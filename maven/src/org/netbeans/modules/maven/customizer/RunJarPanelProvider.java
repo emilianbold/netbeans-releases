@@ -77,7 +77,7 @@ public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryP
     public JComponent createComponent(Category category, Lookup context) {
         ModelHandle2 handle = context.lookup(ModelHandle2.class);
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
-        final RunJarPanel panel = new RunJarPanel(handle, project);
+        final RunJarPanel panel = new RunJarPanel(handle, project, category);
         return panel;
     }
     

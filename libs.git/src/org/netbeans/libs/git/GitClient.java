@@ -97,6 +97,7 @@ import org.netbeans.libs.git.jgit.commands.RevertCommand;
 import org.netbeans.libs.git.jgit.commands.SetRemoteCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import org.netbeans.libs.git.jgit.commands.UnignoreCommand;
+import org.netbeans.libs.git.jgit.commands.SetUpstreamBranchCommand;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
@@ -1004,6 +1005,25 @@ public final class GitClient {
         Repository repository = gitRepository.getRepository();
         SetRemoteCommand cmd = new SetRemoteCommand(repository, getClassFactory(), remoteConfig, monitor);
         cmd.execute();
+    }
+
+    /**
+     * Sets the upstream branch (tracking) of <code>localBranchName</code> to
+     * <code>remoteBranch</code>.
+     *
+     * @param localBranchName local branch supposed to track another branch
+     * @param remoteBranch branch from <code>remoteName</code> to be tracked
+     * @param monitor progress monitor
+     * @return info for the local branch with updated tracking
+     * @throws GitException error occurs
+     * @since 1.12
+     */
+    public GitBranch setUpstreamBranch (String localBranchName, String remoteBranch, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        SetUpstreamBranchCommand cmd = new SetUpstreamBranchCommand(repository, getClassFactory(),
+                localBranchName, remoteBranch, monitor);
+        cmd.execute();
+        return cmd.getTrackingBranch();
     }
 
     /**

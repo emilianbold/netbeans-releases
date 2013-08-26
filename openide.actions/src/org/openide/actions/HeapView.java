@@ -657,7 +657,7 @@ class HeapView extends JComponent {
         FontMetrics fm = g.getFontMetrics();
         int textWidth = fm.stringWidth(text);
         g.drawString(text, (w - maxTextWidth) / 2 + (maxTextWidth - textWidth), 
-                h / 2 + fm.getAscent() / 2);
+                h / 2 + fm.getAscent() / 2 - 2);
     }
 
     /**

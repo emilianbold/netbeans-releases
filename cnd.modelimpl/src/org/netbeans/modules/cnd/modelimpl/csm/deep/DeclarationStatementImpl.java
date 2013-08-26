@@ -152,77 +152,80 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
             if (tree != null) {
-                AST token = tree;
-                switch (token.getType()) {
-                    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
-                    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-                        if (!renderVariable(token, currentNamespace, container, currentNamespace, false)) {
-                            render(token.getFirstChild(), currentNamespace, container);
-                        }
-                        break;
-                case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
-                        try {
-                            LambdaFunction<?> fddi = LambdaFunction.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
-                            declarators.add(fddi);
-                        } catch (AstRendererException e) {
-                            DiagnosticExceptoins.register(e);
-                        }
-                        break;
-                    case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                        declarators.add(NamespaceAliasImpl.create(token, getContainingFile(), null, !isRenderingLocalContext()));
-                        break;
-                    case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                        declarators.add(UsingDirectiveImpl.create(token, getContainingFile(), !isRenderingLocalContext()));
-                        break;
-                    case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(UsingDeclarationImpl.create(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
-                        break;
-
-                    case CPPTokenTypes.CSM_CLASS_DECLARATION:
-                    case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-                    {
-                        try {
-                            ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                            ClassImplSpecialization.create(token, null, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), null) :
-                                            ClassImpl.create(token, null, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), null);
-                            declarators.add(cls);
-                            Pair typedefs = renderTypedef(token, cls, currentNamespace);
-                            if (!typedefs.getTypesefs().isEmpty()) {
-                                addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
-                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
-                                    declarators.add(typedef);
-                                    //FIXME: class do not allow register enclosing typedef that does not in repository
-                                    //if (cls != null) {
-                                    //   cls.addEnclosingTypedef(typedefs[i]);
-                                    //}
-                                }
+                try {
+                    AST token = tree;
+                    switch (token.getType()) {
+                        case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
+                        case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
+                            if (!renderVariable(token, currentNamespace, container, currentNamespace, false)) {
+                                render(token.getFirstChild(), currentNamespace, container);
                             }
-                            renderVariableInClassifier(token, cls, currentNamespace, container);
-                        } catch (AstRendererException e) {
-                            DiagnosticExceptoins.register(e);
-                        }
-                        break;
-                    }
-                    case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                    case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
-                    {
-                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), fileContent, !isRenderingLocalContext());
-                        declarators.add(csmEnum);
-                        renderVariableInClassifier(token, csmEnum, currentNamespace, container);
-                        break;
-                    }
-                    case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                    {
-                        if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
+                            break;
+                    case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                            try {
+                                LambdaFunction<?> fddi = LambdaFunction.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
+                                declarators.add(fddi);
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
+                            break;
+                        case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
+                            declarators.add(NamespaceAliasImpl.create(token, getContainingFile(), null, !isRenderingLocalContext()));
+                            break;
+                        case CPPTokenTypes.CSM_USING_DIRECTIVE:
+                            declarators.add(UsingDirectiveImpl.create(token, getContainingFile(), !isRenderingLocalContext()));
+                            break;
+                        case CPPTokenTypes.CSM_USING_DECLARATION:
+                            declarators.add(UsingDeclarationImpl.create(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
+                            break;
+
+                        case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                        case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
+                        {
+                            try {
+                                ClassImpl cls = createClass(token, null, null);
+                                Pair typedefs = renderTypedef(token, cls, currentNamespace);
+                                if (!typedefs.getTypesefs().isEmpty()) {
+                                    addTypedefs(typedefs.getTypesefs(), currentNamespace, container, cls);
+                                    for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                        declarators.add(typedef);
+                                        //FIXME: class do not allow register enclosing typedef that does not in repository
+                                        //if (cls != null) {
+                                        //   cls.addEnclosingTypedef(typedefs[i]);
+                                        //}
+                                    }
+                                }
+                                renderVariableInClassifier(token, cls, currentNamespace, container);
+                            } catch (AstRendererException e) {
+                                DiagnosticExceptoins.register(e);
+                            }
                             break;
                         }
-                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, getScope(), currentNamespace);
-                        if (!typedefs.getTypesefs().isEmpty()) {
-                            for (CsmTypedef typedef : typedefs.getTypesefs()) {
-                                declarators.add(typedef);
-                            }
+                        case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                        case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
+                        {
+                            EnumImpl csmEnum = createEnum(token, currentNamespace, container);
+                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                            break;
                         }
-                        break;
+                        case CPPTokenTypes.CSM_GENERIC_DECLARATION:
+                        {
+                            if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
+                                break;
+                            }
+                            Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, getScope(), currentNamespace);
+                            if (!typedefs.getTypesefs().isEmpty()) {
+                                for (CsmTypedef typedef : typedefs.getTypesefs()) {
+                                    declarators.add(typedef);
+                                }
+                            }
+                            break;
+                        }
+                    }
+                } catch (AstRendererException ex) {
+                    if (!SKIP_AST_RENDERER_EXCEPTIONS) {
+                        // In MySQL related tests we see endless "empty function name" exceptions
+                        DiagnosticExceptoins.register(ex);
                     }
                 }
             }
@@ -239,7 +242,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
             //cfdi.init(ast, scope, !isRenderingLocalContext());
             return cfdi;
         }
-
+                
 // Never used 
 //	/**
 //	 * Creates a variable for declaration like int x(y);
@@ -273,6 +276,24 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
 //	    }
 //	    return null;
 //	}
+
+        @Override
+        protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
+            EnumImpl impl = super.createEnum(token, scope, container); 
+            if (impl != null) {
+                declarators.add(impl);
+            }
+            return impl;
+        }
+
+        @Override
+        protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
+            ClassImpl cls = super.createClass(token, scope, container);
+            if (cls != null) {
+                declarators.add(cls);
+            }
+            return cls;
+        }
     }
     
     

@@ -49,6 +49,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -141,6 +142,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
 
     private final Semaphore INIT_LOCK = new Semaphore( -1 );
     private Lookup projectContext;
+    private Method setZoomMethod;
+    private Method getZoomMethod;
 
     /**
      * Creates a new {@code WebBrowserImpl}.
@@ -429,6 +432,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             }
             container = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED, null, null);
+            }
+        });
     }
 
     @Override
@@ -842,7 +851,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.impl_setScale( zoomFactor );
+                setZoom( browser, zoomFactor );
                 if( preferredWidth > 0 && preferredHeight > 0 ) {
                     double scaledWidth = preferredWidth*zoomFactor;
                     double scaledHeight = preferredHeight*zoomFactor;
@@ -858,7 +867,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             public void run() {
                 preferredWidth = width;
                 preferredHeight = height;
-                double scale = browser.impl_getScale();
+                double scale = getZoom( browser );
                 double scaledWidth = width*scale;
                 double scaledHeight = height*scale;
                 _resize( scaledWidth, scaledHeight );
@@ -996,6 +1005,48 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             if( null != io ) {
                 io.getOut().close();
                 io.getErr().close();
+            }
+        }
+    }
+
+    //TODO remove when JDK 1.7 is no longer supported
+    //JavaFX runtime uses impl_setZoom method in JDK 1.7 and setZoom method in JDK 1.8
+    private void setZoom( WebView webview, double zoomFactor ) {
+        initZoom();
+        if( null != setZoomMethod ) {
+            try {
+                setZoomMethod.invoke( webview, zoomFactor );
+            } catch( Exception e ) {
+                Logger.getLogger( WebBrowserImpl.class.getName() ).log( Level.INFO, "Cannot set browser zoom factor.", e );
+            }
+        }
+    }
+
+    private double getZoom( WebView webview ) {
+        initZoom();
+        if( null != getZoomMethod ) {
+            try {
+                return (Double)getZoomMethod.invoke( webview, new Object[0] );
+            } catch( Exception e ) {
+                Logger.getLogger( WebBrowserImpl.class.getName() ).log( Level.INFO, "Cannot read browser zoom factor.", e );
+            }
+        }
+        return 1.0;
+    }
+
+    private void initZoom() {
+        if( null != getZoomMethod ) {
+            return;
+        }
+        try {
+            getZoomMethod = WebView.class.getDeclaredMethod( "getZoom", new Class[0] );
+            setZoomMethod = WebView.class.getDeclaredMethod( "setZoom", double.class );
+        } catch( Exception e ) {
+            try {
+                getZoomMethod = WebView.class.getDeclaredMethod( "impl_getScale", new Class[0] );
+                setZoomMethod = WebView.class.getDeclaredMethod( "impl_setScale", double.class );
+            } catch( Exception e2 ) {
+                Logger.getLogger( WebBrowserImpl.class.getName() ).log( Level.WARNING, "Cannot initialize browser zoom.", e2 );
             }
         }
     }

@@ -78,7 +78,7 @@ public class GroovyParserResult extends ParserResult {
             ErrorCollector errorCollector) {
         super(snapshot);
         this.parser = parser;
-        this.rootElement = new ASTRoot(snapshot.getSource().getFileObject(), this, rootNode);
+        this.rootElement = new ASTRoot(snapshot.getSource().getFileObject(), rootNode);
         this.errorCollector = errorCollector;
     }
 

@@ -55,6 +55,8 @@ import java.net.URL;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -89,6 +91,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 //    private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private boolean valid = true;
 
+    private final Icon PROXY_TEST_OK = ImageUtilities.loadImageIcon("org/netbeans/core/ui/options/general/ok_16.png", false);
+    private final Icon PROXY_TEST_ERROR = ImageUtilities.loadImageIcon("org/netbeans/core/ui/options/general/error_16.png", false);
     
     /** 
      * Creates new form GeneralOptionsPanel. 
@@ -166,6 +170,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         lblLearnMore.getAccessibleContext ().setAccessibleDescription (loc ("AD_Learn_More"));
         lblLearnMore.getAccessibleContext ().setAccessibleName (loc ("AN_Learn_More"));
         
+        pbProxyWaiting.setVisible(false);
+        
         rbUseSystemProxy.setToolTipText (getUseSystemProxyToolTip ());
 
         //#144853: Show statistics ui only in IDE not in Platform.
@@ -210,6 +216,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         bReloadProxy = new javax.swing.JButton();
         bTestConnection = new javax.swing.JButton();
         lblTestResult = new javax.swing.JLabel();
+        pbProxyWaiting = new javax.swing.JProgressBar();
 
         lWebBrowser.setLabelFor(cbWebBrowser);
         org.openide.awt.Mnemonics.setLocalizedText(lWebBrowser, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lWebBrowser.text")); // NOI18N
@@ -268,7 +275,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, "<html><font color=\"#0000FF\" <u>Learn more</u></font></html>"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "CTL_Learn_More")); // NOI18N
         lblLearnMore.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 lblLearnMoreMouseEntered(evt);
@@ -328,6 +335,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblTestResult, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.lblTestResult.text")); // NOI18N
 
+        pbProxyWaiting.setIndeterminate(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -377,6 +386,8 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                         .addComponent(bTestConnection)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(lblTestResult)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pbProxyWaiting, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGap(0, 0, Short.MAX_VALUE)))
                                 .addContainerGap())))
                     .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 1495, Short.MAX_VALUE)
@@ -414,9 +425,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 .addGap(30, 30, 30)
                 .addComponent(errorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(lblTestResult)
                     .addComponent(bTestConnection)
-                    .addComponent(lblTestResult))
+                    .addComponent(pbProxyWaiting, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(11, 11, 11)
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -557,6 +569,7 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JLabel lblLearnMore;
     private javax.swing.JLabel lblTestResult;
     private javax.swing.JLabel lblUsageInfo;
+    private javax.swing.JProgressBar pbProxyWaiting;
     private javax.swing.JRadioButton rbHTTPProxy;
     private javax.swing.JRadioButton rbNoProxy;
     private javax.swing.JRadioButton rbUseSystemProxy;
@@ -592,14 +605,16 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return portStatus;
     }
 
-    private void showError(String message) {
+    private void showError(String message) {        
         errorLabel.setVisible(true);
-        errorLabel.setText(message);
+        errorLabel.setText(message);        
+        bTestConnection.setEnabled(false);
     }
 
     private void clearError() {
         errorLabel.setText("");
         errorLabel.setVisible(false);
+        bTestConnection.setEnabled(true);
     }
 
     private static String loc (String key, String... params) {
@@ -775,22 +790,35 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return changed;
     }
     
-    void updateTestConnectionStatus(GeneralOptionsModel.TestingStatus status, String message) {
+    void updateTestConnectionStatus(GeneralOptionsModel.TestingStatus status, String message) {        
         switch (status) {
             case NOT_TESTED:
-                lblTestResult.setText("");
+                lblTestResult.setText(" "); // NOI18N
+                lblTestResult.setIcon(null);
+                lblTestResult.setToolTipText("");
+                pbProxyWaiting.setVisible(false);
                 break;
-            case WAITING:
-                lblTestResult.setText("WAITING");
+            case WAITING:                
+                lblTestResult.setText(" "); // NOI18N
+                lblTestResult.setIcon(null);
+                lblTestResult.setToolTipText("");
+                pbProxyWaiting.setVisible(true);
                 break;
             case OK:
-                lblTestResult.setText("OK");
+                lblTestResult.setText(" "); // NOI18N
+                lblTestResult.setIcon(PROXY_TEST_OK);
+                lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.ok")); // NOI18N
+                pbProxyWaiting.setVisible(false);
                 break;
             case FAILED:
-                lblTestResult.setText("FAILED (" + message + ")");
+                lblTestResult.setText(message);
+                lblTestResult.setIcon(PROXY_TEST_ERROR);
+                lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.failed", message)); // NOI18N
+                pbProxyWaiting.setVisible(false);
                 break;
         }       
     }
+
 
     @Override
     public void actionPerformed (ActionEvent e) {

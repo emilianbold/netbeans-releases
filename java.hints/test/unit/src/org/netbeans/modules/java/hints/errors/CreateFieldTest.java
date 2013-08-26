@@ -147,6 +147,13 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 -1);
     }
 
+    public void test234968() throws Exception {
+        performAnalysisTest("test/Test.java",
+                "package test; public class Test { public Test() { l = 0; } public Test(int i); }",
+                -1,
+                "CreateFieldFix:l:test.Test:int:[private]");
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, String diagnosticCode, int pos, TreePath path) throws Exception {
         List<Fix> fixes = CreateElement.analyze(info, diagnosticCode, pos);

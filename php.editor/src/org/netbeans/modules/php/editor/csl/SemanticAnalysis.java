@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -133,18 +134,23 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> ANNOTATION_TYPE_SET = EnumSet.of(ColoringAttributes.ANNOTATION_TYPE);
     public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
-
+    private static final Logger LOGGER = Logger.getLogger(SemanticAnalysis.class.getName());
+    private static boolean isLogged = false;
     private volatile boolean cancelled;
+    private boolean checkIfResolveDeprecatedElements = true;
+    private boolean isResolveDeprecatedElements = false;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    private final boolean isResolveDeprecatedElements;
 
     public SemanticAnalysis() {
-        this(PhpAnnotations.getDefault().isResolveDeprecatedElements());
+        semanticHighlights = null;
     }
 
-    public SemanticAnalysis(boolean isResolveDeprecatedElements) {
-        this.isResolveDeprecatedElements = isResolveDeprecatedElements;
-        semanticHighlights = null;
+    private static void setIsLogged(boolean isLogged) {
+        SemanticAnalysis.isLogged = isLogged;
+    }
+
+    private static boolean isLogged() {
+        return isLogged;
     }
 
     @Override
@@ -159,6 +165,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
     @Override
     public void run(Result r, SchedulerEvent event) {
+        checkIfResolveDeprecatedElements = true;
+        if (isResolveDeprecatedElements()) {
+            if (!isLogged()) {
+                LOGGER.info("Resolving of deprecated elements in Semantic analysis - IDE will be possibly slow!");
+                setIsLogged(true);
+            }
+        }
         resume();
 
         if (isCancelled()) {
@@ -189,7 +202,11 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         cancelled = false;
     }
 
-    private boolean isResolveDeprecatedElements() {
+    protected boolean isResolveDeprecatedElements() {
+        if (checkIfResolveDeprecatedElements) {
+            isResolveDeprecatedElements = PhpAnnotations.getDefault().isResolveDeprecatedElements();
+            checkIfResolveDeprecatedElements = false;
+        }
         return isResolveDeprecatedElements;
     }
 

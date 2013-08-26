@@ -54,6 +54,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
@@ -112,7 +113,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
+        String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         if (selectedBrowser == null) {
             return null;
         } else {
@@ -126,7 +127,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
             @Override
             public void run() {
-                MavenProjectSupport.setBrowserID(project, browser.getId());
+                JavaEEProjectSettings.setBrowserID(project, browser.getId());
             }
         });
         pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);

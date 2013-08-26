@@ -592,12 +592,16 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 if (cls2 != null) {
                                     if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
                                         match += 2;
-                                    } else if (cls2.isValid()) {
-                                        if (cls2.getQualifiedName().toString().equals(((CsmTypeBasedSpecializationParameter)param).getClassifier().getQualifiedName().toString())) {
-                                            match += 1;
-                                        } else {
-                                            match -= 1;
-                                        }                                        
+                                    } else if (cls2.isValid() && cls2.getQualifiedName().toString().contains(paramsText.get(i))) {
+                                        CsmTypeBasedSpecializationParameter usedSpecializationParam = (CsmTypeBasedSpecializationParameter)param;
+                                        CsmClassifier usedSpecParamClassifier = usedSpecializationParam.getClassifier();
+                                        if (usedSpecParamClassifier != null && usedSpecParamClassifier.getQualifiedName() != null) {
+                                            if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
+                                                match += 1;
+                                            } else {
+                                                match -= 1;
+                                            }
+                                        }
                                     }
                                     if (tbsp.isPointer() &&
                                             isPointer(paramsType.get(i))) {
@@ -736,7 +740,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         }
         return 0;
     }
-
+    
     private static CsmClassifier getClassifier(CsmType type) {
         int iteration = MAX_DEPTH;
         CsmClassifier cls = type.getClassifier();

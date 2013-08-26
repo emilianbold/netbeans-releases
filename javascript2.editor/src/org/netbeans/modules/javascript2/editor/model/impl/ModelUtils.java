@@ -942,7 +942,7 @@ public class ModelUtils {
 
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
-        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;")
+        if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;") || sexp.startsWith("@pro;")
                 || sexp.startsWith("@call;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH)) && (sexp.length() > 5)) {
             
             int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH) ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
@@ -1026,6 +1026,7 @@ public class ModelUtils {
                 for (TypeUsage typeWith: typesFromWith) {
                     resolvedTypes.add(new TypeUsageImpl(SemiTypeResolverVisitor.ST_EXP + typeWith.getType() + sb.toString(), typeName.getOffset(), false));
                 }
+                resolvedTypes.add(new TypeUsageImpl(sb.toString(), typeName.getOffset(), false));
                 
             } else {
                 JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
@@ -1156,6 +1157,9 @@ public class ModelUtils {
      */
     public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
         JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        while (jsObject != null && jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
+            jsObject = ModelUtils.findJsObject(model, jsObject.getOffset() - 1);
+        }
         while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = jsObject.getParent();
         }

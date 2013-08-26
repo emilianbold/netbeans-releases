@@ -75,6 +75,7 @@ import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -114,6 +115,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
     @Override
     public void actionPerformed(ActionEvent e) {
         
+        Utils.logVCSActionEvent("Git"); //NOI18N
         String cloneFromPath = null;
         if(ctx != null) {
             Set<File> roots = ctx.getRootFiles();
@@ -194,12 +196,13 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 
                                 List<String> refs = Arrays.asList(GitUtils.getGlobalRefSpec(remoteName));
                                 client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refs).toGitRemote(), getProgressMonitor());
-                                org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
+                                org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.getHost()); //NOI18N
                                 if (branch == null) {
                                     client.createBranch(GitUtils.MASTER, GitUtils.PREFIX_R_REMOTES + remoteName + "/" + GitUtils.MASTER, getProgressMonitor());
                                 } else {
                                     client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
-                                    client.checkout(new File[0], branch.getName(), true, getProgressMonitor());
+                                    client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+                                    client.reset(branch.getName(), org.netbeans.libs.git.GitClient.ResetType.HARD, getProgressMonitor());
                                 }
 
                                 Git.getInstance().getFileStatusCache().refreshAllRoots(destination);

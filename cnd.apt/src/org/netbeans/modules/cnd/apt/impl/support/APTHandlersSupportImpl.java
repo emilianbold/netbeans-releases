@@ -239,9 +239,9 @@ public class APTHandlersSupportImpl {
         private final Key startProjectKey;
         private final int hashCode;
 
-        public StateKeyImpl(int crc1, int crc2, Key startProjectKey) {
-            this.crc1 = crc1;
-            this.crc2 = crc2;
+        public StateKeyImpl(int crc1, int crc2, long crcSys, Key startProjectKey) {
+            this.crc1 = crc1 ^ (int)(crcSys & 0x0000FFFFL);
+            this.crc2 = crc2 ^ (int)(crcSys>>32);
             this.startProjectKey = startProjectKey;
             int hash = startProjectKey == null ? -1 : startProjectKey.hashCode();
             this.hashCode = crc1 ^ crc2 ^ hash;

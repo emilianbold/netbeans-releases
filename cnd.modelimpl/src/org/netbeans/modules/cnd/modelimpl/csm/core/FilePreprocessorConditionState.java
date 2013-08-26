@@ -138,9 +138,14 @@ public final class FilePreprocessorConditionState {
             if (i > 0) {
                 sb.append("][");//NOI18N
             }
-            sb.append(state.offsets[i]);
-            sb.append("-");//NOI18N
-            sb.append(state.offsets[i+1]);
+            if (state.offsets[i+1] == Integer.MAX_VALUE) {
+                sb.append(Integer.MAX_VALUE-state.offsets[i]);
+                sb.append("#error");//NOI18N
+            } else {
+                sb.append(state.offsets[i]);
+                sb.append("-");//NOI18N
+                sb.append(state.offsets[i+1]);
+            }
         }
         sb.append("]");//NOI18N
         return sb.toString();
@@ -217,6 +222,13 @@ public final class FilePreprocessorConditionState {
         return blocks;
     }
 
+    public boolean isFromErrorDirective() {
+        if (this.offsets.length == 0 || this == PARSING) {
+            return false;
+        }
+        return offsets[offsets.length-1] == Integer.MAX_VALUE;
+    }
+
     public static final class Builder implements APTParseFileWalker.EvalCallback {
 
         private final SortedSet<int[]> blocks = new TreeSet<int[]>(COMPARATOR);
@@ -247,7 +259,8 @@ public final class FilePreprocessorConditionState {
          */        
         @Override
         public void onStoppedDirective(APT apt) {
-            addBlockImpl(apt.getToken().getOffset(), Integer.MAX_VALUE);
+            // on error directive we add special dead block
+            addBlockImpl(Integer.MAX_VALUE-apt.getToken().getOffset(), Integer.MAX_VALUE);
         }
 
         /**
@@ -342,11 +355,13 @@ public final class FilePreprocessorConditionState {
                 if (i++ > 0) {
                     sb.append("][");//NOI18N
                 }
-                sb.append(deadInterval[0]);
-                sb.append("-");//NOI18N
-                sb.append(deadInterval[1]);
                 if (deadInterval[1] == Integer.MAX_VALUE) {
-                    break;
+                    sb.append(Integer.MAX_VALUE-deadInterval[0]);
+                    sb.append("#error");//NOI18N
+                } else {
+                    sb.append(deadInterval[0]);
+                    sb.append("-");//NOI18N
+                    sb.append(deadInterval[1]);
                 }
             }
             sb.append("]");//NOI18N

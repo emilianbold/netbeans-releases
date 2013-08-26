@@ -147,8 +147,8 @@ final public class EjbJarProjectProperties {
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
     public static final String INCLUDE_JARS = "jars.in.ejbjar"; // NOI18N
 
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
-    public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
+    public static final String J2EE_SERVER_INSTANCE = J2EEProjectProperties.J2EE_SERVER_INSTANCE;
+    public static final String J2EE_SERVER_TYPE = J2EEProjectProperties.J2EE_SERVER_TYPE;
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; // NOI18N

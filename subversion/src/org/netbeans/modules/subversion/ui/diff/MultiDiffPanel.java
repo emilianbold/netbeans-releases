@@ -191,6 +191,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private SvnProgressSupport executeStatusSupport;
     private boolean internalChange;
     private boolean propertiesVisible;
+    private int lastDividerLoc;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -524,6 +525,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
         parent.getActionMap().put("jumpPrev", prevAction); // NOI18N
+        if (splitPane != null && lastDividerLoc != 0) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    splitPane.setDividerLocation(lastDividerLoc);
+                }
+            });
+        }
     }
 
     private void updateSplitLocation() {
@@ -553,6 +562,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     @Override
     public void removeNotify() {
+        if (splitPane != null) {
+            lastDividerLoc = splitPane.getDividerLocation();
+        }
         cache.removeVersioningListener(this);
         if (fileTable != null) {
             SvnModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);

@@ -87,7 +87,7 @@ public  class ProxyTag implements Tag {
                 return s.getAttributes();
             } else {
                 //merge
-                Collection<Attribute> merged = new HashSet<Attribute>();
+                Collection<Attribute> merged = new HashSet<>();
                 merged.addAll(s.getAttributes());
                 merged.addAll(t.getAttributes());
                 return merged;

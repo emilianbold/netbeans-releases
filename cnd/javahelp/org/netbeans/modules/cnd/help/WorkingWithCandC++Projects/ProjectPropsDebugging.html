@@ -20,10 +20,14 @@ type="text/css">
        The Debug panel lets you specify properties that are used when you debug your project in the
       IDE.
     </p>
-    <p>
-       <b>Debug command.</b> By default, the IDE uses the run command to run your project under the
-      debugger. You can specify a command for the IDE to use for debugging instead of the run
-      command.
+    <p>       
+      <b>Debug Command.</b> For debugging, the IDE uses the command specified as the Run Command in the 
+      Run properties by default. You can specify a different command to be executed when you debug the project. 
+      The IDE runs the command as <tt>/bin/sh -c "debug-command"</tt> which enables you to use any shell syntax including
+       redirection and pipes.  Type the command in the Debug Command field the same way you would run it from the command
+       line. For example, you could type <tt>my-script -opt1 -opt2</tt> to run a script and specify
+       two options, or <tt>mycommand > output.log</tt>  to run your command and send the output to a 
+       logfile. Unlike the Run Command, the Debug Command history is not maintained. 
     </p>
     <p>
        <b>Working dir.</b> By default, the IDE uses the run directory as the working directory when

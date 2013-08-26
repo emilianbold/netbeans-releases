@@ -110,13 +110,18 @@ final class RemoteOperationFactory extends FileOperationFactory {
     @Override
     protected synchronized void resetInternal() {
         if (remoteClient != null) {
-            try {
-                remoteClient.disconnect();
-            } catch (RemoteException ex) {
-                LOGGER.log(Level.INFO, "Error while disconnecting", ex);
-            }
+            disconnect(remoteClient, true);
         }
         remoteClient = null;
+    }
+
+    static void disconnect(RemoteClient client, boolean force) {
+        assert client != null;
+        try {
+            client.disconnect(force);
+        } catch (RemoteException ex) {
+            LOGGER.log(Level.INFO, "Error while disconnecting", ex);
+        }
     }
 
     @Override
@@ -146,7 +151,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-                return doCopy(getRemoteClient(), source);
+                RemoteClient client = getRemoteClient();
+                try {
+                    return doCopy(client, source);
+                } finally {
+                    disconnect(client, false);
+                }
             }
         };
     }
@@ -161,7 +171,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-                return doRename(getRemoteClient(), source, oldName);
+                RemoteClient client = getRemoteClient();
+                try {
+                    return doRename(client, source, oldName);
+                } finally {
+                    disconnect(client, false);
+                }
             }
         };
     }
@@ -176,7 +191,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
                 if (!isValid(source)) {
                     return null;
                 }
-                return doDelete(getRemoteClient(), source);
+                RemoteClient client = getRemoteClient();
+                try {
+                    return doDelete(client, source);
+                } finally {
+                    disconnect(client, false);
+                }
             }
         };
     }

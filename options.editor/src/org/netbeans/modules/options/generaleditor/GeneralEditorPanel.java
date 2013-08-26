@@ -126,6 +126,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         lSearchtypeTooltip = new javax.swing.JLabel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         setForeground(new java.awt.Color(99, 130, 191));
         setLayout(new java.awt.GridBagLayout());
 

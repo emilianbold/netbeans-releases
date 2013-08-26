@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -12,9 +12,34 @@ type="text/css">
 <body>
 <h2>C/C++ Project Properties Dialog Box: Make</h2>
 <p><small><a href="#seealso">See Also</a>&nbsp; </small></p>
-<p>The Make panel lets you specify the working directory, build command, 
-clean command, and build result for a C/C++ project from existing sources.
+<p>The Make panel lets you specify properties for building a C/C++ project from existing sources.
 </p>
+     <p>
+       <b>Working Directory.</b> By default, the IDE uses the run directory as the working directory when
+      running build and clean commands for your project from existing sources. You can specify a 
+      different working directory for the IDE to use.
+    </p>
+    <p>
+       <b>Build Command.</b> By default, the IDE uses the make command to run the 
+       default target in the unmanaged project's Makefile. With the Build Command property
+       you can specify a different command for the IDE to use instead of make. 
+       The IDE runs the command as <tt>/bin/sh -c "command"</tt> which enables you to use any shell syntax including
+       redirection and pipes.  Type the command in the Build Command field the same way you would run it from the command
+       line. For example, you could type <tt>my-script -opt1 -opt2</tt> to run a script and specify
+       two options, or <tt>mycommand > output.log</tt>  to run your command and send the output to a 
+       logfile. The Build Command history is not maintained.
+    </p>
+    <p>
+    <b>Clean Command.</b> By default, the IDE uses the make command to run the
+       clean target in the unmanaged project's Makefile. With the Clean Command property
+       you can specify a different command for the IDE to use instead of make clean. 
+       As with the Build Command, you can use any command you could type in a command line.
+       The Clean Command history is not maintained.
+    </p>
+   <p>
+    <b>Build Result.</b> The path to the output of the build, which is specified in the Makefile.  You can
+    specify a path to override that path specified in the Makefile.
+   </p>
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See also</a></th>

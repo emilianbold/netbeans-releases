@@ -158,7 +158,13 @@ public class testInsertGetterAndSetter extends insert
     };
     CheckResult( eoPHP, asResult, -30 );
     */
-    CheckFlex( eoPHP, "public function getA(){return $this->a;}public function setA($a){$this->a=$a;}public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getD(){return $this->d;}public function setD($d){$this->d=$d;}", false );
+    //CheckFlex( eoPHP, "public function getA(){return $this->a;}public function setA($a){$this->a=$a;}public function getB(){return $this->b;}public function setB($b){$this->b=$b;}public function getD(){return $this->d;}public function setD($d){$this->d=$d;}", false );
+    CheckFlex( eoPHP, "public function getA(){return $this->a;}", false );
+    CheckFlex( eoPHP, "public function setA($a){$this->a=$a;}", false );
+    CheckFlex( eoPHP, "public function getB(){return $this->b;}", false );
+    CheckFlex( eoPHP, "public function setB($b){$this->b=$b;}", false );
+    CheckFlex( eoPHP, "public function getD(){return $this->d;}", false );
+    CheckFlex( eoPHP, "public function setD($d){$this->d=$d;}", false );
 
     endTest( );
   }

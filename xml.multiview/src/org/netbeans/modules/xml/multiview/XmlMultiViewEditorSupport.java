@@ -473,6 +473,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {
                 MultiViewHandler handler = MultiViews.findMultiViewHandler(mvtc);
+                // #234365 - the window may get closed in the meantime.
+                if (handler == null) {
+                    return;
+                }
                 handler.requestVisible(handler.getPerspectives()[xmlMultiViewIndex]);
             }
         });

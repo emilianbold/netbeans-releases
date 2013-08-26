@@ -278,18 +278,28 @@ public class CharSequencesTest extends NbTestCase {
                 assertTrue("string object is smaller than our char sequence", stringIsBigger);
             }
         }
-        // check that our Impl is better than default String for Unicode as well
+        // check that our Impl is not worse than default String for Unicode as well
         String rusText = "Русский Текст";
         CharSequence cs = CharSequences.create(rusText);
         assertTrue(rusText.contentEquals(cs));
-        assertSize("Size is too big for " + cs, 56, cs);
+        int sizeLimit = 56;
+        assertSize("Size is too big for " + cs, sizeLimit, cs);
         boolean stringIsBigger = false;
+        boolean stringIsSame = false;
         try {
-            assertSize("Size is too big for " + rusText, 56, rusText);
+            // make sure our impl is better
+            assertSize(rusText, sizeLimit, rusText);
+            try {
+                // of the same (as in JDK 8)
+                assertSize(rusText, sizeLimit - 1, rusText);
+            } catch (AssertionFailedError e) {
+//                System.err.println(e.getMessage());
+                stringIsSame = true;
+            }            
         } catch (AssertionFailedError e) {
 //                    System.err.println(e.getMessage());
             stringIsBigger = true;
         }
-        assertTrue("string object is smaller than our char sequence", stringIsBigger);
+        assertTrue("string object \"" + rusText + "\" is smaller than our char sequence with size " + sizeLimit, stringIsBigger || stringIsSame);
     }
 }

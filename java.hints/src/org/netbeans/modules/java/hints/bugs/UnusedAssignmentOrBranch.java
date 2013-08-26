@@ -167,7 +167,7 @@ public class UnusedAssignmentOrBranch {
         return null;
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY}, suppressWarnings="DeadBranch")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options=Options.QUERY, suppressWarnings="DeadBranch")
     @TriggerTreeKind(Tree.Kind.IF)
     public static List<ErrorDescription> deadBranch(HintContext ctx) {
         String deadBranchLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_DEAD_BRANCH");

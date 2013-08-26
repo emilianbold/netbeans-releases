@@ -606,7 +606,7 @@ public final class UnitTab extends javax.swing.JPanel {
                     showDetailsAtRow (-1);
                     popupActionsSupport.rowChanged (-1);
                 } else {
-                    int selectedRow = lsm.getMinSelectionIndex ();                    
+                    int selectedRow = table.convertRowIndexToModel(lsm.getMinSelectionIndex());                    
                     popupActionsSupport.rowChanged (selectedRow);
                     //selectedRow is selected
                     Action action = null;

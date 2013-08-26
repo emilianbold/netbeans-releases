@@ -43,8 +43,6 @@ package org.netbeans.modules.web.jsf.editor.refactoring.actions;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.EditorUtilities;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.jsf.editor.InjectCompositeComponent;
 import org.openide.loaders.DataObject;

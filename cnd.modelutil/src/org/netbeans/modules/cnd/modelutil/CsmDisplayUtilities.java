@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -249,6 +250,8 @@ public class CsmDisplayUtilities {
                     default:
                         throw new IllegalArgumentException("unexpected macro kind:" + macro.getKind() + " in macro:" + macro); // NOI18N
                 }
+            } else if (CsmKindUtilities.isErrorDirective(item)) {
+                tooltipText = getHtmlizedString("DSC_ErrorDirectiveTooltip", ((CsmErrorDirective)item).getErrorMessage()); // NOI18N
             } else if (CsmKindUtilities.isInclude(item)) {
                 CsmInclude incl = (CsmInclude)item;
                 CsmFile target = incl.getIncludeFile();

@@ -461,7 +461,7 @@ class BracesStack implements Cloneable {
         if (id == null){
             return false;
         }
-        return id == CppTokenId.NAMESPACE || id == CppTokenId.CLASS;
+        return id == CppTokenId.NAMESPACE || id == CppTokenId.CLASS || id == CppTokenId.STRUCT || id == CppTokenId.UNION;
     }
     
     public StackEntry peek() {

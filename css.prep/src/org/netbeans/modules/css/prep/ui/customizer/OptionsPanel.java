@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.ui.customizer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -56,9 +57,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -85,23 +90,25 @@ public class OptionsPanel extends JPanel {
     // we must be thread safe
     volatile boolean configured = false;
     volatile boolean enabled;
+    volatile String compilerOptions;
 
 
-    public OptionsPanel(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings) {
+    public OptionsPanel(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
         assert EventQueue.isDispatchThread();
 
         mappingsTableModel = new MappingsTableModel(mappings);
         enabled = initialEnabled;
+        compilerOptions = initialCompilerOptions;
 
         initComponents();
-        init(type, initialEnabled, initialMappings);
+        init(type, initialEnabled, initialMappings, initialCompilerOptions);
     }
 
     @NbBundle.Messages({
         "# {0} - preprocessor name",
         "OptionsPanel.compilationEnabled.label=Co&mpile {0} Files on Save",
     })
-    private void init(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings) {
+    private void init(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
         assert EventQueue.isDispatchThread();
         configureExecutablesButton.setVisible(false);
         Mnemonics.setLocalizedText(enabledCheckBox, Bundle.OptionsPanel_compilationEnabled_label(type.getDisplayName()));
@@ -109,9 +116,14 @@ public class OptionsPanel extends JPanel {
         mappingsTable.setModel(mappingsTableModel);
         setCompilationEnabled(initialEnabled);
         setMappings(initialMappings);
+        setCompilerOptions(initialCompilerOptions);
         // ui
         enablePanel(initialEnabled);
         enableRemoveButton();
+        if ("Mac OS X".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
+            mappingsTable.setShowGrid(true);
+            mappingsTable.setGridColor(Color.GRAY);
+        }
         // listeners
         enabledCheckBox.addItemListener(new ItemListener() {
             @Override
@@ -135,6 +147,24 @@ public class OptionsPanel extends JPanel {
                     return;
                 }
                 enableRemoveButton();
+            }
+        });
+        compilerOptionsTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                compilerOptions = compilerOptionsTextField.getText();
+                fireChange();
             }
         });
     }
@@ -167,6 +197,16 @@ public class OptionsPanel extends JPanel {
         mappingsTableModel.fireMappingsChange();
     }
 
+    public String getCompilerOptions() {
+        assert compilerOptions != null;
+        return compilerOptions;
+    }
+
+    public void setCompilerOptions(String compilerOptions) {
+        assert EventQueue.isDispatchThread();
+        compilerOptionsTextField.setText(compilerOptions);
+    }
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -189,6 +229,9 @@ public class OptionsPanel extends JPanel {
         } else {
             removeButton.setEnabled(false);
         }
+        compilerOptionsLabel.setEnabled(enabled);
+        compilerOptionsTextField.setEnabled(enabled);
+        compilerOptionsInfoLabel.setEnabled(enabled);
     }
 
     void enableRemoveButton() {
@@ -203,7 +246,6 @@ public class OptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        placeholderPanel = new JPanel();
         enabledCheckBox = new JCheckBox();
         configureExecutablesButton = new JButton();
         watchLabel = new JLabel();
@@ -211,6 +253,9 @@ public class OptionsPanel extends JPanel {
         mappingsTable = new JTable();
         addButton = new JButton();
         removeButton = new JButton();
+        compilerOptionsLabel = new JLabel();
+        compilerOptionsTextField = new JTextField();
+        compilerOptionsInfoLabel = new JLabel();
 
         Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
 
@@ -221,22 +266,7 @@ public class OptionsPanel extends JPanel {
             }
         });
 
-        GroupLayout placeholderPanelLayout = new GroupLayout(placeholderPanel);
-        placeholderPanel.setLayout(placeholderPanelLayout);
-        placeholderPanelLayout.setHorizontalGroup(
-            placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(placeholderPanelLayout.createSequentialGroup()
-                .addComponent(enabledCheckBox)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(configureExecutablesButton))
-        );
-        placeholderPanelLayout.setVerticalGroup(
-            placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(placeholderPanelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                .addComponent(enabledCheckBox)
-                .addComponent(configureExecutablesButton))
-        );
-
+        watchLabel.setLabelFor(mappingsTable);
         Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
 
         mappingsScrollPane.setViewportView(mappingsTable);
@@ -255,24 +285,38 @@ public class OptionsPanel extends JPanel {
             }
         });
 
+        compilerOptionsLabel.setLabelFor(compilerOptionsTextField);
+        Mnemonics.setLocalizedText(compilerOptionsLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsLabel.text")); // NOI18N
+
+        compilerOptionsTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(compilerOptionsInfoLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsInfoLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(enabledCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(configureExecutablesButton))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(addButton)
+                    .addComponent(removeButton)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(watchLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(compilerOptionsLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(removeButton)
-                            .addComponent(addButton)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(watchLabel)
+                        .addComponent(compilerOptionsInfoLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(placeholderPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addComponent(compilerOptionsTextField)))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
@@ -280,20 +324,24 @@ public class OptionsPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(placeholderPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(enabledCheckBox)
+                    .addComponent(configureExecutablesButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(watchLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeButton)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .addComponent(removeButton)))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(compilerOptionsLabel)
+                    .addComponent(compilerOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compilerOptionsInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -319,11 +367,13 @@ public class OptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
+    private JLabel compilerOptionsInfoLabel;
+    private JLabel compilerOptionsLabel;
+    private JTextField compilerOptionsTextField;
     private JButton configureExecutablesButton;
     private JCheckBox enabledCheckBox;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
-    private JPanel placeholderPanel;
     private JButton removeButton;
     private JLabel watchLabel;
     // End of variables declaration//GEN-END:variables

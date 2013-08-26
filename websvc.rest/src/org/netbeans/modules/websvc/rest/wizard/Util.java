@@ -524,6 +524,10 @@ public class Util {
             String entityFqn, EntityResourceBeanModel model ) throws IOException
     {
         EntityClassInfo entityInfo = model.getEntityInfo(entityFqn);
+        // bug 234460 : don't generate primary key method for not resolved entity class
+        if (entityInfo == null) {
+            return;
+        }
         final FieldInfo idFieldInfo = entityInfo.getIdFieldInfo();
         if ( idFieldInfo!= null && idFieldInfo.isEmbeddedId() && idFieldInfo.getType()!= null){
             final String idType = idFieldInfo.getType();

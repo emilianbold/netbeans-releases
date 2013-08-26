@@ -46,8 +46,10 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.*;
-import org.glassfish.tools.ide.data.TaskEvent;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 

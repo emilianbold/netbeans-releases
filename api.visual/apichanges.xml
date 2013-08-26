@@ -781,12 +781,11 @@ made subject to such option by the copyright holder.
             <author login="mantlik"/>
             <compatibility addition="yes"/>
             <description>
-                Built-in pan action is using modifiers from <code>Scene.getInputBindings().getZoomActionModifiers()</code> method.
+                Built-in pan action is using button from <code>Scene.getInputBindings().getPanActionButton()</code> method.
 		Default value remains <code>MouseEvent.BUTTON2</code>, i.e. mouse wheel, which is compatible with the previous
                 implementation.
             </description>
             <class package="org.netbeans.api.visual.laf" name="InputBindings" link="yes"/>
-            <class package="org.netbeans.modules.visual.action" name="PanAction" link="yes"/>
             <issue number="233296"/>
         </change>
 

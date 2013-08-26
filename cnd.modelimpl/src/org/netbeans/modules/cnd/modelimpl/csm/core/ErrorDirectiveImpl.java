@@ -46,10 +46,13 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
+import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -57,18 +60,34 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class ErrorDirectiveImpl extends OffsetableBase implements CsmErrorDirective {
     private final CharSequence msg;
-    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs) {
+    private final APTPreprocHandler.State ppState;
+    private ErrorDirectiveImpl(CsmFile file, CharSequence text, CsmOffsetable offs, APTPreprocHandler.State ppState) {
         super(file, offs != null ? offs.getStartOffset() : 0, offs != null ? offs.getEndOffset() : 0);
         this.msg = DefaultCache.getManager().getString(text);
+        this.ppState = ppState;
     }
 
-    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs) {
-        return new ErrorDirectiveImpl(file, msg, offs);
+    public static ErrorDirectiveImpl create(CsmFile file, CharSequence msg, CsmOffsetable offs, APTPreprocHandler.State state) {
+        if (APTHandlersSupport.getIncludeStackDepth(state) > 0) {
+            state = APTHandlersSupport.createCleanPreprocState(state);
+        } else {
+            state = null;
+        }        
+        return new ErrorDirectiveImpl(file, msg, offs, state);
+    }
+
+    @Override
+    public CharSequence getErrorMessage() {
+        return msg;
     }
 
     @Override
     public CharSequence getText() {
         return msg;
+    }
+
+    public APTPreprocHandler.State getState() {
+        return this.ppState;
     }
 
     @Override
@@ -95,14 +114,27 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     // serialization
     
     @SuppressWarnings("unchecked")
-    public ErrorDirectiveImpl(RepositoryDataInput input) throws IOException {
+    public ErrorDirectiveImpl(FileSystem fs, RepositoryDataInput input, int initIndex) throws IOException {
         super(input);
         this.msg = PersistentUtils.readUTF(input, DefaultCache.getManager());
+        if (input.readBoolean()) {
+            this.ppState = PersistentUtils.readPreprocState(fs, input, initIndex);
+        } else {
+            this.ppState = null;
+        }
     }
 
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
+        throw new UnsupportedOperationException("write with unitIndex have to be used"); // NOI18N
+    }
+    
+    public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(msg, output);
+        output.writeBoolean(this.ppState != null);
+        if (this.ppState != null) {
+            PersistentUtils.writePreprocState(this.ppState, output, unitIndex);
+        }
     }
 }

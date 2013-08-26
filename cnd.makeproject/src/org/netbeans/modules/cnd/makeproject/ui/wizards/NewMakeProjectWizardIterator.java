@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -124,14 +125,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private final List<WizardDescriptor.Panel<WizardDescriptor>> advancedPanels;
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-
-    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+    
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD, String helpCtx) {
         this.wizardtype = wizardtype;
         name = name.replaceAll(" ", ""); // NOI18N
-
-        panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true);
+        panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true, helpCtx);
         advancedPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
         advancedPanels.addAll(getPanels(wizardtype, name, wizardTitle, wizardACSD, true));
+        
+    }
+
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+        this(wizardtype, name, wizardTitle, wizardACSD, null);
     }
 
     public static List<WizardDescriptor.Panel<WizardDescriptor>> getPanels(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
@@ -209,11 +214,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return new NewMakeProjectWizardIterator(TYPE_QT_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
 
-    public static NewMakeProjectWizardIterator newDBApplication() {
+    public static NewMakeProjectWizardIterator newDBApplication(Map<String,?> inst) {
+        String helpCtxt = (String)inst.get("helpCtx"); //NOI18N
         String name = DBAPPLICATION_PROJECT_NAME;
         String wizardTitle = getString("Templates/Project/Native/newDBApplication.xml");
         String wizardACSD = getString("NativeNewDBApplicationACSD");
-        return new NewMakeProjectWizardIterator(TYPE_DB_APPLICATION, name, wizardTitle, wizardACSD);
+        return new NewMakeProjectWizardIterator(TYPE_DB_APPLICATION, name, wizardTitle, wizardACSD, helpCtxt);
     }
 
     public static NewMakeProjectWizardIterator makefile() {
@@ -479,6 +485,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             FileObject dir = dirF.getFileObject();
             resultSet.add(dir);
         }
+        
         return resultSet;
     }
     private transient int index;

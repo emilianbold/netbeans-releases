@@ -297,5 +297,13 @@ public final class BrowserSupport {
     public void close(boolean closeTab) {
         getWebBrowserPane().close(closeTab);
     }
-    
+
+    /**
+     * Returns true after browser pane was opened and until it is closed by user.
+     * @since 1.34
+     */
+    public synchronized boolean isWebBrowserPaneOpen() {
+        WebBrowserPane p = pane;
+        return p != null && p.isOpen();
+    }
 }

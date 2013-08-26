@@ -59,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -66,6 +67,7 @@ import org.netbeans.spi.editor.fold.FoldInfo;
 import org.netbeans.api.editor.fold.FoldStateChange;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.netbeans.api.editor.fold.FoldType;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.openide.util.Exceptions;
 
@@ -622,8 +624,8 @@ public final class FoldOperationImpl {
             FoldInfo i = infoIt.hasNext() ? infoIt.next() : null;
             
             tran = openTransaction();
-
-            
+            Document d = getDocument();
+            int len = d.getLength();
             try {
                 while (f != null || i != null) {
                     if (LOG.isLoggable(Level.FINEST)) {
@@ -665,6 +667,33 @@ public final class FoldOperationImpl {
                 }
                 for (FoldInfo info : toAdd) {
                     try {
+                        if (info.getStart() > len || info.getEnd() > len) {
+                            // invalid fold info; possibly document has changed from the time FoldInfo was created.
+                            continue;
+                        }
+                        if ((info.getEnd() - info.getStart()) < (info.getTemplate().getGuardedStart() + info.getTemplate().getGuardedEnd())) {
+                            Element rootEl = DocumentUtilities.getParagraphRootElement(d);
+                            int startLine = rootEl.getElementIndex(info.getStart());
+                            int endLine = rootEl.getElementIndex(info.getEnd());
+                            int max = rootEl.getElementCount();
+                            
+                            Element sEl = rootEl.getElement(Math.max(0, startLine - 3));
+                            Element eEl = rootEl.getElement(Math.min(max - 1, endLine + 3));
+                            int sOff = sEl.getStartOffset();
+                            int eOff = eEl.getEndOffset();
+                            
+                            String text = d.getText(sOff, eOff - sOff);
+                            int begin = info.getStart() - sOff;
+                            int end = info.getEnd() - sOff;
+                            LOG.log(Level.WARNING, "Illegal fold length, see issue #234289: (end={0} - start={1}) < (guardedStart={2} + guardedEnd={3}). Context is: {4}###{5}###{6}", // NOI18N
+                                    new Object[] { 
+                                        info.getEnd(),  info.getStart(), 
+                                        info.getTemplate().getGuardedStart(),  info.getTemplate().getGuardedEnd(),
+                                        text.substring(0, begin),
+                                        text.substring(begin, begin + info.getEnd() - info.getStart()),
+                                        text.substring(end)
+                                    });
+                        }
                         currentFolds.put(info, getOperation().addToHierarchy(
                                 info.getType(), 
                                 info.getStart(), info.getEnd(),
@@ -689,6 +718,11 @@ public final class FoldOperationImpl {
             this.fsch = null;
             int soffs = f.getStartOffset();
             ApiPackageAccessor acc = getAccessor();
+            int len = getDocument().getLength();
+            if (info.getStart() > len || info.getEnd() > len) {
+                // no update done, new values are not valid
+                return f;
+            }
             if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);

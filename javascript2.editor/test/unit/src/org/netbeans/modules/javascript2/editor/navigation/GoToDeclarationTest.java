@@ -76,4 +76,8 @@ public class GoToDeclarationTest extends JsTestBase {
     public void testIssue218090_01() throws Exception {
         checkDeclaration("testfiles/coloring/issue218090.js", "        text : pro^m,", "    var ^prom = 'test';");
     }
+    
+    public void testIssue223057_01() throws Exception {
+        checkDeclaration("testfiles/markoccurences/issue223057.js", "a.url = container.na^me;", "container.^name = n;");
+    }
 }

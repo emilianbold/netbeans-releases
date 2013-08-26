@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -107,7 +108,8 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
             if (token.id() == CppTokenId.PREPROCESSOR_INCLUDE ||
                     token.id() == CppTokenId.PREPROCESSOR_INCLUDE_NEXT ||
                     token.id() == CppTokenId.PREPROCESSOR_SYS_INCLUDE ||
-                    token.id() == CppTokenId.PREPROCESSOR_USER_INCLUDE) {
+                    token.id() == CppTokenId.PREPROCESSOR_USER_INCLUDE ||
+                    token.id() == CppTokenId.PREPROCESSOR_ERROR) {
                     return true;
             }
         }
@@ -232,17 +234,31 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     @Override
     protected String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-        CsmInclude target = null;
+        CsmInclude includeTarget = null;
         if (csmFile != null) {
-            target = ReferencesSupport.findInclude(csmFile, offset);
+            includeTarget = ReferencesSupport.findInclude(csmFile, offset);
         }
-        CharSequence tooltip = target == null ? null : CsmDisplayUtilities.getTooltipText(target);
+        CsmErrorDirective errorDirective = null;
+        if (includeTarget == null) {
+            errorDirective = ReferencesSupport.findErrorDirective(csmFile, offset);
+        }
+        CharSequence tooltip = null;
+        if (includeTarget != null) {
+            tooltip = CsmDisplayUtilities.getTooltipText(includeTarget);
+        } else if (errorDirective != null) {
+            tooltip = CsmDisplayUtilities.getTooltipText(errorDirective);
+        }
         boolean extraText = (type == HyperlinkType.ALT_HYPERLINK);
         if (tooltip != null) {
             StringBuilder buf = new StringBuilder();
             String altKey = "AltIncludeHyperlinkHint"; // NOI18N
-            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
-            CsmFile includedFile = target.getIncludeFile();
+            List<CsmInclude> includeStack;
+            if (includeTarget != null) {
+                includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(csmFile);
+            } else {
+                includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(errorDirective);
+            }
+            CsmFile includedFile = includeTarget == null ? null : includeTarget.getIncludeFile();
             if (includedFile != null) {
                 // check if inside file include hierarchy we have unresolved includes
                 CsmInclude brokenInclude = getFirstBrokenIncludeInsideIncludedFiles(includedFile, new HashSet<CsmFile>());

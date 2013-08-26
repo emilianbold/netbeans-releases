@@ -50,7 +50,6 @@ import java.util.WeakHashMap;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -91,70 +90,109 @@ Constants {
     
     
     
+    @Override
     public Object getValueAt (
         TableModel original, 
         Object row, 
         String columnID
     ) throws UnknownTypeException {
         Object result = original.getValueAt (row, columnID);
-        if ( LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
-             WATCH_TYPE_COLUMN_ID.equals (columnID)
-        )
-            return bold (row, (String) result, variableToValueType);
-        if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
-             WATCH_VALUE_COLUMN_ID.equals (columnID)
-        ) {
-            return result;
-            /*
-            if (result instanceof String) {
-                return bold (row, (String) result, variableToValueValue);
-            } else if (result instanceof Variable) {
-                String displayValue = VariablesDisplayValueCache.getDefault().getDisplayValue((Variable) result);
-                String update = bold (row, displayValue, variableToValueValue);
-                VariablesDisplayValueCache.getDefault().updateDisplayValue((Variable) result, update);
-                return result;
-            }
-            */
-        }
-        if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
-             WATCH_TO_STRING_COLUMN_ID.equals (columnID)
-        )
-            return bold (row, (String) result, variableToValueToString);
         return result;
     }
     
     @Override
     public boolean hasHTMLValueAt(TableHTMLModel original, Object row, String columnID) throws UnknownTypeException {
-        if (LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
-            WATCH_VALUE_COLUMN_ID.equals (columnID)) {
-            
-            if (row instanceof Variable) {
-                return true;
-            }
-        }
-        return original.hasHTMLValueAt(row, columnID);
+        return true;
     }
 
     @Override
     public String getHTMLValueAt(TableHTMLModel original, Object row, String columnID) throws UnknownTypeException {
+        if (original.hasHTMLValueAt(row, columnID)) {
+            return original.getHTMLValueAt(row, columnID);
+        }
+        Object result = original.getValueAt (row, columnID);
+        if ( LOCALS_TYPE_COLUMN_ID.equals (columnID) ||
+             WATCH_TYPE_COLUMN_ID.equals (columnID)
+        ) {
+            return bold (row, (String) result, variableToValueType);
+        }
         if (LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
             WATCH_VALUE_COLUMN_ID.equals (columnID)) {
             
-            if (row instanceof Variable) {
-                Variable var = (Variable) row;
+            if (result instanceof Variable) {
+                Variable var = (Variable) result;
                 Object mirror = VariablesTableModel.getMirrorFor(var);
                 if (mirror == null) {
                     String value = var.getValue();
                     return bold (row, value, variableToValueValue);
                 } else {
+                    if ("java.lang.String".equals(var.getType())) {             // NOI18N
+                        String value = var.getValue();
+                        value = adjustEscaped(value);
+                        return bold (row, value, variableToValueValue);
+                    }
                     // No HTML value, there's a special property editor that manages the value.
                     return null;
                 }
+            } else {
+                return bold (row, (String) result, variableToValueValue);
             }
+        }
+        if ( LOCALS_TO_STRING_COLUMN_ID.equals (columnID) ||
+             WATCH_TO_STRING_COLUMN_ID.equals (columnID)
+        ) {
+            return bold (row, (String) result, variableToValueToString);
         }
         return original.getHTMLValueAt(row, columnID);
     }
     
+    private static String adjustEscaped(String text) {
+        text = text.replaceAll(java.util.regex.Matcher.quoteReplacement("\\"), "\\\\\\\\");
+        StringBuffer sb = null;
+        int j = 0;
+        int n = text.length();
+        boolean quotes = n > 1 && text.startsWith("\"") && text.endsWith("\"");
+        for (int i = 0; i < n; i++) {
+            char c = text.charAt(i);
+            String replacement = null;
+            if (c == '\n') {
+                replacement = "\\n";
+            } else if (c == '\r') {
+                replacement = "\\r";
+            } else if (c == '\f') {
+                replacement = "\\f";
+            } else if (c == '\b') {
+                replacement = "\\b";
+            } else if (c == '\t') {
+                replacement = "\\t";
+            } else if (c == '\f') {
+                replacement = "\\f";
+            } else if (c == '\'') {
+                replacement = "\\\'";
+            } else if (c == '\"') {
+                if (!quotes || (i != 0) && i != (n - 1)) {
+                    replacement = "\\\"";
+                }
+            }
+            if (replacement != null) {
+                if (sb == null) {
+                    sb = new StringBuffer(text.substring(0, i));
+                } else {
+                    sb.append(text.substring(j, i));
+                }
+                sb.append(replacement);
+                j = i+1;
+            }
+        }
+        if (sb == null) {
+            return text;
+        } else {
+            sb.append(text.substring(j));
+            return sb.toString();
+        }
+    }
+    
+    @Override
     public boolean isReadOnly (
         TableModel original, 
         Object row, 
@@ -163,6 +201,7 @@ Constants {
         return original.isReadOnly (row, columnID);
     }
     
+    @Override
     public void setValueAt (
         TableModel original, 
         Object row, 
@@ -177,6 +216,7 @@ Constants {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
     }
 
@@ -185,6 +225,7 @@ Constants {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
     }
     
@@ -211,10 +252,7 @@ Constants {
         Color color
     ) {
         if (text == null) return null;
-        if (text.length() > 6 && text.substring(0, 6).equalsIgnoreCase("<html>")) {
-            return text; // Already HTML
-        }
-        StringBuffer sb = new StringBuffer ();
+        StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         if (bold) sb.append ("<b>");
         if (italics) sb.append ("<i>");

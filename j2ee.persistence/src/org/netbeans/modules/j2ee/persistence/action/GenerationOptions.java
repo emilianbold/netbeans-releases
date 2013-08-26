@@ -78,8 +78,8 @@ public final class GenerationOptions {
                 ),
         //querry to get only items starting from {1}[0] up to {1}[1]-1
         FIND_SUBSET(
-                "javax.persistence.Query q = {0}.createQuery(\"select object(o) from \" + {5}.getSimpleName() + \" as o\");\nq.setMaxResults({1}[1]-{1}[0]);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();",
-                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({5}));javax.persistence.Query q = {0}.createQuery(cq);q.setMaxResults({1}[1]-{1}[0]);q.setFirstResult({1}[0]);return q.getResultList();"),
+                "javax.persistence.Query q = {0}.createQuery(\"select object(o) from \" + {5}.getSimpleName() + \" as o\");\nq.setMaxResults({1}[1]-{1}[0]+1);\nq.setFirstResult({1}[0]);\nreturn q.getResultList();",
+                "javax.persistence.criteria.CriteriaQuery cq = {0}.getCriteriaBuilder().createQuery();cq.select(cq.from({5}));javax.persistence.Query q = {0}.createQuery(cq);q.setMaxResults({1}[1]-{1}[0]+1);q.setFirstResult({1}[0]);return q.getResultList();"),
         //qurrry to get count(*) on a table
         COUNT(
                 "return ((Long) {0}.createQuery(\"select count(o) from \" + {5}.getSimpleName() + \" as o\").getSingleResult()).intValue();",

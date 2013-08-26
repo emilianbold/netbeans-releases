@@ -1044,7 +1044,7 @@ public final class Utils {
      * Logs a vcs external repository name.
      *
      * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", "GIT", ...
-     * @param repositoryUrl - external repository url to log
+     * @param repositoryUrl - external repository url to log or null if the repository is local
      */
     public static void logVCSExternalRepository (String vcs, String repositoryUrl) {
         String repositoryIdent = getKnownRepositoryFor(repositoryUrl);
@@ -1107,6 +1107,9 @@ public final class Utils {
     }
 
     private static String getKnownRepositoryFor (String repositoryUrl) {
+        if (repositoryUrl == null) {
+            return "LOCAL"; //NOI18N
+        }
         repositoryUrl = repositoryUrl.toLowerCase();
         if (repositoryUrl.contains("github.com")) { //NOI18N
             return "GITHUB"; //NOI18N
@@ -1116,7 +1119,9 @@ public final class Utils {
             return "BITBUCKET"; //NOI18N
         } else if (repositoryUrl.contains("sourceforge.net")) { //NOI18N
             return "SOURCEFORGE"; //NOI18N
-        } else if (repositoryUrl.contains("googlecode.com")) { //NOI18N
+        } else if (repositoryUrl.contains("googlecode.com") //NOI18N
+                || repositoryUrl.contains("code.google.com") //NOI18N
+                || repositoryUrl.contains("googlesource.com")) { //NOI18N
             return "GOOGLECODE"; //NOI18N
         } else if (repositoryUrl.contains("kenai.com")) { //NOI18N
             return "KENAI"; //NOI18N
@@ -1124,6 +1129,10 @@ public final class Utils {
             return "JAVANET"; //NOI18N
         } else if (repositoryUrl.contains("netbeans.org")) { //NOI18N
             return "NETBEANS"; //NOI18N
+        } else if (repositoryUrl.contains("codeplex.com")) { //NOI18N
+            return "CODEPLEX"; //NOI18N
+        } else if (repositoryUrl.contains(".eclipse.org")) { //NOI18N
+            return "ECLIPSE"; //NOI18N
         } else {
             return "OTHER"; //NOI18N
         }

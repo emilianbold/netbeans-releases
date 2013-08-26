@@ -13,12 +13,11 @@
         <macrodef name="junit-template">
             <element name="test-spec" implicit="yes"/>
             <sequential>
-                <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
                 <junit showoutput="true" fork="true" dir="${work.dir}" jvm="${platform.java}" tempdir="${tmp.dir}">
                     <test-spec/>
-                    <classpath path="${classpath-translated}" />
+                    <classpath path="${classpath}" />
                     <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs}"/>
                     <formatter type="brief" usefile="false"/>
@@ -30,7 +29,6 @@
                 </junit>
             </sequential>
         </macrodef>
-        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated"/>
     </target>
     <target name="test-custom" depends="-check-run-test-single-method-supported,-prepare-execution">
         <tstamp>

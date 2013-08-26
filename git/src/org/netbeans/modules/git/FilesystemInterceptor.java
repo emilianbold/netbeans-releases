@@ -762,7 +762,8 @@ class FilesystemInterceptor extends VCSInterceptor {
         private boolean isNewer (GitFolderTimestamps other) {
             boolean newer = true;
             if (other != null) {
-                newer = indexFileTS > other.indexFileTS || headFileTS > other.headFileTS;
+                newer = indexFileTS > other.indexFileTS || headFileTS > other.headFileTS
+                        || refFileTS > other.refFileTS;
             }
             return newer;
         }

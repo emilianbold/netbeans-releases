@@ -44,10 +44,8 @@ package org.netbeans.modules.versioning.core;
 
 import java.net.URI;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
 import org.netbeans.spi.queries.VersioningQueryImplementation;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -67,6 +65,9 @@ public class VersioningQueryImplementationImpl implements VersioningQueryImpleme
     @Override
     public String getRemoteLocation(URI uri) {
         VCSFileProxy proxy = Utils.toFileProxy(uri);
+        if (proxy == null) {
+            return null;
+        }
         return (String) VCSFilesystemInterceptor.getAttribute(proxy, VersioningManager.ATTRIBUTE_REMOTE_LOCATION);
     }
     

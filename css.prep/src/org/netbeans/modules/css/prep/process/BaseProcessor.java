@@ -43,7 +43,9 @@ package org.netbeans.modules.css.prep.process;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -67,6 +69,7 @@ abstract class BaseProcessor {
     private static final Logger LOGGER = Logger.getLogger(BaseProcessor.class.getName());
 
     protected final BaseCssPreprocessor cssPreprocessor;
+    private final Set<FileObject> processedFiles = new HashSet<>();
 
 
     BaseProcessor(BaseCssPreprocessor cssPreprocessor) {
@@ -82,7 +85,9 @@ abstract class BaseProcessor {
 
     protected abstract List<Pair<String, String>> getMappings(Project project);
 
-    protected abstract void compileInternal(Project project, File source, File target);
+    protected abstract String getCompilerOptions(Project project);
+
+    protected abstract void compileInternal(Project project, File workDir, File source, File target, List<String> compilerOptions);
 
     public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
         if (!isEnabled(project)) {
@@ -112,6 +117,10 @@ abstract class BaseProcessor {
         assert fileObject.isData() : "File expected: " + fileObject;
         if (!isSupportedFile(fileObject)) {
             // unsupported file
+            return;
+        }
+        if (!processedFiles.add(fileObject)) {
+            // already processed
             return;
         }
         if (fileObject.isValid()) {
@@ -146,12 +155,14 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        File target = getTargetFile(project, getWebRoot(project, fileObject), file);
+        FileObject webRoot = getWebRoot(project, fileObject);
+        File target = getTargetFile(project, webRoot, file);
         if (target == null) {
             // not found
             return;
         }
-        compileInternal(project, file, target);
+        compileInternal(project, FileUtil.toFile(webRoot), file, target,
+                CssPreprocessorUtils.parseCompilerOptions(getCompilerOptions(project), webRoot));
     }
 
     protected void compileReferences(Project project, FileObject fileObject) {
@@ -167,15 +178,7 @@ abstract class BaseProcessor {
                     // ignore myself
                     continue;
                 }
-                if (isPartial(referring)) {
-                    // ignore partials
-                    continue;
-                }
-                if (isSupportedFile(referring)) {
-                    fileChanged(project, referring);
-                } else {
-                    LOGGER.log(Level.INFO, "Supported file expected: {0}", referring);
-                }
+                processFile(project, referring, null, null);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

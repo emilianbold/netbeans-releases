@@ -122,7 +122,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
         //File file = new File(fullName);
-        fullName = DiscoveryUtils.normalizeAbsolutePath(fullName);
+        fullName = compilerSettings.getNormalizedPath(fullName);
         fullName = linkSupport(fullName);
         if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');

@@ -228,7 +228,8 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                     ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
                     if (cssRi != null) {
                         CssParserResult result = (CssParserResult) cssRi.getParserResult();
-                        org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
+                        int embeddedCaret = result.getSnapshot().getEmbeddedOffset(context.caret);
+                        org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaret);
                         if (leaf != null) {
                             switch (leaf.type()) {
                                 case elementName:

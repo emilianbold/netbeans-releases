@@ -54,7 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -92,7 +92,8 @@ public class WindowsSupport {
                     return Collections.<String, String>emptyMap();
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(HostMappingProviderWindows.class.getName()).log(Level.SEVERE, null, ex);
+                RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+                return Collections.<String, String>emptyMap();
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("Unicode")));//NOI18N
@@ -225,7 +226,8 @@ public class WindowsSupport {
                     return Collections.<String, String>emptyMap();
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(HostMappingProviderWindows.class.getName()).log(Level.SEVERE, null, ex);
+                RemoteUtil.LOGGER.log(Level.FINE, null, ex);
+                return Collections.<String, String>emptyMap();
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("Unicode")));//NOI18N

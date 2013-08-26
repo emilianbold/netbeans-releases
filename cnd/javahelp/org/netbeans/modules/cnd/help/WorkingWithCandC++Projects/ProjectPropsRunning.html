@@ -21,9 +21,13 @@ Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
       IDE.
     </p>
     <p>
-       <b>Run Command.</b> Enter any run command and arguments that should be supplied to the
-      project's command line when you run the project. The run command can be a shell script, or
-      for a library project, it can be a binary.
+       <b>Run Command.</b> Enter a command to be executed when you run the project. The IDE runs
+       the command as <tt>/bin/sh -c "run-command"</tt> which enables you to use any shell syntax including
+       redirection and pipes.  Type the command in the Run Command field the same way you would run it from the command
+       line. For example, you could type <tt>my-script -opt1 -opt2</tt> to run a script and specify
+       two options, or <tt>mycommand > output.log</tt>  to run your command and send the output to a 
+       logfile. The Run Command list maintains history of previous entries so you can go back to the 
+       default value or select among several different commands you have entered.
     </p>
     <p>
        <b>Run Directory.</b> Enter the path to the directory where the project should run. Normally

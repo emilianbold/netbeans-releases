@@ -257,9 +257,15 @@ public class FtpClient implements RemoteClient {
     }
 
     @Override
-    public synchronized void disconnect() throws RemoteException {
+    public synchronized void disconnect(boolean force) throws RemoteException {
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");
+        if (!force
+                && keepAliveTask != null) {
+            LOGGER.log(Level.FINE, "Keep-alive running and disconnecting not forced -> do nothing");
+            return;
+        }
         if (keepAliveTask != null) {
+            assert force;
             keepAliveTask.cancel();
         }
         if (ftpClient.isConnected()) {
@@ -619,7 +625,7 @@ public class FtpClient implements RemoteClient {
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Keep-alive (NOOP/PWD) error for " + configuration.getHost(), ex);
             keepAliveTask.cancel();
-            silentDisconnect();
+            silentDisconnect(true);
             WindowsJdk7WarningPanel.warn();
             // #209043 - just inform user in the log, do not show any dialog
             if (io != null) {
@@ -635,23 +641,23 @@ public class FtpClient implements RemoteClient {
         }
     }
 
-    private void silentDisconnect() {
+    private void silentDisconnect(boolean force) {
         try {
-            disconnect();
+            disconnect(force);
         } catch (RemoteException ex) {
             LOGGER.log(Level.FINE, "Error while silently disconnecting", ex);
         }
     }
 
-    // #203987
+    // #203987, #233485
     private void preventNoOperationTimeout() throws IOException {
         int counter = keepAliveCounter.incrementAndGet();
         if (counter == 10) {
             keepAliveCounter.set(0);
-            LOGGER.log(Level.FINE, "Keep-alive (PWD) for {0}", configuration.getHost());
+            LOGGER.log(Level.FINE, "Keep-alive (LIST FILES) for {0}", configuration.getHost());
             removeProtocolCommandListener();
             try {
-                ftpClient.pwd();
+                ftpClient.listFiles();
                 ftpClient.getReplyString();
             } finally {
                 addProtocolCommandListener();

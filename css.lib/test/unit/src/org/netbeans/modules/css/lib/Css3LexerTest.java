@@ -282,7 +282,14 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken("20" , Css3Lexer.NUMBER, lexer.nextToken());
         assertANTLRToken(" " , Css3Lexer.WS, lexer.nextToken());
     }
-     
+    
+    public void testLESS_JS_STRING() throws Exception {
+        String source = "`\"hello\".toUpperCase() + '!'`;";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken("`\"hello\".toUpperCase() + '!'`" ,Css3Lexer.LESS_JS_STRING, lexer.nextToken());
+        assertANTLRToken(";" ,Css3Lexer.SEMI, lexer.nextToken());
+    }
+    
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

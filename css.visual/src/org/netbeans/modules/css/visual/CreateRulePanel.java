@@ -146,9 +146,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private static final Logger LOGGER = Logger.getLogger(CreateRulePanel.class.getSimpleName());
     
     //TODO take the values from editor settings!
-    private static Color tagColor = new Color(0, 0, 230);
-    private static Color attrNameColor = new Color(0, 153, 0);
-    private static Color attrValueColor = new Color(206, 123, 0);
+    private static final Color tagColor = new Color(0, 0, 230);
+    private static final Color attrNameColor = new Color(0, 153, 0);
+    private static final Color attrValueColor = new Color(206, 123, 0);
     
     /**
      * Default value of the compound selector - derived from selected html source element.
@@ -555,104 +555,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
         elementPathLabelText.append("</body></html>");
 
-        elementPathLabel.setText(elementPathLabelText.toString());
-
-        //enable the "apply changes to element" combobox so user may decide whether to
-        //apply the changes to the element or not. If no html source elemnt is set, 
-        //the checkbox remains disabled.
-        applyChangesCB.setEnabled(true);
-
         //update the default for compound rule
         compoundSelectorDefaultValue = compoundDefaultValue.toString();
 
-        updateElementCodeSample();
-    }
-
-    /**
-     * Updates the active html source element sample code.
-     * The sample content mutates as user changes class/id names.
-     */
-    private void updateElementCodeSample() {
-        if (activeElement == null) {
-            return;
-        }
-        StringBuilder source = new StringBuilder();
-
-        source.append("<html><body>");
-        source.append("<font color=\"");
-        source.append(WebUtils.toHexCode(tagColor));
-        source.append("\">");
-        source.append("&lt;");
-        source.append(activeElement.getOpenTag().name());
-        source.append("</font>");
-
-        String selectedClazzName = selectedClazz != null ? selectedClazz.getItemName() : null;
-        String selectedElementClass = getSelectedElementClassName();
-
-        String clz = selectedClazzName != null ? selectedClazzName : selectedElementClass;
-        boolean change = selectedClazzName != null && selectedElementClass != null && !selectedClazzName.equals(selectedElementClass)
-                || selectedClazzName != null && selectedElementClass == null;
-
-        if (clz != null && !clz.isEmpty()) { //isEmpty - removed
-            if (change) {
-                source.append("<b>");
-            }
-            source.append("<font color=\"");
-            source.append(WebUtils.toHexCode(attrNameColor));
-            source.append("\">");
-            source.append(" class=");
-            source.append("</font>");
-            source.append("<font color=\"");
-            source.append(WebUtils.toHexCode(attrValueColor));
-            source.append("\">");
-            source.append("\"");
-            source.append(clz);
-            source.append("\"");
-            source.append("</font>");
-            if (change) {
-                source.append("</b>");
-            }
-        }
-
-        String selectedIdName = selectedId != null ? selectedId.getItemName() : null;
-        String selectedElementId = getSelectedElementIdName();
-
-        String id = selectedIdName != null ? selectedIdName : selectedElementId;
-        change = selectedIdName != null && selectedElementId != null && !selectedIdName.equals(selectedElementId)
-                || selectedIdName != null && selectedElementId == null;
-
-        if (id != null && !id.isEmpty()) {
-            if (change) {
-                source.append("<b>");
-            }
-            source.append("<font color=\"");
-            source.append(WebUtils.toHexCode(attrNameColor));
-            source.append("\">");
-            source.append(" id=");
-            source.append("</font>");
-            source.append("<font color=\"");
-            source.append(WebUtils.toHexCode(attrValueColor));
-            source.append("\">");
-            source.append("\"");
-            source.append(id);
-            source.append("\"");
-            source.append("</font>");
-            if (change) {
-                source.append("</b>");
-            }
-        }
-
-        source.append("<font color=\"");
-        source.append(WebUtils.toHexCode(tagColor));
-        source.append("\">");
-        source.append("&gt;");
-        source.append("</font>");
-        source.append("</body></html>");
-
-        elementCodeLabel.setText(source.toString());
-
-    }
-
+   }
     /**
      * Gets selected stylesheet.
      */
@@ -711,9 +617,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 break;
         }
 
-        updateElementCodeSample(); //refresh UI
-
-        FileObject existsIn = selector.getExistsInFile();
+       FileObject existsIn = selector.getExistsInFile();
         boolean exists = existsIn != null;
         if (exists) {
             STYLESHEETS_MODEL.setSelectedItem(existsIn);
@@ -885,12 +789,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
 
             //b. and modify the html source element
-            if(Settings.getCreateRule_ApplyChangesToSelectedSourceElement()) {
-                if(activeElement != null) {
-                    modifySourceElement();
-                }
+           if(activeElement != null) {
+                modifySourceElement();
             }
-
+           
         } catch (IOException | ParseException e) {
             Exceptions.printStackTrace(e);
         }
@@ -972,8 +874,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     cssSourceModel.applyChanges();
                     createdRuleRef.set(rule);
                     LOGGER.log(Level.FINE, "Created new rule {0} in file {1} (at-rule: {2}).", new Object[]{selectorItem.getItemFQName(), createInFile.getNameExt(), createInAtRule});
-                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (IOException | BadLocationException x) {
+                    Exceptions.printStackTrace(x);
                 }
             }
         });
@@ -1495,13 +1397,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
         selectorCB = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JSeparator();
         selectorTypeLabel = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        elementPathLabel = new javax.swing.JLabel();
-        applyChangesCB = new javax.swing.JCheckBox();
-        jLabel8 = new javax.swing.JLabel();
-        elementCodeLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel1.text")); // NOI18N
 
@@ -1542,27 +1437,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(selectorTypeLabel, null);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel5.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel6.text")); // NOI18N
-
-        elementPathLabel.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(elementPathLabel, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.elementPathLabel.text")); // NOI18N
-
-        applyChangesCB.setSelected(Settings.getCreateRule_ApplyChangesToSelectedSourceElement());
-        org.openide.awt.Mnemonics.setLocalizedText(applyChangesCB, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.applyChangesCB.text")); // NOI18N
-        applyChangesCB.setEnabled(false);
-        applyChangesCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyChangesCBActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel8.text")); // NOI18N
-
-        elementCodeLabel.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(elementCodeLabel, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.elementCodeLabel.text")); // NOI18N
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -1579,31 +1453,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         .addComponent(jSeparator1)
                         .addGap(6, 6, 6))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addGap(12, 12, 12)
-                        .addComponent(jSeparator2)
-                        .addGap(6, 6, 6))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel4)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel6))
+                            .addComponent(jLabel3))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(elementPathLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(elementCodeLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(atRuleCB, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(styleSheetCB, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(selectorCB, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jSplitPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(applyChangesCB)))
+                        .addComponent(jSplitPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                         .addContainerGap())))
         );
         layout.setVerticalGroup(
@@ -1629,44 +1490,20 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(atRuleCB, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
-                    .addComponent(elementCodeLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(elementPathLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(applyChangesCB)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void applyChangesCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyChangesCBActionPerformed
-        Settings.setCreateRule_ApplyChangesToSelectedSourceElement(applyChangesCB.isSelected());
-    }//GEN-LAST:event_applyChangesCBActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox applyChangesCB;
     private javax.swing.JComboBox atRuleCB;
     private javax.swing.JTextPane descriptionPane;
-    private javax.swing.JLabel elementCodeLabel;
-    private javax.swing.JLabel elementPathLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox selectorCB;
     private javax.swing.JLabel selectorTypeLabel;
@@ -1685,9 +1522,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         public static final int ID_TYPE = 1;
         public static final int ELEMENT_TYPE = 2;
         public static final int COMPOUND_TYPE = 3;
-        private int type;
-        private String clz, id, element;
-        private FileObject existsIn;
+        private final int type;
+        private final String clz, id, element;
+        private final FileObject existsIn;
         private FileObject createNewIn;
         private AtRuleItem createIn;
 
@@ -2019,7 +1856,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      */
     public class ExtDefaultComboBoxModel extends AbstractListModel implements MutableComboBoxModel, Serializable {
 
-        private List objects;
+        private final List objects;
         private Object selectedObject;
 
         /**

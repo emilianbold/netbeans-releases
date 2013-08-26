@@ -323,12 +323,12 @@ public class CompositeComponentModel extends JsfPageModel {
             }
 
             //composite:attribute tag -> map of its attributes
-            final Collection<Map<String, String>> interfaceAttrs = new ArrayList<Map<String, String>>();
-            final Collection<String> facetDeclarations = new ArrayList<String>();
+            final Collection<Map<String, String>> interfaceAttrs = new ArrayList<>();
+            final Collection<String> facetDeclarations = new ArrayList<>();
             final boolean[] hasInterface = new boolean[1];
             final boolean[] hasImplementation = new boolean[1];
-            final AtomicReference<String> interfaceDisplayName = new AtomicReference<String>();
-            final AtomicReference<String> interfaceShortDescrption = new AtomicReference<String>();
+            final AtomicReference<String> interfaceDisplayName = new AtomicReference<>();
+            final AtomicReference<String> interfaceShortDescrption = new AtomicReference<>();
 
             ElementUtils.visitChildren(node, new ElementVisitor() {
 
@@ -356,7 +356,7 @@ public class CompositeComponentModel extends JsfPageModel {
                                     OpenTag openTagInner = (OpenTag)child;
                                     if(LexerUtils.equals(COMPOSITE_ATTRIBUTE_TAG_NAME, openTagInner.unqualifiedName(), true, true)) {
                                         //found composite:attribute tag
-                                        Map<String, String> attrs = new HashMap<String, String>();
+                                        Map<String, String> attrs = new HashMap<>();
                                         for (Attribute attr : openTagInner.attributes()) {
                                             String value = attr.unquotedValue() == null ? null : attr.unquotedValue().toString();
                                             attrs.put(attr.unqualifiedName().toString(), 
@@ -407,13 +407,13 @@ public class CompositeComponentModel extends JsfPageModel {
         public JsfPageModel loadFromIndex(IndexResult result) {
             String attrs = result.getValue(INTERFACE_ATTRIBUTES_KEY);
             boolean hasImplementation = Boolean.parseBoolean(result.getValue(HAS_IMPLEMENTATION_KEY));
-            Collection<Map<String, String>> parsedAttrs = new ArrayList<Map<String, String>>();
-            Collection<String> facetDeclarations = new ArrayList<String>();
+            Collection<Map<String, String>> parsedAttrs = new ArrayList<>();
+            Collection<String> facetDeclarations = new ArrayList<>();
             //parse attributes
             StringTokenizer st = new StringTokenizer(attrs, Character.valueOf(ATTRIBUTES_SEPARATOR).toString());
             while (st.hasMoreTokens()) {
                 String attrText = st.nextToken();
-                Map<String, String> pairs = new HashMap<String, String>();
+                Map<String, String> pairs = new HashMap<>();
                 StringTokenizer st2 = new StringTokenizer(attrText, Character.valueOf(VALUES_SEPARATOR).toString());
                 while (st2.hasMoreTokens()) {
                     String pair = st2.nextToken();

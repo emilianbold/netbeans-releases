@@ -262,9 +262,14 @@ public class MylynSupport {
 
     NbTaskDataState getTaskDataState (NbTask task) throws CoreException {
         TaskDataState taskDataState = taskDataManager.getTaskDataState(task.getDelegate());
-        return taskDataState == null
-                ? null
-                : new NbTaskDataState(taskDataState);
+        if (taskDataState == null) {
+            return null;
+        } else {
+            if (taskDataState.getLastReadData() == null) {
+                taskDataState.setLastReadData(taskDataState.getRepositoryData());
+            }
+            return new NbTaskDataState(taskDataState);
+        }
     }
 
     public Set<TaskAttribute> countDiff (TaskData newTaskData, TaskData oldTaskData) {
@@ -356,6 +361,7 @@ public class MylynSupport {
             task.setSummary(summary);
         }
         taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
+        task.setAttribute(AbstractNbTaskWrapper.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
         return MylynSupport.getInstance().toNbTask(task);
     }
 
@@ -378,8 +384,25 @@ public class MylynSupport {
         return factory;
     }
 
-    void markTaskSeen (ITask task, boolean seen) {
+    void markTaskSeen (final ITask task, boolean seen) {
+        ITask.SynchronizationState syncState = task.getSynchronizationState();
         taskDataManager.setTaskRead(task, seen);
+        if (!seen && syncState == task.getSynchronizationState()
+                && syncState == ITask.SynchronizationState.OUTGOING
+                && task instanceof AbstractTask) {
+            // mylyn does not set to CONFLICT status
+            try {
+                taskList.run(new ITaskListRunnable() {
+                    @Override
+                    public void execute (IProgressMonitor monitor) throws CoreException {
+                        ((AbstractTask) task).setSynchronizationState(ITask.SynchronizationState.CONFLICT);
+                    }
+                });
+                taskList.notifyElementChanged(task);
+            } catch (CoreException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
         task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
     }
 
@@ -739,6 +762,9 @@ public class MylynSupport {
         TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
         try {
             ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
+            if (workingCopy instanceof TaskDataState && workingCopy.getLastReadData() == null) {
+                ((TaskDataState) workingCopy).setLastReadData(workingCopy.getRepositoryData());
+            }
             return new NbTaskDataModel(taskRepository, task, workingCopy);
         } catch (CoreException ex) {
             MylynSupport.LOG.log(Level.INFO, null, ex);

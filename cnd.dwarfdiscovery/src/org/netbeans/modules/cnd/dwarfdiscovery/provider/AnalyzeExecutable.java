@@ -266,6 +266,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
+        init(project);
         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));

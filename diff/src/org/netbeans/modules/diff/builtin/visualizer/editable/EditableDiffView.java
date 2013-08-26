@@ -273,6 +273,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     }
                     jEditorPane1.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane1.getEditorPane());
+                    jEditorPane1.getEditorPane().putClientProperty("usedByCloneableEditor", Boolean.TRUE); //NOI18N
                     try {
                         editorKit = CloneableEditorSupport.getEditorKit(f2);
                     } catch (IllegalArgumentException ex) {
@@ -281,6 +282,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     }
                     jEditorPane2.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane2.getEditorPane());
+                    jEditorPane2.getEditorPane().putClientProperty("usedByCloneableEditor", Boolean.TRUE); //NOI18N
                     
                     try {
                         setSource1(ss1);

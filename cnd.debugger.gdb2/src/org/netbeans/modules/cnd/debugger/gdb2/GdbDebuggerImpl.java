@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -3377,6 +3378,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
 	requestStack(stopRecord);
+        
+        if (MemoryWindow.getDefault().isShowing()) {
+            MemoryWindow.getDefault().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "debugger stopped")); // NOI18N
+        }
 
 	// If we have any counting bpts poll the bpt list in order to
 	// learn the current bpt counts.
@@ -4115,6 +4120,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    switch (bp.op()) {
 		case NEW:
+                    if (template == null) {
+                        // we are unable to create handlers for breakpoints created in console
+                        return;
+                    }
 		    handler = handlerExpert.newHandler(template, result, null);
 		    break;
 		case RESTORE:

@@ -79,6 +79,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
         this.wm = wm;
     }
 
+    @Override
     public Collection<URI> getResources(ServletContext ignored) {
         try {
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
@@ -88,6 +89,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
                 // Another reports against non-consistents result from the first and second invocation should be
                 // consulted with tzetula for better options how to fix this. Related issue is bug #232878.
                 faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
+                    @Override
                     public String run(WebAppMetadata metadata) throws Exception {
                         //TODO can be init param specified by some annotation or the dd must be present?
                         WebApp ddRoot = metadata.getRoot();
@@ -107,7 +109,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
 
             FileObject webModuleRoot = wm.getDocumentBase();
             FileObject webInfBase = wm.getWebInf() == null ? null : wm.getWebInf().getParent();
-            Collection<URI> librariesURIs = new ArrayList<URI>();
+            Collection<URI> librariesURIs = new ArrayList<>();
             if(faceletsLibrariesList != null) {
                 StringTokenizer st = new StringTokenizer(faceletsLibrariesList, ";");
                 while(st.hasMoreTokens()) {

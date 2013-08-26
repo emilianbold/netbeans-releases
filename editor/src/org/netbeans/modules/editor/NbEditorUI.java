@@ -273,7 +273,7 @@ public class NbEditorUI extends EditorUI {
         // would be reused during L&F change (see BaseTextUI.UIWatcher) which would not work properly.
         CustomizableSideBar.resetSideBars(component);
         Map<SideBarPosition, JComponent> sideBars = CustomizableSideBar.getSideBars(component);
-        processSideBars(sideBars, ec);
+        processSideBars(sideBars, ec, scroller);
         
         if (listener == null){
             listener = new SideBarsListener(component);
@@ -298,9 +298,7 @@ public class NbEditorUI extends EditorUI {
         prefs.putBoolean(SimpleValueNames.LINE_NUMBER_VISIBLE, !visible);
     }
     
-    private static void processSideBars(Map sideBars, JComponent ec) {
-        JScrollPane scroller = (JScrollPane) ec.getComponent(0);
-
+    private static void processSideBars(Map sideBars, JComponent ec, JScrollPane scroller) {
         // Remove all existing sidebars
         ec.removeAll();
 
@@ -796,8 +794,13 @@ public class NbEditorUI extends EditorUI {
                     if (eui != null) {
                         JComponent ec = eui.getExtComponent();
                         if (ec != null) {
+                            JScrollPane scroller = (JScrollPane) ec.getComponent(0);
+                            // remove prior to creating new sidebars
+                            ec.removeAll();
+                            scroller.setRowHeaderView(null);
+                            scroller.setColumnHeaderView(null);
                             Map newMap = CustomizableSideBar.getSideBars(component);
-                            processSideBars(newMap, ec);
+                            processSideBars(newMap, ec, scroller);
                             ec.revalidate();
                             ec.repaint();
                         }

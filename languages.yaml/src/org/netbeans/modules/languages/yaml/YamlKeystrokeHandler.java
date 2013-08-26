@@ -194,7 +194,7 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         String lineSuffix = doc.getText(offset, lineEnd + 1 - offset);
         if (linePrefix.trim().endsWith(":") && lineSuffix.trim().length() == 0) {
             // Yes, new key: increase indent
-            indent += IndentUtils.getIndentSize();
+            indent += IndentUtils.getIndentSize(doc);
         } else {
             // No, just use same indent as parent
         }

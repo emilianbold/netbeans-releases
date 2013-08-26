@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.mylyn.util;
 
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
+import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
@@ -50,9 +50,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
  * @author Ondrej Vrabec
  */
 public final class NbTaskDataState {
-    private final TaskDataState state;
+    private final ITaskDataWorkingCopy state;
 
-    NbTaskDataState (TaskDataState state) {
+    NbTaskDataState (ITaskDataWorkingCopy state) {
         this.state = state;
     }
 

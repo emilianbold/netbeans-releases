@@ -68,7 +68,6 @@ public class GsfFoldScheduler extends Scheduler {
     
     private JTextComponent  currentEditor;
     private Document        currentDocument;
-    private Source          source;
 
     public GsfFoldScheduler() {
         setEditor (EditorRegistry.focusedComponent ());
@@ -80,12 +79,11 @@ public class GsfFoldScheduler extends Scheduler {
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
-            source = Source.create (currentDocument);
+            final Source source = Source.create (currentDocument);
             schedule (source, new SchedulerEvent (this) {});
         }
         else {
             currentDocument = null;
-            source = null;
             schedule(null, null);
         }
     }
@@ -126,7 +124,7 @@ public class GsfFoldScheduler extends Scheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == source)
+        if (event.getModifiedSource () == getSource())
             return new SchedulerEvent (this) {};
         return null;
     }

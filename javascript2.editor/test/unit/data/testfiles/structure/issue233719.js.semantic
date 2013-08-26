@@ -1,8 +1,8 @@
 
 (function() {
-    |>GLOBAL:window<|.|>FIELD:prom01<| = "nazdar";
+    |>GLOBAL:window<|.|>GLOBAL:prom01<| = "nazdar";
     |>GLOBAL:console<|.log(|>GLOBAL:prom01<|);
-    |>GLOBAL:window<|['|>FIELD:prom02<|'] = "cau";
+    |>GLOBAL:window<|['|>GLOBAL:prom02<|'] = "cau";
     |>GLOBAL:window<|['|>FIELD:prom03<|'] = 111;
     |>GLOBAL:console<|.log(|>GLOBAL:prom02<|);
     

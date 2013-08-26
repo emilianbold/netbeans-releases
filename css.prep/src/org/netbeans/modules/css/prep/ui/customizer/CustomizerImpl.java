@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
@@ -65,7 +66,8 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     private final CssPreprocessorType type;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private volatile OptionsPanel customizerPanel = null;
+    private CustomizerOptionsPanel customizerPanel = null;
+    private volatile OptionsPanel optionsPanel = null;
 
 
     public CustomizerImpl(BaseCssPreprocessor cssPreprocessor, Project project, CssPreprocessorType type) {
@@ -85,7 +87,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        getComponent().addChangeListener(listener);
+        getOptionsPanel().addChangeListener(listener);
         changeSupport.addChangeListener(listener);
         CssPrepOptions.getInstance().addPropertyChangeListener(this);
     }
@@ -94,17 +96,25 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     public void removeChangeListener(ChangeListener listener) {
         CssPrepOptions.getInstance().removePropertyChangeListener(this);
         changeSupport.removeChangeListener(listener);
-        getComponent().removeChangeListener(listener);
+        getOptionsPanel().removeChangeListener(listener);
     }
 
     @Override
-    public synchronized OptionsPanel getComponent() {
+    public JComponent getComponent() {
         if (customizerPanel == null) {
-            CssPreprocessorPreferences preferences = type.getPreferences();
-            customizerPanel = new OptionsPanel(type, preferences.isEnabled(project), preferences.getMappings(project));
+            customizerPanel = new CustomizerOptionsPanel(getOptionsPanel());
         }
-        assert customizerPanel != null;
         return customizerPanel;
+    }
+
+    public synchronized OptionsPanel getOptionsPanel() {
+        if (optionsPanel == null) {
+            CssPreprocessorPreferences preferences = type.getPreferences();
+            optionsPanel = new OptionsPanel(type, preferences.isEnabled(project), preferences.getMappings(project),
+                    preferences.getCompilerOptions(project));
+        }
+        assert optionsPanel != null;
+        return optionsPanel;
     }
 
     @Override
@@ -133,24 +143,33 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
         boolean fire = false;
         CssPreprocessorPreferences preferences = type.getPreferences();
         // configured
-        if (getComponent().isConfigured()) {
+        if (getOptionsPanel().isConfigured()) {
             // only if true, otherwise do not change!
             preferences.setConfigured(project, true);
         }
         // enabled
         boolean originalEnabled = preferences.isEnabled(project);
-        boolean enabled = getComponent().isCompilationEnabled();
+        boolean enabled = getOptionsPanel().isCompilationEnabled();
         preferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
             fire = true;
         }
         // mappings
         List<Pair<String, String>> originalMappings = preferences.getMappings(project);
-        List<Pair<String, String>> mappings = getComponent().getMappings();
+        List<Pair<String, String>> mappings = getOptionsPanel().getMappings();
         preferences.setMappings(project, mappings);
         // #230945
         mappings.removeAll(originalMappings);
-        if (!mappings.isEmpty()) {
+        if (!fire
+                && !mappings.isEmpty()) {
+            fire = true;
+        }
+        // compiler options
+        String originalCompilerOptions = preferences.getCompilerOptions(project);
+        String compilerOptions = getOptionsPanel().getCompilerOptions();
+        preferences.setCompilerOptions(project, compilerOptions);
+        if (!fire
+                && !originalCompilerOptions.equals(compilerOptions)) {
             fire = true;
         }
         // change?
@@ -160,9 +179,9 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
-        boolean compilationEnabled = getComponent().isCompilationEnabled();
+        boolean compilationEnabled = getOptionsPanel().isCompilationEnabled();
         return type.getPreferencesValidator()
-                .validateMappings(compilationEnabled, getComponent().getMappings())
+                .validateMappings(compilationEnabled, getOptionsPanel().getMappings())
                 .validateExecutable(compilationEnabled)
                 .getResult();
     }

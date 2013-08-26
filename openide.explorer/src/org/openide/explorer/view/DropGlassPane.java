@@ -54,6 +54,7 @@ import java.util.HashMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.openide.util.Parameters;
 
@@ -127,7 +128,7 @@ final class DropGlassPane extends JPanel {
         }
         final JRootPane rp = originalSource.getRootPane();
         if (rp == null) {
-            if( originalSource.isDisplayable() ) //#216921
+            if( null != SwingUtilities.getWindowAncestor( originalSource ) ) //#232187 - only complain when the originalSource is still in component hierarchy
                 throw new IllegalStateException("originalSource " + originalSource + " has no root pane: " + rp); // NOI18N
         } else {
             rp.setGlassPane(oldPane);

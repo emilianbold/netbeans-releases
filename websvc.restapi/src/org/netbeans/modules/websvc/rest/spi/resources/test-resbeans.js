@@ -1358,7 +1358,8 @@ WADLParser.prototype = {
           for (var i = 0; i < node.childNodes.length; ++i) {
             var n = node.childNodes[i];
             if(ts.wdr.isResource(n) /*&& !isTemplateResource(ch)*/) {
-                var pathVal = ts.wdr.getNormailizedPath(n);
+                var pathVal = unescape(ts.wdr.getNormailizedPath(n));
+                n.attributes.getNamedItem('path').nodeValue = pathVal;
                 ts.topUrls.push(pathVal);
             }
           } 
@@ -1948,7 +1949,7 @@ XHR.prototype = {
             xmlHttpReq.send(content);
             if (this.isResponseReady(method, xmlHttpReq, content, monitor)) {
               var rtext = xmlHttpReq.responseText;
-              if ( (rtext== undefined || rtext == '' ) && (method=='POST' || method=='PUT' )){
+              if ( (rtext== undefined || rtext == '' ) && (method=='POST' || method=='PUT' || method=='DELETE')){
                   return 'MSG_TEST_RESBEANS_NoContent';
               }
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
@@ -1983,7 +1984,7 @@ XHR.prototype = {
     },
 
     delete_ : function(url) {
-        return this.httpRequest('DELETE', url, 'application/xml', true);
+        return this.httpRequest('DELETE', url, 'application/xml', '', true);
     },
     
     loadXml : function(xmlStr) {

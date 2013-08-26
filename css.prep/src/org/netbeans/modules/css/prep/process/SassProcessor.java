@@ -87,13 +87,18 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compileInternal(Project project, File source, File target) {
+    protected String getCompilerOptions(Project project) {
+        return SassPreferences.getInstance().getCompilerOptions(project);
+    }
+
+    @Override
+    protected void compileInternal(Project project, File workDir, File source, File target, List<String> compilerOptions) {
         SassExecutable sass = getSass(project);
         if (sass == null) {
             return;
         }
         try {
-            sass.compile(source, target);
+            sass.compile(workDir, source, target, compilerOptions);
         } catch (ExecutionException ex) {
             if (Warnings.showWarning(CssPreprocessorType.SASS)) {
                 UiUtils.processExecutionException(ex);

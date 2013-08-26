@@ -70,8 +70,7 @@ public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescr
     
     @Override
     public final void validate () throws WizardValidationException {
-        validateBeforeNext();
-        if (!valid) {
+        if (!validateBeforeNext()) {
             throw new WizardValidationException (
                 getJComponent(),
                 errMessage.getMessage(),
@@ -133,7 +132,7 @@ public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescr
         }
     }
 
-    protected abstract void validateBeforeNext ();
+    protected abstract boolean validateBeforeNext ();
 
     protected abstract JComponent getJComponent ();
 

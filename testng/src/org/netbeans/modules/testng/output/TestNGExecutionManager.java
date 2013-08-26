@@ -92,11 +92,22 @@ public class TestNGExecutionManager implements RerunHandler {
             String testIncludes = properties.getProperty("test.includes");//NOI18N
             if (testIncludes != null) {
                 FileObject testFO = testSession.getFileLocator().find(testIncludes);
-                if (testFO != null) {
+                lookup = Lookups.fixed(DataObject.find(testFO));
+            }
+            
+            //"Run/Debug Focused Test Method" actions (test-method/debug-test-single-nb) in a nb module project
+            String testClass = properties.getProperty("test.class");//NOI18N
+            String testMethods = properties.getProperty("test.methods");//NOI18N
+            if(testClass != null) {
+                FileObject testFO = testSession.getFileLocator().find(testClass.replace('.', '/') + ".java"); //NOI18N
+                if (testMethods != null) {
+                    SingleMethod methodSpec = new SingleMethod(testFO, testMethods);
+                    lookup = Lookups.singleton(methodSpec);
+                } else {
                     lookup = Lookups.fixed(DataObject.find(testFO));
                 }
             }
-
+            
             if (targets.length == 0) {
                 String className = properties.getProperty("classname");     //NOI18N
                 String methodName = properties.getProperty("methodname");     //NOI18N
@@ -126,7 +137,6 @@ public class TestNGExecutionManager implements RerunHandler {
                 }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, null, e);
         }
     }
 
@@ -217,13 +227,24 @@ public class TestNGExecutionManager implements RerunHandler {
         AntTargetExecutor.createTargetExecutor(execenv).execute(AntScriptUtils.antProjectCookieFor(antScript), antTargets);
     }
 
-    private static String[] getActionNames(String[] targetNames) {
+    private String[] getActionNames(String[] targetNames) {
         String[] actions = new String[targetNames.length];
         for (int i = 0; i < targetNames.length; i++) {
             if (targetNames[i].equals("test-single")) {                      //NOI18N
                 actions[i] = ActionProvider.COMMAND_TEST_SINGLE;
             } else if (targetNames[i].equals("debug-test")) {                //NOI18N
                 actions[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+            } else if (targetNames[i].equals("test-unit")) {                //NOI18N
+                actions[i] = ActionProvider.COMMAND_TEST;
+            } else if (targetNames[i].equals("test-method")) {                //NOI18N
+                actions[i] = SingleMethod.COMMAND_RUN_SINGLE_METHOD;
+            } else if (targetNames[i].equals("debug-test-single-nb")) {                //NOI18N
+                String testMethods = properties.getProperty("test.methods");//NOI18N
+                if (testMethods != null) {
+                    actions[i] = SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
+                } else {
+                    actions[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+                }
             } else {
                 actions[i] = targetNames[i];
             }

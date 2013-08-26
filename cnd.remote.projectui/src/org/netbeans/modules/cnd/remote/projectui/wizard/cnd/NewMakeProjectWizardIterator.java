@@ -45,10 +45,12 @@ package org.netbeans.modules.cnd.remote.projectui.wizard.cnd;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -77,6 +79,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -129,12 +132,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private final List<WizardDescriptor.Panel<WizardDescriptor>> advancedPanels;
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
-
-    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+    
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD, String helpCtx) {        
         this.wizardtype = wizardtype;
         name = name.replaceAll(" ", ""); // NOI18N
 
-        panelConfigureProjectTrue = ProjectWizardPanels.getMakeSampleProjectWizardPanel(wizardtype, name, wizardTitle, wizardACSD, true);
+        panelConfigureProjectTrue = ProjectWizardPanels.getMakeSampleProjectWizardPanel(wizardtype, name, wizardTitle, wizardACSD, true, helpCtx);
 
 //        panelConfigureProjectFalse = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false);
 //        makefileOrConfigureDescriptorPanel = new MakefileOrConfigureDescriptorPanel();
@@ -143,6 +146,11 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 //        parserConfigurationDescriptorPanel = new ParserConfigurationDescriptorPanel();
         advancedPanels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
         advancedPanels.addAll(ProjectWizardPanels.getNewProjectWizardPanels(wizardtype, name, wizardTitle, wizardACSD, false));
+    }
+    
+
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+        this(wizardtype, name, wizardTitle, wizardACSD, null);
     }
 
     private synchronized ProjectWizardPanels.MakeModePanel<WizardDescriptor> getSelectModePanel() {
@@ -201,11 +209,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return new NewMakeProjectWizardIterator(TYPE_QT_STATIC_LIB, name, wizardTitle, wizardACSD);
     }
 
-    public static NewMakeProjectWizardIterator newDBApplication() {
+    public static NewMakeProjectWizardIterator newDBApplication(Map<String,?> inst) {
+        String helpCtx = (String)inst.get("helpCtx"); //NOI18N
         String name = DBAPPLICATION_PROJECT_NAME;
         String wizardTitle = getString("Templates/Project/Native/newDBApplication.xml");
         String wizardACSD = getString("NativeNewDBApplicationACSD");
-        return new NewMakeProjectWizardIterator(TYPE_DB_APPLICATION, name, wizardTitle, wizardACSD);
+        return new NewMakeProjectWizardIterator(TYPE_DB_APPLICATION, name, wizardTitle, wizardACSD, helpCtx);
     }
 
     public static NewMakeProjectWizardIterator makefile() {
@@ -466,6 +475,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             FileObject dir = dirF.getFileObject();
             resultSet.add(dir);
         }
+        
         return resultSet;
     }
     private transient int index;

@@ -55,16 +55,17 @@ import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProvider;
 import org.netbeans.modules.cnd.makeproject.api.ui.LogicalViewNodeProviders;
 import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
 /**
  *
@@ -153,12 +154,14 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
     @Override
     protected Collection<Object> getKeys() {
         Collection<Object> collection;
+        final MakeConfigurationDescriptor configurationDescriptor = getFolder().getConfigurationDescriptor();
         if (getFolder().isDiskFolder()) {
+            final ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
             // Search disk folder for C/C++ files and add them to the view (not the project!).
-            CndVisibilityQuery folderVisibilityQuery = getFolder().getConfigurationDescriptor().getFolderVisibilityQuery();
-            ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
-            FileObject baseDirFileObject = getFolder().getConfigurationDescriptor().getBaseDirFileObject();
-            FileObject fileObject = RemoteFileUtil.getFileObject(baseDirFileObject, getFolder().getRootPath());
+            final CndVisibilityQuery folderVisibilityQuery = configurationDescriptor.getFolderVisibilityQuery();
+            final FileObject baseDirFileObject = configurationDescriptor.getBaseDirFileObject();
+            final FileSystem baseDirFileSystem = configurationDescriptor.getBaseDirFileSystem();
+            final FileObject fileObject = RemoteFileUtil.getFileObject(baseDirFileObject, getFolder().getRootPath());
             if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
                 FileObject[] children = fileObject.getChildren();
                 if (children != null) {
@@ -181,9 +184,8 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                                 continue;
                             }
                         }
-
                         // Add file to the view
-                        Item item = Item.createDetachedViewItem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
+                        Item item = Item.createDetachedViewItem(baseDirFileSystem, child.getPath());
                         Folder.insertItemElementInList(collection2, item);
                     }
                 }
@@ -209,7 +211,7 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
             collection = getFolder().getElements();
         }
 
-        switch (getFolder().getConfigurationDescriptor().getState()) {
+        switch (configurationDescriptor.getState()) {
             case READING:
                 if (collection.isEmpty()) {
                     collection = Collections.singletonList((Object) new LoadingNode());

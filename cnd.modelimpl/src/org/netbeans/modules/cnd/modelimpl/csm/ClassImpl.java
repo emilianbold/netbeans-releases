@@ -753,26 +753,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                 currentScope = getContainingFile().getProject().getGlobalNamespace();
                             }
                             
-                            ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
-                                    ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), ClassImpl.this)
-                                    : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), ClassImpl.this);
-                            
+                            ClassImpl innerClass = createClass(token, currentScope, ClassImpl.this);
 
-                            boolean created = false; 
-                            if(TraceFlags.CPP_PARSER_ACTION) {
-                                for (CsmMember member : ClassImpl.this.getMembers()) {
-                                    if(CsmKindUtilities.isClass(member) && member.getStartOffset() == innerClass.getStartOffset()) {
-                                        innerClass = (ClassImpl)member;
-                                        created = true;
-                                        break;
-                                    }
-                                }
-                            }
                             if(innerClass != null) {
-                                innerClass.setVisibility(curentVisibility);
-                                if(!created) {
-                                    addMember(innerClass,!isRenderingLocalContext());
-                                }
                                 typedefs = renderTypedef(token, innerClass, ClassImpl.this);
                                 if (!typedefs.getTypesefs().isEmpty()) {
                                     for (CsmTypedef typedef : typedefs.getTypesefs()) {
@@ -795,21 +778,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         }
                             
                         case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                            EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
-                            boolean enumCreated = false; 
-                            if(TraceFlags.CPP_PARSER_ACTION) {
-                                for (CsmMember member : ClassImpl.this.getMembers()) {
-                                    if(CsmKindUtilities.isEnum(member) && member.getStartOffset() == innerEnum.getStartOffset()) {
-                                        innerEnum = (EnumImpl)member;
-                                        enumCreated = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            innerEnum.setVisibility(curentVisibility);
-                            if(!enumCreated) {
-                                addMember(innerEnum,!isRenderingLocalContext());
-                            }
+                            EnumImpl innerEnum = createEnum(token, ClassImpl.this, ClassImpl.this);
                             renderVariableInClassifier(token, innerEnum, null, null);
                             checkInnerIncludes(innerEnum, Collections.<CsmObject>emptyList());
                             break;
@@ -993,6 +962,28 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return scope;
         }
 
+        @Override
+        protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
+            EnumImpl innerEnum = EnumImpl.create(token, scope, getContainingFile(), fileContent, !isRenderingLocalContext());
+            if (innerEnum != null) {
+                innerEnum.setVisibility(curentVisibility);
+                addMember(innerEnum,!isRenderingLocalContext());
+            }
+            return innerEnum;
+        }
+
+        @Override
+        protected ClassImpl createClass(AST token, CsmScope currentScope, DeclarationsContainer container) throws AstRendererException {          
+            ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
+                    ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
+                    : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
+            if (innerClass != null) {
+                innerClass.setVisibility(curentVisibility);
+                addMember(innerClass, !isRenderingLocalContext());
+            }
+            return innerClass;
+        }
+        
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization) {
             templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
         }

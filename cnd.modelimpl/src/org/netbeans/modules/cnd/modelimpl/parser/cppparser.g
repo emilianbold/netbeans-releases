@@ -138,7 +138,7 @@ tokens {
 	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-    CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -822,7 +822,7 @@ template_explicit_specialization
                 |   cv_qualifier
                 |   LITERAL_typedef
                 )*
-                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+                enum_head
             ) =>
             (LITERAL___extension__!)?
             (LITERAL_template LESSTHAN GREATERTHAN)?
@@ -1012,7 +1012,7 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     |   cv_qualifier
                     |   LITERAL_typedef
                     )*
-                    LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+                    enum_head
                 ) =>
                 (LITERAL___extension__!)?
                     (   sc = storage_class_specifier
@@ -1124,7 +1124,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+            enum_head
         ) =>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
@@ -1520,7 +1520,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
+		((storage_class_specifier)? enum_head)=>
                 {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
@@ -2145,8 +2145,8 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         (sc = storage_class_specifier!)?
         (   id = class_qualified_id
             (options{generateAmbigWarnings = false;}:
-                (LITERAL_final | LITERAL_explicit)?
-                (base_clause)?
+            (LITERAL_final | LITERAL_explicit)?
+            (base_clause)?
                 
                 // parse class body if nesting limit not exceed
                 (
@@ -2169,7 +2169,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                         | RCURLY )
                     |   
                         balanceCurlies
-                 )
+        )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
@@ -2462,6 +2462,13 @@ class_head
 	)? LCURLY
 	;
 
+// for predicates
+enum_head
+        { String s; int ts; }
+        :
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (s = qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+        ;
+
 // so far this one is used in predicates only
 class_forward_declaration
         { String s; }
@@ -2525,7 +2532,7 @@ member_declarator_list
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
-	|  
+        |
 		declarator[declOther, 0] 
                 (   LITERAL_override 
                 |   LITERAL_final 
@@ -2575,7 +2582,9 @@ declarator[int kind, int level]
     |
         // typedef ((...));
         // int (i);
-        {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        // or
+        // type(var);
+        {level < 5 && (_td || (_ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN is_post_declarator_token) =>
         LPAREN declarator[kind, level + 1] RPAREN
     |
         // type (var) = {...}
@@ -2590,7 +2599,7 @@ restrict_declarator[int kind, int level]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[kind, level] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        (LPAREN declarator[kind, level] RPAREN is_post_declarator_token) =>
         LPAREN declarator[kind, level] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
@@ -2656,7 +2665,7 @@ direct_declarator[int kind, int level]
                              }
                              is_address = false; is_pointer = false;
                         }
-                    )
+                )
                 (options {greedy=true;} :variable_attribute_specification)?
                 (asm_block!)?
                 (options {greedy=true;} :variable_attribute_specification)?
@@ -2673,9 +2682,14 @@ direct_declarator[int kind, int level]
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
 		LPAREN declarator[kind, level+1] RPAREN
-        (options {greedy=true;} :variable_attribute_specification)?
-        declarator_suffixes
-        (options {greedy=true;} :variable_attribute_specification)?
+                (options {greedy=true;} :variable_attribute_specification)?
+                (
+                    {_ts != tsInvalid}?
+                        (options {greedy=true;} : declarator_suffixes)?
+                |
+                    declarator_suffixes
+                )   
+                (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
@@ -2732,7 +2746,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         (ptr_operator)=> ptr_operator function_declarator[definition, allowParens, symTabCheck]
     |	
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
+        {_td || (_ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN is_post_declarator_token) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
         function_direct_declarator[definition, symTabCheck] 
@@ -2748,7 +2762,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | literal_try | LITERAL_throw | LITERAL_noexcept | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -2763,6 +2777,12 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
                 (options {greedy=true;} :function_attribute_specification)?
 	;
         
+protected
+is_post_declarator_token
+    :
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF 
+    ;
+
 trailing_type
 {int ts = tsInvalid; TypeQualifier tq;}
     :
@@ -3496,6 +3516,12 @@ statement
 			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
         |
+                ( is_known_typename LPAREN IDENT RPAREN) => // declaration like "int(a);"
+                {if (statementTrace>=1) 
+                        printf("statement_1a[%d]: declaration\n", LT(1).getLine());
+                }
+                declaration[declGeneric]  {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);}
+        |
                 // #227479 - SQL EXEC support is broken
                 // This alternative is greedy and must be after pro_c alternative
                 ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
@@ -3573,6 +3599,18 @@ compound_labeled_statement
         labeled_statement
         {#compound_labeled_statement = #([CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_labeled_statement);}
     ;
+
+protected
+is_known_typename
+{/*TypeSpecifier*/int ts=0;}
+    :
+        ts=builtin_type[0]
+        |
+        is_va_list_type
+    ;
+
+protected
+is_va_list_type : id:IDENT {"va_list".contentEquals(id.getText())}?;
 
 protected
 label
@@ -3658,9 +3696,7 @@ condition_expression
 protected 
 condition_declaration {int ts = tsInvalid;}
     :
-        cv_qualifier_seq (LITERAL_typename)?
-        ts=type_specifier[dsInvalid, false]
-        (postfix_cv_qualifier)? 
+        declaration_specifiers[true, false]  
         declarator[declStatement, 0]
         (   ASSIGNEQUAL assignment_expression
         |   array_initializer 
@@ -3754,7 +3790,10 @@ for_range_init_statement
 
 jump_statement
 	:	
-	(	LITERAL_goto IDENT (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+	(	LITERAL_goto 
+                ((IDENT (EOF | SEMICOLON)) => IDENT
+                | expression)
+                (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
 	|	LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
@@ -3841,9 +3880,33 @@ using_declaration
 
 alias_declaration
 	:	LITERAL_using
-		IDENT ASSIGNEQUAL type_name
+		IDENT ASSIGNEQUAL alias_declaration_type
 		SEMICOLON! //{end_of_stmt();}
 	;
+
+// Rule to catch class definition inside type alias
+alias_declaration_type
+        :   
+            ( 
+                // We do not need to process template classes here because of standard.
+                // [dcl.type], point 3:
+                // A type-specifier-seq shall not define a class or enumeration
+                // unless it appears in the type-id of an alias-declaration (7.1.3) that
+                // is not the declaration of a template-declaration.  
+                (class_head)=>
+                    type_name
+                    {#alias_declaration_type = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #alias_declaration_type);}
+            |
+                (enum_head)=>
+                    // TODO: think about handling enums via type_name 
+                    {if(statementTrace>=1) printf("typedef_enum [%d]\n",LT(1).getLine()); }
+                    enum_specifier 
+                    (init_declarator_list[declOther])?
+                    {#alias_declaration_type = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #alias_declaration_type);}
+            |
+                type_name
+            )
+    ;
 
 visibility_redef_declaration
 {String qid="";}

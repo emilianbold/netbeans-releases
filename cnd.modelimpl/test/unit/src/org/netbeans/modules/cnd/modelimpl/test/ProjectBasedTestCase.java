@@ -198,6 +198,9 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         }
         
         if (CndTraceFlags.USE_INDEXING_API) {
+            System.setProperty("org.netbeans.modules.parsing.impl.indexing.LogContext$EventType.PATH.minutes", "1");
+            System.setProperty("org.netbeans.modules.parsing.impl.indexing.LogContext$EventType.PATH.treshold", "32000");
+            RepositoryUpdater.getDefault().start(false);
             Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectDir));
             if (prj != null) {
                 OpenProjects.getDefault().open(new Project[] {prj}, false);
@@ -205,7 +208,6 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
 
             ClassPath classPath = ClassPathSupport.createClassPath(fobjs);
             GlobalPathRegistry.getDefault().register("org.netbeans.modules.cnd.makeproject/SOURCES", new ClassPath[]{classPath});
-            RepositoryUpdater.getDefault().start(true);
         }
 
         log("setUp finished preparing project.");

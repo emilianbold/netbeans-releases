@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>New JDBC Connection Pool: Add Connection Pool Properties</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="AS_Wiz_ConnPool_props" name="AS_Wiz_ConnPool_props"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref639" name="sthref639"></a>
+<h1>New JDBC Connection Pool: Add Connection Pool Properties</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>You see this page of the New File wizard when you are defining a connection pool and you have already named the connection pool and selected the database connection.</p>
+<p>On this (and the Connection Pool Optional Settings page) you specify the properties of the connection pool. After entering the property values, you can do one of the following:</p>
+<ul>
+<li>Click <b>Next</b> if you want to further customize the optional pool properties such as pool size and connection validation.</li>
+<li>Click <b>Finish</b> to create the connection pool, leaving the optional settings at their default values.</li>
+</ul>
+<p>The connection pool properties are added to glassfish-resources.xml. If you want to modify connection pool properties you can open glassfish-resources.xml in the Source Editor by locating the file in your project in the Projects window and double-clicking the file.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="19%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t63">Element</th>
+<th align="left" valign="bottom" id="r1c2-t63">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t63" headers="r1c1-t63">
+<p>Datasource classname</p>
+</td>
+<td align="left" headers="r2c1-t63 r1c2-t63">
+<p>The datasource class name is the JDBC driver that implements the APIs for the datasource. This name is provided according to the database connection selected in the previous screen. If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t63" headers="r1c1-t63">
+<p>Resource type</p>
+</td>
+<td align="left" headers="r3c1-t63 r1c2-t63">
+<p>The resource type reflects whether the connection pool enables XA global transactions or is restricted to local transactions. Return to the previous screen to change the resource type.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t63" headers="r1c1-t63">
+<p>Description</p>
+</td>
+<td align="left" headers="r4c1-t63 r1c2-t63">
+<p>You can enter a description of this connection pool.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t63" headers="r1c1-t63">
+<p>Properties</p>
+</td>
+<td align="left" headers="r5c1-t63 r1c2-t63">
+<p>Connection pool properties may vary according to the database vendor. Common properties include the datasource URL, user name, and password, but other properties may be suggested or required depending on the database connection. If you selected an existing source in the previous screen, some of the property values may already be provided.</p>
+<p>Properties may be changed or removed and additional properties may be added, but each property in the Properties area must have a value entered before you can proceed to the next screen or finish the connection pool configuration.</p>
+<p><b>Note</b>: To complete the wizard you may need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref640" name="sthref640"></a>
+<p><b>To change a property:</b></p>
+<ol>
+<li>Click a box in the Properties Name column and select a new property from the dropdown list.</li>
+<li>Add a value for that property.</li>
+</ol>
+<a id="sthref641" name="sthref641"></a>
+<p><b>To add a new property:</b></p>
+<ol>
+<li>Click the Add button. A new row appears in the properties box.</li>
+<li>In the new row, click the box in the Properties Name column and select a property from the dropdown list.</li>
+<li>Add a value for that property.</li>
+</ol>
+<a id="sthref642" name="sthref642"></a>
+<p><b>To remove a property:</b></p>
+<ol>
+<li>Click the row containing the property to delete.</li>
+<li>Click the Remove button.</li>
+</ol>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, <code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1651">
+<param name="text" value="<html><u>About Working with Web Application Servers</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, Working with Glassfish Application Servers</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

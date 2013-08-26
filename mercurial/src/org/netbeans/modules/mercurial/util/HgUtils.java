@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.util;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
@@ -1482,6 +1483,18 @@ itor tabs #66700).
         Mercurial.LOG.log(Level.FINE, null, ex);
         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
         DialogDisplayer.getDefault().notifyLater(e);
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 255);
+        if (hex.length() == 1) {
+            hex = "0" + hex;
+        }
+        return hex;
+    }
+
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
     }
 
     /**

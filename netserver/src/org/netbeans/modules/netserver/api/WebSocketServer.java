@@ -45,7 +45,9 @@ package org.netbeans.modules.netserver.api;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.netserver.websocket.WebSocketServerImpl;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 
@@ -71,7 +73,9 @@ public final class WebSocketServer  {
         server.stop();
     }
     
-    public void sendMessage( SelectionKey key , String message){
+    public void sendMessage( @NonNull SelectionKey key , @NonNull String message){
+        Parameters.notNull("key", key); //NOI18N
+        Parameters.notNull("message", message); //NOI18N
         server.sendMessage(key, message);
     }
 }

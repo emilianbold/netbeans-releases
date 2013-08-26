@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -1371,6 +1372,56 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testMultiFileCopy234570() throws Exception {
+        File source = new File(getWorkDir(), "Source.java");
+        TestUtilities.copyStringToFile(source,
+            "package test;\n" +
+            "\n" +
+            "class Source {\n" +
+            "    int a,b;\n" +
+            "}\n"
+            );
+        File target = new File(getWorkDir(), "Target.java");
+        TestUtilities.copyStringToFile(target,
+            "package test;\n" +
+            "\n" +
+            "class Target {\n" +
+            "}\n"
+            );
+        String golden =
+            "package test;\n" +
+            "\n" +
+            "class Target {\n" +
+                //TODO: ideally should be:
+//            "    int a,b;\n" +
+            "    int a;\n" +
+            "    int b;\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.create(ClasspathInfo.create(FileUtil.toFileObject(source)), FileUtil.toFileObject(source), FileUtil.toFileObject(target));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                assertEquals(Phase.UP_TO_DATE, workingCopy.toPhase(Phase.UP_TO_DATE));
+                if ("Target".equals(workingCopy.getFileObject().getName())) {
+                    TypeElement source = workingCopy.getElements().getTypeElement("test.Source");
+                    ClassTree sourceClass = workingCopy.getTrees().getTree(source);
+
+                    assertNotNull(sourceClass);
+
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                    Tree var1 = sourceClass.getMembers().get(1);
+                    Tree var2 = sourceClass.getMembers().get(2);
+
+                    workingCopy.rewrite(clazz, make.addClassMember(make.addClassMember(clazz, var1), var2));
+                }
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(target);
         System.err.println(res);
         assertEquals(golden, res);
     }

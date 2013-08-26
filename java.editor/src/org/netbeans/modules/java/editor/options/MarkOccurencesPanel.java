@@ -64,6 +64,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     
     private List<JCheckBox> boxes;
     private MarkOccurencesOptionsPanelController controller;
+    private boolean changed = false;
     
     /** Creates new form MarkOccurencesPanel */
     public MarkOccurencesPanel( MarkOccurencesOptionsPanelController controller ) {
@@ -85,7 +86,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         }
         
         componentsSetEnabled();
-        
+        changed = false;
     }
     
     public void store( ) {
@@ -106,9 +107,13 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
+        changed = false;
 }
     
     public boolean changed() {
+        if (changed) {
+            return true;
+        }
         
         Preferences node = MarkOccurencesSettings.getCurrentNode();
         
@@ -116,14 +121,15 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
             boolean value = box.isSelected();
             boolean original = node.getBoolean(box.getActionCommand(), DEFAULT_VALUE);
             if ( value != original ) {
+                changed = true;
                 return true;
             }
         }
 
         return false;
     }
-    
-    
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -353,17 +359,12 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     
     private class CheckChangeListener implements ChangeListener {
 
+        @Override
         public void stateChanged(ChangeEvent evt) {
-            
-            if ( evt.getSource() == onOffCheckBox ) {
+            if (evt.getSource().equals(onOffCheckBox)) {
                 componentsSetEnabled();
             }
-            
-            controller.changed();            
         }
-        
     }
-    
-    
     
 }

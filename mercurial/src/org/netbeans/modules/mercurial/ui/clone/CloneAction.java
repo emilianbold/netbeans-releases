@@ -117,6 +117,7 @@ public class CloneAction extends ContextAction {
         HgUtils.runIfHgAvailable(new Runnable() {
             @Override
             public void run () {
+                Utils.logVCSActionEvent("HG"); //NOI18N
                 VCSContext context = HgUtils.getCurrentContext(nodes);
                 final File roots[] = HgUtils.getActionRoots(context);
                 if (roots == null || roots.length == 0) return;
