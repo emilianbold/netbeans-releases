@@ -74,6 +74,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Radek Matous
  */
+@NbBundle.Messages("ERR_CannotRefactorLoc=Cannot refactor here")
 public abstract class RefactoringTask extends UserTask implements Runnable {
     private static final RequestProcessor RP = new RequestProcessor(RefactoringTask.class);
     private static final Logger LOG = Logger.getLogger(RefactoringTask.class.getName());
@@ -103,7 +104,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         } else if (scanningInProgress) {
             JOptionPane.showMessageDialog(null, Bundle.ERR_ScanningInProgress());
         } else {
-            JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc")); //NOI18N
+            JOptionPane.showMessageDialog(null, Bundle.ERR_CannotRefactorLoc());
         }
     }
 
@@ -163,10 +164,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             DataObject dobj = node.getLookup().lookup(DataObject.class);
             if (dobj != null) {
                 fileObject = dobj.getPrimaryFile();
-
                 if (fileObject.isFolder()) {
-                    //folder
-                    JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc")); //NOI18N
+                    JOptionPane.showMessageDialog(null, Bundle.ERR_CannotRefactorLoc());
                 } else {
                     fetchRefactoringUI(Source.create(fileObject), this);
                 }
