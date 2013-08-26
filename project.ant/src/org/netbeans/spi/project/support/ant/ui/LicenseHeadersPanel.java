@@ -56,6 +56,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import static org.netbeans.spi.project.support.ant.ui.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -203,7 +205,9 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
     }
     
     
-    
+    @Messages({
+        "# {0} - name of license",
+        "ERR_missing_license=The project's license with name \"{0}\" was not found in IDE's license headers."})
     private void reloadGlobalTemplatesCombo() {
         category.setErrorMessage(null);
         GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
@@ -212,7 +216,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
         if (selection != null) {
             boolean found = selectComboBoxItem(selection, rbGlobal.isSelected());
             if (!found) {
-                category.setErrorMessage("The project's license with name '" + selection + "' was not found in IDE's license headers.");
+                category.setErrorMessage(ERR_missing_license(selection));
             }
         }
     }
@@ -364,6 +368,9 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
         comGlobal.setModel(model);
     }
     
+    @Messages({
+        "# {0} - name of license",
+        "ERR_missing_license_template=<License header template not found for name \"{0}\">"})    
     private void setTextToGlobalLicense() {
         GlobalItem item = (GlobalItem) comGlobal.getSelectedItem();
         if (item == null) {
@@ -373,7 +380,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
                 if (item.fileObject != null) {
                     epLicense.setText(item.fileObject.asText());
                 } else {
-                   epLicense.setText("<License header template not found for name '" + item.getName() + "'>"); 
+                   epLicense.setText(ERR_missing_license_template(item.getName())); 
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -381,6 +388,9 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
         }
     }
     
+    @Messages({
+        "# {0} - path of license",
+        "ERR_missing_license_path=File at path \"{0}\" doesn't exist."}) 
     private void setTextToProjectLicense() {
         category.setErrorMessage(null);
         String path = txtProject.getText();
@@ -392,7 +402,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
                 Exceptions.printStackTrace(ex);
             }
         } else {
-            category.setErrorMessage("File at path '" + path + "' doesn't exist.");
+            category.setErrorMessage(ERR_missing_license_path(path));
             epLicense.setText(defaultProjectLicense);
         }
         
@@ -412,7 +422,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
             txtProject.setText(path);
             rbGlobal.setSelected(true); //has to come last
             if (!found) {
-                category.setErrorMessage("The project's license with name '" + name + "' was not found in IDE's license headers.");
+                category.setErrorMessage(ERR_missing_license(name));
             }
         } else {
             txtProject.setText(path);

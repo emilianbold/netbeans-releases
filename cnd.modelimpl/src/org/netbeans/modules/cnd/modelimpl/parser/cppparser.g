@@ -2780,7 +2780,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 protected
 is_post_declarator_token
     :
-        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF 
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF | RPAREN
     ;
 
 trailing_type
@@ -3125,7 +3125,8 @@ simple_parameter_declaration
 
 type_name // aka type_id
 	:
-	declaration_specifiers[true, false] abstract_declarator
+	declaration_specifiers[true, false] 
+        abstract_declarator
 	;
 
 /* This rule looks a bit weird because (...) can happen in two
@@ -3904,9 +3905,15 @@ alias_declaration_type
                     (init_declarator_list[declOther])?
                     {#alias_declaration_type = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #alias_declaration_type);}
             |
-                type_name
+                alias_type_name
             )
     ;
+
+alias_type_name
+        :
+            type_name
+            (trailing_type)?
+	;
 
 visibility_redef_declaration
 {String qid="";}
