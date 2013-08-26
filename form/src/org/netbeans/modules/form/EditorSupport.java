@@ -67,6 +67,8 @@ public interface EditorSupport extends Node.Cookie {
     void openSource();
     void reloadForm();
     boolean isJavaEditorDisplayed();
+    Boolean getFoldState(int offset);
+    void restoreFoldState(boolean collapsed, int startOffset, int endOffset);
     int getCodeIndentSize();
     boolean getCodeBraceOnNewLine();
     boolean canGenerateNBMnemonicsCode();
