@@ -498,7 +498,7 @@ public class CssCompletion implements CodeCompletionHandler {
         int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
 
         TokenHierarchy hi = snapshot.getTokenHierarchy();
-        String prefix = getPrefix(hi.tokenSequence(), embeddedCaretOffset);
+        String prefix = getPrefix(hi.tokenSequence(CssTokenId.language()), embeddedCaretOffset);
         if (prefix == null) {
             return null;
         }
@@ -627,10 +627,8 @@ public class CssCompletion implements CodeCompletionHandler {
         if (ts != null) {
             int diff = ts.move(offset);
             TokenId currentTokenId = null;
-            if (ts != null) {
-                if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
-                    currentTokenId = ts.token().id();
-                }
+            if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                currentTokenId = ts.token().id();
             }
 
             if (currentTokenId == CssTokenId.IDENT) {
@@ -693,11 +691,12 @@ public class CssCompletion implements CodeCompletionHandler {
                 case SEMI: //@import |;
                     addSemicolon = false;
                 case WS: //@import |
+                case NL:
                     if (addSemicolon) {
-                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.S);
+                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.WS, CssTokenId.NL);
                     addSemicolon = (semicolon == null);
                 }
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.S)) {
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.WS, CssTokenId.NL)) {
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, caretOffset, "", true, addSemicolon);
                         int moveBack = (addSemicolon ? 1 : 0) + 1; //+1 means the added quotation mark length
                         return new CssFileCompletionResult(imports, moveBack);
@@ -706,7 +705,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 case STRING: //@import "|"; or @import "fil|";
                     Token<CssTokenId> originalToken = ts.token();
                     addSemicolon = false;
-                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.S)) {
+                    if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL)) {
                         //strip off the leading quote and the rest of token after caret
                         String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
@@ -905,6 +904,14 @@ public class CssCompletion implements CodeCompletionHandler {
             case moz_document:
             case imports:
             case namespaces:
+                TokenSequence<CssTokenId> ts = context.getTokenSequence();
+                if(ts.movePrevious()) {
+                    if(ts.token().id().getTokenCategory() == CssTokenIdCategory.AT_RULE_SYMBOL) {
+                        //filter out situation(s) like: @import | a { ... } where we fall into 
+                        //imports node w/ empty prefix, but don't want to complete any at-rules or html selectors
+                        return ;
+                    }
+                }
                 /*
                  * somewhere between rules, in an empty or very broken file, between
                  * rules
@@ -1071,6 +1078,14 @@ public class CssCompletion implements CodeCompletionHandler {
                 //@| -- parsed as elementSubsequent due to the possible less_selector_interpolation -- @{...} in selectorsGroup
                 switch (completionContext.getTokenSequence().token().id()) {
                     case AT_SIGN:
+                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                        break;
+                }
+            case styleSheet:
+                //@| in empty file
+                switch (completionContext.getTokenSequence().token().id()) {
+                    case ERROR:
                         Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
                         completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
                         break;

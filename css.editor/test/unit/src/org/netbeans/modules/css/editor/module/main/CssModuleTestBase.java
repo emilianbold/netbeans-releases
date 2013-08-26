@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -85,6 +87,10 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -354,6 +360,63 @@ public class CssModuleTestBase extends CslTestBase {
 
     }
 
+    protected Document getDocumentForFileObject(FileObject file) {
+        try {
+            DataObject d = DataObject.find(file);
+            EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return null;
+            }
+            return ec.openDocument();
+        } catch (IOException e) {
+            throw new AssertionError("Cann't load document", e);
+        }
+
+    }
+    
+    protected void setDocumentContent(Document document, String text) {
+        try {
+            document.remove(0, document.getLength());
+            document.insertString(0, text, null);
+        } catch (BadLocationException ex) {
+            throw new AssertionError(null, ex);
+        }
+    }
+    
+     public void assertCompletion(Document document, final Match type, String... expectedItemsNames) {
+        try {
+            String text = document.getText(0, document.getLength());
+            int pipeOffset = text.indexOf(Character.toString('|'));
+            assertTrue(String.format("Missing pipe char - you forgot to define the caret position in the test code: '%s'", text), pipeOffset >= 0);
+            
+            //remove the pipe
+            document.remove(pipeOffset, 1);
+            Source source = Source.create(document);
+            
+            CssParserResult cssresult = TestUtil.parse(source, getTopLevelSnapshotMimetype());
+            CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
+            String prefix = cc.getPrefix(cssresult, pipeOffset, false);
+            CodeCompletionResult ccresult = cc.complete(createContext(pipeOffset, cssresult, prefix));
+            
+            try {
+                assertCompletionItemNames(expectedItemsNames, ccresult, type);
+            } catch (junit.framework.AssertionFailedError afe) {
+                System.out.println("AssertionFailedError debug information:");
+                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                System.out.println("Caret offset: " + pipeOffset);
+                System.out.println("Parse tree:");
+                NodeUtil.dumpTree(cssresult.getParseTree());
+                System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+                
+                throw afe;
+            }
+            
+        } catch (ParseException | BadLocationException ex) {
+            throw new AssertionError(null, ex);
+        }
+    }
+
+    
     public void assertComplete(String documentText, String expectedDocumentText, final String itemToComplete) throws ParseException, BadLocationException {
         StringBuilder content = new StringBuilder(documentText);
         StringBuilder expectedContent = new StringBuilder(expectedDocumentText);
@@ -479,7 +542,7 @@ public class CssModuleTestBase extends CslTestBase {
             assertEquals(exp, real);
         } else if (type == Match.CONTAINS) {
             exp.removeAll(real);
-            assertEquals(exp, Collections.emptyList());
+            assertTrue("Expected " + arrayToString(exp.toArray(new String[0])) + ", but was " + arrayToString(real.toArray(new String[0])), exp.isEmpty());
         } else if (type == Match.EMPTY) {
             assertEquals("The unexpected element(s) '" + arrayToString(real.toArray(new String[]{})) + "' are present in the completion items list", 0, real.size());
         } else if (type == Match.NOT_EMPTY) {
