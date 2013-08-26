@@ -389,9 +389,9 @@ public final class ColorModel {
                     if (editorPane == null) {
                         return;
                     }
-                    ((AbstractDocument) editorPane.getDocument()).readLock();
-                    TokenHierarchy<Document> th = TokenHierarchy.get(editorPane.getDocument());
+                    ((AbstractDocument) editorPane.getDocument()).readLock();                    
                     try {
+                        TokenHierarchy<Document> th = TokenHierarchy.get(editorPane.getDocument());
                         if (th != null) {
                             elementName = findLexerElement(th, offset);
                         } else {
