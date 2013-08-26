@@ -44,6 +44,8 @@
 package org.netbeans.modules.html;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.concurrent.Semaphore;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import static junit.framework.Assert.assertTrue;
@@ -60,6 +62,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -83,7 +88,6 @@ public class HtmlDataObjectTest extends CslTestBase {
 
     public void testConstructorHasToRunWithoutChildrenLockBeingNeeded() throws Exception {
         MockServices.setServices(HtmlLoader.class);
-
 
         class Block implements Runnable {
 
@@ -135,6 +139,28 @@ public class HtmlDataObjectTest extends CslTestBase {
         final StyledDocument doc = obj.getLookup().lookup(EditorCookie.class).openDocument();
         assertTrue(doc instanceof BaseDocument);
 
+        //listen on DO's lookup for the savecookie
+        final Object lock = new Object();
+        final Lookup.Result<SaveCookie> saveCookieResult = obj.getLookup().lookupResult(SaveCookie.class);
+        saveCookieResult.addLookupListener(new LookupListener() {
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                //change - save cookie should appear upon the modification
+                Collection<? extends SaveCookie> allInstances = saveCookieResult.allInstances();
+                assertNotNull(allInstances);
+                assertEquals(1, allInstances.size());
+
+                //remove the listener
+                saveCookieResult.removeLookupListener(this);
+
+                synchronized(lock) {
+                    lock.notifyAll();
+                }
+            }
+
+        });
+
         ((BaseDocument) doc).runAtomic(new Runnable() {
             @Override
             public void run() {
@@ -145,15 +171,16 @@ public class HtmlDataObjectTest extends CslTestBase {
                 }
             }
         });
-        ((BaseDocument) doc).runAtomic(new Runnable() {
-            @Override
-            public void run() {
-                //doesn't work :-|
-//                assertTrue(obj.isModified());
+
+        //wait for some time until the savecookie is asynchronously added
+        synchronized (lock) {
+            try {
+                lock.wait(1000);
+            } catch (InterruptedException ex) {
+                throw new AssertionError("No SaveCookie added to DataObject's lookup upon bound document instance change!");
             }
-        });
-
-
+        }
+        
         assertNotNull(obj.getLookup().lookup(SaveCookie.class));
 
         obj.getLookup().lookup(SaveCookie.class).save();
@@ -231,7 +258,6 @@ public class HtmlDataObjectTest extends CslTestBase {
         assertEquals(null,
                 HtmlDataObject.findEncoding(
                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=\"/>"));
-
 
     }
 }

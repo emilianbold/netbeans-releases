@@ -2,94 +2,75 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Send JMS Message Dialog Box</title>
+<title>Specify Mail Resource Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator" name="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator"></a></p>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" name="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref610" name="sthref610"></a>
-<h1>Send JMS Message Dialog Box</h1>
+<h1>Specify Mail Resource Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this dialog box to send a Java Message Service (JMS) message to a message destination. A JMS message is an object that communicates information between JMS clients. The message is sent from one client to a second client that listens for messages through a JMS destination on an application server.</p>
-<p>You open the dialog box by right-clicking a Java file in the Source Editor and choosing Insert Code &gt; Send JMS Message. The file must be in an EJB module project or a standard web application project. You cannot generate lookup code in a free-form web application project.</p>
+<p>You use this dialog box to automatically generate code that sends an e-mail from a Java file. You open the dialog box by right-clicking a Java file in the Source Editor and choosing Insert Code &gt; Send E-mail. The file must be in an EJB module project or a standard web application project. You cannot generate e-mail code in a free-form web application project.</p>
 <p>You use the dialog box as follows:</p>
 <ol>
+<li>Specify the JNDI name of the resource.</li>
 <li>
-<p>Select the destination for the JMS message by selecting one of the following:</p>
+<p>Under Service Locator Strategy, specify whether to generate inline lookup code or use an existing service locator. You can click Browse to search for the service locator class name. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1286">
+<param name="text" value="<html><u>How To</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</li>
+<li>
+<p>Click OK.</p>
+<p>The IDE creates two methods:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t33">Element</th>
-<th align="left" valign="bottom" id="r1c2-t33">Description</th>
+<th align="left" valign="bottom" id="r1c1-t35">Element</th>
+<th align="left" valign="bottom" id="r1c2-t35">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t33" headers="r1c1-t33">
-<p>Project Destinations</p>
+<td align="left" id="r2c1-t35" headers="r1c1-t35">
+<p>getSession</p>
 </td>
-<td align="left" headers="r2c1-t33 r1c2-t33">
-<p>Choose from the list of available destinations in your project. If no destination is available in the drop-down list, you can click Add to create a new destination.</p>
-<p>Alternatively, you can create a JMS destination by opening the New File wizard and choosing JMS Resource in the GlassFish category.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t33" headers="r1c1-t33">
-<p>Server Destinations.</p>
-</td>
-<td align="left" headers="r3c1-t33 r1c2-t33">
-<p>Choose from the list of available destinations that exist on the server.</p>
+<td align="left" headers="r2c1-t35 r1c2-t35">
+<p>Looks up the mail resource and creates a mail session.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t33" headers="r1c1-t33">
-<p>Message Driven Bean</p>
+<td align="left" id="r3c1-t35" headers="r1c1-t35">
+<p>sendMail</p>
 </td>
-<td align="left" headers="r4c1-t33 r1c2-t33">
-<p>Choose a message-driven bean from the drop-down list. The drop-down list displays the message-driven beans in the same project and fills the Destination field with the name of the destination resource found in the bean.</p>
+<td align="left" headers="r3c1-t35 r1c2-t35">
+<p>Constructs and send the e-mail.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
-<!-- --></li>
-<li>Specify a Service Locator Strategy by choosing to generate an inline lookup code or use an existing service locator. You can click the Browse to search for the service locator class name. How To</li>
+<!-- -->
+<p>The IDE also registers the resource reference in your module's general deployment descriptor.</p>
+</li>
 <li>
-<p>Click OK.</p>
-<p>The IDE creates two methods:</p>
-<ul>
-<li><code>createJMSMessageForNewMessageDestination</code>. The method that creates the message that is sent. You should implement your business logic in this method.</li>
-<li><code>sendJMSMessageToNewMessageDestination</code>. The method that handles the message you created in the method above. You should not modify this message.</li>
-</ul>
-<p>The IDE also registers the resource reference and message destination reference in your module's general deployment descriptor.</p>
+<p>In your code, call the sendMail method and pass the e-mail address, subject, and body as parameters.</p>
+<p><b>Note</b>: You have to configure the mail resource on the application server yourself. If your project's target server is the GlassFish server, the IDE automatically configures the resource reference in the application-specific deployment descriptor. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors yourself.</p>
 </li>
 </ol>
-<p><b>Note</b>: If your project's target server is the GlassFish server, the IDE automatically configures a destination and connection factory for the message-driven bean when you create the bean. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors and the server resources yourself.</p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1263">
-<param name="text" value="<html><u>About Developing with Enterprise Beans</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-"</p>
 <p><i>Developing Applications with NetBeans IDE</i>, "
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1269">
 <param name="text" value="<html><u>Creating an Enterprise Bean</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
-<param name="text" value="<html><u>Working with Glassfish Application Servers</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
