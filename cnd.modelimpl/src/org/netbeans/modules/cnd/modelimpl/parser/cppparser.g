@@ -3125,7 +3125,9 @@ simple_parameter_declaration
 
 type_name // aka type_id
 	:
-	declaration_specifiers[true, false] abstract_declarator
+	declaration_specifiers[true, false] 
+        abstract_declarator
+        (trailing_type)?
 	;
 
 /* This rule looks a bit weird because (...) can happen in two
