@@ -227,8 +227,11 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="locationComboBox">
       <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[34, 20]"/>
+        </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[4, 20]"/>
+          <Dimension value="[4, 25]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -262,8 +265,11 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
         <Property name="inheritsPopupMenu" type="boolean" value="true"/>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[133, 20]"/>
+        </Property>
         <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[4, 20]"/>
+          <Dimension value="[4, 25]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
@@ -288,6 +294,9 @@
             <StringItem index="2" value="Item 3"/>
             <StringItem index="3" value="Item 4"/>
           </StringArray>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[69, 20]"/>
         </Property>
       </Properties>
       <AccessibilityProperties>

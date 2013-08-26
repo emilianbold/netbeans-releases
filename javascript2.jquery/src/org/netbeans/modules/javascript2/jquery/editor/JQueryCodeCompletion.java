@@ -417,7 +417,37 @@ public class JQueryCodeCompletion implements CompletionProvider {
                         break;
                     case TAG_ATTRIBUTE:
                         // provide attributes
-                        String tagName = prefix.substring(anchorOffsetDelta, context.prefixIndex);
+                        String tagName = prefix.substring(anchorOffsetDelta, context.prefixIndex).trim();
+                        if (!tagName.isEmpty() && (tagName.charAt(0) == '.' || tagName.charAt(0) == '#')) {
+                            if (ts.token().id() == JsTokenId.STRING_BEGIN) {
+                                ts.moveNext();
+                            }
+                            if (ts.token().id() == JsTokenId.STRING) {
+                                String value = ts.token().text().toString();
+                                int index = value.indexOf(prefix);
+                                if (index > -1) {
+                                    tagName = value.substring(0, index);
+                                    index--;
+                                    while (index > -1) {
+                                        char ch = tagName.charAt(index);
+                                        if (ch == '.' || ch == '#' || ch == ',' || ch == '=' 
+                                                || ch == '"' || ch == '\'' || ch == '[' 
+                                                || ch == ']' || ch == '(' || ch == ')' 
+                                                || ch == ':') {
+                                            break;
+                                        }
+                                        index --;
+                                    }
+                                    if (index > -1) {
+                                        tagName = tagName.substring(index + 1);
+                                    }
+                                } else {
+                                    tagName = "";
+                                }
+                            } else {
+                                tagName = "";
+                            }
+                        }
                         String attributePrefix = prefix.substring(context.prefixIndex + 1);
                         anchorOffset = docOffset + prefix.length() - context.prefix.length();
                         Collection<HtmlTagAttribute> attributes = getHtmlAttributes(tagName, attributePrefix);
