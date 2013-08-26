@@ -220,7 +220,7 @@ final class IntroPanel extends javax.swing.JPanel {
             getPanel().keyboardCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_KEYB));
         }
         private boolean flag(String prop) {
-            Boolean val = (Boolean) wiz.getProperty(ShortcutWizard.PROP_SHOW_KEYB);
+            Boolean val = (Boolean) wiz.getProperty(prop);
             return val != null ? val : false;
         }
         public void storeSettings(ShortcutWizard wiz) {
