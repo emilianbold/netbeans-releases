@@ -1825,7 +1825,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (statusDisplayer == null) {
             statusDisplayer = StatusDisplayer.getDefault();
         }
-        statusDisplayer.setStatusText(text);
+        statusDisplayer.setStatusText(text, 1);
     }
 
     /*

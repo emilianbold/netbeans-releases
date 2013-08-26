@@ -133,7 +133,9 @@ public abstract class Disassembly implements StateModel.Listener {
                     int addressLine = getAddressLine(annotations[0].getAddr());
                     if (addressLine >= 0) {
                         Line line = getLine(addressLine);
-                        bptAnnotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));
+                        if (line != null) {
+                            bptAnnotations.add(new DebuggerAnnotation(null, ibpt.getAnnotationType(), line, 0, true, ibpt));
+                        }
                     }
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
@@ -266,7 +268,12 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
     static Line getLine(int lineNo) throws Exception {
-        return EditorBridge.lineNumberToLine(getDataObject(), lineNo);
+        try {
+            return EditorBridge.lineNumberToLine(getDataObject(), lineNo);
+        } catch (IndexOutOfBoundsException e) {
+            // do nothing
+        }
+        return null;
     }
     
     protected int getAddressLine(String address) {
