@@ -70,12 +70,12 @@ import org.openide.util.Parameters;
  */
 public final class RemotePlatform extends JavaPlatform {
 
+    public static final String SPEC_NAME = "j2se-remote";  //NOI18N
     public static final String PROP_PROPERTIES="properties";                            //NOI18N
     public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N
     private final static String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
     private final static String PLAT_PROP_WORK_FOLDER = "platform.work.folder";   //NOI18N
-
-    private static final String SPEC_NAME = "j2se-remote";  //NOI18N
+    
     private static final Logger LOG = Logger.getLogger(RemotePlatform.class.getName());
 
     private final String displayName;

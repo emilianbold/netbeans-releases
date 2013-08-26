@@ -193,6 +193,8 @@ public class J2SEProjectProperties {
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     //Files excluded from dist.jar
     public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
+    //Runtime platform
+    public static final String PLATFORM_RUNTIME = "platform.runtime";   //NOI18N
     
     ClassPathSupport cs;
     
