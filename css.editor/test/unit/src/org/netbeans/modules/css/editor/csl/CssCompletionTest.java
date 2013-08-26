@@ -42,8 +42,11 @@
 package org.netbeans.modules.css.editor.csl;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -51,7 +54,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
  */
 public class CssCompletionTest extends CssModuleTestBase {
 
-    private static String[] AT_RULES = new String[]{"@charset", "@import", "@media", "@page", "@font-face"};
+    private static final String[] AT_RULES = new String[]{"@charset", "@import", "@media", "@page", "@font-face"};
 
     public CssCompletionTest(String test) {
         super(test);
@@ -411,4 +414,71 @@ public class CssCompletionTest extends CssModuleTestBase {
                 + "   }",
                 arr("red"), Match.DOES_NOT_CONTAIN);
     }
+    
+    public void testImportKeywordCompletion() throws ParseException {
+        checkCC("@|",
+                arr("@import"), Match.CONTAINS);
+        checkCC("@im|",
+                arr("@import"), Match.EXACT);
+        checkCC("@| ",
+                arr("@import"), Match.CONTAINS);
+    }
+    
+    public void testImportCompletionNoPrefix() throws ParseException {
+        FileObject cssFile = getTestFile("testfiles/testHtmlApplication/public_html/style.css");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, "@import |");
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, "@import | "); //ws after caret
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, "@import \"|\"");
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, "@import \"|\" "); //ws after the quotes
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, "@import \"|\";"); //semicolon after the quotes
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+    }
+
+    public void testImportCompletionWithPrefix() throws ParseException {
+        FileObject cssFile = getTestFile("testfiles/testHtmlApplication/public_html/style.css");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, "@import \"fol|\"");
+        assertCompletion(document, Match.EXACT, "folder");
+        
+        setDocumentContent(document, "@import \"styl|\" "); //ws after caret
+        assertCompletion(document, Match.EXACT, "style.css");
+        
+        setDocumentContent(document, "@import \"styl|\"; "); //semicolon after caret
+        assertCompletion(document, Match.EXACT, "style.css");
+        
+        setDocumentContent(document, "@import \"folder/|\"; "); //semicolon after caret
+        assertCompletion(document, Match.CONTAINS, "style2.css");
+        
+        setDocumentContent(document, "@import \"folder/sty|\" ");
+        assertCompletion(document, Match.EXACT, "style2.css");
+        
+    }
+    
+    public void testImportCompletionWithPrefixBeforeText() throws ParseException {
+        FileObject cssFile = getTestFile("testfiles/testHtmlApplication/public_html/style.css");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, "@import | \n\na {}\n"); //ws after the caret
+        assertCompletion(document, Match.EXACT, "../", "folder", "index.html", "style.css");
+        
+        setDocumentContent(document, "@import |\n\na {}\n"); //NO ws after the caret
+        assertCompletion(document, Match.EXACT, "../", "folder", "index.html", "style.css");
+        
+        setDocumentContent(document, "@import \"|\";\n\na {}\n"); //NO ws after the caret
+        assertCompletion(document, Match.EXACT, "../", "folder", "index.html", "style.css");
+        
+    }
+    
 }
