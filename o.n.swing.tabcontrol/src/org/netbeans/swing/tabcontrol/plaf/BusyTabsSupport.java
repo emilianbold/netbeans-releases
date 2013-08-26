@@ -142,7 +142,8 @@ public abstract class BusyTabsSupport {
     public final void makeTabBusy( Tabbed tabContainer, int tabIndex, boolean busy ) {
         if( !busy ) {
             Rectangle tabRect = tabContainer.getTabBounds( tabIndex );
-            tabContainer.getComponent().repaint( tabRect.x, tabRect.y, tabRect.width, tabRect.height );
+            if( null != tabRect )
+                tabContainer.getComponent().repaint( tabRect.x, tabRect.y, tabRect.width, tabRect.height );
         }
         checkBusyTabs();
     }
