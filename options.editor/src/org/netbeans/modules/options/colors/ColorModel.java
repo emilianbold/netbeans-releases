@@ -69,6 +69,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -388,15 +389,21 @@ public final class ColorModel {
                     if (editorPane == null) {
                         return;
                     }
+                    ((AbstractDocument) editorPane.getDocument()).readLock();
                     TokenHierarchy<Document> th = TokenHierarchy.get(editorPane.getDocument());
-                    if (th != null) {
-                        elementName = findLexerElement(th, offset);
-                    } else {
-                        SyntaxSupport ss = Utilities.getSyntaxSupport(editorPane);
-                        if (ss instanceof ExtSyntaxSupport) {
-                            elementName = findSyntaxElement((ExtSyntaxSupport) ss, offset);
+                    try {
+                        if (th != null) {
+                            elementName = findLexerElement(th, offset);
+                        } else {
+                            SyntaxSupport ss = Utilities.getSyntaxSupport(editorPane);
+                            if (ss instanceof ExtSyntaxSupport) {
+                                elementName = findSyntaxElement((ExtSyntaxSupport) ss, offset);
+                            }
                         }
+                    } finally {
+                        ((AbstractDocument) editorPane.getDocument()).readUnlock();
                     }
+                    
 
                     if (elementName != null) {
                         firePropertyChange(PROP_CURRENT_ELEMENT, null, elementName);
