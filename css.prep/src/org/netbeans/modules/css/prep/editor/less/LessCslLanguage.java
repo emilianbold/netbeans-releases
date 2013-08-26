@@ -46,9 +46,11 @@ import org.netbeans.modules.css.prep.editor.EmptyParser;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.css.prep.editor.EmptyDeclarationFinder;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
@@ -110,4 +112,11 @@ public class LessCslLanguage extends DefaultLanguageConfig {
     public boolean hasStructureScanner() {
         return true;
     }
+
+    @Override
+    public DeclarationFinder getDeclarationFinder() {
+        return new EmptyDeclarationFinder();
+    }
+    
+    
 }
