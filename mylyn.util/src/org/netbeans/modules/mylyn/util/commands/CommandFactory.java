@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.mylyn.util.commands;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,8 +52,6 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeQueriesJob;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
@@ -103,13 +100,7 @@ public class CommandFactory {
             return null;
         }
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        SynchronizeQueriesJob job = new SynchronizeQueriesJob(taskList,
-                taskDataManager,
-                repositoryModel,
-                repositoryConnector,
-                taskRepository,
-                Collections.<RepositoryQuery>singleton(repositoryQuery));
-        return new SynchronizeQueryCommand(job, repositoryModel, repositoryConnector,
+        return new SynchronizeQueryCommand(repositoryModel, repositoryConnector,
                 taskRepository, taskList, taskDataManager, repositoryQuery);
     }
     
@@ -132,12 +123,12 @@ public class CommandFactory {
             repositoryConnector = taskRepositoryManager.getRepositoryConnector(task.getConnectorKind());
         }
 
-        SubmitTaskCommand.MylynSubmitTaskJob job = new SubmitTaskCommand.MylynSubmitTaskJob(taskDataManager,
+        SubmitTaskCommand command = new SubmitTaskCommand(taskDataManager,
                 repositoryConnector,
                 taskRepository,
                 task,
                 model.getLocalTaskData(), model.getChangedOldAttributes() /*??? no idea what's this good for*/);
-        job.addSubmitJobListener(new SubmitJobListener() {
+        command.setSubmitJobListener(new SubmitJobListener() {
             @Override
             public void taskSubmitted (SubmitJobEvent event, IProgressMonitor monitor) throws CoreException {
             }
@@ -165,20 +156,13 @@ public class CommandFactory {
             }
         });
 
-        SubmitTaskCommand command = new SubmitTaskCommand(job);
         return command;
     }
 
     public SynchronizeTasksCommand createSynchronizeTasksCommand (TaskRepository taskRepository, Set<NbTask> tasks) {
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        Set<ITask> mylynTasks = Accessor.getInstance().toMylynTasks(tasks);
-        SynchronizeTasksJob job = new SynchronizeTasksJob(taskList,
-                taskDataManager,
-                repositoryModel,
-                repositoryConnector,
-                taskRepository,
-                mylynTasks);
-        return new SynchronizeTasksCommand(job, taskRepository, tasks);
+        return new SynchronizeTasksCommand(repositoryConnector, taskRepository,
+                repositoryModel, taskDataManager, taskList, tasks);
     }
 
     public GetRepositoryTasksCommand createGetRepositoryTasksCommand (TaskRepository taskRepository, Set<String> taskIds) throws CoreException {

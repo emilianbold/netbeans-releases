@@ -107,7 +107,7 @@ org.netbeans.api.debugger.jpda.Field {
     
     public JPDAClassType getDeclaringClass() {
         try {
-            return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) ValueWrapper.type(array));
+            return getDebugger().getClassType((ReferenceType) ValueWrapper.type(array));
         } catch (InternalExceptionWrapper ex) {
             throw ex.getCause();
         } catch (VMDisconnectedExceptionWrapper ex) {

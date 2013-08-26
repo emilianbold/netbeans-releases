@@ -2301,6 +2301,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             try {
                                 URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
                                 browser.setPage(resource); // NOI18N
+                                browser.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                             } catch (IOException ex) {
                                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
                             }

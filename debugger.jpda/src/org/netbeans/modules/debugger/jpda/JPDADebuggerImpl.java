@@ -2387,7 +2387,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         allInterfaces.clear();
                         if (interfaces != null) {
                             for (InterfaceType it : interfaces) {
-                                allInterfaces.add(new JPDAClassTypeImpl(this, it));
+                                allInterfaces.add(getClassType(it));
                             }
                         }
                         allInterfaces.notifyAll();

@@ -519,6 +519,19 @@ public class OutWriterTest extends NbTestCase {
         assertEquals("May", ow.getLines().getLine(6));
     }
 
+    public void testBackspaceChars() throws IOException {
+
+        OutWriter ow = new OutWriter();
+
+        ow.write("Enter input:\n");
+        ow.write(">");
+        ow.write("\b");
+        ow.write("Output\n");
+
+        assertEquals("Enter input:\n", ow.getLines().getLine(0));
+        assertEquals("Output\n", ow.getLines().getLine(1));
+    }
+
     public void testWritePartial() {
         System.out.println("testWritePartial");
         try {
