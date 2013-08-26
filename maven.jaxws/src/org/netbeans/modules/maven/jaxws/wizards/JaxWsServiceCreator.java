@@ -229,7 +229,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             handle.progress(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_GEN_WS"), 50); //NOI18N
             //add the JAXWS 2.0 library, if not already added
             if (addJaxWsLib) {
-                MavenModelUtils.addJaxws21Library(project);
+                MavenModelUtils.addMetroLibrary(project);
             }
             generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project), false);
             handle.finish();
@@ -305,7 +305,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         handle.finish();
                     }
                 } else {
-                    final boolean isJaxWsLibrary = MavenModelUtils.isJaxWs21Library(project);
+                    final boolean isJaxWsLibrary = MavenModelUtils.hasJaxWsAPI(project);
                     final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                     final String serviceName = wsdlFo.getName();
 
@@ -315,34 +315,30 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         prefs.put(MavenWebService.SERVICE_PREFIX+WSUtils.getUniqueId(wsdlFo.getName(), jaxWsSupport.getServices()), wsdlUrl);
                     }
 
+                    if (!isJaxWsLibrary) {
+                        try {
+                            MavenModelUtils.addMetroLibrary(project);
+                            MavenModelUtils.addJavadoc(project);
+                        } catch (Exception ex) {
+                            Logger.getLogger(
+                                JaxWsServiceCreator.class.getName()).log(
+                                    Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
+                        }
+                    }
+
                     ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                         @Override
                         public void performOperation(POMModel model) {
-                            if (!isJaxWsLibrary) {
-                                try {
-                                    MavenModelUtils.addJaxws21Library(project, model);
-                                    MavenModelUtils.addJavadoc(project);
-                                } catch (Exception ex) {
-                                    Logger.getLogger(
-                                        JaxWsServiceCreator.class.getName()).log(
-                                            Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
-                                }
-                            }
-                            try {
-                                model.startTransaction();
-                                org.netbeans.modules.maven.model.pom.Plugin plugin =
-                                        WSUtils.isEJB(project) ?
-                                            MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
-                                            MavenModelUtils.addJaxWSPlugin(model);
-                                MavenModelUtils.addWsimportExecution(plugin, 
-                                        serviceName, relativePath,null );
-                                if (WSUtils.isWeb(project)) { // expecting web project
-                                    MavenModelUtils.addWarPlugin(model);
-                                } else { // J2SE Project
-                                    MavenModelUtils.addWsdlResources(model);
-                                }
-                            } finally {
-                                model.endTransaction();
+                            org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                    WSUtils.isEJB(project) ?
+                                        MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                        MavenModelUtils.addJaxWSPlugin(model);
+                            MavenModelUtils.addWsimportExecution(plugin, 
+                                    serviceName, relativePath,null );
+                            if (WSUtils.isWeb(project)) { // expecting web project
+                                MavenModelUtils.addWarPlugin(model);
+                            } else { // J2SE Project
+                                MavenModelUtils.addWsdlResources(model);
                             }
                         }
                     };
