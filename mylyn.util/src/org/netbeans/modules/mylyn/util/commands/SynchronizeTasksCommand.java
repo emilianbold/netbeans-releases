@@ -47,27 +47,41 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
 import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  *
  * @author Ondrej Vrabec
  */
 public class SynchronizeTasksCommand extends BugtrackingCommand {
-    private final SynchronizeTasksJob job;
     private String stringValue;
     private final TaskRepository taskRepository;
     private final Set<NbTask> tasks;
     private final CancelableProgressMonitor monitor;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final TaskList taskList;
+    private final TaskDataManager taskDataManager;
+    private final RepositoryModel repositoryModel;
 
-    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<NbTask> tasks) {
+    SynchronizeTasksCommand (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
+            RepositoryModel repositoryModel, TaskDataManager taskDataManager, TaskList taskList,
+            Set<NbTask> tasks) {
+        this.repositoryConnector = repositoryConnector;
         this.taskRepository = taskRepository;
+        this.repositoryModel = repositoryModel;
+        this.taskDataManager = taskDataManager;
+        this.taskList = taskList;
         this.tasks = tasks;
-        this.job = job;
         this.monitor = new CancelableProgressMonitor();
     }
 
@@ -80,7 +94,13 @@ public class SynchronizeTasksCommand extends BugtrackingCommand {
                 "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
                 new Object[] { taskRepository.getUrl(), tasks });
         }
-        
+        Set<ITask> mylynTasks = Accessor.getInstance().toMylynTasks(tasks);
+        SynchronizeTasksJob job = new SynchronizeTasksJob(taskList,
+                taskDataManager,
+                repositoryModel,
+                repositoryConnector,
+                taskRepository,
+                mylynTasks);
         job.run(monitor);
     }
 
