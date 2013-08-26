@@ -65,6 +65,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +129,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
     private final JPDABreakpoint      breakpoint;
     private final BreakpointsReader   reader;
     private EvaluatorExpression compiledCondition;
-    private List<EventRequest>  requests = new ArrayList<EventRequest>();
+    private List<EventRequest>  requests = new LinkedList<EventRequest>();
     private int                 hitCountFilter = 0;
     private int                 customHitCount;
     private int                 customHitCountFilter = 0;
@@ -360,6 +361,15 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         } catch (InternalExceptionWrapper e) {
         }
         requests.remove(r);
+    }
+    
+    protected final List<EventRequest> getEventRequests() {
+        List<EventRequest> ers;
+        synchronized (this) {
+            ers = new LinkedList<EventRequest>(requests);
+            ers = Collections.unmodifiableList(ers);
+        }
+        return ers;
     }
     
     /** Called when a new event request needs to be created, e.g. after hit count
