@@ -276,6 +276,16 @@ class FileMapStorage implements Storage {
         return position;
     }
 
+    @Override
+    public synchronized void removeBytesFromEnd(int length) throws IOException {
+        if (length == 0) {
+            return;
+        }
+        FileChannel channel = writeChannel();
+        channel.position(channel.position() - length);
+        bytesWritten -= length;
+    }
+
     public synchronized void dispose() {
         if (Controller.LOG) {
             Controller.log ("Disposing file map storage");

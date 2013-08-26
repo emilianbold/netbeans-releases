@@ -276,6 +276,19 @@ public class LifecycleTest extends NbTestCase {
         assertNull ("Should be no selected tab after closeInputOutput", getSelectedTab());
     }
 
+    public void testDisplayOfBackspace() throws Exception {
+
+        OutWriter out = io.writer().out();
+        out.println("Enter something:");
+        out.print(">");
+        sleep();
+        out.println("\bPrompt removed.");
+        sleep();
+        out.println("xx");
+        sleep();
+        io.closeInputOutput();
+    }
+
     public void testFilesCleanedUp() throws Exception {
         System.out.println("testFilesCleanedUp");
         NbWriter writer = io.writer();
