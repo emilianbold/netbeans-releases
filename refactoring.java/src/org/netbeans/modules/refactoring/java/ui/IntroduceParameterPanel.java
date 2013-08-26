@@ -398,7 +398,15 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
     }
     
     public String getParameterName() {
-        return ((JEditorPane)singleLineEditor[1]).getText().substring(startOffset);
+        final String text = ((JEditorPane)singleLineEditor[1]).getText();
+        final String substring;
+        if(text.length() < startOffset) {
+            // try to recover from not fully implemented document-view-start-position #204788
+            substring = text;
+        } else {
+            substring = text.substring(startOffset);
+        }
+        return substring;
     }
     
     protected Javadoc getJavadoc() {

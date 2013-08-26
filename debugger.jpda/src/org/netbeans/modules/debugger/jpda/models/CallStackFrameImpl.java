@@ -222,7 +222,7 @@ public class CallStackFrameImpl implements CallStackFrame {
         if (!valid && sfLocation == null) return null;
         try {
             Location l = getStackFrameLocation();
-            return new JPDAClassTypeImpl(debugger, LocationWrapper.declaringType(l));
+            return debugger.getClassType(LocationWrapper.declaringType(l));
         } catch (InternalExceptionWrapper ex) {
             return null;
         } catch (VMDisconnectedExceptionWrapper ex) {
