@@ -52,13 +52,13 @@
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- JDK Properties-->    
-    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk7_builds_path}/latest/bundles/macosx-x64/"/>
+    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk7_builds_path}/latest/bundles/macosx-x64"/>
     <loadresource property="jdk.version.number">
           <url url="${jdk.builds.path}"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz" replace="\1" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -68,7 +68,7 @@
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz" replace="\2" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\3" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -78,11 +78,11 @@
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz" replace="\3" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\4" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
-    <condition property="jdk.ea.text" value="ea-">
+    <condition property="jdk.ea.text" value="ea-" else="">
         <equals arg1="${jdk.build.type}" arg2="ea"/>
     </condition>
     
@@ -92,7 +92,7 @@
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
-              <replaceregex pattern="jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz" replace="\4" flags="g"/>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\5" flags="g"/>
             </tokenfilter>
           </filterchain>
     </loadresource>
@@ -105,7 +105,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.${jdk.version.number}.0_${jdk.update.number}.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/${jdk7_builds_path}/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-macosx-x64.dmg"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/${jdk7_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg"/>
     <property name="jdk.package.name" value="JDK\ ${jdk.version.number}\ Update\ ${jdk.update.number}"/>
 
 </project>
