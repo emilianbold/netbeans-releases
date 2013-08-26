@@ -5,3 +5,4 @@ CONSTANT   AFTER 'after'                   [PUBLIC]   sfWidgetFormSchema
 CONSTANT   BEFORE 'before'                 [PUBLIC]   sfWidgetFormSchema
 CONSTANT   FIRST 'first'                   [PUBLIC]   sfWidgetFormSchema
 CONSTANT   LAST 'last'                     [PUBLIC]   sfWidgetFormSchema
+CONSTANT   class \sfWidgetFormSchema       [PUBLIC]   Magic Constant

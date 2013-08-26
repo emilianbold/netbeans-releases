@@ -169,6 +169,7 @@
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.nette</friend>
+                <friend>org.netbeans.modules.php.nette.tester</friend>
                 <friend>org.netbeans.modules.php.nette2</friend>
                 <friend>org.netbeans.modules.php.phpcsfixer</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
@@ -181,6 +182,7 @@
                 <friend>org.netbeans.modules.php.wordpress</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
                 <friend>org.netbeans.modules.php.zend2</friend>
+                <package>org.netbeans.modules.php.api</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.queries</package>
                 <package>org.netbeans.modules.php.api.util</package>

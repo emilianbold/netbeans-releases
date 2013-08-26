@@ -77,6 +77,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 
 %state ST_IN_SCRIPTING
+%state ST_LOOKING_FOR_CLASS_CONST
 %state ST_DOUBLE_QUOTES
 %state ST_BACKQUOTE
 %state ST_HEREDOC
@@ -337,6 +338,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_RETURN);
 }
 
+<ST_IN_SCRIPTING>"yield" {
+	return createSymbol(ASTPHP5Symbols.T_YIELD);
+}
+
 <ST_IN_SCRIPTING>"try" {
 	return createSymbol(ASTPHP5Symbols.T_TRY);
 }
@@ -347,6 +352,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"throw" {
 	return createSymbol(ASTPHP5Symbols.T_THROW);
+}
+
+<ST_IN_SCRIPTING>"finally" {
+	return createSymbol(ASTPHP5Symbols.T_FINALLY);
 }
 
 <ST_IN_SCRIPTING>"if" {
@@ -492,7 +501,19 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 }
 
 <ST_IN_SCRIPTING>"::" {
+    pushState(ST_LOOKING_FOR_CLASS_CONST);
 	return createSymbol(ASTPHP5Symbols.T_PAAMAYIM_NEKUDOTAYIM);
+}
+
+<ST_LOOKING_FOR_CLASS_CONST> {
+    "class" {
+        popState();
+        return createFullSymbol(ASTPHP5Symbols.T_STRING);
+    }
+    {ANY_CHAR} {
+        yypushback(yylength());
+        popState();
+    }
 }
 
 <ST_IN_SCRIPTING>"\\" {
