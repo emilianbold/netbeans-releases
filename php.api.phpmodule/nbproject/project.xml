@@ -187,6 +187,7 @@
                 <package>org.netbeans.modules.php.api.queries</package>
                 <package>org.netbeans.modules.php.api.util</package>
                 <package>org.netbeans.modules.php.api.validation</package>
+                <package>org.netbeans.modules.php.spi.phpmodule</package>
             </friend-packages>
         </data>
     </configuration>
