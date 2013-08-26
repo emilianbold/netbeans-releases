@@ -140,11 +140,14 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             document = pane.getDocument();
             document.addDocumentListener(this);
             document = pane.getDocument();
+            synchronized (tokenListLock) {
+                tokenList = null;
+            }
             doUpdateCurrentVisibleSpan();
         }
     }
 
-    private JTextComponent pane;
+    private final JTextComponent pane;
     private Document document;
 
     private static final RequestProcessor WORKER = new RequestProcessor("Spellchecker", 1, false, false);
@@ -250,10 +253,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     private final Object tokenListLock = new Object();
     private TokenList tokenList;
     
-    private TokenList getTokenList() {
+    private TokenList getTokenList(Document doc) {
         synchronized(tokenListLock) {
             if (tokenList == null) {
-                tokenList = ACCESSOR.lookupTokenList(getDocument());
+                tokenList = ACCESSOR.lookupTokenList(doc);
 
                 if (tokenList != null)
                     tokenList.addChangeListener(this);
@@ -276,7 +279,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         try {
             resume();
             
-            final TokenList _tokenList = getTokenList();
+            final TokenList _tokenList = getTokenList(_document);
             
             if (_tokenList == null) {
                 //nothing to do:
@@ -579,8 +582,9 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
     private void computeHint() {
         LOG.entering(ComponentPeer.class.getName(), "computeHint");
-        
-        final TokenList l = getTokenList();
+
+        final Document _document = getDocument();
+        final TokenList l = getTokenList(_document);
 
         if (l == null) {
             //nothing to do:
@@ -589,7 +593,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             return ;
         }
 
-        final Dictionary d = ComponentPeer.getDictionary(document);
+        final Dictionary d = ComponentPeer.getDictionary(_document);
         
         if (d == null) {
             LOG.fine("dictionary == null");
@@ -605,7 +609,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             lastCaretPositionCopy[0] = lastCaretPosition;
         }
         
-        document.render(new Runnable() {
+        _document.render(new Runnable() {
             public void run() {
                 LOG.log(Level.FINE, "lastCaretPosition={0}", lastCaretPositionCopy[0]);
                 l.setStartOffset(lastCaretPositionCopy[0]);
@@ -623,8 +627,8 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 
                 if (currentWSO <= lastCaretPositionCopy[0] && (currentWSO + length) >= lastCaretPositionCopy[0]) {
                     try {
-                        span[0] = document.createPosition(currentWSO);
-                        span[1] = document.createPosition(currentWSO + length);
+                        span[0] = _document.createPosition(currentWSO);
+                        span[1] = _document.createPosition(currentWSO + length);
                         word[0] = w;
                     } catch (BadLocationException e) {
                         LOG.log(Level.INFO, null, e);
@@ -649,10 +653,10 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             String currentWord = word[0].toString();
             
             for (String proposal : d.findProposals(currentWord)) {
-                result.add(new DictionaryBasedHint(currentWord, proposal, document, span, "0" + currentWord));
+                result.add(new DictionaryBasedHint(currentWord, proposal, _document, span, "0" + currentWord));
             }
             
-            FileObject file = NbEditorUtilities.getFileObject(document);
+            FileObject file = NbEditorUtilities.getFileObject(_document);
 
             if (file != null) {
                 Project p = FileOwnerQuery.getOwner(file);
@@ -674,12 +678,12 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
             
             if (!result.isEmpty()) {
                 String displayName = NbBundle.getMessage(ComponentPeer.class, "ERR_MisspelledWord");
-                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, result, document, span[0], span[1])));
+                HintsController.setErrors(_document, ComponentPeer.class.getName(), Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.HINT, displayName, result, _document, span[0], span[1])));
             } else {
-                HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+                HintsController.setErrors(_document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
             }
         } else {
-            HintsController.setErrors(document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
+            HintsController.setErrors(_document, ComponentPeer.class.getName(), Collections.<ErrorDescription>emptyList());
         }
     }
     

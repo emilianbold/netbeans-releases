@@ -88,8 +88,8 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
     
-    private JPDADebuggerImpl debugger;
-    private ReferenceType classType;
+    private final JPDADebuggerImpl debugger;
+    private final ReferenceType classType;
 //    private long cachedInstanceCount = -1L;
     
     /**
@@ -98,6 +98,10 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     public JPDAClassTypeImpl(JPDADebuggerImpl debugger, ReferenceType classType) {
         this.debugger = debugger;
         this.classType = classType;
+    }
+    
+    protected final JPDADebuggerImpl getDebugger() {
+        return debugger;
     }
     
     public ReferenceType getType() {
@@ -167,7 +171,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             if (subclasses.size() > 0) {
                 List<JPDAClassType> subClasses = new ArrayList(subclasses.size());
                 for (ClassType subclass : subclasses) {
-                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                    subClasses.add(debugger.getClassType(subclass));
                 }
                 return Collections.unmodifiableList(subClasses);
             }
@@ -180,10 +184,10 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             if (ss > 0 || is > 0) {
                 List<JPDAClassType> subClasses = new ArrayList(ss + is);
                 for (InterfaceType subclass : subinterfaces) {
-                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                    subClasses.add(debugger.getClassType(subclass));
                 }
                 for (ClassType subclass : implementors) {
-                    subClasses.add(new JPDAClassTypeImpl(debugger, subclass));
+                    subClasses.add(debugger.getClassType(subclass));
                 }
                 return Collections.unmodifiableList(subClasses);
             }

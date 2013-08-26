@@ -61,7 +61,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class JavaTokenList implements TokenList {
 
-    private Document doc;
+    private final Document doc;
     private boolean hidden = false;
 
     /** Creates a new instance of JavaTokenList */

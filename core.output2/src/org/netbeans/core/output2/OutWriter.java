@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -457,10 +458,15 @@ class OutWriter extends PrintWriter {
                 } else if (c == '\b') {
                     int skip = handleBackspace(charBuff);
                     if (skip == -2) {
-                        lines.removeLastTab();
-                        lineCLVT -= tabLength;
+                        lineCLVT -= lines.removeLastTab();;
                     } else if (skip == 2) {
                         lineCLVT--;
+                    } else if (skip == 1) {
+                        Pair<Integer, Integer> removedInfo;
+                        removedInfo = lines.removeCharsFromLastLine(1);
+                        storage.removeBytesFromEnd(removedInfo.first() * 2);
+                        lineLength -= removedInfo.first() * 2;
+                        lineCharLengthWithTabs -= removedInfo.second();
                     }
                     skipped += Math.abs(skip);
                 } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {

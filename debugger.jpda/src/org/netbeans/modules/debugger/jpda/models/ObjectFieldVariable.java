@@ -192,7 +192,7 @@ public class ObjectFieldVariable extends AbstractObjectVariable
     }
 
     public JPDAClassType getDeclaringClass() {
-        return new JPDAClassTypeImpl(getDebugger(), getTheDeclaringClassType());
+        return getDebugger().getClassType(getTheDeclaringClassType());
     }
 
     private ReferenceType getTheDeclaringClassType() {
@@ -235,7 +235,7 @@ public class ObjectFieldVariable extends AbstractObjectVariable
                 return null;
             }
             if (type instanceof ReferenceType) {
-                return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
+                return getDebugger().getClassType((ReferenceType) type);
             } else {
                 return null;
             }

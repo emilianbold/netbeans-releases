@@ -627,9 +627,9 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     private static class FileCompletionItem extends CssCompletionItem {
 
-        private ImageIcon icon;
-        private String colorCode;
-        private boolean addQuotes;
+        private final ImageIcon icon;
+        private final String colorCode;
+        private final boolean addQuotes;
 
         private FileCompletionItem(CssElement element,
                 String value,
@@ -640,7 +640,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
                 boolean addSemicolon) {
             super(element, value, anchorOffset, false);
             this.icon = icon;
-            this.colorCode = WebUtils.toHexCode(color).substring(1);
+            this.colorCode = color == null ? null : WebUtils.toHexCode(color).substring(1);
             this.addQuotes = addQuotes;
             this.addSemicolon = addSemicolon;
         }
@@ -673,10 +673,13 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            formatter.appendHtml(String.format("<font color=\"%s\">", colorCode)); //NOI18N
+            if(colorCode != null) {
+                formatter.appendHtml(String.format("<font color=\"%s\">", colorCode)); //NOI18N
+            }
             formatter.appendText(getName());
-            formatter.appendHtml("</font>"); //NOI18N
-
+            if(colorCode != null) {
+                formatter.appendHtml("</font>"); //NOI18N
+            }
             return formatter.getText();
         }
     }

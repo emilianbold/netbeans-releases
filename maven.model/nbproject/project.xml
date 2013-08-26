@@ -172,6 +172,7 @@
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- danis@netbeans.org -->
                 <friend>org.vaadin.netbeans.maven</friend>
+                <friend>org.netbeans.modules.maven.util</friend>
                 <package>org.netbeans.modules.maven.model</package>
                 <package>org.netbeans.modules.maven.model.pom</package>
                 <package>org.netbeans.modules.maven.model.settings</package>

@@ -173,7 +173,7 @@ org.netbeans.api.debugger.jpda.Field, Refreshable {
     }
     
     public JPDAClassType getDeclaringClass() {
-        return new JPDAClassTypeImpl(getDebugger(), getTheDeclaringClassType());
+        return getDebugger().getClassType(getTheDeclaringClassType());
     }
 
     private ReferenceType getTheDeclaringClassType() {

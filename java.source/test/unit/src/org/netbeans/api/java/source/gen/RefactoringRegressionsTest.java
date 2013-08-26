@@ -71,7 +71,7 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
     public RefactoringRegressionsTest(String aName) {
         super(aName);
     }
-    
+
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(RefactoringRegressionsTest.class);
@@ -159,6 +159,56 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
                 mit = (MethodInvocationTree) mit.getArguments().get(0);
                 ident = (IdentifierTree) mit.getTypeArguments().get(0);
                 workingCopy.rewrite(ident, make.Identifier("Unit"));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameMethodWithNewLine() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package javaapplication1;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        new A().\n"
+                + "            myMethod();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void myMethod() { }\n"
+                + "}\n"
+                );
+        String golden
+                = "package javaapplication1;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        new A().yourMethod();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void yourMethod() { }\n"
+                + "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree myMethod = (MethodTree) clazz.getMembers().get(2);
+                workingCopy.rewrite(myMethod, make.setLabel(myMethod, "yourMethod"));
+                
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
+                workingCopy.rewrite(mst, make.setLabel(mst, "yourMethod"));
             }
             
         };
