@@ -3882,7 +3882,7 @@ using_declaration
 alias_declaration
 	:	LITERAL_using
 		IDENT ASSIGNEQUAL alias_declaration_type
-		SEMICOLON! //{end_of_stmt();}
+		SEMICOLON //{end_of_stmt();}
 	;
 
 // Rule to catch class definition inside type alias
