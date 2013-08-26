@@ -3194,6 +3194,9 @@ public class Reformatter implements ReformatTask {
             if (bof || maxCount < count) {
                 maxCount = count;
             }
+            if (templateEdit && maxCount < 1) {
+                maxCount = 1;
+            }
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
                 lastBlankLinesTokenIndex = tokens.index();
