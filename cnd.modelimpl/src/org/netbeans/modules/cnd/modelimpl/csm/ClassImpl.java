@@ -965,8 +965,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         @Override
         protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
             EnumImpl innerEnum = EnumImpl.create(token, scope, getContainingFile(), fileContent, !isRenderingLocalContext());
-            innerEnum.setVisibility(curentVisibility);
-            addMember(innerEnum,!isRenderingLocalContext());
+            if (innerEnum != null) {
+                innerEnum.setVisibility(curentVisibility);
+                addMember(innerEnum,!isRenderingLocalContext());
+            }
             return innerEnum;
         }
 
@@ -975,8 +977,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
                     ? ClassImplSpecialization.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container)
                     : ClassImpl.create(token, currentScope, getContainingFile(), language, getFileContent(), !isRenderingLocalContext(), container);
-            innerClass.setVisibility(curentVisibility);
-            addMember(innerClass, !isRenderingLocalContext());
+            if (innerClass != null) {
+                innerClass.setVisibility(curentVisibility);
+                addMember(innerClass, !isRenderingLocalContext());
+            }
             return innerClass;
         }
         
