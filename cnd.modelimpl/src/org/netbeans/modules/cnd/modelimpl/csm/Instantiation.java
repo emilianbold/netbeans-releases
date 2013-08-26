@@ -222,6 +222,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return newClass;
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
+        } else if (template instanceof CsmTypedef) {
+            return new Typedef((CsmTypedef)template, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
                 CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template); // NOI18N
@@ -720,6 +722,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
         private final CsmType type;
 
+        public Typedef(CsmTypedef typedef, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(typedef, mapping);
+            this.type = createType(typedef.getType(), Typedef.this);
+        }
+        
         public Typedef(CsmTypedef typedef, CsmInstantiation instantiation) {
             super(typedef, instantiation.getMapping());
             this.type = createType(typedef.getType(), instantiation);
