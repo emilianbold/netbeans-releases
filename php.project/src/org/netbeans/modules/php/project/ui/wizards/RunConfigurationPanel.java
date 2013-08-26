@@ -492,7 +492,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             case REMOTE:
                 return false;
             default:
-                return areOtherStepsValid();
+                return NewPhpProjectWizardIterator.areAllStepsValid(descriptor);
         }
     }
 
@@ -505,14 +505,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         runAsRemoteWeb.addRunAsRemoteWebListener(this);
         runAsScript.addRunAsScriptListener(this);
         runAsInternalServer.addRunAsInternalServerListener(this);
-    }
-
-    private boolean areOtherStepsValid() {
-        Boolean isValid = (Boolean) descriptor.getProperty(PhpFrameworksPanel.VALID);
-        if (isValid != null && !isValid) {
-            return false;
-        }
-        return true;
     }
 
     private PhpProjectProperties.RunAsType getRunAsType() {
