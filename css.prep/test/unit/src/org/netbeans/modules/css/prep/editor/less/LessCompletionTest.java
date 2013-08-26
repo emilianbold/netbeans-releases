@@ -89,31 +89,59 @@ public class LessCompletionTest extends CssModuleTestBase {
         checkCC("@oops:1;\n"
                 + ".mixin(@oops2) {\n"
                 + "    color: @|\n"
-                + "}"
-                , arr("@oops", "@oops2"), Match.CONTAINS);
+                + "}", arr("@oops", "@oops2"), Match.CONTAINS);
     }
-    
+
     public void testVarCompletionWithPrefix() throws ParseException {
         //at line end
         checkCC("@oops:1;\n"
                 + ".mixin(@oops2) {\n"
                 + "    color: @oo|\n"
-                + "}"
-                , arr("@oops", "@oops2"), Match.CONTAINS);
-        
+                + "}", arr("@oops", "@oops2"), Match.CONTAINS);
+
         //before semi
         checkCC("@oops:1;\n"
                 + ".mixin(@oops2) {\n"
                 + "    color: @oo|;\n"
-                + "}"
-                , arr("@oops", "@oops2"), Match.CONTAINS);
-        
+                + "}", arr("@oops", "@oops2"), Match.CONTAINS);
+
         //before ws and semi
         checkCC("@oops:1;\n"
                 + ".mixin(@oops2) {\n"
                 + "    color: @oo| ;\n"
-                + "}"
-                , arr("@oops", "@oops2"), Match.CONTAINS);
+                + "}", arr("@oops", "@oops2"), Match.CONTAINS);
 
+    }
+
+    public void testMixinCompletionOutsideOfAnyRule() throws ParseException {
+        checkCC(".myMixin(@c){\n"
+                + "    div{\n"
+                + "    color:red   \n"
+                + "    }\n"
+                + "}\n"
+                + ".| ", arr("myMixin"), Match.CONTAINS);
+        
+        checkCC(".myMixin(@c){\n"
+                + "    div{\n"
+                + "    color:red   \n"
+                + "    }\n"
+                + "}\n"
+                + ".| \n"
+                + ".clz {}", arr("myMixin"), Match.CONTAINS);
+        
+        checkCC(".myMixin(@c){\n"
+                + "    div{\n"
+                + "    color:red   \n"
+                + "    }\n"
+                + "}\n"
+                + ".my| ", arr("myMixin"), Match.EXACT);
+        
+        checkCC(".myMixin(@c){\n"
+                + "    div{\n"
+                + "    color:red   \n"
+                + "    }\n"
+                + "}\n"
+                + ".my| \n"
+                + ".clz {}", arr("myMixin"), Match.EXACT);
     }
 }

@@ -68,6 +68,7 @@ import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 import org.netbeans.modules.groovy.editor.imports.ImportUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -201,22 +202,15 @@ public class MethodCompletion extends BaseCompletion {
         GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(context.getSourceFile(), Collections.singleton(ClassPath.SOURCE), null, null));
 
         if (exactClassExists(index)) {
-            Set<IndexedMethod> constructors = index.getConstructors(context.getPrefix());
+            // Now we know prefix is the exact name of the class/constructor
+            String name = context.getPrefix();
+
+            // Explicitely declared constructors
+            Set<IndexedMethod> constructors = index.getConstructors(name);
             for (IndexedMethod indexedMethod : constructors) {
                 List<MethodParameter> parameters = indexedMethod.getParameters();
-                List<String> parameterTypes = indexedMethod.getParameterTypes();
 
-                StringBuilder sb = new StringBuilder();
-                if (!parameterTypes.isEmpty()) {
-                    for (String type : parameterTypes) {
-                        sb.append(type);
-                        sb.append(", ");
-                    }
-                    // Removing last ", "
-                    sb.delete(sb.length() - 2, sb.length());
-                }
-
-                ConstructorItem constructor = new ConstructorItem(context.getPrefix(), sb.toString(), parameters, anchor, false);
+                ConstructorItem constructor = new ConstructorItem(name, parameters, anchor, false);
                 if (!proposals.contains(constructor)) {
                     proposals.add(constructor);
                 }
@@ -225,7 +219,7 @@ public class MethodCompletion extends BaseCompletion {
             // If we didn't find any proposal, it means the instatiate class does not have any constructor
             // explicitely declared - in such case add defaultly generated no-parameter constructor
             if (proposals.isEmpty()) {
-                proposals.add(new ConstructorItem(context.getPrefix(), "", Collections.<MethodParameter>emptyList(), anchor, false));
+                proposals.add(new ConstructorItem(name, Collections.<MethodParameter>emptyList(), anchor, false));
             }
         }
 
@@ -329,10 +323,9 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private void addConstructorProposal(String constructorName, ExecutableElement encl) {
-        String paramListString = getParameterListForMethod(encl);
         List<MethodParameter> paramList = getParameterList(encl);
         
-        ConstructorItem constructor = new ConstructorItem(constructorName, paramListString, paramList, anchor, false);
+        ConstructorItem constructor = new ConstructorItem(constructorName, paramList, anchor, false);
         if (!proposals.contains(constructor)) {
             proposals.add(constructor);
         }
@@ -350,10 +343,9 @@ public class MethodCompletion extends BaseCompletion {
         if (isPrefixed(context, constructorName)) {
             for (ConstructorNode constructor : classNode.getDeclaredConstructors()) {
                 Parameter[] parameters = constructor.getParameters();
-                String paramListString = getParameterListStringForMethod(parameters);
                 List<MethodParameter> paramList = getParameterListForMethod(parameters);
 
-                proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
+                proposals.add(new ConstructorItem(constructorName, paramList, anchor, false));
             }
         }
     }
@@ -464,28 +456,6 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
         return sb.toString();
-    }
-
-    /**
-     * Convert given parameter array into one String.
-     * For example if we send two parameters (int and String), this method will
-     * return "int, String"
-     *
-     * @param parameters array of parameters
-     * @return parameter string
-     */
-    private String getParameterListStringForMethod(Parameter[] parameters) {
-        if (parameters.length == 0) {
-            return "";
-        }
-
-        StringBuilder sb = new StringBuilder();
-        for (Parameter param : parameters) {
-            sb.append(param.getType().getNameWithoutPackage()).append(", ");
-        }
-
-        // remove last comma and return
-        return sb.substring(0, sb.lastIndexOf(","));
     }
 
     /**
