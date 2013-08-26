@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 final class IntroPanel extends javax.swing.JPanel {
 
-    private IntroWizardPanel wiz;
+    private final IntroWizardPanel wiz;
 
     /** Create the wizard panel component and set up some basic properties. */
     public IntroPanel (IntroWizardPanel wiz) {
@@ -177,6 +177,7 @@ final class IntroPanel extends javax.swing.JPanel {
             this.wiz = wiz;
         }
         
+        @Override
         public Component getComponent () {
             return getPanel();
         }
@@ -188,10 +189,12 @@ final class IntroPanel extends javax.swing.JPanel {
             return panel;
         }
 
+        @Override
         public HelpCtx getHelp () {
             return HelpCtx.DEFAULT_HELP;
         }
 
+        @Override
         public boolean isValid () {
             return getPanel().menuCheck.isSelected () ||
                    getPanel().toolbarCheck.isSelected () ||
@@ -199,9 +202,11 @@ final class IntroPanel extends javax.swing.JPanel {
         }
 
         private final ChangeSupport cs = new ChangeSupport(this);
+        @Override
         public final void addChangeListener (ChangeListener l) {
             cs.addChangeListener(l);
         }
+        @Override
         public final void removeChangeListener (ChangeListener l) {
             cs.removeChangeListener(l);
         }
@@ -213,6 +218,7 @@ final class IntroPanel extends javax.swing.JPanel {
             cs.fireChange();
         }
 
+        @Override
         public void readSettings(ShortcutWizard wiz) {
             getPanel().customizeCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_CUST));
             getPanel().menuCheck.setSelected(flag(ShortcutWizard.PROP_SHOW_MENU));
@@ -223,6 +229,7 @@ final class IntroPanel extends javax.swing.JPanel {
             Boolean val = (Boolean) wiz.getProperty(prop);
             return val != null ? val : false;
         }
+        @Override
         public void storeSettings(ShortcutWizard wiz) {
             wiz.putProperty(ShortcutWizard.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
             wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, getPanel().menuCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
