@@ -128,7 +128,8 @@ Microsystems, Inc. All Rights Reserved.
                                          "/>
         
         <property name="jdk-bundle.clusters" value="apisupport(javase), profiler(javase), java(javase),
-                                                   ide(baseide), nb-etc(baseide), harness(baseide), platform(baseide)
+                                                    extide(extide), websvccommon(extide),
+                                                    ide(baseide), nb-etc(baseide), harness(baseide), platform(baseide)
                                          "/>
 
         <property name="fx.clusters" value="javafx(javafx), javafx-mac(javafx)"/>
@@ -216,7 +217,8 @@ Microsystems, Inc. All Rights Reserved.
                                         php(${php-title})
                                         "/>
         <property name="jdk-bundle.modules" value="
-                                        javase(${javase-title})
+                                        javase(${javase-title}),
+                                        extide(${extide-title})
                                         "/>
         <property name="fx.module" value="javafx(${javafx-title})"/>
 
