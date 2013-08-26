@@ -178,4 +178,10 @@ public class ELSanitizerTest {
         assertEquals(6, ELSanitizer.findLastNonWhiteSpace("foo bar"));
         assertEquals(6, ELSanitizer.findLastNonWhiteSpace("foo bar "));
     }
+
+    @Test
+    public void testIssue234865() {
+        String sanitized = ELSanitizer.sanitize("#{['word', 4].stream().peek(i->)}");
+        assertEquals("#{['word', 4].stream().peek(i->x)}", sanitized);
+    }
 }
