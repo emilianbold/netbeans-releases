@@ -640,7 +640,7 @@ public class WorkingCopy extends CompilationController {
                         && Utilities.compareObjects(origCUT.getPackageName(), nueCUT.getPackageName())
                         && Utilities.compareObjects(origCUT.getTypeDecls(), nueCUT.getTypeDecls())) {
                         fillImports = false;
-                        diffs.addAll(CasualDiff.diff(getContext(), diffContext, origCUT.getImports(), nueCUT.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
+                        diffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), origCUT.getImports(), nueCUT.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
                         continue;
                     }
                 }
@@ -730,7 +730,7 @@ public class WorkingCopy extends CompilationController {
             if (brandNew.getKind() == Kind.COMPILATION_UNIT) {
                 fillImports = false;
             }
-            diffs.addAll(CasualDiff.diff(getContext(), diffContext, path, (JCTree) brandNew, userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
+            diffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), path, (JCTree) brandNew, userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
         }
 
         if (fillImports) {
@@ -738,7 +738,7 @@ public class WorkingCopy extends CompilationController {
 
             if (nueImports != null && !nueImports.isEmpty()) { //may happen if no changes, etc.
                 CompilationUnitTree ncut = GeneratorUtilities.get(this).addImports(diffContext.origUnit, nueImports);
-                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
+                diffs.addAll(CasualDiff.diff(getContext(), diffContext, getTreeUtilities(), diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
             }
         }
         

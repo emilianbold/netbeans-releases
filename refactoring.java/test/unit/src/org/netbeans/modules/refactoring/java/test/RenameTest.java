@@ -106,7 +106,7 @@ public class RenameTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    public void testRenameProp() throws Exception {
+    public void testRenamePropa() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -142,6 +142,51 @@ public class RenameTest extends RefactoringTestBase {
                 + "        return a.getRenamed();\n"
                 + "    }\n"
                 + "}"));
+
+    }
+    
+    public void testRenamePropb() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private String status;\n"
+                        + "\n"
+                        + "    /**\n"
+                        + "     * @return the status\n"
+                        + "     */\n"
+                        + "    public String getStatus() {\n"
+                        + "        return status;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    /**\n"
+                        + "     * @param status the status to set\n"
+                        + "     */\n"
+                        + "    public void setStatus(String status) {\n"
+                        + "        this.status = status;\n"
+                        + "    }"
+                        + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameGettersSetters(true);
+        performRename(src.getFileObject("t/A.java"), 1, "message", props, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    private String message;\n"
+                        + "\n"
+                        + "    /**\n"
+                        + "     * @return the message\n"
+                        + "     */\n"
+                        + "    public String getMessage() {\n"
+                        + "        return message;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    /**\n"
+                        + "     * @param message the message to set\n"
+                        + "     */\n"
+                        + "    public void setMessage(String message) {\n"
+                        + "        this.message = message;\n"
+                        + "    }"
+                        + "}"));
 
     }
     
