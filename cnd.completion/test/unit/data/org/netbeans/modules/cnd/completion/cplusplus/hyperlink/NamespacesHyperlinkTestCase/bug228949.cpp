@@ -24,3 +24,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+string& NN228949::AAA228949::getSSS() {
+    BBB228949 base;
+    return base.str();
+}

@@ -78,6 +78,17 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug228949.cpp", 21, 20, "bug228949StdHeader.h", 13, 9);
     }
     
+    public void test228949_BaseClassFromAnotherNS() throws Exception {
+        // str
+        performTest("bug228949.h", 35, 27, "bug228949.h", 13, 9);
+        performTest("bug228949.cpp", 29, 18, "bug228949.h", 13, 9);
+        
+        // BBB228949
+        performTest("bug228949.cpp", 28, 10, "bug228949.h", 12, 5);
+        performTest("bug228949.h", 22, 30, "bug228949.h", 12, 5);
+        performTest("bug228949.h", 34, 18, "bug228949.h", 12, 5);
+    }
+    
     public void test228950() throws Exception {
         // #228950 - inaccuracy tests: LiteSQL project has unresolved identifiers
         
