@@ -341,6 +341,9 @@ public class RemoteFileUtil {
      * @param folder the path to be set as last used.
      */
     public static void setCurrentChooserFile(String path, ExecutionEnvironment env) {
+        if (path == null) {
+            return;
+        }
         if (env.isLocal()) {
             FileChooser.setCurrentChooserFile(new File(path));
         } else {
