@@ -506,7 +506,7 @@ public class CsmFinderImpl implements CsmFinder {
     public List<CsmClassifier> findNestedClassifiers(CsmOffsetableDeclaration contextDeclaration, CsmClass c, String name, boolean exactMatch, boolean inspectParentClasses, boolean sort) {
         CsmClass clazz = c;
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        List<CsmClassifier> classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses, true);
+        List<CsmClassifier> classClassifiers = contResolver.getNestedClassifiers(clazz, contextDeclaration, name, exactMatch, inspectParentClasses, true, false);
         return classClassifiers;
     }
 
