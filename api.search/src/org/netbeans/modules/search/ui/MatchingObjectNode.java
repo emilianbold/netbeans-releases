@@ -254,7 +254,7 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     @Override
-    public PropertySet[] getPropertySets() {
+    public synchronized PropertySet[] getPropertySets() {
 
         if (propertySets == null) {
 

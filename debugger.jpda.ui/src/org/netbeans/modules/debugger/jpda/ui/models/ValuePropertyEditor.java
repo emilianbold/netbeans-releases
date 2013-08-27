@@ -53,7 +53,10 @@ import java.beans.VetoableChangeListener;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -82,6 +85,11 @@ import org.openide.util.RequestProcessor;
 class ValuePropertyEditor implements ExPropertyEditor {
     
     private static final Logger logger = Logger.getLogger(ValuePropertyEditor.class.getName());
+    
+    private static final Set<Class> CLASSES_2_IGNORE = new HashSet<Class>(Arrays.asList(new Class[] {
+                                                           Object.class,
+                                                           java.io.File.class
+                                                       }));
     
     private ContextProvider contextProvider;
     private PropertyEditor delegatePropertyEditor;
@@ -116,7 +124,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
     }
     
     private static boolean hasPropertyEditorFor(final Class clazz) {
-        if (Object.class.equals(clazz)/* || String.class.equals(clazz)*/) {
+        if (CLASSES_2_IGNORE.contains(clazz)) {
             return false;
         }
         if (SwingUtilities.isEventDispatchThread()) {
