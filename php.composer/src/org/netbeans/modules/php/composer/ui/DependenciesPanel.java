@@ -99,10 +99,9 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.composer.commands.Composer;
+import org.netbeans.modules.php.composer.output.model.ComposerPackage;
 import org.netbeans.modules.php.composer.output.model.SearchResult;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
@@ -114,13 +113,10 @@ import org.openide.util.RequestProcessor;
  */
 public final class DependenciesPanel extends JPanel {
 
-    private static final long serialVersionUID = -4572187014657456L;
+    private static final long serialVersionUID = -54676446789654L;
 
     private static final SearchResult SEARCHING_SEARCH_RESULT = new SearchResult(null, null);
     private static final SearchResult NO_RESULTS_SEARCH_RESULT = new SearchResult(null, null);
-
-    // @GuardedBy("EDT")
-    private static boolean keepOpened = true;
 
     private final PhpModule phpModule;
     private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
@@ -146,73 +142,33 @@ public final class DependenciesPanel extends JPanel {
     }
 
     public static DependenciesPanel create() {
-        return new DependenciesPanel(null);
+        return create(null);
     }
 
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "AddDependencyPanel.panel.title=Composer Packages ({0})",
-    })
-    public static void openForModule(PhpModule phpModule) {
-        assert EventQueue.isDispatchThread();
-        assert phpModule != null;
-
-        DependenciesPanel searchPanel = new DependenciesPanel(phpModule);
-        Object[] options = new Object[] {
-            searchPanel.requireButton,
-            searchPanel.requireDevButton,
-            DialogDescriptor.CANCEL_OPTION,
-        };
-
-        final DialogDescriptor descriptor = new DialogDescriptor(
-                searchPanel,
-                Bundle.AddDependencyPanel_panel_title(phpModule.getDisplayName()),
-                false,
-                options,
-                searchPanel.requireButton,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        descriptor.setClosingOptions(new Object[] {DialogDescriptor.CANCEL_OPTION});
-        descriptor.setAdditionalOptions(new Object[] {searchPanel.keepOpenCheckBox});
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        handleKeepOpen(dialog, searchPanel);
-        setDefaultButton(dialog, searchPanel);
-        dialog.setVisible(true);
+    public static DependenciesPanel create(PhpModule phpModule) {
+        return new DependenciesPanel(phpModule);
     }
 
-    private static void setDefaultButton(Dialog dialog, final DependenciesPanel searchPanel) {
-        if (dialog instanceof JDialog) {
-            JRootPane rootPane = ((JDialog) dialog).getRootPane();
-            rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
-            rootPane.getActionMap().put("search", new AbstractAction() { // NOI18N
-                private static final long serialVersionUID = -4568616574687867L;
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (searchPanel.tokenTextField.hasFocus()) {
-                        if (searchPanel.searchButton.isEnabled()) {
-                            searchPanel.searchButton.doClick();
-                        }
-                    } else if (searchPanel.resultsList.hasFocus()) {
-                        if (searchPanel.requireButton.isEnabled()) {
-                            searchPanel.requireButton.doClick();
-                        }
-                    }
-                }
-            });
+    public void setDefaultAction(Dialog dialog, final Runnable defaultResultsListTask) {
+        if (!(dialog instanceof JDialog)) {
+            return;
         }
-    }
-
-    private static void handleKeepOpen(final Dialog dialog, final DependenciesPanel searchPanel) {
-        ActionListener keepOpenActionListener = new ActionListener() {
+        JRootPane rootPane = ((JDialog) dialog).getRootPane();
+        rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter"); // NOI18N
+        rootPane.getActionMap().put("enter", new AbstractAction() { // NOI18N
+            private static final long serialVersionUID = -687845132165467L;
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (!searchPanel.keepOpenCheckBox.isSelected()) {
-                    dialog.setVisible(false);
-                    dialog.dispose();
+                assert EventQueue.isDispatchThread();
+                if (tokenTextField.hasFocus()) {
+                    if (searchButton.isEnabled()) {
+                        searchButton.doClick();
+                    }
+                } else if (resultsList.hasFocus()) {
+                    defaultResultsListTask.run();
                 }
             }
-        };
-        searchPanel.requireButton.addActionListener(keepOpenActionListener);
-        searchPanel.requireDevButton.addActionListener(keepOpenActionListener);
+        });
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -221,6 +177,17 @@ public final class DependenciesPanel extends JPanel {
 
     public void removeChangeListener(ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
+    }
+
+    @CheckForNull
+    public ComposerPackage getComposerPackage() {
+        SearchResult selectedSearchResult = getSelectedSearchResult();
+        String selectedVersion = getSelectedResultVersion();
+        if (selectedSearchResult == null
+                || selectedVersion == null) {
+            return null;
+        }
+        return new ComposerPackage(selectedSearchResult.getName(), selectedVersion);
     }
 
     @Override
@@ -233,7 +200,6 @@ public final class DependenciesPanel extends JPanel {
         initSearch();
         initResults();
         initVersions();
-        initActionButons();
     }
 
     private void initSearch() {
@@ -259,6 +225,7 @@ public final class DependenciesPanel extends JPanel {
     }
 
     private void initResults() {
+        outputSplitPane.setDividerLocation(0.5);
         // results
         resultsList.setModel(resultsModel);
         resultsList.setCellRenderer(new ResultListCellRenderer());
@@ -318,30 +285,12 @@ public final class DependenciesPanel extends JPanel {
         });
     }
 
-    private void initActionButons() {
-        assert EventQueue.isDispatchThread();
-        // require buttons
-        enableRequireButtons();
-        // keep opened checkbox
-        keepOpenCheckBox.setSelected(keepOpened);
-        // listeners
-        keepOpenCheckBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                assert EventQueue.isDispatchThread();
-                keepOpened = e.getStateChange() == ItemEvent.SELECTED;
-            }
-        });
-    }
-
     void resultsChanged() {
-        enableRequireButtons();
         updateResultDetailsAndVersions(false);
         fireChange();
     }
 
     void versionChanged() {
-        enableRequireButtons();
         fireChange();
     }
 
@@ -396,16 +345,6 @@ public final class DependenciesPanel extends JPanel {
         });
     }
 
-    void enableRequireButtons() {
-        assert EventQueue.isDispatchThread();
-        boolean validResultSelected = false;
-        if (getSelectedNameWithVersion() != null) {
-            validResultSelected = true;
-        }
-        requireButton.setEnabled(validResultSelected);
-        requireDevButton.setEnabled(validResultSelected);
-    }
-
     void updateResultDetailsAndVersions(boolean fetchDetails) {
         assert EventQueue.isDispatchThread();
         String msg = ""; // NOI18N
@@ -428,7 +367,7 @@ public final class DependenciesPanel extends JPanel {
         }
     }
 
-    @NbBundle.Messages("AddDependencyPanel.details.loading=Loading package details...")
+    @NbBundle.Messages("DependenciesPanel.details.loading=Loading package details...")
     private String getResultsDetails(final String resultName, boolean fetchDetails) {
         if (resultName == null) {
             return null;
@@ -444,7 +383,7 @@ public final class DependenciesPanel extends JPanel {
         if (composer == null) {
             return null;
         }
-        String loading = Bundle.AddDependencyPanel_details_loading();
+        String loading = Bundle.DependenciesPanel_details_loading();
         String prev = resultDetails.putIfAbsent(resultName, loading);
         assert prev == null : "Previous message found?!: " + prev;
         postShowRequestProcessor.post(new Runnable() {
@@ -520,29 +459,17 @@ public final class DependenciesPanel extends JPanel {
         return (String) selectedVersion;
     }
 
-    @CheckForNull
-    public String getSelectedNameWithVersion() {
-        assert EventQueue.isDispatchThread();
-        SearchResult selectedSearchResult = getSelectedSearchResult();
-        String selectedVersion = getSelectedResultVersion();
-        if (selectedSearchResult == null
-                || selectedVersion == null) {
-            return null;
-        }
-        return selectedSearchResult.getName() + ":" + selectedVersion; // NOI18N
-    }
-
     private void fireChange() {
         changeSupport.fireChange();
     }
 
-    @NbBundle.Messages("AddDependencyPanel.error.composer.notValid=Composer is not valid.")
+    @NbBundle.Messages("DependenciesPanel.error.composer.notValid=Composer is not valid.")
     @CheckForNull
     Composer getComposer() {
         try {
             return Composer.getDefault();
         } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(Bundle.AddDependencyPanel_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
+            UiUtils.invalidScriptProvided(Bundle.DependenciesPanel_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
         }
         return null;
     }
@@ -584,17 +511,6 @@ public final class DependenciesPanel extends JPanel {
         }
     }
 
-    private void initComposer(Composer composer, Runnable postTask) {
-        assert phpModule != null;
-        Future<Integer> task = composer.initIfNotPresent(phpModule);
-        if (task == null) {
-            // file exists already
-            postTask.run();
-            return;
-        }
-        runWhenTaskFinish(task, postTask, null);
-    }
-
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
      */
@@ -602,9 +518,6 @@ public final class DependenciesPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        requireDevButton = new JButton();
-        requireButton = new JButton();
-        keepOpenCheckBox = new JCheckBox();
         tokenLabel = new JLabel();
         tokenTextField = new JTextField();
         onlyNameCheckBox = new JCheckBox();
@@ -617,23 +530,6 @@ public final class DependenciesPanel extends JPanel {
         detailsTextPane = new JTextPane();
         versionLabel = new JLabel();
         versionComboBox = new JComboBox<String>();
-
-        Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.requireDevButton.text")); // NOI18N
-        requireDevButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                requireDevButtonActionPerformed(evt);
-            }
-        });
-
-        Mnemonics.setLocalizedText(requireButton, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.requireButton.text")); // NOI18N
-        requireButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                requireButtonActionPerformed(evt);
-            }
-        });
-
-        keepOpenCheckBox.setSelected(true);
-        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.keepOpenCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.tokenLabel.text")); // NOI18N
 
@@ -675,9 +571,9 @@ public final class DependenciesPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 622, Short.MAX_VALUE)
+                    .addComponent(outputSplitPane)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(tokenLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -697,12 +593,12 @@ public final class DependenciesPanel extends JPanel {
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGap(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(tokenLabel)
                     .addComponent(tokenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -712,12 +608,12 @@ public final class DependenciesPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(packagesLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(outputSplitPane, GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE)
+                .addComponent(outputSplitPane)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(versionLabel)
                     .addComponent(versionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -784,40 +680,6 @@ public final class DependenciesPanel extends JPanel {
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
-    private void requireButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_requireButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        final Composer composer = getComposer();
-        if (composer == null) {
-            return;
-        }
-        final String selectedName = getSelectedNameWithVersion();
-        initComposer(composer, new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                assert phpModule != null;
-                composer.require(phpModule, selectedName);
-            }
-        });
-    }//GEN-LAST:event_requireButtonActionPerformed
-
-    private void requireDevButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_requireDevButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        final Composer composer = getComposer();
-        if (composer == null) {
-            return;
-        }
-        final String selectedName = getSelectedNameWithVersion();
-        initComposer(composer, new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                assert phpModule != null;
-                composer.requireDev(phpModule, selectedName);
-            }
-        });
-    }//GEN-LAST:event_requireDevButtonActionPerformed
-
     private void resultsListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_resultsListMouseClicked
         updateResultDetailsAndVersions(true);
     }//GEN-LAST:event_resultsListMouseClicked
@@ -825,12 +687,9 @@ public final class DependenciesPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JScrollPane detailsScrollPane;
     private JTextPane detailsTextPane;
-    private JCheckBox keepOpenCheckBox;
     private JCheckBox onlyNameCheckBox;
     private JSplitPane outputSplitPane;
     private JLabel packagesLabel;
-    private JButton requireButton;
-    private JButton requireDevButton;
     private JList<SearchResult> resultsList;
     private JScrollPane resultsScrollPane;
     private JButton searchButton;
@@ -886,20 +745,20 @@ public final class DependenciesPanel extends JPanel {
         @NbBundle.Messages({
             "# {0} - name",
             "# {1} - description",
-            "AddDependencyPanel.results.result=<html><b>{0}</b>: {1}",
-            "AddDependencyPanel.results.searching=<html><i>Searching...</i>",
-            "AddDependencyPanel.results.noResults=<html><i>No results found.</i>"
+            "DependenciesPanel.results.result=<html><b>{0}</b>: {1}",
+            "DependenciesPanel.results.searching=<html><i>Searching...</i>",
+            "DependenciesPanel.results.noResults=<html><i>No results found.</i>"
         })
         @Override
         public Component getListCellRendererComponent(JList<? extends SearchResult> list, SearchResult value, int index, boolean isSelected, boolean cellHasFocus) {
             String label;
             SearchResult result = value;
             if (result == SEARCHING_SEARCH_RESULT) {
-                label = Bundle.AddDependencyPanel_results_searching();
+                label = Bundle.DependenciesPanel_results_searching();
             } else if (result == NO_RESULTS_SEARCH_RESULT) {
-                label = Bundle.AddDependencyPanel_results_noResults();
+                label = Bundle.DependenciesPanel_results_noResults();
             } else {
-                label = Bundle.AddDependencyPanel_results_result(result.getName(), result.getDescription());
+                label = Bundle.DependenciesPanel_results_result(result.getName(), result.getDescription());
             }
             return defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
         }
