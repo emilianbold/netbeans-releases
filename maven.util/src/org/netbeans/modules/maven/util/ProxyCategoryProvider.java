@@ -49,11 +49,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Category provider that delegates to a different category provider - if the Maven
  * project POM contains the desired plugin.
- * 
+ *
  * @author  S. Aubrecht
  */
 final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
@@ -107,7 +108,8 @@ final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategory
     private void createProvider( Lookup lkp ) {
         if( null == theProvider ) {
             theProvider = ( MavenCategoryProvider) args.get( "categoryProvider" );
-            theProvider.setPluginParameters( MavenPluginParameters.create( lkp, getGroupId(), getArtifactId()));
+            Project prj = lkp.lookup( Project.class );
+            theProvider.setPluginParameters( MavenPluginParameters.create( new ProxyLookup( lkp, prj.getLookup() ), getGroupId(), getArtifactId()));
         }
     }
 
