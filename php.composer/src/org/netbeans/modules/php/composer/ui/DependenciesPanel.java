@@ -733,7 +733,7 @@ public final class DependenciesPanel extends JPanel {
 
         public void fireContentsChanged() {
             assert EventQueue.isDispatchThread();
-            super.fireContentsChanged(this, 0, searchResults.size());
+            fireContentsChanged(this, 0, searchResults.size());
         }
 
     }
