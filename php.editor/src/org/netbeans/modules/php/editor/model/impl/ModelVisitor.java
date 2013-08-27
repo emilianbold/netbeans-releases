@@ -759,7 +759,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             StaticFieldAccess staticFieldAccess = (StaticFieldAccess) leftHandSide;
             Expression className = staticFieldAccess.getClassName();
             String unqualifiedClassName = CodeUtils.extractUnqualifiedName(className);
-            if ("self".equals(unqualifiedClassName) || "static".equals(unqualifiedClassName)) { //NOI18N
+            if (VariousUtils.isStaticClassName(unqualifiedClassName)) {
                 VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), "$this"); //NOI18N
                 if (varN != null) {
                     varN.createLazyStaticFieldAssignment(staticFieldAccess, node, scope);

@@ -134,13 +134,15 @@ public final class VariousUtils {
     public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<>();
+    private static final Collection<String> STATIC_CLASS_NAMES = new LinkedList<>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
     private static final String SPACES_AND_TYPE_DELIMITERS = "[| ]*"; //NOI18N
 
     static {
-        SPECIAL_CLASS_NAMES.add("self"); //NOI18N
-        SPECIAL_CLASS_NAMES.add("static"); //NOI18N
+        STATIC_CLASS_NAMES.add("self"); //NOI18N
+        STATIC_CLASS_NAMES.add("static"); //NOI18N
         SPECIAL_CLASS_NAMES.add("parent"); //NOI18N
+        SPECIAL_CLASS_NAMES.addAll(STATIC_CLASS_NAMES);
     }
 
     public static enum Kind {
@@ -1625,6 +1627,16 @@ public final class VariousUtils {
      */
     public static boolean isSpecialClassName(final String className) {
         return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
+    }
+
+    /**
+     * Check if a className is "self" or "static".
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isStaticClassName(String className) {
+        return STATIC_CLASS_NAMES.contains(className.toLowerCase());
     }
 
     public static boolean isSemiType(String typeName) {
