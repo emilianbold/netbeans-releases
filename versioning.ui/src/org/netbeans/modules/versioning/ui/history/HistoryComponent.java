@@ -129,6 +129,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private NoContentPanel noContentPanel;
 
     private final Object FILE_LOCK = new Object();
+    private final Object TOOLBAR_LOCK = new Object();
     
     public HistoryComponent() {
         activatedNodesContent = new InstanceContent();
@@ -312,9 +313,13 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             add(splitPane, BorderLayout.CENTER);
         }
         
-        if(toolBar == null) {
-            toolBar = new Toolbar(versioningSystem);
-        } else {
+        boolean hadToolbar = false;
+        synchronized ( TOOLBAR_LOCK ) {
+            if(toolBar == null) {
+                toolBar = getToolbar();
+            }        
+        }        
+        if(hadToolbar) {
             toolBar.setup(versioningSystem);
         }
         masterView = new HistoryFileView(versioningSystem, History.getInstance().getLocalHistory(getFile()), this);
@@ -420,7 +425,12 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     private Toolbar getToolbar() {
-        return toolBar;
+        synchronized ( TOOLBAR_LOCK ) {
+            if(toolBar == null) {
+                toolBar = new Toolbar(versioningSystem);
+            }
+            return toolBar;
+        }
     }
 
     @Override
