@@ -525,7 +525,8 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
          */
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (isUserLoggedOutEvent(evt)) {
+            if (isUserLoggedOutEvent(evt)
+                    || "close".equals(evt.getPropertyName())) { //NOI18N
                 removeHudsonAndClean();
                 CACHE.clear();
             } else if (evt.getPropertyName().equals(
