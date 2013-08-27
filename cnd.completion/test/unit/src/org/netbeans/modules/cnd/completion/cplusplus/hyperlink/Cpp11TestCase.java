@@ -213,4 +213,13 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 234640 - parser fails on decltype
         performTest("bug234640.cpp", 12, 12, "bug234640.cpp", 3, 9);
     }    
+    
+    public void testBug235044() throws Exception {
+        // Bug 235044 - Unresolved identifier in template type alias (C++11)
+        performTest("bug235044.cpp", 35, 12, "bug235044.cpp", 4, 9);
+        performTest("bug235044.cpp", 38, 12, "bug235044.cpp", 4, 9);
+        performTest("bug235044.cpp", 41, 12, "bug235044.cpp", 4, 9);
+        performTest("bug235044.cpp", 44, 12, "bug235044.cpp", 4, 9);
+        performTest("bug235044.cpp", 47, 12, "bug235044.cpp", 4, 9);
+    }
 }

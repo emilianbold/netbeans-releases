@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,12 +37,11 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2013 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.spiimpl.pm;
 
-import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -78,8 +77,8 @@ public class NFA<I, R> {
     public State transition(final State active, final I input) {
         State result = null;
 
-//        for (int i : active) {
-        for (int i = active.nextSetBit(0); i >= 0; i = active.nextSetBit(i+1)) {
+        for (int i : active) {
+//        for (int i = active.nextSetBit(0); i >= 0; i = active.nextSetBit(i+1)) {
              State target = transitionTable.get(Key.create(i, input));
 
              if (target != null) {
@@ -106,7 +105,8 @@ public class NFA<I, R> {
     public Set<R> getResults(State bs) {
         Set<R> result = new HashSet<R>();
 
-        for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
+        for (int i : bs) {
+//        for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i+1)) {
             if (finalStates.get(i) != null) {
                 result.add(finalStates.get(i));
             }
@@ -174,43 +174,44 @@ public class NFA<I, R> {
 
     }
 
-//    public static final class State extends HashSet<Integer> {
-//        private State() {
-//        }
-//
-//        public static State create() {
-//            return new State();
-//        }
-//
-//        public State mutableOr(int state) {
-//            add(state);
-//            return this;
-//        }
-//
-//        public State mutableOr(State or) {
-//            addAll(or);
-//            return this;
-//        }
-//
-//    }
-
-    public static final class State extends BitSet {
-        private State() {}
+    public static final class State extends HashSet<Integer> {
+        private State() {
+            super(4);
+        }
 
         public static State create() {
             return new State();
         }
 
         public State mutableOr(int state) {
-            set(state);
+            add(state);
             return this;
         }
 
         public State mutableOr(State or) {
-            or(or);
+            addAll(or);
             return this;
         }
 
     }
+
+//    public static final class State extends BitSet {
+//        private State() {}
+//
+//        public static State create() {
+//            return new State();
+//        }
+//
+//        public State mutableOr(int state) {
+//            set(state);
+//            return this;
+//        }
+//
+//        public State mutableOr(State or) {
+//            or(or);
+//            return this;
+//        }
+//
+//    }
 
 }

@@ -50,11 +50,11 @@
 	<mapID target="NewDynamicLibWizard" url="WorkingWithCandC++Projects/NewDynamicLibWizard.html"/>
 	<mapID target="NewStaticLibWizard" url="WorkingWithCandC++Projects/NewStaticLibWizard.html"/>
 	<mapID target="NewMakeWizardP0" url="WorkingWithCandC++Projects/NewMakeWizardP0.html"/>
-        <mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
-        <mapID target="NewMakeWizardP2" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
-        <mapID target="NewMakeWizardP3" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
-        <mapID target="NewMakeWizardP4" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
-        <mapID target="NewMakeWizardP5" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
+	<mapID target="NewMakeWizardP1" url="WorkingWithCandC++Projects/NewMakeWizardP1.html"/>
+	<mapID target="NewMakeWizardP2" url="WorkingWithCandC++Projects/NewMakeWizardP2.html"/>
+	<mapID target="NewMakeWizardP3" url="WorkingWithCandC++Projects/NewMakeWizardP3.html"/>
+	<mapID target="NewMakeWizardP4" url="WorkingWithCandC++Projects/NewMakeWizardP4.html"/>
+	<mapID target="NewMakeWizardP5" url="WorkingWithCandC++Projects/NewMakeWizardP5.html"/>
 	<mapID target="ProjectsWindow" url="GettingStarted/ProjectsWindow.html"/>
 	<mapID target="FilesWindow" url="GettingStarted/FilesWindow.html"/>
 	<mapID target="UsingCodeCompletion1" url="EditingSourceFiles/UsingCodeCompletion.html"/>
@@ -253,7 +253,8 @@
 	<mapID target="using_declaration_16" url="images/using_declaration_16.png"/>
 	<mapID target="using_namespace_16" url="images/using_namespace_16.png"/>
 	<mapID target="template_parameter_16" url="images/template_parameter_16.png"/>
-	<mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
+	<mapID target="preprocessor-undefine" url="CandC++ProjectBasics/preprocessor-undefine.html"/>
+        <mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP1" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP1.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP2" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP2.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP3" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP3.html"/>
@@ -376,4 +377,5 @@
 	<mapID target="DebuggingOptions" url="CandC++ProjectBasics/DebuggingOptions.html"/>
 	<mapID target="RemoteModes" url="WorkingWithCandC++Projects/RemoteModes.html"/>
 	<mapID target="CodeCompletionOptions" url="WorkingWithCandC++Projects/CodeCompletionOptions.html"/>
+	<mapID target="SettingCandC++FolderProperties" url="WorkingWithCandC++Projects/SettingCandC++FolderProperties.html"/>
 </map>
