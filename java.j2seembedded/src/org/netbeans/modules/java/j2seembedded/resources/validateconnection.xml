@@ -56,6 +56,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true"
                  command="cd '${remote.working.dir}'; '${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
         <scp file="${remote.username}@${remote.host}:${remote.working.dir}/${remote.platform.properties.file}" localtofile="${platform.properties.file}" port="${remote.port}" password="${remote.password}" trust="true"/>
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true"
+                 command="cd '${remote.working.dir}'; rm ${probe.name}; rm ${remote.platform.properties.file}"/>
     </target>
     
     <target name="connect-ssh-keyfile" depends="-init">
@@ -64,5 +66,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"
                  command="cd '${remote.working.dir}'; '${remote.java.executable}' -jar ${probe.name} ${remote.platform.properties.file}"/>
         <scp file="${remote.username}@${remote.host}:${remote.working.dir}/${remote.platform.properties.file}" localtofile="${platform.properties.file}" port="${remote.port}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"/>
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"
+                 command="cd '${remote.working.dir}'; rm ${probe.name}; rm ${remote.platform.properties.file}"/>
     </target>
 </project>
