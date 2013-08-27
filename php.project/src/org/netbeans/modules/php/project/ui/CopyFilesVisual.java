@@ -191,17 +191,17 @@ public class CopyFilesVisual extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(localServerLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(copyFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(copyFilesButton))
             .addComponent(copyFilesCheckBox)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(copyOnOpenCheckBox))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(localServerLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(copyFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(copyFilesButton))
+                    .addComponent(copyOnOpenCheckBox)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
