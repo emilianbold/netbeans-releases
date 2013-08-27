@@ -99,4 +99,14 @@ public class HtmlCompletionProviderTest extends TestBase {
 
     }
 
+    //Bug 235048 - second tab activates suggestion in html editor 
+    public void testDoNotOpenCompletionOnTabOrEnter() throws BadLocationException {
+        Document doc = createDocument();
+
+        doc.insertString(0, "<div >", null);
+        //                   012345
+        assertFalse(HtmlCompletionProvider.checkOpenCompletion(doc, 5, "    ")); //tab size 
+        
+    }
+    
 }

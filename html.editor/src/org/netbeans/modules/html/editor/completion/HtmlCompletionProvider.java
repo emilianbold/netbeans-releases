@@ -64,6 +64,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
 import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -338,6 +340,15 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 }
                 break;
             case ' ':
+                //Bug 235048 - second tab activates suggestion in html editor 
+                //trigger the completion window only if the user types space
+                //char, not upon tab expand or enter + indentation.
+                //
+                //in theory one could set tab size to 1 and then the issue would
+                //reappear, but it's not worth adding a new condition :-)
+                if(typedText.length() > 1) {
+                    return false;
+                }
                 final AtomicBoolean value = new AtomicBoolean();
                 doc.render(new Runnable() {
 
