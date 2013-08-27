@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -109,7 +111,8 @@ public class ParentConstructorCallHint extends HintRule {
 
     private MethodScope extractOverriddenConstructor(ClassScope classScope) {
         MethodScope result = null;
-        while (classScope != null && result == null) {
+        Set<ClassScope> recursionDetection = new HashSet<>();
+        while (classScope != null && result == null && recursionDetection.add(classScope)) {
             ClassScope superClass = ModelUtils.getFirst(classScope.getSuperClasses());
             result = extractConstructor(superClass);
             classScope = superClass;
