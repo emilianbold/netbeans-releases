@@ -144,6 +144,7 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
         });
         final InstanceContent c = new InstanceContent();
         c.add(Node.class, this);
+        c.add(this);
         this.lkp = new AbstractLookup(c);
         task = RP.create(this);
     }
