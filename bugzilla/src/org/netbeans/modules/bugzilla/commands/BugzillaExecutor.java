@@ -43,7 +43,10 @@
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -443,7 +446,12 @@ public class BugzillaExecutor {
         private static String getNotFoundError(CoreException ce) {
             IStatus status = ce.getStatus();
             Throwable t = status.getException();
-            if(t instanceof UnknownHostException) {
+            if(t instanceof UnknownHostException ||
+               // XXX maybe a different msg ?     
+               t instanceof SocketTimeoutException || 
+               t instanceof NoRouteToHostException ||
+               t instanceof ConnectException) 
+            {
                 Bugzilla.LOG.log(Level.FINER, null, t);
                 return NbBundle.getMessage(BugzillaExecutor.class, "MSG_HOST_NOT_FOUND");                   // NOI18N
             }
@@ -457,7 +465,6 @@ public class BugzillaExecutor {
             }
             return null;
         }
-
 
         static String getMessage(CoreException ce) {
             String msg = ce.getMessage();
@@ -584,7 +591,7 @@ public class BugzillaExecutor {
                             }
                         };
                         handlerCalls.put(key, c);
-                    } 
+                    }
                 }
                 try {
                     return c.call();
