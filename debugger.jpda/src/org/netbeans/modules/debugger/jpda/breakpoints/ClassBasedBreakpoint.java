@@ -426,7 +426,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         logger.log(Level.FINE, "Check loaded classes: {0}, will load all classes: {1}", // NOI18N
                    new Object[]{className, all});
         boolean matched = false;
-        Iterator i;
+        Iterator<ReferenceType> i;
         if (all) {
             i = VirtualMachineWrapper.allClasses0(vm).iterator ();
         } else {
@@ -434,7 +434,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         }
         List<ReferenceType> loadedClasses = null;
         while (i.hasNext ()) {
-            ReferenceType referenceType = (ReferenceType) i.next ();
+            ReferenceType referenceType = i.next ();
             if (!ReferenceTypeWrapper.isPrepared0(referenceType)) {
                 // Ignore not prepared classes, we should receive ClassPrepareEvent later.
                 continue;

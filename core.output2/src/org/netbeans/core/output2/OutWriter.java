@@ -618,7 +618,10 @@ class OutWriter extends PrintWriter {
                 print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, outKind, false);
             }
             text = m.end();
-            if (!"m".equals(m.group(3))) {                              //NOI18N
+            if ("K".equals(m.group(3)) && "2".equals(m.group(1))) {     //NOI18N
+                clearLineANSI();
+                continue;
+            } else if (!"m".equals(m.group(3))) {                       //NOI18N
                 continue; // not a SGR ANSI sequence
             }
             String paramsS = m.group(1);
@@ -681,6 +684,22 @@ class OutWriter extends PrintWriter {
             printLineEnd();
         }
         return true;
+    }
+
+    /**
+     * Clears the current line. Called when ANSI sequence "\u001B[2K" is
+     * detected.
+     */
+    private void clearLineANSI() {
+        //NOI18N
+        Pair<Integer, Integer> r = lines.removeCharsFromLastLine(-1);
+        try {
+            getStorage().removeBytesFromEnd(r.first() * 2);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        lineLength -= r.first() * 2;
+        lineCharLengthWithTabs -= r.second();
     }
 
     synchronized void print(CharSequence s, LineInfo info, boolean important) {
