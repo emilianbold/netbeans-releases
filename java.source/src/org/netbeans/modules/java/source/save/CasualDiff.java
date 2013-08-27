@@ -3206,6 +3206,7 @@ public class CasualDiff {
                     bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
+                    lastdel = null;
                     ++i;
                     break;
                 }

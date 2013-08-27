@@ -492,6 +492,9 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             Collections.sort(l, new CategoryComparator());
             profileToDefaults.put(profile, new Vector<AttributeSet>(l));
         }
-        return profileToDefaults.get(profile);
+        Vector<AttributeSet> defaultprofile = profileToDefaults.get(profile);
+        Vector<AttributeSet> nprofile = new Vector<AttributeSet>();
+        nprofile.addAll(defaultprofile);
+        return nprofile;
     }
 }
