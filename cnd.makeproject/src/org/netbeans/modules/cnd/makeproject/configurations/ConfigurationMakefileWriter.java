@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter;
@@ -767,11 +768,39 @@ public class ConfigurationMakefileWriter {
             }
         }
         if (conf.hasCPPFiles(projectDescriptor)) {
+            if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler() && hasCpp11(projectDescriptor, conf)) {
+                AbstractCompiler cpp = (AbstractCompiler)compilerSet.findTool(PredefinedToolKind.CCCompiler);
+                return  "${LINK.cc}" + " "+cpp.getCppStandardOptions(CCCompilerConfiguration.STANDARD_CPP11) +" "; // NOI18N
+            }
             return  "${LINK.cc}" + " "; // NOI18N
         } else if (conf.hasFortranFiles(projectDescriptor)) {
             return  "${LINK.f}" + " "; // NOI18N
         }
         return "${LINK.c}" + " "; // NOI18N
+    }
+    
+    private static boolean hasCpp11(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
+        Item[] items = configurationDescriptor.getProjectItems();
+        // Base it on actual files added to project
+        for (int x = 0; x < items.length; x++) {
+            ItemConfiguration itemConfiguration = items[x].getItemConfiguration(conf);
+            if (itemConfiguration == null
+                    || itemConfiguration.getExcluded() == null
+                    || itemConfiguration.getExcluded().getValue()) {
+                continue;
+            }
+            PredefinedToolKind tool = itemConfiguration.getTool();
+            if (tool == PredefinedToolKind.CCCompiler) {
+                BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+                if (compilerConfiguration instanceof CCCompilerConfiguration) {
+                    CCCompilerConfiguration cppConf = (CCCompilerConfiguration) compilerConfiguration;
+                    if (cppConf.getInheritedCppStandard() == CCCompilerConfiguration.STANDARD_CPP11) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static void writeLinkTestTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {

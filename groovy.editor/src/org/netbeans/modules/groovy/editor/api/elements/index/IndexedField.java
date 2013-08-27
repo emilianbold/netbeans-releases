@@ -110,10 +110,15 @@ public class IndexedField extends IndexedElement {
 
     @Override
     public Set<Modifier> getModifiers() {
+        Set<Modifier> mods = super.getModifiers();
         if (isProperty()) {
-            return Collections.singleton(Modifier.PRIVATE);
+            if (mods.isEmpty()) {
+                return Collections.singleton(Modifier.PRIVATE);
+            } else {
+                mods.add(Modifier.PRIVATE);
+            }
         }
-        return super.getModifiers();
+        return mods;
     }
 
     @Override

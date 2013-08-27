@@ -182,6 +182,27 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeCompletionBase {
         checkAppliedCompletion("testfiles/completion/propertyNames02.js", "    ^    // here cc 02", "                        ^", "success", false);
     }
     
+    public void testAttributeName_01() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/issue223964.js", "$(document).find('a[^]')", false);
+    }
+    
+    public void testAttributeName_02() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/issue223964.js", "$(document).find('[^]')", false);
+    }
+    
+    public void testAttributeName_03() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/issue223964.js", "$(document).find('a.add-bottom[^]')", false);
+    }
+    
+    public void testAttributeName_04() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/issue223964.js", "$(document).find('(a#add-bottom[^])')", false);
+    }
+    
+    public void testAttributeName_05() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/issue223964.js", "$(document).find('.add-bottom[^]')", false);
+    }
+    
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

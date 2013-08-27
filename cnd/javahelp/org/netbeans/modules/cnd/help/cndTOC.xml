@@ -34,6 +34,7 @@
 				<tocitem text="Configuring Code Assistance for Projects from Existing Sources" target="CodeAssistance" />
 				<tocitem text="Setting the Main C/C++/Fortran Project" target="SettingMainCorC++Project." />
 				<tocitem text="Setting Project Properties for a Single Project" target="SettingProjectProperties" />
+				<tocitem text="Setting Folder Properties" target="SettingCandC++FolderProperties" />
 				<tocitem text="Setting File Properties" target="SettingCandC++FileProperties" />
 				<tocitem text="Creating a Makefile for a Project with Existing Sources" target="CreatingMakefile" />
 				<tocitem text="Managing Project Configurations" target="ManagingProjectConfigurations" />
