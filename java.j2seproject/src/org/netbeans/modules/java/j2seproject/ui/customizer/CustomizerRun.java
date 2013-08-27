@@ -1009,7 +1009,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         public CreateConfigurationPanel(boolean showDefaultConfigMsg) {
             org.openide.awt.Mnemonics.setLocalizedText(defaultConfigPlatformMsg, NbBundle.getMessage(CustomizerRun.class, "TXT_DefaultConfigPlatformChange")); // NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(configNameLabel, NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt")); // NOI18N
-            configNameLabel.setLabelFor(configNameLabel);
+            configNameLabel.setLabelFor(configName);
             defaultConfigPlatformMsg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/j2seproject/ui/resources/info.png"))); // NOI18N
 
             javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
