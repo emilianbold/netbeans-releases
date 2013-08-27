@@ -100,11 +100,23 @@ public class JQueryCodeCompletion implements CompletionProvider {
         lastTsOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(offset);
         switch (jsCompletionContext) {
             case STRING:
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), offset);
+                if (ts != null) {
+                    ts.move(lastTsOffset);
+                    if (ts.moveNext()) {
+                        if (ts.token().id() == JsTokenId.STRING_END) {
+                            ts.movePrevious();
+                        }
+                        if (ts.token().id() == JsTokenId.STRING) {
+                            prefix = ts.token().text().toString().substring(0, lastTsOffset - ts.offset());
+                        }
+                    }
+                }
             case GLOBAL:
             case EXPRESSION:
             case OBJECT_PROPERTY:
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
-                    addSelectors(result, parserResult, prefix, lastTsOffset);
+                    addSelectors(result, parserResult, prefix, lastTsOffset, ccContext);
                 }
                 break;
             case OBJECT_PROPERTY_NAME:
@@ -356,7 +368,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
         return null;
     }
     
-    private void addSelectors(final List<CompletionProposal> result, final ParserResult parserResult, final String prefix, final int offset) {
+    private void addSelectors(final List<CompletionProposal> result, final ParserResult parserResult, final String prefix, final int offset, CodeCompletionContext ccContex) {
         /*
          * basic selectors: 
          * $(document); // Activate jQuery for object
@@ -375,7 +387,13 @@ public class JQueryCodeCompletion implements CompletionProvider {
         }
         String wrapup = ""; //NOI18N
         String prefixText = prefix;
-        int anchorOffsetDelta = 0;
+        int anchorOffsetDelta = prefix.length() - ccContex.getPrefix().length();
+        if (!prefixText.isEmpty() && anchorOffsetDelta > 0) {
+            char ch = prefixText.charAt(anchorOffsetDelta - 1);
+            if (ch == '#' || ch == '.' || ch == ':') {
+                anchorOffsetDelta--;
+            }
+        }
 //        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
 //            wrapup = "'"; //NOI18N
 //            if (ts.token().id() == JsTokenId.IDENTIFIER) {
@@ -417,7 +435,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
                         break;
                     case TAG_ATTRIBUTE:
                         // provide attributes
-                        String tagName = prefix.substring(anchorOffsetDelta, context.prefixIndex).trim();
+                        String tagName = prefix.substring(anchorOffsetDelta).trim();
                         if (!tagName.isEmpty() && (tagName.charAt(0) == '.' || tagName.charAt(0) == '#')) {
                             if (ts.token().id() == JsTokenId.STRING_BEGIN) {
                                 ts.moveNext();
