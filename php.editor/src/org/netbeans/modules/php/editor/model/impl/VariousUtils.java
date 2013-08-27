@@ -134,13 +134,15 @@ public final class VariousUtils {
     public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<>();
+    private static final Collection<String> STATIC_CLASS_NAMES = new LinkedList<>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
     private static final String SPACES_AND_TYPE_DELIMITERS = "[| ]*"; //NOI18N
 
     static {
-        SPECIAL_CLASS_NAMES.add("self"); //NOI18N
-        SPECIAL_CLASS_NAMES.add("static"); //NOI18N
+        STATIC_CLASS_NAMES.add("self"); //NOI18N
+        STATIC_CLASS_NAMES.add("static"); //NOI18N
         SPECIAL_CLASS_NAMES.add("parent"); //NOI18N
+        SPECIAL_CLASS_NAMES.addAll(STATIC_CLASS_NAMES);
     }
 
     public static enum Kind {
@@ -449,6 +451,13 @@ public final class VariousUtils {
                     if (operation == null) {
                         assert i == 0 : frag;
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
+                        // !!! THIS IS A HACK !!!
+                        // varScope.getDeclaredVariables() method invokes lazy scan of methods, so proper variables are assigned
+                        // to proper elements. Without this hack CC doesn't work in issue 226071 for first invocation, just for the second.
+                        // It works for "non static CC: $this->a^", becuase when VAR_TYPE_PREFIX is used (for $this), then there is
+                        // "VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);" invoked for fetching
+                        // variable name. In static context, we don't need variable name, but we need fully initialized scope as well.
+                        varScope.getDeclaredVariables();
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
                         Set<TypeScope> newRecentTypes = new HashSet<>();
@@ -1618,6 +1627,16 @@ public final class VariousUtils {
      */
     public static boolean isSpecialClassName(final String className) {
         return SPECIAL_CLASS_NAMES.contains(className.toLowerCase());
+    }
+
+    /**
+     * Check if a className is "self" or "static".
+     *
+     * @param className
+     * @return
+     */
+    public static boolean isStaticClassName(String className) {
+        return STATIC_CLASS_NAMES.contains(className.toLowerCase());
     }
 
     public static boolean isSemiType(String typeName) {

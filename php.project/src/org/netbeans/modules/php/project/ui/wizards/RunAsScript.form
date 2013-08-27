@@ -39,7 +39,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="indexFileTextField" alignment="1" max="32767" attributes="0"/>
-                          <Component id="interpreterTextField" alignment="1" max="32767" attributes="2"/>
+                          <Component id="interpreterTextField" alignment="1" pref="0" max="32767" attributes="2"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -96,6 +96,7 @@
     <Component class="javax.swing.JTextField" name="interpreterTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
+        <Property name="columns" type="int" value="20"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -174,6 +175,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="indexFileTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="RunAsScript.indexFileTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

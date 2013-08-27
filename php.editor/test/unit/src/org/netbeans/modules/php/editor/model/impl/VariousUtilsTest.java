@@ -268,4 +268,16 @@ public class VariousUtilsTest extends ModelTestBase{
         assertFalse(VariousUtils.isSemiType(null));
     }
 
+    public void testStaticClassName() throws Exception {
+        assertTrue(VariousUtils.isStaticClassName("static"));
+        assertTrue(VariousUtils.isStaticClassName("self"));
+        assertFalse(VariousUtils.isStaticClassName("parent"));
+    }
+
+    public void testSpecialClassName() throws Exception {
+        assertTrue(VariousUtils.isSpecialClassName("static"));
+        assertTrue(VariousUtils.isSpecialClassName("self"));
+        assertTrue(VariousUtils.isSpecialClassName("parent"));
+    }
+
 }

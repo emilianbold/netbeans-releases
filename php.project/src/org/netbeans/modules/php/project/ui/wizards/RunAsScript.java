@@ -229,6 +229,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
 
         interpreterTextField.setEditable(false);
+        interpreterTextField.setColumns(20);
 
         runAsLabel.setLabelFor(runAsCombo);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
@@ -242,6 +243,8 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setColumns(20);
 
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -267,7 +270,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addComponent(indexFileTextField)
-                            .addComponent(interpreterTextField))
+                            .addComponent(interpreterTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(configureButton, Alignment.TRAILING)
