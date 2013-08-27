@@ -85,6 +85,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformType;
 import org.openide.util.Parameters;
@@ -183,6 +184,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         customizeOptionsButton = new javax.swing.JButton();
         lblPlatform = new javax.swing.JLabel();
         platform = new javax.swing.JComboBox();
+        jButtonManagePlatforms = new javax.swing.JButton();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -374,6 +376,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel.add(lblPlatform, gridBagConstraints);
 
         platform.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        platform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                platformActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -381,6 +388,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         mainPanel.add(platform, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonManagePlatforms, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_ManagePlatforms")); // NOI18N
+        jButtonManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonManagePlatformsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        mainPanel.add(jButtonManagePlatforms, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -471,6 +492,38 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 constraints);
     }
     
+    private boolean createNewConfiguration(boolean platformChanged) {
+        DialogDescriptor d = new DialogDescriptor(new CreateConfigurationPanel(platformChanged), NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title"));        
+        
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return false;
+        }
+        String name = ((CreateConfigurationPanel) d.getMessage()).getConfigName();
+        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+
+        }
+        if (configs.get(config) != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        }
+        Map<String,String> m = new HashMap<String,String>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.put(config, m);
+        configChanged(config);
+        uiProperties.activeConfig = config;
+        return true;
+    }  
+    
     private void configDelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configDelActionPerformed
         String config = (String) configCombo.getSelectedItem();
         assert config != null;
@@ -480,41 +533,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configDelActionPerformed
 
     private void configNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configNewActionPerformed
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt"), // NOI18N
-                NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.title")); // NOI18N
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
-        }
-        String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-        if (config.trim().length() == 0) {
-            //#143764
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.empty", config), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-            
-        }
-        if (configs.get(config) != null) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.duplicate", config), // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        Map<String,String> m = new HashMap<String,String>();
-        if (!name.equals(config)) {
-            m.put("$label", name); // NOI18N
-        }
-        configs.put(config, m);
-        configChanged(config);
-        uiProperties.activeConfig = config;
+        createNewConfiguration(false);
     }//GEN-LAST:event_configNewActionPerformed
 
     private void configComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configComboActionPerformed
         String config = (String) configCombo.getSelectedItem();
         if (config.length() == 0) {
             config = null;
+            platform.setSelectedIndex(0);
         }
         configChanged(config);
         uiProperties.activeConfig = config;
@@ -548,6 +574,23 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
 
     }//GEN-LAST:event_customizeVMOptionsByDialog
+
+    private void jButtonManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonManagePlatformsActionPerformed
+        JavaPlatform jp = ((PlatformKey) this.platform.getSelectedItem()).getPlatform();
+        PlatformsCustomizer.showCustomizer(jp);
+    }//GEN-LAST:event_jButtonManagePlatformsActionPerformed
+
+    private void platformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformActionPerformed
+        String config = (String) configCombo.getSelectedItem();
+        PlatformKey currentPlatform = ((PlatformKey) platform.getSelectedItem());
+        String currentPlatformName = ((PlatformKey) platform.getSelectedItem()).displayName;
+        if (config.isEmpty() && !currentPlatformName.equals(NbBundle.getMessage(CustomizerRun.class, "TXT_ActivePlatform"))) { //NOI18N
+            platform.setSelectedIndex(0);
+            if (createNewConfiguration(true)) {
+                platform.setSelectedItem(currentPlatform);
+            }
+        }
+    }//GEN-LAST:event_platformActionPerformed
 
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
@@ -602,6 +645,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton customizeOptionsButton;
     private javax.swing.JPanel extPanel;
     private javax.swing.JButton jButtonMainClass;
+    private javax.swing.JButton jButtonManagePlatforms;
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
     private javax.swing.JLabel jLabelMainClass;
@@ -953,6 +997,50 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 active = project;
             }
             combo.setSelectedItem(active);
+        }
+    }
+
+    private static class CreateConfigurationPanel extends JPanel {
+
+        private JLabel defaultConfigPlatformMsg = new JLabel();
+        private JLabel configNameLabel = new JLabel();
+        private JTextField configName = new JTextField();
+
+        public CreateConfigurationPanel(boolean showDefaultConfigMsg) {
+            org.openide.awt.Mnemonics.setLocalizedText(defaultConfigPlatformMsg, NbBundle.getMessage(CustomizerRun.class, "TXT_DefaultConfigPlatformChange")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(configNameLabel, NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.input.prompt")); // NOI18N
+            configNameLabel.setLabelFor(configNameLabel);
+            defaultConfigPlatformMsg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/java/j2seproject/ui/resources/info.png"))); // NOI18N
+
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(configNameLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(configName, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap()));
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(18, 18, 18)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(configName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configNameLabel))));
+            defaultConfigPlatformMsg.setVisible(showDefaultConfigMsg);
+        }
+
+        public String getConfigName() {
+            return configName.getText();
         }
     }
 }
