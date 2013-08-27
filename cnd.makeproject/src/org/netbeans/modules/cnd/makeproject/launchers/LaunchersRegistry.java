@@ -58,6 +58,7 @@ public final class LaunchersRegistry {
     private static final String LAUNCHER_TAG = "launcher";  // NOI18N
     private static final String COMMON_TAG = "common";  // NOI18N
     private static final String COMMAND_TAG = "runCommand"; // NOI18N
+    private static final String BUILD_COMMAND_TAG = "buildCommand"; // NOI18N
     private static final String NAME_TAG = "displayName";   // NOI18N
     private static final String DIRECTORY_TAG = "runDir";   // NOI18N
     private static final String SYMFILES_TAG = "symbolFiles";// NOI18N    
@@ -122,6 +123,9 @@ public final class LaunchersRegistry {
         } else {
             launcher.setName(command);
         }
+        //build command can be null and this is OK
+        String buildCommand = properties.getProperty(name + "." + BUILD_COMMAND_TAG);
+        launcher.setBuildCommand(buildCommand);
         String directory = properties.getProperty(name + "." + DIRECTORY_TAG);//NOI18N
         //directory can be null and this is OK
         launcher.setRunDir(directory);

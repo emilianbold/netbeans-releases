@@ -56,6 +56,10 @@ import org.openide.util.NbBundle;
 public class MakeProjectActionsSupport {
     private static final ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
+    public static Action buildAction() {
+        return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD, bundle.getString("LBL_BuildAction_Name"), null); // NOI18N
+    }
+    
     public static Action batchBuildAction() {
         return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null); // NOI18N
     }
