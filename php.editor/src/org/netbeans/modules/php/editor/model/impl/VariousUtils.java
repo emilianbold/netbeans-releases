@@ -449,6 +449,13 @@ public final class VariousUtils {
                     if (operation == null) {
                         assert i == 0 : frag;
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
+                        // !!! THIS IS A HACK !!!
+                        // varScope.getDeclaredVariables() method invokes lazy scan of methods, so proper variables are assigned
+                        // to proper elements. Without this hack CC doesn't work in issue 226071 for first invocation, just for the second.
+                        // It works for "non static CC: $this->a^", becuase when VAR_TYPE_PREFIX is used (for $this), then there is
+                        // "VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);" invoked for fetching
+                        // variable name. In static context, we don't need variable name, but we need fully initialized scope as well.
+                        varScope.getDeclaredVariables();
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
                         Set<TypeScope> newRecentTypes = new HashSet<>();
