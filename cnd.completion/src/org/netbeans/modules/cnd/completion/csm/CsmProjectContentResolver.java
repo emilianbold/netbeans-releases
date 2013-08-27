@@ -982,7 +982,8 @@ public final class CsmProjectContentResolver {
     }    
 
     @SuppressWarnings("unchecked")
-    public List<CsmClassifier> getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses) {
+    public List<CsmClassifier> getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, 
+            boolean inspectParentClasses, boolean inspectOuterClasses, boolean returnBaseClasses) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.TYPEDEF,
             CsmDeclaration.Kind.UNION,
@@ -992,7 +993,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.ENUM,
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, false);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, false, match, inspectParentClasses, inspectOuterClasses, true, returnBaseClasses, false);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -1008,7 +1009,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
-        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
+        List res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false, false);
         if (res != null && this.isSortNeeded()) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -1046,7 +1047,7 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     public List<CsmField> getFields(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier) {
-        List<CsmField> res = getClassMembers(clazz, contextDeclaration, CsmDeclaration.Kind.VARIABLE, strPrefix, staticOnly, match, inspectParentClasses, scopeAccessedClassifier, inspectOuterClasses);
+        List/*<CsmMember>*/ res = getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false, false);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
@@ -1062,7 +1063,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, true);
+        List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false, true);
         List<CsmEnumerator> res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
     }
@@ -1076,16 +1077,13 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
-        List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
+        List<CsmMember> res = getClassMembers(clazz, contextDeclaration, memberKinds, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false, false);
         if (isSortNeeded() && res != null) {
             CsmSortUtilities.sortMembers(res, isNaturalSort(), isCaseSensitive());
         }
         return res;
     }
 
-    private List/*<CsmMember>*/ getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kind, String strPrefix, boolean staticOnly, boolean match, boolean inspectParentClasses, boolean scopeAccessedClassifier, boolean inspectOuterClasses) {
-        return getClassMembers(clazz, contextDeclaration, new CsmDeclaration.Kind[]{kind}, strPrefix, staticOnly, match, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false);
-    }
     // =============== help methods to get/check content of containers =========
     private static final int MAX_INHERITANCE_DEPTH = 15;
 
@@ -1096,7 +1094,7 @@ public final class CsmProjectContentResolver {
 
     private List<CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration,
             CsmDeclaration.Kind kinds[], String strPrefix, boolean staticOnly, boolean match,
-            boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier, boolean returnUnnamedMembers) {
+            boolean inspectParentClasses, boolean inspectOuterClasses, boolean scopeAccessedClassifier, boolean returnBaseClasses, boolean returnUnnamedMembers) {
         assert (clazz != null);
         CsmVisibility minVisibility;
         if (contextDeclaration == null) {
@@ -1113,7 +1111,7 @@ public final class CsmProjectContentResolver {
         }
 
         Map<CharSequence, CsmMember> set = getClassMembers(clazz, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
+                new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
         List<CsmMember> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmMember>(set.values());
@@ -1127,6 +1125,7 @@ public final class CsmProjectContentResolver {
     private Map<CharSequence, CsmMember> getClassMembers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, CsmDeclaration.Kind kinds[],
             String strPrefix, boolean staticOnly, boolean match,
             AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, boolean inspectParentClasses, boolean inspectOuterClasses,
+            boolean returnBaseClasses,
             boolean returnUnnamedMembers) {
         assert (clazz != null);
 
@@ -1219,7 +1218,7 @@ public final class CsmProjectContentResolver {
                         // if inner class doesn't have enclosing variables => iterate it
                         if (innerClass.getEnclosingVariables().isEmpty()) {
                             Map<CharSequence, CsmMember> set = getClassMembers(innerClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                    handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
+                                    handledClasses, CsmVisibility.PUBLIC, INIT_INHERITANCE_LEVEL, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
                             // replace by own elements in nested set
                             if (set != null && set.size() > 0) {
                                 set.putAll(res);
@@ -1272,12 +1271,21 @@ public final class CsmProjectContentResolver {
                     CsmInheritance inherit = it2.next();
                     CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
                     if (baseClass != null) {
+                        if (returnBaseClasses) {
+                            CharSequence baseClsName = baseClass.getName();
+                            if (isKindOf(baseClass.getKind(), kinds) && (matchName(baseClsName, strPrefix, match))) {
+                                // do not replace inner objects by outer ones
+                                if (!res.containsKey(baseClsName)) {
+                                    res.put(baseClsName, (CsmMember) baseClass);
+                                }
+                            }
+                        }
                         VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                         CsmVisibility nextMinVisibility = nextInfo.visibility;
                         int nextInheritanceLevel = nextInfo.inheritanceLevel;
 
                         Map<CharSequence, CsmMember> baseRes = getClassMembers(baseClass, contextDeclaration, kinds, strPrefix, staticOnly, match,
-                                handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, inspectOuterClasses, returnUnnamedMembers);
+                                handledClasses, nextMinVisibility, nextInheritanceLevel, inspectParentClasses, inspectOuterClasses, returnBaseClasses, returnUnnamedMembers);
                         if (baseRes != null && !baseRes.isEmpty()) {
                             // add parent members at the end
                             for (Map.Entry<CharSequence, CsmMember> entry : baseRes.entrySet()) {
