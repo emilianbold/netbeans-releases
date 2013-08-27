@@ -138,16 +138,18 @@ public class CndTokenList implements TokenList {
         if ("@see".contentEquals(tag) || "@throws".contentEquals(tag)) {// NOI18N
             //ignore next "word", possibly dotted and hashed
             Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, true, Kind.Doc);
-
-            currentOffsetInComment = data.b + data.a.length();
+            if (data != null) {
+                currentOffsetInComment = data.b + data.a.length();
+            }
             return;
         }
 
         if ("@param".contentEquals(tag)) {// NOI18N
             //ignore next word
             Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false, Kind.Doc);
-
-            currentOffsetInComment = data.b + data.a.length();
+            if (data != null) {
+                currentOffsetInComment = data.b + data.a.length();
+            }
             return;
         }
 
