@@ -65,6 +65,11 @@ public final class ComposerOptionsValidator {
         return result;
     }
 
+    public ComposerOptionsValidator validate(ComposerOptions composerOptions) {
+        return validate(composerOptions.getComposerPath(), composerOptions.getVendor(),
+                composerOptions.getAuthorName(), composerOptions.getAuthorEmail());
+    }
+
     public ComposerOptionsValidator validate(String composerPath, String vendor, String authorName, String authorEmail) {
         validateComposerPath(composerPath);
         validateVendor(vendor);
