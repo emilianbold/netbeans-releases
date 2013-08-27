@@ -96,11 +96,6 @@ public class BuildNumberJDK extends Task {
                 String jdkBuildType = matcher.group(3);
                 String jdkBuildNumber = matcher.group(4);
                 String jdkEaText = "fcs".equals(jdkBuildType) ? "" : "ea-"; // NOI18N
-                System.out.println("### ###: jdkVersion: " + jdkVersion);
-                System.out.println("### ###: jdkUpdate: " + jdkUpdate);
-                System.out.println("### ###: jdkBuildType: " + jdkBuildType);
-                System.out.println("### ###: jdkBuildNumber: " + jdkBuildNumber);
-                System.out.println("### ===");
 
                 getProject().setProperty("jdk.version.number", jdkVersion); // NOI18N
                 getProject().setProperty("jdk.update.number", jdkUpdate); // NOI18N

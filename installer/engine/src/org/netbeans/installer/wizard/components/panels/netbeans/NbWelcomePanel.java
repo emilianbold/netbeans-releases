@@ -947,16 +947,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                                 product.getUid().equals("tomcat") ||                             
 				product.getUid().equals("mysql")) {
                             final NbiCheckBox chBox;
-                            List<Product> otherRuntimes = Registry.getInstance().queryProducts(
-                                                                  new ProductFilter(
-                                                                      product.getUid(),
-                                                                      product.getVersion(),
-                                                                      product.getPlatforms()));
-                            
-                            for (Product other : otherRuntimes) {
-                                System.out.println("###: " + other);
-                            }
-                            
                             if (product.getStatus() == Status.INSTALLED) {
                                 chBox = new NbiCheckBox();
                                 chBox.setText( "<html>" +
