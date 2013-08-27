@@ -1115,9 +1115,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
         updateFieldStatus(assignedLabel, IssueField.ASSIGNED_TO);
         if (assignedField.getParent() == null) {
-            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
-        } else {
             updateFieldDecorations(assignedCombo, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+        } else {
+            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
         }
         updateFieldStatus(qaContactLabel, IssueField.QA_CONTACT);
         updateFieldDecorations(qaContactField, IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
