@@ -97,8 +97,6 @@
           </filterchain>
     </loadresource>
     
-    <echo message="JDK metadata: jdk.version.number=${jdk.version.number} jdk.update.number=${jdk.update.number} jdk.build.number=${jdk.build.number} jdk.ea.text=${jdk.ea.text}" />
-    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
     <property name="mpkg.version_jdk" value=" ${jdk.version.number} Update ${jdk.update.number}"/> 
     <property name="jdk.bundle.files.prefix" value="jdk-${jdk.version.number}u${jdk.update.number}"/>
