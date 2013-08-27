@@ -52,4 +52,5 @@ public interface TypeConstantElement extends TypeMemberElement {
     PhpElementKind KIND = PhpElementKind.TYPE_CONSTANT;
     @CheckForNull
     String getValue();
+    boolean isMagic();
 }

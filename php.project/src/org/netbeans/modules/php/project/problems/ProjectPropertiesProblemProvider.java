@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
@@ -79,7 +80,8 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
             PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
             PhpProjectProperties.WEB_ROOT,
-            PhpProjectProperties.INCLUDE_PATH));
+            PhpProjectProperties.INCLUDE_PATH,
+            PhpProjectProperties.PRIVATE_INCLUDE_PATH));
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final PhpProject project;
@@ -207,21 +209,36 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "ProjectPropertiesProblemProvider.invalidIncludePath.description=Some directories on project's Include Path are invalid."
     })
     void checkIncludePath(Collection<ProjectProblem> currentProblems) {
+        // public first
+        ProjectProblem projectProblem = checkIncludePath(PhpProjectProperties.INCLUDE_PATH);
+        if (projectProblem != null) {
+            currentProblems.add(projectProblem);
+            return;
+        }
+        // private now
+        projectProblem = checkIncludePath(PhpProjectProperties.PRIVATE_INCLUDE_PATH);
+        if (projectProblem != null) {
+            currentProblems.add(projectProblem);
+        }
+    }
+
+    @CheckForNull
+    private ProjectProblem checkIncludePath(String includePathProperty) {
         IncludePathSupport includePathSupport = new IncludePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
                 project.getRefHelper(), project.getHelper());
         List<BasePathSupport.Item> items = includePathSupport.itemsList(
-                ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.INCLUDE_PATH));
+                ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(includePathProperty));
         ValidationResult result = new IncludePathSupport.Validator()
                 .validateBroken(items)
                 .validatePaths(project, items)
                 .getResult();
-        if (result.hasErrors()) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
-                    Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, PhpProjectProperties.INCLUDE_PATH));
-            currentProblems.add(problem);
+        if (!result.hasErrors()) {
+            return null;
         }
+        return ProjectProblem.createError(
+                Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(),
+                Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_description(),
+                new CustomizerProblemResolver(project, CompositePanelProviderImpl.PHP_INCLUDE_PATH, includePathProperty));
     }
 
     private File getInvalidDirectory(FileObject directory, String propertyName) {
