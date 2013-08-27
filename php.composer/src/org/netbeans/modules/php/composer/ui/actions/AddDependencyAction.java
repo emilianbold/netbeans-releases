@@ -43,6 +43,7 @@ package org.netbeans.modules.php.composer.ui.actions;
 
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.composer.ui.DependenciesPanel;
 import org.openide.util.NbBundle;
 
 public class AddDependencyAction extends BaseComposerAction {
