@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,56 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.elements.ast;
+package org.netbeans.modules.css.prep.editor.less;
 
-import java.util.Collections;
-import java.util.Set;
-import org.codehaus.groovy.ast.FieldNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
+import javax.swing.text.Document;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
 
-public final class ASTField extends ASTElement {
+/**
+ * Testing of plain css stuff in less files.
+ * 
+ * @author marekfukala
+ */
+public class LessCompletionTest2 extends CssModuleTestBase {
 
-    private final String fieldType;
-    private final boolean isProperty;
-
-
-    public ASTField(FieldNode node, String in, boolean isProperty) {
-        super(node, in, node.getName());
-        this.isProperty = isProperty;
-        this.fieldType = node.getType().getNameWithoutPackage();
+    public LessCompletionTest2(String name) {
+        super(name);
     }
-
     @Override
-    public String getName() {
-        return name;
-    }
-    
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.FIELD;
-    }
-    
-    public String getType() {
-        return fieldType;
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
     }
 
-    public boolean isProperty() {
-        return isProperty;
-    }
-
-    @Override
-    public Set<Modifier> getModifiers() {
-        Set<Modifier> mods = super.getModifiers();
-        if (isProperty()) {
-            if (mods.isEmpty()) {
-                return Collections.singleton(Modifier.PRIVATE);
-            } else {
-                mods.add(Modifier.PRIVATE);
-            }
-        }
-        return mods;
+     public void testImportCompletion() throws ParseException {
+        FileObject cssFile = getTestFile("testProject/public_html/test.less");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, "@import |");
+        assertCompletion(document, Match.CONTAINS, "\"test1.scss\";");
+        
+        setDocumentContent(document, "@import | ");
+        assertCompletion(document, Match.CONTAINS, "\"test1.scss\";");
+        
     }
 }
