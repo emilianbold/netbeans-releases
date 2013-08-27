@@ -91,7 +91,9 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -139,6 +141,7 @@ public class ClientSideProject implements Project {
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
     private final DynamicProjectLookup lookup;
+    private final AntProjectListener antProjectListenerImpl = new AntProjectListenerImpl();
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
@@ -231,6 +234,7 @@ public class ClientSideProject implements Project {
                 }
             }
         });
+        projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, antProjectListenerImpl, projectHelper));
         WindowManager windowManager = WindowManager.getDefault();
         windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
@@ -836,6 +840,19 @@ public class ClientSideProject implements Project {
                 return new ClientSideProjectProperties(project);
             }
 
+        }
+
+    }
+
+    private final class AntProjectListenerImpl implements AntProjectListener {
+
+        @Override
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            name = null;
+        }
+
+        @Override
+        public void propertiesChanged(AntProjectEvent ev) {
         }
 
     }

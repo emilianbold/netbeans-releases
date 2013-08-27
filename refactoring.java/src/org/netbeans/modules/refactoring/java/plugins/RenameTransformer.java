@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.TextTree;
 import com.sun.source.tree.*;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTrees;
@@ -84,7 +85,7 @@ public class RenameTransformer extends RefactoringVisitor {
     private RenameRefactoring refactoring;
 
     public RenameTransformer(TreePathHandle handle, RenameRefactoring refactoring, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
-        super(!renameInComments);
+        super(true);
         this.handle = handle;
         this.refactoring = refactoring;
         this.newName = refactoring.getNewName();
@@ -406,6 +407,24 @@ public class RenameTransformer extends RefactoringVisitor {
     }
 
     @Override
+    public DocTree visitText(TextTree node, Element p) {
+        if(renameInComments && refactoring.getContext().lookup(RenamePropertyRefactoringPlugin.class) == null) {
+            DocTreePath currentDocPath = getCurrentDocPath();
+            if(p.getKind() == ElementKind.PARAMETER) {
+                VariableElement var = (VariableElement) p;
+                Element method = workingCopy.getTrees().getElement(currentDocPath.getTreePath());
+                if(!var.getEnclosingElement().equals(method)) {
+                    return super.visitText(node, p);
+                }
+            }
+            String body = node.getBody().replaceAll(getOldSimpleName(p), newName);
+            TextTree newText = make.Text(body);
+            rewrite(currentDocPath.getTreePath().getLeaf(), node, newText);
+        }
+        return super.visitText(node, p);
+    }
+
+    @Override
     public DocTree visitIdentifier(com.sun.source.doctree.IdentifierTree node, Element elementToFind) {
         DocTreePath currentDocPath = getCurrentDocPath();
         DocTrees trees = workingCopy.getDocTrees();
@@ -470,8 +489,8 @@ public class RenameTransformer extends RefactoringVisitor {
         switch (token.id()) {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
-            case JAVADOC_COMMENT:
                 return true;
+            case JAVADOC_COMMENT:
             default:
                 return false;
         }

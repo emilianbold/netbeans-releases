@@ -142,6 +142,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     private CompilerSet2Configuration compilerSet;
     private LanguageBooleanConfiguration cRequired;
     private LanguageBooleanConfiguration cppRequired;
+    private boolean cpp11Required;
     private LanguageBooleanConfiguration fortranRequired;
     private LanguageBooleanConfiguration assemblerRequired;
     private DevelopmentHostConfiguration developmentHost;
@@ -899,8 +900,10 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public void reCountLanguages(MakeConfigurationDescriptor configurationDescriptor) {
         boolean hasCFiles = false;
         boolean hasCPPFiles = false;
+        boolean hasCPP11Files = false;
         boolean hasFortranFiles = false;
         boolean hasAssemblerFiles = false;
+        
         //boolean hasCAsmFiles = false;
 
 
@@ -925,6 +928,13 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
                 PredefinedToolKind tool = itemConfiguration.getTool();
                 if (tool == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
+                    BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+                    if (compilerConfiguration instanceof CCCompilerConfiguration) {
+                        CCCompilerConfiguration cppConf = (CCCompilerConfiguration) compilerConfiguration;
+                        if (cppConf.getCppStandard().getValue() == CCCompilerConfiguration.STANDARD_CPP11) {
+                            hasCPP11Files = true;
+                        }
+                    }
                 }
                 if (tool == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
@@ -945,6 +955,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         fortranRequired.setDefault(hasFortranFiles);
         assemblerRequired.setDefault(hasAssemblerFiles);
         //asmRequired.setValueDef(hasCAsmFiles);
+        cpp11Required = hasCPP11Files;
 
         languagesDirty = false;
     }

@@ -71,6 +71,10 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.DialogDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -2066,5 +2070,86 @@ public class FormUtils
             }
         });
         return dd;
+    }
+
+    /**
+     * Parse form file into DOM document. If the form is a xml 1.1 file, try to
+     * parse it first as 1.0, only if it fails then try to process it as 1.1.
+     * The reason is that xml 1.1 parser fails to parse larger files correctly
+     * (e.g. in TableCustomizer or GridBagCustomizer forms some property names
+     * are read mangled, while read fine as xml 1.0).
+     * @param formFile
+     * @return
+     * @throws IOException
+     * @throws SAXException 
+     */
+    static Document readFormToDocument(FileObject formFile) throws IOException, SAXException {
+        InputStream xmlInputStream = new XML10InputStream(formFile.getInputStream());
+        try {
+            return XMLUtil.parse(new InputSource(xmlInputStream),
+                                 false, false, null, null);
+        } catch (Exception ex) {
+            LOGGER.log(Level.INFO, "Could not read form as xml 1.0, will try as xml 1.1."); // NOI18N
+            LOGGER.log(Level.FINE, "", ex); // NOI18N
+        }
+        return XMLUtil.parse(new InputSource(formFile.getInputStream()),
+                             false, false, null, null);
+    }
+
+    private static class XML10InputStream extends InputStream {
+        /** Form files saved as xml 1.1 start with this string. */
+        private static final String FORM_XML11_HEADER = "<?xml version=\"1.1"; // NOI18N
+
+        /** Index in header read so far and matching. */
+        private int matchIndex;
+
+        /** Source stream. */
+        private final InputStream is;
+
+        XML10InputStream(InputStream is) {
+            this.is = is;
+        }
+
+        @Override
+        public int read() throws IOException {
+            int c = is.read();
+            if (matchIndex < FORM_XML11_HEADER.length()) {
+                if (c == FORM_XML11_HEADER.charAt(matchIndex)) {
+                    matchIndex++;
+                    if (matchIndex == FORM_XML11_HEADER.length()) {
+                        // this is a xml 1.1 form, pretend it is xml 1.0
+                        c = '0';
+                    }
+                } else if (matchIndex > 0 || c == '\n') {
+                    matchIndex = FORM_XML11_HEADER.length(); // header not found, this is not a xml 1.1 form
+                }
+            }
+            return c;
+        }
+
+        @Override
+        public int available() throws IOException {
+            return is.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            is.close();
+        }
+
+        @Override
+        public synchronized void mark(int readlimit) {
+            is.mark(readlimit);
+        }
+
+        @Override
+        public boolean markSupported() {
+            return is.markSupported();
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return is.skip(n);
+        }
     }
 }

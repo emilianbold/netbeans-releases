@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -60,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmObjectAttributeQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -204,11 +206,20 @@ public class FileElementsCollector {
             return;
         }
         mapsGathered = true;
-        gatherFileMaps(this.destFile);
+        gatherFileMaps();
     }
 
-    private void gatherFileMaps(CsmFile file) {
-        gatherFileMaps(new HashSet<CsmFile>(), file, this.startOffset, this.destOffset);
+    private void gatherFileMaps() {
+        final HashSet<CsmFile> visitedFiles = new HashSet<>();
+        // gather all visible by this file's include stack
+        List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(destFile);
+        for (CsmInclude inc : includeStack) {
+            CsmFile includedFrom = inc.getContainingFile();
+            int incOffset = inc.getStartOffset();
+            gatherFileMaps(visitedFiles, includedFrom, 0, incOffset);
+        }
+        // gather all visible by this file upto destination offset
+        gatherFileMaps(visitedFiles, this.destFile, this.startOffset, this.destOffset);
     }
 
     private void gatherFileMaps(Set<CsmFile> visitedFiles, CsmFile file, int startOffset, int endOffset) {

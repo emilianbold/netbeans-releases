@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -727,7 +728,11 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         @Override
         public String getName() {
             String relativePath = FileUtil.getRelativePath(root, dataFolder.getPrimaryFile());
-            return relativePath == null ?  null : relativePath.replace('/', '.'); // NOI18N
+            if (relativePath == null) {
+                LOG.log(Level.INFO, "Encountered issue #233984: folder:{0} [valid:{1}], root:{2} [valid:{3},folder={4}]", new Object[]{dataFolder.getPrimaryFile().getPath(), dataFolder.getPrimaryFile().isValid(), root.getPath(), root.isValid(), root.isFolder()});
+            }
+            return relativePath == null ?  dataFolder.getPrimaryFile().getNameExt() /*used to be null, but null not allowed, very rare occurence, not sure what is the right value then*/
+                                        : relativePath.replace('/', '.'); // NOI18N
         }
         
         @Messages("LBL_CompilePackage_Action=Compile Package")

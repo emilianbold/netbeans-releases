@@ -181,6 +181,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private OwnerInfo ownerInfo;
     private UndoRedoSupport undoRedoSupport;
     private final Set<IssueField> unsavedFields = new HashSet<IssueField>();
+    private boolean customFieldsLoaded;
 
     static {
         incomingChangesColor = UIManager.getColor( "nb.bugtracking.label.highlight" ); //NOI18N
@@ -313,11 +314,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (!reloading && isDirty) {
                     issue.markUserChange();
                 }
-                btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
                     unsavedFields.clear();
                 }
-                cancelButton.setEnabled(isModified);
+                if (enableMap.isEmpty()) {
+                    btnSaveChanges.setEnabled(isDirty);
+                    cancelButton.setEnabled(isModified);
+                } else {
+                    enableMap.put(btnSaveChanges, isDirty);
+                    enableMap.put(cancelButton, isModified);
+                }
             }
         });
     }
@@ -359,7 +365,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         this.issue = issue;
         initCombos();
-        initCustomFields();
         List<String> kws = issue.getRepository().getConfiguration().getKeywords();
         keywords.clear();
         for (String keyword : kws) {
@@ -654,6 +659,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ccField, IssueField.CC);
             reloadField(force, dependsField, IssueField.DEPENDS_ON);
             reloadField(force, blocksField, IssueField.BLOCKS);
+            if (!customFieldsLoaded) {
+                customFieldsLoaded = true;
+                initCustomFields();
+            }
             reloadCustomFields(force);
         }
         int newCommentCount = issue.getComments().length;
@@ -1111,9 +1120,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
         updateFieldStatus(assignedLabel, IssueField.ASSIGNED_TO);
         if (assignedField.getParent() == null) {
-            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
-        } else {
             updateFieldDecorations(assignedCombo, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+        } else {
+            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
         }
         updateFieldStatus(qaContactLabel, IssueField.QA_CONTACT);
         updateFieldDecorations(qaContactField, IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
@@ -1134,11 +1143,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
         updateFieldStatus(addCommentLabel);
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, addCommentLabel);
+        updateCustomFieldStatuses();
+        repaint();
+    }
+
+    private void updateCustomFieldStatuses () {
         for (CustomFieldInfo field : customFields) {
             updateFieldStatus(field.label, field.field);
             updateFieldDecorations(field.comp, field.field, field.warning, field.label);
         }
-        repaint();
     }
 
     private void updateFieldStatus(JComponent label, IssueField... fields) {
@@ -1563,6 +1576,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         fieldLayout.setVerticalGroup(fieldVerticalGroup);
         customFieldsPanelLeft.setVisible(anyField);
         customFieldsPanelRight.setVisible(anyField);
+        setupCustomFieldsListeners();
     }
     
     private boolean isNbExceptionReport(IssueField field) {
@@ -2903,6 +2917,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 issueTypeCombo.setSelectedItem(issueType);
                             }
                             reloadCustomFields(true);
+                            updateCustomFieldStatuses();
                         } finally {
                             reloading = false;
                             enableComponents(true);
@@ -3521,7 +3536,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return super.isEnabled() && !deadlineField.getText().trim().equals(YYYY_MM_DD);
             }
         });
-
+    }
+    
+    private void setupCustomFieldsListeners () {
         // custom fields
         for (CustomFieldInfo field : customFields) {
             if (field.comp instanceof JTextComponent) {

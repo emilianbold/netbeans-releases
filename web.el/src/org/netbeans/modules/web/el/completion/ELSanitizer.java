@@ -164,8 +164,10 @@ public final class ELSanitizer {
                     if (expression.endsWith(ELTokenId.RBRACKET.fixedText())) {
                         // e.g. #{bean.items[|]}
                         return expression.substring(0, expression.length() - 1) + ADDED_QUOTED_SUFFIX + ELTokenId.RBRACKET.fixedText();
-                    } else if (expression.endsWith(ELTokenId.DOT.fixedText() + ELTokenId.RPAREN.fixedText())) {
+                    } else if (expression.endsWith(ELTokenId.DOT.fixedText() + ELTokenId.RPAREN.fixedText())
                         // for opened classname call - e.g. #{(java.|)}
+                            || expression.endsWith(ELTokenId.LAMBDA.fixedText() + ELTokenId.RPAREN.fixedText())) {
+                            // for started lambda expression - e.g. #{[1,4].stream().peek(i->|)}
                         return expression.substring(0, expression.length() - 1) + ADDED_SUFFIX + ELTokenId.RPAREN.fixedText();
                     }
                     return expression;

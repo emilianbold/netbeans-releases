@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -190,7 +191,7 @@ public final class Resolver3 implements Resolver {
         // first of all - check local context
         if (!currDone) {
             currLocalClassifier = null;
-            gatherMaps(file, false, origOffset);
+            initFileMaps(false);
             currDone = true;
         }
         if (currLocalClassifier != null && needClassifiers()) {
@@ -461,6 +462,19 @@ public final class Resolver3 implements Resolver {
                        , CsmDeclaration.Kind.UNION
                        );
 
+    private void initFileMaps(boolean visitIncludedFiles) {
+        if (visitIncludedFiles) {
+            // gather all visible by this file's include stack
+            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+            for (CsmInclude inc : includeStack) {
+                CsmFile includedFrom = inc.getContainingFile();
+                int incOffset = inc.getStartOffset();
+                gatherMaps(includedFrom, true, incOffset);
+            }
+        }
+        gatherMaps(file, visitIncludedFiles, origOffset);
+    }
+    
     private void gatherMaps(CsmFile file, boolean visitIncludedFiles, int offset) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
@@ -774,7 +788,7 @@ public final class Resolver3 implements Resolver {
             result = null;
         }
         if (result == null) {
-            gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
+            initFileMaps(!FileImpl.isFileBeingParsedInCurrentThread(file));
             if (currLocalClassifier != null && needClassifiers()) {
                 resultIsVisible.set(isObjectVisibleFromFile(currLocalClassifier, startFile));
                 result = currLocalClassifier;
@@ -908,7 +922,7 @@ public final class Resolver3 implements Resolver {
             result = findNamespace(containingNS, fullName);
         }
         if (!canStop(result, resultIsVisible, backupResult) && needClassifiers()) {
-            gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
+            initFileMaps(!FileImpl.isFileBeingParsedInCurrentThread(file));
             if (currLocalClassifier != null && CsmKindUtilities.isTypedef(currLocalClassifier)) {
                 CsmType type = ((CsmTypedef)currLocalClassifier).getType();
                 if (type != null) {
@@ -1118,6 +1132,9 @@ public final class Resolver3 implements Resolver {
             List<CsmClass> classesContainers = getClassesContainers(cls);
             for (CsmClass csmClass : classesContainers) {
                 CsmClassifier classifier = null;
+                if (csmClass.getName().equals(name)) {
+                    return csmClass;
+                }
                 CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(name, true, true, false);
                 Iterator<CsmMember> it = CsmSelect.getClassMembers(csmClass, filter);
                 while (it.hasNext()) {

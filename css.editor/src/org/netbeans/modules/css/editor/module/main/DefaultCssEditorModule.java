@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
@@ -108,7 +109,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
         module("fonts", "http://www.w3.org/TR/css3-fonts"),
         module("basic_box_model", "http://www.w3.org/TR/css3-box"),
         module("speech", "http://www.w3.org/TR/css3-speech"),
-//        module("grid_positioning", "http://www.w3.org/TR/css3-grid"), //obsolete
+        //        module("grid_positioning", "http://www.w3.org/TR/css3-grid"), //obsolete
         module("flexible_box_layout", "http://www.w3.org/TR/css3-flexbox"),
         module("image_values", "http://www.w3.org/TR/css3-images"),
         module("animations", "http://www.w3.org/TR/css3-animations"),
@@ -128,7 +129,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
     private static class DefaultCssModule implements CssModule {
 
-        private String name, url;
+        private final String name, url;
 
         public DefaultCssModule(String name, String url) {
             this.name = name;
@@ -159,9 +160,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     .append(getSpecificationURL())
                     .append(')').toString();
         }
-        
-        
-        
+
     }
 
     private static class Css21HelpResolver extends HelpResolver {
@@ -206,15 +205,15 @@ public class DefaultCssEditorModule extends CssEditorModule {
     public PropertyDefinition getPropertyDefinition(String propertyName) {
         return getProperties().get(propertyName);
     }
-    
+
     @Override
     public Collection<HelpResolver> getHelpResolvers(FileObject context) {
         //CSS2.1 legacy help - to be removed
         return Arrays.asList(new HelpResolver[]{
-                    new Css21HelpResolver(),
-                    new PropertyCompatibilityHelpResolver(),
-                    new StandardPropertiesHelpResolver()
-                });
+            new Css21HelpResolver(),
+            new PropertyCompatibilityHelpResolver(),
+            new StandardPropertiesHelpResolver()
+        });
     }
 
     @Override
@@ -230,12 +229,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case cssClass:
                         //Bug 207764 - error syntax highlight
                         //filter out virtual selectors (@@@)
-                        if(LexerUtils.equals(
+                        if (LexerUtils.equals(
                                 org.netbeans.modules.web.common.api.Constants.LANGUAGE_SNIPPET_SEPARATOR,
                                 node.image(), false, false)) {
                             break; //@@@ node
                         }
-                        
+
                         int dso = snapshot.getOriginalOffset(node.from());
                         if (dso == -1) {
                             //try next offset - for virtually created class and id
@@ -256,10 +255,10 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case property:
                         //do not overlap with sass interpolation expression sem.coloring
                         //xxx this needs to be solved somehow grafefully!
-                        if(NodeUtil.getChildByType(node, NodeType.token) == null || node.children().size() > 1) {
-                            break; //not "normal" property which can only have one GEN or IDENT child token node
-                        }
-                        
+                        if (NodeUtil.getChildByType(node, NodeType.token) == null || node.children().size() > 1) {
+                        break; //not "normal" property which can only have one GEN or IDENT child token node
+                    }
+
                         dso = snapshot.getOriginalOffset(node.from());
                         deo = snapshot.getOriginalOffset(node.to());
                         if (dso >= 0 && deo >= 0) { //filter virtual nodes
@@ -307,7 +306,6 @@ public class DefaultCssEditorModule extends CssEditorModule {
             return null;
         }
 
-
         Node current = NodeUtil.findNonTokenNodeAtOffset(context.getParseTreeRoot(), astCaretOffset);
         if (current == null) {
             //this may happen if the offset falls to the area outside the selectors rule node.
@@ -354,7 +352,6 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                 return false;
 
-
             }
         };
 
@@ -364,13 +361,13 @@ public class DefaultCssEditorModule extends CssEditorModule {
     public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
         final Snapshot snapshot = context.getSnapshot();
         final Lines lines = new Lines(snapshot.getText());
-        
+
         return new NodeVisitor<T>(result) {
 
             @Override
             public boolean visit(Node node) {
                 int from = -1, to = -1;
-                switch(node.type()) {
+                switch (node.type()) {
                     case rule:
                     case media:
                     case page:
@@ -419,29 +416,33 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(Document document, int caretOffset) {
+    public Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclaration(final Document document, final int caretOffset) {
         //first try to find the reference span
-        TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(document, caretOffset, CssTokenId.language());
-        if (ts == null) {
-            return null;
-        }
+        final AtomicReference<OffsetRange> result = new AtomicReference<>();
+        document.render(new Runnable() {
 
-        OffsetRange foundRange = null;
-        Token<CssTokenId> token = ts.token();
-        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
-        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-        if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
-            //check if there is @import token before
-            if (ts.movePrevious()) {
-                //@import token expected
-                if (ts.token().id() == CssTokenId.IMPORT_SYM) {
-                    //gotcha!
-                    foundRange = range;
+            @Override
+            public void run() {
+                TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(document, caretOffset, CssTokenId.language());
+                if (ts == null) {
+                    return;
+                }
+
+                Token<CssTokenId> token = ts.token();
+                int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+                OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
+                if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
+                    //check if there is @import token before
+                    if (LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        //gotcha!
+                        result.set(range);
+                    }
                 }
             }
-        }
 
-        if (foundRange == null) {
+        });
+
+        if (result.get() == null) {
             return null;
         }
 
@@ -450,36 +451,43 @@ public class DefaultCssEditorModule extends CssEditorModule {
         FutureParamTask<DeclarationLocation, EditorFeatureContext> callable = new FutureParamTask<DeclarationLocation, EditorFeatureContext>() {
 
             @Override
-            public DeclarationLocation run(EditorFeatureContext context) {
-                final TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(context.getDocument(), context.getCaretOffset(), CssTokenId.language());
-                if (ts == null) {
-                    return null;
-                }
+            public DeclarationLocation run(final EditorFeatureContext context) {
+                final AtomicReference<DeclarationLocation> result = new AtomicReference<>();
+                context.getDocument().render(new Runnable() {
 
-                Token<CssTokenId> valueToken = ts.token();
-                String valueText = valueToken.text().toString();
+                    @Override
+                    public void run() {
+                        final TokenSequence<CssTokenId> ts = LexerUtils.getJoinedTokenSequence(context.getDocument(), context.getCaretOffset(), CssTokenId.language());
+                        if (ts == null) {
+                            return;
+                        }
 
-                //adjust the value if a part of an URI
-                if (valueToken.id() == CssTokenId.URI) {
-                    Matcher m = URI_PATTERN.matcher(valueToken.text());
-                    if (m.matches()) {
-                        int groupIndex = 1;
-                        valueText = m.group(groupIndex);
+                        Token<CssTokenId> valueToken = ts.token();
+                        String valueText = valueToken.text().toString();
+
+                        //adjust the value if a part of an URI
+                        if (valueToken.id() == CssTokenId.URI) {
+                            Matcher m = URI_PATTERN.matcher(valueToken.text());
+                            if (m.matches()) {
+                                int groupIndex = 1;
+                                valueText = m.group(groupIndex);
+                            }
+                        }
+
+                        valueText = WebUtils.unquotedValue(valueText);
+
+                        FileObject resolved = WebUtils.resolve(context.getSource().getFileObject(), valueText);
+                        if (resolved != null) {
+                            result.set(new DeclarationLocation(resolved, 0));
+                        }
                     }
-                }
-
-                valueText = WebUtils.unquotedValue(valueText);
-
-                FileObject resolved = WebUtils.resolve(context.getSource().getFileObject(), valueText);
-                return resolved != null
-                        ? new DeclarationLocation(resolved, 0)
-                        : null;
-
+                });
+                return result.get();
 
             }
         };
 
-        return Pair.<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>of(foundRange, callable);
+        return Pair.<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>of(result.get(), callable);
     }
 
     @Override
@@ -494,46 +502,46 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
         final Snapshot snapshot = context.getSnapshot();
         final FileObject file = context.getFileObject();
-        
+
         return new NodeVisitor<T>() {
-            
+
             private void addElement(StructureItem si) {
-                if(elements.isEmpty()) {
+                if (elements.isEmpty()) {
                     result.add(new TopLevelStructureItem.Elements(elements));
                 }
                 elements.add(si);
             }
-           
+
             private void addRule(StructureItem si) {
-                if(rules.isEmpty()) {
+                if (rules.isEmpty()) {
                     result.add(new TopLevelStructureItem.Rules(rules, context));
                 }
                 rules.add(si);
             }
-           
+
             private void addAtRule(StructureItem si) {
-                if(atrules.isEmpty()) {
+                if (atrules.isEmpty()) {
                     result.add(new TopLevelStructureItem.AtRules(atrules));
                 }
                 atrules.add(si);
             }
-            
+
             private void addId(StructureItem si) {
-                if(ids.isEmpty()) {
+                if (ids.isEmpty()) {
                     result.add(new TopLevelStructureItem.Ids(ids));
                 }
                 ids.add(si);
             }
-            
+
             private void addClass(StructureItem si) {
-                if(classes.isEmpty()) {
+                if (classes.isEmpty()) {
                     result.add(new TopLevelStructureItem.Classes(classes));
                 }
                 classes.add(si);
             }
-            
+
             private void addImport(StructureItem si) {
-                if(imports.isEmpty()) {
+                if (imports.isEmpty()) {
                     result.add(new TopLevelStructureItem.Imports(imports));
                 }
                 imports.add(si);
@@ -576,7 +584,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case mediaQueryList:
                         Node mediaNode = node.parent();
                         StringBuilder image = new StringBuilder();
-                        if(mediaNode.type() == NodeType.media) {
+                        if (mediaNode.type() == NodeType.media) {
                             image.append("@media "); //NOI18N
                             image.append(node.image());
                             addAtRule(new CssRuleStructureItem(image, CssNodeElement.createElement(file, mediaNode), snapshot));
@@ -585,14 +593,14 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case page:
                         Node pageSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.PAGE_SYM);
                         Node lbraceSymbolNode = NodeUtil.getChildTokenNode(node, CssTokenId.LBRACE);
-                        if(pageSymbolNode != null && lbraceSymbolNode != null) {
+                        if (pageSymbolNode != null && lbraceSymbolNode != null) {
                             CharSequence headingAreaImage = snapshot.getText().subSequence(pageSymbolNode.from(), lbraceSymbolNode.from());
                             addAtRule(new CssRuleStructureItem(headingAreaImage, CssNodeElement.createElement(file, node), snapshot));
                         }
                         break;
                     case counterStyle:
                         Node identNode = NodeUtil.getChildTokenNode(node, CssTokenId.IDENT);
-                        if(identNode != null) {
+                        if (identNode != null) {
                             image = new StringBuilder();
                             image.append("@counter-style "); //NOI18N
                             image.append(identNode.image());
@@ -601,7 +609,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         break;
                     case importItem:
                         Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
-                        for(Node ri : resourceIdentifiers) {
+                        for (Node ri : resourceIdentifiers) {
                             addImport(new CssRuleStructureItem(WebUtils.unquotedValue(ri.image()), CssNodeElement.createElement(file, ri), snapshot));
                         }
                         break;

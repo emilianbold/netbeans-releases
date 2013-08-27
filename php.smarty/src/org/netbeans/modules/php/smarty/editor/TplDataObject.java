@@ -108,6 +108,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
     /** Constants used when finding tpl (html) document content type and encoding. */
     private static final String CHARSET_DECL = "CHARSET=";     //NOI18N
     private static final String CHARSET_ATTRIBUTE = "charset"; //NOI18N
+    private static final String META_TAG = "meta";             //NOI18N
 
     /**
      * Constant where is placed standard TPL file icon.
@@ -252,11 +253,15 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
         TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
         ts.moveStart();
         boolean in_charset_attribute = false;
+        CharSequence openTag = ""; //NOI18N
         while (ts.moveNext()) {
             Token<HTMLTokenId> token = ts.token();
             switch (token.id()) {
+                case TAG_OPEN:
+                    openTag = token.text();
                 case ARGUMENT:
-                    in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true);
+                    in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true)
+                            && LexerUtils.equals(META_TAG, openTag, true, true);
                     break;
                 case VALUE:
                     if (in_charset_attribute) {

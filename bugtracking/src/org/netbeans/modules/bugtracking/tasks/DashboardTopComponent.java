@@ -48,6 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
@@ -324,8 +326,8 @@ public final class DashboardTopComponent extends TopComponent {
                 categories.remove(taskNode.getCategory());
             }
         }
-        CategoryPicker picker = new CategoryPicker(categories);
-        NotifyDescriptor nd = new NotifyDescriptor(
+        final CategoryPicker picker = new CategoryPicker(categories);
+        final NotifyDescriptor nd = new NotifyDescriptor(
                 picker,
                 NbBundle.getMessage(DashboardTopComponent.class, "LBL_AddTaskToCat"), //NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION,
@@ -333,11 +335,20 @@ public final class DashboardTopComponent extends TopComponent {
                 null,
                 NotifyDescriptor.OK_OPTION);
 
+        picker.setCategoryListener(new CategoryPicker.CategoryComboListener() {
+            @Override
+            public void comboItemsChanged(boolean categoryAvailable) {
+                nd.setValid(categoryAvailable);
+            }
+        });
+
+        if (categories.isEmpty()) {
+            nd.setValid(false);
+        }
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
             dashboard.addTaskToCategory(category, taskNodes);
         }
-
     }
 
     public void select(RepositoryImpl repo, boolean activate) {

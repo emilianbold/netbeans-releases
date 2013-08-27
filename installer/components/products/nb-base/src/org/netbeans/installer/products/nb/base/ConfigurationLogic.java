@@ -320,6 +320,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             try {
                 LogManager.log("... integrate " + getSystemDisplayName() + " with Java DB installed at " + javadbLocation);
                 javadbRegistered = registerJavaDB(installLocation, javadbLocation);
+                // Derby registration creates this file (see #234759)
+                File lastModified = new File(installLocation, "nb/var/cache/lastmodified/all-checksum.txt");
+                if (lastModified.exists()) {
+                    File actual = lastModified;
+                    do {
+                        filesList.add(actual);
+                        actual = actual.getParentFile();
+                    } while (!actual.getName().equals("nb")); // NOI18N
+                }
                 if (! javadbRegistered) {
                     LogManager.log("... ... Java DB wasn't registred.");
                 }
