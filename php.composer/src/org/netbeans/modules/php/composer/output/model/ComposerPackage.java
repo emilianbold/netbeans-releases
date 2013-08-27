@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.composer.output.model;
 
+import java.util.Objects;
+
 /**
  * Value object for a Composer package.
  */
@@ -67,6 +69,32 @@ public final class ComposerPackage {
 
     public String asFullPackage() {
         return name + ":" + version; // NOI18N
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 31 * hash + Objects.hashCode(this.name);
+        hash = 31 * hash + Objects.hashCode(this.version);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ComposerPackage other = (ComposerPackage) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.version, other.version)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
