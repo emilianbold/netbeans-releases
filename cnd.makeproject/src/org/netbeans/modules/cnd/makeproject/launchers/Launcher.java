@@ -54,6 +54,7 @@ public final class Launcher {
     //command is required field, cannot be null
     //if you want to change command -> delete launcher and add new one
     private final String command;
+    private String buildCommand;
     private String runDir;
     private Map<String, String> env = new HashMap<String, String>();
     private String symbolFiles;
@@ -75,6 +76,14 @@ public final class Launcher {
 
     public String getCommand() {
         return command;
+    }
+
+    public String getBuildCommand() {
+        return buildCommand;
+    }
+
+    public void setBuildCommand(String buildCommand) {
+        this.buildCommand = buildCommand;
     }
 
     public String getRunDir() {

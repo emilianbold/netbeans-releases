@@ -1019,7 +1019,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 if (classTypes.isEmpty()) {
-                    insertEmptyElement(classTypes, NameKind.exact(superClassName));
+                    insertEmptyElement(classTypes, getClasses(NameKind.exact(superClassName)));
                 }
             }
             directTypes.addAll(classTypes);
@@ -1054,7 +1054,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 if (ifaceTypes.isEmpty()) {
-                    insertEmptyElement(ifaceTypes, NameKind.exact(iface));
+                    insertEmptyElement(ifaceTypes, getInterfaces(NameKind.exact(iface)));
                 }
                 directTypes.addAll(ifaceTypes);
             }
@@ -1080,7 +1080,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     }
                 }
                 if (traitTypes.isEmpty()) {
-                    insertEmptyElement(traitTypes, NameKind.exact(trait));
+                    insertEmptyElement(traitTypes, getTraits(NameKind.exact(trait)));
                 }
                 directTypes.addAll(traitTypes);
             }
@@ -1088,8 +1088,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return directTypes;
     }
 
-    private void insertEmptyElement(final Set<TypeMemberElement> where, final Exact exactTypeName) {
-        TypeElement exactType = ModelUtils.getFirst(getTypes(exactTypeName));
+    private void insertEmptyElement(final Set<TypeMemberElement> where, final Set<? extends TypeElement> exactTypeName) {
+        TypeElement exactType = ModelUtils.getFirst(exactTypeName);
         if (exactType != null) {
             where.add(new EmptyElement(exactType));
         }

@@ -173,15 +173,27 @@ public class WindowsSupport {
                     currentElement = new NetUseStructure();
                     break;
                 case "LocalName"://NOI18N
+                    if (currentElement == null) {
+                        break;
+                    }
                     currentElement.localDiskName = value;
                     break;
                 case "RemotePath"://NOI18N
+                    if (currentElement == null) {
+                        break;
+                    }                    
                     currentElement.setRemotePath(value);
                     break;
                 case "ConnectionState"://NOI18N
                     currentElement.isConnected = !"Disconnected".equals(value);//NOI18N
+                    if (currentElement == null) {
+                        break;
+                    }                    
                     break;
                 case "ProviderName"://NOI18N
+                    if (currentElement == null) {
+                        break;
+                    }                    
                     currentElement.isNFS = NFS_NETWORK_PROVIDER_NAME.equals(value);
                     currentElement.providerName = value;
                     break;
