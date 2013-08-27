@@ -116,7 +116,7 @@ public abstract class NbCsmPaintComponent extends CsmPaintComponent {
             Icon superIcon = super.getIcon();
             if (superIcon != null) 
                 return superIcon;
-            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.ENUM, CsmUtilities.ENUMERATOR);
+            Icon newIcon = CsmImageLoader.getIcon(CsmDeclaration.Kind.ENUMERATOR, 0);
             setIcon(newIcon);
             return newIcon;            
         }

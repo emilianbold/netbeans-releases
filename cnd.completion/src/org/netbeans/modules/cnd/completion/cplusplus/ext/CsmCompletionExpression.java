@@ -187,8 +187,12 @@ public class CsmCompletionExpression {
     public static final int DECLTYPE_OPEN = 47;
     /** Closed decltype holding the subexpression */
     public static final int DECLTYPE = 48;    
+    /** 'auto' keyword */
+    public static final int AUTO = 49;
+    /** '->' after cpp11 new syntax function declaration (auto [declarator] -> [return type] ) */
+    public static final int ARROW_RETURN_TYPE = 50;
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = DECLTYPE;
+    private static final int LAST_ID = ARROW_RETURN_TYPE;
     private static final int cppTokenIDsLength = EnumSet.allOf(CppTokenId.class).size();
     /** Array that holds the precedence of the operator
      * and whether it's right associative or not.
@@ -276,6 +280,9 @@ public class CsmCompletionExpression {
         OP[cppTokenIDsLength + NEW] = 0; // stop
         OP[cppTokenIDsLength + INSTANCEOF] = 10;
         OP[cppTokenIDsLength + CPPINCLUDE] = 0; // stop
+        OP[cppTokenIDsLength + DECLTYPE_OPEN] = 0; // stop
+        OP[cppTokenIDsLength + DECLTYPE] = 1; // stop
+        OP[cppTokenIDsLength + ARROW_RETURN_TYPE] = 1;
 
         OP[cppTokenIDsLength + MEMBER_POINTER_OPEN] = 0; // stop
         OP[cppTokenIDsLength + MEMBER_POINTER] = 15 | RIGHT_ASSOCIATIVE; // as unary operators ?        

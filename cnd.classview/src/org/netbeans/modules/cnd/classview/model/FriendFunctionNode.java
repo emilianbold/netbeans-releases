@@ -63,7 +63,7 @@ public class FriendFunctionNode extends ObjectNode {
         init(fun);
     }
     
-    private void init(CsmFriendFunction fun){
+    private void init(final CsmFriendFunction fun){
         CharSequence old = text;
         text = CVUtil.getSignature(fun);
         if ((old == null) || !old.equals(text)) {
@@ -74,10 +74,15 @@ public class FriendFunctionNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     text == null ? null : text.toString());
         }
-        //String text = CVUtil.getSignature(fun).toString();
-        //setName(text);
-        //setDisplayName(text);
-        //setShortDescription(text);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(fun);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     @Override
@@ -106,6 +111,7 @@ public class FriendFunctionNode extends ObjectNode {
         return getIcon(param);
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmFriendFunction){

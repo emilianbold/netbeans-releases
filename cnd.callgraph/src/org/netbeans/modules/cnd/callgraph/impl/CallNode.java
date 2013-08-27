@@ -49,15 +49,18 @@ import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
 public class CallNode extends AbstractNode {
-    private Call object;
-    private CallGraphState model;
-    private boolean isCalls;
+    private final Call object;
+    private final CallGraphState model;
+    private final boolean isCalls;
+    private volatile Image image;
+    private static final RequestProcessor RP = new RequestProcessor("Call Graph icon updater",1); //NOI18N
 
     public CallNode(Call element, CallGraphState model, boolean isCalls) {
         super(new CallChildren(element, model, isCalls));
@@ -99,15 +102,27 @@ public class CallNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image res = null;
-        if (isCalls) {
-            res = object.getCallee().getIcon();
+        Image res = image;
+        if (res == null) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    Image icon;
+                    if (isCalls) {
+                        icon = object.getCallee().getIcon();
+                    } else {
+                        icon = object.getCaller().getIcon();
+                    }
+                    image = mergeBadge(icon);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            });
         } else {
-            res = object.getCaller().getIcon();
+            return res;
         }
-        if (res == null){
-            res = super.getIcon(param);
-        }
+        res = super.getIcon(param);
         return mergeBadge(res);
     }
 

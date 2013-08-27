@@ -73,7 +73,7 @@ public class CsmImageLoader implements CsmImageName {
      * allow translation of kinds when interested in another icon for object, i.e.
      * can set translation from FUNCTION icon to FUNCTION_DEFINITION icon
      * @param o
-     * @param translateKinds
+     * @param translateIcons
      * @return
      */
     public static Image getImage(CsmObject o, Map<CsmDeclaration.Kind, CsmDeclaration.Kind> translateIcons) {
@@ -150,10 +150,8 @@ public class CsmImageLoader implements CsmImageName {
     
     private static String getImagePath(CsmObject o, Map<CsmDeclaration.Kind, CsmDeclaration.Kind> translateIcons) {
         CsmDeclaration.Kind kind = CsmDeclaration.Kind.BUILT_IN;
-        int modifiers = CsmUtilities.getModifiers(o);
         if (CsmKindUtilities.isEnumerator(o)) {
-            kind = CsmDeclaration.Kind.ENUM;
-            modifiers |= CsmUtilities.ENUMERATOR;
+            kind = CsmDeclaration.Kind.ENUMERATOR;
         } else if (CsmKindUtilities.isUsingDirective(o)) {
             return USING;
         } else if (CsmKindUtilities.isUsingDeclaration(o)) {
@@ -161,7 +159,7 @@ public class CsmImageLoader implements CsmImageName {
         } else if (CsmKindUtilities.isEnumForwardDeclaration(o)) {
             return ENUMERATION_FWD;
         } else if (CsmKindUtilities.isClassForwardDeclaration(o)) {
-            CsmClass cls = ((CsmClassForwardDeclaration)o).getCsmClass();
+            CsmClass cls = ((CsmClassForwardDeclaration) o).getCsmClass();
             if (cls != null && cls.getKind() == CsmDeclaration.Kind.CLASS) {
                 return CLASS_FORWARD;
             }
@@ -171,7 +169,7 @@ public class CsmImageLoader implements CsmImageName {
         } else if (CsmKindUtilities.isModule(o)) {
             return MODULE;
         } else if (CsmKindUtilities.isDeclaration(o)) {
-            kind = ((CsmDeclaration)o).getKind();
+            kind = ((CsmDeclaration) o).getKind();
         } else if (CsmKindUtilities.isNamespace(o)) {
             // FIXUP: consider namespace same as namespace definition
             // because namespace is not declaration
@@ -183,15 +181,15 @@ public class CsmImageLoader implements CsmImageName {
         } else if (CsmKindUtilities.isErrorDirective(o)) {
             return ERROR;
         } else if (CsmKindUtilities.isInclude(o)) {
-            if (((CsmInclude)o).isSystem()){
+            if (((CsmInclude) o).isSystem()) {
                 return INCLUDE_SYSTEM;
             } else {
                 return INCLUDE_USER;
             }
         } else if (CsmKindUtilities.isProject(o)) {
-            return getProjectPath(((CsmProject)o).isArtificial(), false);
+            return getProjectPath(((CsmProject) o).isArtificial(), false);
         } else if (CsmKindUtilities.isFile(o)) {
-            switch (((CsmFile)o).getFileType()) {
+            switch (((CsmFile) o).getFileType()) {
                 case HEADER_FILE:
                     return HEADER_FILE;
                 case SOURCE_CPP_FILE:
@@ -205,239 +203,263 @@ public class CsmImageLoader implements CsmImageName {
                     return HEADER_FILE;
             }
         }
+        switch (kind) {
+            case NAMESPACE_DEFINITION:
+                return NAMESPACE;
+            case NAMESPACE_ALIAS:
+                return NAMESPACE_ALIAS;
+            case ENUMERATOR:
+                return ENUMERATOR;
+            case ENUM:
+                return ENUMERATION;
+            case MACRO:
+                return MACRO;
+            case UNION:
+                return UNION;
+            case TYPEDEF:
+                return TYPEDEF;
+            case CLASS_FRIEND_DECLARATION:
+                return FRIEND_CLASS;
+        }
         if (translateIcons.get(kind) != null) {
             kind = translateIcons.get(kind);
         }
+        int modifiers = CsmUtilities.getModifiers(o);
         return getImagePath(kind, modifiers);
     }
     
     static String getImagePath(CsmDeclaration.Kind kind, int modifiers) {
-
         String iconPath = DEFAULT;
-        if (kind == CsmDeclaration.Kind.NAMESPACE_DEFINITION) {
-            iconPath = NAMESPACE;
-        } else if (kind == CsmDeclaration.Kind.NAMESPACE_ALIAS) {
-            iconPath = NAMESPACE_ALIAS;
-        } else if (kind == CsmDeclaration.Kind.ENUM) { 
-            if ((modifiers & CsmUtilities.ENUMERATOR) == 0) {
-                iconPath = ENUMERATION;
-            } else {
-                iconPath = ENUMERATOR;
-            }
-        } else if (kind == CsmDeclaration.Kind.MACRO){
-            iconPath = MACRO;
-        } else if (kind == CsmDeclaration.Kind.CLASS) {
-            if ((modifiers & CsmUtilities.FORWARD) == 0) {
-                iconPath = CLASS;
-            } else {
-                iconPath = CLASS_FORWARD;
-            }
-        } else if (kind == CsmDeclaration.Kind.STRUCT) {
-            if ((modifiers & CsmUtilities.FORWARD) == 0) {
-                iconPath = STRUCT;
-            } else {
-                iconPath = STRUCT_FORWARD;
-            }
-        } else if (kind == CsmDeclaration.Kind.UNION) {
-            iconPath = UNION; 
-        } else if (kind == CsmDeclaration.Kind.TYPEDEF) {
-            iconPath = TYPEDEF;
-        } else if (kind == CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION) {
-            iconPath = FRIEND_CLASS;
-        } else if (kind == CsmDeclaration.Kind.VARIABLE || kind == CsmDeclaration.Kind.VARIABLE_DEFINITION ) {
-            boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
-            boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
-            boolean isField = (modifiers & CsmUtilities.MEMBER) != 0;
-            boolean isGlobal = !(isLocal | isFileLocal | isField);
-            boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
-            boolean isConst = (modifiers & CsmUtilities.CONST_MEMBER_BIT) != 0;
-            boolean isExtern = (modifiers & CsmUtilities.EXTERN) != 0;
-            if (isGlobal) {
-                if (isConst) {
-                    if (isExtern) {
-                        iconPath = VARIABLE_EX_GLOBAL;
-                    } else {
-                        iconPath = VARIABLE_CONST_GLOBAL;
-                    }
+        switch (kind) {
+            case NAMESPACE_DEFINITION:
+                return NAMESPACE;
+            case NAMESPACE_ALIAS:
+                return NAMESPACE_ALIAS;
+            case ENUMERATOR:
+                return ENUMERATOR;
+            case ENUM:
+                return ENUMERATION;
+            case MACRO:
+                return MACRO;
+            case UNION:
+                return UNION;
+            case TYPEDEF:
+                return TYPEDEF;
+            case CLASS_FRIEND_DECLARATION:
+                return FRIEND_CLASS;
+            case CLASS:
+                if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                    return CLASS;
                 } else {
-                    if (isExtern) {
-                        iconPath = VARIABLE_EX_GLOBAL;
-                    } else {
-                        iconPath = VARIABLE_GLOBAL;
-                    }
+                    return CLASS_FORWARD;
                 }
-            }
-
-            if (isLocal) {
-                if (isStatic) {
+            case STRUCT:
+                if ((modifiers & CsmUtilities.FORWARD) == 0) {
+                    return STRUCT;
+                } else {
+                    return STRUCT_FORWARD;
+                }
+            case VARIABLE:
+            case VARIABLE_DEFINITION: {
+                boolean isLocal = (modifiers & CsmUtilities.LOCAL) != 0;
+                boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
+                boolean isField = (modifiers & CsmUtilities.MEMBER) != 0;
+                boolean isGlobal = !(isLocal | isFileLocal | isField);
+                boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
+                boolean isConst = (modifiers & CsmUtilities.CONST_MEMBER_BIT) != 0;
+                boolean isExtern = (modifiers & CsmUtilities.EXTERN) != 0;
+                if (isGlobal) {
                     if (isConst) {
-                        iconPath = VARIABLE_CONST_ST_LOCAL;
+                        if (isExtern) {
+                            iconPath = VARIABLE_EX_GLOBAL;
+                        } else {
+                            iconPath = VARIABLE_CONST_GLOBAL;
+                        }
                     } else {
-                        iconPath = VARIABLE_ST_LOCAL;
-                    }
-                } else {
-                    if (isConst) {
-                        iconPath = VARIABLE_CONST_LOCAL;
-                    } else {
-                        iconPath = VARIABLE_LOCAL;
+                        if (isExtern) {
+                            iconPath = VARIABLE_EX_GLOBAL;
+                        } else {
+                            iconPath = VARIABLE_GLOBAL;
+                        }
                     }
                 }
-            }
 
-            if (isFileLocal) {
-                if (isConst) {
-                    iconPath = VARIABLE_CONST_FILE_LOCAL;
-                } else {
-                    iconPath = VARIABLE_FILE_LOCAL;
-                }
-            }
-
-            if (isField) {
-                int level = CsmUtilities.getLevel(modifiers);
-                iconPath = FIELD_PUBLIC;
-                if (isStatic){
-                    //static field
-                    switch (level) {
-                        case CsmUtilities.PRIVATE_LEVEL:
-                            iconPath = isConst ? FIELD_ST_CONST_PRIVATE : FIELD_ST_PRIVATE;
-                            break;
-                        case CsmUtilities.PROTECTED_LEVEL:
-                            iconPath = isConst ? FIELD_ST_CONST_PROTECTED : FIELD_ST_PROTECTED;
-                            break;
-                        case CsmUtilities.PUBLIC_LEVEL:
-                            iconPath = isConst ? FIELD_ST_CONST_PUBLIC : FIELD_ST_PUBLIC;
-                            break;
-                    }
-                }else{
-                    switch (level) {
-                        case CsmUtilities.PRIVATE_LEVEL:
-                            iconPath = isConst ? FIELD_CONST_PRIVATE : FIELD_PRIVATE;
-                            break;
-                        case CsmUtilities.PROTECTED_LEVEL:
-                            iconPath = isConst ? FIELD_CONST_PROTECTED : FIELD_PROTECTED;
-                            break;
-                        case CsmUtilities.PUBLIC_LEVEL:
-                            iconPath = isConst ? FIELD_CONST_PUBLIC : FIELD_PUBLIC;
-                            break;
-                    }
-                }
-          }
-        } else if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
-                kind == CsmDeclaration.Kind.FUNCTION_FRIEND || kind == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
-            boolean isMethod = (modifiers & CsmUtilities.MEMBER) != 0;
-            boolean isGlobal = !(isMethod);
-            boolean isConstructor = (modifiers & CsmUtilities.CONSTRUCTOR) != 0;
-            boolean isDestructor = (modifiers & CsmUtilities.DESTRUCTOR) != 0;
-            boolean isOperator =  (modifiers & CsmUtilities.OPERATOR) != 0;
-            boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
-            boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
-            int level = CsmUtilities.getLevel(modifiers);
-            if (isGlobal) {
-                if (isOperator) {
-                    iconPath = OPERATOR_GLOBAL;
-                } else {
-                    if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_FRIEND) {
-                        iconPath = FUNCTION_DECLARATION_GLOBAL;
+                if (isLocal) {
+                    if (isStatic) {
+                        if (isConst) {
+                            iconPath = VARIABLE_CONST_ST_LOCAL;
+                        } else {
+                            iconPath = VARIABLE_ST_LOCAL;
+                        }
                     } else {
-                        iconPath = FUNCTION_GLOBAL;
+                        if (isConst) {
+                            iconPath = VARIABLE_CONST_LOCAL;
+                        } else {
+                            iconPath = VARIABLE_LOCAL;
+                        }
                     }
                 }
+
                 if (isFileLocal) {
-                    if (isOperator) {
-                        iconPath = OPERATOR_ST_GLOBAL;
+                    if (isConst) {
+                        iconPath = VARIABLE_CONST_FILE_LOCAL;
                     } else {
-                        iconPath = FUNCTION_ST_GLOBAL;
+                        iconPath = VARIABLE_FILE_LOCAL;
                     }
                 }
-            }
-            if (isMethod) {
-                if (isOperator) {
-                    iconPath = OPERATOR_PUBLIC;
-                } else {
-                    iconPath = METHOD_PUBLIC;
+
+                if (isField) {
+                    int level = CsmUtilities.getLevel(modifiers);
+                    iconPath = FIELD_PUBLIC;
+                    if (isStatic) {
+                        //static field
+                        switch (level) {
+                            case CsmUtilities.PRIVATE_LEVEL:
+                                iconPath = isConst ? FIELD_ST_CONST_PRIVATE : FIELD_ST_PRIVATE;
+                                break;
+                            case CsmUtilities.PROTECTED_LEVEL:
+                                iconPath = isConst ? FIELD_ST_CONST_PROTECTED : FIELD_ST_PROTECTED;
+                                break;
+                            case CsmUtilities.PUBLIC_LEVEL:
+                                iconPath = isConst ? FIELD_ST_CONST_PUBLIC : FIELD_ST_PUBLIC;
+                                break;
+                        }
+                    } else {
+                        switch (level) {
+                            case CsmUtilities.PRIVATE_LEVEL:
+                                iconPath = isConst ? FIELD_CONST_PRIVATE : FIELD_PRIVATE;
+                                break;
+                            case CsmUtilities.PROTECTED_LEVEL:
+                                iconPath = isConst ? FIELD_CONST_PROTECTED : FIELD_PROTECTED;
+                                break;
+                            case CsmUtilities.PUBLIC_LEVEL:
+                                iconPath = isConst ? FIELD_CONST_PUBLIC : FIELD_PUBLIC;
+                                break;
+                        }
+                    }
                 }
-                if (isStatic){
-                    //static method
+                break;
+            }
+            case FUNCTION:
+            case FUNCTION_DEFINITION:
+            case FUNCTION_FRIEND:
+            case FUNCTION_FRIEND_DEFINITION: {
+                boolean isMethod = (modifiers & CsmUtilities.MEMBER) != 0;
+                boolean isGlobal = !(isMethod);
+                boolean isConstructor = (modifiers & CsmUtilities.CONSTRUCTOR) != 0;
+                boolean isDestructor = (modifiers & CsmUtilities.DESTRUCTOR) != 0;
+                boolean isOperator = (modifiers & CsmUtilities.OPERATOR) != 0;
+                boolean isStatic = (modifiers & CsmUtilities.STATIC) != 0;
+                boolean isFileLocal = (modifiers & CsmUtilities.FILE_LOCAL) != 0;
+                int level = CsmUtilities.getLevel(modifiers);
+                if (isGlobal) {
+                    if (isOperator) {
+                        iconPath = OPERATOR_GLOBAL;
+                    } else {
+                        if (kind == CsmDeclaration.Kind.FUNCTION || kind == CsmDeclaration.Kind.FUNCTION_FRIEND) {
+                            iconPath = FUNCTION_DECLARATION_GLOBAL;
+                        } else {
+                            iconPath = FUNCTION_GLOBAL;
+                        }
+                    }
+                    if (isFileLocal) {
+                        if (isOperator) {
+                            iconPath = OPERATOR_ST_GLOBAL;
+                        } else {
+                            iconPath = FUNCTION_ST_GLOBAL;
+                        }
+                    }
+                }
+                if (isMethod) {
+                    if (isOperator) {
+                        iconPath = OPERATOR_PUBLIC;
+                    } else {
+                        iconPath = METHOD_PUBLIC;
+                    }
+                    if (isStatic) {
+                        //static method
+                        switch (level) {
+                            case CsmUtilities.PRIVATE_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_ST_PRIVATE;
+                                } else {
+                                    iconPath = METHOD_ST_PRIVATE;
+                                }
+                                break;
+                            case CsmUtilities.PROTECTED_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_ST_PROTECTED;
+                                } else {
+                                    iconPath = METHOD_ST_PROTECTED;
+                                }
+                                break;
+                            case CsmUtilities.PUBLIC_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_ST_PUBLIC;
+                                } else {
+                                    iconPath = METHOD_ST_PUBLIC;
+                                }
+                                break;
+                        }
+                    } else {
+                        switch (level) {
+                            case CsmUtilities.PRIVATE_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_PRIVATE;
+                                } else {
+                                    iconPath = METHOD_PRIVATE;
+                                }
+                                break;
+                            case CsmUtilities.PROTECTED_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_PROTECTED;
+                                } else {
+                                    iconPath = METHOD_PROTECTED;
+                                }
+                                break;
+                            case CsmUtilities.PUBLIC_LEVEL:
+                                if (isOperator) {
+                                    iconPath = OPERATOR_PUBLIC;
+                                } else {
+                                    iconPath = METHOD_PUBLIC;
+                                }
+                                break;
+                        }
+                    }
+                }
+                if (isConstructor) {
+                    iconPath = CONSTRUCTOR_PUBLIC;
                     switch (level) {
                         case CsmUtilities.PRIVATE_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_ST_PRIVATE;
-                            } else {
-                                iconPath = METHOD_ST_PRIVATE;
-                            }
+                            iconPath = CONSTRUCTOR_PRIVATE;
                             break;
                         case CsmUtilities.PROTECTED_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_ST_PROTECTED;
-                            } else {
-                                iconPath = METHOD_ST_PROTECTED;
-                            }
+                            iconPath = CONSTRUCTOR_PROTECTED;
                             break;
                         case CsmUtilities.PUBLIC_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_ST_PUBLIC;
-                            } else {
-                                iconPath = METHOD_ST_PUBLIC;
-                            }
+                            iconPath = CONSTRUCTOR_PUBLIC;
                             break;
                     }
-                } else{
+                }
+                if (isDestructor) {
+                    iconPath = DESTRUCTOR_PUBLIC;
                     switch (level) {
                         case CsmUtilities.PRIVATE_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_PRIVATE;
-                            } else {
-                                iconPath = METHOD_PRIVATE;
-                            }
+                            iconPath = DESTRUCTOR_PRIVATE;
                             break;
                         case CsmUtilities.PROTECTED_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_PROTECTED;
-                            } else {
-                                iconPath = METHOD_PROTECTED;
-                            }
+                            iconPath = DESTRUCTOR_PROTECTED;
                             break;
                         case CsmUtilities.PUBLIC_LEVEL:
-                            if (isOperator) {
-                                iconPath = OPERATOR_PUBLIC;
-                            } else {
-                                iconPath = METHOD_PUBLIC;
-                            }
+                            iconPath = DESTRUCTOR_PUBLIC;
                             break;
                     }
                 }
-            }
-            if (isConstructor) {
-                iconPath = CONSTRUCTOR_PUBLIC;
-                switch (level) {
-                    case CsmUtilities.PRIVATE_LEVEL:
-                        iconPath = CONSTRUCTOR_PRIVATE;
-                        break;
-                    case CsmUtilities.PROTECTED_LEVEL:
-                        iconPath = CONSTRUCTOR_PROTECTED;
-                        break;
-                    case CsmUtilities.PUBLIC_LEVEL:
-                        iconPath = CONSTRUCTOR_PUBLIC;
-                        break;
-                }
-            }
-            if (isDestructor) {
-                iconPath = DESTRUCTOR_PUBLIC;
-                switch (level) {
-                    case CsmUtilities.PRIVATE_LEVEL:
-                        iconPath = DESTRUCTOR_PRIVATE;
-                        break;
-                    case CsmUtilities.PROTECTED_LEVEL:
-                        iconPath = DESTRUCTOR_PROTECTED;
-                        break;
-                    case CsmUtilities.PUBLIC_LEVEL:
-                        iconPath = DESTRUCTOR_PUBLIC;
-                        break;
-                }
+                break;
             }
         }
         return iconPath;
-    }    
+    }
 
     private static ImageIcon getCachedImageIcon(String iconPath) {
         ImageIcon icon = map.get(iconPath);
