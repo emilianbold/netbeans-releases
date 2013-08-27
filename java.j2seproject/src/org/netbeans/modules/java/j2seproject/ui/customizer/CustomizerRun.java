@@ -771,6 +771,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             return antName;
         }
 
+        @CheckForNull
+        JavaPlatform getPlatform() {
+            return platform;
+        }
+
         static PlatformKey create(@NonNull final JavaPlatform platform) {
             return new PlatformKey(platform);
         }
