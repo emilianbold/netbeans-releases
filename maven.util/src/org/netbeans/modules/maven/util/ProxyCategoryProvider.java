@@ -60,7 +60,6 @@ import org.openide.util.lookup.ProxyLookup;
 final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private final Map args;
-    private MavenCategoryProvider theProvider;
 
     public ProxyCategoryProvider() {
         this( new HashMap(0) );
@@ -77,7 +76,7 @@ final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategory
     @Override
     public ProjectCustomizer.Category createCategory( Lookup lkp ) {
         if( isSupportedProject( lkp ) ) {
-            createProvider( lkp );
+            MavenCategoryProvider theProvider = createProvider( lkp );
             if( null != theProvider ) {
                 return theProvider.createCategory( lkp );
             }
@@ -87,6 +86,7 @@ final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategory
 
     @Override
     public JComponent createComponent( ProjectCustomizer.Category ctgr, Lookup lkp ) {
+        MavenCategoryProvider theProvider = createProvider( lkp );
         if( null != theProvider ) {
             return theProvider.createComponent( ctgr, lkp );
         }
@@ -105,12 +105,11 @@ final class ProxyCategoryProvider implements ProjectCustomizer.CompositeCategory
         return null != PluginPropertyUtils.getPluginVersion( nbMaven.getMavenProject(), groupId, artifactId );
     }
 
-    private void createProvider( Lookup lkp ) {
-        if( null == theProvider ) {
-            theProvider = ( MavenCategoryProvider) args.get( "categoryProvider" );
-            Project prj = lkp.lookup( Project.class );
-            theProvider.setPluginParameters( MavenPluginParameters.create( new ProxyLookup( lkp, prj.getLookup() ), getGroupId(), getArtifactId()));
-        }
+    private MavenCategoryProvider createProvider( Lookup lkp ) {
+        MavenCategoryProvider res = ( MavenCategoryProvider) args.get( "categoryProvider" );
+        Project prj = lkp.lookup( Project.class );
+        res.setPluginParameters( MavenPluginParameters.create( new ProxyLookup( lkp, prj.getLookup() ), getGroupId(), getArtifactId()));
+        return res;
     }
 
     private String getGroupId() {
