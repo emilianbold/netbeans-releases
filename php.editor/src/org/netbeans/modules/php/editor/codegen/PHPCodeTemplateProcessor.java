@@ -73,9 +73,6 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -350,37 +347,4 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
 
-    private static final class AssignmentLocator extends DefaultVisitor {
-
-        private int offset;
-        protected Assignment node = null;
-
-        /**
-         * Locates the nearest assignement after the offset
-         * @param beginNode
-         * @param astOffset
-         * @return
-         */
-        public Assignment locate(ASTNode beginNode, int astOffset) {
-            offset = astOffset;
-            scan(beginNode);
-            return this.node;
-        }
-
-        @Override
-        public void scan(ASTNode current) {
-            if (this.node == null && current != null) {
-                current.accept(this);
-            }
-        }
-
-        @Override
-        public void visit(Assignment node) {
-            if (node != null) {
-                if (node.getStartOffset() > offset) {
-                    this.node = node;
-                }
-            }
-        }
-    }
 }
