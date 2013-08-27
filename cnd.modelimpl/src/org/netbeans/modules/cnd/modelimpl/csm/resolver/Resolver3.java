@@ -1132,6 +1132,9 @@ public final class Resolver3 implements Resolver {
             List<CsmClass> classesContainers = getClassesContainers(cls);
             for (CsmClass csmClass : classesContainers) {
                 CsmClassifier classifier = null;
+                if (csmClass.getName().equals(name)) {
+                    return csmClass;
+                }
                 CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter(name, true, true, false);
                 Iterator<CsmMember> it = CsmSelect.getClassMembers(csmClass, filter);
                 while (it.hasNext()) {

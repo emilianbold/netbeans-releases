@@ -9,8 +9,8 @@
 #define	PROJECT228949_H
  
 namespace NNOther228949 {
-    class BBB228949 {
-        
+    struct BBB228949 {
+        string& str() { return 0; }
     };
 }
 
@@ -31,8 +31,12 @@ namespace NN228949 {
         }   
         
         string& getStr() { 
-            return str;
+            BBB228949 base;
+            return base.str();
         }
+        
+        string& getSSS();
+
     private:
         string str;
     };
