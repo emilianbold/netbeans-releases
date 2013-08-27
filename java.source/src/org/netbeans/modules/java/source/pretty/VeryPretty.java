@@ -830,7 +830,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                           true);
             }
             if (tree.body != null) {
-                printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace());
+                printBlock(tree.body, tree.body.stats, cs.getMethodDeclBracePlacement(), cs.spaceBeforeMethodDeclLeftBrace(), true);
             } else {
                 if (tree.defaultValue != null) {
                     print(" default ");
@@ -882,7 +882,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 if (newClsTree.def != null) {
                     Name enclClassNamePrev = enclClassName;
                     enclClassName = newClsTree.def.name;
-                    printBlock(null, newClsTree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace());
+                    printBlock(null, newClsTree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
                     enclClassName = enclClassNamePrev;
                 }
             }
@@ -911,7 +911,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitBlock(JCBlock tree) {
 	printFlags(tree.flags, false);
-	printBlock(tree, tree.stats, cs.getOtherBracePlacement(), (tree.flags & Flags.STATIC) != 0 ? cs.spaceBeforeStaticInitLeftBrace() : false);
+	printBlock(tree, tree.stats, cs.getOtherBracePlacement(), (tree.flags & Flags.STATIC) != 0 ? cs.spaceBeforeStaticInitLeftBrace() : false, false);
     }
 
     @Override
@@ -2596,17 +2596,17 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             block = null;
 	    stats = List.of(t);
         }
-	printBlock(block, stats, bracePlacement, spaceBeforeLeftBrace);
+	printBlock(block, stats, bracePlacement, spaceBeforeLeftBrace, true);
     }
 
-    private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace) {
-        printBlock(tree, stats, bracePlacement, spaceBeforeLeftBrace, false);
+    private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean printComments) {
+        printBlock(tree, stats, bracePlacement, spaceBeforeLeftBrace, false, printComments);
     }
 
     public int conditionStartHack = (-1);
     
-    private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members) {
-        printPrecedingComments(tree, true);
+    private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members, boolean printComments) {
+        if (printComments) printPrecedingComments(tree, true);
 	int old = indent();
 	int bcol = old;
         switch(bracePlacement) {
@@ -2662,7 +2662,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         toColExactly(bcol);
 	undent(old);
 	print('}');
-        printTrailingComments(tree, true);
+        if (printComments) printTrailingComments(tree, true);
     }
 
     private void printTypeParameters(List < JCTypeParameter > trees) {

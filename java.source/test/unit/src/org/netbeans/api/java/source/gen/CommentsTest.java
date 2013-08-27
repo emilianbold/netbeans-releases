@@ -2199,6 +2199,51 @@ public class CommentsTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
 
+    public void test206034() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        final String content =  "package test;\n" +
+                                "public class Test {\n" +
+                                "}\n";
+        final String golden =  "package test;\n" +
+                                "public class Test {\n" +
+                                "    /* This is a comment. */\n" +
+                                "    static {\n" +
+                                "        ;\n" +
+                                "    }\n" +
+                                "}\n";
+
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, content);
+
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                BlockTree newBlock = make.Block(Collections.singletonList(make.EmptyStatement()), true);
+                Comment comment = Comment.create(Comment.Style.BLOCK, "This is a comment.");
+
+                make.addComment(newBlock, comment, true);
+
+                // updates the class with the code block
+                ClassTree modifiedClazz = make.addClassMember(clazz, newBlock);
+                workingCopy.rewrite(clazz, modifiedClazz);
+            }
+        };
+
+        testSource.runModificationTask(task).commit();
+        DataObject d = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+        ec.saveDocument();
+
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }
