@@ -1,4 +1,8 @@
+Name: jquery-api.xml
+Version: jQuery 1.10
+Description: Documentation api file for jQuery
 License: MIT-jquery
+Source: http://api.jquery.com/resources/api.xml
 
 Copyright (c) 2011 John Resig, http://jquery.com/
 

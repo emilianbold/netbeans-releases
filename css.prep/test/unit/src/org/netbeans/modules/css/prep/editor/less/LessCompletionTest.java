@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.css.prep.editor.less;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.css.prep.editor.scss.*;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
 import org.netbeans.modules.css.prep.editor.model.CPModel;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
 
 /**
  *

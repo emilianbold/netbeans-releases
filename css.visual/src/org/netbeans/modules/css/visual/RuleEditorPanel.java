@@ -654,7 +654,14 @@ public class RuleEditorPanel extends JPanel {
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
-        titleLabel = new javax.swing.JLabel();
+        titleLabel = new javax.swing.JLabel() {
+            @Override
+            public java.awt.Dimension getMinimumSize() {
+                // Issue 234489
+                java.awt.Dimension dim = super.getMinimumSize();
+                return new java.awt.Dimension(0, dim.height);
+            }
+        };
         messageLabel = new javax.swing.JLabel();
 
         cancelFilterLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/cancel.png"))); // NOI18N
@@ -703,7 +710,6 @@ public class RuleEditorPanel extends JPanel {
         northWestPanel.setLayout(new javax.swing.BoxLayout(northWestPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         titleLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        titleLabel.setMaximumSize(null);
         titleLabel.setPreferredSize(new java.awt.Dimension(100, 16));
         northWestPanel.add(titleLabel);
 
