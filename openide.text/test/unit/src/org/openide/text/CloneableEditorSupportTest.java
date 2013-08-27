@@ -86,6 +86,7 @@ implements CloneableEditorSupport.Env {
 
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
+        System.setProperty("assertgc.paths", "0");
     }
     /** the support to work with */
     private CloneableEditorSupport support;

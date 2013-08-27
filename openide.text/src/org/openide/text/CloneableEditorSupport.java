@@ -1499,6 +1499,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
             return false;
         }
+        
+        if (getAnyEditor() == null) {
+            getPositionManager().documentOpened(openClose.docRef);
+        }
 
         return true;
     }
@@ -1513,6 +1517,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         
         // Call notifyUnmodified() outside of any lock - see callNotifyModified() description.
         notifyUnmodified();
+
+        if (getAnyEditor() == null) {
+            getPositionManager().documentClosed();
+        }
     }
 
     /** Called when the document is being modified.
