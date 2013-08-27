@@ -73,26 +73,35 @@ public class GoToDeclarationAction extends AbstractAction {
         putValue(Action.NAME, I18n.getMessage("LBL_GoToDeclaration")); //NOI18N
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
-        CsmOffsetable target = csmObject;
-        if (!more) {
-            if (CsmKindUtilities.isFunctionDeclaration((CsmObject)csmObject)){
-                CsmFunctionDefinition def = ((CsmFunction)csmObject).getDefinition();
-                if (def != null){
-                    target = def;
-                } else {
-                    CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
-                    if (ref != null){
-                        target = ref;
+        final String taskName = "GoTo Declaratione"; //NOI18N
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                CsmOffsetable target = csmObject;
+                if (!more) {
+                    if (CsmKindUtilities.isFunctionDeclaration((CsmObject)csmObject)){
+                        CsmFunctionDefinition def = ((CsmFunction)csmObject).getDefinition();
+                        if (def != null){
+                            target = def;
+                        } else {
+                            CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
+                            if (ref != null){
+                                target = ref;
+                            }
+                        }
+                    } else if(CsmKindUtilities.isVariableDeclaration((CsmObject)csmObject)){
+                        CsmVariableDefinition def = ((CsmVariable)csmObject).getDefinition();
+                        if (def != null){
+                            target = def;
+                        }
                     }
                 }
-            } else if(CsmKindUtilities.isVariableDeclaration((CsmObject)csmObject)){
-                CsmVariableDefinition def = ((CsmVariable)csmObject).getDefinition();
-                if (def != null){
-                    target = def;
-                }
+                CsmUtilities.openSource(target);
             }
-        }
-        CsmUtilities.openSource(target);
+        };
+        CsmModelAccessor.getModel().enqueue(run, taskName);
     }
 }

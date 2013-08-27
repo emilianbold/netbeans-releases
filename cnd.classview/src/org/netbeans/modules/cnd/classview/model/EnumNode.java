@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import java.awt.Image;
 import javax.swing.event.ChangeEvent;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
 /**
@@ -55,6 +57,7 @@ import org.openide.nodes.Children;
 public class EnumNode extends ClassifierNode {
     private CharSequence name;
     private CharSequence qname;
+    private static Image enumImage = null;
 
     public EnumNode(CsmEnum enumeration,Children.Array key) {
         super(enumeration,key);
@@ -76,11 +79,10 @@ public class EnumNode extends ClassifierNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     qname == null ? null : qname.toString());
         }
-        //String shortName = enumeration.getName().toString();
-        //String longName = enumeration.getQualifiedName().toString();
-        //setName(shortName);
-        //setDisplayName(shortName);
-        //setShortDescription(longName);
+        if( enumImage == null ) {
+            enumImage = CsmImageLoader.getImage(enumeration);
+        }
+        image = CsmImageLoader.getImage(enumeration);
     }
 
     @Override
@@ -98,14 +100,18 @@ public class EnumNode extends ClassifierNode {
         return qname.toString();
     }
 
+    @Override
+    public Image getIcon(int param) {
+        return enumImage;
+    }
+
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmEnum){
             CsmEnum cls = (CsmEnum)o;
             setObject(cls);
             init(cls);
-            fireIconChange();
-            fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmEnum. Actually event contains "+o.toString());
         }
