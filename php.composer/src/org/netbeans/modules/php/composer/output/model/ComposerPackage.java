@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.ui.actions;
+package org.netbeans.modules.php.composer.output.model;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.openide.util.NbBundle;
+import java.util.Objects;
 
-public class AddDependencyAction extends BaseComposerAction {
+/**
+ * Value object for a Composer package.
+ */
+public final class ComposerPackage {
 
-    private static final long serialVersionUID = 8974514465465464L;
+    private final String name;
+    private final String version;
 
 
-    @NbBundle.Messages("AddDependencyAction.name=Add Dependency...")
-    @Override
-    protected String getName() {
-        return Bundle.AddDependencyAction_name();
+    public ComposerPackage(String name, String version) {
+        assert name != null;
+        assert version != null;
+        this.name = name;
+        this.version = version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public String asFullPackage() {
+        return name + ":" + version; // NOI18N
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        AddDependencyPanel.open(phpModule);
+    public int hashCode() {
+        int hash = 3;
+        hash = 31 * hash + Objects.hashCode(this.name);
+        hash = 31 * hash + Objects.hashCode(this.version);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ComposerPackage other = (ComposerPackage) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.version, other.version)) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "ComposerPackage{" + "name=" + name + ", version=" + version + '}'; // NOI18N
     }
 
 }

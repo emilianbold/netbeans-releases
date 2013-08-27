@@ -279,8 +279,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // post process
         switch (wizardType) {
             case NEW:
-                extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
-                extendPhpModule(phpModule, monitor, resultSet);
+                if (!frameworkExtenders.isEmpty()
+                        || !phpModuleExtenders.isEmpty()) {
+                    assert monitor instanceof LocalProgressMonitor;
+                    LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
+                    localMonitor.startingExtending();
+                    extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
+                    extendPhpModule(phpModule, monitor, resultSet);
+                    localMonitor.finishingExtending();
+                }
                 break;
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
@@ -586,28 +593,22 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         assert monitor instanceof LocalProgressMonitor;
 
         LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
-        if (!frameworkExtenders.isEmpty()) {
-            localMonitor.startingExtending();
+        for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworkExtenders.entrySet()) {
+            PhpFrameworkProvider frameworkProvider = entry.getKey();
+            assert frameworkProvider != null;
 
-            for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworkExtenders.entrySet()) {
-                PhpFrameworkProvider frameworkProvider = entry.getKey();
-                assert frameworkProvider != null;
-
-                localMonitor.extending(frameworkProvider.getName());
-                PhpModuleExtender phpModuleExtender = entry.getValue();
-                if (phpModuleExtender != null) {
-                    try {
-                        Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
-                        assert newFiles != null;
-                        filesToOpen.addAll(newFiles);
-                    } catch (ExtendingException ex) {
-                        warnUser(ex.getFailureMessage());
-                    }
+            localMonitor.extending(frameworkProvider.getName());
+            PhpModuleExtender phpModuleExtender = entry.getValue();
+            if (phpModuleExtender != null) {
+                try {
+                    Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
+                    assert newFiles != null;
+                    filesToOpen.addAll(newFiles);
+                } catch (ExtendingException ex) {
+                    warnUser(ex.getFailureMessage());
                 }
             }
         }
-
-        localMonitor.finishingExtending();
     }
 
     private void extendPhpModule(PhpModule phpModule, PhpProjectGenerator.Monitor monitor, Set<FileObject> filesToOpen) {
@@ -615,22 +616,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         assert monitor instanceof LocalProgressMonitor;
 
         LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
-        if (!phpModuleExtenders.isEmpty()) {
-            localMonitor.startingExtending();
-
-            for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender extender : phpModuleExtenders) {
-                assert extender != null;
-                localMonitor.extending(extender.getDisplayName());
-                try {
-                    Set<FileObject> newFiles = extender.extend(phpModule);
-                    assert newFiles != null;
-                    filesToOpen.addAll(newFiles);
-                } catch (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException ex) {
-                    warnUser(ex.getFailureMessage());
-                }
+        for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender extender : phpModuleExtenders) {
+            assert extender != null;
+            localMonitor.extending(extender.getDisplayName());
+            try {
+                Set<FileObject> newFiles = extender.extend(phpModule);
+                assert newFiles != null;
+                filesToOpen.addAll(newFiles);
+            } catch (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException ex) {
+                warnUser(ex.getFailureMessage());
             }
         }
-        localMonitor.finishingExtending();
     }
 
     private void warnUser(String message) {
