@@ -409,7 +409,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         synchronized(enclosingElements) {
             for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
                 CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
-                if (kind == CsmDeclaration.Kind.TYPEDEF) {
+                if (kind == CsmDeclaration.Kind.TYPEDEF || kind == CsmDeclaration.Kind.TYPEALIAS) {
                     CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
                     if (obj != null) {
                         out.add((CsmTypedef) obj);

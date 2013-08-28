@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeAliasImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDirectiveImpl;
@@ -179,6 +180,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof TypedefImpl) {
             if (object instanceof ClassImpl.MemberTypedef) {
                 aHandler = MEMBER_TYPEDEF;
+            } else if (object instanceof ClassImpl.MemberTypeAlias) {
+                aHandler = MEMBER_TYPEALIAS;
             } else {
                 aHandler = TYPEDEF_IMPL;
             }
@@ -397,9 +400,17 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             case TYPEDEF_IMPL:
                 obj = new TypedefImpl(stream);
                 break;
+                
+            case TYPEALIAS_IMPL:
+                obj = new TypeAliasImpl(stream);
+                break;
 
             case MEMBER_TYPEDEF:
                 obj = new ClassImpl.MemberTypedef(stream);
+                break;
+                
+            case MEMBER_TYPEALIAS:
+                obj = new ClassImpl.MemberTypeAlias(stream);
                 break;
 
             case NAMESPACE_IMPL:
@@ -634,8 +645,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 //    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
 //    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;
     private static final int TYPEDEF_IMPL                   = CLASS_IMPL + 1;
-    private static final int MEMBER_TYPEDEF                 = TYPEDEF_IMPL + 1;
-    private static final int NAMESPACE_IMPL                 = MEMBER_TYPEDEF + 1;
+    private static final int TYPEALIAS_IMPL                 = TYPEDEF_IMPL + 1;
+    private static final int MEMBER_TYPEDEF                 = TYPEALIAS_IMPL + 1;
+    private static final int MEMBER_TYPEALIAS               = MEMBER_TYPEDEF + 1;
+    private static final int NAMESPACE_IMPL                 = MEMBER_TYPEALIAS + 1;
     private static final int NAMESPACE_DEF_IMPL             = NAMESPACE_IMPL + 1;
     private static final int NAMESPACE_ALIAS_IMPL           = NAMESPACE_DEF_IMPL + 1;
     private static final int USING_DECLARATION_IMPL         = NAMESPACE_ALIAS_IMPL + 1;

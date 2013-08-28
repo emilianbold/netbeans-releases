@@ -314,7 +314,7 @@ public class CallModelImpl implements CallModel {
         }
 
         private CsmFunction findFunction(CsmDeclaration element) {
-            if (CsmKindUtilities.isTypedef(element)) {
+            if (CsmKindUtilities.isTypedef(element) || CsmKindUtilities.isTypeAlias(element)) {
                 CsmTypedef def = (CsmTypedef) element;
                 if (def.isTypeUnnamed()) {
                     CsmClassifier cls = def.getType().getClassifier();

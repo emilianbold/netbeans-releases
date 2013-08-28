@@ -216,7 +216,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
-        if (isTypedef(decl)) {
+        if (isTypedef(decl) || isTypeAlias(decl)) {
             map = typedefs;
             shortNamesMap = null;
         } else {
@@ -296,7 +296,7 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
         Map<CharSequence, CsmUID<CsmClassifier>> map;
         Map<CharSequence, CsmUID<CsmClassifier>> shortNamesMap;
         CsmUID<?> uid = UIDs.get(decl);
-        if (isTypedef(decl)) {
+        if (isTypedef(decl) || isTypeAlias(decl)) {
             map = typedefs;
             shortNamesMap = null;
         } else {
@@ -396,6 +396,10 @@ public class ClassifierContainer extends ProjectComponent implements Persistent,
     private boolean isTypedef(CsmDeclaration decl){
         return CsmKindUtilities.isTypedef(decl);
     }
+    
+    private boolean isTypeAlias(CsmDeclaration decl){
+        return CsmKindUtilities.isTypeAlias(decl);
+    }    
     
     @Override
     public void write(RepositoryDataOutput output) throws IOException {

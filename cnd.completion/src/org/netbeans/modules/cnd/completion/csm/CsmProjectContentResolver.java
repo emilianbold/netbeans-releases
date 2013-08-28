@@ -171,7 +171,7 @@ public final class CsmProjectContentResolver {
                     elemEnum = ((CsmEnumForwardDeclaration)ob).getCsmEnum();
                 } else {
                     // for typedef check whether it defines unnamed enum
-                    assert CsmKindUtilities.isTypedef(ob);
+                    assert CsmKindUtilities.isTypedef(ob) || CsmKindUtilities.isTypeAlias(ob);
                     CsmTypedef td = (CsmTypedef) ob;
                     CsmType type = td.getType();
                     if (td.isTypeUnnamed() && type != null) {
@@ -935,7 +935,8 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,
-            CsmDeclaration.Kind.TYPEDEF
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS
         };
         List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNestedUnnamedNamespaces, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
@@ -954,7 +955,8 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
-            CsmDeclaration.Kind.TYPEDEF
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS
         };
         
         List enumsAndTypedefs = getNamespaceMembers(
@@ -974,6 +976,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS,
             CsmDeclaration.Kind.ENUMERATOR
         };
         filterDeclarations(used.iterator(), enumsAndTypedefs, classAndEnumeratorKinds, "", false, true);
@@ -986,6 +989,7 @@ public final class CsmProjectContentResolver {
             boolean inspectParentClasses, boolean inspectOuterClasses, boolean returnBaseClasses) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.CLASS,
@@ -1061,7 +1065,8 @@ public final class CsmProjectContentResolver {
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
-            CsmDeclaration.Kind.TYPEDEF
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS
         };
         List enumsAndTypedefs = getClassMembers(clazz, contextDeclaration, classKinds, "", false, false, inspectParentClasses, inspectOuterClasses, scopeAccessedClassifier, false, true);
         List<CsmEnumerator> res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);

@@ -222,8 +222,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return newClass;
         } else if (template instanceof CsmFunction) {
             return new Function((CsmFunction)template, mapping);
-        } else if (template instanceof CsmTypedef) {
-            return new Typedef((CsmTypedef)template, mapping);
+        } else if (template instanceof CsmTypeAlias) {
+            return new TypeAlias((CsmTypeAlias)template, mapping);
         } else {
             if (CndUtils.isDebugMode()) {
                 CndUtils.assertTrueInConsole(false, "Unknown class " + template.getClass() + " for template instantiation:" + template); // NOI18N
@@ -388,6 +388,8 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 return new Field((CsmField)member, this);
             } else if (member instanceof CsmMethod) {
                 return new Method((CsmMethod)member, this);
+            } else if (member instanceof CsmTypeAlias) {
+                return new TypeAlias((CsmTypeAlias)member, this);
             } else if (member instanceof CsmTypedef) {
                 return new Typedef((CsmTypedef)member, this);
             } else if (member instanceof CsmClass) {
@@ -721,11 +723,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
     private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
         private final CsmType type;
-
-        public Typedef(CsmTypedef typedef, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-            super(typedef, mapping);
-            this.type = createType(typedef.getType(), Typedef.this);
-        }
         
         public Typedef(CsmTypedef typedef, CsmInstantiation instantiation) {
             super(typedef, instantiation.getMapping());
@@ -762,6 +759,75 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
+    
+    private static class TypeAlias extends Instantiation<CsmTypeAlias> implements CsmTypeAlias, CsmMember {
+        private final CsmType type;
+
+        public TypeAlias(CsmTypeAlias typeAlias, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+            super(typeAlias, mapping);
+            this.type = createType(typeAlias.getType(), TypeAlias.this);
+        }
+        
+        public TypeAlias(CsmTypeAlias typeAlias, CsmInstantiation instantiation) {
+            super(typeAlias, instantiation.getMapping());
+            this.type = createType(typeAlias.getType(), instantiation);
+        }
+
+        @Override
+        public boolean isTypeUnnamed() {
+            return declaration.isTypeUnnamed();
+        }
+
+        @Override
+        public CsmType getType() {
+            return type;
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return ((CsmMember)declaration).getContainingClass();
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return ((CsmMember)declaration).getVisibility();
+        }
+
+        @Override
+        public boolean isStatic() {
+            return ((CsmMember)declaration).isStatic();
+        }
+
+        @Override
+        public boolean isTemplate() {
+            return ((CsmTypeAlias)declaration).isTemplate();
+        }
+
+        @Override
+        public boolean isSpecialization() {
+            return ((CsmTypeAlias)declaration).isSpecialization();
+        }
+
+        @Override
+        public boolean isExplicitSpecialization() {
+            return ((CsmTypeAlias)declaration).isExplicitSpecialization();
+        }
+
+        @Override
+        public List<CsmTemplateParameter> getTemplateParameters() {
+            return ((CsmTypeAlias)declaration).getTemplateParameters();
+        }
+
+        @Override
+        public CharSequence getDisplayName() {
+            return ((CsmTypeAlias)declaration).getDisplayName();
+        }
+
+        @Override
+        public String toString() {
+            return "INSTANTIATION OF TYPEALIAS: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+        }
+    }    
 
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
@@ -1444,6 +1510,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember taMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
+                        resolved = new TypeAlias((CsmTypeAlias)resolved, instantiation);
+                        return resolved;
+                    }
+                }
                 if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
@@ -1620,6 +1693,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                         return resolved;
                     }
                 }
+                if (CsmKindUtilities.isTypeAlias(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember taMember = (CsmMember)resolved;
+                    if (CsmKindUtilities.isTemplate(taMember.getContainingClass())) {
+                        resolved = new TypeAlias((CsmTypeAlias)resolved, instantiation);
+                        return resolved;
+                    }
+                }          
                 if (CsmKindUtilities.isClass(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
