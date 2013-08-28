@@ -110,6 +110,11 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
     public void addPropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public Collection<NbJiraIssue> getUnsubmittedIssues (JiraRepository r) {
+        return r.getUnsubmittedIssues();
+    }
     
     /********************************************************************************
      * Kenai

@@ -116,7 +116,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public NbJiraIssue createIssue() {
-        return super.createIssue();
+        return super.createIssue(projectName);
     }
 
     @Override

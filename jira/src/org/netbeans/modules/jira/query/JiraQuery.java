@@ -232,7 +232,7 @@ public class JiraQuery {
                                 for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
                                     // as a side effect creates a NbJiraIssue instance
                                     getRepository().getIssueForTask(t);
-                                    issues.add(t.getTaskId());
+                                    issues.add(t.getTaskKey());
                                 }
                             }
                             return;
@@ -297,12 +297,12 @@ public class JiraQuery {
         fireQueryRemoved();
     }
 
-    public boolean contains(String id) {
-        return issues.contains(id);
+    public boolean contains(String key) {
+        return issues.contains(key);
     }
 
-    public IssueCache.Status getIssueStatus(String id) {
-        return repository.getIssueCache().getStatus(id);
+    public IssueCache.Status getIssueStatus(String key) {
+        return repository.getIssueCache().getStatus(key);
     }
 
     int getSize() {
@@ -371,8 +371,8 @@ public class JiraQuery {
     
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
         
-        private final Set<String> addedIds = new HashSet<String>();
-        private final Set<String> ids = new HashSet<String>();
+        private final Set<String> addedIds = new HashSet<>();
+        private final Set<String> ids = new HashSet<>();
         
         @Override
         public void queryRefreshStarted (Collection<NbTask> tasks) {
@@ -389,6 +389,7 @@ public class JiraQuery {
         @Override
         public void taskAdded (NbTask task) {
             synchronized(ISSUES_LOCK) {
+                // using taskId here, task key not yet available for fresh incoming tasks
                 ids.add(task.getTaskId());
             }
             // when issue table or task dashboard is able to handle deltas
@@ -398,6 +399,7 @@ public class JiraQuery {
         @Override
         public void taskRemoved (NbTask task) {
             synchronized(ISSUES_LOCK) {
+                // using taskId here, task key not yet available for fresh incoming tasks
                 ids.remove(task.getTaskId());
             }
             // when issue table or task dashboard is able to handle removals
@@ -406,11 +408,12 @@ public class JiraQuery {
 
         @Override
         public void taskSynchronized (NbTask task) {
+            // using taskId here, task key not yet available for fresh incoming tasks
             if (ids.contains(task.getTaskId()) && addedIds.add(task.getTaskId())) {
                 getController().progress(task.getSummary());
                 NbJiraIssue issue = repository.getIssueForTask(task);
                 if (issue != null) {
-                    issues.add(task.getTaskId());
+                    issues.add(task.getTaskKey());
                     fireNotifyData(issue); // XXX - !!! triggers getIssues()
                 }
             }
@@ -425,6 +428,7 @@ public class JiraQuery {
                     if (task != null) {
                         NbJiraIssue issue = repository.getIssueForTask(task);
                         if (issue != null) {
+                            // using taskId here, task key not yet available for fresh incoming tasks
                             if (addedIds.add(task.getTaskId())) {
                                 fireNotifyData(issue); // XXX - !!! triggers getIssues()
                             }

@@ -109,7 +109,7 @@ public class KenaiQueryController extends QueryController
                                 NbBundle.getMessage(
                                     KenaiQueryController.class,
                                     "MSG_WrongProjectWarning",
-                                    new Object[] {issue.getID(), issueProject}),
+                                    new Object[] {issue.getKey(), issueProject}),
                                 Confirmation.YES_NO_OPTION);
             return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
         }

@@ -240,7 +240,7 @@ public class RepositoryTest extends NbTestCase {
         assertTrue(issues.size() > 0);
         NbJiraIssue i = null;
         for(NbJiraIssue issue : issues) {
-            if(issue.getID().equals(key1)) {
+            if(issue.getKey().equals(key1)) {
                 i = issue;
                 break;
             }
@@ -253,7 +253,7 @@ public class RepositoryTest extends NbTestCase {
         List<String> ids = new ArrayList<String>();
         for(NbJiraIssue issue : issues) {
             summaries.add(issue.getSummary());
-            ids.add(issue.getID());
+            ids.add(issue.getKey());
         }
         assertTrue(summaries.contains(summary1));
         assertTrue(summaries.contains(summary2));
@@ -330,7 +330,7 @@ public class RepositoryTest extends NbTestCase {
 
     private String getKey(JiraRepository repo, String id1) {
         NbJiraIssue i = repo.getIssue(id1);
-        return i.getID();
+        return i.getKey();
     }
 
     private void onValidate(JiraRepositoryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

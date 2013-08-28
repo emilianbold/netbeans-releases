@@ -43,6 +43,7 @@
 package org.netbeans.modules.jira.util;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraAction;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
@@ -60,6 +61,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
@@ -111,21 +113,21 @@ public class JiraUtils {
     /**
      * Returns Task for the given issue id or null if an error occurred
      * @param repository
-     * @param id
+     * @param key
      * @return
      */
-    public static NbTask getRepositoryTask (final JiraRepository repository, final String id, boolean handleExceptions) {
+    public static NbTask getRepositoryTask (final JiraRepository repository, final String key, boolean handleExceptions) {
         MylynSupport supp = MylynSupport.getInstance();
         try {
             GetRepositoryTasksCommand cmd = supp.getCommandFactory()
-                    .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
+                    .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(key));
             repository.getExecutor().execute(cmd, handleExceptions);
             if(cmd.hasFailed()) {
                 Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
             }
             if (cmd.getTasks().isEmpty()) {
                 // fallback on local
-                NbTask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
+                NbTask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), key);
                 if (cmd.hasFailed() && task != null) {
                     return task;
                 }
@@ -367,4 +369,8 @@ public class JiraUtils {
             SwingUtilities.invokeLater(r);
         }
     }    
+
+    public static boolean isLeaveOperation (TaskOperation value) {
+        return "leave".equals(value.getOperationId());
+    }
 }

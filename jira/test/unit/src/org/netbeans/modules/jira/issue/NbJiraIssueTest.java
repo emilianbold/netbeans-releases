@@ -374,7 +374,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
         submit(issue);
 
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
 
         assertEquals(newType, issue.getFieldValue(NbJiraIssue.IssueField.TYPE));
@@ -428,9 +428,7 @@ public class NbJiraIssueTest extends NbTestCase {
         String summary = "Summary " + System.currentTimeMillis();
         String description = "Description for " + summary;
 
-        final TaskData data = issue.getTaskData();
         issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, p.getKey());
-        assertTrue(rc.getTaskDataHandler().initializeTaskData(getRepository().getTaskRepository(), data, rc.getTaskMapping(data), new NullProgressMonitor()));
         issue.setFieldValue(NbJiraIssue.IssueField.TYPE, "1");
         issue.setFieldValue(NbJiraIssue.IssueField.SUMMARY, summary);
         issue.setFieldValue(NbJiraIssue.IssueField.DESCRIPTION, description);
@@ -438,7 +436,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
         submit(issue);
 
-        String id = issue.getID();
+        String id = issue.getKey();
         assertNotNull(id);
         assertFalse(id.trim().equals(""));
 
@@ -447,13 +445,13 @@ public class NbJiraIssueTest extends NbTestCase {
         assertFalse("".equals(issue.getKey()));
         assertEquals(summary, issue.getSummary());
         assertEquals(description, issue.getDescription());
-        assertEquals(JiraIssueStatus.OPEN.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.OPEN.statusName, issue.getJiraStatus().getName());
 
         return issue;
     }
 
     private void addAttachment (NbJiraIssue issue, File attachmentFile, int attachmentCount) throws IOException {
-        String key = issue.getID();
+        String key = issue.getKey();
         String comment = "Comment for the attachment: " + attachmentFile.getName();
         String author = getRepository().getUsername();
         FileObject fo = FileUtil.toFileObject(attachmentFile);
@@ -506,11 +504,11 @@ public class NbJiraIssueTest extends NbTestCase {
         String description = "resolving issue";
         issue.resolve(getResolutionByName(resolution.statusName), description);
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
-        assertEquals(JiraIssueStatus.RESOLVED.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.RESOLVED.statusName, issue.getJiraStatus().getName());
         assertEquals(resolution.statusName, issue.getResolution().getName());
     }
 
@@ -518,38 +516,38 @@ public class NbJiraIssueTest extends NbTestCase {
         String description = "closing issue";
         issue.close(getResolutionByName(resolution.statusName), description);
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
-        assertEquals(JiraIssueStatus.CLOSED.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.CLOSED.statusName, issue.getJiraStatus().getName());
         assertEquals(resolution.statusName, issue.getResolution().getName());
     }
 
     private void startIssueProgress(NbJiraIssue issue) throws JiraException {
         issue.startProgress();
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
-        assertEquals(JiraIssueStatus.INPROGRESS.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.INPROGRESS.statusName, issue.getJiraStatus().getName());
     }
 
     private void stopIssueProgress(NbJiraIssue issue) throws JiraException {
         issue.stopProgress();
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
-        assertEquals(JiraIssueStatus.OPEN.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.OPEN.statusName, issue.getJiraStatus().getName());
     }
 
     private void assignTo (NbJiraIssue issue, String user) {
         issue.setFieldValue(NbJiraIssue.IssueField.ASSIGNEE, user);
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertEquals(user, issue.getFieldValue(NbJiraIssue.IssueField.ASSIGNEE));
     }
@@ -587,17 +585,17 @@ public class NbJiraIssueTest extends NbTestCase {
         String description = "reopening issue";
         issue.reopen(description);
         submit(issue);
-        String id = issue.getID();
+        String id = issue.getKey();
         issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
-        assertEquals(JiraIssueStatus.REOPENED.statusName, issue.getStatus().getName());
+        assertEquals(JiraIssueStatus.REOPENED.statusName, issue.getJiraStatus().getName());
         assertNull(issue.getResolution());
     }
 
     private void addComment(NbJiraIssue issue) {
-        String comment = "Comment for " + issue.getID() + " - " + System.currentTimeMillis();
-        String id = issue.getID();
+        String comment = "Comment for " + issue.getKey() + " - " + System.currentTimeMillis();
+        String id = issue.getKey();
         String who = getRepository().getUsername();
         int commentsCount = issue.getComments().length;
 
@@ -622,7 +620,7 @@ public class NbJiraIssueTest extends NbTestCase {
         String comment = "Worklog number " + worklogNumber;
         Date startDate = new Date();
         long timeSpent = 10 * 60; // 10 minutes
-        issue.addWorkLog(startDate, timeSpent, comment);
+        issue.addWorkLog(startDate, timeSpent, comment, -1);
         issue.submitAndRefresh();
 
         workLogs = issue.getWorkLogs();

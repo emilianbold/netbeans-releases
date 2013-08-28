@@ -1078,11 +1078,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 Collection<NbJiraIssue> issues = query.getIssues();
                 for (NbJiraIssue issue : issues) {
-                    try {
-                        issue.setSeen(true);
-                    } catch (IOException ex) {
-                        Jira.LOG.log(Level.SEVERE, null, ex);
-                    }
+                    issue.setUpToDate(true);
                 }
             }
         });
@@ -1384,7 +1380,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         @Override
         public void notifyData(final NbJiraIssue issue) {
             issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getID())) {
+            if(!query.contains(issue.getKey())) {
                 // XXX this is quite ugly - the query notifies an archoived issue
                 // but it doesn't "contain" it!
                 return;

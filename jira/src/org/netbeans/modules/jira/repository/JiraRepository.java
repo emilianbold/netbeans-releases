@@ -44,6 +44,7 @@ package org.netbeans.modules.jira.repository;
 
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
@@ -55,8 +56,12 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,9 +74,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
@@ -90,6 +94,7 @@ import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -110,10 +115,10 @@ public class JiraRepository {
     private JiraRepositoryController controller;
     private Set<JiraQuery> queries = null;
     private Set<JiraQuery> remoteFilters = null;
-    private IssueCache<NbJiraIssue> cache;
+    private Cache cache;
     private Image icon;
 
-    private final Set<String> issuesToRefresh = new HashSet<String>(5);
+    private final Set<NbTask> issuesToRefresh = new HashSet<>(5);
     private final Set<JiraQuery> queriesToRefresh = new HashSet<JiraQuery>(3);
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
@@ -130,6 +135,7 @@ public class JiraRepository {
     private PropertyChangeSupport support;
     private UnsubmittedTasksContainer unsubmittedTasksContainer;
     private PropertyChangeListener unsubmittedTasksListener;
+    private final Object CACHE_LOCK = new Object();
     
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -178,22 +184,40 @@ public class JiraRepository {
     }
 
     public NbJiraIssue createIssue() {
-        if(getConfiguration() == null) {
+        return createIssue(null);
+    }
+    
+    protected final NbJiraIssue createIssue (String productName) {
+        JiraConfiguration config = getConfiguration();
+        if (config == null) {
             // invalid connection data?
             return null;
         }
-        TaskAttributeMapper attributeMapper =
-                Jira.getInstance()
-                    .getRepositoryConnector()
-                    .getTaskDataHandler()
-                    .getAttributeMapper(taskRepository);
-        TaskData data =
-                new TaskData(
-                    attributeMapper,
-                    taskRepository.getConnectorKind(),
-                    taskRepository.getRepositoryUrl(),
-                    ""); // NOI18N
-        return new NbJiraIssue(data, this);
+        Project project = null;
+        for (Project proj : config.getProjects()) {
+            if (productName == null || productName.equals(proj.getName())
+                    || productName.equals(proj.getKey())) {
+                project = proj;
+                break;
+            }
+        }
+        if (project == null) {
+            return null;
+        }
+        final String projectKey = project.getKey();
+        NbTask task;
+        try {
+            task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping() {
+                @Override
+                public String getProduct () {
+                    return projectKey;
+                }
+            });
+            return getIssueForTask(task);
+        } catch (CoreException ex) {
+            Jira.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -416,7 +440,8 @@ public class JiraRepository {
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd);
             for (NbTask task : cmd.getTasks()) {
-                NbJiraIssue issue = getIssueForTask(task);
+                // simple query command, remember?
+                NbJiraIssue issue = getIssueForTask(task, false);
                 if (issue != null) {
                     issues.add(issue);
                 }
@@ -428,11 +453,17 @@ public class JiraRepository {
         return issues;
     }
 
-    public IssueCache<NbJiraIssue> getIssueCache() {
-        if(cache == null) {
-            cache = new Cache();
+    private Cache getCache () {
+        synchronized (CACHE_LOCK) {
+            if(cache == null) {
+                cache = new Cache();
+            }
+            return cache;
         }
-        return cache;
+    }
+    
+    public IssueCache<NbJiraIssue> getIssueCache() {
+        return getCache();
     }
 
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -567,18 +598,22 @@ public class JiraRepository {
             refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
                 @Override
                 public void run() {
-                    // TODO as in bugzilla
-                    Set<String> ids;
+                    Set<NbTask> tasks;
                     synchronized(issuesToRefresh) {
-                        ids = new HashSet<String>(issuesToRefresh);
+                        tasks = new HashSet<>(issuesToRefresh);
                     }
-                    if(ids.isEmpty()) {
+                    if(tasks.isEmpty()) {
                         Jira.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
                         return;
                     }
-                    Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {getDisplayName(), ids}); // NOI18N
-                    for (String id : ids) {
-                        getIssueForTask(JiraUtils.getRepositoryTask(JiraRepository.this, id, false));
+                    Jira.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
+                    try {
+                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory()
+                                .createSynchronizeTasksCommand(taskRepository, tasks);
+                        getExecutor().execute(cmd, false);
+                    } catch (CoreException ex) {
+                        // should not happen
+                        Jira.LOG.log(Level.WARNING, null, ex);
                     }
                     scheduleIssueRefresh();
                 }
@@ -627,18 +662,18 @@ public class JiraRepository {
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
-    public void scheduleForRefresh(String id) {
-        Jira.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, getDisplayName()}); // NOI18N
+    public void scheduleForRefresh (NbTask task) {
+        Jira.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {task.getTaskKey(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
-            issuesToRefresh.add(id);
+            issuesToRefresh.add(task);
         }
         setupIssueRefreshTask();
     }
 
-    public void stopRefreshing(String id) {
-        Jira.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, getDisplayName()}); // NOI18N
+    public void stopRefreshing (NbTask task) {
+        Jira.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {task.getTaskKey(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
-            issuesToRefresh.remove(id);
+            issuesToRefresh.remove(task);
         }
     }
 
@@ -725,29 +760,29 @@ public class JiraRepository {
     }
     
     public NbJiraIssue getIssueForTask (NbTask task) {
+        return getIssueForTask(task, true);
+    }
+    
+    private NbJiraIssue getIssueForTask (NbTask task, boolean onlyInitializedTasks) {
         NbJiraIssue issue = null;
         if (task != null) {
-//            synchronized (CACHE_LOCK) {
-//                String taskId = ODCSIssue.getID(task);
-//                Cache issueCache = getCache();
-//                issue = issueCache.getIssue(taskId);
-//                if (issue == null) {
-//                    issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
-//                }
-//            }
             try {
-                NbTaskDataState tdState = task.getTaskDataState();
-                if (tdState == null) {
-                    // this happens when a query is canceled. All yet unsynchronized tasks
-                    // are still incomplete. What now? Should the task be deleted?
-                    return null;
+                if (onlyInitializedTasks) {
+                    NbTaskDataState tdState = task.getTaskDataState();
+                    if (tdState == null) {
+                        // this happens when a query is canceled. All yet unsynchronized tasks
+                        // are still incomplete. What now? Should the task be deleted?
+                        return null;
+                    }
                 }
-                issue = getIssueCache().getIssue(task.getTaskId());
-                TaskData td = tdState.getRepositoryData();
-                if (issue != null) {
-                    issue.setTaskData(td);
+                synchronized (CACHE_LOCK) {
+                    String taskKey = NbJiraIssue.getKey(task);
+                    Cache issueCache = getCache();
+                    issue = issueCache.getIssue(taskKey);
+                    if (issue == null) {
+                        issue = issueCache.setIssueData(taskKey, new NbJiraIssue(task, this));
+                    }
                 }
-                issue = (NbJiraIssue) getIssueCache().setIssueData(task.getTaskId(), issue != null ? issue : new NbJiraIssue(td, this));
             } catch (Exception ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);
                 issue = null;
@@ -756,10 +791,10 @@ public class JiraRepository {
         return issue;
     }
 
-    private NbJiraIssue findUnsubmitted (String id) {
+    private NbJiraIssue findUnsubmitted (String key) {
         try {
             for (NbTask task : getUnsubmittedTasksContainer().getTasks()) {
-                if (id.equals("-" + task.getTaskId())) {
+                if (key.equals("-" + task.getTaskId())) {
                     return getIssueForTask(task);
                 }
             }
@@ -794,11 +829,74 @@ public class JiraRepository {
         return new JiraQuery(queryName, this, filterDefinition);
     }
 
+    public void taskDeleted (String taskId) {
+        getCache().removeIssue(taskId);
+    }
+
+    public Collection<NbJiraIssue> getUnsubmittedIssues () {
+        try {
+            UnsubmittedTasksContainer cont = getUnsubmittedTasksContainer();
+            List<NbTask> unsubmittedTasks = cont.getTasks();
+            List<NbJiraIssue> unsubmittedIssues = new ArrayList<>(unsubmittedTasks.size());
+            for (NbTask task : unsubmittedTasks) {
+                NbJiraIssue issue = getIssueForTask(task);
+                if (issue != null) {
+                    unsubmittedIssues.add(issue);
+                }
+            }
+            return unsubmittedIssues;
+        } catch (CoreException ex) {
+            Jira.LOG.log(Level.INFO, null, ex);
+            return Collections.<NbJiraIssue>emptyList();
+        }
+    }
+    
     private class Cache extends IssueCache<NbJiraIssue> {
+        private final Map<String, Reference<NbJiraIssue>> issues = new HashMap<>();
+        
         Cache() {
             super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
         }
+
+        @Override
+        public NbJiraIssue getIssue (String key) {
+            synchronized (CACHE_LOCK) {
+                Reference<NbJiraIssue> issueRef = issues.get(key);
+                return issueRef == null ? null : issueRef.get();
+            }
+        }
+
+        @Override
+        public NbJiraIssue setIssueData (String key, NbJiraIssue issue) {
+            synchronized (CACHE_LOCK) {
+                issues.put(key, new SoftReference<>(issue));
+            }
+            return issue;
+        }
+
+        @Override
+        public IssueCache.Status getStatus (String id) {
+            NbJiraIssue issue = getIssue(id);
+            if (issue != null) {
+                switch (issue.getStatus()) {
+                    case MODIFIED:
+                        return IssueCache.Status.ISSUE_STATUS_MODIFIED;
+                    case NEW:
+                        return IssueCache.Status.ISSUE_STATUS_NEW;
+                    case SEEN:
+                        return IssueCache.Status.ISSUE_STATUS_SEEN;
+                }
+            }
+            return IssueCache.Status.ISSUE_STATUS_UNKNOWN;
+        }
+
+        private void removeIssue (String key) {
+            synchronized (CACHE_LOCK) {
+                issues.remove(key);
+            }
+        }
     }
+    
     private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue> {
         @Override
         public long getLastModified(NbJiraIssue issue) {
@@ -812,8 +910,7 @@ public class JiraRepository {
         }
         @Override
         public Map<String, String> getAttributes(NbJiraIssue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getAttributes();
+            return Collections.<String, String>emptyMap();
         }
     }
 }

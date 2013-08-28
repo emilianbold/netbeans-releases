@@ -233,7 +233,7 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), author, host, TeamUtil.getChatLink(issue.getID()));
+            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), author, host, TeamUtil.getChatLink(issue.getKey()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }
@@ -409,7 +409,7 @@ public class CommentsPanel extends JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getKey());
                 for (Long l : s) {
                     if(!touchedCommenst.contains(l)) {
                         collapsedComments.add(l);
@@ -421,7 +421,7 @@ public class CommentsPanel extends JPanel {
     
     void storeSettings() {
         if(issue != null) {
-            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
+            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getKey());
         } 
     }    
 
