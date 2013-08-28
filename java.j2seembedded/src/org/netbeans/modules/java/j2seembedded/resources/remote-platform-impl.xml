@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<project default="default" basedir=".." xmlns:jnlp="http://www.netbeans.org/ns/j2se-project/remote-platform/1" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3">
+<project default="default" basedir=".." xmlns:remote="http://www.netbeans.org/ns/j2se-project/remote-platform/1" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3">
 
     <target name="default">
         <echo message="Default target is not set, you must specify which target you want to run."/>
@@ -33,14 +32,25 @@
         <property name="remote.dist.dir" value="${remote.project.dir}/${remote.dist.dir.name}"/>
         <property name="remote.dist.jar" value="${remote.dist.dir}/${remote.dist.jar.name}"/>
         <property name="remote.java.executable" value="${remote.platform.home.dir}/bin/java"/>
-    </target>
-
-    <target name="-init-run-remote" depends="init, jar" if="remote.platform.auth.passwd">
-        <property name="extension.jvmargs" value=""/>
-    </target>
-
-    <target name="-init-debug-remote" depends="init, jar, -debug-start-debugger" if="remote.platform.auth.passwd">
-        <property name="extension.jvmargs" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+        <scriptdef name="addressport" language="javascript">
+            <attribute name="address" />
+            <attribute name="property" />
+         <![CDATA[
+           var address = attributes.get("address");
+           project.setProperty(attributes.get("property"), address.split(":")[1]);
+         ]]>
+      </scriptdef>
+      <macrodef name="runwithpasswd" uri="http://www.netbeans.org/ns/j2se-project/remote-platform/1">
+            <attribute name="additionaljvmargs" default=""/>
+            <sequential>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" command="mkdir -p '${remote.dist.dir}'"/>
+                <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" password="${remote.platform.password}" trust="true">
+                    <fileset dir="${dist.dir}"/>
+                </scp>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true"
+                    command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+            </sequential>
+        </macrodef>
     </target>
 
     <target name="-ask-password" unless="remote.platform.password">
@@ -48,21 +58,27 @@
             <handler type="secure"/>
         </input>
     </target>
-    
+
     <target name="-run-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password" if="remote.platform.auth.passwd">
-        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" command="mkdir -p '${remote.dist.dir}'"/>
-        <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" password="${remote.platform.password}" trust="true">
-            <fileset dir="${dist.dir}"/>
-        </scp>
-        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true"
-                 command="cd '${remote.project.dir}'; '${remote.java.executable}' ${extension.jvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+        <remote:runwithpasswd/>
+    </target>
+
+    <target name="-debug-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password, -debug-start-debugger" if="remote.platform.auth.passwd">
+        <addressport address="${jpda.address}" property="jpda.port"/>
+        <sshsession host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true">
+            <remotetunnel lport="${jpda.port}" lhost="localhost" rport="${jpda.port}"/>
+            <sequential>
+                <remote:runwithpasswd additionaljvmargs="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            </sequential>
+        </sshsession>
     </target>
     
-
     <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties" if="remote.platform.auth.key">
     </target>
 
-    <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -init-run-remote, -run-remote-passwd, -run-remote-key"/>
-    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -init-debug-remote, -run-remote-passwd, -run-remote-key"/>
+    <target name="-debug-remote-key" depends="init, jar, -init-remote-platform-properties" if="remote.platform.auth.key">
+    </target>
 
+    <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -run-remote-passwd, -run-remote-key"/>
+    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -debug-remote-passwd, -debug-remote-key"/>
 </project>
