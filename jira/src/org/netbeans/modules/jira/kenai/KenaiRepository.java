@@ -135,6 +135,11 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         obj2[obj2.length - 1] = kenaiProject;
         return obj2;
     }
+    
+    @Override
+    public JiraQuery createPersistentQuery (String queryName, FilterDefinition filter) {
+        return new KenaiQuery(queryName, this, filter, projectName, true, false);
+    }
 
     public String getHost() {
         return host;

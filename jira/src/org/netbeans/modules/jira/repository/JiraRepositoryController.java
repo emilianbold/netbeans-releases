@@ -304,7 +304,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 String httpUser = getHttpUser();
                 char[] password = getPassword();
                 char[] httpPassword = getHttpPassword();
-                TaskRepository taskRepo = JiraRepository.createTaskRepository(
+                TaskRepository taskRepo = JiraRepository.createTemporaryTaskRepository(
                         name,
                         url,
                         user,

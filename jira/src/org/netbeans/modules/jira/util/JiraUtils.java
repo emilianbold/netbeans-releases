@@ -49,9 +49,9 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -59,16 +59,16 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -107,62 +107,35 @@ public class JiraUtils {
                     NotifyDescriptor.OK_OPTION);
         DialogDisplayer.getDefault().notify(nd);
     }
-    // XXX merge with bugzilla
-    /**
-     * Returns TaskData for the given issue key or null if an error occured
-     * @param repository
-     * @param key
-     * @return
-     */
-    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key) {
-        return getTaskDataByKey(repository, key, true);
-    }
 
     /**
-     * Returns TaskData for the given issue key or null if an error occured
-     * @param repository
-     * @param key
-     * @return
-     */
-    public static TaskData getTaskDataByKey(final JiraRepository repository, final String key, boolean handleExceptions) {
-        final TaskData[] taskData = new TaskData[1];
-        BugtrackingCommand cmd = new BugtrackingCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), key, new NullProgressMonitor());
-            }
-        };
-        repository.getExecutor().execute(cmd, handleExceptions);
-        if(cmd.hasFailed() && Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
-        }
-        return taskData[0];
-    }
-
-    // XXX merge with bugzilla
-    /**
-     * Returns TaskData for the given issue id or null if an error occured
+     * Returns Task for the given issue id or null if an error occurred
      * @param repository
      * @param id
      * @return
      */
-    public static TaskData getTaskDataById(final JiraRepository repository, final String id) {
-        return getTaskDataById(repository, id, true);
-    }
-
-    public static TaskData getTaskDataById(final JiraRepository repository, final String id, boolean handleExceptions) {
-        final TaskData[] taskData = new TaskData[1];
-        BugtrackingCommand cmd = new BugtrackingCommand() {
-            @Override
-            public void execute() throws CoreException, IOException, MalformedURLException {
-                taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+    public static NbTask getRepositoryTask (final JiraRepository repository, final String id, boolean handleExceptions) {
+        MylynSupport supp = MylynSupport.getInstance();
+        try {
+            GetRepositoryTasksCommand cmd = supp.getCommandFactory()
+                    .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
+            repository.getExecutor().execute(cmd, handleExceptions);
+            if(cmd.hasFailed()) {
+                Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
             }
-        };
-        repository.getExecutor().execute(cmd, handleExceptions);
-        if(cmd.hasFailed() && Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.log(Level.FINE, cmd.getErrorMessage());
+            if (cmd.getTasks().isEmpty()) {
+                // fallback on local
+                NbTask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
+                if (cmd.hasFailed() && task != null) {
+                    return task;
+                }
+            } else {
+                return cmd.getTasks().iterator().next();
+            }
+        } catch (CoreException ex) {
+            Jira.LOG.log(Level.INFO, null, ex);
         }
-        return taskData[0];
+        return null;
     }
 
     /**

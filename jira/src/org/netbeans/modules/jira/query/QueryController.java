@@ -1227,14 +1227,22 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
-    private void onFindIssues() {
-        Util.createNewQuery(JiraUtils.getRepository(repository));
-    }
-
-    private void onCloneQuery() {
+    protected void onCloneQuery() {
         FilterDefinition fd = getFilterDefinition();
         JiraQuery q = new JiraQuery(null, repository, fd, false, true);
         JiraUtils.openQuery(q);
+    }
+    
+    protected final JiraRepository getRepository () {
+        return repository;
+    }
+
+    void switchToDeterminateProgress(long issuesCount) {
+        synchronized(REFRESH_LOCK) {
+            if(refreshTask != null) {
+                refreshTask.switchToDeterminateProgress(issuesCount);
+            }
+        }
     }
 
     void progress(String issueDesc) {
@@ -1250,6 +1258,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         private int counter;
         private Task task;
         private boolean autoRefresh;
+        private long progressMaxWorkunits;
+        private int progressWorkunits;
 
         public QueryTask() {
             query.addNotifyListener(this);
@@ -1287,11 +1297,20 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             });
         }
 
-        void progress(String issueDesc) {
+        void switchToDeterminateProgress(long progressMaxWorkunits) {
             if(handle != null) {
+                handle.switchToDeterminate((int) progressMaxWorkunits);
+                this.progressMaxWorkunits = progressMaxWorkunits;
+                this.progressWorkunits = 0;
+            }
+        }
+
+        void progress (String issueDesc) {
+            if(handle != null && progressWorkunits < progressMaxWorkunits) {
                 handle.progress(
                     NbBundle.getMessage(
-                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}));
+                        QueryController.class, "LBL_RetrievingIssue", new Object[] {issueDesc}),
+                        ++progressWorkunits);
             }
         }
 
@@ -1356,6 +1375,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
+                query.cancel();
                 finnishQuery();
             }
             return true;

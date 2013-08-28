@@ -42,20 +42,17 @@
 
 package org.netbeans.modules.jira.query;
 
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
@@ -68,7 +65,9 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,6 +87,9 @@ public class JiraQuery {
     private boolean saved;
     protected long lastRefresh;
     private final PropertyChangeSupport support;
+    private SynchronizeQueryCommand queryCmd;
+    private IRepositoryQuery iquery;
+    private final Object ISSUES_LOCK = new Object();
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -183,6 +185,8 @@ public class JiraQuery {
         executeQuery(new Runnable() {
             public void run() {
                 Jira.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/ }); // NOI18N
+                MylynSupport supp = MylynSupport.getInstance();
+                IRepositoryQuery runningQuery = iquery;
                 try {
 
                     // keeps all issues we will retrieve from the server
@@ -201,32 +205,61 @@ public class JiraQuery {
                     }
                     firstRun = false;
 
-                    // run query to know what matches the criteria
-                    // IssuesIdCollector will populate the issues set
-                    JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
-                    RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "jira query"); // NOI18N
-                    JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
-        
-                    PerformQueryCommand queryCmd = 
-                        new PerformQueryCommand(
-                            Jira.getInstance().getRepositoryConnector(),
-                            repository.getTaskRepository(), 
-                            new IssuesCollector(),
-                            repositoryQuery);
-                    repository.getExecutor().execute(queryCmd, !autoRefresh);
-                    ret[0] = !queryCmd.hasFailed();
-                    if(!ret[0]) {
-                       return;
-                    }
+                    try {
+                        if (runningQuery == null) {
+                            String qName = getStoredQueryName();
+                            if (qName == null || name == null) {
+                                qName = "bugzilla ad-hoc query nr. " + System.currentTimeMillis(); //NOI18N
+                            }
+                            runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
+                            if (runningQuery == null) {
+                                runningQuery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
+                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
+                            }
+                            if (isSaved()) {
+                                iquery = runningQuery;
+                            }
+                        }
+                        JiraUtil.setQuery(repository.getTaskRepository(), runningQuery, jiraFilter);
+                        SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
+                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
+                        QueryProgressListener list = new QueryProgressListener();
+                        queryCmd.addCommandProgressListener(list);
+                        repository.getExecutor().execute(queryCmd, !autoRefresh);
+                        ret[0] = queryCmd.hasFailed();
+                        if (ret[0]) {
+                            if (isSaved()) {
+                                for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
+                                    // as a side effect creates a NbJiraIssue instance
+                                    getRepository().getIssueForTask(t);
+                                    issues.add(t.getTaskId());
+                                }
+                            }
+                            return;
+                        }
 
-                    // only issues not returned by the query are archived
-                    archivedIssues.removeAll(issues);
-                    if(isSaved()) {
-                        // ... and store the actuall state
-                        repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
-                        repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                        // only issues not returned by the query are obsolete
+                        archivedIssues.removeAll(issues);
+                        if(isSaved()) {
+                            // ... and store all issues you got
+                            repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
+                            repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                        }
+                        list.notifyIssues(issues);
+                        list.notifyIssues(archivedIssues);
+
+                        // but what about the archived issues?
+                        // they should be refreshed as well, but do we really care about them ?
+                    } catch (CoreException ex) {
+                        Jira.LOG.log(Level.INFO, null, ex);
+                        ret[0] = true;
                     }
                 } finally {
+                    queryCmd = null;
+                    if (iquery == null && runningQuery != null) {
+                        // ad-hoc queries cannot be saved in tasklist
+                        MylynSupport.getInstance().deleteQuery(runningQuery);
+                    }
                     logQueryEvent(issues.size(), autoRefresh);
                     Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/}); // NOI18N
                 }
@@ -278,6 +311,9 @@ public class JiraQuery {
     
     public void setName(String name) {
         this.name = name;
+        if (iquery != null) {
+            iquery.setSummary(name);
+        }
     }
 
     public void setSaved(boolean saved) {
@@ -332,28 +368,74 @@ public class JiraQuery {
     public long getLastRefresh() {
         return lastRefresh;
     }
-
-    private class IssuesCollector extends TaskDataCollector {
-        public IssuesCollector() {}
+    
+    private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
+        
+        private final Set<String> addedIds = new HashSet<String>();
+        private final Set<String> ids = new HashSet<String>();
+        
         @Override
-        public void accept(TaskData taskData) {
-            String id = NbJiraIssue.getID(taskData);
-            NbJiraIssue issue;
-            try {
-                getController().progress(NbJiraIssue.getDisplayName(taskData));
-                IssueCache<NbJiraIssue> cache = repository.getIssueCache();
-                issue = cache.getIssue(id);
-                if(issue != null) {
-                    issue.setTaskData(taskData);
-                }
-                issue = (NbJiraIssue) cache.setIssueData(id, issue != null ? issue : new NbJiraIssue(taskData, repository));
-                issues.add(issue.getID());
-            } catch (IOException ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
-                return;
+        public void queryRefreshStarted (Collection<NbTask> tasks) {
+            for (NbTask task : tasks) {
+                taskAdded(task);
             }
-            fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
+
+        @Override
+        public void tasksRefreshStarted (Collection<NbTask> tasks) {
+            getController().switchToDeterminateProgress(tasks.size());
+        }
+
+        @Override
+        public void taskAdded (NbTask task) {
+            synchronized(ISSUES_LOCK) {
+                ids.add(task.getTaskId());
+            }
+            // when issue table or task dashboard is able to handle deltas
+            // fire an event from here
+        }
+
+        @Override
+        public void taskRemoved (NbTask task) {
+            synchronized(ISSUES_LOCK) {
+                ids.remove(task.getTaskId());
+            }
+            // when issue table or task dashboard is able to handle removals
+            // fire an event from here
+        }
+
+        @Override
+        public void taskSynchronized (NbTask task) {
+            if (ids.contains(task.getTaskId()) && addedIds.add(task.getTaskId())) {
+                getController().progress(task.getSummary());
+                NbJiraIssue issue = repository.getIssueForTask(task);
+                if (issue != null) {
+                    issues.add(task.getTaskId());
+                    fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                }
+            }
+        }
+        
+        private void notifyIssues (Set<String> issues) {
+            // this is due to the archived issues
+            MylynSupport supp = MylynSupport.getInstance();
+            try {
+                for (String taskId : issues) {
+                    NbTask task = supp.getTask(repository.getUrl(), taskId);
+                    if (task != null) {
+                        NbJiraIssue issue = repository.getIssueForTask(task);
+                        if (issue != null) {
+                            if (addedIds.add(task.getTaskId())) {
+                                fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                            }
+                        }
+                    }
+                }
+            } catch (CoreException ex) {
+                Jira.LOG.log(Level.INFO, null, ex);
+            }
+        }
+
     };
     
     public void addNotifyListener(QueryNotifyListener l) {
@@ -400,6 +482,13 @@ public class JiraQuery {
             fireFinished();
             fireQueryIssuesChanged();
             lastRefresh = System.currentTimeMillis();
+        }
+    }
+
+    void cancel () {
+        SynchronizeQueryCommand cmd = queryCmd;
+        if (cmd != null) {
+            cmd.cancel();
         }
     }
     

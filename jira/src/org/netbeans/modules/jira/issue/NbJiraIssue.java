@@ -104,6 +104,9 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -349,6 +352,11 @@ public class NbJiraIssue {
         return repository.getTaskRepository();
     }
 
+    private NbTask getTask () throws CoreException {
+        assert !isNew();
+        return MylynSupport.getInstance().getTask(getRepository().getUrl(), getID());
+    }
+
     public boolean isSubtask() {
         String key = getParentKey();
         return key != null && !key.trim().equals("");
@@ -521,7 +529,7 @@ public class NbJiraIssue {
      */
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        return refresh(getID(), false);
+        return refresh(false);
     }
 
     public IssueStatusProvider.Status getIssueStatus() {
@@ -534,7 +542,7 @@ public class NbJiraIssue {
             case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }
-        return null;
+        return IssueStatusProvider.Status.SEEN;
     }
 
     public void setUpToDate(boolean seen) {
@@ -555,39 +563,16 @@ public class NbJiraIssue {
      * @param key key of the issue
      * @return true if successfully refreshed
      */
-    private boolean refresh(String key, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
-            TaskData td = JiraUtils.getTaskDataByKey(repository, key);
-            if(td == null) {
-                return false;
-            }
-            setTaskData(td);
-            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
+            NbTask task = getTask();
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+            getRepository().getExecutor().execute(cmd);
+            assert this == getRepository().getIssueForTask(task);
             refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
-        return true;
-    }
-
-    /**
-     * Reloads the task data and refreshes the issue cache
-     * @param id id of the issue
-     * @return true if successfully refreshed
-     */
-    private boolean refreshById(String id, boolean afterSubmitRefresh) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        try {
-            TaskData td = JiraUtils.getTaskDataById(repository, id);
-            if(td == null) {
-                return false;
-            }
-            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
-            NbJiraIssue issue = cache.getIssue(id);
-            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository));
-            refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
+        } catch (CoreException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
@@ -902,7 +887,7 @@ public class NbJiraIssue {
                 }
                 Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
                         task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
-                refresh(getID(), true); // XXX to much refresh - is there no other way?
+                refresh(true); // XXX to much refresh - is there no other way?
             }
         };
         repository.getExecutor().execute(cmd);
@@ -1365,7 +1350,7 @@ public class NbJiraIssue {
                 if (!wasNew) {
                     refresh();
                 } else {
-                    refreshById(rr[0].getTaskId(), true);
+                    refresh(true);
                 }
             }
         };
