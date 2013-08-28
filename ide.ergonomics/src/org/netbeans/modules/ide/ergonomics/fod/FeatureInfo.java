@@ -191,7 +191,12 @@ public final class FeatureInfo {
                             XPathExpression e;
                             if (!(r1 instanceof XPathExpression)) {
                                 try {
-                                    required[1] = e = XPathFactory.newInstance().newXPath().compile((String) r1);
+                                    final String path = (String) r1;
+                                    if (path.isEmpty()) {
+                                        toRet = 2;
+                                        continue;
+                                    }
+                                    required[1] = e = XPathFactory.newInstance().newXPath().compile(path);
                                 } catch (XPathExpressionException ex) {
                                     FoDLayersProvider.LOG.log(Level.WARNING, "Cannot parse " + r1, ex);
                                     continue;
@@ -235,6 +240,10 @@ public final class FeatureInfo {
         Boolean p = cachePresent;
         if (p != null) {
             return p;
+        }
+        
+        if (this.clusterName.equals("download")) {
+            return cachePresent = true;
         }
 
         Set<String> codeNames = new HashSet<String>(getCodeNames());
