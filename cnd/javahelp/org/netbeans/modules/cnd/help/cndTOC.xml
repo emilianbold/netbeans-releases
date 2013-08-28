@@ -3,15 +3,16 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="IDE Basics">
+<!--	<tocitem text="IDE Basics">
 		<tocitem text="Getting Started">
 			<tocitem text="C and C++ and Fortran Applications" target="WorkingWithCandC++Projects" />
 		</tocitem>
 	</tocitem>
+    -->
 	<tocitem text="C/C++/Fortran Development" expand="false">
 		<tocitem text="Getting Started">
-			<tocitem text="IDE Tools for C/C++/Fortran Development" target="IDEToolsOverview" />
 			<tocitem text="Workflow for C/C++/Fortran Projects" target="WorkingWithCandC++Projects1" />
+                        <tocitem text="IDE Tools for C/C++/Fortran Development" target="IDEToolsOverview" />
 			<tocitem text="About Projects and Makefiles" target="CandC++ProjectsMakefiles" />
 			<tocitem text="Creating a C/C++/Fortran Project" target="CreatingCorC++Project" />
 		</tocitem>
