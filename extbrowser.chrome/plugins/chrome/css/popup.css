@@ -63,6 +63,7 @@ body {
     border: 1px solid #aeaeab;
     border-radius: 2px;
     white-space: nowrap;
+    min-width: 280px;
 }
 #presetMenu a {
     display: block;
