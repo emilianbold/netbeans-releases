@@ -329,7 +329,7 @@ public final class ReferencesSupport {
 //                // Exit now, don't look for variables, types and etc.
 //                return null;
 //            }
-        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset)) {
+        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset) || CsmKindUtilities.isTypeAlias(objUnderOffset)) {
             CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
             CsmParameter parameter = null;
             boolean repeat;

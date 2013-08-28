@@ -183,7 +183,7 @@ public abstract class CsmFileReferences {
            return ((CsmFunction)obj).getReturnType();
        } else if (CsmKindUtilities.isVariable(obj)) {
            return ((CsmVariable)obj).getType();
-       } else if(CsmKindUtilities.isTypedef(obj)) {
+       } else if(CsmKindUtilities.isTypedef(obj) || CsmKindUtilities.isTypeAlias(obj)) {
            return ((CsmTypedef) obj).getType();
        }
        return null;

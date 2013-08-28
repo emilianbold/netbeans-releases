@@ -48,6 +48,7 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -57,6 +58,7 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.PersistenceHandler;
 import org.netbeans.core.windows.RegistryImpl;
 import org.netbeans.core.windows.TopComponentGroupImpl;
+import org.netbeans.core.windows.TopComponentTracker;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.ui.MainWindow;
@@ -66,6 +68,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 
@@ -113,7 +116,7 @@ public class ResetWindowsAction implements ActionListener {
         final boolean isProjectsTCGroupOpened = null != projectTCGroup && projectTCGroup.isOpened();
         
         //get a list of editor windows that should stay open even after the reset
-        final TopComponent[] editors = wm.getEditorTopComponents();
+        final TopComponent[] editors = collectEditors();
         
         //close all other windows just in case they hold some references to editor windows
         wm.closeNonEditorViews();
@@ -188,5 +191,27 @@ public class ResetWindowsAction implements ActionListener {
                 }
             }
         });
+    }
+
+    private TopComponent[] collectEditors() {
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
+        ArrayList<TopComponent> editors = new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened().size());
+        //collect from the main editor mode first
+        ModeImpl editorMode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( "editor" );
+        for( TopComponent tc : editorMode.getOpenedTopComponents() ) {
+            if( tcTracker.isViewTopComponent( tc ) )
+                continue;
+            editors.add( tc );
+        }
+        for( ModeImpl m : WindowManagerImpl.getInstance().getModes() ) {
+            if( "editor".equals( m.getName() ) )
+                continue;
+            for( TopComponent tc : m.getOpenedTopComponents() ) {
+                if( tcTracker.isViewTopComponent( tc ) )
+                    continue;
+                editors.add( tc );
+            }
+        }
+        return editors.toArray( new TopComponent[editors.size()] );
     }
 }

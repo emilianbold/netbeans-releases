@@ -250,7 +250,7 @@ public class CsmDeclarationResolver {
         } else if (CsmKindUtilities.isEnum(outDecl)) {
             CsmEnum en = (CsmEnum)outDecl;
             it = en.getEnumerators().iterator();
-        } else if (CsmKindUtilities.isTypedef(outDecl)) {
+        } else if (CsmKindUtilities.isTypedef(outDecl) || CsmKindUtilities.isTypeAlias(outDecl)) {
             CsmTypedef td = (CsmTypedef) outDecl;
             if (td.isTypeUnnamed() || td.getName().length() == 0) {
                 outDecl = td.getType().getClassifier();

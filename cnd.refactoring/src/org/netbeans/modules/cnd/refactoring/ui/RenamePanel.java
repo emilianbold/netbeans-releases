@@ -159,6 +159,8 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
                 kindName = getString("LBL_Function"); // NOI18N
             } else if (CsmKindUtilities.isTypedef(obj)) {
                 kindName = getString("LBL_Typedef"); // NOI18N
+            } else if (CsmKindUtilities.isTypeAlias(obj)) {
+                kindName = getString("LBL_TypeAlias"); // NOI18N
             }
         }
         return kindName;

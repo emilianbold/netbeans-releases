@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -117,6 +118,8 @@ public class UIDUtilities {
         } else {
             if (declaration instanceof CsmTypedef) {
                 uid = new TypedefUID<T>(declaration);
+            } else if (declaration instanceof CsmTypeAlias) {
+                uid = new TypeAliasUID<T>(declaration);
             } else if (ForwardClass.isForwardClass(declaration)) {
                 uid = new ForwardClassUID<T>(declaration);
             } else if (declaration instanceof CsmClassifier) {
@@ -657,6 +660,29 @@ public class UIDUtilities {
             return "TypedefUID"; // NOI18N
         }
     }
+    
+    /**
+     * UID for CsmTypeAlias
+     */
+    /* package */ static final class TypeAliasUID<T extends CsmOffsetableDeclaration> extends OffsetableDeclarationUIDBase<T> {
+
+        public TypeAliasUID(T typeAlias) {
+            super(typeAlias);
+        }
+
+        public TypeAliasUID(Key key) {
+            super(key);
+        }
+        
+        /* package */ TypeAliasUID(RepositoryDataInput aStream) throws IOException {
+            super(aStream);
+        }
+
+        @Override
+        protected String getToStringPrefix() {
+            return "TypeAliasUID"; // NOI18N
+        }
+    }    
 
     /**
      * UID for CsmMacro

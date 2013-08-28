@@ -982,7 +982,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,
-            CsmDeclaration.Kind.TYPEDEF
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS
         };
         if (!contextOnly && checkNamespaceDeclarations()) {
             Collection usedDecls = getUsedDeclarations(this.file, offset, strPrefix, match, kinds);

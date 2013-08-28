@@ -216,6 +216,7 @@ public class CsmImageLoader implements CsmImageName {
                 return MACRO;
             case UNION:
                 return UNION;
+            case TYPEALIAS:
             case TYPEDEF:
                 return TYPEDEF;
             case CLASS_FRIEND_DECLARATION:
@@ -243,6 +244,7 @@ public class CsmImageLoader implements CsmImageName {
                 return MACRO;
             case UNION:
                 return UNION;
+            case TYPEALIAS:
             case TYPEDEF:
                 return TYPEDEF;
             case CLASS_FRIEND_DECLARATION:

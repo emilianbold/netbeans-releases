@@ -58,7 +58,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
@@ -81,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.Input
 import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.TabsGroup;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -110,7 +110,6 @@ import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -207,6 +206,11 @@ public class ProjectActionSupport {
                     MakeLogicalViewProvider.refreshBrokenItems(project);
                 }
             });
+            ConfigurationDescriptorProvider.SnapShot snapShot = curPAE.getContext().lookup(ConfigurationDescriptorProvider.SnapShot.class);
+            if (snapShot != null) {
+                ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                cdp.endModifications(snapShot, true, LOGGER);
+            }
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
         }

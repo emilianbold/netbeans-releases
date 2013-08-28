@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -1231,7 +1232,7 @@ abstract public class CsmCompletionQuery {
         }        
 
         private void fillVisibleListAndFilterTypedefs(CsmObject elem, AtomicBoolean hasClassifier, List<CsmObject> visibleObjects, List<CsmObject> td) {
-            if (CsmKindUtilities.isTypedef(elem)) {
+            if (CsmKindUtilities.isTypedef(elem) || CsmKindUtilities.isTypeAlias(elem)) {
                 CsmTypedef curTd = (CsmTypedef) elem;
                 CharSequence classifierText = curTd.getType().getClassifierText();
                 if (curTd.getName().equals(classifierText)) {
@@ -2498,7 +2499,7 @@ abstract public class CsmCompletionQuery {
                                                         } else {
                                                             // variable like function definition (IZ#159422)
                                                             CsmClassifier cls = fldType.getClassifier();
-                                                            if (CsmKindUtilities.isTypedef(cls)) {
+                                                            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                                                                 CsmType type = ((CsmTypedef) cls).getType();
                                                                 if (CsmKindUtilities.isFunctionPointerType(type)) {
                                                                     lastType = type;
@@ -2551,7 +2552,7 @@ abstract public class CsmCompletionQuery {
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {
                                             mtdList.add((CsmFunction)obj);
-                                        } else if (CsmKindUtilities.isTypedef(obj)) {
+                                        } else if (CsmKindUtilities.isTypedef(obj) || CsmKindUtilities.isTypeAlias(obj)) {
                                             lastType = ((CsmTypedef)obj).getType();
                                             break;
                                         } else if (CsmKindUtilities.isClassifier(obj)) {
@@ -3095,7 +3096,7 @@ abstract public class CsmCompletionQuery {
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN);
 
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN);
-
+        
         public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN);
 
         public CsmResultItem.ForwardEnumResultItem createForwardEnumResultItem(CsmEnumForwardDeclaration cls, int classDisplayOffset, boolean displayFQN);
@@ -3371,6 +3372,8 @@ abstract public class CsmCompletionQuery {
                 return getCsmItemFactory().createGlobalMacroResultItem((CsmMacro) csmObj);
             } else if (CsmKindUtilities.isTypedef(csmObj)) {
                 return getCsmItemFactory().createTypedefResultItem((CsmTypedef) csmObj, classDisplayOffset, false);
+            } else if (CsmKindUtilities.isTypeAlias(csmObj)) {
+                return getCsmItemFactory().createTypedefResultItem((CsmTypeAlias) csmObj, classDisplayOffset, false);                
             } else if (CsmKindUtilities.isStatement(csmObj)) {
                 return getCsmItemFactory().createLabelResultItem((CsmLabel) csmObj);
             } else if (CsmKindUtilities.isNamespaceAlias(csmObj)) {
@@ -3444,7 +3447,7 @@ abstract public class CsmCompletionQuery {
                     // TODO fix me!
                     continue;
                 }
-            } else if (CsmKindUtilities.isTypedef(elem)) {
+            } else if (CsmKindUtilities.isTypedef(elem) || CsmKindUtilities.isTypeAlias(elem)) {
                 item = factory.createTypedefResultItem((CsmTypedef) elem, classDisplayOffset, false);
             } else {
                 assert CsmKindUtilities.isEnum(elem);
@@ -3523,7 +3526,7 @@ abstract public class CsmCompletionQuery {
         for (CsmClassifier elem : res.getLibClassifiersEnums()) {
             if (CsmKindUtilities.isClass(elem)) {
                 item = factory.createLibClassResultItem((CsmClass) elem, classDisplayOffset, false);
-            } else if (CsmKindUtilities.isTypedef(elem)) {
+            } else if (CsmKindUtilities.isTypedef(elem) || CsmKindUtilities.isTypeAlias(elem)) {
                 item = factory.createLibTypedefResultItem((CsmTypedef) elem, classDisplayOffset, false);
             } else {
                 assert CsmKindUtilities.isEnum(elem);
@@ -3745,7 +3748,7 @@ abstract public class CsmCompletionQuery {
             
             type = null;
             
-            if (CsmKindUtilities.isTypedef(classifier)) {
+            if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
                 type = ((CsmTypedef)classifier).getType();
             }
         }

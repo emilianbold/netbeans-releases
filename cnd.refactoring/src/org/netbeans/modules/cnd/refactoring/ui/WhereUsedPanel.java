@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -271,6 +272,9 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         } else if (CsmKindUtilities.isTypedef(refObject)) {
             String tdName = ((CsmTypedef)refObject).getQualifiedName().toString();
             labelText = getString("DSC_TypedefUsages", tdName); // NOI18N
+        } else if (CsmKindUtilities.isTypeAlias(refObject)) {
+            String taName = ((CsmTypeAlias)refObject).getQualifiedName().toString();
+            labelText = getString("DSC_TypeAliasUsages", taName); // NOI18N            
         } else if (CsmKindUtilities.isEnum(refObject)) {
             labelText = getString("DSC_EnumUsages", ((CsmEnum)refObject).getQualifiedName().toString()); // NOI18N
         } else if (CsmKindUtilities.isEnumerator(refObject)) {
