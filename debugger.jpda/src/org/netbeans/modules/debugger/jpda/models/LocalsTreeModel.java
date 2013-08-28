@@ -70,6 +70,7 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
@@ -538,7 +539,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             }
             if (stackFrame == null)
                 return new String [] {"No current thread"};
-            ObjectReference thisR = StackFrameWrapper.thisObject (stackFrame);
+            This thisVar = callStackFrame.getThisVariable();
             List<Operation> operations = thread.getLastOperations();
             Variable breakpointVariable;
             boolean haveLastOperations;
@@ -555,7 +556,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
             //int currArgShift = (currentOperation != null && CallStackFrameImpl.IS_JDK_160_02) ? 1 : 0;
             int currArgShift = (currentOperation != null) ? 1 : 0;
             int shift = retValShift + currArgShift;
-            if (thisR == null) {
+            if (thisVar == null) {
                 ReferenceType classType = LocationWrapper.declaringType(StackFrameWrapper.location(stackFrame));
                 Object[] avs = null;
                 avs = getLocalVariables (
@@ -595,7 +596,7 @@ public class LocalsTreeModel implements TreeModel, PropertyChangeListener {
                     result[retValShift] = currentOperation;
                 }
                 if (from < 1 + shift) {
-                    result[shift] = new ThisVariable (debugger, thisR, "");
+                    result[shift] = thisVar;
                 }
                 System.arraycopy (avs, 0, result, 1 + shift, avs.length);
                 return result;
