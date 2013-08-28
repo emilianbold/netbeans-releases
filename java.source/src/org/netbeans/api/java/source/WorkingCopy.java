@@ -550,9 +550,7 @@ public class WorkingCopy extends CompilationController {
                 @Override
                 public Void scan(Tree tree, Void p) {
                     if (changes.containsKey(tree) || docChanges.containsKey(tree)) {
-                        boolean clearCurrentParent = false;
                         if (currentParent == null) {
-                            clearCurrentParent = true;
                             currentParent = getParentPath(getCurrentPath(), tree);
                             if (currentParent.getParentPath() != null && currentParent.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
                                 currentParent = currentParent.getParentPath();
@@ -573,11 +571,11 @@ public class WorkingCopy extends CompilationController {
                         } else {
                             super.scan(tree, p);
                         }
-                        if (clearCurrentParent) {
-                            currentParent = null;
-                        }
                     } else {
                         super.scan(tree, p);
+                    }
+                    if (currentParent != null && currentParent.getLeaf() == tree) {
+                        currentParent = null;
                     }
                     return null;
                 }
