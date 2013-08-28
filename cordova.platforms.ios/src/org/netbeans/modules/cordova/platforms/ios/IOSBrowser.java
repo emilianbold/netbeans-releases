@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -164,7 +165,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                 public void run() {
                     if (kind == Kind.IOS_DEVICE_DEFAULT) {
                         try {
-                            build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
+                            build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iosdevice16.png"), url)), true);
                         } catch (IllegalStateException ise) {
                             build.stopDebugging(true);
                             SwingUtilities.invokeLater(new Runnable() {
@@ -182,7 +183,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                             });
                         }
                     } else {
-                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
+                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator16.png"), url)), false);
                     }
                 }
             }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);

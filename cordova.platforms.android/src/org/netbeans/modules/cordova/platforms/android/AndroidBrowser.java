@@ -67,6 +67,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -205,7 +206,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                 final Project project = context.lookup(Project.class);
                 if (Browser.CHROME.getName().equals(b.getName()) && project != null) {
                     try {
-                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, url)), false);
+                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice16.png"), url)), false);
                     } catch (IllegalStateException ex) {
                         LOGGER.log(Level.INFO, ex.getMessage(), ex);
                         SwingUtilities.invokeLater(new Runnable() {
