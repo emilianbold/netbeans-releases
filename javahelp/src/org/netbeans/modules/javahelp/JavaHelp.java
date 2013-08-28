@@ -57,6 +57,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -352,12 +353,53 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             Installer.log.fine("\talready visible, just repainting");
         } else {
             frameViewer.setVisible(true);
+            addListenerToCurrentModalDialog();
         }
         //#29417: This call of requestFocus causes lost focus when Help window
         //is reopened => removed.
         //frameViewer.requestFocus();
         lastJH = jh;
     }
+
+    /**
+     * If the help frame is opened from a modal dialog, it should be closed
+     * automatically if that dialog closes. See bug 233543.
+     */
+    private void addListenerToCurrentModalDialog() {
+        int maxDepth = 0;
+        Dialog topDialog = null;
+        for (Window w : JDialog.getWindows()) {
+            if (w instanceof Dialog && w.isVisible()) {
+                Dialog d = (Dialog) w;
+                if (isRelevantDialog(d)) {
+                    int depth = 0;
+                    for (Window o = d.getOwner(); o != null; o = o.getOwner()) {
+                        depth++;
+                        if (o == WindowManager.getDefault().getMainWindow()
+                                && depth > maxDepth) {
+                            maxDepth = depth;
+                            topDialog = d;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (topDialog != null) {
+            final Dialog finalTopDialog = topDialog;
+            topDialog.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    if (frameViewer != null) {
+                        frameViewer.setVisible(false);
+                    }
+                    finalTopDialog.removeWindowListener(this);
+                }
+            });
+        }
+    }
+
     private void displayHelpInDialog(JHelp jh) {
         Installer.log.fine("displayHelpInDialog");
         if (jh == null) jh = lastJH;
@@ -575,17 +617,8 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
         }
         if (w instanceof Dialog) {
             Dialog d = (Dialog)w;
-            String dlgClass = d.getClass().getName();
-            if ((d.isModal() && !(d instanceof ProgressDialog)) || d == dialogViewer) {
-                //#40950: Print and Page Setup dialogs was not displayed from java help window.
-                if ("sun.awt.windows.WPageDialog".equals(dlgClass) || // NOI18N
-                    "sun.awt.windows.WPrintDialog".equals(dlgClass) || // NOI18N
-                    "sun.print.ServiceDialog".equals(dlgClass) ||
-                    "apple.awt.CPrinterJobDialog".equals(dlgClass) ||
-                    "apple.awt.CPrinterPageDialog".equals(dlgClass)) { // NOI18N
-                    //It is the print or print settings dialog for javahelp, do nothing
-                    return;
-                }
+
+            if (isRelevantDialog(d) || d == dialogViewer) {
                 
                 //#47150: Race condition in toolkit if two dialogs are shown in a row
                 if (d instanceof JDialog) {
@@ -665,6 +698,25 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             //Installer.log.fine("frame event: " + ev);
         }
     }
+
+    /**
+     * Test whether a window is a dialog that is relevant to the help displayer.
+     * Only modal dialogs that are NOT print dialogs, progress dialog or similar
+     * system dialogs are relevant.
+     */
+    private static boolean isRelevantDialog(Dialog d) {
+        if (!d.isModal() || d instanceof ProgressDialog) {
+            return false;
+        }
+        String dlgClass = d.getClass().getName();
+        return !"sun.awt.windows.WPageDialog".equals(dlgClass) //NOI18N
+                && !"sun.awt.windows.WPrintDialog".equals(dlgClass) //NOI18N
+                && !"sun.print.ServiceDialog".equals(dlgClass) //NOI18N
+                && !"apple.awt.CPrinterJobDialog".equals(dlgClass) //NOI18N
+                && !"apple.awt.CPrinterPageDialog".equals(dlgClass); //NOI18N
+
+    }
+
     private void showDialogStack() {
         if (Installer.log.isLoggable(Level.FINE)) {
             StringBuffer buf = new StringBuffer("new modal dialog stack: ["); // NOI18N
