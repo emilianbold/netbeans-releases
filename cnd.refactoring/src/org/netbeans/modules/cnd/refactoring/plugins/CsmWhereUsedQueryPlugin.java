@@ -107,6 +107,7 @@ import org.openide.util.lookup.Lookups;
 public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements FiltersDescription.Provider {
     private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
+    private FiltersDescription filtersDescription;
     
     /** Creates a new instance of WhereUsedQuery */
     public CsmWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
@@ -116,6 +117,15 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
+        if(filtersDescription != null) {
+            //select/unselect DECLARATIONS filter if needed
+            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
+                if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
+                    filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
+                    break;
+                }
+            }
+        }
         CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
         CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
         if (referencedObject == null) {
@@ -428,6 +438,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public void addFilters(FiltersDescription filtersDescription) {
+        this.filtersDescription = filtersDescription;
         filtersDescription.addFilter(CsmWhereUsedFilters.COMMENTS.getKey(), 
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Comments"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false)); //NOI18N
@@ -444,13 +455,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public void enableFilters(FiltersDescription filtersDescription) {
-        //select/unselect DECLARATIONS filter if needed
-        for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
-            if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
-                filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
-                break;
-            }
-        }
         if (isSearchInComments()) {
             filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
         }
