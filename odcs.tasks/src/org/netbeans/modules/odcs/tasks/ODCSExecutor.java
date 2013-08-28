@@ -42,7 +42,14 @@
 package org.netbeans.modules.odcs.tasks;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -60,6 +67,7 @@ import org.openide.util.NbBundle;
  */
 public class ODCSExecutor {
     private final ODCSRepository repository;
+    private final Set<String> noConnectionUrls = new HashSet<String>();
     
     public ODCSExecutor (ODCSRepository repository) {
         this.repository = repository;
@@ -77,10 +85,17 @@ public class ODCSExecutor {
             }
             cmd.execute();
             if(cmd instanceof PerformQueryCommand) {
-                handleStatus((PerformQueryCommand) cmd, handleExceptions);
+                if(!handleStatus((PerformQueryCommand) cmd, handleExceptions)) {
+                    return;
+                }
+            }
+            
+            synchronized (noConnectionUrls) {
+                noConnectionUrls.remove(repository.getUrl());
             }
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
+            
         } catch (CoreException ex) {
             notifyError(ex);
         } catch (MalformedURLException ex) {
@@ -122,28 +137,30 @@ public class ODCSExecutor {
         return msg != null ? msg.trim() : null;
     }
 
-    @NbBundle.Messages({"# {0} - the returned error message", "MSG_Error_Warning=The following error was returned:\n\n{0}",
+    @NbBundle.Messages({"# {0} - query name", "# {1} - the returned error message", "MSG_Error_Warning=Query ''{0}'' returned the following error:\n\n{1}",
+                        "# {0} - message returned from remote server", "MSG_NoConnection=Your computer seems to be disconnected from the network.\nThe following error was returned: {0}",  // NOI18N
                         "MSG_UnexpectedServerResponse=Unexpected response format."})  // NOI18N
     private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
         IStatus status = cmd.getStatus();
         if(status == null || status.isOK()) {
-            return false;
+            return true;
         }
         ODCS.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
 
+        boolean noConnection = false;
         Throwable t = status.getException();
-        boolean jsonParseException = false;
         if (t instanceof CoreException) {
             throw (CoreException) status.getException();
-        } else if (t.getClass().getName().contains("JsonParseException")) {
-            ODCS.LOG.log(Level.INFO, null, t);
-            jsonParseException = true;
-        } else {
-            ODCS.LOG.log(Level.WARNING, null, t);
-        }
+        } else if(t instanceof UnknownHostException ||
+             t instanceof NoRouteToHostException ||
+             t instanceof SocketTimeoutException ||
+             t instanceof ConnectException) 
+        {
+            noConnection = true;
+        } 
 
-        boolean isHtml = false;
         String errMsg = null;
+        boolean isHtml = false;
         if(status instanceof RepositoryStatus) {
             RepositoryStatus rstatus = (RepositoryStatus) status;
             errMsg = rstatus.getHtmlMessage();
@@ -156,20 +173,34 @@ public class ODCSExecutor {
         cmd.setFailed(true);
 
         if(!handleExceptions) {
-            return true;
+            return false;
         }
 
+        if(noConnection) {
+            synchronized(noConnectionUrls) {
+                if(noConnectionUrls.contains(repository.getUrl())) {
+                    return false;
+                } else {
+                    noConnectionUrls.add(repository.getUrl());
+                    errMsg = Bundle.MSG_NoConnection(errMsg);
+                }
+            }
+        } else if(errMsg != null) {
+            errMsg = Bundle.MSG_Error_Warning(cmd.getQuery().getSummary(), errMsg);
+        }
+        
         if(isHtml) {
             assertHtmlMsg(errMsg); // any reason to expect this ???
         } 
-        
-        if(jsonParseException) {
-            ODCS.LOG.info(Bundle.MSG_Error_Warning(errMsg));
-            notifyErrorMessage(Bundle.MSG_UnexpectedServerResponse()); 
+            
+        if(errMsg != null) {
+            ODCS.LOG.info(errMsg);
+            ODCS.LOG.log(Level.INFO, null, t);
+            notifyErrorMessage(errMsg); 
         } else {
-            notifyErrorMessage(Bundle.MSG_Error_Warning(errMsg)); 
+            ODCS.LOG.log(Level.WARNING, null, t);
         }
-        return true;
+        return false;
     }    
 
     @NbBundle.Messages({"LBL_Error=Error"})  // NOI18N

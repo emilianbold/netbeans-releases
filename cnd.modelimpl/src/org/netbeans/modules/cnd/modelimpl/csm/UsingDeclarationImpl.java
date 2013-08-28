@@ -142,7 +142,11 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 CsmObject result = null;
                 Resolver aResolver = ResolverFactory.createResolver(this);
                 try {
-                    result = aResolver.resolve(partial, Resolver.NAMESPACE);
+                    if (!aResolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                        result = aResolver.resolve(partial, Resolver.NAMESPACE);
+                    } else {
+                        result = null;
+                    }
                 } finally {
                     ResolverFactory.releaseResolver(aResolver);
                 }
