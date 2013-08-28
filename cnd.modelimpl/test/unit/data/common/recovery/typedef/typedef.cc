@@ -1,5 +1,5 @@
 
-using handler_t = void (*)(int);
+typedef void (*handler_t)(int);
 
 extern handler_t ignore;
 

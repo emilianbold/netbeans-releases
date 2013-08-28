@@ -283,7 +283,7 @@ public final class Resolver3 implements Resolver {
                 if (resovedClassifier == null) {
                     break;
                 } 
-            } else if (CsmKindUtilities.isTypedef(orig)) {
+            } else if (CsmKindUtilities.isTypedef(orig) || CsmKindUtilities.isTypeAlias(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
                 resovedClassifier = t.getClassifier();
                 if (resovedClassifier == null) {
@@ -320,7 +320,7 @@ public final class Resolver3 implements Resolver {
             Collection<CsmOffsetableDeclaration> col;
             if (ns instanceof NamespaceImpl) {
                 col = ((NamespaceImpl)ns).getDeclarationsRange(fqn,
-                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF,
+                        new Kind[]{Kind.CLASS, Kind.UNION, Kind.STRUCT, Kind.ENUM, Kind.TYPEDEF, Kind.TYPEALIAS,
                             Kind.TEMPLATE_DECLARATION, Kind.TEMPLATE_SPECIALIZATION,
                             Kind.CLASS_FORWARD_DECLARATION, Kind.ENUM_FORWARD_DECLARATION});
 
@@ -453,6 +453,7 @@ public final class Resolver3 implements Resolver {
                        , CsmDeclaration.Kind.USING_DECLARATION
                        , CsmDeclaration.Kind.USING_DIRECTIVE
                        , CsmDeclaration.Kind.TYPEDEF
+                       , CsmDeclaration.Kind.TYPEALIAS
                        , CsmDeclaration.Kind.CLASS
                        , CsmDeclaration.Kind.ENUM
                        , CsmDeclaration.Kind.STRUCT
@@ -564,15 +565,15 @@ public final class Resolver3 implements Resolver {
     private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
         CsmFilter filter =  CsmSelect.getFilterBuilder().createKindFilter(
                                   CsmDeclaration.Kind.NAMESPACE_DEFINITION,
-                                  CsmDeclaration.Kind.TYPEDEF);
+                                  CsmDeclaration.Kind.TYPEDEF,
+                                  CsmDeclaration.Kind.TYPEALIAS);
         for (Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(nsd, filter); iter.hasNext();) {
             CsmOffsetableDeclaration decl = iter.next();
             if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
                 processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
-            } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF ) {
-                CsmTypedef typedef = (CsmTypedef) decl;
-                if( CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
-                    currLocalClassifier = typedef;
+            } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF || decl.getKind() == CsmDeclaration.Kind.TYPEALIAS ) {
+                if( CharSequences.comparator().compare(currName(),decl.getName())==0 ) {
+                    currLocalClassifier = (CsmClassifier) decl;
                 }
             }
         }
@@ -646,11 +647,12 @@ public final class Resolver3 implements Resolver {
                     }
                     return;
                 }
+                case TYPEALIAS:
                 case TYPEDEF: {
-                    CsmTypedef typedef = (CsmTypedef) element;
+                    CsmDeclaration decl = (CsmDeclaration) element;
                     // don't want typedef to find itself
-                    if( offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
-                        currLocalClassifier = typedef;
+                    if( offset > end && CharSequences.comparator().compare(currName(), decl.getName())==0 ) {
+                        currLocalClassifier = (CsmClassifier) decl;
                     }
                     return;
                 }
@@ -927,14 +929,14 @@ public final class Resolver3 implements Resolver {
         }
         if (!canStop(result, resultIsVisible, backupResult) && needClassifiers()) {
             initFileMaps(!FileImpl.isFileBeingParsedInCurrentThread(file));
-            if (currLocalClassifier != null && CsmKindUtilities.isTypedef(currLocalClassifier)) {
+            if (currLocalClassifier != null && (CsmKindUtilities.isTypedef(currLocalClassifier) || CsmKindUtilities.isTypeAlias(currLocalClassifier))) {
                 CsmType type = ((CsmTypedef)currLocalClassifier).getType();
                 if (type != null) {
                     CsmClassifier currentClassifier = getTypeClassifier(type);
                     while (currNamIdx < names.length - 1 && currentClassifier != null) {
                         currNamIdx++;
                         currentClassifier = findNestedClassifier(currentClassifier);
-                        if (CsmKindUtilities.isTypedef(currentClassifier)) {
+                        if (CsmKindUtilities.isTypedef(currentClassifier) || CsmKindUtilities.isTypeAlias(currentClassifier)) {
                             CsmType curType = ((CsmTypedef) currentClassifier).getType();
                             currentClassifier = curType == null ? null : getTypeClassifier(curType);
                         }

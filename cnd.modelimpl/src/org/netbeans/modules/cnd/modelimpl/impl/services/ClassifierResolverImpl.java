@@ -179,14 +179,15 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
                     }
                 }
                 if (ir.isObjectVisible(file, decl)) {
-                    if (CsmKindUtilities.isTypedef(decl)) {
+                    if (CsmKindUtilities.isTypedef(decl) || CsmKindUtilities.isTypeAlias(decl)) {
                         if (!hasClassifier.get()) {
                             // if no any visible classifiers found so far
                             // check if same typedef is not yet added
                             CharSequence typeTxt = ((CsmTypedef)decl).getType().getClassifierText();
                             boolean foundSameTD = false;
                             for (CsmClassifier cls : visibles) {
-                                if (CsmKindUtilities.isTypedef(cls) && typeTxt.equals(((CsmTypedef)cls).getType().getClassifierText())) {
+                                if ((CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) 
+                                     && typeTxt.equals(((CsmTypedef)cls).getType().getClassifierText())) {
                                     foundSameTD = true;
                                     break;
                                 }

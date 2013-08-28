@@ -201,7 +201,7 @@ public class CsmDisplayUtilities {
                     key = "DSC_ClassTooltip"; // NOI18N
                 }
                 tooltipText = getHtmlizedString(key, ((CsmClassifier) item).getQualifiedName());
-            } else if (CsmKindUtilities.isTypedef(item)) {
+            } else if (CsmKindUtilities.isTypedef(item) || CsmKindUtilities.isTypeAlias(item)) {
                 CharSequence tdName = ((CsmTypedef) item).getQualifiedName();
                 tooltipText = getHtmlizedString("DSC_TypedefTooltip", tdName, ((CsmTypedef) item).getText()); // NOI18N
             } else if (CsmKindUtilities.isEnum(item)) {

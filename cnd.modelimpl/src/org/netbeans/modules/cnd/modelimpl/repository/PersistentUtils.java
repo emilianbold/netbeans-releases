@@ -799,19 +799,20 @@ public class PersistentUtils {
     private static final int LAZY_TRY_CATCH_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
     private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_TRY_CATCH_STATEMENT_IMPL + 1;
     private static final int COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
+    
+    // params
+    private static final int DUMMY_PARAMETER_IMPL = COMPOUND_STATEMENT_IMPL + 1;
+    private static final int PARAMETER_ELLIPSIS_IMPL = DUMMY_PARAMETER_IMPL + 1;
+    private static final int PARAMETER_IMPL = PARAMETER_ELLIPSIS_IMPL + 1;    
 
     // param lists
-    private static final int PARAM_LIST_IMPL = COMPOUND_STATEMENT_IMPL + 1;
+    private static final int PARAM_LIST_IMPL = PARAMETER_IMPL + 1;
     private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
     private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
     private static final int DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
-    // params
-    private static final int DUMMY_PARAMETER_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
-    private static final int PARAMETER_ELLIPSIS_IMPL = DUMMY_PARAMETER_IMPL + 1;
-    private static final int PARAMETER_IMPL = PARAMETER_ELLIPSIS_IMPL + 1;
 
     // tempalte descriptor
-    private static final int TEMPLATE_DESCRIPTOR_IMPL = PARAMETER_IMPL + 1;
+    private static final int TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
     // specialization descriptor
     private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
     // specialization parameters

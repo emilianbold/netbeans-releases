@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
@@ -276,6 +277,8 @@ abstract public class CsmCompletion {
         CsmType type = null;
         if (CsmKindUtilities.isTypedef(obj)) {
             type = ((CsmTypedef)obj).getType();
+        } else if (CsmKindUtilities.isTypeAlias(obj)) {
+            type = ((CsmTypeAlias)obj).getType();
         } else if (CsmKindUtilities.isClassifier(obj)) {
             type = CsmCompletion.createType((CsmClassifier) obj, 0, 0, 0, _constIfClassifier);
         } else if (CsmKindUtilities.isFunction(obj)) {

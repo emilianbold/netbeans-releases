@@ -1233,19 +1233,19 @@ public class AstRenderer {
             typeImpl = TemplateUtils.checkTemplateType(typeImpl, scope, csmTemplateParams);
         }
         
-        CsmTypedef typedef = createTypedef(nameAST/*nameToken*/, file, scope, typeImpl, name); 
+        CsmTypeAlias typeAlias = createTypeAlias(nameAST/*nameToken*/, file, scope, typeImpl, name); 
         
-        if (typedef != null) {
+        if (typeAlias != null) {
             if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
-                ((TypedefImpl) typedef).setTypeUnnamed();
+                ((TypedefImpl) typeAlias).setTypeUnnamed();
             }
             if (csmTemplateParams != null) {
                 TemplateDescriptor templateDescriptor = new TemplateDescriptor(csmTemplateParams, name, false, !isRenderingLocalContext());
-                ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
+                ((TypedefImpl) typeAlias).setTemplateDescriptor(templateDescriptor);
             }
-            results.typedefs.add(typedef);
+            results.typedefs.add(typeAlias);
         }
-        return typedef;
+        return typeAlias;
     }  
     
     protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
@@ -1269,6 +1269,10 @@ public class AstRenderer {
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
+    
+    protected CsmTypeAlias createTypeAlias(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
+        return TypeAliasImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
+    }    
     
     public boolean renderForwardClassDeclaration(
             AST ast,

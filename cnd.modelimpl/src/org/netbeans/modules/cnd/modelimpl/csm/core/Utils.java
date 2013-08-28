@@ -241,6 +241,7 @@ public class Utils {
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF) + namePostfix,
+                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEALIAS) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix,
                                 getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) + namePostfix
                                 };
@@ -292,6 +293,8 @@ public class Utils {
                 return "s"; // NOI18N
             case TYPEDEF:
                 return "t"; // NOI18N
+            case TYPEALIAS:
+                return "x"; // NOI18N
             case USING_DECLARATION:
                 return "u"; // NOI18N
             case VARIABLE_DEFINITION:
@@ -353,6 +356,8 @@ public class Utils {
                 return TEMPLATE_SPECIALIZATION;
             case 't': // NOI18N
                 return TYPEDEF;
+            case 'x': // NOI18N
+                return TYPEALIAS;
             case 'u': // NOI18N
                 return USING_DECLARATION;
             case 'v': // NOI18N

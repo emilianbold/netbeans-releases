@@ -224,6 +224,14 @@ public class CsmKindUtilities {
         }
     }
     
+    public static boolean isTypeAlias(CsmObject obj) {
+        if (isDeclaration(obj)) {
+            return ((CsmDeclaration)obj).getKind() == CsmDeclaration.Kind.TYPEALIAS;
+        } else {
+            return false;
+        }
+    }    
+    
     public static boolean isStatement(CsmObject obj) {
         if (obj instanceof CsmStatement) {
             return true;
