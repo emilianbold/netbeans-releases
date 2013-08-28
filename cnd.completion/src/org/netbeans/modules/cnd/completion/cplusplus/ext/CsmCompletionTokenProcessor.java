@@ -1055,6 +1055,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case IDENTIFIER: // identifier found e.g. 'a'
                          {
                             switch (topID) {
+                                case AUTO:
                                 case OPERATOR:
                                 case DOT_OPEN:
                                 case ARROW_OPEN:
@@ -1773,17 +1774,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                             case CONVERSION:
                             case GENERIC_TYPE:
                             case MEMBER_POINTER: {
-                                popExp();
-                                // tokenID.getNumericID() is the parameter of the main switch
-                                // create correspondent *_OPEN expression ID
-                                int openExpID = tokenID2OpenExpID(tokenID);
-                                CsmCompletionExpression opExp = createTokenExp(openExpID);
-                                if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
-                                    // Now we know that previous exp is PARENTHESIS, not CONVERSION.
-                                    top.setExpID(PARENTHESIS);
+                                if (
+                                    checkExpRow(AUTO, METHOD) || // C++11 function declaration
+                                    checkExpRow(AUTO, PARENTHESIS, PARENTHESIS) // C++11 pointer to function declaration
+                                ) {
+                                    // this is a new style C++11 function declaration
+                                    pushExp(createTokenExp(ARROW_RETURN_TYPE));
+                                } else {
+                                    popExp();
+                                    // tokenID.getNumericID() is the parameter of the main switch
+                                    // create correspondent *_OPEN expression ID
+                                    int openExpID = tokenID2OpenExpID(tokenID);
+                                    CsmCompletionExpression opExp = createTokenExp(openExpID);
+                                    if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
+                                        // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                        top.setExpID(PARENTHESIS);
+                                    }
+                                    opExp.addParameter(top);
+                                    pushExp(opExp);
                                 }
-                                opExp.addParameter(top);
-                                pushExp(opExp);
                                 break;
                             }
                             case DOT:
@@ -1942,6 +1951,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 pushExp(mtdExp);
                                 break;
 
+                            case AUTO:   // auto(
                             case DECLTYPE_OPEN:    // decltype(                                
                             case ARRAY_OPEN:       // a[(
                             case PARENTHESIS_OPEN: // ((
@@ -2150,6 +2160,19 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
                             case PARENTHESIS_OPEN: // empty parenthesis
                                 popExp();
+                                break;
+                                
+                            case MEMBER_POINTER_OPEN:
+                                if (shiftedCheckExpRow(1, AUTO, PARENTHESIS_OPEN)) {
+                                    popExp();
+                                    top.setExpID(MEMBER_POINTER);
+                                    
+                                    CsmCompletionExpression newTopExp = peekExp();
+                                    newTopExp.addParameter(top);
+                                    newTopExp.setExpID(PARENTHESIS);
+                                } else {
+                                    errorState = true;
+                                }
                                 break;
                                 
                             default:
@@ -2478,6 +2501,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
             if (tokenID == CppTokenId.IDENTIFIER) {
                 pushExp(createTokenExp(VARIABLE));
                 errorState = false;
+            } else if (tokenID == CppTokenId.AUTO) {
+                pushExp(createTokenExp(AUTO));
+                errorState = false;
             } else {
                 if(!macro) {
                     lastSeparatorOffset = tokenOffset;
@@ -2803,6 +2829,25 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     @Override
     public boolean isStopped() {
         return false;
+    }
+    
+    private boolean checkExp(CsmCompletionExpression exp, int expId) {
+        return exp != null && exp.getExpID() == expId;
+    }
+    
+    private boolean checkExpRow(int ... ids) {
+        return shiftedCheckExpRow(0, ids);
+    }
+    
+    private boolean shiftedCheckExpRow(int skipFromTop, int ... ids) {
+        if (ids != null && ids.length > 0) {
+            for (int i = 1; i <= ids.length; i++) {
+                if (!checkExp(peekExp(i + skipFromTop), ids[ids.length - i])) {
+                    return false;
+                }
+            }
+        }
+        return true;        
     }
     
     private class OffsetableToken {

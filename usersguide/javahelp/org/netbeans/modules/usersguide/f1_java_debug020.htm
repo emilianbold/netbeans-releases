@@ -2,157 +2,30 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Debugging: Threads Window</title>
+<title>Debugging: Variables Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="NetbeansDebuggerThreadNode" name="NetbeansDebuggerThreadNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref300" name="sthref300"></a>
-<h1>Debugging: Threads Window</h1>
+<p><a id="NetbeansDebuggerVariableNode" name="NetbeansDebuggerVariableNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref306" name="sthref306"></a>
+<h1>Debugging: Variables Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Threads window lists all threads in the current debugging session. You open the Threads window by choosing <b>Window &gt; Debugging &gt; Threads</b>. 
+<p>Use to lists the local variables in the current call. By default, the Variables window opens automatically whenever you start a debugging session. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG896">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG886">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>The information given for each thread is the thread name, state and if the thread is suspended. One thread is the current thread. By default, the current thread is the thread in the current session from which the debugger gained control. When you select a different current session, the Threads window is updated to show the threads for that session.</p>
-<a id="sthref301" name="sthref301"></a>
-<p><b>Thread States</b></p>
-<p>The Debugger has the following thread states:</p>
-
-<table summary="Descriptions of thread states." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t28">State</th>
-<th align="left" valign="bottom" id="r1c2-t28">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t28" headers="r1c1-t28">
-<p>Monitor</p>
-</td>
-<td align="left" headers="r2c1-t28 r1c2-t28">
-<p>Thread is waiting on a Java monitor.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t28" headers="r1c1-t28">
-<p>Not Started</p>
-</td>
-<td align="left" headers="r3c1-t28 r1c2-t28">
-<p>Thread has not yet been started.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t28" headers="r1c1-t28">
-<p>Running</p>
-</td>
-<td align="left" headers="r4c1-t28 r1c2-t28">
-<p>Thread is runnable.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t28" headers="r1c1-t28">
-<p>Sleeping</p>
-</td>
-<td align="left" headers="r5c1-t28 r1c2-t28">
-<p>Thread is sleeping. <code>Thread.sleep()</code> was called.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t28" headers="r1c1-t28">
-<p>Unknown</p>
-</td>
-<td align="left" headers="r6c1-t28 r1c2-t28">
-<p>Thread status is unknown.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t28" headers="r1c1-t28">
-<p>Wait / Suspended</p>
-</td>
-<td align="left" headers="r7c1-t28 r1c2-t28">
-<p>Thread is waiting. O<code>bject.wait()</code> was called.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t28" headers="r1c1-t28">
-<p>Zomibie</p>
-</td>
-<td align="left" headers="r8c1-t28 r1c2-t28">
-<p>Thread has completed execution.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="sthref302" name="sthref302"></a>
+<p>You can click the control to the left of the name to expand or collapse the variable. If the object type is displayed in blue underlined text, clicking the text jumps to the object type in the source code. You can click the Value cell to edit the value directly in the Variables window.</p>
+<a id="sthref307" name="sthref307"></a>
 <p><b>Icons</b></p>
-<p>The Threads window displays the following thread icons:</p>
+<p>The Variables window displays the following thread icons:</p>
 
-<table summary="Descriptions of Threads window icons." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of Variables window icons." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t29">Element</th>
-<th align="left" valign="bottom" id="r1c2-t29">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t29" headers="r1c1-t29">
-<p><img width="16" height="16" src="img/currentthreadgroup.gif" alt="Current Thread Group icon." title="Current Thread Group icon." /></p></td>
-<td align="left" headers="r2c1-t29 r1c2-t29">
-<p>The thread group that contains the current thread</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t29" headers="r1c1-t29">
-<p><img width="16" height="16" src="img/threadgroup.gif" alt="Thread Group icon" title="Thread Group icon" /></p></td>
-<td align="left" headers="r3c1-t29 r1c2-t29">
-<p>A thread group that does not contain the current thread</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t29" headers="r1c1-t29">
-<p><img width="16" height="16" src="img/currentthread.gif" alt="Current Thread icon." title="Current Thread icon." /></p></td>
-<td align="left" headers="r4c1-t29 r1c2-t29">
-<p>The current thread</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t29" headers="r1c1-t29">
-<p><img width="16" height="16" src="img/runningthread.gif" alt="Running Thread icon" title="Running Thread icon" /></p></td>
-<td align="left" headers="r5c1-t29 r1c2-t29">
-<p>A thread that is running and is not current</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t29" headers="r1c1-t29">
-<p><img width="16" height="16" src="img/suspendedthread.gif" alt="Suspended Thread icon." title="Suspended Thread icon." /></p></td>
-<td align="left" headers="r6c1-t29 r1c2-t29">
-<p>A thread that is suspended and is not current</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="sthref303" name="sthref303"></a>
-<p><b>Actions</b></p>
-<p>The Threads window has the following commands in the context menus:</p>
-
-<table summary="Descriptions of context menu commands in Threads window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -163,65 +36,139 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t30" headers="r1c1-t30">
-<p>Make Current</p>
-</td>
+<p><img width="16" height="16" src="img/localvariable.gif" alt="Local Variable icon." title="Local Variable icon." /></p></td>
 <td align="left" headers="r2c1-t30 r1c2-t30">
-<p>Makes the selected thread the current thread. This command is equivalent to double-clicking the thread</p>
+<p>Local variable</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t30" headers="r1c1-t30">
-<p>Resume</p>
-</td>
+<p><img width="16" height="16" src="img/supervariable.gif" alt="Static Field icon" title="Static Field icon" /></p></td>
 <td align="left" headers="r3c1-t30 r1c2-t30">
-<p>Resumes execution of the selected thread.</p>
+<p>Container for a superclass</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t30" headers="r1c1-t30">
-<p>Suspend</p>
-</td>
+<p><img width="16" height="16" src="img/staticvariable.gif" alt="Static Field icon" title="Static Field icon" /></p></td>
 <td align="left" headers="r4c1-t30 r1c2-t30">
-<p>Suspends execution of the selected thread.</p>
+<p>Static field of an object.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t30" headers="r1c1-t30">
-<p>Interrupt</p>
-</td>
+<p><img width="16" height="16" src="img/field.gif" alt="Non-static Field icon" title="Non-static Field icon" /></p></td>
 <td align="left" headers="r5c1-t30 r1c2-t30">
-<p>Interrupts execution of the selected thread.</p>
+<p>Non-static field of an object.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t30" headers="r1c1-t30">
-<p>Go to Source</p>
-</td>
+<p><img width="16" height="16" src="img/filter.gif" alt="Return Values of Methods icon" title="Return Values of Methods icon" /></p></td>
 <td align="left" headers="r6c1-t30 r1c2-t30">
-<p>Shows the source code for the newest frame on the selected thread's stack.</p>
+<p>Return values of executed methods when using expression step</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t30" headers="r1c1-t30">
-<p>List Option</p>
-</td>
+<p><img width="16" height="16" src="img/exprarguments.gif" alt="Expression Arguments icon." title="Expression Arguments icon." /></p></td>
 <td align="left" headers="r7c1-t30 r1c2-t30">
-<p>Enables you to customize the display of the Threads window, including adding and removing columns of information, reordering the columns, and sorting the columns.</p>
+<p>Input values for next method when using expression step</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref304" name="sthref304"></a>
+<a id="sthref308" name="sthref308"></a>
+<p><b>Actions</b></p>
+<p>The Variables window has the following commands in the context menus:</p>
+
+<table summary="Descriptions of context menu commands in Variables window." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="31%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t31">Element</th>
+<th align="left" valign="bottom" id="r1c2-t31">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t31" headers="r1c1-t31">
+<p>Create Fixed Watch</p>
+</td>
+<td align="left" headers="r2c1-t31 r1c2-t31">
+<p>Creates a fixed watch of the selected object. A fixed watch displays the specified object or memory location regardless of the current context.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t31" headers="r1c1-t31">
+<p>Display As</p>
+</td>
+<td align="left" headers="r3c1-t31 r1c2-t31">
+<p>For objects of type integer only. Determines how the value of the selected object is shown. The choices are decimal, hexadecimal, octal, and binary.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t31" headers="r1c1-t31">
+<p>Go to Source</p>
+</td>
+<td align="left" headers="r4c1-t31 r1c2-t31">
+<p>Opens the source file containing the variable.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t31" headers="r1c1-t31">
+<p>Show References</p>
+</td>
+<td align="left" headers="r5c1-t31 r1c2-t31">
+<p>Opens the Instance view showing list of instances and the referrers (not available if IDE is running on JDK 1.5). See Instances Window for more information.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t31" headers="r1c1-t31">
+<p>List Option</p>
+</td>
+<td align="left" headers="r6c1-t31 r1c2-t31">
+<p>Enables you to customize the display of the Variables window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2393">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref309" name="sthref309"></a>
 <p><b>Properties</b></p>
-<p>By default, all thread properties are displayed directly in the Threads window, except for the Suspended property. To display the Suspended property in the Threads window, click <img width="17" height="18" src="img/changecolumn.gif" alt="Change Column icon." title="Change Column icon." /> in the upper right corner of the window, or right-click in the window and choose <b>List Options</b> &gt; <b>Change Visible Columns</b> and then select <b>Suspended</b> in the dialog box.</p>
-<p>If a thread is suspended (for example because a breakpoint was reached during the debugging session), the checkbox for that thread is selected in the Suspended column. Deselecting the Suspended checkbox causes the thread to resume.</p>
+<p>By default, all thread properties are displayed directly in the Variables window, except for the <code>toString()</code> property. To display the <code>toString()</code> property in the Variables window, click <img width="17" height="18" src="img/changecolumn.gif" alt="Change Column icon." title="Change Column icon." /> in the upper right corner of the window, or right-click in the window and choose <b>List Options</b> &gt; <b>Change Visible Columns</b> and then select <code>toString()</code> in the dialog box.</p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG824">
 <param name="text" value="<html><u>&quot;Choosing Current Context in the Debugger&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG887">
+<param name="text" value="<html><u>&quot;Evaluating Variables in the Source Editor&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG885">
+<param name="text" value="<html><u>&quot;Viewing Program Information When Debugging&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
@@ -230,14 +177,6 @@
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG822">
 <param name="text" value="<html><u>&quot;Using the Debugger Windows&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1534">
-<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

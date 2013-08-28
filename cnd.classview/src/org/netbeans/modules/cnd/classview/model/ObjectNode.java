@@ -75,15 +75,16 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     }
     
     /** Implements AbstractCsmNode.getData() */
-    public CsmObject getCsmObject() {
+    @Override
+    public final CsmObject getCsmObject() {
         return getObject();
     }
     
-    public CsmOffsetableDeclaration getObject() {
+    public final CsmOffsetableDeclaration getObject() {
         return (CsmOffsetableDeclaration) key.getObject();
     }
     
-    protected void setObject(CsmOffsetableDeclaration declaration) {
+    protected final void setObject(CsmOffsetableDeclaration declaration) {
         key = PersistentKey.createKey(declaration);
     }
     
@@ -104,10 +105,9 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
     public Action[] getActions(boolean context) {
         List<Action> res = new ArrayList<Action>();
         Action action = createOpenAction();
-        CsmOffsetableDeclaration decl = null;
         if (action != null){
             res.add(action);
-            decl = getObject();
+            CsmOffsetableDeclaration decl = getObject();
             CharSequence name = decl.getUniqueName();
             final CsmFile file = decl.getContainingFile();
             CsmProject project = file.getProject();

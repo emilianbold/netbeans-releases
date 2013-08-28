@@ -227,5 +227,7 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 235076 - Unresolved parameters in type alias for function with more than one parameter
         performTest("bug235076.cpp", 3, 34, "bug235076.cpp", 3, 30);
         performTest("bug235076.cpp", 3, 41, "bug235076.cpp", 3, 37);
+        performTest("bug235076.cpp", 6, 43, "bug235076.cpp", 5, 15);
+        performTest("bug235076.cpp", 9, 31, "bug235076.cpp", 8, 15);
     }
 }

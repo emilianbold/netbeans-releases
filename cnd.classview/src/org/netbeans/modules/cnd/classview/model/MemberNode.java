@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 
 /**
@@ -56,30 +57,53 @@ import  org.netbeans.modules.cnd.api.model.*;
  */
 public class MemberNode extends ObjectNode {
     
+    private CharSequence name;
+    
     public MemberNode(CsmMember mem) {
         super(mem, Children.LEAF);
         init(mem);
     }
     
-    private void init(CsmMember mem){
+    private void init(final CsmMember mem){
         boolean isTemplate = false;
-        CharSequence text = mem.getName();
+        name = mem.getName();
         if( mem.getKind() == CsmDeclaration.Kind.CLASS ) {
             isTemplate = CsmKindUtilities.isTemplate(mem);
         } else if( CsmKindUtilities.isFunction(mem) ) {
             CsmFunction fun = (CsmFunction) mem;
             isTemplate = CsmKindUtilities.isTemplate(fun);
-            text = CVUtil.getSignature(fun);
+            name = CVUtil.getSignature(fun);
         }
-        String name = text.toString();
         if (isTemplate){
-            name = text + "<>"; // NOI18N
+            name += "<>"; // NOI18N
         }
-        setName(name);
-        setDisplayName(name);
-        setShortDescription(name);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(mem);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
     
+    @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return name.toString();
+    }
+    
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmMember){
