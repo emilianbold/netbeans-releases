@@ -535,7 +535,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         }
         for (TaskAttribute attribute : attrs.values()) {
             if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
-                    && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
+                    && customField.getId().equals(attribute.getId())) {
                 attribute.setValues(customField.getValues());
                 m.attributeChanged(attribute);
             }
@@ -724,6 +724,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 } else {
                     setOperation(operation);
                 }
+                setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
                 addComment(comment);
             }
         });
@@ -1586,11 +1587,15 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      * @return a status value
      */
     public int getFieldStatus(IssueField f) {
+        return getFieldStatus(f.getKey());
+    }
+
+    public int getFieldStatus (String fieldKey) {
         NbTaskDataModel m = getModel();
         if (m == null) {
             return FIELD_STATUS_UPTODATE;
         }
-        TaskAttribute ta = m.getLocalTaskData().getRoot().getMappedAttribute(f.getKey());
+        TaskAttribute ta = m.getLocalTaskData().getRoot().getMappedAttribute(fieldKey);
         boolean incoming = ta != null && m.hasIncomingChanges(ta, true);
         boolean outgoing = ta != null && m.hasOutgoingChanges(ta);
         if (ta == null) {
@@ -1828,7 +1833,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return "[" + getKey() + ", " + getSummary() + "]";
     }
 
-    public static final class CustomField {
+    public final class CustomField {
         private final String id;
         private final String label;
         private final String type;
@@ -1836,7 +1841,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         private final boolean readOnly;
 
         private CustomField(TaskAttribute attribute) {
-            id = attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length());
+            id = attribute.getId();
             label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
             type = attribute.getMetaData().getValue(IJiraConstants.META_TYPE);
             values = attribute.getValues();
@@ -1865,6 +1870,28 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         public void setValues (List<String> values) {
             this.values = values;
+        }
+
+        public List<String> getLastSeenValues () {
+            NbTaskDataModel model = getModel();
+            TaskData td = model == null ? null : model.getLastReadTaskData();
+            return getValues(td);
+        }
+
+        public List<String> getRepositoryValues () {
+            NbTaskDataModel model = getModel();
+            TaskData td = model == null ? null : model.getRepositoryTaskData();
+            return getValues(td);
+        }
+
+        private List<String> getValues (TaskData td) {
+            if (td != null) {
+                TaskAttribute ta = td.getRoot().getMappedAttribute(id);
+                if (ta != null) {
+                    return ta.getValues();
+                }
+            }
+            return Collections.<String>emptyList();
         }
     }
 
