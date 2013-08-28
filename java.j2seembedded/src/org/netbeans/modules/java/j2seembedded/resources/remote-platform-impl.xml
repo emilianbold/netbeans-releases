@@ -14,6 +14,7 @@
         <j2seproject1:property name="remote.platform.port" value="platforms.${platform.runtime}.platform.port"/>
         <j2seproject1:property name="remote.platform.user" value="platforms.${platform.runtime}.platform.auth.username"/>
         <j2seproject1:property name="remote.platform.auth" value="platforms.${platform.runtime}.platform.auth.kind"/>
+        <j2seproject1:property name="remote.platform.keyfile" value="platforms.${platform.runtime}.platform.auth.keystore"/>
         <fail unless="remote.platform.home.dir">Must set remote.platform.home.dir</fail>
         <fail unless="remote.platform.work.dir">Must set remote.platform.work.dir</fail>
         <fail unless="remote.platform.host">Must set remote.platform.host</fail>
@@ -43,8 +44,14 @@
         <property name="extension.jvmargs" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
     </target>
 
-    <target name="-ask-password" unless="remote.platform.password">
+    <target name="-ask-password" unless="remote.platform.password" if="remote.platform.auth.passwd">
         <input message="Password ${remote.platform.user}@${remote.platform.host}:" addproperty="remote.platform.password">
+            <handler type="secure"/>
+        </input>
+    </target>
+    
+    <target name="-ask-passphrase" unless="remote.platform.passphrase" if="remote.platform.auth.key">
+        <input message="Passphrase ${remote.platform.user}@${remote.platform.host}:" addproperty="remote.platform.passphrase">
             <handler type="secure"/>
         </input>
     </target>
@@ -59,7 +66,14 @@
     </target>
     
 
-    <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties" if="remote.platform.auth.key">
+    <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties, -ask-passphrase" if="remote.platform.auth.key">
+        <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" command="mkdir -p '${remote.dist.dir}'"/>
+        <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true">
+            <fileset dir="${dist.dir}"/>
+        </scp>
+        <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true"
+                 command="cd '${remote.project.dir}'; '${remote.java.executable}' -jar ${remote.dist.jar} ${application.args}"/>
     </target>
 
     <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -init-run-remote, -run-remote-passwd, -run-remote-key"/>
