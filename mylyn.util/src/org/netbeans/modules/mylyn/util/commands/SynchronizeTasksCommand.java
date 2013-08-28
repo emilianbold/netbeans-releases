@@ -72,10 +72,11 @@ public class SynchronizeTasksCommand extends BugtrackingCommand {
     private final TaskList taskList;
     private final TaskDataManager taskDataManager;
     private final RepositoryModel repositoryModel;
+    private final boolean user;
 
     SynchronizeTasksCommand (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
             RepositoryModel repositoryModel, TaskDataManager taskDataManager, TaskList taskList,
-            Set<NbTask> tasks) {
+            Set<NbTask> tasks, boolean isUserAction) {
         this.repositoryConnector = repositoryConnector;
         this.taskRepository = taskRepository;
         this.repositoryModel = repositoryModel;
@@ -83,6 +84,7 @@ public class SynchronizeTasksCommand extends BugtrackingCommand {
         this.taskList = taskList;
         this.tasks = tasks;
         this.monitor = new CancelableProgressMonitor();
+        this.user = isUserAction;
     }
 
     @Override
@@ -101,6 +103,7 @@ public class SynchronizeTasksCommand extends BugtrackingCommand {
                 repositoryConnector,
                 taskRepository,
                 mylynTasks);
+        job.setUser(user);
         job.run(monitor);
     }
 

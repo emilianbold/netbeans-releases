@@ -105,7 +105,7 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         }
         @Override
         public String getValue() {
-            return getNbJiraIssue().getFieldValue(IssueField.KEY);
+            return getNbJiraIssue().getRepositoryFieldValue(IssueField.KEY);
         }
         @Override
         public int compareTo(IssueProperty p) {
@@ -153,7 +153,7 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         public Object getValue(String attributeName) {
             if("sortkey".equals(attributeName)) {                               // NOI18N
                 try {
-                    return Integer.parseInt(getNbJiraIssue().getFieldValue(IssueField.PRIORITY));
+                    return Integer.parseInt(getNbJiraIssue().getRepositoryFieldValue(IssueField.PRIORITY));
                 } catch (NumberFormatException nfex) {
                     return null;
                 }
@@ -172,14 +172,14 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         }
         @Override
         public String getValue() {
-            JiraStatus status = getNbJiraIssue().getStatus();
+            JiraStatus status = getNbJiraIssue().getJiraStatus();
             return status != null ? status.getName() : "";                      // NOI18N
         }
         @Override
         public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
-            String s1 = getNbJiraIssue().getFieldValue(IssueField.STATUS);
-            String s2 = p.getIssueData().getFieldValue(IssueField.STATUS);
+            String s1 = getNbJiraIssue().getRepositoryFieldValue(IssueField.STATUS);
+            String s2 = p.getIssueData().getRepositoryFieldValue(IssueField.STATUS);
             return s1.compareTo(s2);
         }
     }
@@ -261,7 +261,7 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         public String getValue(ValueReturnType returnType) {
             switch(returnType) {
                 case VALUE:
-                    return getNbJiraIssue().getFieldValue(field);
+                    return getNbJiraIssue().getRepositoryFieldValue(field);
                 case DISPLAY_VALUE:
                     return getNbJiraIssue().getFieldDisplayValue(field);
                 default:
@@ -289,14 +289,14 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
         }
         @Override
         public String getValue() {
-            String value = getNbJiraIssue().getFieldValue(field);
+            String value = getNbJiraIssue().getRepositoryFieldValue(field);
             return JiraUtils.dateByMillis(value, true);
         }
         @Override
         public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
-            Date d1 = JiraUtils.dateByMillis(getNbJiraIssue().getFieldValue(field));
-            Date d2 = JiraUtils.dateByMillis(p.getIssueData().getFieldValue(field));
+            Date d1 = JiraUtils.dateByMillis(getNbJiraIssue().getRepositoryFieldValue(field));
+            Date d2 = JiraUtils.dateByMillis(p.getIssueData().getRepositoryFieldValue(field));
             return d1.compareTo(d2);
         }
     }
@@ -339,14 +339,14 @@ public class JiraIssueNode extends IssueNode<NbJiraIssue> {
             final JiraConfiguration configuration = getNbJiraIssue().getRepository().getConfiguration();
             int daysPerWeek = configuration.getWorkDaysPerWeek();
             int hoursPerDay = configuration.getWorkHoursPerDay();
-            String value = getNbJiraIssue().getFieldValue(field);
+            String value = getNbJiraIssue().getRepositoryFieldValue(field);
             return JiraUtils.getWorkLogText(toInt(value), daysPerWeek, hoursPerDay, true);
         }
         @Override
         public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
-            Integer i1 = toInt(getNbJiraIssue().getFieldValue(field));
-            Integer i2 = toInt(p.getIssueData().getFieldValue(field));
+            Integer i1 = toInt(getNbJiraIssue().getRepositoryFieldValue(field));
+            Integer i2 = toInt(p.getIssueData().getRepositoryFieldValue(field));
             return i1.compareTo(i2);
         }
 

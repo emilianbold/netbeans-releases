@@ -43,12 +43,14 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -61,7 +63,7 @@ public final class LogUtils {
     /**
      * Metrics logger
      */
-    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.bugtracking"); // NOI18N
+    private final static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.bugtracking"); // NOI18N
 
     /**
      * The automatic refresh was set on or off.<br>
@@ -86,9 +88,27 @@ public final class LogUtils {
      */
     public static final String USG_BUGTRACKING_QUERY             = "USG_BUGTRACKING_QUERY"; // NOI18N
 
+    /**
+     * Some bugtracking operation happened.<br>
+     * Parameters:
+     * <ol>
+     *  <li>connector name : String
+     *  <li>operation : String - ISSUE_EDIT, ISSUE_QUERY, COMMIT_HOOK
+     * </ol>
+     */
     private static final String USG_ISSUE_TRACKING = "USG_ISSUE_TRACKING"; // NOI18N
 
-    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
+    /**
+     * A repository was instantiated.<br>
+     * Parameters:
+     * <ol>
+     *  <li>connector name : String
+     *  <li>repository site : String - e.g. kenai.com, java.net, other
+     * </ol>
+     */
+    private static final String USG_ISSUE_TRACKING_REPOSITORY = "USG_ISSUE_TRACKING_REPOSITORY"; // NOI18N
+    
+    private final static Set<String> loggedParams = new HashSet<String>(1); // to avoid logging same params more than once in a session
 
     public static void logQueryEvent(String connector, String name, int count, boolean isFromTeamServer, boolean isAutoRefresh) {
         name = obfuscateQueryName(name);
@@ -101,35 +121,80 @@ public final class LogUtils {
     }
     
     public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
-        if (repository == null) {
+        if(repository == null) {
             return;
         }
-        String btType = getBugtrackingType(APIAccessor.IMPL.getImpl(repository).getProvider());
-        if (btType == null) {
+        logBugtrackingUsage(APIAccessor.IMPL.getImpl(repository).getConnectorId(), operation);
+    }
+    
+    public static synchronized void logBugtrackingUsage(String connectorID, String operation) {
+        if (connectorID == null || operation == null) {
             return;
         }
-        // log tema usage
-        if (TeamUtil.isFromTeamServer(repository)) {
-            TeamUtil.logTeamUsage(repository.getUrl(), "ISSUE_TRACKING", btType); //NOI18N
-        }
-        if (operation == null) {
-            return;
-        }
+        String bugtrackingType = getBugtrackingType(connectorID);
         // log general bugtracking usage
-        String paramStr = getParamString(btType, operation);
-        if (loggedParams == null || !loggedParams.contains(paramStr)) {
+        if (!checkMetricsKey(getParamString(USG_ISSUE_TRACKING, bugtrackingType, operation))) {
             // not logged in this session yet
             LogRecord rec = new LogRecord(Level.INFO, USG_ISSUE_TRACKING);
-            rec.setParameters(new Object[] { btType, operation });
+            rec.setParameters(new Object[] { bugtrackingType, operation });
             rec.setLoggerName(METRICS_LOG.getName());
             METRICS_LOG.log(rec);
-
-            if (loggedParams == null) {
-                loggedParams = new HashSet<String>();
-            }
-            loggedParams.add(paramStr);
         }
     }
+    
+    public static void logRepositoryUsage(String connectorID, String repositoryUrl) {
+        if (connectorID == null || repositoryUrl == null) {
+            return;
+        }        
+        String bugtrackingType = getBugtrackingType(connectorID);
+        String knownRepositoryFor = LogUtils.getKnownRepositoryFor(repositoryUrl);        
+        if (!checkMetricsKey(getParamString(USG_ISSUE_TRACKING_REPOSITORY, bugtrackingType, knownRepositoryFor))) {
+            LogRecord rec = new LogRecord(Level.INFO, USG_ISSUE_TRACKING_REPOSITORY);
+            rec.setParameters(new Object[] { getBugtrackingType(connectorID), knownRepositoryFor});
+            rec.setLoggerName(METRICS_LOG.getName());
+            METRICS_LOG.log(rec);
+        }
+    }
+    
+    private static boolean checkMetricsKey(String key) {
+        synchronized (loggedParams) {
+            if (loggedParams.contains(key)) {
+                return true;
+            } else {
+                loggedParams.add(key);
+            }
+        }
+        return false;
+    }
+    
+    public static String getKnownRepositoryFor (String repositoryUrl) {
+        repositoryUrl = repositoryUrl.toLowerCase();
+        if (repositoryUrl.contains("github.com")) { //NOI18N
+            return "GITHUB"; //NOI18N
+        } else if (repositoryUrl.contains("gitorious.org")) { //NOI18N
+            return "GITORIOUS"; //NOI18N
+        } else if (repositoryUrl.contains("bitbucket.org")) { //NOI18N
+            return "BITBUCKET"; //NOI18N
+        } else if (repositoryUrl.contains("sourceforge.net")) { //NOI18N
+            return "SOURCEFORGE"; //NOI18N
+        } else if (repositoryUrl.contains("googlecode.com") //NOI18N
+                || repositoryUrl.contains("code.google.com") //NOI18N
+                || repositoryUrl.contains("googlesource.com")) { //NOI18N
+            return "GOOGLECODE"; //NOI18N
+        } else if (repositoryUrl.contains("kenai.com")) { //NOI18N
+            return "KENAI"; //NOI18N
+        } else if (repositoryUrl.contains("java.net")) { //NOI18N
+            return "JAVANET"; //NOI18N
+        } else if (repositoryUrl.contains("netbeans.org")) { //NOI18N
+            return "NETBEANS"; //NOI18N
+        } else if (repositoryUrl.contains("codeplex.com")) { //NOI18N
+            return "CODEPLEX"; //NOI18N
+        } else if (repositoryUrl.contains(".eclipse.org")) { //NOI18N
+            return "ECLIPSE"; //NOI18N
+        } else {
+            return "OTHER"; //NOI18N
+        }
+    }        
     
     private static String getParamString(Object... parameters) {
         if (parameters == null || parameters.length == 0) {
@@ -145,20 +210,24 @@ public final class LogUtils {
         return buf.toString();
     }
 
-    private static String getBugtrackingType(RepositoryProvider repository) {
+    public static String getBugtrackingType(Repository repository) {
+        return getBugtrackingType(APIAccessor.IMPL.getImpl(repository).getConnectorId());
+    }
+    
+    public static String getBugtrackingType(String id) {
         // XXX hack: there's no clean way to determine the type of bugtracking
         // from RepositoryProvider (need BugtrackingConnector.getDisplayName)
-        String clsName = repository.getClass().getName();
-        if (clsName.contains(".bugzilla.")) { // NOI18N
+        if (id.contains("bugzilla")) { // NOI18N
             return "Bugzilla"; // NOI18N
         }
-        if (clsName.contains(".jira.")) { // NOI18N
+        if (id.contains("jira")) { // NOI18N
             return "Jira"; // NOI18N
         }
-        if (clsName.contains(".ods.")) { // NOI18N
-            return "ODS"; //NOI18N
+        if (id.contains("odcs") || 
+            id.contains("CloudDev")) { // NOI18N
+            return "ODCS"; //NOI18N
         }
-        return null;
+        return id;
     }
 
     /**

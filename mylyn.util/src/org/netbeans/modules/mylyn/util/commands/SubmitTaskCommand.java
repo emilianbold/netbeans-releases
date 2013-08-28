@@ -60,6 +60,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -98,6 +99,9 @@ public class SubmitTaskCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
+        
+        LogUtils.logBugtrackingUsage(repositoryConnector.getConnectorKind(), "ISSUE_EDIT");
+        
         MylynSubmitTaskJob job = new MylynSubmitTaskJob(taskDataManager, repositoryConnector, taskRepository,
                 task, taskData, changedOldAttributes);
         if (submitJobListener != null) {

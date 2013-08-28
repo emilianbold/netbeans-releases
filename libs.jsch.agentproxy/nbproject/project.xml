@@ -72,23 +72,23 @@ made subject to such option by the copyright holder.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-agentproxy-core.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.core-0.0.5.jar</binary-origin>
+                <binary-origin>external/jsch.agentproxy.core-0.0.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-agentproxy-pageant.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.pageant-0.0.5.jar</binary-origin>
+                <binary-origin>external/jsch.agentproxy.pageant-0.0.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-agentproxy-sshagent.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.sshagent-0.0.5.jar</binary-origin>
+                <binary-origin>external/jsch.agentproxy.sshagent-0.0.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-agentproxy-usocket-nc.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.usocket-nc-0.0.5.jar</binary-origin>
+                <binary-origin>external/jsch.agentproxy.usocket-nc-0.0.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-agentproxy-usocket-jna.jar</runtime-relative-path>
-                <binary-origin>external/jsch.agentproxy.usocket-jna-0.0.5.jar</binary-origin>
+                <binary-origin>external/jsch.agentproxy.usocket-jna-0.0.6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

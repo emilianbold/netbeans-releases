@@ -1874,41 +1874,62 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         final MethodArgument args[][] = new MethodArgument[1][];
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) {
-                        return;
+        if (SourceUtils.isScanInProgress()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        CompilationController ci = retrieveController(resultIterator, doc);
+                        if (ci == null) {
+                            return;
+                        }
+                        args[0] = computeMethodArguments(ci, operation);
                     }
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                        return;
-                    }
-                    int offset = operation.getMethodEndPosition().getOffset();
-                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    Element method = scope.getEnclosingMethod();
-                    if (method == null) {
-                        return ;
-                    }
-                    Tree methodTree = ci.getTrees().getTree(method);
-                    CompilationUnitTree cu = ci.getCompilationUnit();
-                    MethodArgumentsScanner scanner =
-                            new MethodArgumentsScanner(offset, cu, ci.getTrees().getSourcePositions(), true,
-                                                       new OperationCreationDelegateImpl());
-                    args[0] = methodTree.accept(scanner, null);
-                    args[0] = scanner.getArguments();
+                });
+            } catch (ParseException pex) {
+                ErrorManager.getDefault().notify(pex);
+                return null;
+            }
+        } else {
+            try {
+                CompilationController ci = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
+                if (ci == null) {
+                    return null;
                 }
-            });
-        } catch (ParseException pex) {
-            ErrorManager.getDefault().notify(pex);
-            return null;
+                synchronized (ci) {
+                    args[0] = computeMethodArguments(ci, operation);
+                }
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+                return null;
+            }
         }
         return args[0];
+    }
+    
+    private MethodArgument[] computeMethodArguments(CompilationController ci, Operation operation) throws IOException {
+        MethodArgument args[];
+        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                    "\nDiagnostics = "+ci.getDiagnostics()+
+                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+            return null;
+        }
+        int offset = operation.getMethodEndPosition().getOffset();
+        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+        Element method = scope.getEnclosingMethod();
+        if (method == null) {
+            return null;
+        }
+        Tree methodTree = ci.getTrees().getTree(method);
+        CompilationUnitTree cu = ci.getCompilationUnit();
+        MethodArgumentsScanner scanner =
+                new MethodArgumentsScanner(offset, cu, ci.getTrees().getSourcePositions(), true,
+                                           new OperationCreationDelegateImpl());
+        args = methodTree.accept(scanner, null);
+        args = scanner.getArguments();
+        return args;
     }
 
     @Override
@@ -1927,40 +1948,61 @@ public class EditorContextImpl extends EditorContext {
         }
         final int offset = findLineOffset(doc, methodLineNumber);
         final MethodArgument args[][] = new MethodArgument[1][];
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) {
-                        return;
+        if (SourceUtils.isScanInProgress()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        CompilationController ci = retrieveController(resultIterator, doc);
+                        if (ci == null) {
+                            return;
+                        }
+                        args[0] = computeMethodArguments(ci, methodLineNumber, offset);
                     }
-                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                        return;
-                    }
-                    Scope scope = ci.getTreeUtilities().scopeFor(offset);
-                    Element clazz = scope.getEnclosingClass();
-                    if (clazz == null) {
-                        return ;
-                    }
-                    Tree methodTree = ci.getTrees().getTree(clazz);
-                    CompilationUnitTree cu = ci.getCompilationUnit();
-                    MethodArgumentsScanner scanner =
-                            new MethodArgumentsScanner(methodLineNumber, cu, ci.getTrees().getSourcePositions(), false,
-                                                       new OperationCreationDelegateImpl());
-                    args[0] = methodTree.accept(scanner, null);
-                    args[0] = scanner.getArguments();
+                });
+            } catch (ParseException pex) {
+                ErrorManager.getDefault().notify(pex);
+                return null;
+            }
+        } else {
+            try {
+                CompilationController ci = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
+                if (ci == null) {
+                    return null;
                 }
-            });
-        } catch (ParseException pex) {
-            ErrorManager.getDefault().notify(pex);
-            return null;
+                synchronized (ci) {
+                    args[0] = computeMethodArguments(ci, methodLineNumber, offset);
+                }
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+                return null;
+            }
         }
         return args[0];
+    }
+    
+    private MethodArgument[] computeMethodArguments(CompilationController ci, int methodLineNumber, int offset) throws IOException {
+        MethodArgument args[];
+        if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                    "\nDiagnostics = "+ci.getDiagnostics()+
+                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+            return null;
+        }
+        Scope scope = ci.getTreeUtilities().scopeFor(offset);
+        Element clazz = scope.getEnclosingClass();
+        if (clazz == null) {
+            return null;
+        }
+        Tree methodTree = ci.getTrees().getTree(clazz);
+        CompilationUnitTree cu = ci.getCompilationUnit();
+        MethodArgumentsScanner scanner =
+                new MethodArgumentsScanner(methodLineNumber, cu, ci.getTrees().getSourcePositions(), false,
+                                           new OperationCreationDelegateImpl());
+        args = methodTree.accept(scanner, null);
+        args = scanner.getArguments();
+        return args;
     }
 
     /**
@@ -1987,33 +2029,35 @@ public class EditorContextImpl extends EditorContext {
             return new String [0];
         }
         final List<String> imports = new ArrayList<String>();
-        try {
-            ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    CompilationController ci = retrieveController(resultIterator, doc);
-                    if (ci == null) {
-                        return;
+        if (SourceUtils.isScanInProgress()) {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        CompilationController ci = retrieveController(resultIterator, doc);
+                        if (ci == null) {
+                            return;
+                        }
+                        computeImports(ci, imports);
                     }
-                    if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                                "\nDiagnostics = "+ci.getDiagnostics()+
-                                "\nFree memory = "+Runtime.getRuntime().freeMemory());
-                        return;
-                    }
-                    List importDecl = ci.getCompilationUnit().getImports();
-                    int i = 0;
-                    for (Iterator it = importDecl.iterator(); it.hasNext(); i++) {
-                        ImportTree itree = (ImportTree) it.next();
-                        String importStr = itree.getQualifiedIdentifier().toString();
-                        imports.add(importStr);
-                    }
+                });
+            } catch (ParseException pex) {
+                ErrorManager.getDefault().notify(pex);
+                return new String[0];
+            }
+        } else {
+            try {
+                CompilationController ci = getPreferredCompilationController(dataObject.getPrimaryFile(), js);
+                if (ci == null) {
+                    return null;
                 }
-            });
-        } catch (ParseException pex) {
-            ErrorManager.getDefault().notify(pex);
-            return new String[0];
+                synchronized (ci) {
+                    computeImports(ci, imports);
+                }
+            } catch (IOException ioex) {
+                ErrorManager.getDefault().notify(ioex);
+                return null;
+            }
         }
         return imports.toArray(new String[0]);
         /*
@@ -2027,6 +2071,23 @@ public class EditorContextImpl extends EditorContext {
             is2 [i] = is [i].getIdentifier ().getFullName ();
         return is2;
          */
+    }
+    
+    private void computeImports(CompilationController ci, List<String> imports) throws IOException {
+        if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Unable to resolve "+ci.getFileObject()+" to phase "+Phase.RESOLVED+", current phase = "+ci.getPhase()+
+                    "\nDiagnostics = "+ci.getDiagnostics()+
+                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+            return;
+        }
+        List importDecl = ci.getCompilationUnit().getImports();
+        int i = 0;
+        for (Iterator it = importDecl.iterator(); it.hasNext(); i++) {
+            ImportTree itree = (ImportTree) it.next();
+            String importStr = itree.getQualifiedIdentifier().toString();
+            imports.add(importStr);
+        }
     }
 
     private JavaSource getJavaSource(SourcePathProvider sp) {

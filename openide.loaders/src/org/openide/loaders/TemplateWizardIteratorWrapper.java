@@ -55,7 +55,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Jiri Rechtacek
  */
-class TemplateWizardIteratorWrapper implements WizardDescriptor.InstantiatingIterator<WizardDescriptor>, ChangeListener {
+class TemplateWizardIteratorWrapper implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor>, ChangeListener {
 
     protected TemplateWizardIterImpl iterImpl;
     

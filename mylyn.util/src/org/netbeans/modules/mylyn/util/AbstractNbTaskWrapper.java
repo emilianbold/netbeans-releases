@@ -403,15 +403,11 @@ public abstract class AbstractNbTaskWrapper {
         return task.isCompleted();
     }
 
-    public final IssueStatusProvider.Status getStatus () {
-        return getNbStatus();
-    }
-
     protected final NbTask.SynchronizationState getSynchronizationState () {
         return task.getSynchronizationState();
     }
 
-    public final IssueStatusProvider.Status getNbStatus () {
+    public final IssueStatusProvider.Status getStatus () {
         switch (getSynchronizationState()) {
             case CONFLICT:
             case INCOMING:
