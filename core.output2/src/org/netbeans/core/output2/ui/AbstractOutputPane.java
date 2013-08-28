@@ -599,7 +599,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+        if (e.getOffset() + e.getLength() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             //#119985 only move caret when not in editable section
             OutputDocument doc = (OutputDocument)e.getDocument();
             if (! (e instanceof OutputDocument.DO) && getCaretPos() >= doc.getOutputLength()) {
@@ -614,7 +614,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+        if (e.getOffset() + e.getLength() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             //#119985 only move caret when not in editable section
             OutputDocument doc = (OutputDocument)e.getDocument();
             if (! (e instanceof OutputDocument.DO) && getCaretPos() >= doc.getOutputLength()) {
