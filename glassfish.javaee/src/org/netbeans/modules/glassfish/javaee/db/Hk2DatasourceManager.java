@@ -60,9 +60,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.admin.CommandListResources;
-import org.glassfish.tools.ide.admin.ResultList;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.utils.OsUtils;
 import org.glassfish.tools.ide.utils.ServerUtils;
@@ -149,18 +146,15 @@ public class Hk2DatasourceManager implements DatasourceManager {
         GlassFishServer server = dm.getCommonServerSupport().getInstance();
         String domainsDir = server.getDomainsFolder();
         String domainName = server.getDomainName();
-        Set<Datasource> dataSources;
         // Try to retrieve data sources from asadmin interface if possible
         if (GlassFishState.isOnline(server) || server.isRemote()) {
             DataSourcesReader dataSourcesReader
                     = new DataSourcesReader(server);
-            dataSources = dataSourcesReader.getDataSourcesFromServer();
+            Set<Datasource> dataSources = dataSourcesReader.getDataSourcesFromServer();
             // Return when data sources were retrieved successfully.
             if (dataSources != null) {
                 return dataSources;
             }
-        } else {
-            dataSources = null;
         }
         // Fallback option to retrieve data sources from domain.xml
         // for local server
@@ -643,7 +637,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
 
 
-        if (doc == null) return;
+        if (doc == null || docBuilder == null) return;
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
         Node resourcesNode;
         if(resourcesNodes.getLength()<1){
@@ -750,7 +744,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
             Exceptions.printStackTrace(ex);
         }
 
-        if (null == doc) return;
+        if (doc == null || docBuilder == null) {
+            return;
+        }
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
         Node resourcesNode = null;
         if(resourcesNodes.getLength()<1){
