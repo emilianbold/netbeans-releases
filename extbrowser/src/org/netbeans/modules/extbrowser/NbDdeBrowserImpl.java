@@ -63,7 +63,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.util.Exceptions;
 
 
@@ -177,11 +176,11 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             nativeRunnable.postTask (new DisplayTask (url, this));
         }
         else {
+            NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
             try {
                 url = URLUtil.createExternalURL(url, false);
                 URI uri = url.toURI();
                 
-                NbProcessDescriptor np = extBrowserFactory.getBrowserExecutable();
                 if (np != null) {
                     np.exec(new SimpleExtBrowser.BrowserFormat((uri == null)? "": uri.toASCIIString())); // NOI18N
                 }
@@ -189,12 +188,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
                 logInfo(ex);
-                org.openide.DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(NbDdeBrowserImpl.class, "EXC_Invalid_Processor"), 
-                        NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.WARNING_MESSAGE
-                    )
-                );
+                BrowserUtils.notifyMissingBrowser(np.getProcessName());
             }
         }
     }
@@ -329,7 +323,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 
             } while (true);
         }
-        
+
+        @NbBundle.Messages("NbDdeBrowserImpl.browser.external=external browser")
         @Override
         public void run() {
             if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
@@ -350,10 +345,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                                 if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                                     ExtWebBrowser.getEM().log(Level.FINE, "interrupted in URLDisplayer.run.TimerTask.run()");   // NOI18N
                                 }
-                                DialogDisplayer.getDefault().notify(
-                                        new NotifyDescriptor.Message(NbBundle.getMessage(NbDdeBrowserImpl.class, "MSG_win_browser_invocation_failed"),
-                                        NotifyDescriptor.INFORMATION_MESSAGE)
-                                        );
+                                BrowserUtils.notifyMissingBrowser(Bundle.NbDdeBrowserImpl_browser_external());
                             }
                         }
                     }, /*task.browser.extBrowserFactory.getBrowserStartTimeout() + */ADDITIONAL_WAIT_TIMEOUT);
