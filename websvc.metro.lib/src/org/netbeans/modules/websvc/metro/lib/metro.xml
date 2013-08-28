@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>com.sun.xml.ws:webservices-rt:2.0:jar</value>
+            <value>org.glassfish.metro:webservices-rt:2.3:jar</value>
         </property>
     </properties>    
 </library>

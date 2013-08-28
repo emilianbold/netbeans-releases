@@ -82,6 +82,11 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
 
     @Override
     public void afterInsert(@NonNull CompletionProposal item) {
+        // See issue #235175
+        if (root == null) {
+            return;
+        }
+
         // Don't add import statement if we are completing import statement - see #228587
         if (context.isBehindImportStatement()) {
             return;
@@ -119,10 +124,6 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
         }
 
         public static List<String> collect(ModuleNode root) {
-            if (root == null) {
-                return Collections.emptyList();
-            }
-
             ImportCollector collector = new ImportCollector(root);
             collector.visitImports(root);
             return collector.imports;

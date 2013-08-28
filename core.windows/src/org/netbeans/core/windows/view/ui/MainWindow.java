@@ -52,6 +52,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.JPanel;
@@ -171,6 +172,8 @@ public final class MainWindow {
                }
            }
        }
+
+       logLookAndFeelUsage();
    }
 
    /** Initializes main window. */
@@ -857,5 +860,23 @@ public final class MainWindow {
    private static boolean isShowCustomBackground() {
        return UIManager.getBoolean("NbMainWindow.showCustomBackground"); //NOI18N
    }
+
+   private static boolean lafLogged = false;
+    private static void logLookAndFeelUsage() {
+        if( lafLogged )
+            return;
+        lafLogged = true;
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        Logger logger = Logger.getLogger( "org.netbeans.ui.metrics.laf" );   // NOI18N
+        LogRecord rec = new LogRecord( Level.INFO, "USG_LOOK_AND_FEEL" ); //NOI18N
+        String lafId = laf.getID();
+        if( laf.getDefaults().getBoolean( "nb.dark.theme" ) ) //NOI18N
+        {
+            lafId = "DARK " + lafId; //NOI18N
+        }
+        rec.setParameters( new Object[]{ lafId, laf.getName() } );
+        rec.setLoggerName( logger.getName() );
+        logger.log( rec );
+    }
 }
 
