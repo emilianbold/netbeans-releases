@@ -47,6 +47,7 @@ import java.awt.EventQueue;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -94,6 +95,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -113,7 +115,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(CSSStylesPanel.class);
     /** The default instance of this class. */
-    private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
+    private static CSSStylesPanel DEFAULT;
     /** Selection section of CSS Styles view. */
     private final CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
@@ -147,7 +149,42 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      * @return the default instance of this class.
      */
     public static CSSStylesPanel getDefault() {
-        return DEFAULT;
+        boolean initialize;
+        synchronized (CSSStylesPanel.class) {
+            initialize = (DEFAULT == null);
+        }
+        if (initialize) {
+            initialize();
+        }
+        synchronized (CSSStylesPanel.class) {
+            return DEFAULT;
+        }
+    }
+
+    /**
+     * Ensures that the {@code DEFAULT} instance is initialized.
+     */
+    static void initialize() {
+        if (EventQueue.isDispatchThread()) {
+            synchronized (CSSStylesPanel.class) {
+                if (DEFAULT == null) {
+                    DEFAULT = new CSSStylesPanel();
+                }
+            }
+        } else {
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        initialize();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     /** Listener for various events this instance is interested in. */

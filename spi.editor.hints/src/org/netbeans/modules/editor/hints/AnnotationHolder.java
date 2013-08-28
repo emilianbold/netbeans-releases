@@ -817,6 +817,9 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
     private Pair<FixData, String> buildUpFixDataForLine(Position line) {
         List<ErrorDescription> errorDescriptions = getErrorsForLine(line, true);
+        if (errorDescriptions.isEmpty()) {
+            return null;
+        }
 
         List<ErrorDescription> trueErrors = filter(errorDescriptions, true);
         List<ErrorDescription> others = filter(errorDescriptions, false);

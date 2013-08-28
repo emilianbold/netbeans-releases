@@ -360,6 +360,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
              if (parts[0].contains(" in ")) {
                 // we understand only "in"  now
                 String[] forParts = parts[0].trim().split(" in ");   // NOI18N
+                if (forParts.length < 2) {
+                    return false;
+                }
                 embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));
                 // forParts keeps value, collection
                 // now need to check, whether the value is simple or (key, value) - issue #230223
@@ -388,6 +391,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     }
                     valueExp = valueExp.trim();
                     String[] keyValue = valueExp.split(",");    // NOI18N
+                    
                     int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
                     int keyPos = expression.indexOf(keyValue[0]);
                     // map the key name

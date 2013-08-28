@@ -314,15 +314,13 @@ public class ASTUtils {
 
             }
 
-            for (Object object : classNode.getFields()) {
-                FieldNode field = (FieldNode) object;
+            for (FieldNode field : classNode.getFields()) {
                 if (field.getLineNumber() >= 0) {
                     children.add(field);
                 }
             }
 
-            for (Object object : classNode.getMethods()) {
-                MethodNode method = (MethodNode) object;
+            for (MethodNode method : classNode.getMethods()) {
                 // getMethods() returns all methods also from superclasses
                 // how to get only methods from source?
                 // for now, just check line number, if < 0 it is not from source
@@ -334,9 +332,7 @@ public class ASTUtils {
 
             }
 
-            for (Object object : classNode.getDeclaredConstructors()) {
-                ConstructorNode constructor = (ConstructorNode) object;
-
+            for (ConstructorNode constructor : classNode.getDeclaredConstructors()) {
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }

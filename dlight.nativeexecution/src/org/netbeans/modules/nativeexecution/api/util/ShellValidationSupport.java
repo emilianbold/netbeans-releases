@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.ui.ShellValidationStatusPanel;
 import org.openide.DialogDescriptor;
@@ -91,6 +92,26 @@ public final class ShellValidationSupport {
 
         ArrayList<String> validationErrors = new ArrayList<String>();
         ArrayList<String> validationWarnings = new ArrayList<String>();
+
+        String jdkBitness = System.getProperty("os.arch"); // NOI18N
+        if (jdkBitness == null) {
+            jdkBitness = ""; // NOI18N
+        }
+
+        String cygwinBitness = "";
+        File uname_exe = new File(shell.bindir, "uname.exe"); // NOI18N
+        if (uname_exe.exists()) {
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), uname_exe.getPath(), "-m"); // NOI18N
+            if (exitStatus.isOK()) {
+                cygwinBitness = exitStatus.output.trim();
+            }
+        }
+
+        if (cygwinBitness.equals("i686") && !jdkBitness.equals("x86")) { // NOI18N
+            validationWarnings.add(NbBundle.getMessage(ShellValidationSupport.class, "ShellValidationSupport.ValidationWarning.Cygwin32OnJDK64")); // NOI18N
+        } else if (cygwinBitness.equals("x86_64") && jdkBitness.equals("x86")) { // NOI18N
+            validationWarnings.add(NbBundle.getMessage(ShellValidationSupport.class, "ShellValidationSupport.ValidationWarning.Cygwin64OnJDK32")); // NOI18N
+        }
 
         try {
             File mount_util = new File(shell.bindir, "mount.exe"); // NOI18N

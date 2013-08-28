@@ -76,8 +76,11 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
         loggersPanel.setEnabled(enabled);
         Component[] components = loggersPanel.getComponents();
         for (Component c : components) {
-            c.setEnabled(enabled);
+            if (!c.equals(btnRemove)) {
+                c.setEnabled(enabled);
+            }
         }
+        btnRemove.setEnabled(enabled && !customLoggersList.isEmpty());
         loggersScrollPane.getViewport().getView().setEnabled(enabled);
     }
 
@@ -99,7 +102,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
         btnRemove = new javax.swing.JButton();
         lblInstructions = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(360, 150));
+        setPreferredSize(new java.awt.Dimension(390, 150));
 
         org.openide.awt.Mnemonics.setLocalizedText(loggersCheckbox, org.openide.util.NbBundle.getMessage(LoggerHintsCustomizer.class, "LoggerHintsCustomizer.loggersCheckbox.text")); // NOI18N
         loggersCheckbox.addActionListener(new java.awt.event.ActionListener() {
@@ -108,7 +111,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
             }
         });
 
-        loggersPanel.setPreferredSize(new java.awt.Dimension(360, 121));
+        loggersPanel.setPreferredSize(new java.awt.Dimension(390, 121));
 
         customLogClass.setText(org.openide.util.NbBundle.getMessage(LoggerHintsCustomizer.class, "LoggerHintsCustomizer.customLogClass.text")); // NOI18N
 
@@ -143,15 +146,12 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
                         .addGap(82, 82, 82))
                     .addGroup(loggersPanelLayout.createSequentialGroup()
                         .addGroup(loggersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(loggersPanelLayout.createSequentialGroup()
-                                .addComponent(loggersScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnRemove))
-                            .addGroup(loggersPanelLayout.createSequentialGroup()
-                                .addComponent(customLogClass, javax.swing.GroupLayout.PREFERRED_SIZE, 270, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(customLogClass)
+                            .addComponent(loggersScrollPane))
+                        .addGap(11, 11, 11)
+                        .addGroup(loggersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnRemove)))))
         );
         loggersPanelLayout.setVerticalGroup(
             loggersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -174,14 +174,13 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(loggersCheckbox)
+                .addComponent(loggersCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(loggersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(loggersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(loggersCheckbox)
                 .addGap(3, 3, 3)
                 .addComponent(loggersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))

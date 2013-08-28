@@ -361,6 +361,7 @@ public final class DefaultProjectOperationsImplementation {
         showConfirmationDialog(panel, project, NbBundle.getMessage(DefaultProjectOperationsImplementation.class, "LBL_Rename_Project_Caption"), "Rename_Button", null, false, new Executor() { // NOI18N
             public @Override void execute() throws Exception {
                 final String nueName = panel.getNewName();
+                panel.addProgressBar();
                 
                 if (panel.getRenameProjectFolder()) {
                     doMoveProject(handle, project, nueName, nueName, project.getProjectDirectory().getParent(), "ERR_Cannot_Rename");
@@ -377,6 +378,7 @@ public final class DefaultProjectOperationsImplementation {
                         }
                     });
 		}
+                panel.removeProgressBar();
             }
         });
     }

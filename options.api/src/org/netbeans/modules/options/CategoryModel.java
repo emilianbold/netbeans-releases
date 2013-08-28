@@ -101,6 +101,7 @@ public final class CategoryModel implements LookupListener {
                 }
             }
             getMasterLookup().setLookups(all);
+            addLookupListener();
         }
     },true);
     private final RequestProcessor.Task categoryTask = RP.create(new Runnable() {
@@ -162,7 +163,7 @@ public final class CategoryModel implements LookupListener {
         currentCategoryID = verifyCategoryID(categoryID);
     }
 
-
+    
     String getHighlitedCategoryID() {
         return verifyCategoryID(highlitedCategoryID);
     }
@@ -302,13 +303,16 @@ public final class CategoryModel implements LookupListener {
             result.removeLookupListener(this);
         }
         result = lookup.lookup(new Lookup.Template<OptionsCategory>(OptionsCategory.class));
-        result.addLookupListener(this);
         Map<String, OptionsCategory> m = new LinkedHashMap<String, OptionsCategory>();
         for (Iterator<? extends Lookup.Item<OptionsCategory>> it = result.allItems().iterator(); it.hasNext();) {
             Lookup.Item<OptionsCategory> item = it.next();
             m.put(item.getId().substring(OD_LAYER_FOLDER_NAME.length() + 1), item.getInstance());
         }
         return Collections.unmodifiableMap(m);
+    }
+    
+    private void addLookupListener() {
+        result.addLookupListener(this);
     }
 
     public void resultChanged(LookupEvent ev) {

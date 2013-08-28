@@ -112,6 +112,11 @@ public class CndTokenListTest extends NbTestCase {
         );
     }
     
+    public void test235081() throws Exception {
+        // should not throw exceptions
+        tokenListTest("\"@param");
+    }
+    
     public void testIsIdentifierLike() throws Exception {
         assertTrue(CndTokenList.isIdentifierLike("JTable"));
         assertTrue(CndTokenList.isIdentifierLike("getData"));

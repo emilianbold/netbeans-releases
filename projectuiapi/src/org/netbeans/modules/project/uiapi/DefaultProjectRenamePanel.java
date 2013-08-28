@@ -43,9 +43,15 @@
  */
 package org.netbeans.modules.project.uiapi;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
 import java.io.File;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -65,6 +71,8 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     private Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private ProgressHandle handle;
+    private JComponent progressComponent;
+    private ProgressBar progressBar;
     
     /**
      * Creates new form DefaultProjectRenamePanel
@@ -86,6 +94,28 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         
         if (Boolean.getBoolean("org.netbeans.modules.project.uiapi.DefaultProjectOperations.showProgress")) {
             ((CardLayout) progress.getLayout()).show(progress, "progress");
+        }
+    }
+    
+    private static class ProgressBar extends JPanel {
+
+        private JLabel label;
+
+        private static ProgressBar create(JComponent progress) {
+            ProgressBar instance = new ProgressBar();
+            instance.setLayout(new BorderLayout());
+            instance.label = new JLabel(" "); //NOI18N
+            instance.label.setBorder(new EmptyBorder(0, 0, 2, 0));
+            instance.add(instance.label, BorderLayout.NORTH);
+            instance.add(progress, BorderLayout.CENTER);
+            return instance;
+        }
+
+        public void setString(String value) {
+            label.setText(value);
+        }
+
+        private ProgressBar() {
         }
     }
     
@@ -117,8 +147,9 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         jPanel4 = new javax.swing.JPanel();
         progressImpl = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
 
+        setMinimumSize(new java.awt.Dimension(225, 250));
+        setPreferredSize(new java.awt.Dimension(542, 250));
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(projectName);
@@ -149,8 +180,8 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         projectName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSN_Project_Name", new Object[] {})); // NOI18N
         projectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Name", new Object[] {})); // NOI18N
 
-        projectFolder.setColumns(30);
         projectFolder.setEditable(false);
+        projectFolder.setColumns(30);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -161,7 +192,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         projectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "ACSD_Project_Folder", new Object[] {})); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(alsoRenameFolder, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Also_Rename_Project_Folder")); // NOI18N
-        alsoRenameFolder.setMargin(new java.awt.Insets(0, 0, 0, 0));
         alsoRenameFolder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 alsoRenameFolderActionPerformed(evt);
@@ -197,23 +227,18 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         progress.setLayout(new java.awt.CardLayout());
         progress.add(jPanel4, "not-progress");
 
+        progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
+        progressImpl.setMinimumSize(new java.awt.Dimension(121, 17));
+        progressImpl.setPreferredSize(new java.awt.Dimension(121, 17));
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DefaultProjectRenamePanel.class, "LBL_Renaming_Project", new Object[] {})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
-
-        jPanel3.add(ProgressHandleFactory.createProgressComponent(handle));
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        progressImpl.add(jPanel3, gridBagConstraints);
 
         progress.add(progressImpl, "progress");
 
@@ -243,7 +268,6 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel progress;
     private javax.swing.JPanel progressImpl;
@@ -320,4 +344,19 @@ public class DefaultProjectRenamePanel extends javax.swing.JPanel implements Doc
         ((CardLayout) progress.getLayout()).last(progress);
     }
     
+    protected void addProgressBar() {
+        progressBar = ProgressBar.create(progressComponent); //NOI18N
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        progressImpl.add(progressBar, gridBagConstraints);
+        progressImpl.repaint();
+        progressImpl.revalidate();
+}
+    
+    protected void removeProgressBar() {
+        progressImpl.remove(progressBar);
+    }
 }

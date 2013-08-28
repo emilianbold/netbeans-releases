@@ -755,6 +755,16 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varN != null) {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
             }
+        } else if (leftHandSide instanceof StaticFieldAccess) {
+            StaticFieldAccess staticFieldAccess = (StaticFieldAccess) leftHandSide;
+            Expression className = staticFieldAccess.getClassName();
+            String unqualifiedClassName = CodeUtils.extractUnqualifiedName(className);
+            if (VariousUtils.isStaticClassName(unqualifiedClassName)) {
+                VariableNameImpl varN = findVariable(modelBuilder.getCurrentScope(), "$this"); //NOI18N
+                if (varN != null) {
+                    varN.createLazyStaticFieldAssignment(staticFieldAccess, node, scope);
+                }
+            }
         }
         super.scan(rightHandSide);
     }

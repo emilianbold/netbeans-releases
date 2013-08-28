@@ -8,10 +8,17 @@
 
 <body>
 <p><a id="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel" name="org.netbeans.modules.j2ee.persistence.wizard.fromdb.MappingOptionsPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref665" name="sthref665"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref702" name="sthref702"></a>
 <h1>New Entity Classes from Database Wizard: Mapping Options</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In this page of the wizard you can set the following options for configuring generated annotation elements:</p>
+<p>In this page of the wizard you can set options for configuring generated annotation elements. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1371">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -28,7 +35,7 @@
 <p>Association Fetch</p>
 </td>
 <td align="left" headers="r2c1-t4 r1c2-t4">
-<p>Select the fetch element to add to the relationship annotations. You can select default, eager or lazy. When default is selected (default is selected by default), no fetch element is added to the relationship annotations.</p>
+<p>Select the fetch element to add to the relationship annotations. You can select <b>default</b>, <b>eager</b> or <b>lazy</b>. When <b>default</b> is selected (<b>default</b> is selected by default), no fetch element is added to the relationship annotations.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -36,7 +43,8 @@
 <p>Collection Type</p>
 </td>
 <td align="left" headers="r3c1-t4 r1c2-t4">
-<p>Select the collection type for OneToMany and ManyToMany CMR fields. You can select <code>java.util.Collection</code>, <code>java.util.List</code> or <code>java.util.Set</code>. <code>java.util.Collection</code> is selected by default.</p>
+<p>Select the collection type for OneToMany and ManyToMany CMR fields.</p>
+<p>You can select <code>java.util.Collection</code>, <code>java.util.List</code> or <code>java.util.Set</code>. <code>java.util.Collection</code> is selected by default.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -52,7 +60,8 @@
 <p>Attributes for Regenerating Database Tables</p>
 </td>
 <td align="left" headers="r5c1-t4 r1c2-t4">
-<p>When selected, <code>nullable</code> (when it is false), <code>length</code> (for String type), <code>precision</code> and <code>scale</code> (for decimal type) are added to the <code>@Column</code> annotation. Unique constraints are also added to the <code>@Table</code> annotation when selected. This option is deselected by default..</p>
+<p>When selected, <code>nullable</code> (when it is false), <code>length</code> (for String type), <code>precision</code> and <code>scale</code> (for decimal type) are added to the <code>@Column</code> annotation.</p>
+<p>Unique constraints are also added to the <code>@Table</code> annotation when selected. This option is deselected by default..</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -69,7 +78,8 @@
 <p>Use Defaults if Possible</p>
 </td>
 <td align="left" headers="r7c1-t4 r1c2-t4">
-<p>When selected, only annotations that modify the default behavior or attributes will be generated. Selecting this option can reduce the number of unnecessary annotations that are generated. This option is deselected by default.</p>
+<p>When selected, only annotations that modify the default behavior or attributes will be generated.</p>
+<p>Selecting this option can reduce the number of unnecessary annotations that are generated. This option is deselected by default.</p>
 </td>
 </tr>
 <tr align="left" valign="top">

@@ -40,7 +40,7 @@
                   </Group>
                   <Group type="103" alignment="0" groupAlignment="0" attributes="0">
                       <Component id="phpVersionComboBox" max="32767" attributes="0"/>
-                      <Component id="projectNameTextField" alignment="0" max="32767" attributes="2"/>
+                      <Component id="projectNameTextField" alignment="0" pref="0" max="32767" attributes="2"/>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="localServerComboBox" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -116,6 +116,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="projectNameTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureNewProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -150,9 +153,6 @@
     <Component class="javax.swing.JComboBox" name="localServerComboBox">
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
-        </Property>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

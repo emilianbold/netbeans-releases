@@ -150,12 +150,14 @@ class AssignComments extends TreeScanner<Void, Void> {
         }
         if (preceding) {
             int pos = findInterestingStart((JCTree) tree);
-            seq.move(pos);
-            lookForPreceedings(seq, tree);
-            if (tree instanceof BlockTree) {
-                BlockTree blockTree = (BlockTree) tree;
-                if (blockTree.getStatements().isEmpty()) {
-                    lookWithinEmptyBlock(seq, blockTree);
+            if (pos >= 0) {
+                seq.move(pos);
+                lookForPreceedings(seq, tree);
+                if (tree instanceof BlockTree) {
+                    BlockTree blockTree = (BlockTree) tree;
+                    if (blockTree.getStatements().isEmpty()) {
+                        lookWithinEmptyBlock(seq, blockTree);
+                    }
                 }
             }
         } else {
@@ -339,7 +341,10 @@ class AssignComments extends TreeScanner<Void, Void> {
         int pos = (int) positions.getStartPosition(unit, tree);
         if (pos <= 0) return 0;
         seq.move(pos);
-        while (seq.movePrevious() && tokenIndexAlreadyAdded < seq.index()) {
+        boolean previousSucceeded;
+        boolean ranOnce = false;
+        while (previousSucceeded = seq.movePrevious() && tokenIndexAlreadyAdded < seq.index()) {
+            ranOnce = true;
             switch (seq.token().id()) {
                 case WHITESPACE:
                 case LINE_COMMENT:
@@ -357,6 +362,7 @@ class AssignComments extends TreeScanner<Void, Void> {
                     return seq.offset() + seq.token().length();
             }
         }
+        if (!previousSucceeded && !ranOnce) return -1;
         return seq.offset() + (tokenIndexAlreadyAdded >= seq.index() ? seq.token().length() : 0);
     }
 

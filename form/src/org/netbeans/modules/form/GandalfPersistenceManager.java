@@ -72,9 +72,7 @@ import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
-import org.xml.sax.InputSource;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
@@ -184,8 +182,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final Object NO_VALUE = new Object();
     private static final String FORM_SETTINGS_PREFIX = "FormSettings_"; // NOI18N
 
-    private org.w3c.dom.Document topDocument =
-        XMLUtil.createDocument("topDocument",null,null,null); // NOI18N
+    private org.w3c.dom.Document topDocument;
+
+    private org.w3c.dom.Document document;
 
     private FileObject formFile;
 
@@ -254,21 +253,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
     public boolean canLoadForm(FormDataObject formObject)
         throws PersistenceException
     {
-        FileObject formFile = formObject.getFormEntry().getFile();
-        org.w3c.dom.Element mainElement;
+        formFile = formObject.getFormEntry().getFile();
         try {
-            Document document = XMLUtil.parse(
-                new InputSource(formFile.getURL().toExternalForm()),
-                false, false, null, null);
-            mainElement = document.getDocumentElement();
-        }
-        catch (IOException ex) {
+            document = FormUtils.readFormToDocument(formFile);
+        } catch (IOException ex) {
             throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
-        }
-        catch (org.xml.sax.SAXException ex) {
+        } catch (org.xml.sax.SAXException ex) {
             throw new PersistenceException(ex, FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
         }
 
+        org.w3c.dom.Element mainElement = document.getDocumentElement();
         return mainElement != null && XML_FORM.equals(mainElement.getTagName());
     }
 
@@ -304,36 +298,37 @@ public class GandalfPersistenceManager extends PersistenceManager {
      *            prevents loading the form
      */
     public FormModel loadForm(FileObject formFile, FileObject javaFile,
-                         FormModel formModel,
-                         List<Throwable> nonfatalErrors)
+                              FormModel formModel,
+                              List<Throwable> nonfatalErrors)
         throws PersistenceException
     {
-        this.formFile = formFile;                
-        
+        if (!formFile.equals(this.formFile)) {
+            this.formFile = formFile;
+            document = null;
+        }
+
         boolean underTest = ((javaFile == null) || (javaFile.equals(formFile)));
                 
         if (formModel == null) {
             formModel = new FormModel();
         }
-        org.w3c.dom.Element mainElement;
-        try { // parse document, get the main element
-            Document document = XMLUtil.parse(
-                new InputSource(formFile.getURL().toExternalForm()),
-                false, false, null, null);
-            mainElement = document.getDocumentElement();
-        }
-        catch (IOException ex) {
-            PersistenceException pe = new PersistenceException(ex,
-                    FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
-            throw pe;
-        }
-        catch (org.xml.sax.SAXException ex) {
-            PersistenceException pe = new PersistenceException(ex,
-                    FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
-            throw pe;
+
+        if (document == null) {
+            try {
+                document = FormUtils.readFormToDocument(formFile);
+            } catch (IOException ex) {
+                PersistenceException pe = new PersistenceException(ex,
+                        FormUtils.getBundleString("MSG_ERR_LoadingErrors")); // NOI18N
+                throw pe;
+            } catch (org.xml.sax.SAXException ex) {
+                PersistenceException pe = new PersistenceException(ex,
+                        FormUtils.getBundleString("MSG_ERR_InvalidXML")); // NOI18N
+                throw pe;
+            }
         }
 
         // check the main element
+        org.w3c.dom.Element mainElement = document.getDocumentElement();
         if (mainElement == null || !XML_FORM.equals(mainElement.getTagName())) {
             PersistenceException ex = new PersistenceException(
                     FormUtils.getBundleString("MSG_ERR_MissingMainElement")); // NOI18N
@@ -580,6 +575,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (loadedComponents != null)
             loadedComponents.clear();
         this.formModel = null;
+        document = null;
         return formModel;
     }
 
@@ -3267,6 +3263,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
+    private org.w3c.dom.Document getTopCocument() {
+        if (topDocument == null) {
+            topDocument = topDocument = XMLUtil.createDocument("topDocument", null, null, null); // NOI18N
+        }
+        return topDocument;
+    }
+
     private void saveAnyComponent(RADComponent comp,
                                   StringBuffer buf,
                                   String indent,
@@ -3896,12 +3899,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if (prEd instanceof BeanPropertyEditor) {
                 prEd.setValue(value);
                 if (((BeanPropertyEditor)prEd).valueIsBeanProperty()) {
-                    valueNode = saveBeanToXML(realValue.getClass(), topDocument);
+                    valueNode = saveBeanToXML(realValue.getClass(), getTopCocument());
                 }
             }
             if (valueNode == null && prEd instanceof XMLPropertyEditor) {
                 prEd.setValue(value);
-                valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
+                valueNode = ((XMLPropertyEditor)prEd).storeToXML(getTopCocument());
     //            if (valueNode == null) { // property editor refused to save the value
     //                PersistenceException ex = new PersistenceException(
     //                                   "Cannot save the property value"); // NOI18N
@@ -4171,7 +4174,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         if (prEd instanceof XMLPropertyEditor) {
             prEd.setValue(value);
-            valueNode = ((XMLPropertyEditor)prEd).storeToXML(topDocument);
+            valueNode = ((XMLPropertyEditor)prEd).storeToXML(getTopCocument());
             if (valueNode == null) { // property editor refused to save the value
                 PersistenceException ex = new PersistenceException(
                                    "Cannot save the property value"); // NOI18N

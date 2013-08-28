@@ -67,6 +67,7 @@ import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -77,7 +78,6 @@ import org.netbeans.modules.mylyn.util.internal.Accessor;
  * @author Ondrej Vrabec
  */
 public class SynchronizeQueryCommand extends BugtrackingCommand {
-    private final SynchronizeQueriesJob job;
     private String stringValue;
     private final TaskRepository taskRepository;
     private final RepositoryQuery query;
@@ -89,7 +89,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
     private final TaskDataManager taskDataManager;
     private IStatus status;
 
-    SynchronizeQueryCommand (SynchronizeQueriesJob job, RepositoryModel repositoryModel, 
+    SynchronizeQueryCommand (RepositoryModel repositoryModel, 
             AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
             TaskList taskList, TaskDataManager taskDataManager, RepositoryQuery query) {
         this.repositoryModel = repositoryModel;
@@ -98,12 +98,12 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
         this.taskList = taskList;
         this.taskDataManager = taskDataManager;
         this.query = query;
-        this.job = job;
         this.monitor = new CancelableProgressMonitor();
     }
 
     @Override
     public void execute () throws CoreException, IOException, MalformedURLException {
+        LogUtils.logBugtrackingUsage(repositoryConnector.getConnectorKind(), "ISSUE_QUERY");
         final Accessor accessor = Accessor.getInstance();
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
@@ -112,6 +112,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                 "executing SynchronizeQueryCommand for query {0}:{1}", //NOI18N
                 new Object[] { taskRepository.getUrl(), query.getSummary() });
         }
+        
+        SynchronizeQueriesJob job = new SynchronizeQueriesJob(taskList, taskDataManager, repositoryModel,
+                repositoryConnector, taskRepository, Collections.<RepositoryQuery>singleton(query));
         
         final Set<ITask> tasksToSynchronize = Collections.synchronizedSet(new HashSet<ITask>());
         // in the end this will contain tasks removed from the query

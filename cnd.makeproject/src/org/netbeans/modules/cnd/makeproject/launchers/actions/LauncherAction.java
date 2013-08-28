@@ -86,6 +86,9 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
             return subMenu;
         } else {
             switch (actionType) {
+                case BUILD:
+                    delegate = MakeProjectActionsSupport.buildAction();
+                    break;
                 case RUN:
                     delegate = MakeProjectActionsSupport.runAction();
                     break;
@@ -116,6 +119,9 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
         JMenuItem add;
         subMenu.add(new Separator());
         switch (actionType) {
+            case BUILD:
+                add = subMenu.add(MakeProjectActionsSupport.buildAction());
+                break;
             case RUN:
                 add = subMenu.add(MakeProjectActionsSupport.runAction());
                 break;
@@ -168,6 +174,8 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
             @Override
             public String getAction() {
                 switch (actionType) {
+                    case BUILD:
+                        return ActionProvider.COMMAND_BUILD;
                     case RUN:
                         return ActionProvider.COMMAND_RUN;
                     case DEBUG:
@@ -226,6 +234,9 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
         }
     }
     
+    public static LauncherAction buildAsAction() {
+        return new LauncherAction(ProjectActionEvent.PredefinedType.BUILD, NbBundle.getMessage(LauncherAction.class, "LBL_BuildAsAction_Name"));//NOI18N
+    }
     
     public static LauncherAction runAsAction() {
         return new LauncherAction(ProjectActionEvent.PredefinedType.RUN, NbBundle.getMessage(LauncherAction.class, "LBL_RunAsAction_Name"));//NOI18N
