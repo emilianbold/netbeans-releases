@@ -52,13 +52,58 @@
     <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <!-- JDK Properties-->    
+    <property name="jdk.builds.path" value="${jdk_builds_host}/${jdk7_builds_path}/latest/bundles/macosx-x64"/>
+    <loadresource property="jdk.version.number">
+          <url url="${jdk.builds.path}"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\2" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    
+    <loadresource property="jdk.update.number">
+          <url url="${jdk.builds.path}"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\3" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    
+    <loadresource property="jdk.build.type">
+          <url url="${jdk.builds.path}"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\4" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    <condition property="jdk.ea.text" value="ea-" else="">
+        <equals arg1="${jdk.build.type}" arg2="ea"/>
+    </condition>
+    
+    
+    <loadresource property="jdk.build.number">
+          <url url="${jdk.builds.path}"/>
+          <filterchain>
+	    <striplinebreaks/>
+            <tokenfilter>
+              <replaceregex pattern="(.*)jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-b(([0-9]+)+)-(.*)" replace="\5" flags="g"/>
+            </tokenfilter>
+          </filterchain>
+    </loadresource>
+    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
-    <property name="mpkg.version_jdk" value=" 7 Update 25"/> 
-    <property name="jdk.bundle.files.prefix" value="jdk-7u25"/>
-    <property name="jdk.bundle.files.suffix" value="nb-7_3_1"/>
+    <property name="mpkg.version_jdk" value=" ${jdk.version.number} Update ${jdk.update.number}"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-${jdk.version.number}u${jdk.update.number}"/>
+    <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
-    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_25.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u25/promoted/fcs/b16/bundles/macosx-x64/jdk-7u25-macosx-x64.dmg"/>
-    <property name="jdk.package.name" value="JDK\ 7\ Update\ 25"/>
+    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.${jdk.version.number}.0_${jdk.update.number}.jdk/Contents/Home"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/${jdk7_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg"/>
+    <property name="jdk.package.name" value="JDK\ ${jdk.version.number}\ Update\ ${jdk.update.number}"/>
 
 </project>

@@ -369,7 +369,13 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
         <!-- copy Welcome.html and Localizable.strings -->                 
         <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
-              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
+              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false">
+            <filterset>
+                <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
+                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number}"/>
+            </filterset>
+        </copy>
+
         <exec executable="sh" failonerror="no">
             <arg value="-c"/>
             <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
@@ -518,6 +524,9 @@ Microsystems, Inc. All Rights Reserved.
                 <!--<filter token="GLASSFISHV3_SUN_ID" value="${glassfish.v3.sun.id}"/>-->
                 <!--<filter token="GLASSFISH_ID" value="${glassfish.id}"/>
                 <filter token="SJSAS_ID" value="${sjsas.id}"/>-->
+                <filter token="JDK_VERSION_NUMBER" value="${jdk.version.number}"/>
+                <filter token="JDK_UPDATE_NUMBER" value="${jdk.update.number}"/>
+                <filter token="JDK_BUILD_NUMBER" value="${jdk.build.number}"/>
                 <filter token="TOMCAT_ID" value="${tomcat.id}"/>
                 <filter token="OPENESB_ID" value="${openesb.id}"/>
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
