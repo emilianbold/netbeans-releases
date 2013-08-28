@@ -352,8 +352,8 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             frameViewer.toFront(); // #20048
             Installer.log.fine("\talready visible, just repainting");
         } else {
+            bindFrameViewerToCurrentDialog();
             frameViewer.setVisible(true);
-            addListenerToCurrentModalDialog();
         }
         //#29417: This call of requestFocus causes lost focus when Help window
         //is reopened => removed.
@@ -363,9 +363,10 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
 
     /**
      * If the help frame is opened from a modal dialog, it should be closed
-     * automatically if that dialog closes. See bug 233543.
+     * automatically if that dialog closes. See bug 233543. Also the windows
+     * should be rearranged so that both are visible. See bug #233542.
      */
-    private void addListenerToCurrentModalDialog() {
+    private void bindFrameViewerToCurrentDialog() {
         int maxDepth = 0;
         Dialog topDialog = null;
         for (Window w : JDialog.getWindows()) {
@@ -386,6 +387,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             }
         }
         if (topDialog != null) {
+            rearrange(topDialog, frameViewer);
             final Dialog finalTopDialog = topDialog;
             topDialog.addWindowListener(new WindowAdapter() {
 
@@ -429,7 +431,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             Installer.log.fine("\tcopying bounds from frame viewer: " + bounds);
             dialogViewer.setBounds(bounds);
         }
-        rearrange(currentModalDialog());
+        rearrange(currentModalDialog(), dialogViewer);
         if (dialogViewer.isVisible()) {
             Installer.log.fine("\talready visible, just repainting");
             dialogViewer.repaint();
@@ -738,10 +740,11 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
     /** If needed, visually rearrange dialogViewer and dlg on screen.
      * If they overlap, try to make them not overlap.
      * @param dlg the visible modal dialog
+     * @param dialogOrFrameViewer The viewer, a dialog of a frame.
      */
-    private void rearrange(Dialog dlg) {
+    private void rearrange(Dialog dlg, Window dialogOrFrameViewer) {
         Rectangle r1 = dlg.getBounds();
-        Rectangle r2 = dialogViewer.getBounds();
+        Rectangle r2 = dialogOrFrameViewer.getBounds();
         if (r1.intersects(r2)) {
             Installer.log.fine("modal dialog and dialog viewer overlap");
             Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
@@ -831,7 +834,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
                 }
             }
             dlg.setBounds(r1);
-            dialogViewer.setBounds(r2);
+            dialogOrFrameViewer.setBounds(r2);
         }
     }
     
