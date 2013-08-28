@@ -86,6 +86,7 @@ import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MirrorWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.NativeMethodExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
@@ -745,7 +746,13 @@ public class CallStackFrameImpl implements CallStackFrame {
             return null;
         }
         if (thisR == null) return null;
-        return new ThisVariable (debugger, thisR, "");
+        String id = "";
+        try {
+            id = Long.toString(ObjectReferenceWrapper.uniqueID(thisR));
+        } catch (InternalExceptionWrapper ex) {
+        } catch (ObjectCollectedExceptionWrapper ex) {
+        } catch (VMDisconnectedExceptionWrapper ex) {}
+        return new ThisVariable (debugger, thisR, id);
     }
     
     /**

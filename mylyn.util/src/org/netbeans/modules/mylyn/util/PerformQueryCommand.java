@@ -92,6 +92,10 @@ public class PerformQueryCommand extends BugtrackingCommand {
         return status;
     }
 
+    public IRepositoryQuery getQuery() {
+        return query;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
