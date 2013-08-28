@@ -93,6 +93,7 @@ import org.openide.windows.OutputWriter;
 public class BrowserConsoleLogger implements Console.Listener {
     
     private static final String LEVEL_ERROR = "error";      // NOI18N
+    private static final String LEVEL_WARNING = "warning";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
     
     private static final String PROMPT = "> ";              // NOI18N
@@ -205,7 +206,20 @@ public class BrowserConsoleLogger implements Console.Listener {
         return formatter.format(new Date(System.currentTimeMillis()));
     }
     
+    private boolean shouldLogMessage(ConsoleMessage msg) {
+        String level = msg.getLevel();
+        String source = msg.getSource();
+        // Ignore CSS warnings
+        if (LEVEL_WARNING.equals(level) && "css".equals(source)) {              // NOI18N
+            return false;
+        }
+        return true;
+    }
+    
     private void logMessage(ConsoleMessage msg) throws IOException {
+        if (!shouldLogMessage(msg)) {
+            return ;
+        }
         io.getOut().print("\b\b");
         Project project = projectContext.lookup(Project.class);
         logMessage(msg, project);
