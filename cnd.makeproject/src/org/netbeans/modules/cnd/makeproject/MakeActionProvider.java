@@ -806,7 +806,7 @@ public final class MakeActionProvider implements ActionProvider {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
-        Lookup lookup = Lookup.EMPTY;
+        Lookup lookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
@@ -821,6 +821,9 @@ public final class MakeActionProvider implements ActionProvider {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                 lookup = Lookups.fixed(cdp.startModifications());
             }
+        }
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
@@ -884,7 +887,7 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
-        Lookup lookup = Lookup.EMPTY;
+        Lookup lookup = null;
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
@@ -899,6 +902,9 @@ public final class MakeActionProvider implements ActionProvider {
                 ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
                 lookup = Lookups.fixed(cdp.startModifications());
             }
+        }
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
         }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
