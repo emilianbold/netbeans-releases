@@ -43,6 +43,7 @@
 package org.netbeans.modules.jira.autoupdate;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
+import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.JiraTestUtil;
 
@@ -58,6 +59,7 @@ public class JiraNotSupportedTest extends NbTestCase {
         
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());
         System.setProperty("netbeans.t9y.jira.supported.version", "0.0.0");
         super.setUp();
         JiraTestUtil.initClient(getWorkDir());

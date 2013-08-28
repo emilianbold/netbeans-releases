@@ -44,6 +44,7 @@ package org.netbeans.modules.jira.repository;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -52,8 +53,11 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JTextField;
+import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.jira.JiraConnector;
@@ -78,15 +82,15 @@ public class RepositoryTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());
         super.setUp();
         REPO_NAME = "Beautiful-" + System.currentTimeMillis();
         JiraTestUtil.initClient(getWorkDir());
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public static Test suite () {
+        return NbModuleSuite.createConfiguration(RepositoryTest.class).gui(false).suite();
     }
 
 
@@ -247,7 +251,7 @@ public class RepositoryTest extends NbTestCase {
         }
         assertNotNull(i);
 
-        issues = repo.simpleSearch(summary2.substring(0, summary2.length() - 2));
+        issues = repo.simpleSearch(summary2.substring(0, summary2.length() - 1));
         assertEquals(2, issues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
@@ -303,17 +307,34 @@ public class RepositoryTest extends NbTestCase {
     private void populate(RepositoryController c, String name, String url, String user, String psswd) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         RepositoryPanel panel = getRepositoryPanel(c);
         resetPanel(panel);
-        panel.nameField.setText(name);
-        panel.urlField.setText(url);
-        panel.userField.setText(user);
-        panel.psswdField.setText(psswd);
+//        panel.nameField.setText(name);
+        setText(panel, "nameField", name);
+//        panel.urlField.setText(url);
+        setText(panel, "urlField", url);
+//        panel.userField.setText(user);
+        setText(panel, "userField", user);
+//        panel.psswdField.setText(psswd);
+        setText(panel, "psswdField", psswd);
+        Field f = JiraRepositoryController.class.getDeclaredField("populated");
+        f.setAccessible(true);
+        f.set(c, true);
     }
 
-    private void resetPanel(RepositoryPanel panel) {
-        panel.nameField.setText("");
-        panel.urlField.setText("");
-        panel.userField.setText("");
-        panel.psswdField.setText("");
+    private void resetPanel(RepositoryPanel panel) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        panel.nameField.setText("");
+        setText(panel, "nameField", "");
+//        panel.urlField.setText("");
+        setText(panel, "urlField", "");
+//        panel.userField.setText("");
+        setText(panel, "userField", "");
+//        panel.psswdField.setText("");
+        setText(panel, "psswdField", "");
+    }
+    
+    private void setText (RepositoryPanel panel, String field, String value) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field f = RepositoryPanel.class.getDeclaredField(field);
+        f.setAccessible(true);
+        ((JTextField) f.get(panel)).setText(value);
     }
 
     private void compareModifiers (int expected, int actual) {

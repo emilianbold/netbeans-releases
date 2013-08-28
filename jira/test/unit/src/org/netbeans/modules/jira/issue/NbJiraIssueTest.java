@@ -54,17 +54,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.jira.*;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
@@ -129,6 +131,9 @@ public class NbJiraIssueTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());
         System.setProperty("netbeans.t9y.jira.nb.config.path", System.getProperty("netbeans.user"));
         JiraTestUtil.initClient(getWorkDir());
         if (config == null) {
@@ -137,8 +142,8 @@ public class NbJiraIssueTest extends NbTestCase {
         JiraTestUtil.cleanProject(getRepositoryConnector(), getRepository().getTaskRepository(), getClient(), config.getProjectByKey(TEST_PROJECT));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
+    public static Test suite () {
+        return NbModuleSuite.createConfiguration(NbJiraIssueTest.class).gui(false).suite();
     }
 
     public void testIssueCreate() throws JiraException, CoreException {
@@ -261,6 +266,7 @@ public class NbJiraIssueTest extends NbTestCase {
         NbJiraIssue issue = createIssue();
         assertFalse(issue.isFinished());
         issue.resolve(getResolutionByName(JiraIssueResolutionStatus.FIXED.statusName), "fixed");
+        issue.submitAndRefresh();
         assertTrue(issue.isFinished());
     }
     
@@ -381,8 +387,8 @@ public class NbJiraIssueTest extends NbTestCase {
         assertEquals(newPriority, issue.getFieldValue(NbJiraIssue.IssueField.PRIORITY));
         assertEquals(newEstimate, Long.parseLong(issue.getFieldValue(NbJiraIssue.IssueField.ESTIMATE)));
         List<String> newAffectedVersions = issue.getFieldValues(NbJiraIssue.IssueField.AFFECTSVERSIONS);
-        assertEquals(affectedVersions, newAffectedVersions);
-        List<String> newFixedVersions = issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS);
+        assertEquals(new HashSet<>(affectedVersions), new HashSet<>(newAffectedVersions));
+        List<String> newFixedVersions = new ArrayList<>(issue.getFieldValues(NbJiraIssue.IssueField.FIXVERSIONS));
         Collections.sort(newFixedVersions);
         assertEquals(fixedVersions, newFixedVersions);
         List<String> newComponents = issue.getFieldValues(NbJiraIssue.IssueField.COMPONENT);
@@ -421,14 +427,14 @@ public class NbJiraIssueTest extends NbTestCase {
 
     private NbJiraIssue createIssue() throws CoreException {
         NbJiraIssue issue = (NbJiraIssue) getRepository().createIssue();
-
+        issue.loadModel();
         JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
         Project p = config.getProjectByKey(TEST_PROJECT);
 
         String summary = "Summary " + System.currentTimeMillis();
         String description = "Description for " + summary;
 
-        issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, p.getKey());
+        issue.setFieldValue(NbJiraIssue.IssueField.PROJECT, p.getId());
         issue.setFieldValue(NbJiraIssue.IssueField.TYPE, "1");
         issue.setFieldValue(NbJiraIssue.IssueField.SUMMARY, summary);
         issue.setFieldValue(NbJiraIssue.IssueField.DESCRIPTION, description);
@@ -440,7 +446,6 @@ public class NbJiraIssueTest extends NbTestCase {
         assertNotNull(id);
         assertFalse(id.trim().equals(""));
 
-        issue = (NbJiraIssue) getRepository().getIssueCache().getIssue(id);
         assertNotNull(issue.getKey());
         assertFalse("".equals(issue.getKey()));
         assertEquals(summary, issue.getSummary());
@@ -470,7 +475,7 @@ public class NbJiraIssueTest extends NbTestCase {
                 attachment = att;
             }
         }
-        assertEquals(config.getUser(author).getFullName(), attachment.getEmail());
+        assertEquals(config.getUser(author).getFullName(), attachment.getAuthor());
         assertEquals(size, Integer.parseInt(attachment.getSize()));
         assertNotNull(attachment.getDate());
         assertEquals(fo.getNameExt(), attachment.getFilename());

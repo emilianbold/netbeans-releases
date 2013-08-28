@@ -1431,7 +1431,10 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return operation;
     }
 
-    void setFieldValue(IssueField f, String value) {
+    /**
+     * public for tests
+     */
+    public void setFieldValue(IssueField f, String value) {
         NbTaskDataModel m = getModel();
         // should not happen, setFieldValue either runs with model lock
         // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
@@ -1444,6 +1447,13 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         if (!value.equals(a.getValue())) {
             setTaskAttributeValue(m, a, value);
         }
+    }
+    
+    /**
+     * Tests only, <b>NEVER</b> call this method.
+     */
+    public void loadModel () {
+        editorOpened();
     }
 
     public List<String> getRepositoryFieldValues (IssueField f) {
@@ -1479,7 +1489,10 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         }
     }
 
-    void setFieldValues(IssueField f, List<String> values) {
+    /**
+     * public for tests
+     */
+    public void setFieldValues(IssueField f, List<String> values) {
         NbTaskDataModel m = getModel();
         // should not happen, setFieldValue either runs with model lock
         // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
@@ -1839,7 +1852,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return email;
         }
 
-        String getAuthor() {
+        public String getAuthor() {
             return author;
         }
         
@@ -2105,59 +2118,59 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return toSubmit;
         }
 
-        long getEstimatedTime () {
+        public long getEstimatedTime () {
             return estimatedTime;
         }
 
-        boolean isAutoAdjust () {
+        public boolean isAutoAdjust () {
             return autoAdjust;
         }
 
-        boolean isLeaveEstimate () {
+        public boolean isLeaveEstimate () {
             return leaveEstimate;
         }
 
-        boolean isReduceEstimate () {
+        public boolean isReduceEstimate () {
             return reduceEstimate;
         }
 
-        boolean isSetEstimate () {
+        public boolean isSetEstimate () {
             return setEstimate;
         }
 
-        void setToSubmit (boolean submit) {
+        public void setToSubmit (boolean submit) {
             toSubmit = submit;
         }
 
-        void setTimeSpent (long timeSpent) {
+        public void setTimeSpent (long timeSpent) {
             this.timeSpent = timeSpent;
         }
 
-        void setStartDate (Date startDate) {
+        public void setStartDate (Date startDate) {
             this.startDate = startDate;
         }
 
-        void setComment (String description) {
+        public void setComment (String description) {
             this.comment = description;
         }
 
-        void setEstimateTime (long remainingEstimate) {
+        public void setEstimateTime (long remainingEstimate) {
             this.estimatedTime = remainingEstimate;
         }
 
-        void setSetEstimate (boolean flag) {
+        public void setSetEstimate (boolean flag) {
             setEstimate = flag;
         }
 
-        void setReduceEstimate (boolean flag) {
+        public void setReduceEstimate (boolean flag) {
             reduceEstimate = flag;
         }
 
-        void setLeaveEstimate (boolean flag) {
+        public void setLeaveEstimate (boolean flag) {
             leaveEstimate = flag;
         }
 
-        void setAutoAdjust (boolean flag) {
+        public void setAutoAdjust (boolean flag) {
             autoAdjust = flag;
         }
     }
