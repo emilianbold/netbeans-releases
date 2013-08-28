@@ -110,6 +110,23 @@ is the proper place.
 
   <changes>
 
+      <change id="mergeCustomHelpset">
+          <api name="general"/>
+          <summary>Added class <code>HelpUtils</code></summary>
+          <version major="2" minor="34"/>
+          <date day="19" month="8" year="2013"/>
+          <author login="jhavlin"/>
+          <compatibility addition="yes" />
+          <description>
+              <p>
+                  Provide a method for merging of a custom HelpSet object to the
+                  master helpset.
+              </p>
+          </description>
+          <class package="org.netbeans.api.javahelp" name="HelpUtils"/>
+          <issue number="234144"/>
+      </change>
+
       <change id="HelpSetRegistration">
           <api name="general"/>
           <summary>Added <code>@HelpSetRegistration</code></summary>
