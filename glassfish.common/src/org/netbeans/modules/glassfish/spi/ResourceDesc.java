@@ -45,14 +45,10 @@ package org.netbeans.modules.glassfish.spi;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.admin.CommandListResources;
 import org.glassfish.tools.ide.admin.ResultList;
-import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 
@@ -88,20 +84,13 @@ public class ResourceDesc implements Comparable<ResourceDesc> {
     public static List<ResourceDesc> getResources(
             GlassfishInstance instance, String type) {
         List<ResourceDesc> resourcesList;
-        List<String> values = null;
-        Future<ResultList<String>> future =
-                ServerAdmin.<ResultList<String>>exec(instance,
-                new CommandListResources(CommandListResources.command(type),
-                null));
-        try {
-            ResultList<String> result = future.get();
+        List<String> values;
+        ResultList<String> result
+                = CommandListResources.listResources(instance, type, null);
+        if (result != null && result.getState() == TaskState.COMPLETED) {
             values = result.getValue();
-        } catch (ExecutionException ee) {
-            LOGGER.log(Level.INFO, ee.getMessage(), ee);
-        } catch (InterruptedException ie) {
-            LOGGER.log(Level.INFO, ie.getMessage(), ie);
-        } catch (CancellationException ce) {
-            LOGGER.log(Level.INFO, ce.getMessage(), ce);
+        } else {
+            values = null;
         }
         if (values != null && values.size() > 0) {
             resourcesList = new ArrayList<ResourceDesc>(values.size());

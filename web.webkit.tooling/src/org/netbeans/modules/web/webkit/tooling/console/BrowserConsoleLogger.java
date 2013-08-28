@@ -43,11 +43,13 @@
 package org.netbeans.modules.web.webkit.tooling.console;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.SystemColor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -91,9 +93,10 @@ import org.openide.windows.OutputWriter;
 public class BrowserConsoleLogger implements Console.Listener {
     
     private static final String LEVEL_ERROR = "error";      // NOI18N
+    private static final String LEVEL_WARNING = "warning";      // NOI18N
     private static final String LEVEL_DEBUG = "debug";      // NOI18N
     
-    private static final String PROMPT = "";//> ";              // NOI18N
+    private static final String PROMPT = "> ";              // NOI18N
 
     private final Lookup projectContext;
     private InputOutput io;
@@ -120,7 +123,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         setIOColors();
         io.setInputVisible(true);
         isFoldingSupported = IOFolding.isSupported(io);
-        //io.getOut().print(PROMPT);
+        io.getOut().print(PROMPT);
         Reader r = io.getIn();
         reader = new ConsoleReader(r);
         rp.post(reader);
@@ -178,6 +181,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         } catch (IOException ex) {}
         setIOColors();
         io.setInputVisible(true);
+        // HACK: Wait for the processing of reset event
+        try {
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override public void run() {}
+            });
+        } catch (InterruptedException ex) {
+        } catch (InvocationTargetException ex) {}
         io.getOut().print(PROMPT);
     }
 
@@ -196,7 +206,20 @@ public class BrowserConsoleLogger implements Console.Listener {
         return formatter.format(new Date(System.currentTimeMillis()));
     }
     
+    private boolean shouldLogMessage(ConsoleMessage msg) {
+        String level = msg.getLevel();
+        String source = msg.getSource();
+        // Ignore CSS warnings
+        if (LEVEL_WARNING.equals(level) && "css".equals(source)) {              // NOI18N
+            return false;
+        }
+        return true;
+    }
+    
     private void logMessage(ConsoleMessage msg) throws IOException {
+        if (!shouldLogMessage(msg)) {
+            return ;
+        }
         io.getOut().print("\b\b");
         Project project = projectContext.lookup(Project.class);
         logMessage(msg, project);
@@ -319,6 +342,7 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     @NbBundle.Messages({"BrowserConsoleLoggerSessionClosed=Debugging session with browser was closed."})
     void sessionWasClosed() {
+        io.getOut().print("\b\b");
         io.getOut().println(Bundle.BrowserConsoleLoggerSessionClosed());
     }
 
@@ -609,7 +633,6 @@ public class BrowserConsoleLogger implements Console.Listener {
                     LOG.log(Level.FINE, "Got line from Console Reader: \"{0}\"", line);
                     if (line != null) {
                         input.line(line);
-                        io.getOut().print(PROMPT);
                     }
                 }
             } catch (IOException ex) {
