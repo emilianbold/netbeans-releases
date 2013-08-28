@@ -162,14 +162,13 @@ public class ProjectFolder extends JPanel implements ItemListener, DocumentListe
         projectFolderScrollPane = new JScrollPane();
         projectFolderTextPane = new JTextPane();
 
-        setFocusTraversalPolicy(null);
-
         Mnemonics.setLocalizedText(projectFolderCheckBox, NbBundle.getMessage(ProjectFolder.class, "LBL_SeparateProjectFolder")); // NOI18N
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
         Mnemonics.setLocalizedText(projectFolderLabel, NbBundle.getMessage(ProjectFolder.class, "LBL_MetadataFolder")); // NOI18N
         projectFolderLabel.setEnabled(false);
 
+        projectFolderTextField.setColumns(20);
         projectFolderTextField.setEnabled(false);
 
         Mnemonics.setLocalizedText(projectFolderBrowseButton, NbBundle.getMessage(ProjectFolder.class, "LBL_BrowseProject")); // NOI18N

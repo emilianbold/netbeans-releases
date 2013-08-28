@@ -46,6 +46,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -184,9 +185,43 @@ public class InjectCompositeComponent {
         templateWizard.putProperty("declaredPrefixes", declaredPrefixes.get()); //NOI18N
 
         templateDO = DataObject.find(template);
-        Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
+        final Set<DataObject> result = templateWizard.instantiate(templateDO, targetFolder);
         final String prefix = (String) templateWizard.getProperty("selectedPrefix"); //NOI18N
         if (result != null && result.size() > 0) {
+            // issue #225974 - invoke the document change in AWT thread - it will call the hints refresh immediately
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    final String compName = result.iterator().next().getName();
+                    final BaseDocument doc = (BaseDocument) document;
+                    final Indent indent = Indent.get(doc);
+                    indent.lock();
+                    try {
+                        doc.runAtomic(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    doc.remove(startOffset, endOffset - startOffset);
+                                    String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
+                                    doc.insertString(startOffset, text, null);
+                                    indent.reindent(startOffset, startOffset + text.length());
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        });
+                    } finally {
+                        indent.unlock();
+                    }
+                }
+            });
+            
+
+            // get component folder
+            FileObject tF = Templates.getTargetFolder(templateWizard);
+            String compFolder = FileUtil.getRelativePath(projectDir, tF);
+            compFolder = compFolder.substring(compFolder.lastIndexOf("/") + 1);
+
             // issue #232189 - Composite component's NS declaration not inserted on first usage
             FileObject generatedFO = result.iterator().next().getPrimaryFile();
             if (generatedFO != null) {
@@ -197,31 +232,6 @@ public class InjectCompositeComponent {
                             Collections.singleton(generatedFO.toURL()));
                 }
             }
-            final String compName = result.iterator().next().getName();
-            //TODO XXX Replace selected text by created component in editor
-            FileObject tF = Templates.getTargetFolder(templateWizard);
-            final BaseDocument doc = (BaseDocument) document;
-            final Indent indent = Indent.get(doc);
-            indent.lock();
-            try {
-                doc.runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            doc.remove(startOffset, endOffset - startOffset);
-                            String text = "<" + prefix + ":" + compName + "/>"; //NOI18N
-                            doc.insertString(startOffset, text, null);
-                            indent.reindent(startOffset, startOffset + text.length());
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            } finally {
-                indent.unlock();
-            }
-            String compFolder = FileUtil.getRelativePath(projectDir, tF);
-            compFolder = compFolder.substring(compFolder.lastIndexOf("/") + 1);
 
             //now we need to import the library if not already done,
             //but since the library has just been created by adding an xhtml file

@@ -314,11 +314,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (!reloading && isDirty) {
                     issue.markUserChange();
                 }
-                btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
                     unsavedFields.clear();
                 }
-                cancelButton.setEnabled(isModified);
+                if (enableMap.isEmpty()) {
+                    btnSaveChanges.setEnabled(isDirty);
+                    cancelButton.setEnabled(isModified);
+                } else {
+                    enableMap.put(btnSaveChanges, isDirty);
+                    enableMap.put(cancelButton, isModified);
+                }
             }
         });
     }

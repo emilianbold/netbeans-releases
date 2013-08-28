@@ -383,7 +383,12 @@ public class CssModuleTestBase extends CslTestBase {
         }
     }
     
-     public void assertCompletion(Document document, final Match type, String... expectedItemsNames) {
+    protected void assertCompletion(String documentContent, final Match type, String... expectedItemsNames) {
+        Document doc = getDocument(documentContent);
+        assertCompletion(doc, type, expectedItemsNames);
+    }
+    
+    protected void assertCompletion(Document document, final Match type, String... expectedItemsNames) {
         try {
             String text = document.getText(0, document.getLength());
             int pipeOffset = text.indexOf(Character.toString('|'));

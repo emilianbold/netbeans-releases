@@ -2,25 +2,26 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Debugging: Instances Window</title>
+<title>Old Method on Stack Alert Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="NetbeansDebuggerInstancesNode" name="NetbeansDebuggerInstancesNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref292" name="sthref292"></a>
-<h1>Debugging: Instances Window</h1>
+<p><a id="NetbeansDebuggerJPDAPopOldFrame" name="NetbeansDebuggerJPDAPopOldFrame"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref294" name="sthref294"></a>
+<h1>Old Method on Stack Alert Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to displays the instances and referers for the class that you select in the Loaded Classes window. Right-click a class in the Loaded Classes window and choosing <b>Show in Instances</b> view to open this window. 
+<p>Use to examines the current stack of the current thread. If the Old Method on Stack alert is displayed, the topmost call is associated with a class that was just swapped into the currently executing program, and there is more than one call on the call stack. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG885">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG896">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-The Instances view requires that the IDE and your application are running on JDK 1.6.The Instances window is composed of the three panes.</p>
+</p>
+<p>Perform one of the following actions:</p>
 
-<table summary="Descriptions of Instances window elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Descriptions of stack alert box commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="38%" />
 <col width="*" />
 <thead>
@@ -32,53 +33,20 @@ The Instances view requires that the IDE and your application are running on JDK
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Instances Browser</p>
+<p>Pop Call</p>
 </td>
 <td align="left" headers="r2c1-t21 r1c2-t21">
-<p>Displays instances for the selected class.</p>
-<p>Select an instance to browse the fields of the instance in the Fields browser.</p>
-<p>Select an instance to browse the references to the instance in the References browser.</p>
+<p>Removes the most recent call from the current call stack. The program counter is moved to the line before the instruction that made the recently removed call.</p>
+<p>If the source code is available, the focus of the Source Editor is set to that line. When you continue program execution, the call is repeated.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>Fields Browser</p>
+<p>Use Old and Step Out</p>
 </td>
 <td align="left" headers="r3c1-t21 r1c2-t21">
-<p>Displays fields for the selected class.</p>
-<p>Right-click in this browser to view an instance, an object, or Java source</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Show Instance</p>
-</td>
-<td align="left" headers="r4c1-t21 r1c2-t21">
-<p>Shows the instance in the Instances browser.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Show in Loaded Classes View</p>
-</td>
-<td align="left" headers="r5c1-t21 r1c2-t21">
-<p>Displays the object in the Loaded Classes window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Go to Source</p>
-</td>
-<td align="left" headers="r6c1-t21 r1c2-t21">
-<p>Opens the Java source file in the Source Editor.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t21" headers="r1c1-t21">
-<p>References Browser</p>
-</td>
-<td align="left" headers="r7c1-t21 r1c2-t21">
-<p>Displays referers for the selected class.</p>
+<p>Executes the original version of the call. Use this option when you need the old version of the call to perform an action that the new version might not perform.</p>
+<p>If methods belonging to an old version of the class are on a stack in the virtual machine (VM), the VM keeps both the old and new versions of the class in memory so that the calls on the stack are not disrupted. If a class is fixed again before the older calls are removed, there might be more than two versions of the class in the VM at one time.</p>
 </td>
 </tr>
 </tbody>
@@ -86,10 +54,10 @@ The Instances view requires that the IDE and your application are running on JDK
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p>Developing Applications with NetBeans IDE, 
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG822">
-<param name="text" value="<html><u>&quot;Using Debugger Windows&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG863">
+<param name="text" value="<html><u>&quot;Managing Debugging Sessions&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

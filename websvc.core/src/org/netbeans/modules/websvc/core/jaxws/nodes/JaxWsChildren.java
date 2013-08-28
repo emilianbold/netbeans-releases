@@ -286,65 +286,72 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                                         TypeElement typeElement = SourceUtils.
                                             getPublicTopLevelElement(controller);
                                         // find WS operations
-                                        // either annotated (@WebMethod) public mathods 
-                                        // or all public methods
+                                        // excluding @WebMethod(exclude=true). See the issue 228292.
                                         List<ExecutableElement> publicMethods = 
                                             getPublicMethods(controller, typeElement);
                                         List<ExecutableElement> webMethods = 
                                             new ArrayList<ExecutableElement>();
-                                        List<WebOperationInfo> webOperations = 
-                                            new ArrayList<WebOperationInfo>();
-                                        boolean foundWebMethodAnnotation=false;
+                                        // map for storing @WebMethod annotation mirror
+                                        java.util.Map<ExecutableElement, AnnotationMirror> webMethodAnnMap = 
+                                                new java.util.HashMap<ExecutableElement, AnnotationMirror>();
                                         for(ExecutableElement method:publicMethods) {
-                                            List<? extends AnnotationMirror> annotations = 
-                                                method.getAnnotationMirrors();
-                                            boolean hasWebMethodAnnotation= 
-                                                getWebMethodAnnotation(method)!=null;
-                                            if (hasWebMethodAnnotation) {
-                                                if (!foundWebMethodAnnotation) {
-                                                    foundWebMethodAnnotation=true;
-                                                    // remove all methods added before
-                                                    // because only annotated methods should be added
-                                                    if (webMethods.size()>0) {
-                                                        webMethods.clear();
+                                            AnnotationMirror webMethodAnn = 
+                                                getWebMethodAnnotation(method);
+                                            if (webMethodAnn != null) {
+                                                boolean exclude = false;
+                                                java.util.Map<? extends ExecutableElement, 
+                                                    ? extends AnnotationValue> expressions = webMethodAnn.getElementValues();
+                                                for(Entry<? extends ExecutableElement, 
+                                                        ? extends AnnotationValue> entry: 
+                                                            expressions.entrySet()) 
+                                                {
+                                                    if (entry.getKey().getSimpleName().
+                                                            contentEquals("exclude"))//NOI18N 
+                                                    { 
+                                                        Object value = expressions.get(entry.getKey()).getValue();
+                                                        if (Boolean.TRUE.equals(value)) {
+                                                            exclude = true;
+                                                        }
+                                                        break;
                                                     }
                                                 }
-                                                webMethods.add(method);
+                                                if (!exclude) {
+                                                    webMethods.add(method);
+                                                    webMethodAnnMap.put(method, webMethodAnn);
+                                                }
                                             } 
-                                            else if (!foundWebMethodAnnotation) {
-                                                // there are only non-annotated methods present until now
+                                            else {
+                                                // add un-annotated public method by default (issue 228292)
                                                 webMethods.add(method);
                                             }
                                         } // for
 
-                                        // create list of operations;                                      
+                                        
+                                        // create list of operations;
+                                        List<WebOperationInfo> webOperations = 
+                                            new ArrayList<WebOperationInfo>();
+                                        
                                         for (ExecutableElement webMethod:webMethods) {
                                             // web operation name
                                             WebOperationInfo webOperation = 
                                                 new WebOperationInfo();
-                                            List<? extends AnnotationMirror> annotations = 
-                                                webMethod.getAnnotationMirrors();
-                                            AnnotationMirror webMethodAnn = 
-                                                getWebMethodAnnotation(webMethod);
-                                            java.util.Map<? extends ExecutableElement, 
-                                                    ? extends AnnotationValue> expressions; 
-                                            if ( webMethodAnn == null ){
-                                                expressions = Collections.emptyMap();
-                                            }
-                                            else {
-                                                expressions = webMethodAnn.getElementValues();
-                                            }
-                                            for(Entry<? extends ExecutableElement, 
-                                                    ? extends AnnotationValue> entry: 
-                                                        expressions.entrySet()) 
-                                            {
-                                                if (entry.getKey().getSimpleName().
-                                                        contentEquals("operationName"))//NOI18N 
-                                                { 
-                                                    webOperation.setOperationName(
-                                                            (String)expressions.get(
-                                                                    entry.getKey()).
-                                                                        getValue());
+                                            // get @WebMethod annotation from the map
+                                            AnnotationMirror webMethodAnn = webMethodAnnMap.get(webMethod);
+                                            if (webMethodAnn != null) {
+                                                java.util.Map<? extends ExecutableElement, 
+                                                    ? extends AnnotationValue> expressions = webMethodAnn.getElementValues();
+                                                for(Entry<? extends ExecutableElement, 
+                                                        ? extends AnnotationValue> entry: 
+                                                            expressions.entrySet()) 
+                                                {
+                                                    if (entry.getKey().getSimpleName().
+                                                            contentEquals("operationName"))//NOI18N 
+                                                    { 
+                                                        webOperation.setOperationName(
+                                                                (String)expressions.get(
+                                                                        entry.getKey()).
+                                                                            getValue());
+                                                    }
                                                 }
                                             }
                                             if (webOperation.getOperationName() == null) 
