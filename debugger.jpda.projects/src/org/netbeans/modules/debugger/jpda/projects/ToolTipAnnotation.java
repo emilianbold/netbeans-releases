@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
@@ -198,6 +199,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         int offset;
         boolean[] isMethodPtr = new boolean[] { false };
+        String[] fieldOfPtr = new String[] { null };
         final String expression = getIdentifier (
             d,
             doc,
@@ -206,7 +208,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 doc,
                 lp.getLine ().getLineNumber ()
             ) + lp.getColumn (),
-            isMethodPtr
+            isMethodPtr,
+            fieldOfPtr
         );
         if (expression == null) {
             return;
@@ -330,7 +333,8 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         StyledDocument doc,
         JEditorPane ep,
         int offset,
-        boolean[] isMethodPtr
+        boolean[] isMethodPtr,
+        String[] fieldOfPtr
     ) {
         // do always evaluation if the tooltip is invoked on a text selection
         String t = null;
@@ -380,16 +384,17 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 return null;
             }
 
-            int newOffset = NbDocument.findLineOffset(doc, line) + identStart + 1;
-            if (!isValidTooltipLocation(debugger, doc, newOffset)) {
-                return null;
-            }
-
             String ident = t.substring (identStart, identEnd);
             if (JAVA_KEYWORDS.contains(ident)) {
                 // Java keyword => Do not show anything
                 return null;
             }
+            int newOffset = NbDocument.findLineOffset(doc, line) + identStart + 1;
+            final boolean[] isFieldStatic = new boolean[] { false };
+            if (!isValidTooltipLocation(debugger, doc, newOffset, ident, fieldOfPtr, isFieldStatic)) {
+                return null;
+            }
+
             while (identEnd < lineLen &&
                    Character.isWhitespace(t.charAt(identEnd))
             ) {
@@ -399,14 +404,23 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                 // We're at a method call
                 isMethodPtr[0] = true;
             }
+            
+            if (fieldOfPtr[0] != null) {
+                ident = fieldOfPtr[0] + '.' + ident;    // NOI18N
+            }
             return ident;
         } catch (BadLocationException e) {
             return null;
         }
     }
 
-    private static boolean isValidTooltipLocation(JPDADebugger debugger, final StyledDocument doc, final int offset) {
-        CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
+    private static boolean isValidTooltipLocation(JPDADebugger debugger,
+                                                  final StyledDocument doc,
+                                                  final int offset,
+                                                  final String expr,
+                                                  final String[] fieldOfPtr,
+                                                  final boolean[] isFieldStatic) {
+        final CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
         if (currentFrame == null) {
             return false;
         }
@@ -489,6 +503,29 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                         }
                         path = path.getParentPath();
                     }
+                    javax.lang.model.element.Element element = controller.getTrees().getElement(mainPath);
+                    if (element != null) {
+                        ElementKind ek = element.getKind();
+                        if (ElementKind.FIELD.equals(ek)) {
+                            String name = element.getSimpleName().toString();
+                            if (name.equals(expr)) {
+                                javax.lang.model.element.Element typeElement = element.getEnclosingElement();
+                                /*ElementKind tk = typeElement.getKind();
+                                if (ElementKind.CLASS.equals(tk) ||
+                                    ElementKind.ENUM.equals(tk) ||
+                                    ElementKind.INTERFACE.equals(tk)) {*/
+                                if (typeElement instanceof TypeElement) {
+                                    String binaryClassName = ElementUtilities.getBinaryName((TypeElement) typeElement);
+                                    boolean isStatic = element.getModifiers().contains(Modifier.STATIC);
+                                    fieldOfPtr[0] = findRelativeClassReference(
+                                            currentFrame.getClassName(),
+                                            binaryClassName,
+                                            isStatic);
+                                    isFieldStatic[0] = isStatic;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         } catch (ParseException ex) {
@@ -520,6 +557,58 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         return true;
     }
 
+    private static String findRelativeClassReference(String currentCassName,
+                                                     String binaryClassName,
+                                                     boolean isStatic) {
+        int i = binaryClassName.indexOf('$');       // NOI18N
+        if (i < 0) {
+            if (isStatic) {
+                return binaryClassName;
+            } else {
+                return binaryClassName+".this";     // NOI18N
+            }
+        }
+        boolean anonymous = false;
+        StringBuilder clazz = new StringBuilder(binaryClassName.substring(0, i));
+        while (0 <= i && i < binaryClassName.length()) {
+            i++;
+            int i2 = binaryClassName.indexOf('$', i);       // NOI18N
+            if (i2 < 0) {
+                i2 = binaryClassName.length();
+            }
+            String name = binaryClassName.substring(i, i2);
+            if (name.isEmpty()) {
+                return null; // unknown
+            }
+            if (Character.isDigit(name.charAt(0))) {
+                anonymous = true;
+                break;
+            } else {
+                clazz.append('.');  // NOI18N
+                clazz.append(name);
+            }
+            i = i2;
+        }
+        if (anonymous) {
+            //if (binaryClassName.length() > currentCassName.length()) {
+            if (!currentCassName.startsWith(binaryClassName)) {
+                // Can not navigate to a more nested anonymous class
+                return null;
+            }
+            if (binaryClassName.equals(currentCassName)) {
+                return "this";  // NOI18N
+            } else {
+                // Can not navigate to the outer field
+                return null;
+            }
+        }
+        if (!isStatic) {
+            clazz.append('.');      // NOI18N
+            clazz.append("this");   // NOI18N
+        }
+        return clazz.toString();
+    }
+    
     // include the class name plus all enclosing classes
     private static void addClassNames(String fqn, Set<String> typeNames) {
         do {
