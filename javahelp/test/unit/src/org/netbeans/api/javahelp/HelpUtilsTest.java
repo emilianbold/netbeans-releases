@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.api.javahelp;
 
-* {
-    margin: 0;
-    padding: 0;
-}
-body {
-    font-family: Arial, Tahoma, Helvetica;
-    font-size: 10pt;
-    font-weight: normal;
-    color: #303942;
-    background-color: #fff;
-}
+import javax.help.HelpSet;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.modules.javahelp.HelpConstants;
 
-.clear {
-    clear: both;
-}
-.hidden {
-    visibility: hidden;
-}
+/**
+ *
+ * @author jhavlin
+ */
+public class HelpUtilsTest {
 
-#presetMenu {
-    border: 1px solid #aeaeab;
-    border-radius: 2px;
-    white-space: nowrap;
-    min-width: 280px;
-}
-#presetMenu a {
-    display: block;
-    height: 38px;
-    clear: both;
-}
-#presetMenu a:hover {
-    background-color: #e4ecf7;
-}
-#presetMenu a.active {
-    background-color: #bbcee9;
-}
-#presetMenu div.form-item, #presetMenu div.icon, #presetMenu div.label {
-    float: left;
-    margin-top: 10px;
-}
-#presetMenu div.form-item {
-    margin-left: 20px;
-    margin-right: 20px;
-}
-#presetMenu div.icon {
-    width: 16px;
-}
-#presetMenu div.label {
-    margin-top: 6px;
-    margin-left: 20px;
-    margin-right: 20px;
-}
-#presetMenu div.main {
-    font-size: 10pt;
-    font-weight: bold;
-    color: #303942;
-}
-#presetMenu div.info {
-    font-size: 9pt;
-    color: #6b7176;
-}
-#presetMenu hr {
-    clear: both;
-    margin: 0 4px;
-    border: 1px solid #aeaeab;
+    public HelpUtilsTest() {
+    }
+
+    @Test
+    public void testMergeCustomHelpset() {
+        HelpSet hs = new HelpSet();
+        HelpUtils.mergeCustomHelpset(hs);
+        assertEquals(true, hs.getKeyData(HelpConstants.HELPSET_MERGE_CONTEXT,
+                HelpConstants.HELPSET_MERGE_ATTR));
+    }
 }
