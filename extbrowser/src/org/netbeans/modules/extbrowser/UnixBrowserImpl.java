@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 
-import org.openide.*;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.Exceptions;
@@ -180,11 +179,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         catch (java.io.IOException ex) {
             ExtWebBrowser.getEM().log(Level.INFO, null, ex);
             // occurs when executable is not found or not executable
-            DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message (
-                NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
-                NotifyDescriptor.Message.WARNING_MESSAGE)
-            );
+            BrowserUtils.notifyMissingBrowser(cmd.getProcessName());
         }
         catch (NumberFormatException ex) {
             Logger.getLogger("global").log(Level.INFO, null, ex);
@@ -352,11 +347,7 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
             // Ignore exitStatus 23 to workaround it - it is a Chrome's bug
             // http://code.google.com/p/chromium/issues/detail?id=146762
             if (exitStatus != 0 && !retried && exitStatus != 23) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message (
-                    NbBundle.getMessage (UnixBrowserImpl.class, "MSG_Cant_run_netscape", new Object [] { cmd.getProcessName () }),
-                    NotifyDescriptor.Message.WARNING_MESSAGE)
-                );
+                BrowserUtils.notifyMissingBrowser(cmd.getProcessName());
                 return;
             }
 
