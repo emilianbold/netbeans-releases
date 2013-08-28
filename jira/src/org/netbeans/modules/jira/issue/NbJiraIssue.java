@@ -174,6 +174,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private String recentChanges = "";
     private String tooltip = "";
     private boolean open;
+    private static final String NB_WORK_LOGNEW_ESTIMATE_TIME = "NB.WorkLog.newEstimateTime"; //NOI18N
 
     @Override
     protected void taskDeleted (NbTask task) {
@@ -282,6 +283,18 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             Jira.LOG.log(Level.WARNING, null, ex);
             return null;
         }
+    }
+
+    NewWorkLog getEditedWorkLog () {
+        NbTaskDataModel model = getModel();
+        TaskData td = model == null ? null : model.getLocalTaskData();
+        if (td != null) {
+            TaskAttribute ta = td.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            if (ta != null) {
+                return new NewWorkLog(ta);
+            }
+        }
+        return null;
     }
 
     public enum IssueField {
@@ -572,7 +585,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         }
         List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
-            workLogs.add(new WorkLog(taskAttribute));
+            if (!WorkLogConverter.ATTRIBUTE_WORKLOG_NEW.equals(taskAttribute.getId())) {
+                workLogs.add(new WorkLog(taskAttribute));
+            }
         }
         return workLogs.toArray(new WorkLog[workLogs.size()]);
     }
@@ -580,35 +595,39 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     /**
      * Adds a new worklog. Just one worklog can be added before committing the issue.
      * Don't forget to commit the issue.
-     * @param startDate
-     * @param spentTime in seconds
-     * @param comment
      */
-    public void addWorkLog (Date startDate, long spentTime, String comment, int remainingEstimate) {
-        if(startDate != null) {
-            NbTaskDataModel m = getModel();
-            TaskData taskData = m == null ? null : m.getLocalTaskData();
-            if (taskData == null) {
-                return;
+    public void addWorkLog (NewWorkLog log) {
+        NbTaskDataModel m = getModel();
+        TaskData taskData = m == null ? null : m.getLocalTaskData();
+        if (taskData == null) {
+            return;
+        }
+        TaskAttribute attribute = taskData.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+        if (!log.isToSubmit()) {
+            if (attribute != null && !attribute.getAttributes().isEmpty()) {
+                attribute.clearAttributes();
+                m.attributeChanged(attribute);
             }
-            TaskAttribute attribute = taskData.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+        } else if (log.getStartDate() != null) {
             if (attribute == null) {
                 attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
             }
             JiraWorkLog workLog = new JiraWorkLog();
-            workLog.setComment(comment);
-            workLog.setStartDate(startDate);
-            workLog.setTimeSpent(spentTime);
-            if (remainingEstimate != -1) { // -1 means auto-adjust
-                // we set the estimate ourselves
-                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
-                setFieldValue(NbJiraIssue.IssueField.ESTIMATE, remainingEstimate + ""); //NOI18N
-            } else {
-                // auto adjust
+            workLog.setComment(log.getComment());
+            workLog.setStartDate(log.getStartDate());
+            workLog.setTimeSpent(log.getTimeSpent());
+            if (log.isAutoAdjust()) {
                 workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.AUTO);
+            } else if (log.isLeaveEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+            } else if (log.isReduceEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.REDUCE);
+            } else if (log.isSetEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.SET);
             }
             new WorkLogConverter().applyTo(workLog, attribute);
             attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+            attribute.createMappedAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME).setValue(String.valueOf(log.getEstimatedTime()));
             m.attributeChanged(attribute);
         }
     }
@@ -1495,6 +1514,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 try {
                     // fix status according to the selected operation
                     fixStatus();
+                    // fix worklog's remaining estimate time
+                    fixWorkLog();
                     if (saveChanges()) {
                         submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(getModel());
                     } else {
@@ -1564,10 +1585,51 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
 
             private void fixStatus () {
-                TaskAttribute status = getModel().getLocalTaskData().getRoot().getMappedAttribute(IssueField.STATUS.key);
+                NbTaskDataModel m = getModel();
+                TaskAttribute status = m.getLocalTaskData().getRoot().getMappedAttribute(IssueField.STATUS.key);
                 if (status != null && status.getOptions().size() > 0 && !status.getOptions().containsKey(status.getValue())) {
                     status.setValue(status.getOptions().keySet().iterator().next());
+                    getModel().attributeChanged(status);
                 }
+            }
+            
+            private void fixWorkLog () {
+                NewWorkLog log = getEditedWorkLog();
+                NbTaskDataModel m = getModel();
+                if (log != null && log.isToSubmit() && log.getStartDate() != null) {
+                    TaskAttribute attribute = m.getLocalTaskData().getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+                    JiraWorkLog workLog = new JiraWorkLog();
+                    workLog.setComment(log.getComment());
+                    workLog.setStartDate(log.getStartDate());
+                    workLog.setTimeSpent(log.getTimeSpent());
+                    if (log.isAutoAdjust()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.AUTO);
+                    } else if (log.isLeaveEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                    } else if (log.isReduceEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                        setFieldValue(NbJiraIssue.IssueField.ESTIMATE, String.valueOf(getCurrentRemainingEstimate() - log.getEstimatedTime()));
+                    } else if (log.isSetEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                        setFieldValue(NbJiraIssue.IssueField.ESTIMATE, String.valueOf(log.getEstimatedTime()));
+                    }
+                    new WorkLogConverter().applyTo(workLog, attribute);
+                    attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+                    m.attributeChanged(attribute);
+                }
+            }
+
+            private int getCurrentRemainingEstimate () {
+                String estimateTxt = getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
+                int estimate = 0;
+                if (estimateTxt != null) {
+                    try {
+                        estimate = Integer.parseInt(estimateTxt);
+                    } catch (NumberFormatException nfex) {
+                        estimate = 0;
+                    }
+                }
+                return estimate;
             }
             
         });
@@ -1965,6 +2027,138 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         public String getComment () {
             return comment;
+        }
+    }
+    
+    
+    public static final class NewWorkLog {
+        private Date startDate;
+        private String author;
+        private long timeSpent;
+        private String comment;
+        private boolean toSubmit;
+        private long estimatedTime;
+        private boolean setEstimate;
+        private boolean reduceEstimate;
+        private boolean leaveEstimate;
+        private boolean autoAdjust;
+
+        private NewWorkLog (TaskAttribute workLogTA) {
+            JiraWorkLog workLog = new WorkLogConverter().createFrom(workLogTA);
+            startDate = workLog.getStartDate();
+            author = workLog.getAuthor();
+            timeSpent = workLog.getTimeSpent();
+            comment = workLog.getComment();
+            TaskAttribute toSubmitFlag = workLogTA.getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG);
+            toSubmit = toSubmitFlag != null && Boolean.parseBoolean(toSubmitFlag.getValue());
+            TaskAttribute att = workLogTA.getAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME);
+            if (att != null) {
+                try {
+                    estimatedTime = Long.valueOf(att.getValue());
+                } catch (NumberFormatException ex) { }
+            }
+            switch (workLog.getAdjustEstimate()) {
+                case LEAVE:
+                    leaveEstimate = true;
+                    break;
+                case REDUCE:
+                    reduceEstimate = true;
+                    break;
+                case SET:
+                    setEstimate = true;
+                    break;
+                default:
+                    autoAdjust = true;
+            }
+        }
+    
+        public NewWorkLog () {
+            startDate = null;
+            author = "";
+            timeSpent = 0;
+            comment = "";
+            toSubmit = false;
+            estimatedTime = 0;
+            leaveEstimate = false;
+            reduceEstimate = false;
+            setEstimate = false;
+            autoAdjust = false;
+        }
+
+        public Date getStartDate () {
+            return startDate;
+        }
+
+        public String getAuthor () {
+            return author;
+        }
+
+        public long getTimeSpent () {
+            return timeSpent;
+        }
+
+        public String getComment () {
+            return comment;
+        }
+
+        boolean isToSubmit () {
+            return toSubmit;
+        }
+
+        long getEstimatedTime () {
+            return estimatedTime;
+        }
+
+        boolean isAutoAdjust () {
+            return autoAdjust;
+        }
+
+        boolean isLeaveEstimate () {
+            return leaveEstimate;
+        }
+
+        boolean isReduceEstimate () {
+            return reduceEstimate;
+        }
+
+        boolean isSetEstimate () {
+            return setEstimate;
+        }
+
+        void setToSubmit (boolean submit) {
+            toSubmit = submit;
+        }
+
+        void setTimeSpent (long timeSpent) {
+            this.timeSpent = timeSpent;
+        }
+
+        void setStartDate (Date startDate) {
+            this.startDate = startDate;
+        }
+
+        void setComment (String description) {
+            this.comment = description;
+        }
+
+        void setEstimateTime (long remainingEstimate) {
+            this.estimatedTime = remainingEstimate;
+        }
+
+        void setSetEstimate (boolean flag) {
+            setEstimate = flag;
+        }
+
+        void setReduceEstimate (boolean flag) {
+            reduceEstimate = flag;
+        }
+
+        void setLeaveEstimate (boolean flag) {
+            leaveEstimate = flag;
+        }
+
+        void setAutoAdjust (boolean flag) {
+            autoAdjust = flag;
         }
     }
 }

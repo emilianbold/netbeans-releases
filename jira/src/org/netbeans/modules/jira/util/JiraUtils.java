@@ -264,14 +264,14 @@ public class JiraUtils {
         return work;
     }
 
-    public static String getWorkLogCode(int seconds, int daysPerWeek, int hoursPerDay) {
+    public static String getWorkLogCode(long seconds, int daysPerWeek, int hoursPerDay) {
         ResourceBundle bundle = NbBundle.getBundle(JiraUtils.class);
-        int minutes = seconds/60;
-        int hours = minutes/60;
+        long minutes = seconds/60;
+        long hours = minutes/60;
         minutes = minutes%60;
-        int days = hours/hoursPerDay;
+        long days = hours/hoursPerDay;
         hours = hours%hoursPerDay;
-        int weeks = days/daysPerWeek;
+        long weeks = days/daysPerWeek;
         days = days%daysPerWeek;
         String format = bundle.getString("WorkLog.codePattern"); // NOI18N
         String work = MessageFormat.format(format, weeks, days, hours, minutes);

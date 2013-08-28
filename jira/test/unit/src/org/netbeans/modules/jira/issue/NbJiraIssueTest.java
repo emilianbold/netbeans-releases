@@ -620,7 +620,13 @@ public class NbJiraIssueTest extends NbTestCase {
         String comment = "Worklog number " + worklogNumber;
         Date startDate = new Date();
         long timeSpent = 10 * 60; // 10 minutes
-        issue.addWorkLog(startDate, timeSpent, comment, -1);
+        NbJiraIssue.NewWorkLog log = new NbJiraIssue.NewWorkLog();
+        log.setStartDate(startDate);
+        log.setTimeSpent(timeSpent);
+        log.setComment(comment);
+        log.setAutoAdjust(true);
+        log.setToSubmit(true);
+        issue.addWorkLog(log);
         issue.submitAndRefresh();
 
         workLogs = issue.getWorkLogs();

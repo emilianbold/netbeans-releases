@@ -68,6 +68,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="workLogWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -343,8 +345,11 @@
                   <Component id="timeSpentField" linkSize="7" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="logWorkButton2" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="workLogWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="logWorkButton2" alignment="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="dummyIssueLinksPanel" min="-2" max="-2" attributes="0"/>
                   <Component id="issueLinksLabel" min="-2" max="-2" attributes="0"/>
@@ -800,7 +805,6 @@
                       <Component id="resolveIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="createSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="convertToSubtaskButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="logWorkButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="refreshButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -808,7 +812,7 @@
                       <Component id="addToCategoryButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="showInBrowserButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="13" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -831,8 +835,6 @@
                   <Component id="createSubtaskButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="convertToSubtaskButton" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="logWorkButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="addToCategoryButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -913,16 +915,6 @@
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.convertToSubtaskButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
-        </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="logWorkButton">
-          <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.logWorkButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logWorkButtonActionPerformed"/>
-          </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton">
           <Properties>
@@ -1092,6 +1084,8 @@
     <Component class="javax.swing.JLabel" name="addCommentWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="originalEstimateNewWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="workLogWarning">
     </Component>
   </SubComponents>
 </Form>

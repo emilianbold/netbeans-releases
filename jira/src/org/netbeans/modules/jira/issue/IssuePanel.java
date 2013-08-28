@@ -1277,6 +1277,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, addCommentWarning, addCommentLabel);
         
         updateCustomFieldStatuses();
+        updateWorkLogStatus();
         repaint();
     }
     
@@ -1471,7 +1472,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         closeIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         createSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         convertToSubtaskButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         addToCategoryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1505,6 +1505,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         environmentWarning = new javax.swing.JLabel();
         addCommentWarning = new javax.swing.JLabel();
         originalEstimateNewWarning = new javax.swing.JLabel();
+        workLogWarning = new javax.swing.JLabel();
 
         resolutionField.setEditable(false);
         resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -1685,13 +1686,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         convertToSubtaskButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.convertToSubtaskButton.text")); // NOI18N
 
-        logWorkButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkButton.text")); // NOI18N
-        logWorkButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logWorkButtonActionPerformed(evt);
-            }
-        });
-
         refreshButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1732,14 +1726,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(resolveIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(createSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(convertToSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(logWorkButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(stopProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(closeIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(reopenIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
             actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1760,8 +1753,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addComponent(createSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(convertToSubtaskButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(logWorkButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1821,6 +1812,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
                         .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2054,7 +2047,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(timeSpentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(timeSpentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(workLogWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(logWorkButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(dummyIssueLinksPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2440,20 +2435,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_reopenIssueButtonActionPerformed
 
     private void logWorkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logWorkButtonActionPerformed
-        final WorkLogPanel panel = new WorkLogPanel(issue);
-        if (panel.showDialog()) {
-            String pattern = NbBundle.getMessage(IssuePanel.class, "IssuePanel.logWorkMessage"); // NOI18N
-            String message = MessageFormat.format(pattern, issue.getKey());
-            submitChange(new Runnable() {
-                @Override
-                public void run() {
-                    issue.addWorkLog(panel.getStartDate(), panel.getTimeSpent(), panel.getDescription(),
-                            panel.getRemainingEstimate());
-                    unsavedFields.add(WORKLOG);
-                    // should really be submitted riight now?
-                    issue.submitAndRefresh();
-                }
-            }, message);
+        WorkLogPanel panel = new WorkLogPanel(issue);
+        NbJiraIssue.NewWorkLog log = panel.showDialog();
+        if (log != null) {
+            issue.addWorkLog(log);
+            unsavedFields.add(WORKLOG);
+            updateWorkLogStatus();
         }
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
@@ -2604,7 +2591,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JComboBox issueTypeCombo;
     private javax.swing.JLabel issueTypeLabel;
     private javax.swing.JLabel issueTypeWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton;
     private org.netbeans.modules.bugtracking.util.LinkButton logWorkButton2;
     private javax.swing.JTextField originalEstimateField;
     private javax.swing.JTextField originalEstimateFieldNew;
@@ -2653,6 +2639,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel timeSpentWarning;
     private javax.swing.JTextField updatedField;
     private javax.swing.JLabel updatedLabel;
+    private javax.swing.JLabel workLogWarning;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -3006,6 +2993,31 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             updateFieldDecorations(warningLabel, label, field.getLabel(), id,
                     fieldDirty, valueModifiedByUser, valueModifiedByServer,
                     lastSeenValue, repositoryValue, newValue);
+        }
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - icon path",
+        "IssuePanel.workLogToSubmit=<p><img src=\"{0}\">&nbsp;Unsubmitted Work Log</p>"
+            + "<p>A new Work Log has been created but not yet submitted</p>"
+    })
+    private void updateWorkLogStatus () {
+        boolean change = false;
+        if (!issue.isNew()) {
+            NbJiraIssue.NewWorkLog log = issue.getEditedWorkLog();
+            boolean valueModifiedByUser = log != null && log.isToSubmit();
+            removeTooltips(workLogWarning, WORKLOG);
+            if (valueModifiedByUser) {
+                String message = Bundle.IssuePanel_commentAddedLocally();
+                tooltipsLocal.addTooltip(workLogWarning, WORKLOG, Bundle.IssuePanel_workLogToSubmit(ICON_UNSUBMITTED_PATH));
+                change = !message.equals(fieldsLocal.put(WORKLOG, message));
+            } else {
+                change = fieldsLocal.remove(WORKLOG) != null;
+            }
+            updateIcon(workLogWarning);
+        }
+        if (change && !reloading) {
+//            updateMessagePanel();
         }
     }
 
