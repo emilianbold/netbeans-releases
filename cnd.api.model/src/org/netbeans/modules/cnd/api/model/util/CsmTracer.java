@@ -865,6 +865,8 @@ public final class CsmTracer {
             dumpModel((CsmUsingDirective) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.TYPEDEF) {
             dumpModel((CsmTypedef) decl);
+        } else if (decl.getKind() == CsmDeclaration.Kind.TYPEALIAS) {
+            dumpModel((CsmTypeAlias) decl);
 // commented out till there is convenient moment to update tests                
 //        } else if ( decl.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
 //            dumpModel((CsmClassForwardDeclaration) decl);
@@ -892,6 +894,11 @@ public final class CsmTracer {
         print("TYPEDEF " + td.getName() + ' ' + getOffsetString(td, false) + " TYPE: " + toString(td.getType(), false) + // NOI18N
                 ' ' + getScopeString(td)); // NOI18N
     }
+    
+    public void dumpModel(CsmTypeAlias td) {
+        print("TYPEALIAS " + td.getName() + ' ' + getOffsetString(td, false) + " TYPE: " + toString(td.getType(), false) + // NOI18N
+                ' ' + getScopeString(td)); // NOI18N
+    }    
 
     public void dumpModel(CsmUsingDirective ud) {
         CsmNamespace nsp = ud.getReferencedNamespace();
@@ -960,6 +967,8 @@ public final class CsmTracer {
                 dumpModel((CsmFunctionDefinition) member);
             } else if (member.getKind() == CsmDeclaration.Kind.TYPEDEF) {
                 dumpModel((CsmTypedef) member);
+            } else if (member.getKind() == CsmDeclaration.Kind.TYPEALIAS) {
+                dumpModel((CsmTypeAlias) member);
 // commented out till there is convenient moment to update tests                
 //	    } else if ( member.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
 //		dumpModel((CsmClassForwardDeclaration) member);

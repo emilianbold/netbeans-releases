@@ -60,6 +60,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -149,44 +150,46 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             return;
         }
         final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
-        
+
         this.url = url;
         final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
         dev.openUrl(url.toExternalForm());
         final Project project = projectContext.lookup(Project.class);
-        if (project==null) {
+        if (project == null) {
             //dont start debugging session for non project files
             return;
         }
-        
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
-            @Override
-            public void run() {
-                if (kind == Kind.IOS_DEVICE_DEFAULT) {
-                    try {
-                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
-                    } catch (IllegalStateException ise) {
-                        build.stopDebugging(true);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                NotifyDescriptor not = new NotifyDescriptor(
-                                        Bundle.LBL_DeviceNotConnected(),
-                                        Bundle.TTL_DeviceNotConnected(),
-                                        NotifyDescriptor.DEFAULT_OPTION,
-                                        NotifyDescriptor.ERROR_MESSAGE,
-                                        null,
-                                        null);
-                                DialogDisplayer.getDefault().notify(not);
-                            }
-                        });
+        try {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (kind == Kind.IOS_DEVICE_DEFAULT) {
+                        try {
+                            build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iosdevice16.png"), url)), true);
+                        } catch (IllegalStateException ise) {
+                            build.stopDebugging(true);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    NotifyDescriptor not = new NotifyDescriptor(
+                                            Bundle.LBL_DeviceNotConnected(),
+                                            Bundle.TTL_DeviceNotConnected(),
+                                            NotifyDescriptor.DEFAULT_OPTION,
+                                            NotifyDescriptor.ERROR_MESSAGE,
+                                            null,
+                                            null);
+                                    DialogDisplayer.getDefault().notify(not);
+                                }
+                            });
+                        }
+                    } else {
+                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator16.png"), url)), false);
                     }
-                } else {
-                    build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
                 }
-            }
-        }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), false);
-
+            }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);
+        } catch (IllegalStateException ise) {
+            WebKitDebuggingSupport.getDefault().stopDebugging(true);
+        }
     }
 
     @NbBundle.Messages(

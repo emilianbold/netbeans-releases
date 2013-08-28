@@ -86,4 +86,8 @@ public final class CndTextIndex {
             index.put(key, Collections.EMPTY_SET);
         }
     }
+    
+    public static void shutdown() {
+        new CndTextIndexManager.Cleanup().run();
+    }
 }

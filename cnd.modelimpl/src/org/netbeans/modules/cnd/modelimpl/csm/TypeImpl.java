@@ -408,7 +408,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     @Override
     public boolean isTemplateBased(Set<CsmType> visited) {
         CsmClassifier classifier = getClassifier();
-        if (CsmKindUtilities.isTypedef(classifier)) {
+        if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
             if (visited.contains(this)) {
                 return false;
             }
@@ -977,7 +977,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             CsmUID<CsmClassifier> cUID = UIDCsmConverter.declarationToUID(classifier);
             this.classifierUID = cUID;
             // register new cached value
-            if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) && !CsmKindUtilities.isTypedef(classifier)
+            if (cUID != null && classifier != null && !CsmKindUtilities.isBuiltIn(classifier) && CsmBaseUtilities.isValid(classifier) 
+                  && !CsmKindUtilities.isTypedef(classifier) && !CsmKindUtilities.isTypeAlias(classifier)
                 //&& !CsmKindUtilities.isTemplate(classifier) && !isInstantiation()
                ) {
                fileImpl.addResolvedReference(new CsmTypeReferenceImpl(this), classifier);
@@ -991,7 +992,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         CsmClassifier classifier;
         if (resolveTypeChain) {
             classifier = getClassifier();
-            if (CsmKindUtilities.isTypedef(classifier)) {
+            if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
                 return ((CsmTypedef)classifier).getType().isBuiltInBased(true);
             }
         } else {

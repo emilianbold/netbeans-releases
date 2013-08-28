@@ -131,7 +131,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, boolean specialize) {
         CsmObject result = template;
-        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypedef(template)) {
+        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypeAlias(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
             Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
@@ -178,7 +178,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     public CsmObject instantiate(CsmTemplate template, CsmInstantiation instantiation, boolean specialize) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
         CsmObject result = template;
-        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypedef(template)) {
+        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypeAlias(template)) {
             result = Instantiation.create(template, mapping);
             if (specialize && CsmKindUtilities.isClassifier(result)) {
                 CsmClassifier specialization = specialize((CsmClassifier) result);
@@ -709,7 +709,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return true;
             }
             CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls)) {
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                 CsmTypedef td = (CsmTypedef) cls;
                 type = td.getType();
             } else {
@@ -730,7 +730,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return 1;
             }
             CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls)) {
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                 CsmTypedef td = (CsmTypedef) cls;
                 type = td.getType();
             } else {

@@ -504,7 +504,7 @@ public class CsmContextUtilities {
                 List<CsmNamedElement> listByName = CsmSortUtilities.filterList(decls, strPrefix, match, caseSensitive);
                 list.addAll(listByName);
                 for (CsmDeclaration elem : decls) {
-                    if (CsmKindUtilities.isTypedef(elem)) {
+                    if (CsmKindUtilities.isTypedef(elem) || CsmKindUtilities.isTypeAlias(elem)) {
                         final CsmType type = ((CsmTypedef)elem).getType();
                         CsmClassifier classifier = getTypeClassifier(fullContext, type);
                         if (CsmOffsetUtilities.isInObject(elem, classifier) && !CsmOffsetUtilities.sameOffsets(elem, classifier)) {
@@ -694,7 +694,7 @@ public class CsmContextUtilities {
     private static CsmType extractLastType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         CsmType type = null;
-        if (CsmKindUtilities.isTypedef(last)) {
+        if (CsmKindUtilities.isTypedef(last) || CsmKindUtilities.isTypeAlias(last)) {
             type = ((CsmTypedef)last).getType();
         } else if (CsmKindUtilities.isType(last)) {
             type = (CsmType) last;

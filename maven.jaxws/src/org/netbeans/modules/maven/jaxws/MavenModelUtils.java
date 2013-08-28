@@ -435,9 +435,9 @@ public final class MavenModelUtils {
             scope = Artifact.SCOPE_PROVIDED;
         }
         ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml"), 
-                "com.sun.xml.ws", 
+                "org.glassfish.metro", 
                 "webservices-rt", 
-                "2.0", 
+                "2.3", 
                 null, scope, null, false);
     }
 
@@ -532,9 +532,9 @@ public final class MavenModelUtils {
         return null;
     }
 
-    private static void updateLibraryScope(POMModel model, String targetScope) {
+    private static void updateLibraryScope(POMModel model, String groupId, String targetScope) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
-        Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
+        Dependency wsDep = model.getProject().findDependencyById(groupId, "webservices-rt", null); //NOI18N
         if (wsDep != null) {
             wsDep.setScope(targetScope);
         }
@@ -550,11 +550,19 @@ public final class MavenModelUtils {
         List<org.apache.maven.model.Dependency> deps = nb.getMavenProject().getDependencies();
         String metroScope = null;
         boolean foundMetroDep = false;
+        String groupId = null;
         for (org.apache.maven.model.Dependency dep:deps) {
             if ("com.sun.xml.ws".equals(dep.getGroupId()) && "webservices-rt".equals(dep.getArtifactId())) { //NOI18N
                 String scope = dep.getScope();
                 metroScope = scope == null ? "compile" : scope; //NOI18N
                 foundMetroDep = true;
+                groupId = "com.sun.xml.ws";
+                break;
+            } else if ("org.glassfish.metro".equals(dep.getGroupId()) && "webservices-rt".equals(dep.getArtifactId())) { //NOI18N
+                String scope = dep.getScope();
+                metroScope = scope == null ? "compile" : scope; //NOI18N
+                foundMetroDep = true;
+                groupId = "org.glassfish.metro";
                 break;
             }
         }
@@ -580,12 +588,13 @@ public final class MavenModelUtils {
             }*/
             if (updateScopeTo != null) {
                 final String targetScope = updateScopeTo;
+                final String grpId = groupId;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     @Override
                     public void performOperation(POMModel model) {
                         // update webservices-rt library dependency scope (provided or compile)
                         // depending whether J2EE Server contains metro jars or not
-                        updateLibraryScope(model, targetScope);
+                        updateLibraryScope(model, grpId, targetScope);
                     }
                 };
                 Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N

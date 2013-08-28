@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -573,6 +574,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         setState(CsmModelState.OFF);
         ReferencesIndex.shutdown();
         RepositoryUtils.shutdown();
+        CndTextIndex.shutdown();
 
         ModelSupport.instance().setModel(null);
         waitModelTasks();

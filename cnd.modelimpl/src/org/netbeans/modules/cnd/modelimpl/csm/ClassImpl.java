@@ -763,7 +763,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                         if (!isRenderingLocalContext()) {
                                             ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
                                         }
-                                        addMember((MemberTypedef) typedef,!isRenderingLocalContext());
+                                        addMember((CsmMember) typedef,!isRenderingLocalContext());
                                         if (typedefs.getEnclosingClassifier() != null){
                                             typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                         }
@@ -824,7 +824,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                                         if (!isRenderingLocalContext()) {
                                             ((FileImpl) getContainingFile()).getProjectImpl(true).registerDeclaration(typedef);
                                         }
-                                        addMember((MemberTypedef) typedef,!isRenderingLocalContext());
+                                        addMember((CsmMember) typedef,!isRenderingLocalContext());
                                         if (typedefs.getEnclosingClassifier() != null) {
                                             typedefs.getEnclosingClassifier().addEnclosingTypedef(typedef);
                                         }
@@ -1192,6 +1192,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
 
         @Override
+        protected CsmTypeAlias createTypeAlias(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
+            type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
+            return MemberTypeAlias.create(getContainingFile(), ClassImpl.this, ast, type, name, curentVisibility, !isRenderingLocalContext());
+        }
+
+        @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassMemberForwardDeclaration fd = ClassMemberForwardDeclaration.create(getContainingFile(), ClassImpl.this, ast, curentVisibility, !isRenderingLocalContext());
             addMember(fd,!isRenderingLocalContext());
@@ -1288,6 +1294,59 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             assert this.visibility != null;
         }
     }
+    
+    public static final class MemberTypeAlias extends TypeAliasImpl implements CsmMember {
+
+        private final CsmVisibility visibility;
+        
+        public static MemberTypeAlias create(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility, boolean global) {
+            MemberTypeAlias memberTypedef = new MemberTypeAlias(file, containingClass, ast, type, name, curentVisibility);
+            if (!global) {
+                Utils.setSelfUID(memberTypedef);
+            }
+            return memberTypedef;
+        }        
+
+        private MemberTypeAlias(CsmFile file, CsmClass containingClass, AST ast, CsmType type, CharSequence name, CsmVisibility curentVisibility) {
+            super(ast, file, containingClass, type, name);
+            visibility = curentVisibility;
+        }
+
+        private MemberTypeAlias(CsmType type, CharSequence name, CsmVisibility visibility, CsmClass containingClass, CsmFile file, int startOffset, int endOffset) {
+            super(type, name, containingClass, file, startOffset, endOffset);
+            this.visibility = visibility;
+        }
+        
+        @Override
+        public boolean isStatic() {
+            return false;
+        }
+
+        @Override
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        @Override
+        public CsmClass getContainingClass() {
+            return (CsmClass) getScope();
+        }
+        
+        ////////////////////////////////////////////////////////////////////////////
+        // impl of SelfPersistent
+        @Override
+        public void write(RepositoryDataOutput output) throws IOException {
+            super.write(output);
+            assert this.visibility != null;
+            PersistentUtils.writeVisibility(this.visibility, output);
+        }
+
+        public MemberTypeAlias(RepositoryDataInput input) throws IOException {
+            super(input);
+            this.visibility = PersistentUtils.readVisibility(input);
+            assert this.visibility != null;
+        }
+    }    
 
     public static interface MemberForwardDeclaration {}
 
