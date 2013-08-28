@@ -87,9 +87,9 @@ public class RunConfigurationPanelVisual extends JPanel {
         infoLabel2 = new JLabel();
         runAsPanel = new RunAsPanel(insidePanels);
 
-        setFocusTraversalPolicy(null);
-        Mnemonics.setLocalizedText(infoLabel1, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1"));
-        Mnemonics.setLocalizedText(infoLabel2, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2"));
+        Mnemonics.setLocalizedText(infoLabel1, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo1")); // NOI18N
+
+        Mnemonics.setLocalizedText(infoLabel2, NbBundle.getMessage(RunConfigurationPanelVisual.class, "LBL_RunConfigurationInfo2")); // NOI18N
 
         runAsPanel.setLayout(new CardLayout());
 
@@ -97,13 +97,12 @@ public class RunConfigurationPanelVisual extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(infoLabel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(infoLabel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-            .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -112,7 +111,7 @@ public class RunConfigurationPanelVisual extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(infoLabel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                .addComponent(runAsPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         infoLabel1.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunConfigurationPanelVisual.class, "RunConfigurationPanelVisual.infoLabel1.AccessibleContext.accessibleName")); // NOI18N

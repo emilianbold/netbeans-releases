@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
  * @author Vladimir Kvasihn
@@ -61,7 +62,7 @@ public class GlobalVarNode extends ObjectNode {
         init(var);
     }
     
-    private void init(CsmVariable var){
+    private void init(final CsmVariable var){
         CharSequence old = text;
         text = var.getName();
         if ((old == null) || !old.equals(text)) {
@@ -72,10 +73,15 @@ public class GlobalVarNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     text == null ? null : text.toString());
         }
-        //String name = var.getName().toString();
-        //setName(name);
-        //setDisplayName(name);
-        //setShortDescription(name);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(var);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     @Override
@@ -93,10 +99,7 @@ public class GlobalVarNode extends ObjectNode {
         return text.toString();
     }
     
-    private CsmVariable getVariable() {
-        return (CsmVariable) getObject();
-    }
-    
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmVariable){

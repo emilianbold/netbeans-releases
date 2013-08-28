@@ -60,6 +60,7 @@ final class LoadingNode extends BaseNode {
     }
     
     /** Implements AbstractCsmNode.getData() */
+    @Override
     public CsmObject getCsmObject() {
 	return null;
     }

@@ -259,6 +259,7 @@ public class TplDataObject extends MultiDataObject implements CookieSet.Factory 
             switch (token.id()) {
                 case TAG_OPEN:
                     openTag = token.text();
+                    break;
                 case ARGUMENT:
                     in_charset_attribute = LexerUtils.equals(CHARSET_ATTRIBUTE, token.text(), true, true)
                             && LexerUtils.equals(META_TAG, openTag, true, true);

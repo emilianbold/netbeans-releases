@@ -588,7 +588,6 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            boolean parent = super.isEnabled();
             boolean singleNode = getRepositoryNodes().length == 1;
             boolean allMutable = true;
             for (RepositoryNode n : getRepositoryNodes()) {
@@ -597,7 +596,7 @@ public class Actions {
                     break;
                 }
             }
-            return parent && singleNode && allMutable;
+            return singleNode && allMutable;
         }
     }
 

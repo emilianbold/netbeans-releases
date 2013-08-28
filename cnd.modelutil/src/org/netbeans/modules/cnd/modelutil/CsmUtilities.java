@@ -138,7 +138,6 @@ public class CsmUtilities {
     public static final int PROTECTED_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
     public static final int CONST_MEMBER_BIT= 0x00000200;
-    public static final int ENUMERATOR      = 0x00000400;
     public static final int CONSTRUCTOR     = 0x00000800;
     public static final int GLOBAL          = 0x00001000;
     public static final int LOCAL           = 0x00002000;
@@ -180,9 +179,6 @@ public class CsmUtilities {
             }
             if (CsmKindUtilities.isFileLocalVariable(obj) || CsmKindUtilities.isFileLocalFunction(obj)) {
                 mod |= FILE_LOCAL;
-            }
-            if (CsmKindUtilities.isEnumerator(obj)) {
-                mod |= ENUMERATOR;
             }
         }
         if (CsmClassifierResolver.getDefault().isForwardClass(obj)) {

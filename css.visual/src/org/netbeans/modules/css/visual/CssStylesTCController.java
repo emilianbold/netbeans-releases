@@ -46,7 +46,6 @@ package org.netbeans.modules.css.visual;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.web.browser.api.Page;

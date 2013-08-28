@@ -152,14 +152,14 @@ public class RuleEditorPanel extends JPanel {
     private CustomToolbar toolbar;
     private ViewMode viewMode;
     public RuleEditorNode node;
-    private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
    
     private PropertyDeclaration createdDeclaration;
     private PropertyDeclaration editedDeclaration;
-    private List<String> createdDeclarationsIdsList = new ArrayList<>();
+    private final List<String> createdDeclarationsIdsList = new ArrayList<>();
     
-    private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
+    private final PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             Mutex.EVENT.readAccess(new Runnable() {
