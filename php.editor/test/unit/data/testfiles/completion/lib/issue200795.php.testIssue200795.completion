@@ -95,6 +95,7 @@ PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      A                               [PUBLIC]   Test197084.php
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
+CLASS      A                               [PUBLIC]   issue226071.php
 CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
@@ -110,6 +111,7 @@ CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
 CLASS      B                               [PUBLIC]   b
 CLASS      B                               [PUBLIC]   issue195232.php
+CLASS      B                               [PUBLIC]   issue226071.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
