@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms.api;
 
+import java.awt.Image;
 import java.net.URL;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -125,7 +126,7 @@ public final class WebKitDebuggingSupport {
             consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
             networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
             dispatcher = new MessageDispatcherImpl();
-            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
+            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(Image.class), dispatcher));
         } finally {
             startDebuggingInProgress = false;
         }
