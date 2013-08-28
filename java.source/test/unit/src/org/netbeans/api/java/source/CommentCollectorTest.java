@@ -33,6 +33,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -721,6 +722,26 @@ public class CommentCollectorTest extends NbTestCase {
         src.runModificationTask(task);
     }
     
+    public void test223701() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin =
+                       "/*a*/\npackage test;\n" +
+                       "class Test {\n" +
+                       "}";
+        TestUtilities.copyStringToFile(testFile, origin);
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(final WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+                ClassTree ct = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                ((JCClassDecl) ct).pos = 1;//"great" positions apparently produced by some code-generating tools (read: Lombok)
+                GeneratorUtilities.get(workingCopy).importComments(ct, workingCopy.getCompilationUnit());
+            }
+        };
+        src.runModificationTask(task);
+    }
+
     void verify(Tree tree, CommentSet.RelativePosition position, CommentHandler service, String... comments) {
         assertNotNull("Comments handler service not null", service);
         CommentSet set = service.getComments(tree);

@@ -43,11 +43,12 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,8 +56,10 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
  */
 public class CategoryPicker extends javax.swing.JPanel {
 
-    private List<Category> categories;
-    private Action newCatAction;
+    private final List<Category> categories;
+    private final Action newCatAction;
+    private CategoryComboListener listener;
+
 
     /**
      * Creates new form CategoryPicker
@@ -70,6 +73,10 @@ public class CategoryPicker extends javax.swing.JPanel {
 
     public Category getChosenCategory() {
         return categories.get(cbCategory.getSelectedIndex());
+    }
+
+    public void setCategoryListener(CategoryComboListener listener) {
+        this.listener = listener;
     }
 
     /**
@@ -139,9 +146,21 @@ public class CategoryPicker extends javax.swing.JPanel {
         String[] names = new String[categories.size()];
         //names[0] = NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategory"); //NOI18N
         int i = 0;
+        boolean categoryAvailable = true;
         for (Category category : categories) {
             names[i++] = category.getName();
         }
+        if (categories.isEmpty()) {
+            names = new String[]{NbBundle.getMessage(CategoryPicker.class, "LBL_NoCategoryAvailable")};
+            categoryAvailable = false;
+        }
         cbCategory.setModel(new DefaultComboBoxModel(names));
+        if (listener != null) {
+            listener.comboItemsChanged(categoryAvailable);
+        }
+    }
+
+    public interface CategoryComboListener {
+        public void comboItemsChanged(boolean categoryAvailable);
     }
 }

@@ -50,10 +50,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -82,16 +86,19 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /** Display the "Tools Default" panel */
 @OptionsPanelController.Keywords(keywords={"#ToolsPanelKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ToolsTab")
@@ -475,6 +482,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         return true; //serverList == null ? true : serverList.get((String)cbDevHost.getSelectedItem()).isOnline();
     }
 
+    private Future<String> extraValidationTask = null;
+
     private void changeCompilerSet(CompilerSet cs) {
         getToolCollectionPanel().preChangeCompilerSet(cs);
         if (cs == null) {
@@ -500,6 +509,12 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         getToolCollectionPanel().changeCompilerSet(cs);
         changingCompilerSet = false;
         currentCompilerSet = cs;
+
+        if (extraValidationTask != null) {
+            extraValidationTask.cancel(true);
+        }
+        extraValidationTask = RP.submit(new ExtraValidationTask(currentCompilerSet, lblErrors));
+
         fireCompilerSetChange();
         dataValid();
     }
@@ -623,7 +638,18 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                 validate();
                 repaint();
             } else {
-                lblErrors.setText("");
+                String warnings = ""; // NOI18N
+                Future<String> fwarnings = extraValidationTask;
+                if (fwarnings != null && fwarnings.isDone()) {
+                    try {
+                        warnings = fwarnings.get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                lblErrors.setText("<html>" + warnings + "</html>"); // NOI18N
             }
 
             boolean baseDirValid = getToolCollectionPanel().isBaseDirValid();
@@ -1056,6 +1082,66 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/toolchain/ui/compiler/key.png", false); //NOI18N
         }
         
+    }
+
+    private static class ExtraValidationTask implements Callable<String> {
+
+        private final CompilerSet cs;
+        private volatile boolean isInterrupted = false;
+        private final JLabel lblErrors;
+
+        public ExtraValidationTask(CompilerSet cs, JLabel lblErrors) {
+            this.cs = cs;
+            this.lblErrors = lblErrors;
+        }
+
+        @Override
+        public String call() throws Exception {
+            if (cs.getCompilerFlavor().isCygwinCompiler() && Utilities.isWindows()) {
+                String jdkBitness = System.getProperty("os.arch"); // NOI18N
+                if (jdkBitness == null) {
+                    jdkBitness = ""; // NOI18N
+                }
+                String cygwinBitness = "";
+                File uname_exe = new File(cs.getDirectory(), "uname.exe"); // NOI18N
+                if (uname_exe.exists()) {
+                    ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), uname_exe.getPath(), "-m"); // NOI18N
+                    if (exitStatus.isOK()) {
+                        cygwinBitness = exitStatus.output.trim();
+                    }
+                }
+
+                String warning = ""; // NOI18N
+                if (cygwinBitness.equals("i686") && !jdkBitness.equals("x86")) { // NOI18N
+                    warning = NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.Cygwin32OnJDK64.warning"); // NOI18N
+                } else if (cygwinBitness.equals("x86_64") && jdkBitness.equals("x86")) { // NOI18N
+                    warning = NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.Cygwin64OnJDK32.warning"); // NOI18N
+                }
+                final String text = warning;
+                if (!isInterrupted()) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            lblErrors.setText("<html>" + text); // NOI18N
+                        }
+                    });
+                }
+                return warning;
+            }
+            return ""; // NOI18N
+        }
+
+        private boolean isInterrupted() {
+            try {
+                Thread.sleep(0);
+            } catch (InterruptedException ex) {
+                isInterrupted = true;
+                Thread.currentThread().interrupt();
+            }
+
+            isInterrupted |= Thread.currentThread().isInterrupted();
+            return isInterrupted;
+        }
     }
 
     private class MyDevHostListCellRenderer extends DefaultListCellRenderer {

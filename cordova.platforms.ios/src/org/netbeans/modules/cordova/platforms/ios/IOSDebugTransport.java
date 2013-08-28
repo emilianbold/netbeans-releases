@@ -56,6 +56,7 @@ import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
@@ -81,6 +82,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
     private static final Logger LOGGER = Logger.getLogger(IOSDebugTransport.class.getName());
+    private final AtomicBoolean flush = new AtomicBoolean();
     
     
 
@@ -111,12 +113,27 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
             return true;
         } catch (IllegalStateException ise) {
-            throw ise;
+            synchronized(tabs.monitor) {
+                if (!flush.get()) {
+                    throw ise;
+                }
+            }
+            return false;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;
         }
     }
+
+    @Override
+    public void flush() {
+        synchronized(tabs.monitor) {
+            flush.set(true);
+            tabs.monitor.notifyAll();
+        }
+    }
+    
+    
     
     private void process() throws Exception {
         NSObject object = readData();

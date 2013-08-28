@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.design.javamodel.Utils;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
@@ -182,7 +183,7 @@ public final class JaxWsDataObject extends MultiDataObject {
 
     }
 
-    public static final class JaxWsJavaEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {
+    public static final class JaxWsJavaEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, LineCookie, PrintCookie, EditorCookie.Observable {
         
         private static final class Environment extends DataEditorSupport.Env {
             

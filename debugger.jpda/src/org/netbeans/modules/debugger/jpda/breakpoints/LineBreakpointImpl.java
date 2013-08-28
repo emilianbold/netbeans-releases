@@ -51,11 +51,13 @@ import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ClassNotPreparedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
 import com.sun.jdi.request.EventRequest;
+import com.sun.jdi.request.InvalidRequestStateException;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.StatementTree;
@@ -69,6 +71,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -352,7 +355,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
             } // for
             if (counter == 0) {
-                if (!submitted && noLocRefType != null) {
+                if (!submitted && noLocRefType != null && areNewOrSubmittedTypes0(referenceTypes)) {
                     int newLineNumber = findBreakableLine(breakpoint.getURL(), origBreakpointLineNumber);
                     if (newLineNumber != origBreakpointLineNumber && newLineNumber >= 0 &&
                             findBreakpoint(breakpoint.getURL(), newLineNumber) == null) {
@@ -390,6 +393,51 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 setValidity(Breakpoint.VALIDITY.INVALID, failReason);
             }
         }
+    }
+    
+    private boolean areNewOrSubmittedTypes0(List<ReferenceType> referenceTypes) {
+        try {
+            return areNewOrSubmittedTypes(referenceTypes);
+        } catch (VMDisconnectedException vmdex) {
+        } catch (InternalException e) {
+        } catch (ObjectCollectedException e) {
+        } catch (InvalidRequestStateException irse) {
+        }
+        return false;
+    }
+    
+    /**
+     * Checks whether the list of reference types are new types (the breakpoint
+     * was not submitted anywhere yet), or are some of the types for which the
+     * breakpoint was submitted already.
+     * @param referenceTypes The types to check
+     */
+    private boolean areNewOrSubmittedTypes(List<ReferenceType> referenceTypes) {
+        List<EventRequest> eventRequests = getEventRequests();
+        List<BreakpointRequest> brs = new LinkedList<BreakpointRequest>();
+        for (EventRequest er : eventRequests) {
+            if (er instanceof BreakpointRequest) {
+                brs.add((BreakpointRequest) er);
+            }
+        }
+        if (brs.isEmpty()) {
+            return true;
+        }
+        for (ReferenceType rt : referenceTypes) {
+            // Check whether breakpoint requests' types contains rt:
+            boolean contains = false;
+            for (BreakpointRequest br : brs) {
+                ReferenceType brt = br.location().declaringType();
+                if (rt.equals(brt)) {
+                    contains = true;
+                    break;
+                }
+            }
+            if (!contains) {
+                return false;
+            }
+        }
+        return true;
     }
     
     @Override

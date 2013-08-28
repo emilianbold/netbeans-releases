@@ -564,7 +564,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             char ch = text.charAt(index);
             String part = "";
             while (index > -1 && ch != ' ' && ch != '\n' && ch != ';' && ch != '}'
-                    && ch != '{' && ch != '(' && ch != '=' && ch != '+') {
+                    && ch != '{' && ch != '(' && ch != '=' && ch != '+' && ch != '[') {
                 if (ch == '.') {
                     if (!part.isEmpty()) {
                         exp.add(part);
@@ -934,9 +934,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
     /** XXX - Once the JS framework support becomes plugable, should be moved to jQueryCompletionHandler getPrefix() */
     private static int getPrefixIndexFromSequence(String prefix) {
         int spaceIndex = prefix.lastIndexOf(" ") + 1; //NOI18N
-        int dotIndex = prefix.lastIndexOf("."); //NOI18N
-        int hashIndex = prefix.lastIndexOf("#"); //NOI18N
-        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, spaceIndex))));
+        int dotIndex = prefix.lastIndexOf(".") + 1; //NOI18N
+        int hashIndex = prefix.lastIndexOf("#") + 1; //NOI18N
+        int bracketIndex = prefix.lastIndexOf("[") + 1; //NOI18N
+        int columnIndex = prefix.lastIndexOf(":") + 1; //NOI18N
+        int parenIndex = prefix.lastIndexOf("(") + 1; //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, spaceIndex)))))));
     }
 
 }

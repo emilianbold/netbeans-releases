@@ -50,6 +50,7 @@
 				<file title="PackagingFiles.html"/>
 				<file title="PoppingCorC++Stack.html"/>
 				<file title="preprocessor-definitions.html"/>
+				<file title="preprocessor-undefine.html"/>
 				<file title="Projects.html"/>
 				<file title="ResolveBuildTools.html"/>
 				<file title="RunningCorC++Project.html"/>
@@ -380,6 +381,7 @@
 				<file title="RemoteModes.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
+				<file title="SettingCandC++FolderProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>
 				<file title="SettingMainCorC++Project.html"/>
 				<file title="WorkingWithCandC++Projects.html"/>

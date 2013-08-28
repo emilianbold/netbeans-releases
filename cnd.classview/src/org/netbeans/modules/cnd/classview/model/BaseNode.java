@@ -44,15 +44,19 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import java.awt.Image;
 import java.util.Enumeration;
 import org.openide.nodes.*;
 import org.netbeans.modules.cnd.modelutil.*;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author Vladimir Kvasihn
  */
 public abstract class BaseNode extends AbstractCsmNode {
+    protected volatile Image image;
+    protected static final RequestProcessor RP = new RequestProcessor("Class view icon updater",1); //NOI18N
 
     public BaseNode() {
         super(Children.LEAF);
@@ -66,6 +70,14 @@ public abstract class BaseNode extends AbstractCsmNode {
         super(children, lookup);
     }
 
+    @Override
+    public Image getIcon(int param) {
+        Image anImage = image;
+        if (anImage == null) {
+            return superGetIcon(param);
+        }
+        return anImage;
+    }
 
     protected interface Callback {
         void call(BaseNode node);

@@ -1160,7 +1160,9 @@ public class AstRenderer {
                                 TypeImpl typeImpl = null;
                                 List<CsmTemplateParameter> csmTemplateParams = renderTemplateParams(templateParams, scope);
                                 if (classifier != null) {
-                                    typeImpl = TypeFactory.createType(classifier, null, file, null, ptrOperator, arrayDepth, null, scope, csmTemplateParams, false, true);
+                                    // Type of type alias could have similar syntax as declarations in function parameters
+                                    // (unnamed types are allowed as alias has name outside its type declaration)
+                                    typeImpl = TypeFactory.createType(classifier, null, file, null, ptrOperator, arrayDepth, null, scope, csmTemplateParams, true, true);
                                 }
                                 if (typeImpl != null) {
                                     typeImpl.setTypeOfTypedef();

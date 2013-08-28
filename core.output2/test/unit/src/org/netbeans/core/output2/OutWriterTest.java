@@ -466,7 +466,7 @@ public class OutWriterTest extends NbTestCase {
             
             ow = new OutWriter();
             ow.write("Some \u001B[31;42mColor \u001B[32;41mText and "
-                    + "unsupported \u001B[2Ksequence");
+                    + "unsupported \u001B[3Ksequence");
             ow.flush();
             assertEquals(1, ow.getLines().getLineCount());
             LineInfo.Segment[] segments = ow.getLines().getLineInfo(0)
@@ -497,6 +497,18 @@ public class OutWriterTest extends NbTestCase {
         }
     }
     
+    public void testClearLineANSI() throws IOException {
+        OutWriter ow = new OutWriter();
+        for (int i = 0; i <= 10; i++) {
+            ow.print("\u001B[2K" + i + "0%: ");
+            for (int j = 0; j < i; j++) {
+                ow.print("=");
+            }
+        }
+        ow.println();
+        assertEquals("100%: ==========\n", ow.getLines().getLine(0));
+    }
+
     public void testWriteWithBackspace() throws IOException {
 
         OutWriter ow = new OutWriter();

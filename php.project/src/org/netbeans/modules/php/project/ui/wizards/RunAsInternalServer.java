@@ -220,11 +220,17 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
 
         Mnemonics.setLocalizedText(hostnameLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.hostnameLabel.text")); // NOI18N
 
+        hostnameTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.portLabel.text")); // NOI18N
+
+        portTextField.setColumns(6);
 
         Mnemonics.setLocalizedText(urlHintLabel, " "); // NOI18N
 
         Mnemonics.setLocalizedText(routerLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerLabel.text")); // NOI18N
+
+        routerTextField.setColumns(20);
 
         Mnemonics.setLocalizedText(routerBrowseButton, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerBrowseButton.text")); // NOI18N
         routerBrowseButton.addActionListener(new ActionListener() {
@@ -250,14 +256,14 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(routerTextField)
+                        .addComponent(routerTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(routerBrowseButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(urlHintLabel)
                         .addContainerGap())
                     .addComponent(runAsComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(hostnameTextField)
+                    .addComponent(hostnameTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))))

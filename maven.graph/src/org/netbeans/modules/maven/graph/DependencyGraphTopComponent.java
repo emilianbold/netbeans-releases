@@ -111,13 +111,32 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 
     private static final @StaticResource String ZOOM_IN_ICON = "org/netbeans/modules/maven/graph/zoomin.gif";
     private static final @StaticResource String ZOOM_OUT_ICON = "org/netbeans/modules/maven/graph/zoomout.gif";
+    private static final int COMPLEXITY_LIMIT = 30; //number of dependencies that are safe to show immediately
 //    public static final String ATTRIBUTE_DEPENDENCIES_LAYOUT = "MavenProjectDependenciesLayout"; //NOI18N
     private static final Logger LOG = Logger.getLogger(DependencyGraphTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(DependencyGraphTopComponent.class);
+    private boolean everDisplayed;
     private final RequestProcessor.Task task_reload = RP.create(new Runnable() {
         @Override
         public void run() {
-            createScene();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
+                    final MavenProject prj = it2.hasNext() ? it2.next() : null;
+                    if (prj != null && NbMavenProject.isErrorPlaceholder(prj)) {
+                        setPaneText(Err_CannotLoad(), false);
+                        return;
+                    }
+                    if (prj != null) {
+                        if (prj.getArtifacts().size() < COMPLEXITY_LIMIT) {
+                            btnGraphActionPerformed(null);
+                            return;
+                        }
+                    }
+                    waitForApproval();
+                }
+            });
         }
     });
     
@@ -297,26 +316,17 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return TopComponent.PERSISTENCE_NEVER;
     }
     
-    @Messages("LBL_Loading=Loading and constructing graph:")
     @Override public void componentOpened() {
         super.componentOpened();
         pane.setWheelScrollingEnabled(true);
-        maxPathSpinner.setEnabled(false);
-        maxPathSpinner.setVisible(false);
-        lblPath.setVisible(false);
-        txtFind.setEnabled(false);
-        btnBigger.setEnabled(false);
-        btnSmaller.setEnabled(false);
-        comScopes.setEnabled(false);
         add(pane, BorderLayout.CENTER);
-        setPaneText(LBL_Loading(), true);
         result = getLookup().lookupResult(DependencyNode.class);
         result.addLookupListener(this);
         result2 = getLookup().lookupResult(MavenProject.class);
         result2.addLookupListener(this);
         result3 = getLookup().lookupResult(POMModel.class);
         result3.addLookupListener(this);
-        createScene();
+        waitForApproval();
     }
     
     @Override
@@ -355,6 +365,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 
         jPanel1 = new javax.swing.JPanel();
         jToolBar1 = new javax.swing.JToolBar();
+        btnGraph = new javax.swing.JButton();
         btnBigger = new javax.swing.JButton();
         btnSmaller = new javax.swing.JButton();
         lblFind = new javax.swing.JLabel();
@@ -370,6 +381,17 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnGraph, org.openide.util.NbBundle.getMessage(DependencyGraphTopComponent.class, "DependencyGraphTopComponent.btnGraph.text")); // NOI18N
+        btnGraph.setFocusable(false);
+        btnGraph.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        btnGraph.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        btnGraph.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGraphActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(btnGraph);
 
         btnBigger.setIcon(ImageUtilities.loadImageIcon(ZOOM_IN_ICON, true));
         btnBigger.setFocusable(false);
@@ -454,10 +476,16 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         depthHighlight();
     }//GEN-LAST:event_maxPathSpinnerStateChanged
 
+    private void btnGraphActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGraphActionPerformed
+        btnGraph.setEnabled(false);
+        createScene();
+    }//GEN-LAST:event_btnGraphActionPerformed
+
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBigger;
+    private javax.swing.JButton btnGraph;
     private javax.swing.JButton btnSmaller;
     private javax.swing.JComboBox comScopes;
     private javax.swing.JPanel jPanel1;
@@ -510,7 +538,26 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         return pane;
     }
 
-    @Messages("Err_CannotLoad=Cannot display Artifact's dependency tree.")
+    @Messages({
+        "LBL_waiting_for_approval_first_time=Click Show Graph to compute and display dependencies.",
+        "LBL_waiting_for_approval_dirty=Model has changed. Click Show Graph to refresh."
+    })
+    private void waitForApproval() {
+        setPaneText(everDisplayed ? LBL_waiting_for_approval_dirty() : LBL_waiting_for_approval_first_time(), false);
+        btnGraph.setEnabled(true);
+        maxPathSpinner.setEnabled(false);
+        maxPathSpinner.setVisible(false);
+        lblPath.setVisible(false);
+        txtFind.setEnabled(false);
+        btnBigger.setEnabled(false);
+        btnSmaller.setEnabled(false);
+        comScopes.setEnabled(false);
+    }
+
+    @Messages({
+        "Err_CannotLoad=Cannot display Artifact's dependency tree.",
+        "LBL_Loading=Loading and constructing graph (this may take a while)."
+    })
     private void createScene() {
         Iterator<? extends DependencyNode> it1 = result.allInstances().iterator();
         Iterator<? extends MavenProject> it2 = result2.allInstances().iterator();
@@ -518,7 +565,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
         final MavenProject prj = it2.hasNext() ? it2.next() : null;
         if (prj != null && NbMavenProject.isErrorPlaceholder(prj)) {
             setPaneText(Err_CannotLoad(), false);
+            return;
         }
+        everDisplayed = true;
+        setPaneText(LBL_Loading(), true);
         final Project nbProj = getLookup().lookup(Project.class);
         if (prj != null && it1.hasNext()) {
             final DependencyNode root = it1.next();
@@ -604,7 +654,9 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
 //                Actions.connect(btn, act);
 //                toolbar.add(btn);
 //            }
+            toolbar.addSeparator();
             Dimension space = new Dimension(3, 0);
+            toolbar.add(btnGraph);
             toolbar.addSeparator(space);
             toolbar.add(btnBigger);
             toolbar.addSeparator(space);

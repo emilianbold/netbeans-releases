@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import java.awt.Image;
 import java.util.Collection;
 import javax.swing.Action;
 import  org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.actions.GoToDeclarationAction;
 import org.netbeans.modules.cnd.classview.actions.MoreDeclarations;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
 /**
@@ -57,6 +59,9 @@ import org.openide.nodes.Children;
 public class NamespaceNode extends NPNode {
     private CharSequence id;
     private CsmProject project;
+    private static Image namespaceImage = null;
+    private CharSequence name;
+    private CharSequence qname;
     
     public NamespaceNode(CsmNamespace ns, Children.Array key) {
         super(key);
@@ -66,22 +71,43 @@ public class NamespaceNode extends NPNode {
     private void init(CsmNamespace ns){
         id = ns.getQualifiedName();
         project = ns.getProject();
-        String name = ns.getQualifiedName().toString();
-        String displayName = CVUtil.getNamespaceDisplayName(ns).toString();
-        setName(name);
-        setDisplayName(displayName);
-        setShortDescription(name);
+        name = ns.getQualifiedName();
+        qname = CVUtil.getNamespaceDisplayName(ns).toString();
+        if( namespaceImage == null ) {
+            namespaceImage = CsmImageLoader.getImage(ns);
+        }
     }
 
+    @Override
+    public Image getIcon(int param) {
+        return namespaceImage;
+    }
+    
+    @Override
     public CsmNamespace getNamespace() {
         return project.findNamespace(id);
     }
     
     @Override
+    public String getName() {
+        return name.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return qname.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return name.toString();
+    }
+    
+    @Override
     public String getHtmlDisplayName() {
-        String retValue = getDisplayName();
+        String retValue = qname.toString();
         // make unnamed namespace bold and italic
-        if (retValue.startsWith(" ")) { // NOI18N
+        if (retValue.startsWith(" ") || retValue.startsWith("unnamed ")) { // NOI18N
             retValue = "<i>" + retValue; // NOI18N
         }
         return retValue;

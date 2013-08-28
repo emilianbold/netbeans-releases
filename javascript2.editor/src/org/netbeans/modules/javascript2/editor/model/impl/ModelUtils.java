@@ -855,20 +855,25 @@ public class ModelUtils {
                             prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
 
                             Collection<? extends IndexResult> indexResults = null;
+                            String propertyToCheck = null;
                             for (String fqn : prototypeChain) {
                                 // at first look at the properties of the object
-                                indexResults = jsIndex.findByFqn(fqn + "." + name,
-                                        JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                propertyToCheck = fqn + "." + name;
+                                indexResults = jsIndex.findByFqn(propertyToCheck,
+                                        JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES, JsIndex.FIELD_ASSIGNMENTS); //NOI18N
+                                
                                 if (indexResults.isEmpty()) {
                                     // if the property was not found, try to look at the prototype of the object
-                                    indexResults = jsIndex.findByFqn(fqn + ".prototype." + name,
-                                            JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                    propertyToCheck = fqn + ".prototype." + name;
+                                    indexResults = jsIndex.findByFqn(propertyToCheck,
+                                            JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES, JsIndex.FIELD_ASSIGNMENTS); //NOI18N
                                 }
                                 if(!indexResults.isEmpty()) {
                                     // if the property / method was already found, we don't need to continue.
                                     // in the runtime is also used the first one that is found in the prototype chain
                                     break;
                                 }
+                                propertyToCheck = null;
                             }
 
                             boolean checkProperty = (indexResults == null || indexResults.isEmpty()) && !"@mtd".equals(kind);
@@ -889,7 +894,7 @@ public class ModelUtils {
                                 }
                             }
                             if (checkProperty) {
-                                String propertyFQN = typeUsage.getType() + "." + name;
+                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeUsage.getType() + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                                 resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
@@ -1008,8 +1013,12 @@ public class ModelUtils {
     }
     
     private static void resolveAssignments(Model model, JsObject jsObject, int offset, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
-        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(offset);
-        for (Type typeName : assignments) {
+        Collection<? extends TypeUsage> assignments = jsObject.getAssignmentForOffset(offset);
+        for (TypeUsage typeName : assignments) {
+            if (typeName.isResolved()) {
+                resolvedTypes.add(typeName);
+                continue;
+            }
             String type = typeName.getType();
             if (type.startsWith(SemiTypeResolverVisitor.ST_WITH)) {
                 List<String> expression = expressionFromType((TypeUsage)typeName);

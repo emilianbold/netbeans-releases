@@ -675,6 +675,7 @@ public class CPCssEditorModule extends CssEditorModule {
             public boolean visit(Node node) {
                 switch (node.type()) {
                     case sass_control_block:
+                    case cp_mixin_block:
                         //find the ruleSet curly brackets and create the fold between them inclusive
                         int from = node.from();
                         int to = node.to();

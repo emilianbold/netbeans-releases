@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
 /**
@@ -62,7 +63,7 @@ public class ForwardClassNode extends ObjectNode {
         init(cls);
     }
     
-    private void init(CsmClassForwardDeclaration cls){
+    private void init(final CsmClassForwardDeclaration cls){
         CharSequence old = name;
         name = cls.getName();
         if ((old == null) || !old.equals(name)) {
@@ -77,6 +78,15 @@ public class ForwardClassNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     qname == null ? null : qname.toString());
         }
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(cls);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     @Override
@@ -94,6 +104,7 @@ public class ForwardClassNode extends ObjectNode {
         return qname.toString();
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmClassForwardDeclaration){

@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
  * @author Vladimir Kvasihn
@@ -59,7 +60,7 @@ public class GlobalFuncNode extends ObjectNode {
         init(fun);
     }
     
-    private void init(CsmFunction fun){
+    private void init(final CsmFunction fun){
         CharSequence old = text;
         text = CVUtil.getSignature(fun);
         if ((old == null) || !old.equals(text)) {
@@ -70,10 +71,15 @@ public class GlobalFuncNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     text == null ? null : text.toString());
         }
-        //String text = CVUtil.getSignature(fun).toString();
-        //setName(text);
-        //setDisplayName(text);
-        //setShortDescription(text);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(fun);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     @Override
@@ -91,6 +97,7 @@ public class GlobalFuncNode extends ObjectNode {
         return text.toString();
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmFunction){

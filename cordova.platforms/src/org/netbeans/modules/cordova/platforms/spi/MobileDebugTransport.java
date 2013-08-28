@@ -125,4 +125,6 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     public final void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
         this.mapper = mapper;
     }
+    
+    public void flush() {}
 }

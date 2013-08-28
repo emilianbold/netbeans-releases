@@ -880,10 +880,10 @@ public class CssCompletion implements CodeCompletionHandler {
      * @param completionProposals
      */
     private void completeAtRulesAndHtmlSelectors(CompletionContext context, List<CompletionProposal> completionProposals) {
-        if(!context.getPrefix().trim().isEmpty()) {
-            return ;
+        if (!context.getPrefix().trim().isEmpty()) {
+            return;
         }
-        
+
         Node node = context.getActiveNode();
         //switch to first non error node
         loop:
@@ -905,11 +905,11 @@ public class CssCompletion implements CodeCompletionHandler {
             case imports:
             case namespaces:
                 TokenSequence<CssTokenId> ts = context.getTokenSequence();
-                if(ts.movePrevious()) {
-                    if(ts.token().id().getTokenCategory() == CssTokenIdCategory.AT_RULE_SYMBOL) {
+                if (ts.movePrevious()) {
+                    if (ts.token().id().getTokenCategory() == CssTokenIdCategory.AT_RULE_SYMBOL) {
                         //filter out situation(s) like: @import | a { ... } where we fall into 
                         //imports node w/ empty prefix, but don't want to complete any at-rules or html selectors
-                        return ;
+                        return;
                     }
                 }
                 /*
@@ -943,11 +943,11 @@ public class CssCompletion implements CodeCompletionHandler {
                 //work only in WS after a semicolon or left or right curly brace
                 //1. @media screen { | }, @media screen { div {} | }
                 //2. @media screen { @include x; | }
-                if(null != LexerUtils.followsToken(completionContext.getTokenSequence(), 
+                if (null != LexerUtils.followsToken(completionContext.getTokenSequence(),
                         EnumSet.of(CssTokenId.SEMI, CssTokenId.LBRACE, CssTokenId.RBRACE),
                         true, true, true, CssTokenId.WS, CssTokenId.NL)) {
-                    completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
-                }
+                completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
+            }
                 break;
             case elementName:
                 //complete selector's element name - with a prefix
@@ -1063,33 +1063,33 @@ public class CssCompletion implements CodeCompletionHandler {
             case bodyItem:
             case fontFace:
                 switch (completionContext.getTokenSequence().token().id()) {
-                    case IMPORTANT_SYM:
-                    case MEDIA_SYM:
-                    case PAGE_SYM:
-                    case CHARSET_SYM:
-                    case AT_IDENT:
-                    case FONT_FACE_SYM:
-                    case ERROR:
-                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
-                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
-                }
+                case IMPORTANT_SYM:
+                case MEDIA_SYM:
+                case PAGE_SYM:
+                case CHARSET_SYM:
+                case AT_IDENT:
+                case FONT_FACE_SYM:
+                case ERROR:
+                    Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                    completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+            }
                 break;
             case elementSubsequent:
                 //@| -- parsed as elementSubsequent due to the possible less_selector_interpolation -- @{...} in selectorsGroup
                 switch (completionContext.getTokenSequence().token().id()) {
-                    case AT_SIGN:
-                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
-                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
-                        break;
-                }
+                case AT_SIGN:
+                    Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                    completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                    break;
+            }
             case styleSheet:
                 //@| in empty file
                 switch (completionContext.getTokenSequence().token().id()) {
-                    case ERROR:
-                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
-                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
-                        break;
-                }
+                case ERROR:
+                    Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                    completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                    break;
+            }
         }
     }
 
@@ -1142,7 +1142,35 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (nonWhiteTokenIdBackward != null) {
                     switch (nonWhiteTokenIdBackward) {
                         case SASS_INCLUDE:
+                        case COLON: //div { &:| } -- sass parent selector reference + pseudo class
+                        case DCOLON: //div { &::| } -- sass parent selector reference + pseudo element
                             return;
+
+                        case IDENT:
+                            //div { &:hov| } -- sass parent selector reference + pseudo element
+                            //div { &::firs| } -- sass parent selector reference + pseudo element
+                            TokenSequence<CssTokenId> ts = cc.getTokenSequence();
+                            int index = ts.index();
+                            try {
+                                if (ts.movePrevious()) {
+                                    switch (ts.token().id()) {
+                                        case COLON:
+                                        case DCOLON:
+                                            if (ts.movePrevious()) {
+                                            switch (ts.token().id()) {
+                                                case LESS_AND:
+                                                    //do not complete properties
+                                                    return;
+                                                default:
+                                                    break;
+                                            }
+                                        }
+                                    }
+                                }
+                            } finally {
+                                ts.moveIndex(index);
+                            }
+
                     }
                 }
 

@@ -57,7 +57,7 @@ import  org.netbeans.modules.cnd.api.model.*;
  */
 public class EnumeratorNode extends ObjectNode {
     
-    private static Image image = null;
+    private static Image enumeratorImage = null;
     private CharSequence text;
     
     public EnumeratorNode(CsmEnumerator enumerator) {
@@ -76,11 +76,8 @@ public class EnumeratorNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     text == null ? null : text.toString());
         }
-        //setName(text);
-        //setDisplayName(text);
-        //setShortDescription(text);
-        if( image == null ) {
-            image = CsmImageLoader.getImage(enumerator);
+        if( enumeratorImage == null ) {
+            enumeratorImage = CsmImageLoader.getImage(enumerator);
         }
     }
 
@@ -101,17 +98,16 @@ public class EnumeratorNode extends ObjectNode {
     
     @Override
     public Image getIcon(int param) {
-        return image;
+        return enumeratorImage;
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmEnumerator){
             CsmEnumerator cls = (CsmEnumerator)o;
             setObject(cls);
             init(cls);
-            //fireIconChange();
-            //fireOpenedIconChange();
         } else if (o != null) {
             System.err.println("Expected CsmEnumerator. Actually event contains "+o.toString());
         }

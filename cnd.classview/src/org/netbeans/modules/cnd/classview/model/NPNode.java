@@ -65,6 +65,7 @@ public abstract class NPNode extends BaseNode  {
     protected abstract CsmNamespace getNamespace();
 
     /** Implements AbstractCsmNode.getData() */
+    @Override
     public CsmObject getCsmObject() {
 	return getNamespace();
     }
