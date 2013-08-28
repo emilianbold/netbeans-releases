@@ -361,9 +361,6 @@ public final class Resolver3 implements Resolver {
     }
 
     private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
-        if (isRecursionOnResolving(INFINITE_RECURSION)) {
-            return null;
-        }
         CsmObject result = null;
         Set<CharSequence> checked = new HashSet<>(10);
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
@@ -872,7 +869,14 @@ public final class Resolver3 implements Resolver {
             }
         }   
         if (result == null) {
-             result = backupResult[0];
+            if (!needForwardClassesOnly() && 
+                (CsmKindUtilities.isClassForwardDeclaration(backupResult[0])
+                 || ForwardClass.isForwardClass(backupResult[0]))) {
+                result = findClassifierUsedInFile(((CsmClassifier) backupResult[0]).getQualifiedName(), resultIsVisible);
+            }
+            if (result == null) {
+                result = backupResult[0];
+            }
         }
         if (result == null) {
             if (TemplateUtils.isTemplateQualifiedName(name.toString())) {
