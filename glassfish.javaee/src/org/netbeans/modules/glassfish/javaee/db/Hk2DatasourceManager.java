@@ -140,7 +140,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     /**
      * Retrieves the data sources deployed on the server.
      * <p/>
-     * @return the set of data sources deployed on the server.
+     * @return The set of data sources deployed on the server.
      * @throws ConfigurationException reports problems in retrieving data source
      *         definitions.
      */
@@ -166,7 +166,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
         // for local server
         if (!server.isRemote() && null != domainsDir) {
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
-            // TODO -- need to account for remote domain here?
             return readDatasources(domainXml, "/domain/", null);
         } else {
             return Collections.EMPTY_SET;
@@ -308,13 +307,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
                         // add to sun datasource list
                         String url = pool.getProperty("URL"); //NOI18N
-                        if ((url != null) && (!url.equals(""))) { //NOI18N
-                            String username = pool.getProperty("User"); //NOI18N
-                            String password = pool.getProperty("Password"); //NOI18N
-                            String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                            dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
-                                    password, driverClassName, resourcesDir));
-                        }
+                        String username = pool.getProperty("User"); //NOI18N
+                        String password = pool.getProperty("Password"); //NOI18N
+                        String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                        dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
+                                password, driverClassName, resourcesDir));
                     } catch (NullPointerException npe) {
                         Logger.getLogger("glassfish-javaee").log(Level.INFO, pool.toString(), npe);
                     }
@@ -364,11 +361,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String type = attributes.getValue("object-type");
-            
-            // Ignore system resources
-            if(type != null && type.startsWith("system-")) {
-                return;
-            }
             
             String jndiName = attributes.getValue("jndi-name");
             String poolName = attributes.getValue("pool-name");
