@@ -78,6 +78,10 @@ public class RemoveOverride implements ErrorRule<Void> {
     @Override
     public List<Fix> run(CompilationInfo compilationInfo, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         treePath = compilationInfo.getTreeUtilities().pathFor(offset + 1);
+
+        //#222582: treePath.getParentPath() may be null under unknown conditions:
+        if (treePath.getParentPath() == null) return null;
+        
         if (treePath.getParentPath().getLeaf().getKind() == Kind.MODIFIERS)
             return Collections.<Fix>singletonList(new FixImpl(compilationInfo, treePath.getParentPath()).toEditorFix());
         return null;

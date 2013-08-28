@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -74,6 +75,10 @@ public class ClassNameMismatch implements ErrorRule<Void> {
         FileObject file = info.getFileObject();
         
         if (!file.getParent().canWrite()) return Collections.emptyList();
+
+        //testcase unknown, bug #235033:
+        if (!TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) return Collections.emptyList();
+        
         return Arrays.<Fix>asList(new RenameFile(file, ((ClassTree) treePath.getLeaf()).getSimpleName().toString()));
     }
 
