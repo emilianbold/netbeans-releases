@@ -92,10 +92,7 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
                     "executing GetRepositoryTasksCommand for task ids {0}:{1}", //NOI18N
                     new Object[] { taskRepository.getUrl(), taskIds });
         }
-        if (connector.getTaskDataHandler().canGetMultiTaskData(taskRepository)) {
-            connector.getTaskDataHandler().getMultiTaskData(taskRepository, taskIds,
-                    new Collector(), monitor);
-        } else {
+        if (taskIds.size() == 1 || !connector.getTaskDataHandler().canGetMultiTaskData(taskRepository)) {
             for (String taskId : taskIds) {
                 TaskData taskData = connector.getTaskData(taskRepository, taskId, monitor);
                 if (monitor.isCanceled()) {
@@ -103,11 +100,14 @@ public class GetRepositoryTasksCommand extends BugtrackingCommand {
                 }
                 if (taskData != null) {
                     Accessor acc = Accessor.getInstance();
-                    NbTask task = acc.getOrCreateTask(taskRepository, taskId, true);
+                    NbTask task = acc.getOrCreateTask(taskRepository, taskData.getTaskId(), true);
                     taskDataManager.putUpdatedTaskData(acc.getDelegate(task), taskData, true);
                     tasks.add(task);
                 }
             }
+        } else {
+            connector.getTaskDataHandler().getMultiTaskData(taskRepository, taskIds,
+                    new Collector(), monitor);
         }
     }
 

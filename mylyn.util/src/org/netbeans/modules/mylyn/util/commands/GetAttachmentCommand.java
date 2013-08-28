@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,93 +37,86 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.mylyn.util.commands;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
-import org.eclipse.mylyn.internal.tasks.core.TaskList;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
-import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentHandler;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
-import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
-import org.netbeans.modules.mylyn.util.NbTask;
-import org.netbeans.modules.mylyn.util.internal.Accessor;
 
 /**
  *
- * @author Ondrej Vrabec
+ * @author Tomas Stupka
  */
-public class SynchronizeTasksCommand extends BugtrackingCommand {
-    private String stringValue;
-    private final TaskRepository taskRepository;
-    private final Set<NbTask> tasks;
-    private final CancelableProgressMonitor monitor;
-    private final AbstractRepositoryConnector repositoryConnector;
-    private final TaskList taskList;
-    private final TaskDataManager taskDataManager;
-    private final RepositoryModel repositoryModel;
-    private final boolean user;
+public class GetAttachmentCommand extends BugtrackingCommand {
 
-    SynchronizeTasksCommand (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
-            RepositoryModel repositoryModel, TaskDataManager taskDataManager, TaskList taskList,
-            Set<NbTask> tasks, boolean isUserAction) {
-        this.repositoryConnector = repositoryConnector;
+    private final TaskAttribute ta;
+    private final TaskRepository taskRepository;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final OutputStream os;
+    private String stringValue;
+    private final ITask task;
+
+    GetAttachmentCommand(AbstractRepositoryConnector repositoryConnector, 
+            TaskRepository taskRepository,
+            ITask task,
+            TaskAttribute ta,
+            OutputStream os) {
+        this.ta = ta;
+        this.task = task;
         this.taskRepository = taskRepository;
-        this.repositoryModel = repositoryModel;
-        this.taskDataManager = taskDataManager;
-        this.taskList = taskList;
-        this.tasks = tasks;
-        this.monitor = new CancelableProgressMonitor();
-        this.user = isUserAction;
+        this.repositoryConnector = repositoryConnector;
+        this.os = os;
     }
 
     @Override
-    public void execute () throws CoreException, IOException, MalformedURLException {
+    public void execute() throws CoreException, IOException, MalformedURLException {
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
-            log.log(
-                Level.FINE, 
-                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
-                new Object[] { taskRepository.getUrl(), tasks });
+            log.log(Level.FINE, "executing GetTaskDataCommand for attachment id: {0}", ta.getValue()); // NOI18N
         }
-        Set<ITask> mylynTasks = Accessor.getInstance().toMylynTasks(tasks);
-        SynchronizeTasksJob job = new SynchronizeTasksJob(taskList,
-                taskDataManager,
-                repositoryModel,
-                repositoryConnector,
-                taskRepository,
-                mylynTasks);
-        job.setUser(user);
-        job.run(monitor);
+        AbstractTaskAttachmentHandler taskAttachmentHandler = repositoryConnector.getTaskAttachmentHandler();
+        if (!taskAttachmentHandler.canGetContent(taskRepository, task)) {
+            throw new IOException("Cannot get content for attachment with id: " + ta.getValue());
+        }
+        InputStream is = taskAttachmentHandler.getContent(taskRepository, task, ta, new NullProgressMonitor());
+        try {
+            byte [] buffer = new byte[4096];
+            int n;
+            while ((n = is.read(buffer)) != -1) {
+                os.write(buffer, 0, n);
+            }
+        } finally {
+            is.close();
+        }
     }
 
     @Override
-    public void cancel () {
-        monitor.setCanceled(true);
-    }
-    
-    @Override
-    public String toString () {
-        if(stringValue == null) {
-            StringBuilder sb = new StringBuilder()
-            .append("Synchronizing tasks ") //NOI18N
-            .append(tasks)
-            .append(",repository=") //NOI18N
-            .append(taskRepository.getUrl())
-            .append("]"); //NOI18N
+    public String toString() {
+        if (stringValue == null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("GetAttachmentCommand [repository=");                     // NOI18N
+            sb.append(taskRepository.getUrl());
+            sb.append(",attachmentID=");                                        // NOI18N
+            sb.append(ta.getValue());
+            sb.append("]");                                                     // NOI18N
             stringValue = sb.toString();
         }
         return stringValue;
+        
     }
-    
+
 }

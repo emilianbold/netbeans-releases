@@ -88,6 +88,7 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.ITaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.AbstractTaskDataHandler;
 import org.eclipse.mylyn.tasks.core.data.ITaskAttributeDiff;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -109,6 +110,9 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Ondrej Vrabec
  */
+@NbBundle.Messages({
+    "MSG_NewTaskSummary=New Unsubmitted Task"
+})
 public class MylynSupport {
 
     private static MylynSupport instance;
@@ -210,9 +214,13 @@ public class MylynSupport {
         }
     }
 
-    public NbTask getTask (String repositoryUrl, String taskId) throws CoreException {
+    public NbTask getTask (String repositoryUrl, String taskKeyOrId) throws CoreException {
         ensureTaskListLoaded();
-        return toNbTask(taskList.getTask(repositoryUrl, taskId));
+        ITask task = taskList.getTaskByKey(repositoryUrl, taskKeyOrId);
+        if (task == null) {
+            task = taskList.getTask(repositoryUrl, taskKeyOrId);
+        }
+        return toNbTask(task);
     }
 
     public UnsubmittedTasksContainer getUnsubmittedTasksContainer (TaskRepository taskRepository) throws CoreException {
@@ -335,19 +343,36 @@ public class MylynSupport {
      * @return the newly created task.
      * @throws CoreException tasklist or task data storage is inaccessible
      */
-    @NbBundle.Messages({
-        "MSG_NewTaskSummary=New Unsubmitted Task"
-    })
     public NbTask createTask (TaskRepository taskRepository, ITaskMapping initializingData) throws CoreException {
         ensureTaskListLoaded();
-        AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
-        task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
+        AbstractTask task = createNewTask(taskRepository);
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
         TaskAttributeMapper attributeMapper = repositoryConnector.getTaskDataHandler().getAttributeMapper(taskRepository);
         TaskData taskData = new TaskData(attributeMapper, repositoryConnector.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
         repositoryConnector.getTaskDataHandler().initializeTaskData(taskRepository, taskData, initializingData, new NullProgressMonitor());
+        initializeTask(repositoryConnector, taskData, task, taskRepository);
+        return MylynSupport.getInstance().toNbTask(task);
+    }
+    
+    public NbTask createSubtask (NbTask parentTask) throws CoreException {
+        ensureTaskListLoaded();
+        TaskRepository taskRepository = taskRepositoryManager.getRepository(parentTask.getDelegate().getRepositoryUrl());
+        if (taskRepository == null || parentTask.isNew()) {
+            throw new IllegalStateException("Task repository: " + parentTask.getDelegate().getRepositoryUrl()
+                    + " - parent: " + parentTask.isNew());
+        }
+        AbstractTask task = createNewTask(taskRepository);
+        AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
+        AbstractTaskDataHandler taskDataHandler = repositoryConnector.getTaskDataHandler();
+        
+        TaskAttributeMapper attributeMapper = repositoryConnector.getTaskDataHandler().getAttributeMapper(taskRepository);
+        TaskData taskData = new TaskData(attributeMapper, repositoryConnector.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
+        taskDataHandler.initializeSubTaskData(taskRepository, taskData, parentTask.getTaskDataState().getRepositoryData(), new NullProgressMonitor());
+        initializeTask(repositoryConnector, taskData, task, taskRepository);        
+        return MylynSupport.getInstance().toNbTask(task);
+    }
+
+    private void initializeTask (AbstractRepositoryConnector repositoryConnector, TaskData taskData, AbstractTask task, TaskRepository taskRepository) throws CoreException {
         ITaskMapping mapping = repositoryConnector.getTaskMapping(taskData);
         String taskKind = mapping.getTaskKind();
         if (taskKind != null && taskKind.length() > 0) {
@@ -362,7 +387,14 @@ public class MylynSupport {
         }
         taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
         task.setAttribute(AbstractNbTaskWrapper.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
-        return MylynSupport.getInstance().toNbTask(task);
+    }
+
+    private AbstractTask createNewTask (TaskRepository taskRepository) {
+        AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
+        task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
+        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
+        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
+        return task;
     }
 
     public IRepositoryQuery createNewQuery (TaskRepository taskRepository, String queryName) throws CoreException {
@@ -617,7 +649,7 @@ public class MylynSupport {
                         // it is not all green. Only fresh new tasks are relevant to the user
                         ITask task = (ITask) delta.getElement();
                         if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
-                                && task.getCreationDate() != null) {
+                                && task.getCreationDate() != null && task.getModificationDate() != null) {
                             TaskRepository repository = taskRepositoryManager.getRepository(task.getConnectorKind(), task.getRepositoryUrl());
                             if (repository != null) {
                                 long time = getRepositoryCreationTime(repository.getRepositoryUrl());
