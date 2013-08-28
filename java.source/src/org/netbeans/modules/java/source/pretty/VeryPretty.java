@@ -1395,7 +1395,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     public void printNewClassBody(JCNewClass tree) {
         Name enclClassNamePrev = enclClassName;
         enclClassName = tree.def.name;
-        printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true);
+        printBlock(null, tree.def.defs, cs.getOtherBracePlacement(), cs.spaceBeforeClassDeclLeftBrace(), true, true);
         enclClassName = enclClassNamePrev;
     }
 
