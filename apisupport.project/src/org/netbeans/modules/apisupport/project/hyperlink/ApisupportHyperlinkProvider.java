@@ -48,6 +48,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -190,8 +191,15 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
             return null;
         }
         
+        ((AbstractDocument) doc).readLock();
+        
         TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+        TokenSequence<JavaTokenId> ts = null;
+        try {
+            ts = SourceUtils.getJavaTokenSequence(th, offset);
+        } finally {
+            ((AbstractDocument) doc).readUnlock();
+        }
         
         if (ts == null)
             return null;
