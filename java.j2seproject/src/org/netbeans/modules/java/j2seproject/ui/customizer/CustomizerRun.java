@@ -127,13 +127,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         configs = uiProperties.RUN_CONFIGS;
 
-        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>();
-        model.addElement(PlatformKey.createDefault());
+        final java.util.List<PlatformKey> platformList = new ArrayList<>();
         for (J2SERuntimePlatformType rpt : project.getLookup().lookupAll(J2SERuntimePlatformType.class)) {
             for (JavaPlatform jp : getPlatforms(rpt.getPlatformType())) {
-                model.addElement(PlatformKey.create(jp));
+                platformList.add(PlatformKey.create(jp));
             }
         }
+        Collections.sort(platformList);
+        platformList.add(0, PlatformKey.createDefault());
+        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>(platformList.toArray(new PlatformKey[0]));
         platform.setModel(model);
 
         data = new DataSource[]{
@@ -767,7 +769,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
     }
 
-    private static final class PlatformKey {
+    private static final class PlatformKey implements Comparable<PlatformKey> {
 
         private final JavaPlatform platform;
         private final String displayName;
@@ -826,6 +828,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         static PlatformKey createDefault() {
             return new PlatformKey();
+        }
+
+        @Override
+        public int compareTo(PlatformKey o) {
+            return this.displayName.toLowerCase().compareTo(o.displayName.toLowerCase());
         }
     }
     
