@@ -254,7 +254,7 @@
 	<mapID target="using_namespace_16" url="images/using_namespace_16.png"/>
 	<mapID target="template_parameter_16" url="images/template_parameter_16.png"/>
 	<mapID target="preprocessor-undefine" url="CandC++ProjectBasics/preprocessor-undefine.html"/>
-        <mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
+	<mapID target="preprocessor-definitions" url="CandC++ProjectBasics/preprocessor-definitions.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP1" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP1.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP2" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP2.html"/>
 	<mapID target="NewRemoteDevelopmentHostWizardP3" url="WorkingWithCandC++Projects/NewRemoteDevelopmentHostWizardP3.html"/>
