@@ -48,11 +48,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
@@ -62,6 +66,7 @@ import org.netbeans.modules.bugtracking.team.TeamRepositories;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.openide.util.NbPreferences;
 
@@ -208,6 +213,8 @@ public class RepositoryRegistry {
         
         ret.addAll(otherRepos);
         ret.addAll(teamRepos);
+        
+        logRepositoryUsage(ret);
         
         return ret;
     }
@@ -495,5 +502,15 @@ public class RepositoryRegistry {
     private static char[] getNBPassword() {
         return Keyring.read(NB_BUGZILLA_PASSWORD);
     }    
+
+    private void logRepositoryUsage(Collection<RepositoryImpl> ret) {
+        for (RepositoryImpl repositoryImpl : ret) {
+            LogUtils.logRepositoryUsage(repositoryImpl.getConnectorId(), repositoryImpl.getUrl());
+            // log team usage
+            if (TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
+                TeamUtil.logTeamUsage(repositoryImpl.getUrl(), "ISSUE_TRACKING", LogUtils.getBugtrackingType(repositoryImpl.getConnectorId())); //NOI18N
+            }
+        }
+    }
     
 }

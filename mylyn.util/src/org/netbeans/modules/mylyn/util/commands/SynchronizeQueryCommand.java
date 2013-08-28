@@ -67,6 +67,7 @@ import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -102,6 +103,7 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
 
     @Override
     public void execute () throws CoreException, IOException, MalformedURLException {
+        LogUtils.logBugtrackingUsage(repositoryConnector.getConnectorKind(), "ISSUE_QUERY");
         final Accessor accessor = Accessor.getInstance();
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
