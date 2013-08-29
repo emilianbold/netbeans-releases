@@ -126,17 +126,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         addPanelFiller(nextExtensionYPos);
         
         configs = uiProperties.RUN_CONFIGS;
-
-        final java.util.List<PlatformKey> platformList = new ArrayList<>();
-        for (J2SERuntimePlatformType rpt : project.getLookup().lookupAll(J2SERuntimePlatformType.class)) {
-            for (JavaPlatform jp : getPlatforms(rpt.getPlatformType())) {
-                platformList.add(PlatformKey.create(jp));
-            }
-        }
-        Collections.sort(platformList);
-        platformList.add(0, PlatformKey.createDefault());
-        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>(platformList.toArray(new PlatformKey[0]));
-        platform.setModel(model);
+        
+        updatePlatformsList();
 
         data = new DataSource[]{
             new ComboDataSource(J2SEProjectProperties.PLATFORM_RUNTIME, lblPlatform, platform, configCombo, configs),
@@ -434,6 +425,20 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null)));
         return Collections.<JavaPlatform>unmodifiableCollection(result);
     }
+    
+    private java.util.List<PlatformKey> updatePlatformsList() {
+        final java.util.List<PlatformKey> platformList = new ArrayList<>();
+        for (J2SERuntimePlatformType rpt : project.getLookup().lookupAll(J2SERuntimePlatformType.class)) {
+            for (JavaPlatform jp : getPlatforms(rpt.getPlatformType())) {
+                platformList.add(PlatformKey.create(jp));
+            }
+        }
+        Collections.sort(platformList);
+        platformList.add(0, PlatformKey.createDefault());
+        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>(platformList.toArray(new PlatformKey[0]));
+        platform.setModel(model);
+        return platformList;
+    }
 
     @Deprecated
     private void initExtPanel(Project p) {
@@ -578,8 +583,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_customizeVMOptionsByDialog
 
     private void jButtonManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonManagePlatformsActionPerformed
+        PlatformKey currentPlatform = (PlatformKey) platform.getSelectedItem();
+        platform.setSelectedIndex(0);
+
         JavaPlatform jp = ((PlatformKey) this.platform.getSelectedItem()).getPlatform();
         PlatformsCustomizer.showCustomizer(jp);
+
+        java.util.List<PlatformKey> updatedPlatforms = updatePlatformsList();
+        if (updatedPlatforms.contains(currentPlatform)) {
+            platform.setSelectedItem(currentPlatform);
+        }
     }//GEN-LAST:event_jButtonManagePlatformsActionPerformed
 
     private void platformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformActionPerformed
