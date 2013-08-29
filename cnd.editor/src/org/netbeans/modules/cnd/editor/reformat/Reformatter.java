@@ -176,6 +176,15 @@ public class Reformatter implements ReformatTask {
         int prevEnd = -1;
         String prevText = null;
         LinkedList<Diff> reformatDiffs = new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat();
+        LinkedList<Diff> pack = new LinkedList<Diff>();
+        for(Diff diff : reformatDiffs) {
+            if (diff.getStartOffset() == diff.getEndOffset() &&
+                diff.getText(expandTabToSpaces, tabSize).length() == 0){
+                continue;
+            }
+            pack.add(diff);
+        }
+        reformatDiffs = pack;
         if (reformatDiffs.size() < FAST_DIFF_SIZE) {
             for (Diff diff : reformatDiffs) {
                 int curStart = diff.getStartOffset();
