@@ -169,7 +169,10 @@ public final class WindowsSupport {
 
         if (paths != null) {
             for (String path : paths.split(";")) { // NOI18N
-                File sh = new File(path, "sh.exe"); // NOI18N
+                File sh = new File(path, "bash.exe"); // NOI18N
+                if (!(sh.exists() && sh.canRead())) {
+                    sh = new File(path, "sh.exe"); // NOI18N
+                }
                 File parent = sh.getParentFile();
 
                 if (sh.exists() && sh.canRead()) {
@@ -329,8 +332,10 @@ public final class WindowsSupport {
             return null;
         }
 
-        File sh = new File(root + "/bin/sh.exe"); // NOI18N
-
+        File sh = new File(root + "/bin/bash.exe"); // NOI18N
+        if (!sh.exists() || !sh.canRead()) {
+            sh = new File(root + "/bin/sh.exe"); // NOI18N
+        }
         if (!sh.exists() || !sh.canRead()) {
             return null;
         }
