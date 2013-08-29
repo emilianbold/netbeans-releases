@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="oracle.eclipse.tools.cloud.dev.tasks" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-        <target name="jar">
-<!--        <jar jarfile="${cluster}/${module.jar} exclude=ORACLE_C.RSA,ORACLE_C.RSA">
-            <zipfileset src="external/oracle.eclipse.tools.cloud.dev.tasks_5.2.1.201303120823.jar"/>
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
+        <jar jarfile="${cluster}/${module.jar}" >
+            <fileset dir="${build.classes.dir}"/>
+            <zipfileset src="external/oracle.eclipse.tools.cloud.dev.tasks_5.2.1.201307112145.jar" excludes="META-INF/ORACLE_C*, oracle/eclipse/tools/cloud/dev/tasks/CloudDevClient.class, oracle/eclipse/tools/cloud/dev/tasks/CloudDevClient$*.class"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>
                 <attribute name="Export-Package" value="oracle.eclipse.tools.cloud.dev.tasks,oracle.eclipse.tools.cloud.dev.tasks.data"/>
@@ -12,7 +13,6 @@
                 <attribute name="Bundle-Localization" value="bundle"/>
                 <attribute name="Bundle-SymbolicName" value="oracle.eclipse.tools.cloud.dev.tasks"/>
             </manifest>
-        </jar>-->
-    </target>   
+        </jar>
+    </target>
 </project>
-

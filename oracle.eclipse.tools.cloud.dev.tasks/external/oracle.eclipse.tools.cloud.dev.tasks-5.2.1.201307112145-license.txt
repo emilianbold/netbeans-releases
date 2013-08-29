@@ -1,5 +1,5 @@
-Name: %BundleName
-Version: 5.2.1.201302012152
+Name: ODCS Tasks Connector
+Version: 5.2.1.201307112145
 License: CDDL-GPL-2-CP
 OSR: 
 Origin: 
