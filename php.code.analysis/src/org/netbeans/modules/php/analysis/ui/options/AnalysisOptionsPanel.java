@@ -168,7 +168,9 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferPath(String path) {
+        ignoreChanges = true;
         codeSnifferTextField.setText(path);
+        ignoreChanges = false;
     }
 
     @CheckForNull
@@ -181,13 +183,7 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferStandard(String standard) {
-        ignoreChanges = true;
-        codeSnifferStandardsModel.setSelectedItem(standard, new Runnable() {
-            @Override
-            public void run() {
-                ignoreChanges = false;
-            }
-        });
+        codeSnifferStandardsModel.setSelectedItem(standard);
     }
 
     public String getMessDetectorPath() {
@@ -627,6 +623,9 @@ public class AnalysisOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            if (ignoreChanges) {
+                return;
+            }
             String codeSnifferPath = getCodeSnifferPath();
             // reset cached standards only if the new path is valid
             ValidationResult result = new AnalysisOptionsValidator()
@@ -645,10 +644,6 @@ public class AnalysisOptionsPanel extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            if (ignoreChanges) {
-                // default values set
-                return;
-            }
             fireChange();
         }
 
