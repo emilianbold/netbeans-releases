@@ -1017,21 +1017,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (fieldLabel != null && fieldLabel.getFont().isBold()) {
                     fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
                 }
-                if (visible && !valueModifiedByUser && !fieldDirty && valueModifiedByServer) {
-                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
-                    // do not use ||
-                    change = fieldsLocal.remove(fieldKey) != null | fieldsConflict.remove(fieldKey) != null
-                            | !message.equals(fieldsIncoming.put(fieldKey, message));
-                    tooltipsIncoming.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedRemotelyTT(
-                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
-                } else if (visible && valueModifiedByServer) {
+                if (visible && valueModifiedByServer && (valueModifiedByUser || fieldDirty) && !newValue.equals(repositoryValue)) {
                     String message = Bundle.IssuePanel_fieldModifiedConflict(fieldName, lastSeenValue, repositoryValue);
                     // do not use ||
                     change = fieldsLocal.remove(fieldKey) != null | fieldsIncoming.remove(fieldKey) != null
                             | !message.equals(fieldsConflict.put(fieldKey, message));
                     tooltipsConflict.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedConflictTT(
                             fieldName, lastSeenValue, repositoryValue, newValue, ICON_CONFLICT_PATH));
-                } else if (visible && (valueModifiedByUser || fieldDirty)) {
+                } else if (visible && valueModifiedByServer) {
+                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
+                    // do not use ||
+                    change = fieldsLocal.remove(fieldKey) != null | fieldsConflict.remove(fieldKey) != null
+                            | !message.equals(fieldsIncoming.put(fieldKey, message));
+                    tooltipsIncoming.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedRemotelyTT(
+                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
+                } else if (visible && (valueModifiedByUser || fieldDirty) && !newValue.equals(lastSeenValue)) {
                     String message;
                     if (fieldKey.equals(IssueField.COMMENT.getKey())) {
                         message = Bundle.IssuePanel_commentAddedLocally();
@@ -2949,16 +2949,20 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
                 break;
             case COMPONENT:
-                com.atlassian.connector.eclipse.internal.jira.core.model.Component comp = config.getComponentById(projectId, value);
-                if (comp != null) {
-                    value = comp.getName();
+                if (!projectId.isEmpty()) {
+                    com.atlassian.connector.eclipse.internal.jira.core.model.Component comp = config.getComponentById(projectId, value);
+                    if (comp != null) {
+                        value = comp.getName();
+                    }
                 }
                 break;
             case FIXVERSIONS:
             case AFFECTSVERSIONS:
-                Version version = config.getVersionById(projectId, value);
-                if (version != null) {
-                    value = version.getName();
+                if (!projectId.isEmpty()) {
+                    Version version = config.getVersionById(projectId, value);
+                    if (version != null) {
+                        value = version.getName();
+                    }
                 }
                 break;
         }

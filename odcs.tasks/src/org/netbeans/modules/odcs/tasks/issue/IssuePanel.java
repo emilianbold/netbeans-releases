@@ -828,21 +828,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
                 }
                 boolean visible = warningLabel.isVisible();
-                if (visible && !valueModifiedByUser && !fieldDirty && valueModifiedByServer) {
-                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
-                    // do not use ||
-                    change = fieldsLocal.remove(field) != null | fieldsConflict.remove(field) != null
-                            | !message.equals(fieldsIncoming.put(field, message));
-                    tooltipsIncoming.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedRemotelyTT(
-                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
-                } else if (visible && valueModifiedByServer) {
+                if (visible && valueModifiedByServer && (valueModifiedByUser || fieldDirty) && !newValue.equals(repositoryValue)) {
                     String message = Bundle.IssuePanel_fieldModifiedConflict(fieldName, lastSeenValue, repositoryValue);
                     // do not use ||
                     change = fieldsLocal.remove(field) != null | fieldsIncoming.remove(field) != null
                             | !message.equals(fieldsConflict.put(field, message));
                     tooltipsConflict.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedConflictTT(
                             fieldName, lastSeenValue, repositoryValue, newValue, ICON_CONFLICT_PATH));
-                } else if (visible && (valueModifiedByUser || fieldDirty)) {
+                } else if (visible && valueModifiedByServer) {
+                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
+                    // do not use ||
+                    change = fieldsLocal.remove(field) != null | fieldsConflict.remove(field) != null
+                            | !message.equals(fieldsIncoming.put(field, message));
+                    tooltipsIncoming.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedRemotelyTT(
+                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
+                } else if (visible && (valueModifiedByUser || fieldDirty) && !newValue.equals(lastSeenValue)) {
                     String message;
                     if (field == IssueField.COMMENT) {
                         message = Bundle.IssuePanel_commentAddedLocally();
@@ -2570,7 +2570,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             resolutionWarning.setVisible(true);
             resolutionCombo.setSelectedItem(fixedResolution);
             storeFieldValue(IssueField.RESOLUTION, resolutionCombo);
+            updateFieldDecorations(resolutionCombo, IssueField.RESOLUTION, resolutionWarning, resolutionLabel);
         } else {
+            issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             resolutionCombo.setVisible(false);
             resolutionLabel.setVisible(false);
             resolutionWarning.setVisible(false);

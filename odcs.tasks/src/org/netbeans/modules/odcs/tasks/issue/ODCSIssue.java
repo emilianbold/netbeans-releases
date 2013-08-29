@@ -421,8 +421,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                     } else {
                         value += "\n\n" + comment; //NOI18N
                     }
-                    ta.setValue(value);
-                    model.attributeChanged(ta);
+                    setTaskAttributeValue(model, ta, value);
                 }
             });
         }
@@ -440,8 +439,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                     TaskAttribute rta = model.getLocalTaskData().getRoot();
                     TaskAttribute ta = rta.getMappedAttribute(CloudDevOperation.RESOLVED.getInputId());
                     if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
-                        ta.setValue(resolution);
-                        model.attributeChanged(ta);
+                        setTaskAttributeValue(model, ta, resolution);
                     }
                 }
             }
@@ -1008,8 +1006,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         }
         ODCS.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
         if (!value.equals(a.getValue())) {
-            a.setValue(value);
-            m.attributeChanged(a);
+            setTaskAttributeValue(m, a, value);
         }
     }
 
@@ -1024,9 +1021,42 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
         if (!values.equals(a.getValues())) {
-            a.setValues(values);
-            m.attributeChanged(a);
+            setTaskAttributeValues(m, a, values);
         }
+    }
+
+    private void setTaskAttributeValue (NbTaskDataModel model, TaskAttribute ta, String value) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (value.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValue(value);
+            }
+        } else {
+            ta.setValue(value);
+        }
+        model.attributeChanged(ta);
+    }
+
+    private void setTaskAttributeValues (NbTaskDataModel model, TaskAttribute ta, List<String> values) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (values.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValues(values);
+            }
+        } else {
+            ta.setValues(values);
+        }
+        model.attributeChanged(ta);
     }
 
     private RepositoryConfiguration getConfiguration () {

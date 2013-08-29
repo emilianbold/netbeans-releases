@@ -549,8 +549,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         for (TaskAttribute attribute : attrs.values()) {
             if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
                     && customField.getId().equals(attribute.getId())) {
-                attribute.setValues(customField.getValues());
-                m.attributeChanged(attribute);
+                setTaskAttributeValues(m, attribute, customField.getValues());
             }
         }
     }
@@ -797,7 +796,36 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     private void setTaskAttributeValue (NbTaskDataModel model, TaskAttribute ta, String value) {
-        ta.setValue(value);
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (value.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValue(value);
+            }
+        } else {
+            ta.setValue(value);
+        }
+        model.attributeChanged(ta);
+    }
+
+    private void setTaskAttributeValues (NbTaskDataModel model, TaskAttribute ta, List<String> values) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (values.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValues(values);
+            }
+        } else {
+            ta.setValues(values);
+        }
         model.attributeChanged(ta);
     }
 
@@ -835,6 +863,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 } else {
                     setOperation(operation);
                 }
+                setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             }
         });
     }
@@ -873,6 +902,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 } else {
                     setOperation(operation);
                 }
+                setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             }
         });
         
@@ -1006,8 +1036,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                     } else {
                         value += "\n\n" + comment; //NOI18N
                     }
-                    ta.setValue(value);
-                    model.attributeChanged(ta);
+                    setTaskAttributeValue(model, ta, value);
                 }
             });
         }
@@ -1503,8 +1532,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             a = new TaskAttribute(taskData.getRoot(), f.key);
         }
         if (!values.equals(a.getValues())) {
-            a.setValues(values);
-            m.attributeChanged(a);
+            setTaskAttributeValues(m, a, values);
         }
     }
 
