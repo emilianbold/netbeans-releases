@@ -234,10 +234,10 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     @Override
     protected String getTooltipText(Document doc, TokenItem<TokenId> token, int offset, HyperlinkType type) {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-        CsmInclude includeTarget = null;
-        if (csmFile != null) {
-            includeTarget = ReferencesSupport.findInclude(csmFile, offset);
+        if (csmFile == null) {
+            return null;
         }
+        CsmInclude includeTarget = ReferencesSupport.findInclude(csmFile, offset);
         CsmErrorDirective errorDirective = null;
         if (includeTarget == null) {
             errorDirective = ReferencesSupport.findErrorDirective(csmFile, offset);
