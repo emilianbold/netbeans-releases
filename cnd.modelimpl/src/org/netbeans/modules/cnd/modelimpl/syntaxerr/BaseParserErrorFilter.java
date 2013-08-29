@@ -123,7 +123,7 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
             int tokenStart = start + column - 1;
             int tokenEnd = tokenStart + tokenText.length();
             if (0 <= tokenStart && 0 <= tokenEnd && tokenEnd <= text.length()
-                    && text.subSequence(tokenStart, tokenEnd).equals(tokenText)) {
+                    && text.subSequence(tokenStart, tokenEnd).toString().equals(tokenText)) {
                 start = tokenStart;
                 end = tokenEnd;
             }
