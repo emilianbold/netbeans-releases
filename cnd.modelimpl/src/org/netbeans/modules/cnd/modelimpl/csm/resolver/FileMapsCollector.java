@@ -127,10 +127,10 @@ public final class FileMapsCollector {
             MapsCollection out = new MapsCollection(EMPTY_CALLBACK, needClassifiers, visitedFiles, usedNamespaces, namespaceAliases, usingDeclarations);
             long time = System.currentTimeMillis();
             initMapsFromIncludeStack(out, currentFile);
-            LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+            Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
             time = System.currentTimeMillis();
             initMapsFromIncludes(out, currentFile, stopAtOffset);
-            LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+            Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
         }
         initMapsFromCurrentFileOnly(needClassifiers, stopAtOffset, callback);
     }
@@ -173,8 +173,6 @@ public final class FileMapsCollector {
             }
         }
     }
-
-    private static final Logger LOGGER = Logger.getLogger("Resolver3");
 
     interface Callback {
 
@@ -276,7 +274,7 @@ public final class FileMapsCollector {
             if (o == null) {
                 if (FileImpl.reportErrors) {
                     // FIXUP: do not crush on NPE
-                    DiagnosticExceptoins.register(new NullPointerException("Unexpected NULL element in declarations collection"));
+                    DiagnosticExceptoins.register(new NullPointerException("Unexpected NULL element in declarations collection")); // NOI18N
                 }
                 continue;
             }
