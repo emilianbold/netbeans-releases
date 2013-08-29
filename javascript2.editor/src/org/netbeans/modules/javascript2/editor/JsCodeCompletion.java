@@ -137,11 +137,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
             switch (context) {
                 case GLOBAL:
-                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                    for (IndexedElement indexElement : fromIndex) {
-                        addPropertyToMap(request, added, indexElement);
-                    }
-//                    added.putAll(getWithCompletionResults(request, null));
+                    addGlobalObjectsFromIndex(request, added);
                     break;    
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -192,11 +188,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     completeKeywords(request, resultList);
-                    JsIndex jsIndex = JsIndex.get(fileObject);
-                    Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
-                    for (IndexedElement indexElement : fromIndex) {
-                        addPropertyToMap(request, addedProperties, indexElement);
-                    }
+                    addGlobalObjectsFromIndex(request, addedProperties);
                     completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
@@ -229,6 +221,22 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return new DefaultCompletionResult(resultList, false);
         }
         return CodeCompletionResult.NONE;
+    }
+
+    private void addGlobalObjectsFromIndex(CompletionRequest request, HashMap<String, List<JsElement>> addedProperties) {
+        FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+        if (fileObject != null) {
+            JsIndex jsIndex = JsIndex.get(fileObject);
+            Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
+            for (IndexedElement indexElement : fromIndex) {
+                addPropertyToMap(request, addedProperties, indexElement);
+            }
+
+            fromIndex = jsIndex.getPropertiesWithPrefix("window", request.prefix);
+            for (IndexedElement indexElement : fromIndex) {
+                addPropertyToMap(request, addedProperties, indexElement);
+            }
+        }
     }
 
     @Override
