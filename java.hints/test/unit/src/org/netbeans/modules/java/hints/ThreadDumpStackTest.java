@@ -78,8 +78,26 @@ public class ThreadDumpStackTest extends NbTestCase {
                 "}");
     }
 
-    static {
-        NbBundle
-                .setBranding("test");
+    @Test
+    public void test207244() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test (Thread t) {\n" +
+                       "        t.dumpStack ();\n" +
+                       "    }\n" +
+                       "}")
+                .run(ThreadDumpStack.class)
+                .findWarning("3:10-3:19:verifier:Thread Dump Stack")
+                .applyFix("MSG_ThreadDumpStack_fix")
+                .assertCompilable()
+                .assertOutput(
+                "package test;\n" +
+                "class Test {\n" +
+                "    void test (Thread t) {\n" +
+                "    }\n" +
+                "}");
     }
+
 }
