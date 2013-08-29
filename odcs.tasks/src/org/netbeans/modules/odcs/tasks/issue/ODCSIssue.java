@@ -70,6 +70,7 @@ import java.util.logging.Level;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryElement;
 import org.eclipse.mylyn.tasks.core.ITask;
@@ -85,8 +86,11 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
@@ -739,6 +743,11 @@ public class ODCSIssue {
         return ODCSUtil.getMilestoneByValue(repository.getRepositoryConfiguration(false), value);
     }
 
+    private NbTask getTask () throws CoreException {
+        assert !isNew();
+        return MylynSupport.getInstance().getTask(getRepository().getUrl(), getID());
+    }
+
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
         public IssueFieldColumnDescriptor(IssueField f) {
             super(f.getKey(), 
@@ -883,15 +892,22 @@ public class ODCSIssue {
         // XXX gettaskdata the same for bugzilla, jira, odcs, ...
         try {
             ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
-            TaskData td = ODCSUtil.getTaskData(repository, id);
-            if (td == null) {
-                return false;
-            }
-            setTaskData(td);
-            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
+            
+            
+//            TaskData td = ODCSUtil.getTaskData(repository, id);
+//            if (td == null) {
+//                return false;
+//            }
+//            setTaskData(td);
+//            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
+            NbTask task = getTask();
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+            getRepository().getExecutor().execute(cmd);
+            assert this == getRepository().getIssueForTask(task);
 //            getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
+        } catch (CoreException ex) {
             ODCS.LOG.log(Level.SEVERE, null, ex);
         }
         return true;

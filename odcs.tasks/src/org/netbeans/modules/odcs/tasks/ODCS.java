@@ -47,6 +47,7 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
@@ -79,7 +80,8 @@ public class ODCS {
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
 
     private void init() {
-        rc = new CloudDevRepositoryConnector();
+        rc = MylynRepositoryConnectorProvider.getInstance().getConnector();
+        MylynSupport.getInstance().addRepositoryListener(rc.getCloudDevClientManager());
     }
     
     public CloudDevRepositoryConnector getRepositoryConnector() {

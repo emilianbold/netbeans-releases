@@ -1088,6 +1088,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
         public boolean cancel() {
             if(task != null) {
                 task.cancel();
+                query.cancel();
                 finnishQuery();
             }
             return true;
