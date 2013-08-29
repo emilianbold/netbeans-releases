@@ -378,4 +378,5 @@
 	<mapID target="RemoteModes" url="WorkingWithCandC++Projects/RemoteModes.html"/>
 	<mapID target="CodeCompletionOptions" url="WorkingWithCandC++Projects/CodeCompletionOptions.html"/>
 	<mapID target="SettingCandC++FolderProperties" url="WorkingWithCandC++Projects/SettingCandC++FolderProperties.html"/>
+	<mapID target="UsingCandC++Launchers" url="WorkingWithCandC++Projects/UsingCandC++Launchers.html"/>
 </map>
