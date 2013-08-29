@@ -182,7 +182,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
             item.setVisible(false);
 
             final FileObject[] selected = getSelectedProjects();
-            if (selected.length > 1) {
+            if (selected.length == 1) {
                 boolean anyVersioned = false;
                 for (FileObject prjDir : selected) {
                     if (Boolean.TRUE.equals(versionedProjects.get(prjDir))) {
