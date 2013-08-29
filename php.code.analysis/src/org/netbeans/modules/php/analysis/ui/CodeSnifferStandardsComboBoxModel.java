@@ -96,10 +96,6 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
 
     @Override
     public void setSelectedItem(final Object anItem) {
-        setSelectedItem(anItem, null);
-    }
-
-    public void setSelectedItem(final Object anItem, final Runnable postTask) {
         if (anItem == null) {
             return;
         }
@@ -111,12 +107,10 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
                     @Override
                     public void run() {
                         String standard = (String) anItem;
-                        if (standards.contains(standard)) {
+                        if (!standard.equals(selectedStandard)
+                                && standards.contains(standard)) {
                             selectedStandard = standard;
                             fireContentsChanged();
-                            if (postTask != null) {
-                                postTask.run();
-                            }
                         }
                     }
                 });
