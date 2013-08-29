@@ -281,7 +281,12 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
         } else {
             file = new File(FileUtil.normalizePath(path));
         }
-        return FileUtil.toFileObject(file);
+        try {
+            return FileUtil.toFileObject(file);
+        } catch (Exception ex) {
+            RemoteLogger.getInstance().log(Level.WARNING, "LocalFileSystemProvider.urlToFileObject can not convert {0}:\n{1}", new Object[]{absoluteURL, ex.getLocalizedMessage()});
+            return null;
+        }
     }
 
     @Override
