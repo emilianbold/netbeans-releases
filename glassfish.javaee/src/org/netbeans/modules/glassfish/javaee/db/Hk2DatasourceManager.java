@@ -61,6 +61,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.OsUtils;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassFishState;
@@ -160,7 +161,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
         // for local server
         if (!server.isRemote() && null != domainsDir) {
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
-            return readDatasources(domainXml, "/domain/", null);
+            return readDatasources(
+                    domainXml, "/domain/", null, server.getVersion());
         } else {
             return Collections.EMPTY_SET;
         }
@@ -197,12 +199,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @param baseNames List of resource file base names to search for.
      * @return <code>Datasource</code> objects found in first available file.
      */
-    private static Set<Datasource> getDatasources(File resourceDir, String[] baseNames) {
+    private static Set<Datasource> getDatasources(
+            final File resourceDir, final String[] baseNames,
+            final GlassFishVersion version) {
         for (String baseName : baseNames) {
             File file = new File(resourceDir, baseName+".xml");
             // Return Datasource objects from first available file.
             if (file.isFile())
-                return readDatasources(file, "/", resourceDir);
+                return readDatasources(file, "/", resourceDir, version);
         }
         // Return empty set when no resource file was found.
         return new HashSet<>();
@@ -216,7 +220,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @return <code>Datasource</code> objects found in first available file.
      */
     public static Set<Datasource> getDatasources(File resourceDir) {
-        return getDatasources(resourceDir, RESOURCE_FILES);
+        return getDatasources(resourceDir, RESOURCE_FILES, null);
     }
 
 //    public Datasource createDataSource(String jndiName, String url, String username,
@@ -269,14 +273,23 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
     /**
      * Parse resource file and build <code>Datasource</code> objects from it.
-     *
+     * <p/>
+     * For GlassFish server version 4 and higher new Java EE 7
+     * <<code>comp/DefaultDataSource</code> data source is added if default
+     * <code>jdbc/__default</code> data source exists. This does not apply
+     * to calls with <code>null</code> value of <code>version</code> attribute.
+     * <p/>
      * @param xmlFile      Resource file to be read. This file must exists, and must
-     *                         be readable regular file containing XML.
+     *                     be readable regular file containing XML.
      * @param xPathPrefix  XML path prefix,
      * @param resourcesDir Directory containing resource files.
-     * @return 
+     * @param version      GlassFish server version to determine if Java EE 7
+     *                     new data source shall be added.
+     * @return Data sources found in resource file.
      */
-    private static Set<Datasource> readDatasources(File xmlFile, String xPathPrefix, File resourcesDir) {
+    private static Set<Datasource> readDatasources(
+            final File xmlFile, final String xPathPrefix,
+            final File resourcesDir, final GlassFishVersion version) {
         Set<Datasource> dataSources = new HashSet<>();
 
         if (xmlFile.canRead()) {
@@ -304,14 +317,25 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         String username = pool.getProperty("User"); //NOI18N
                         String password = pool.getProperty("Password"); //NOI18N
                         String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                        dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
-                                password, driverClassName, resourcesDir));
+                        SunDatasource dataSource = new SunDatasource(
+                                jdbc.getJndiName(), url, username,
+                                password, driverClassName, resourcesDir);
+                        dataSources.add(dataSource);
+                        // Add Java EE 7 comp/DefaultDataSource data source
+                        // as jdbc/__default clone (since GF 4).
+                        if (version != null && version.ordinal()
+                                >= GlassFishVersion.GF_4.ordinal()
+                                && DataSourcesReader.DEFAULT_DATA_SOURCE
+                                .equals(dataSource.getJndiName()) ) {
+                            dataSources.add(dataSource.copy(
+                                    DataSourcesReader.DEFAULT_DATA_SOURCE_EE7));
+                        }
                     } catch (NullPointerException npe) {
                         Logger.getLogger("glassfish-javaee").log(Level.INFO, pool.toString(), npe);
                     }
                 }
             }
-        }
+        }        
         return dataSources;
     }
     

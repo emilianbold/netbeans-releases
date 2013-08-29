@@ -74,26 +74,32 @@ public class SunDatasource implements Datasource {
         this.resourceDir = resourceDir;
     }
     
+    @Override
     public String getDisplayName() {
         return jndiName;
     }
 
+    @Override
     public String getJndiName() {
         return jndiName;
     }
 
+    @Override
     public String getUrl() {
         return url;
     }
     
+    @Override
     public String getUsername() {
         return username;
     }
     
+    @Override
     public String getPassword() {
         return password;
     }
     
+    @Override
     public String getDriverClassName() {
         return driverClassName;
     }
@@ -149,6 +155,11 @@ public class SunDatasource implements Datasource {
         hash = 41 * hash + (this.password != null ? this.password.hashCode() : 0);
         hash = 41 * hash + (this.driverClassName != null ? this.driverClassName.hashCode() : 0);
         return hash;
+    }
+
+    public SunDatasource copy(String jndiName) {
+        return new SunDatasource(jndiName, this.url, this.username, 
+            this.password, this.driverClassName, this.resourceDir);
     }
 
 }
