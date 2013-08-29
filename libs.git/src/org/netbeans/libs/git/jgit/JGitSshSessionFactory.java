@@ -115,9 +115,11 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
         try {
             LOG.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] { host, agentUsed }); //NOI18N
             return super.getSession(uri, credentialsProvider, fs, tms);
-        } catch (TransportException ex) {
+        } catch (Exception ex) {
+            // catch rather all exceptions. In case jsch-agent-proxy is broken again we should
+            // at least fall back on key/pasphrase
             if (agentUsed) {
-                LOG.log(Level.FINE, null, ex);
+                LOG.log(ex instanceof TransportException ? Level.FINE : Level.INFO, null, ex);
                 setupJSch(fs, host, identityFile, uri, false);
                 LOG.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] { host, false }); //NOI18N
                 return super.getSession(uri, credentialsProvider, fs, tms);

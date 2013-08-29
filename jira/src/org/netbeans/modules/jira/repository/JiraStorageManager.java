@@ -52,19 +52,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.FileUtils;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.modules.Places;
 
 /**
@@ -102,7 +100,7 @@ public class JiraStorageManager {
 
     private JiraQuery createQuery(JiraRepository repository, JiraQueryData data) {
         assert data != null;
-        return new JiraQuery(data.getQueryName(), repository, data.getFilterDefinition());
+        return repository.createPersistentQuery(data.getQueryName(), data.getFilterDefinition());
     }
 
     private HashMap<String, JiraQueryData> getCachedQueries () {
@@ -122,6 +120,16 @@ public class JiraStorageManager {
      */
     void removeQuery(JiraRepository repository, JiraQuery query) {
         getCachedQueries().remove(getQueryKey(repository.getID(), query.getDisplayName()));
+        try {
+            String storedName = query.getStoredQueryName();
+            IRepositoryQuery iquery = storedName == null ? null 
+                    : MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), storedName);
+            if (iquery != null) {
+                MylynSupport.getInstance().deleteQuery(iquery);
+            }
+        } catch (CoreException ex) {
+            Jira.LOG.log(LOG_LEVEL, null, ex);
+        }
     }
 
      /**

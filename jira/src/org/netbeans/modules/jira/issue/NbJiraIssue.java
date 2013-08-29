@@ -48,30 +48,28 @@ import com.atlassian.connector.eclipse.internal.jira.core.WorkLogConverter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Component;
 import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraWorkLog;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -79,8 +77,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.IRepositoryPerson;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
@@ -103,17 +99,26 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
+import org.netbeans.modules.mylyn.util.NbTaskDataState;
+import org.netbeans.modules.mylyn.util.commands.PostAttachmentCommand;
+import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue {
-    private TaskData taskData;
+public class NbJiraIssue extends AbstractNbTaskWrapper {
     private JiraRepository repository;
     private Controller controller;
 
@@ -151,16 +156,146 @@ public class NbJiraIssue {
     static final int FIELD_STATUS_UPTODATE = 1;
 
     /**
-     * Field has a value in oposite to the last time when it was seen
+     * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_NEW = 2;
+    static final int FIELD_STATUS_MODIFIED = 2;
 
     /**
      * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_MODIFIED = 4;
-    private Map<String, String> seenAtributes;
+    static final int FIELD_STATUS_OUTGOING = 4;
+
+    /**
+     * Field was changed both locally and in repository
+     */
+    static final int FIELD_STATUS_CONFLICT = FIELD_STATUS_MODIFIED | FIELD_STATUS_OUTGOING;
     private final PropertyChangeSupport support;
+    
+    private String recentChanges = "";
+    private String tooltip = "";
+    private boolean open;
+    private static final String NB_WORK_LOGNEW_ESTIMATE_TIME = "NB.WorkLog.newEstimateTime"; //NOI18N
+
+    @Override
+    protected void taskDeleted (NbTask task) {
+        getRepository().taskDeleted(getKey(task));
+    }
+
+    @Override
+    protected void attributeChanged (NbTaskDataModel.NbTaskDataModelEvent event, NbTaskDataModel model) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
+        }
+    }
+
+    @Override
+    protected void modelSaved (NbTaskDataModel model) {
+        if (controller != null) {
+            controller.modelStateChanged(model.isDirty(), model.hasOutgoingChanged());
+        }
+    }
+
+    @Override
+    protected String getSummary (TaskData taskData) {
+        return getFieldValue(taskData, IssueField.SUMMARY);
+    }
+
+    @Override
+    protected void taskDataUpdated () {
+        availableOperations = null;
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+                if (updateTooltip()) {
+                    fireDataChanged();
+                }
+                fireDataChanged();
+                refreshViewData(false);
+            }
+        });
+    }
+
+    @Override
+    protected void taskModified (boolean syncStateChanged) {
+        boolean seen = isSeen();
+        if (updateRecentChanges() | updateTooltip()) {
+            fireDataChanged();
+        }
+        if (syncStateChanged) {
+            fireSeenChanged(!seen, seen);
+        }
+    }
+
+    @Override
+    protected void repositoryTaskDataLoaded (TaskData repositoryTaskData) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+                if (updateTooltip()) {
+                    fireDataChanged();
+                }
+            }
+        });
+    }
+    
+    @Override
+    protected boolean synchronizeTask () {
+        try {
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
+            getRepository().getExecutor().execute(cmd);
+            return !cmd.hasFailed();
+        } catch (CoreException ex) {
+            // should not happen
+            Jira.LOG.log(Level.WARNING, null, ex);
+            return false;
+        }
+    }
+
+    boolean save () {
+        return saveChanges();
+    }
+    
+    void markUserChange () {
+        if (isMarkedNewUnread()) {
+            markNewRead();
+        }
+    }
+
+    void delete () {
+        deleteTask();
+    }
+
+    NbJiraIssue createSubtask () {
+        assert !EventQueue.isDispatchThread();
+        NbTask task;
+        try {
+            task = MylynSupport.getInstance().createSubtask(getNbTask());
+            return repository.getIssueForTask(task);
+        } catch (CoreException ex) {
+            Jira.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+    }
+
+    NewWorkLog getEditedWorkLog () {
+        NbTaskDataModel model = getModel();
+        TaskData td = model == null ? null : model.getLocalTaskData();
+        if (td != null) {
+            TaskAttribute ta = td.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            if (ta != null) {
+                return new NewWorkLog(ta);
+            }
+        }
+        return null;
+    }
 
     public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -188,6 +323,7 @@ public class NbJiraIssue {
         SUBTASK_IDS(JiraAttribute.SUBTASK_IDS.id(), null, false),
         SUBTASK_KEYS(JiraAttribute.SUBTASK_KEYS.id(), null, false),
         COMMENT_COUNT(TaskAttribute.TYPE_COMMENT, null, false),
+        COMMENT(TaskAttribute.COMMENT_NEW, null),
         ATTACHEMENT_COUNT(TaskAttribute.TYPE_ATTACHMENT, null, false);
 
         private final String key;
@@ -227,12 +363,14 @@ public class NbJiraIssue {
      * Defines columns for a view table.
      */
     public static ColumnDescriptor[] DESCRIPTORS;
-    private IssueNode node;
+    private JiraIssueNode node;
     
-    public NbJiraIssue(TaskData data, JiraRepository repo) {
-        this.taskData = data;
+    public NbJiraIssue (NbTask task, JiraRepository repo) {
+        super(task);
         this.repository = repo;
         this.support = new PropertyChangeSupport(this);
+        updateRecentChanges();
+        updateTooltip();
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -255,93 +393,75 @@ public class NbJiraIssue {
     }
     
     void opened() {
-        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
-        if(!taskData.isNew()) {
-            // 1.) to get seen attributes makes no sense for new issues
-            // 2.) set seenAtributes on issue open, before its actuall
-            //     state is written via setSeen().
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-        }
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getKey()});
+        open = true;
+        Jira.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (editorOpened()) {
+                    refreshViewData(true);
+                } else {
+                    // should close somehow
+                }
+            }
+        });
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        repository.scheduleForRefresh(getID());
-        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
+        repository.scheduleForRefresh(getNbTask());
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getKey()});
     }
 
     void closed() {
-        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
-        repository.stopRefreshing(getID());
-        seenAtributes = null;
-        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
-    }
-
-    public boolean isNew() {
-        return taskData == null || taskData.isNew();
-    }
-
-    public boolean isFinished() {
-        return getResolution() != null;
-    }
-    
-    public void setTaskData(TaskData taskData) {
-//        assert !taskData.isPartial();
-        this.taskData = taskData;
-        attributes = null; // reset
-        availableOperations = null;
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getKey()});
+        open = false;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
-            public void run() {
-                ((JiraIssueNode)getNode()).fireDataChanged();
-                fireDataChanged();
-                refreshViewData(false);
+            public void run () {
+                editorClosed();
             }
         });
+        repository.stopRefreshing(getNbTask());
+        if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getKey()});
     }
 
     public JiraRepository getRepository() {
         return repository;
     }
 
-    public String getID() {
-//        return taskData.getTaskId(); // XXX id or key ???
-        return getID(taskData);
-    }
-
     public String getKey() {
-        return getID(taskData);
+        return getKey(getNbTask());
     }
-
-    public String getSummary() {
-        return getSummary(taskData);
-    }
-
-    private static String getSummary(TaskData taskData) {
-        return getFieldValue(taskData, IssueField.SUMMARY);
+    
+    public static String getKey (NbTask task) {
+        if (task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW) {
+            return "-" + task.getTaskId();
+        }
+        return task.getTaskKey();
     }
     
     public String getDescription() {
-        return getFieldValue(IssueField.DESCRIPTION);
+        return getRepositoryFieldValue(IssueField.DESCRIPTION);
     }
 
     IssueType getType() {
-        String id = getFieldValue(IssueField.TYPE);
+        String id = getRepositoryFieldValue(IssueField.TYPE);
         return repository.getConfiguration().getIssueTypeById(id);
     }
 
     Priority getPriority() {
-        String id = getFieldValue(IssueField.PRIORITY);
+        String id = getRepositoryFieldValue(IssueField.PRIORITY);
         return repository.getConfiguration().getPriorityById(id);
     }
 
-    public JiraStatus getStatus() {
-        String id = getFieldValue(IssueField.STATUS);
+    public JiraStatus getJiraStatus() {
+        String id = getRepositoryFieldValue(IssueField.STATUS);
         return repository.getConfiguration().getStatusById(id);
     }
 
     public Resolution getResolution() {
-        String id = getFieldValue(IssueField.RESOLUTION);
+        String id = getRepositoryFieldValue(IssueField.RESOLUTION);
         return repository.getConfiguration().getResolutionById(id);
     }
 
@@ -360,60 +480,25 @@ public class NbJiraIssue {
     }
 
     public String getParentKey() {
-        return getFieldValue(IssueField.PARENT_KEY);
+        return getRepositoryFieldValue(IssueField.PARENT_KEY);
     }
 
     public List<String> getSubtaskKeys() {
-        return getFieldValues(IssueField.SUBTASK_KEYS);
+        return getRepositoryFieldValues(IssueField.SUBTASK_KEYS);
     }
 
     public String getParentID() {
-        return getFieldValue(IssueField.PARENT_ID);
+        return getRepositoryFieldValue(IssueField.PARENT_ID);
     }
 
     public List<String> getSubtaskID() {
-        return getFieldValues(IssueField.SUBTASK_IDS);
-    }
-
-    public long getLastModify() {
-        String value = getFieldValue(IssueField.MODIFICATION);
-        try {
-            if(!"".equals(value)) {
-                return Long.parseLong(value);
-            } else {
-                Jira.LOG.log(Level.WARNING, "no modification value available for [{0}, {1}]", new Object[]{getRepository().getUrl(), getID()});
-            }
-        } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, "[" + getRepository().getUrl() + ", " + getID()+ "]", nfex);
-        }
-        return -1;
-    }
-
-    public long getCreated() {
-        String value = getFieldValue(IssueField.CREATION);
-        try {
-            return Long.parseLong(value);
-        } catch (NumberFormatException nfex) {
-            Jira.LOG.log(Level.WARNING, null, nfex);
-        }
-        return -1;
-    }
-
-    private String dateByMillis(String text, boolean includeTime) {
-        if (text.trim().length() > 0) {
-            try {
-                long millis = Long.parseLong(text);
-                DateFormat format = includeTime ? DateFormat.getDateTimeInstance() : DateFormat.getDateInstance();
-                return format.format(new Date(millis));
-            } catch (NumberFormatException nfex) {
-                Jira.LOG.log(Level.WARNING, null, nfex); // should not happen
-            }
-        }
-        return ""; // NOI18N
+        return getRepositoryFieldValues(IssueField.SUBTASK_IDS);
     }
 
     public Comment[] getComments() {
-        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_COMMENT);
+        NbTaskDataModel m = getModel();
+        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
             return new Comment[0];
         }
@@ -425,7 +510,9 @@ public class NbJiraIssue {
     }
 
     public Attachment[] getAttachments() {
-        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_ATTACHMENT);
+        NbTaskDataModel m = getModel();
+        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return new Attachment[0];
         }
@@ -437,7 +524,8 @@ public class NbJiraIssue {
     }
 
     public CustomField[] getCustomFields () {
-        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        NbTaskDataModel m = getModel();
+        Map<String, TaskAttribute> attrs = m == null ? null : m.getLocalTaskData().getRoot().getAttributes();
         if (attrs == null) {
             return new CustomField[0];
         }
@@ -453,20 +541,23 @@ public class NbJiraIssue {
     }
 
     void setCustomField(CustomField customField) {
-        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        NbTaskDataModel m = getModel();
+        Map<String, TaskAttribute> attrs = m == null ? null : m.getLocalTaskData().getRoot().getAttributes();
         if (attrs == null) {
             return;
         }
         for (TaskAttribute attribute : attrs.values()) {
             if (attribute.getId().startsWith(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX)
-                    && customField.getId().equals(attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length()))) {
+                    && customField.getId().equals(attribute.getId())) {
                 attribute.setValues(customField.getValues());
+                m.attributeChanged(attribute);
             }
         }
     }
 
     LinkedIssue[] getLinkedIssues() {
-        Map<String, TaskAttribute> attrs = taskData.getRoot().getAttributes();
+        NbTaskDataModel m = getModel();
+        Map<String, TaskAttribute> attrs = m == null ? null : m.getLocalTaskData().getRoot().getAttributes();
         if (attrs == null) {
             return new LinkedIssue[0];
         }
@@ -486,13 +577,17 @@ public class NbJiraIssue {
      * @return
      */
     public WorkLog[] getWorkLogs () {
-        List<TaskAttribute> attrs = taskData.getAttributeMapper().getAttributesByType(taskData, WorkLogConverter.TYPE_WORKLOG);
+        NbTaskDataModel m = getModel();
+        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), WorkLogConverter.TYPE_WORKLOG);
         if (attrs == null) {
             return new WorkLog[0];
         }
         List<WorkLog> workLogs = new ArrayList<WorkLog>(attrs.size());
         for (TaskAttribute taskAttribute : attrs) {
-            workLogs.add(new WorkLog(taskAttribute));
+            if (!WorkLogConverter.ATTRIBUTE_WORKLOG_NEW.equals(taskAttribute.getId())) {
+                workLogs.add(new WorkLog(taskAttribute));
+            }
         }
         return workLogs.toArray(new WorkLog[workLogs.size()]);
     }
@@ -500,18 +595,40 @@ public class NbJiraIssue {
     /**
      * Adds a new worklog. Just one worklog can be added before committing the issue.
      * Don't forget to commit the issue.
-     * @param startDate
-     * @param spentTime in seconds
-     * @param comment
      */
-    public void addWorkLog (Date startDate, long spentTime, String comment) {
-        if(startDate != null) {
-            TaskAttribute attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
-            TaskAttributeMapper mapper = taskData.getAttributeMapper();
-            mapper.setLongValue(attribute.createMappedAttribute(WorkLogConverter.TIME_SPENT.key()), spentTime);
-            mapper.setDateValue(attribute.createMappedAttribute(WorkLogConverter.START_DATE.key()), startDate);
-            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.COMMENT.key()), comment);
-            mapper.setValue(attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG), "true"); // NOI18N
+    public void addWorkLog (NewWorkLog log) {
+        NbTaskDataModel m = getModel();
+        TaskData taskData = m == null ? null : m.getLocalTaskData();
+        if (taskData == null) {
+            return;
+        }
+        TaskAttribute attribute = taskData.getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+        if (!log.isToSubmit()) {
+            if (attribute != null && !attribute.getAttributes().isEmpty()) {
+                attribute.clearAttributes();
+                m.attributeChanged(attribute);
+            }
+        } else if (log.getStartDate() != null) {
+            if (attribute == null) {
+                attribute = taskData.getRoot().createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+            }
+            JiraWorkLog workLog = new JiraWorkLog();
+            workLog.setComment(log.getComment());
+            workLog.setStartDate(log.getStartDate());
+            workLog.setTimeSpent(log.getTimeSpent());
+            if (log.isAutoAdjust()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.AUTO);
+            } else if (log.isLeaveEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+            } else if (log.isReduceEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.REDUCE);
+            } else if (log.isSetEstimate()) {
+                workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.SET);
+            }
+            new WorkLogConverter().applyTo(workLog, attribute);
+            attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+            attribute.createMappedAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME).setValue(String.valueOf(log.getEstimatedTime()));
+            m.attributeChanged(attribute);
         }
     }
 
@@ -519,13 +636,13 @@ public class NbJiraIssue {
      * Reloads the task data
      * @return true if successfully refreshed
      */
-    public boolean refresh() {
+    public boolean refresh () {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        return refresh(getID(), false);
+        return refresh(false);
     }
 
     public IssueStatusProvider.Status getIssueStatus() {
-        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
+        IssueCache.Status status = getRepository().getIssueCache().getStatus(getKey());
         switch(status) {
             case ISSUE_STATUS_NEW:
                 return IssueStatusProvider.Status.NEW;
@@ -534,20 +651,11 @@ public class NbJiraIssue {
             case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }
-        return null;
+        return IssueStatusProvider.Status.SEEN;
     }
 
     public void setUpToDate(boolean seen) {
-        try {
-            final IssueCache<NbJiraIssue> issueCache = getRepository().getIssueCache();
-            boolean wasSeen = issueCache.wasSeen(getID());
-            if(seen != wasSeen) {
-                issueCache.setSeen(getID(), seen);
-                fireSeenChanged(wasSeen, seen);
-            }
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.WARNING, null, ex);
-        }
+        setUpToDate(seen, true);
     }    
     
     /**
@@ -555,39 +663,16 @@ public class NbJiraIssue {
      * @param key key of the issue
      * @return true if successfully refreshed
      */
-    private boolean refresh(String key, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
-            TaskData td = JiraUtils.getTaskDataByKey(repository, key);
-            if(td == null) {
-                return false;
-            }
-            setTaskData(td);
-            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
+            NbTask task = getNbTask();
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+            getRepository().getExecutor().execute(cmd);
+            assert this == getRepository().getIssueForTask(task);
             refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
-        return true;
-    }
-
-    /**
-     * Reloads the task data and refreshes the issue cache
-     * @param id id of the issue
-     * @return true if successfully refreshed
-     */
-    private boolean refreshById(String id, boolean afterSubmitRefresh) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        try {
-            TaskData td = JiraUtils.getTaskDataById(repository, id);
-            if(td == null) {
-                return false;
-            }
-            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
-            NbJiraIssue issue = cache.getIssue(id);
-            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository));
-            refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
+        } catch (CoreException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
@@ -601,22 +686,26 @@ public class NbJiraIssue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void resolve(Resolution resolution, String comment) {
+    public void resolve (final Resolution resolution, final String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: resolve issue {1}: {2}", new Object[]{getClass().getName(), getKey(), resolution.getName()});    //NOI18N
         }
-        TaskAttribute rta = taskData.getRoot();
-
-        TaskOperation operation = getResolveOperation();
-        if (operation == null) {
-            throw new IllegalStateException("Resolve operation not permitted"); //NOI18N
-        } else {
-            setOperation(operation);
-        }
-
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
-        ta.setValue(resolution.getId());
-        addComment(comment);
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                NbTaskDataModel model = getModel();
+                TaskAttribute rta = model.getLocalTaskData().getRoot();
+                TaskOperation operation = getResolveOperation();
+                if (operation == null) {
+                    throw new IllegalStateException("Resolve operation not permitted"); //NOI18N
+                } else {
+                    setOperation(operation);
+                }
+                setTaskAttributeValue(model, rta.getMappedAttribute(TaskAttribute.RESOLUTION), resolution.getId());
+                addComment(comment);
+            }
+        });
     }
 
     /**
@@ -626,30 +715,38 @@ public class NbJiraIssue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void reopen(String comment) {
+    public void reopen (final String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: reopening issue{1}", new Object[]{getClass().getName(), getKey()}); //NOI18N
         }
-        TaskAttribute rta = taskData.getRoot();
-
-        Map<String, TaskOperation> operations = getAvailableOperations();
-        TaskOperation operation = null;
-        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
-            String operationLabel = entry.getValue().getLabel();
-            if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.log(Level.FINEST, "{0}: reopening issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                Map<String, TaskOperation> operations = getAvailableOperations();
+                TaskOperation operation = null;
+                for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+                    String operationLabel = entry.getValue().getLabel();
+                    if (Jira.LOG.isLoggable(Level.FINEST)) {
+                        Jira.LOG.log(Level.FINEST, "{0}: reopening issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+                    }
+                    if (JiraUtils.isReopenOperation(operationLabel)) {
+                        operation = entry.getValue();
+                        break;
+                    } else if (JiraUtils.isLeaveOperation(entry.getValue())) {
+                        // falback on leave operation. Should check if the original status was reopened to be presize
+                        operation = entry.getValue();
+                    }
+                }
+                if (operation == null) {
+                    throw new IllegalStateException("Reopen operation not permitted"); //NOI18N
+                } else {
+                    setOperation(operation);
+                }
+                setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
+                addComment(comment);
             }
-            if (JiraUtils.isReopenOperation(operationLabel)) {
-                operation = entry.getValue();
-                break;
-            }
-        }
-        if (operation == null) {
-            throw new IllegalStateException("Reopen operation not permitted"); //NOI18N
-        } else {
-            setOperation(operation);
-        }
-        addComment(comment);
+        });
     }
 
     /**
@@ -660,33 +757,48 @@ public class NbJiraIssue {
      * @throws org.eclipse.mylyn.internal.jira.core.service.JiraException
      * @throws java.lang.IllegalStateException if resolve operation is not permitted for this issue
      */
-    public void close(Resolution resolution, String comment) {
+    public void close(final Resolution resolution, final String comment) {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: close issue {1}: {2}", new Object[]{getClass().getName(), getKey(), resolution.getName()});    //NOI18N
         }
-        TaskAttribute rta = taskData.getRoot();
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                NbTaskDataModel model = getModel();
+                TaskAttribute rta = model.getLocalTaskData().getRoot();
 
-        Map<String, TaskOperation> operations = getAvailableOperations();
-        TaskOperation operation = null;
-        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
-            String operationLabel = entry.getValue().getLabel();
-            if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.finest(getClass().getName() + ": closing issue" + getKey() + ": available operation: " + operationLabel + "(" + entry.getValue().getOperationId() + ")"); //NOI18N
+                Map<String, TaskOperation> operations = getAvailableOperations();
+                TaskOperation operation = null;
+                for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+                    String operationLabel = entry.getValue().getLabel();
+                    if (Jira.LOG.isLoggable(Level.FINEST)) {
+                        Jira.LOG.log(Level.FINEST, "{0}: closing issue{1}: available operation: {2}({3})", //NOI18N
+                                new Object[]{getClass().getName(), getKey(), operationLabel,
+                                    entry.getValue().getOperationId()});
+                    }
+                    if (JiraUtils.isCloseOperation(operationLabel)) {
+                        operation = entry.getValue();
+                        break;
+                    } else if (JiraUtils.isLeaveOperation(entry.getValue())) {
+                        // falback on leave operation. Should check if the original status was closed to be presize
+                        operation = entry.getValue();
+                    }
+                }
+                if (operation == null) {
+                    throw new IllegalStateException("Close operation not permitted"); //NOI18N
+                } else {
+                    setOperation(operation);
+                }
+                setTaskAttributeValue(model, rta.getMappedAttribute(TaskAttribute.RESOLUTION), resolution.getId());
+                addComment(comment);
             }
-            if (JiraUtils.isCloseOperation(operationLabel)) {
-                operation = entry.getValue();
-                break;
-            }
-        }
-        if (operation == null) {
-            throw new IllegalStateException("Close operation not permitted"); //NOI18N
-        } else {
-            setOperation(operation);
-        }
+        });
+    }
 
-        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.RESOLUTION);
-        ta.setValue(resolution.getId());
-        addComment(comment);
+    private void setTaskAttributeValue (NbTaskDataModel model, TaskAttribute ta, String value) {
+        ta.setValue(value);
+        model.attributeChanged(ta);
     }
 
     /**
@@ -699,25 +811,32 @@ public class NbJiraIssue {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: starting issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
         }
-        TaskAttribute rta = taskData.getRoot();
-
-        Map<String, TaskOperation> operations = getAvailableOperations();
-        TaskOperation operation = null;
-        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
-            String operationLabel = entry.getValue().getLabel();
-            if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                Map<String, TaskOperation> operations = getAvailableOperations();
+                TaskOperation operation = null;
+                for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+                    String operationLabel = entry.getValue().getLabel();
+                    if (Jira.LOG.isLoggable(Level.FINEST)) {
+                        Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+                    }
+                    if (JiraUtils.isStartProgressOperation(operationLabel)) {
+                        operation = entry.getValue();
+                        break;
+                    } else if (JiraUtils.isLeaveOperation(entry.getValue())) {
+                        // falback on leave operation. Should check if the original status was inprogress to be presize
+                        operation = entry.getValue();
+                    }
+                }
+                if (operation == null) {
+                    throw new IllegalStateException("Start progress operation not permitted"); //NOI18N
+                } else {
+                    setOperation(operation);
+                }
             }
-            if (JiraUtils.isStartProgressOperation(operationLabel)) {
-                operation = entry.getValue();
-                break;
-            }
-        }
-        if (operation == null) {
-            throw new IllegalStateException("Start progress operation not permitted"); //NOI18N
-        } else {
-            setOperation(operation);
-        }
+        });
     }
 
     /**
@@ -730,25 +849,33 @@ public class NbJiraIssue {
         if (Jira.LOG.isLoggable(Level.FINE)) {
             Jira.LOG.log(Level.FINE, "{0}: starting issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
         }
-        TaskAttribute rta = taskData.getRoot();
-
-        Map<String, TaskOperation> operations = getAvailableOperations();
-        TaskOperation operation = null;
-        for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
-            String operationLabel = entry.getValue().getLabel();
-            if (Jira.LOG.isLoggable(Level.FINEST)) {
-                Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                Map<String, TaskOperation> operations = getAvailableOperations();
+                TaskOperation operation = null;
+                for (Map.Entry<String, TaskOperation> entry : operations.entrySet()) {
+                    String operationLabel = entry.getValue().getLabel();
+                    if (Jira.LOG.isLoggable(Level.FINEST)) {
+                        Jira.LOG.log(Level.FINEST, "{0}: starting issue{1}: available operation: {2}({3})", new Object[]{getClass().getName(), getKey(), operationLabel, entry.getValue().getOperationId()}); //NOI18N
+                    }
+                    if (JiraUtils.isStopProgressOperation(operationLabel)) {
+                        operation = entry.getValue();
+                        break;
+                    } else if (JiraUtils.isLeaveOperation(entry.getValue())) {
+                        // falback on leave operation. Should check if the original status was open to be presize
+                        operation = entry.getValue();
+                    }
+                }
+                if (operation == null) {
+                    throw new IllegalStateException("Stop progress operation not permitted"); //NOI18N
+                } else {
+                    setOperation(operation);
+                }
             }
-            if (JiraUtils.isStopProgressOperation(operationLabel)) {
-                operation = entry.getValue();
-                break;
-            }
-        }
-        if (operation == null) {
-            throw new IllegalStateException("Stop progress operation not permitted"); //NOI18N
-        } else {
-            setOperation(operation);
-        }
+        });
+        
     }
 
     /**
@@ -777,22 +904,25 @@ public class NbJiraIssue {
     }
 
     private void setOperation (TaskOperation operation) {
-        TaskAttribute ta = taskData.getRoot().getMappedAttribute(TaskAttribute.OPERATION);
-        ta.setValue(operation.getOperationId());
+        NbTaskDataModel m = getModel();
+        TaskAttribute rta = m.getLocalTaskData().getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
+        m.getLocalTaskData().getAttributeMapper().setTaskOperation(ta, operation);
+        m.attributeChanged(ta);
     }
 
     public String getDisplayName() {
-        return getDisplayName(taskData);
+        return getDisplayName(getNbTask());
     }
 
-    public static String getDisplayName(TaskData taskData) {
-        return taskData.isNew() ?
-            NbBundle.getMessage(NbJiraIssue.class, "CTL_NewIssue") : // NOI18N
-            NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
+    public static String getDisplayName(NbTask task) {
+        return task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW
+                ? task.getSummary()
+                : NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue", new Object[] {getKey(task), task.getSummary()}); // NOI18N
     }
 
     public String getShortenedDisplayName() {
-        if (taskData.isNew()) {
+        if (isNew()) {
             return getDisplayName();
         }
 
@@ -801,7 +931,7 @@ public class NbJiraIssue {
                                                     SHORTENED_SUMMARY_LENGTH);
         return NbBundle.getMessage(NbJiraIssue.class,
                                    "CTL_Issue",                         //NOI18N
-                                   new Object[] {getID(), shortSummary});
+                                   new Object[] {getKey(), shortSummary});
     }
 
     public String getTooltip() {
@@ -845,7 +975,7 @@ public class NbJiraIssue {
                 resolve(JiraUtils.getResolutionByName(repository, FIXED), comment); // XXX constant, what about setting in options?
             } catch (IllegalStateException ise) {
                 // so do not set to close if already closed
-                Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getStatus().getName() + ", leaving status the same", ise);
+                Jira.LOG.log(Level.INFO, "Close not permitted, current status is " + getJiraStatus().getName() + ", leaving status the same", ise);
             }
         } else {
             // comment must be added even when not resolving
@@ -860,13 +990,26 @@ public class NbJiraIssue {
      * <strong>Do not forget to submit</strong>
      * @param comment
      */
-    public void addComment(String comment) {
-        if(comment != null) {
-            if (Jira.LOG.isLoggable(Level.FINE)) {
-                Jira.LOG.log(Level.FINE, "{0}: adding comment to issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
-            }
-            TaskAttribute ta = taskData.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-            ta.setValue(comment);
+    public void addComment (final String comment) {
+        if(comment != null && !comment.isEmpty()) {
+            runWithModelLoaded(new Runnable() {
+                @Override
+                public void run () {
+                    if (Jira.LOG.isLoggable(Level.FINE)) {
+                        Jira.LOG.log(Level.FINE, "{0}: adding comment to issue {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
+                    }
+                    NbTaskDataModel model = getModel();
+                    TaskAttribute ta = model.getLocalTaskData().getRoot().getMappedAttribute(IssueField.COMMENT.getKey());
+                    String value = ta.getValue();
+                    if (value == null || value.trim().isEmpty()) {
+                        value = comment;
+                    } else {
+                        value += "\n\n" + comment; //NOI18N
+                    }
+                    ta.setValue(value);
+                    model.attributeChanged(ta);
+                }
+            });
         }
     }
 
@@ -886,26 +1029,25 @@ public class NbJiraIssue {
 
         TaskAttachmentMapper mapper = new TaskAttachmentMapper();
         mapper.setContentType(contentType);
-        final TaskAttribute attAttribute = new TaskAttribute(taskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskData repositoryTaskData = getRepositoryTaskData();
+        if (repositoryTaskData == null && (!synchronizeTask()
+                || (repositoryTaskData = getRepositoryTaskData()) == null)) {
+            // not fully initialized task, sync failed
+            return;            
+        }
+        final TaskAttribute attAttribute = new TaskAttribute(repositoryTaskData.getRoot(), TaskAttribute.TYPE_ATTACHMENT);
         mapper.applyTo(attAttribute);
-        BugtrackingCommand cmd = new BugtrackingCommand() {
-            @Override
-            public void execute() throws CoreException, IOException {
-//                refresh(); // XXX no refreshing may cause a midair collision - we should refresh in such a case and attach then
-                if (Jira.LOG.isLoggable(Level.FINER)) {
-                    Jira.LOG.log(Level.FINER, "adding an attachment: issue: {0}", getKey());
-                }
-                IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment upload task", getKey());
-                if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canPostContent(repository.getTaskRepository(), task)) {
-                    Jira.LOG.log(Level.WARNING, "adding an attachment: cannot post content: issue: {0}", getKey());
-                    return;
-                }
-                Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().postContent(repository.getTaskRepository(),
-                        task, attachmentSource, comment, attAttribute, new NullProgressMonitor());
-                refresh(getID(), true); // XXX to much refresh - is there no other way?
+        try {
+            PostAttachmentCommand cmd = MylynSupport.getInstance().getCommandFactory().createPostAttachmentCommand(
+                    repository.getTaskRepository(), getNbTask(), attAttribute, attachmentSource, comment);
+            repository.getExecutor().execute(cmd);
+            if (!cmd.hasFailed()) {
+                refresh(true); // XXX to much refresh - is there no other way?
             }
-        };
-        repository.getExecutor().execute(cmd);
+        } catch (CoreException ex) {
+            // should not happen
+            Jira.LOG.log(Level.WARNING, null, ex);
+        }
     }
 
     public void attachPatch(File file, String comment) {
@@ -919,120 +1061,109 @@ public class NbJiraIssue {
         return controller;
     }
     
-    public void setSeen(boolean seen) throws IOException {
-        repository.getIssueCache().setSeen(getID(), seen);
-    }
-    
-    private boolean wasSeen() {
-        return repository.getIssueCache().wasSeen(getID());
-    }
-    
     public String getRecentChanges() {
-        if(wasSeen()) {
-            return "";                                                          // NOI18N
-        }
-        IssueCache.Status status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.Status.ISSUE_STATUS_NEW) {
-            return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
-        } else if(status == IssueCache.Status.ISSUE_STATUS_MODIFIED) {
-            List<IssueField> changedFields = new ArrayList<IssueField>();
-            Map<String, String> attr = getSeenAttributes();
-            assert attr != null;
-            for (IssueField f : IssueField.values()) {
-                switch(f) {
-                    case MODIFICATION :
-                        continue;
-                }
-                String value = getFieldValue(f);
-                String seenValue = attr.get(f.key);
-                if(seenValue == null) {
-                    seenValue = "";                                             // NOI18N
-                }
-                if(!value.trim().equals(seenValue)) {
-                    changedFields.add(f);
-                }
-            }
-            int changedCount = changedFields.size();
-            if(changedCount == 1) {
-                String ret = null;
-                for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
-                            break;
-//                        XXX
-//                        case DEPENDS_ON :
-//                        case BLOCKS :
-//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS");
-//                            break;
-                        case COMMENT_COUNT :
-                            String value = getFieldValue(changedField);
-                            String seenValue = attr.get(changedField.key);
-                            if(seenValue == null || seenValue.trim().equals("")) {
-                                seenValue = "0";
-                            }
-                            int count = 0;
-                            try {
-                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                            } catch(NumberFormatException ex) {
-                                Jira.LOG.log(Level.WARNING, ret, ex);
-                            }
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
-                            break;
-                        case ATTACHEMENT_COUNT :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_ATTACHMENTS_CHANGED");
-                            break;
-                        default :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
-                    }
-                }
-                return ret;
-            } else {
-                String ret = null;
-                for (IssueField changedField : changedFields) {
-                    switch(changedField) {
-                        case SUMMARY :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
-                            break;
-                        case PRIORITY :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
-                            break;
-                        case TYPE :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_TYPE", new Object[] {changedCount});
-                            break;
-                        case PROJECT :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PROJECT", new Object[] {changedCount});
-                            break;
-                        case COMPONENT :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
-                            break;
-                        case ENVIRONMENT :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ENVIRONMENT", new Object[] {changedCount});
-                            break;
-// XXX
-//                        case VERSION :
-//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_VERSION", new Object[] {changedCount});
-//                            break;
-//                        case MILESTONE :
-//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_MILESTONE", new Object[] {changedCount});
-//                            break;
-                        case ASSIGNEE :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
-                            break;                        
-//                        case DEPENDS_ON :
-//                        case BLOCKS :
-//                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCLUSIVE_DEPENDENCE", new Object[] {changedCount});
-//                            break;
-                        default :
-                            ret = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES", new Object[] {changedCount});
-                    }
-                    return ret;
-                }
-            }
-        }
-        return "";
+        return recentChanges;
+    }
+    
+    private boolean updateTooltip () {
+        String displayName = getDisplayName();
+        String oldTooltip = tooltip;
+        // TODO construct tooltip
+        StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b>"); //NOI18N
+        sb.append("</html>"); //NOI18N
+        tooltip = sb.toString();
+        return !oldTooltip.equals(tooltip);
     }
 
+    private boolean updateRecentChanges () {
+        String oldChanges = recentChanges;
+        recentChanges = "";
+        NbTask.SynchronizationState syncState = getSynchronizationState();
+        if (syncState == NbTask.SynchronizationState.INCOMING
+                || syncState == NbTask.SynchronizationState.CONFLICT) {
+            try {
+                NbTaskDataState taskDataState = getNbTask().getTaskDataState();
+                if (taskDataState != null) {
+                    TaskData repositoryData = taskDataState.getRepositoryData();
+                    TaskData lastReadData = taskDataState.getLastReadData();
+                    List<IssueField> changedFields = new ArrayList<>();
+                    for (IssueField f : IssueField.values()) {
+                        switch(f) {
+                            case MODIFICATION :
+                                continue;
+                        }
+                        String value = getFieldValue(repositoryData, f);
+                        String seenValue = getFieldValue(lastReadData, f);
+                        if(!value.trim().equals(seenValue)) {
+                            changedFields.add(f);
+                        }
+                    }
+                    int changedCount = changedFields.size();
+                    if(changedCount == 1) {
+                        for (IssueField changedField : changedFields) {
+                            String value = getFieldValue(repositoryData, changedField);
+                            String seenValue = getFieldValue(lastReadData, changedField);
+                            switch(changedField) {
+                                case SUMMARY :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_SUMMARY_CHANGED_STATUS");
+                                    break;
+                                case COMMENT_COUNT :
+                                    if (seenValue.trim().isEmpty()) {
+                                        seenValue = "0";
+                                    }
+                                    int count = 0;
+                                    try {
+                                        count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                                    } catch(NumberFormatException ex) {
+                                        Jira.LOG.log(Level.WARNING, value + ":" + seenValue, ex);
+                                    }
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count});
+                                    break;
+                                case ATTACHEMENT_COUNT :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_ATTACHMENTS_CHANGED");
+                                    break;
+                                default :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldDisplayValue(changedField)});
+                            }
+                        }
+                    } else {
+                        for (IssueField changedField : changedFields) {
+                            switch(changedField) {
+                                case SUMMARY :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_SUMMARY", new Object[] {changedCount});
+                                    break;
+                                case PRIORITY :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PRIORITY", new Object[] {changedCount});
+                                    break;
+                                case TYPE :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_TYPE", new Object[] {changedCount});
+                                    break;
+                                case PROJECT :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_PROJECT", new Object[] {changedCount});
+                                    break;
+                                case COMPONENT :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_COMPONENT", new Object[] {changedCount});
+                                    break;
+                                case ENVIRONMENT :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ENVIRONMENT", new Object[] {changedCount});
+                                    break;
+                                case ASSIGNEE :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES_INCL_ASSIGNEE", new Object[] {changedCount});
+                                    break;                        
+                                default :
+                                    recentChanges = NbBundle.getMessage(NbJiraIssue.class, "LBL_CHANGES", new Object[] {changedCount});
+                            }
+                        }
+                    }
+                }
+            } catch (CoreException ex) {
+                Jira.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        return !oldChanges.equals(recentChanges);
+    }
+    
     public Map<String, String> getAttributes() {
         if(attributes == null) {
             attributes = new HashMap<String, String>();
@@ -1142,26 +1273,6 @@ public class NbJiraIssue {
     public boolean isResolveAllowed() {
         return getResolveOperation() != null;
     }
-
-    // XXX fields logic - 100% bugzilla overlap
-    /**
-     * Returns the value represented by the given field
-     *
-     * @param f
-     * @return
-     */
-    public String getFieldValue(IssueField f) {
-        return getFieldValue(taskData, f);
-    }
-
-    String getSeenValue(IssueField f) {
-        Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.key) : null;
-        if(seenValue == null) {
-            seenValue = "";                                                     // NOI18N
-        }
-        return seenValue;
-    }
     
     /**
      * Returns the given fields diplay value
@@ -1169,7 +1280,7 @@ public class NbJiraIssue {
      * @return
      */
     String getFieldDisplayValue(IssueField f) {
-        String value = getFieldValue(taskData, f);
+        String value = getRepositoryFieldValue(f);
         if(value == null || value.trim().equals("")) {
             return "";                                                          // NOI18N
         }
@@ -1232,8 +1343,35 @@ public class NbJiraIssue {
         }
         return sb.toString();
     }
+    
+    public String getRepositoryFieldValue (IssueField f) {
+        NbTaskDataModel m = getModel();
+        TaskData td;
+        if (m == null) {
+            td = getRepositoryTaskData();
+            if (td == null) {
+                return ""; //NOI18N
+            }
+        } else {
+            td = m.getRepositoryTaskData();
+        }
+        return getFieldValue(td, f);
+    }
 
-    static String getFieldValue(TaskData taskData, IssueField f) {
+    public String getFieldValue(IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValue(m == null ? null : m.getLocalTaskData(), f);
+    }
+
+    String getLastSeenFieldValue (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValue(m == null ? null : m.getLastReadTaskData(), f);
+    }
+
+    private static String getFieldValue (TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return "";
+        }
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
         if(f.isSingleAttribute()) {
             if(a != null && a.getValues().size() > 1) {
@@ -1285,24 +1423,58 @@ public class NbJiraIssue {
             if (JiraUtils.isResolveOperation(operationLabel)) {
                 operation = entry.getValue();
                 break;
+            } else if (JiraUtils.isLeaveOperation(entry.getValue())) {
+                // falback on leave operation. Should check if the original status was resolved to be presize
+                operation = entry.getValue();
             }
         }
         return operation;
     }
 
+    /**
+     * public for tests
+     */
     public void setFieldValue(IssueField f, String value) {
-        if(f.isReadOnly()) {
-            assert false : "can't set value into IssueField " + f.name();       // NOI18N
-            return;
-        }
+        NbTaskDataModel m = getModel();
+        // should not happen, setFieldValue either runs with model lock
+        // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
+        assert m != null;
+        TaskData taskData = m.getLocalTaskData();
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
-        if(a == null) {
+        if (a == null) {
             a = new TaskAttribute(taskData.getRoot(), f.key);
         }
-        a.setValue(value);
+        if (!value.equals(a.getValue())) {
+            setTaskAttributeValue(m, a, value);
+        }
+    }
+    
+    /**
+     * Tests only, <b>NEVER</b> call this method.
+     */
+    public void loadModel () {
+        editorOpened();
+    }
+
+    public List<String> getRepositoryFieldValues (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
     }
 
     public List<String> getFieldValues(IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? null : m.getLocalTaskData(), f);
+    }
+
+    List<String> getLastSeenFieldValues (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? null : m.getLastReadTaskData(), f);
+    }
+    
+    private static List<String> getFieldValues(TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return Collections.<String>emptyList();
+        }
         if(!f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
             if(a != null) {
@@ -1312,90 +1484,169 @@ public class NbJiraIssue {
             }
         } else {
             List<String> ret = new ArrayList<String>();
-            ret.add(getFieldValue(f));
+            ret.add(getFieldValue(taskData, f));
             return ret;
         }
     }
 
-    public void setFieldValues(IssueField f, List<String> ccs) {
+    /**
+     * public for tests
+     */
+    public void setFieldValues(IssueField f, List<String> values) {
+        NbTaskDataModel m = getModel();
+        // should not happen, setFieldValue either runs with model lock
+        // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
+        assert m != null;
+        TaskData taskData = m.getLocalTaskData();
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.key);
         if(a == null) {
             a = new TaskAttribute(taskData.getRoot(), f.key);
         }
-        a.setValues(ccs);
+        if (!values.equals(a.getValues())) {
+            a.setValues(values);
+            m.attributeChanged(a);
+        }
     }
 
-    public TaskData getTaskData() {
-        return taskData;
-    }
-
+    @NbBundle.Messages({
+        "# {0} - task id and summary", "MSG_JiraIssue.statusBar.submitted=Task {0} submitted."
+    })
     public boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        final boolean[] result = new boolean[1];
+        runWithModelLoaded(new Runnable() {
 
-        final boolean wasNew = taskData.isNew();
-        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        final RepositoryResponse[] rr = new RepositoryResponse[1];
-        if (Jira.LOG.isLoggable(Level.FINEST)) {
-            Jira.LOG.log(Level.FINEST, "submitAndRefresh: id: {0}, new: {1}", new Object[]{getID(), wasNew});
-        }
-        BugtrackingCommand submitCmd = new BugtrackingCommand() {
             @Override
-            public void execute() throws CoreException {
-                // submit
+            public void run () {
+                final boolean wasNew = isNew();
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
-                    Jira.LOG.log(Level.FINEST, "submitAndRefresh, submitCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
+                    Jira.LOG.log(Level.FINEST, "submitAndRefresh: id: {0}, new: {1}", new Object[]{getKey(), wasNew});
                 }
-                Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
-                rr[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(getTaskRepository(), taskData,
-                        attrs, new NullProgressMonitor());
-                // XXX evaluate rr
-            }
-        };
-        repository.getExecutor().execute(submitCmd);
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
-        
-        BugtrackingCommand refreshCmd = new BugtrackingCommand() {
-            @Override
-            public void execute() {
+
+                SubmitTaskCommand submitCmd;
+                try {
+                    // fix status according to the selected operation
+                    fixStatus();
+                    // fix worklog's remaining estimate time
+                    fixWorkLog();
+                    if (saveChanges()) {
+                        submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(getModel());
+                    } else {
+                        result[0] = false;
+                        return;
+                    }
+                } catch (CoreException ex) {
+                    Jira.LOG.log(Level.WARNING, null, ex);
+                    result[0] = false;
+                    return;
+                }
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
-                    Jira.LOG.log(Level.FINEST, "submitAndRefresh, refreshCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
+                    Jira.LOG.log(Level.FINEST, "submitAndRefresh, submitCmd: id: {0}, new: {1}", new Object[]{getKey(), wasNew});
                 }
+                repository.getExecutor().execute(submitCmd);
+                if (!submitCmd.hasFailed()) {
+                    taskSubmitted(submitCmd.getSubmittedTask());
+                }
+
                 if (!wasNew) {
-                    refresh();
+                    // should not be needed, mylyn updates data upon submit itself
+//                    if (Jira.LOG.isLoggable(Level.FINEST)) {
+//                        Jira.LOG.log(Level.FINEST, "submitAndRefresh, refreshCmd: id: {0}, new: {1}", new Object[]{getID(), wasNew});
+//                    }
+//                    if (!wasNew) {
+//                        refresh();
+//                    } else {
+//                        refresh(true);
+//                    }
                 } else {
-                    refreshById(rr[0].getTaskId(), true);
+                    RepositoryResponse rr = submitCmd.getRepositoryResponse();
+                    if(!submitCmd.hasFailed()) {
+                        updateRecentChanges();
+                        updateTooltip();
+                        fireDataChanged();
+                        String key = getKey();
+                        try {
+                            repository.getIssueCache().setIssueData(key, NbJiraIssue.this);
+                        } catch (IOException ex) {
+                            Jira.LOG.log(Level.INFO, null, ex);
+                        }
+                        Jira.LOG.log(Level.FINE, "created issue #{0}", key);
+                        // a new issue was created -> refresh all queries
+                        repository.refreshAllQueries();
+                    } else {
+                        Jira.LOG.log(Level.FINE, "submiting failed");
+                        if(rr != null) {
+                            Jira.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                        } else {
+                            Jira.LOG.log(Level.FINE, "no repository response available");
+                        }
+                    }
+                }
+
+                if(submitCmd.hasFailed()) {
+                    result[0] = false;
+                    return;
+                }
+                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_JiraIssue_statusBar_submitted(getDisplayName()));
+
+                setUpToDate(true, false);
+                if(wasNew) {
+                    // a new issue was created -> refresh all queries
+                    repository.refreshAllQueries();
+                }
+                result[0] = true;
+            }
+
+            private void fixStatus () {
+                NbTaskDataModel m = getModel();
+                TaskAttribute status = m.getLocalTaskData().getRoot().getMappedAttribute(IssueField.STATUS.key);
+                if (status != null && status.getOptions().size() > 0 && !status.getOptions().containsKey(status.getValue())) {
+                    status.setValue(status.getOptions().keySet().iterator().next());
+                    getModel().attributeChanged(status);
                 }
             }
-        };
-        repository.getExecutor().execute(refreshCmd);
-        if(refreshCmd.hasFailed()) {
-            return false;
-        }
-
-        // it was the user who made the changes, so preserve the seen status if seen already
-        if (wasSeenAlready) {
-            try {
-                repository.getIssueCache().setSeen(getID(), true);
-                // it was the user who made the changes, so preserve the seen status if seen already
-            } catch (IOException ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
+            
+            private void fixWorkLog () {
+                NewWorkLog log = getEditedWorkLog();
+                NbTaskDataModel m = getModel();
+                if (log != null && log.isToSubmit() && log.getStartDate() != null) {
+                    TaskAttribute attribute = m.getLocalTaskData().getRoot().getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW);
+                    JiraWorkLog workLog = new JiraWorkLog();
+                    workLog.setComment(log.getComment());
+                    workLog.setStartDate(log.getStartDate());
+                    workLog.setTimeSpent(log.getTimeSpent());
+                    if (log.isAutoAdjust()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.AUTO);
+                    } else if (log.isLeaveEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                    } else if (log.isReduceEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                        setFieldValue(NbJiraIssue.IssueField.ESTIMATE, String.valueOf(getCurrentRemainingEstimate() - log.getEstimatedTime()));
+                    } else if (log.isSetEstimate()) {
+                        workLog.setAdjustEstimate(JiraWorkLog.AdjustEstimateMethod.LEAVE);
+                        setFieldValue(NbJiraIssue.IssueField.ESTIMATE, String.valueOf(log.getEstimatedTime()));
+                    }
+                    new WorkLogConverter().applyTo(workLog, attribute);
+                    attribute.createMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG).setValue("true"); //NOI18N
+                    m.attributeChanged(attribute);
+                }
             }
-        }
-        if(wasNew) {
-            // a new issue was created -> refresh all queries
-            repository.refreshAllQueries();
-        }
 
-        try {
-            seenAtributes = null;
-            setSeen(true);
-        } catch (IOException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
-        }
-
-        return true;
+            private int getCurrentRemainingEstimate () {
+                String estimateTxt = getFieldValue(NbJiraIssue.IssueField.ESTIMATE);
+                int estimate = 0;
+                if (estimateTxt != null) {
+                    try {
+                        estimate = Integer.parseInt(estimateTxt);
+                    } catch (NumberFormatException nfex) {
+                        estimate = 0;
+                    }
+                }
+                return estimate;
+            }
+            
+        });
+        return result[0];
     }
 
     /**
@@ -1403,34 +1654,35 @@ public class NbJiraIssue {
      * <ul>
      *  <li>{@link #FIELD_STATUS_IRELEVANT} - issue wasn't seen yet
      *  <li>{@link #FIELD_STATUS_UPTODATE} - field value wasn't changed
-     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed
-     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
+     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed in repository
+     *  <li>{@link #FIELD_STATUS_OUTGOING} - field value was changed locally
+     *  <li>{@link #FIELD_STATUS_CONFLICT} - field value was changed both locally and remotely
      * </ul>
      * @param f IssueField
      * @return a status value
      */
-    int getFieldStatus(IssueField f) {
-        Map<String, String> a = getSeenAttributes();
-        String seenValue = a != null ? a.get(f.key) : null;
-        if(seenValue == null) {
-            seenValue = "";                                                     // NOI18N
-        }
-        if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {       // NOI18N
-            return FIELD_STATUS_NEW;
-        } else if (!seenValue.equals(getFieldValue(f))) {
-            return FIELD_STATUS_MODIFIED;
-        }
-        return FIELD_STATUS_UPTODATE;
+    public int getFieldStatus(IssueField f) {
+        return getFieldStatus(f.getKey());
     }
 
-    private Map<String, String> getSeenAttributes() {
-        if(seenAtributes == null) {
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-            if(seenAtributes == null) {
-                seenAtributes = new HashMap<String, String>();
-            }
+    public int getFieldStatus (String fieldKey) {
+        NbTaskDataModel m = getModel();
+        if (m == null) {
+            return FIELD_STATUS_UPTODATE;
         }
-        return seenAtributes;
+        TaskAttribute ta = m.getLocalTaskData().getRoot().getMappedAttribute(fieldKey);
+        boolean incoming = ta != null && m.hasIncomingChanges(ta, true);
+        boolean outgoing = ta != null && m.hasOutgoingChanges(ta);
+        if (ta == null) {
+            return FIELD_STATUS_UPTODATE;
+        } else if (incoming & outgoing) {
+            return FIELD_STATUS_CONFLICT;
+        } else if (incoming) {
+            return FIELD_STATUS_MODIFIED;
+        } else if (outgoing) {
+            return FIELD_STATUS_OUTGOING;
+        }
+        return FIELD_STATUS_UPTODATE;
     }
 
     /**
@@ -1440,7 +1692,8 @@ public class NbJiraIssue {
     public Map<String, TaskOperation> getAvailableOperations () {
         if (availableOperations == null) {
             HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
-            List<TaskAttribute> allOperations = taskData.getAttributeMapper().getAttributesByType(taskData, TaskAttribute.TYPE_OPERATION);
+            NbTaskDataModel model = getModel();
+            List<TaskAttribute> allOperations = model.getLocalTaskData().getAttributeMapper().getAttributesByType(model.getLocalTaskData(), TaskAttribute.TYPE_OPERATION);
             for (TaskAttribute operation : allOperations) {
                 // the test must be here, 'operation' (applying writable action) is also among allOperations
                 if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
@@ -1491,7 +1744,6 @@ public class NbJiraIssue {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
                 issuePanel.opened();
-                issue.opened();
             }
         }
         
@@ -1499,7 +1751,6 @@ public class NbJiraIssue {
         public void closed() {
             NbJiraIssue issue = issuePanel.getIssue();
             if (issue != null) {
-                issue.closed();
                 issuePanel.closed();
             }
         }
@@ -1513,13 +1764,24 @@ public class NbJiraIssue {
         public void applyChanges() {
         }
 
-        private void refreshViewData(boolean force) {
-            issuePanel.reloadFormInAWT(force);
+        private void refreshViewData (final boolean force) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run () {
+                    if (open) {
+                        issuePanel.reloadFormInAWT(force);
+                    }
+                }
+            });
         }
 
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
+        }
+
+        private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
+            issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
         }
     }
 
@@ -1590,7 +1852,7 @@ public class NbJiraIssue {
             return email;
         }
 
-        String getAuthor() {
+        public String getAuthor() {
             return author;
         }
         
@@ -1627,16 +1889,11 @@ public class NbJiraIssue {
                         Jira.LOG.log(Level.FINER, "getAttachmentData: id: {0}, issue: {1}", new Object[]{Attachment.this.getId(), getKey()});
                     }
                     try {
-                        IssueTask task = new IssueTask(repository.getUrl(), NbJiraIssue.this.getTaskData().getTaskId(), "Attachment download task", getKey());
-                        if (!Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().canGetContent(repository.getTaskRepository(), task)) {
-                            Jira.LOG.log(Level.WARNING, "getAttachmentData: cannot get content: id: {0}, issue: {1}", new Object[]{Attachment.this.getId(), getKey()});
-                            return;
-                        }
-                        InputStream is = Jira.getInstance().getRepositoryConnector().getTaskAttachmentHandler().getContent(repository.getTaskRepository(),
-                                task, attachmentAttribute, new NullProgressMonitor());
-                        if (is != null) {
-                            JiraUtils.copyStreamsCloseAll(os, is);
-                        }
+                        repository.getExecutor().execute(MylynSupport.getInstance().getCommandFactory()
+                                .createGetAttachmentCommand(repository.getTaskRepository(), getNbTask(), attachmentAttribute, os));
+                    } catch (CoreException ex) {
+                        // should not happen
+                        Jira.LOG.log(Level.WARNING, null, ex);
                     } finally {
                         os.close();
                     }
@@ -1651,31 +1908,7 @@ public class NbJiraIssue {
         return "[" + getKey() + ", " + getSummary() + "]";
     }
 
-    private class IssueTask extends AbstractTask {
-        private final String key;
-
-        public IssueTask(String repositoryUrl, String taskId, String summary, String key) {
-            super(repositoryUrl, taskId, summary);
-            this.key = key;
-        }
-
-        @Override
-        public boolean isLocal() {
-            return true;
-        }
-
-        @Override
-        public String getConnectorKind() {
-            return super.getRepositoryUrl();
-        }
-
-        @Override
-        public String getTaskKey() {
-            return key;
-        }
-    }
-
-    public static final class CustomField {
+    public final class CustomField {
         private final String id;
         private final String label;
         private final String type;
@@ -1683,7 +1916,7 @@ public class NbJiraIssue {
         private final boolean readOnly;
 
         private CustomField(TaskAttribute attribute) {
-            id = attribute.getId().substring(IJiraConstants.ATTRIBUTE_CUSTOM_PREFIX.length());
+            id = attribute.getId();
             label = attribute.getMetaData().getValue(TaskAttribute.META_LABEL);
             type = attribute.getMetaData().getValue(IJiraConstants.META_TYPE);
             values = attribute.getValues();
@@ -1712,6 +1945,28 @@ public class NbJiraIssue {
 
         public void setValues (List<String> values) {
             this.values = values;
+        }
+
+        public List<String> getLastSeenValues () {
+            NbTaskDataModel model = getModel();
+            TaskData td = model == null ? null : model.getLastReadTaskData();
+            return getValues(td);
+        }
+
+        public List<String> getRepositoryValues () {
+            NbTaskDataModel model = getModel();
+            TaskData td = model == null ? null : model.getRepositoryTaskData();
+            return getValues(td);
+        }
+
+        private List<String> getValues (TaskData td) {
+            if (td != null) {
+                TaskAttribute ta = td.getRoot().getMappedAttribute(id);
+                if (ta != null) {
+                    return ta.getValues();
+                }
+            }
+            return Collections.<String>emptyList();
         }
     }
 
@@ -1785,6 +2040,138 @@ public class NbJiraIssue {
 
         public String getComment () {
             return comment;
+        }
+    }
+    
+    
+    public static final class NewWorkLog {
+        private Date startDate;
+        private String author;
+        private long timeSpent;
+        private String comment;
+        private boolean toSubmit;
+        private long estimatedTime;
+        private boolean setEstimate;
+        private boolean reduceEstimate;
+        private boolean leaveEstimate;
+        private boolean autoAdjust;
+
+        private NewWorkLog (TaskAttribute workLogTA) {
+            JiraWorkLog workLog = new WorkLogConverter().createFrom(workLogTA);
+            startDate = workLog.getStartDate();
+            author = workLog.getAuthor();
+            timeSpent = workLog.getTimeSpent();
+            comment = workLog.getComment();
+            TaskAttribute toSubmitFlag = workLogTA.getMappedAttribute(WorkLogConverter.ATTRIBUTE_WORKLOG_NEW_SUBMIT_FLAG);
+            toSubmit = toSubmitFlag != null && Boolean.parseBoolean(toSubmitFlag.getValue());
+            TaskAttribute att = workLogTA.getAttribute(NB_WORK_LOGNEW_ESTIMATE_TIME);
+            if (att != null) {
+                try {
+                    estimatedTime = Long.valueOf(att.getValue());
+                } catch (NumberFormatException ex) { }
+            }
+            switch (workLog.getAdjustEstimate()) {
+                case LEAVE:
+                    leaveEstimate = true;
+                    break;
+                case REDUCE:
+                    reduceEstimate = true;
+                    break;
+                case SET:
+                    setEstimate = true;
+                    break;
+                default:
+                    autoAdjust = true;
+            }
+        }
+    
+        public NewWorkLog () {
+            startDate = null;
+            author = "";
+            timeSpent = 0;
+            comment = "";
+            toSubmit = false;
+            estimatedTime = 0;
+            leaveEstimate = false;
+            reduceEstimate = false;
+            setEstimate = false;
+            autoAdjust = false;
+        }
+
+        public Date getStartDate () {
+            return startDate;
+        }
+
+        public String getAuthor () {
+            return author;
+        }
+
+        public long getTimeSpent () {
+            return timeSpent;
+        }
+
+        public String getComment () {
+            return comment;
+        }
+
+        boolean isToSubmit () {
+            return toSubmit;
+        }
+
+        public long getEstimatedTime () {
+            return estimatedTime;
+        }
+
+        public boolean isAutoAdjust () {
+            return autoAdjust;
+        }
+
+        public boolean isLeaveEstimate () {
+            return leaveEstimate;
+        }
+
+        public boolean isReduceEstimate () {
+            return reduceEstimate;
+        }
+
+        public boolean isSetEstimate () {
+            return setEstimate;
+        }
+
+        public void setToSubmit (boolean submit) {
+            toSubmit = submit;
+        }
+
+        public void setTimeSpent (long timeSpent) {
+            this.timeSpent = timeSpent;
+        }
+
+        public void setStartDate (Date startDate) {
+            this.startDate = startDate;
+        }
+
+        public void setComment (String description) {
+            this.comment = description;
+        }
+
+        public void setEstimateTime (long remainingEstimate) {
+            this.estimatedTime = remainingEstimate;
+        }
+
+        public void setSetEstimate (boolean flag) {
+            setEstimate = flag;
+        }
+
+        public void setReduceEstimate (boolean flag) {
+            reduceEstimate = flag;
+        }
+
+        public void setLeaveEstimate (boolean flag) {
+            leaveEstimate = flag;
+        }
+
+        public void setAutoAdjust (boolean flag) {
+            autoAdjust = flag;
         }
     }
 }
