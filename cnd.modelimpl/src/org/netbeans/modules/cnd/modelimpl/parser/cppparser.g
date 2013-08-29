@@ -727,7 +727,7 @@ tokens {
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
 
-    protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
+        protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
 
         /** Is called when an error occurred */
         protected void onError(RecognitionException e) {}
