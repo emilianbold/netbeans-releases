@@ -1318,7 +1318,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             @Override
             void fieldModified () {
                 if (!reloading) {
-                    storeFieldValues(IssueField.SUBTASK, bugs(subtaskField.getText()));
+                    storeFieldValue(IssueField.SUBTASK, mergeValues(bugs(subtaskField.getText())));
                     updateDecorations();
                 }
             }
