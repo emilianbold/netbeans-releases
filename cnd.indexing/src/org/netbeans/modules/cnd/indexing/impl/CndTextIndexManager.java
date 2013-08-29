@@ -110,11 +110,18 @@ public class CndTextIndexManager {
     }
 
     public static CndTextIndexImpl get(final CacheLocation location) {
+        return get(location, false);
+    }
+    
+    private static CndTextIndexImpl get(final CacheLocation location, boolean validate) {
         synchronized (lock) {
             CndTextIndexImpl index = indexMap.get(location);
             if (index == null) {
                 try {                    
                     index = CndTextIndexImpl.create(location);
+                    if (validate && !index.isValid()) {
+                        return null;
+                    }
                 } catch (IOException ex) {
                     Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -122,5 +129,9 @@ public class CndTextIndexManager {
             }
             return index;
         }
+    }
+    
+    static boolean validate(CacheLocation location) {
+        return get(location, true) != null;
     }
 }
