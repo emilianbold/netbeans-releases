@@ -161,6 +161,14 @@ public abstract class QtInfoProvider {
                         result.add(baseDir.first() + File.separator + "QtCore"); // NOI18N
                     }
                 }
+                if (qmakeConfiguration.isWidgetsEnabled().getValue()) {
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtWidgets.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtWidgets"); // NOI18N
+                    }
+                }
                 if (qmakeConfiguration.isGuiEnabled().getValue()) {
                     if (baseDir.second() != null) {
                         result.add(baseDir.second() + File.separator + "QtGui.framework/Headers"); // NOI18N
