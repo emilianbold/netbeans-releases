@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,28 +60,21 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
-import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -94,11 +86,9 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.openide.util.CharSequences;
@@ -114,10 +104,7 @@ public final class Resolver3 implements Resolver {
     private final int origOffset;
     private Resolver parentResolver;
 
-    private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces = new LinkedHashMap<CharSequence, CsmObject>();
-    private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<CharSequence, CsmNamespace>();
-    private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
-    private final Map<CharSequence, CsmClassifier> currUsedClassifiers = new HashMap<CharSequence, CsmClassifier>();
+    private final Map<CharSequence, CsmClassifier> currUsedClassifiers = new HashMap<>();
 
     private CsmClassifier currLocalClassifier;
     private boolean currDone = false;
@@ -133,7 +120,7 @@ public final class Resolver3 implements Resolver {
     }
 
     private final Context context;
-    private Set<CsmFile> visitedFiles = new HashSet<CsmFile>();
+    private final FileMapsCollector fileMaps;
 
     //private CsmNamespace currentNamespace;
 
@@ -151,12 +138,18 @@ public final class Resolver3 implements Resolver {
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
         context = new Context(file, origOffset, this);
+        fileMaps = new FileMapsCollector(file, startFile);
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
 
+    public void initFileMaps() {
+        FindCurrLocalClassifier cb = new FindCurrLocalClassifier();
+        fileMaps.initFileMaps(needClassifiers(), origOffset, cb);
+    }
+    
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart, AtomicBoolean outVisibility) {
         outVisibility.set(false);
         CsmClassifier result = null;
@@ -191,7 +184,7 @@ public final class Resolver3 implements Resolver {
         // first of all - check local context
         if (!currDone) {
             currLocalClassifier = null;
-            initFileMaps(false);
+            fileMaps.initMapsFromCurrentFileOnly(needClassifiers(), origOffset, new FindCurrLocalClassifier());
             currDone = true;
         }
         if (currLocalClassifier != null && needClassifiers()) {
@@ -439,113 +432,7 @@ public final class Resolver3 implements Resolver {
         }
         return buf.toString();
     }
-
-    private static final CsmFilter NO_FILTER = CsmSelect.getFilterBuilder().createOffsetFilter(0, Integer.MAX_VALUE);
-    private static final CsmFilter NAMESPACE_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
-                         CsmDeclaration.Kind.NAMESPACE_DEFINITION
-                       , CsmDeclaration.Kind.NAMESPACE_ALIAS
-                       , CsmDeclaration.Kind.USING_DECLARATION
-                       , CsmDeclaration.Kind.USING_DIRECTIVE
-                       );
-    private static final CsmFilter CLASS_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
-                         CsmDeclaration.Kind.NAMESPACE_DEFINITION
-                       , CsmDeclaration.Kind.NAMESPACE_ALIAS
-                       , CsmDeclaration.Kind.USING_DECLARATION
-                       , CsmDeclaration.Kind.USING_DIRECTIVE
-                       , CsmDeclaration.Kind.TYPEDEF
-                       , CsmDeclaration.Kind.TYPEALIAS
-                       , CsmDeclaration.Kind.CLASS
-                       , CsmDeclaration.Kind.ENUM
-                       , CsmDeclaration.Kind.STRUCT
-                       , CsmDeclaration.Kind.UNION
-                       );
-
-    private void initFileMaps(boolean visitIncludedFiles) {
-        if (visitIncludedFiles) {
-            // gather all visible by this file's include stack
-            List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-            for (CsmInclude inc : includeStack) {
-                CsmFile includedFrom = inc.getContainingFile();
-                int incOffset = inc.getStartOffset();
-                gatherMaps(includedFrom, true, incOffset);
-            }
-        }
-        gatherMaps(file, visitIncludedFiles, origOffset);
-    }
     
-    private void gatherMaps(CsmFile file, boolean visitIncludedFiles, int offset) {
-        if( file == null || visitedFiles.contains(file) ) {
-            return;
-        }
-        visitedFiles.add(file);
-        CsmFilter filter;
-        if (offset == Integer.MAX_VALUE) {
-            filter = NO_FILTER;
-        } else {
-            filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
-        }
-        if (visitIncludedFiles) {
-            Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
-            while (iter.hasNext()){
-                CsmInclude inc = iter.next();
-                CsmFile incFile = inc.getIncludeFile();
-                if( incFile != null ) {
-                    gatherMaps(incFile, true, Integer.MAX_VALUE);
-                }
-            }
-        }
-        if (offset == Integer.MAX_VALUE) {
-            if (needClassifiers()) {
-                filter = CLASS_FILTER;
-            } else {
-                filter = NAMESPACE_FILTER;
-            }
-        }
-        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
-        gatherMaps(declarations, false, offset);
-        if (!visitIncludedFiles) {
-            visitedFiles.remove(file);
-        }
-    }
-
-    private void gatherMaps(Iterable<? extends CsmObject> declarations, boolean inLocalContext, int offset) {
-        gatherMaps(declarations.iterator(), inLocalContext, offset);
-    }
-
-    private void gatherMaps(Iterator<? extends CsmObject> it, boolean inLocalContext, int offset) {
-        while(it.hasNext()) {
-            CsmObject o = it.next();
-            assert o == null || CsmKindUtilities.isOffsetable(o) : "non CsmOffsetable" + o;
-            try {
-                int start = ((CsmOffsetable) o).getStartOffset();
-                int end = ((CsmOffsetable) o).getEndOffset();
-                if( start >= offset ) {
-                    break;
-                }
-                //assert o instanceof CsmScopeElement;
-                if( CsmKindUtilities.isScopeElement(o) ) {
-                    if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
-                        if (end >= offset) {
-                            gatherMaps((CsmScopeElement) o, end, true, offset);
-                        }
-                    } else {
-                        gatherMaps((CsmScopeElement) o, end, inLocalContext, offset);
-                    }
-                } else {
-                    if( FileImpl.reportErrors ) {
-                        System.err.println("Expected CsmScopeElement, got " + o);
-                    }
-                }
-            } catch (NullPointerException ex) {
-                if( FileImpl.reportErrors ) {
-                    // FIXUP: do not crush on NPE
-                    System.err.println("Unexpected NULL element in declarations collection");
-                    DiagnosticExceptoins.register(ex);
-                }
-            }
-        }
-    }
-
     private CsmClassifier findNestedClassifier(CsmClassifier clazz) {
         if (CsmKindUtilities.isClass(clazz)) {
             Iterator<CsmMember> it = CsmSelect.getClassMembers((CsmClass)clazz,
@@ -560,122 +447,6 @@ public final class Resolver3 implements Resolver {
             }
         }
         return null;
-    }
-
-    private void doProcessTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        CsmFilter filter =  CsmSelect.getFilterBuilder().createKindFilter(
-                                  CsmDeclaration.Kind.NAMESPACE_DEFINITION,
-                                  CsmDeclaration.Kind.TYPEDEF,
-                                  CsmDeclaration.Kind.TYPEALIAS);
-        for (Iterator<CsmOffsetableDeclaration> iter = CsmSelect.getDeclarations(nsd, filter); iter.hasNext();) {
-            CsmOffsetableDeclaration decl = iter.next();
-            if( decl.getKind() == CsmDeclaration.Kind.NAMESPACE_DEFINITION ) {
-                processTypedefsInUpperNamespaces((CsmNamespaceDefinition) decl);
-            } else if( decl.getKind() == CsmDeclaration.Kind.TYPEDEF || decl.getKind() == CsmDeclaration.Kind.TYPEALIAS ) {
-                if( CharSequences.comparator().compare(currName(),decl.getName())==0 ) {
-                    currLocalClassifier = (CsmClassifier) decl;
-                }
-            }
-        }
-    }
-
-    private void processTypedefsInUpperNamespaces(CsmNamespaceDefinition nsd) {
-        if( CharSequences.comparator().compare(nsd.getName(),currName())==0 )  {
-            currNamIdx++;
-            doProcessTypedefsInUpperNamespaces(nsd);
-        } else {
-            CsmNamespace cns = context.getContainingNamespace();
-            if( cns != null ) {
-                if( cns.equals(nsd.getNamespace())) {
-                    doProcessTypedefsInUpperNamespaces(nsd);
-                }
-            }
-        }
-    }
-
-    /**
-     * It is guaranteed that element.getStartOffset < this.offset
-     */
-    private void gatherMaps(CsmScopeElement element, int end, boolean inLocalContext, int offset) {
-
-        CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
-        if (kind != null) {
-            switch (kind) {
-                case NAMESPACE_DEFINITION: {
-                    CsmNamespaceDefinition nsd = (CsmNamespaceDefinition) element;
-                    if (nsd.getName().length() == 0) {
-                        // this is unnamed namespace and it should be considered as
-                        // it declares using itself
-                        usedNamespaces.put(nsd.getQualifiedName(), nsd.getNamespace());
-                    }
-                    if (offset < end || isInContext(nsd)) {
-                        //currentNamespace = nsd.getNamespace();
-                        gatherMaps(nsd.getDeclarations(), inLocalContext, offset);
-                    } else if (needClassifiers()){
-                        processTypedefsInUpperNamespaces(nsd);
-                    }
-                    return;
-                }
-                case NAMESPACE_ALIAS: {
-                    CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
-                    namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
-                    return;
-                }
-                case USING_DECLARATION: {
-                    CsmDeclaration decl = resolveUsingDeclaration((CsmUsingDeclaration) element);
-                    if( decl != null ) {
-                        CharSequence id;
-                        if( decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
-                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ||
-                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA ||
-                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND ||
-                                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
-                            // TODO: decide how to resolve functions
-                            id = ((CsmFunction) decl).getSignature();
-                        } else {
-                            id = decl.getName();
-                        }
-                        usingDeclarations.put(id, decl);
-                    }
-                    return;
-                }
-                case USING_DIRECTIVE:{
-                    CsmUsingDirective udir = (CsmUsingDirective) element;
-                    CharSequence name = udir.getName();
-                    if (!usedNamespaces.containsKey(name)) {
-                        usedNamespaces.put(name, udir); // getReferencedNamespace()
-                    }
-                    return;
-                }
-                case TYPEALIAS:
-                case TYPEDEF: {
-                    CsmDeclaration decl = (CsmDeclaration) element;
-                    // don't want typedef to find itself
-                    if( offset > end && CharSequences.comparator().compare(currName(), decl.getName())==0 ) {
-                        currLocalClassifier = (CsmClassifier) decl;
-                    }
-                    return;
-                }
-            }
-        }
-        if( CsmKindUtilities.isDeclarationStatement(element) ) {
-            CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
-            if( ds.getStartOffset() < offset ) {
-                gatherMaps( ((CsmDeclarationStatement) element).getDeclarators(), inLocalContext, offset);
-            }
-        } else if (CsmKindUtilities.isScope(element)) {
-            if (inLocalContext && needClassifiers() && CsmKindUtilities.isClassifier(element)) {
-                // don't want forward to find itself
-                if (!CsmKindUtilities.isClassForwardDeclaration(element) || (offset > end)) {
-                    if (CharSequences.comparator().compare(currName(), ((CsmClassifier)element).getName()) == 0) {
-                        currLocalClassifier = (CsmClassifier)element;
-                    }
-                }
-            }
-            if (offset < end || isInContext((CsmScope) element)) {
-                gatherMaps( ((CsmScope) element).getScopeElements(), inLocalContext, offset);
-            }
-        }
     }
 
     private boolean isInContext(CsmScope scope) {
@@ -706,14 +477,6 @@ public final class Resolver3 implements Resolver {
         return qname.length() == prefix.length()
                 || qname.charAt(prefix.length()) == ':'; // NOI18N
     }
-
-    private CsmDeclaration resolveUsingDeclaration(CsmUsingDeclaration udecl){
-        if (isRecursionOnResolving(LIMITED_RECURSION)) {
-            return null;
-        }
-        return  udecl.getReferencedDeclaration();
-    }
-
     /**
      * Resolver class or namespace name.
      * Why class or namespace? Because in usage of kind org::vk::test
@@ -787,20 +550,20 @@ public final class Resolver3 implements Resolver {
             result = null;
         }
         if (result == null) {
-            initFileMaps(!FileImpl.isFileBeingParsedInCurrentThread(file));
+            initFileMaps();
             if (currLocalClassifier != null && needClassifiers()) {
                 resultIsVisible.set(isObjectVisibleFromFile(currLocalClassifier, startFile));
                 result = currLocalClassifier;
             }
             if (result == null) {
-                CsmDeclaration decl = usingDeclarations.get(CharSequences.create(name));
+                CsmDeclaration decl = fileMaps.getUsingDeclaration(name);
                 resultIsVisible.set(isObjectVisibleFromFile(decl, startFile));
                 if (canStop(decl, resultIsVisible, backupResult)) {
                     result = decl;
                 }
             }
             if (result == null && needClassifiers()) {
-                for (Map.Entry<CharSequence, CsmObject> entry : usedNamespaces.entrySet()) {
+                for (Map.Entry<CharSequence, CsmObject> entry : fileMaps.getUsedNamespaces().entrySet()) {
                     String nsp = entry.getKey().toString();
                     String fqn = nsp + "::" + name; // NOI18N
                     result = findClassifierUsedInFile(fqn, resultIsVisible);
@@ -812,11 +575,11 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective)val).getReferencedNamespace();
-                            entry.setValue(val);
+                            fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (val == null) {
                             val = findNamespace(nsp);
-                            entry.setValue(val);
+                            fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (CsmKindUtilities.isNamespace(val)) {
                             CsmNamespace ns = (CsmNamespace)val;
@@ -835,13 +598,13 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (result == null && needNamespaces()) {
-                Object o = namespaceAliases.get(CharSequences.create(name));
+                Object o = fileMaps.getNamespaceAlias(name);
                 if (CsmKindUtilities.isNamespace(o)) {
                     result = (CsmNamespace) o;
                 }
             }
             if (result == null && needNamespaces()) {
-                for (Map.Entry<CharSequence, CsmObject> entry : usedNamespaces.entrySet()) {
+                for (Map.Entry<CharSequence, CsmObject> entry : fileMaps.getUsedNamespaces().entrySet()) {
                     String nsp = entry.getKey().toString();
                     String fqn = nsp + "::" + name; // NOI18N
                     result = findNamespace(fqn);
@@ -852,7 +615,7 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective) val).getReferencedNamespace();
-                            entry.setValue(val);
+                            fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                             if (val != null) {
                                 Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases((CsmNamespace)val);
                                 for (CsmNamespaceAlias alias : aliases) {
@@ -928,7 +691,7 @@ public final class Resolver3 implements Resolver {
             result = findNamespace(containingNS, fullName);
         }
         if (!canStop(result, resultIsVisible, backupResult) && needClassifiers()) {
-            initFileMaps(!FileImpl.isFileBeingParsedInCurrentThread(file));
+            initFileMaps();
             if (currLocalClassifier != null && (CsmKindUtilities.isTypedef(currLocalClassifier) || CsmKindUtilities.isTypeAlias(currLocalClassifier))) {
                 CsmType type = ((CsmTypedef)currLocalClassifier).getType();
                 if (type != null) {
@@ -948,8 +711,7 @@ public final class Resolver3 implements Resolver {
                 }
             }
             if (!canStop(result, resultIsVisible, backupResult)) {
-                for (Iterator<CharSequence> iter = usedNamespaces.keySet().iterator(); iter.hasNext();) {
-                    String nsp = iter.next().toString();
+                for (CharSequence nsp : fileMaps.getUsedNamespaces().keySet()) {
                     String fqn = nsp + "::" + fullName; // NOI18N
                     result = findClassifierUsedInFile(fqn, resultIsVisible);
                     if (canStop(result, resultIsVisible, backupResult)) {
@@ -1222,4 +984,22 @@ public final class Resolver3 implements Resolver {
         }
         return false;
     }
+    
+    private class FindCurrLocalClassifier implements FileMapsCollector.Callback {
+
+        @Override
+        public boolean needToTraverseDeeper(CsmScope scope) {
+            if (CsmKindUtilities.isNamespace(scope) || CsmKindUtilities.isNamespaceDefinition(scope)) {
+                return ((CsmNamedElement) scope).getName().length() == 0;
+            }            
+            return isInContext(scope);
+        }
+
+        @Override
+        public void onVisibleClassifier(CsmClassifier cls) {
+            if (CharSequences.comparator().compare(currName(), cls.getName()) == 0) {
+                currLocalClassifier = cls;
+            }
+        }
+    }   
 }
