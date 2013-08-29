@@ -142,7 +142,7 @@ public class MatchedRulesNode extends AbstractNode {
      */
     private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule, List<String> properties, boolean matched) {
         RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.fillMetaSourceInfo(rule);
+        ruleInfo.fillMetaSourceInfo(rule, project);
         List<org.netbeans.modules.web.webkit.debugging.api.css.Property> ruleProperties = rule.getStyle().getProperties();
         List<String> active = new ArrayList<String>(); // Names of active properties in this rule
         for (int i=ruleProperties.size()-1; i>=0; i--) {

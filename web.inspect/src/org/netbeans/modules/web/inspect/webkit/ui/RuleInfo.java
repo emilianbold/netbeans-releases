@@ -41,15 +41,23 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.sourcemap.Mapping;
+import org.netbeans.modules.web.inspect.sourcemap.SourceMap;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.Style;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.openide.filesystems.FileObject;
 
 /**
  * Additional information about a rule.
@@ -152,10 +160,42 @@ public class RuleInfo {
      * into this {@code RuleInfo}.
      * 
      * @param rule rule whose meta-source information should be filled.
+     * @param project origin of the rule.
      */
-    void fillMetaSourceInfo(Rule rule) {
+    void fillMetaSourceInfo(Rule rule, Project project) {
         StyleSheetBody body = rule.getParentStyleSheet();
         if (body != null) {
+            String styleSheetText = body.getText();
+            if (styleSheetText != null) {
+                String sourceMapPath = CSSUtils.sourceMapPath(styleSheetText);
+                if (sourceMapPath != null) {
+                    FileObject cssFile = new Resource(project, rule.getSourceURL()).toFileObject();
+                    if (cssFile != null) {
+                        FileObject folder = cssFile.getParent();
+                        FileObject sourceMapFob = folder.getFileObject(sourceMapPath);
+                        if (sourceMapFob != null) {
+                            try {
+                                String sourceMapText = sourceMapFob.asText();
+                                SourceMap sourceMap = SourceMap.parse(sourceMapText);
+                                final Mapping mapping = sourceMap.findMapping(rule.getSourceLine());
+                                if (mapping != null) {
+                                    int sourceIndex = mapping.getSourceIndex();
+                                    String sourcePath = sourceMap.getSourcePath(sourceIndex);
+                                    folder = sourceMapFob.getParent();
+                                    FileObject source = folder.getFileObject(sourcePath);
+                                    String sourceURL = source.toURL().toExternalForm();
+                                    String sourceFile = Utilities.relativeResourceName(sourceURL, project);
+                                    setMetaSourceFile(sourceFile);
+                                    setMetaSourceLine(mapping.getOriginalLine()+1);
+                                    return;
+                                }
+                            } catch (IOException ex) {
+                                Logger.getLogger(RuleInfo.class.getName()).log(Level.INFO, null, ex);
+                            }
+                        }
+                    }
+                }
+            }
             List<Rule> rules = body.getRules();
             int index = rules.indexOf(rule);
             if (index != -1) {

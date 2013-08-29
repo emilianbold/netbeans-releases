@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -58,6 +59,8 @@ import org.json.simple.parser.ParseException;
 public class SourceMap {
     /** Source map version supported by this class. */
     private static final String SUPPORTED_VERSION = "3"; // NOI18N
+    /** Cache of parsed source maps. Maps the text of the map to the map itself. */
+    private static final Map<String,SourceMap> cache = new WeakHashMap<String,SourceMap>();
     /** JSON representation of this source map. */
     private JSONObject sourceMap;
     /**
@@ -68,11 +71,26 @@ public class SourceMap {
     private final Map<Integer,List<Mapping>> mappings = new HashMap<Integer,List<Mapping>>();
 
     /**
+     * Parses the given text representation of a source map.
+     * 
+     * @param sourceMap text representation of a source map.
+     * @return parsed source map.
+     */
+    public static SourceMap parse(String sourceMap) {
+        SourceMap map = cache.get(sourceMap);
+        if (map == null) {
+            map = new SourceMap(sourceMap);
+            cache.put(sourceMap, map);
+        }
+        return map;
+    }
+
+    /**
      * Creates a new {@code SourceMap}.
      * 
      * @param sourceMap {@code String} representation of the source map.
      */
-    public SourceMap(String sourceMap) {
+    private SourceMap(String sourceMap) {
         this(toJSONObject(sourceMap));
     }
 
@@ -81,7 +99,7 @@ public class SourceMap {
      * 
      * @param sourceMap JSON representation of the source map.
      */
-    public SourceMap(JSONObject sourceMap) {
+    private SourceMap(JSONObject sourceMap) {
         this.sourceMap = sourceMap;
         String version = (String)sourceMap.get("version"); // NOI18N
         if (!SUPPORTED_VERSION.equals(version)) {
@@ -140,6 +158,21 @@ public class SourceMap {
                 }
                 result = mapping;
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the first mapping for the specified line.
+     * 
+     * @param line line we are interested in.
+     * @return first mapping for the specified line.
+     */
+    public Mapping findMapping(int line) {
+        Mapping result = null;
+        List<Mapping> lineInfo = mappings.get(line);
+        if (lineInfo != null && !lineInfo.isEmpty()) {
+            result = lineInfo.get(0);
         }
         return result;
     }
