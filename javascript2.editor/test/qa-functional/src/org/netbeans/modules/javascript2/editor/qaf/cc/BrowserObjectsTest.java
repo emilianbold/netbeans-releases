@@ -110,7 +110,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
         startTest();
         testObject(new String[]{"var myW=window."}, new String[]{"closed", "defaultStatus", "document", "frames", "history", "innerHeight", "innerWidth", "length",
                     "location", "name", "navigator", "opener", "outerHeight", "outerWidth", "pageXOffset", "pageYOffset", "parent", "screen", "screenLeft", "screenRight",
-                    "screenX", "screenY", "self", "status", "top", "alert", "blur", "clearInterval", "clearTimeout", "close", "confirm", "createPopup", "focus", "moveBy",
+                    "screenX", "screenY", "self", "status", "top", "alert", "blur", "clearInterval", "clearTimeout", "close", "confirm", "focus", "moveBy",
                     "moveTo", "open", "print", "prompt", "resizeBy", "resizeTo", "scroll", "scrollBy", "scrollTo", "setInterval", "setTimeout"});
         endTest();
     }
@@ -150,7 +150,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
 
     public void testNavigatorInFunction() {
         startTest();
-        testObject(new String[]{"function print(){\n", "console.log(\"Browser \"+navigator."}, new String[]{"appCodeName", "appName", "appVersion", "cookieEnabled", "platform", "userAgent", "javaEnabled", "taintEnabled"});
+        testObject(new String[]{"function print(){\n", "console.log(\"Browser \"+navigator."}, new String[]{"appCodeName", "appName", "appVersion", "cookieEnabled", "platform", "userAgent", "javaEnabled"});
         endTest();
     }
 

@@ -221,7 +221,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
         type(eo, "function Foo(param1){ }");
-        eo.setCaretPosition("}", true);
+        eo.setCaretPosition(" }", true);
         type(eo, "this.name = ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
