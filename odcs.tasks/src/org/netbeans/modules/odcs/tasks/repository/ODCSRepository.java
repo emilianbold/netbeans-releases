@@ -51,11 +51,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.PasswordAuthentication;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -68,8 +72,8 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
@@ -122,6 +126,7 @@ public class ODCSRepository implements PropertyChangeListener {
     private TeamProject project;
     private UnsubmittedTasksContainer unsubmittedTasksContainer;
     private PropertyChangeListener unsubmittedTasksListener;
+    private final Object CACHE_LOCK = new Object();
     
     public ODCSRepository (TeamProject project) {
         this(createInfo(project.getDisplayName(), project.getFeatureLocation())); // use name as id - can't be changed anyway
@@ -373,7 +378,7 @@ public class ODCSRepository implements PropertyChangeListener {
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, true, false);
             for (NbTask task : cmd.getTasks()) {
-                ODCSIssue issue = getIssueForTask(task);
+                ODCSIssue issue = getIssueForTask(task, false);
                 if (issue != null) {
                     issues.add(issue);
                 }
@@ -486,8 +491,14 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public ODCSIssue createIssue() {
-        TaskData data = ODCSUtil.createTaskData(getTaskRepository());
-        return new ODCSIssue(data, this);
+        NbTask task;
+        try {
+            task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping());
+            return getIssueForTask(task);
+        } catch (CoreException ex) {
+            ODCS.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
     }
 
     public ODCSQuery createQuery() {
@@ -518,11 +529,17 @@ public class ODCSRepository implements PropertyChangeListener {
         return info.getId();
     }
 
-    public IssueCache<ODCSIssue> getIssueCache() {
-        if(cache == null) {
-            cache = new Cache();
+    private Cache getCache () {
+        synchronized (CACHE_LOCK) {
+            if(cache == null) {
+                cache = new Cache();
+            }
+            return cache;
         }
-        return cache;
+    }
+    
+    public IssueCache<ODCSIssue> getIssueCache() {
+        return getCache();
     }
 
     public ODCSExecutor getExecutor() {
@@ -588,30 +605,30 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     public ODCSIssue getIssueForTask (NbTask task) {
+        return getIssueForTask(task, true);
+    }
+    
+    private ODCSIssue getIssueForTask (NbTask task, boolean onlyInitializedTasks) {
         ODCSIssue issue = null;
         if (task != null) {
-//            synchronized (CACHE_LOCK) {
-//                String taskId = ODCSIssue.getID(task);
-//                Cache issueCache = getCache();
-//                issue = issueCache.getIssue(taskId);
-//                if (issue == null) {
-//                    issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
-//                }
-//            }
             try {
-                NbTaskDataState tdState = task.getTaskDataState();
-                if (tdState == null) {
-                    // this happens when a query is canceled. All yet unsynchronized tasks
-                    // are still incomplete. What now? Should the task be deleted?
-                    return null;
+                if (onlyInitializedTasks) {
+                    NbTaskDataState tdState = task.getTaskDataState();
+                    if (tdState == null) {
+                        // this happens when a query is canceled. All yet unsynchronized tasks
+                        // are still incomplete. What now? Should the task be deleted?
+                        return null;
+                    }
                 }
-                issue = getIssueCache().getIssue(task.getTaskId());
-                TaskData td = tdState.getRepositoryData();
-                if (issue != null) {
-                    issue.setTaskData(td);
+                synchronized (CACHE_LOCK) {
+                    String taskId = ODCSIssue.getID(task);
+                    Cache issueCache = getCache();
+                    issue = issueCache.getIssue(taskId);
+                    if (issue == null) {
+                        issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
+                    }
                 }
-                issue = (ODCSIssue) getIssueCache().setIssueData(task.getTaskId(), issue != null ? issue : new ODCSIssue(td, this));
-            } catch (Exception ex) {
+            } catch (CoreException ex) {
                 ODCS.LOG.log(Level.SEVERE, null, ex);
                 issue = null;
             }
@@ -648,10 +665,72 @@ public class ODCSRepository implements PropertyChangeListener {
             return unsubmittedTasksContainer;
         }
     }
+
+    public void taskDeleted (String taskId) {
+        getCache().removeIssue(taskId);
+    }
+
+    public Collection<ODCSIssue> getUnsubmittedIssues () {
+        try {
+            UnsubmittedTasksContainer cont = getUnsubmittedTasksContainer();
+            List<NbTask> unsubmittedTasks = cont.getTasks();
+            List<ODCSIssue> unsubmittedIssues = new ArrayList<ODCSIssue>(unsubmittedTasks.size());
+            for (NbTask task : unsubmittedTasks) {
+                ODCSIssue issue = getIssueForTask(task);
+                if (issue != null) {
+                    unsubmittedIssues.add(issue);
+                }
+            }
+            return unsubmittedIssues;
+        } catch (CoreException ex) {
+            ODCS.LOG.log(Level.INFO, null, ex);
+            return Collections.<ODCSIssue>emptyList();
+        }
+    }
     
     private class Cache extends IssueCache<ODCSIssue> {
+        private final Map<String, Reference<ODCSIssue>> issues = new HashMap<String, Reference<ODCSIssue>>();
+        
         Cache() {
             super(ODCSRepository.this.getUrl(), new IssueAccessorImpl());
+        }
+
+        @Override
+        public ODCSIssue getIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                Reference<ODCSIssue> issueRef = issues.get(id);
+                return issueRef == null ? null : issueRef.get();
+            }
+        }
+
+        @Override
+        public ODCSIssue setIssueData (String id, ODCSIssue issue) {
+            synchronized (CACHE_LOCK) {
+                issues.put(id, new SoftReference<ODCSIssue>(issue));
+            }
+            return issue;
+        }
+
+        @Override
+        public Status getStatus (String id) {
+            ODCSIssue issue = getIssue(id);
+            if (issue != null) {
+                switch (issue.getStatus()) {
+                    case MODIFIED:
+                        return Status.ISSUE_STATUS_MODIFIED;
+                    case NEW:
+                        return Status.ISSUE_STATUS_NEW;
+                    case SEEN:
+                        return Status.ISSUE_STATUS_SEEN;
+                }
+            }
+            return Status.ISSUE_STATUS_UNKNOWN;
+        }
+
+        private void removeIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                issues.remove(id);
+            }
         }
     }
 
@@ -668,8 +747,7 @@ public class ODCSRepository implements PropertyChangeListener {
         }
         @Override
         public Map<String, String> getAttributes(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getAttributes();
+            return Collections.<String, String>emptyMap();
         }
     }    
 }

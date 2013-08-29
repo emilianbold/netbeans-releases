@@ -815,7 +815,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
             public void run() {
                 Collection<ODCSIssue> issues = query.getIssues();
                 for (ODCSIssue issue : issues) {
-                    issue.setSeen(true);
+                    issue.setUpToDate(true);
                 }
             }
         });
