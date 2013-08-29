@@ -96,4 +96,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // #216084 - Wrong editor underline of pure virtual class member - type conversion operator 
         performTest("bug216084.cpp");
     }
+
+    public void test226562() throws Exception {
+        // Bug 226562 - Template function dont recognise braces initializer
+        performTest("bug226562.cpp");
+    }    
 }

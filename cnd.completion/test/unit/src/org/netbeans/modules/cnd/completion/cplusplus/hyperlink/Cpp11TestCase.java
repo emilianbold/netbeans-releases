@@ -230,4 +230,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug235076.cpp", 6, 43, "bug235076.cpp", 5, 15);
         performTest("bug235076.cpp", 9, 31, "bug235076.cpp", 8, 15);
     }
+    
+    public void bug235229() throws Exception {
+        // Bug 235229 - Errors during parse of lambda function call as default parameter 
+        performTest("bug235229.cpp", 2, 15, "bug235229.cpp", 2, 5);
+        performTest("bug235229.cpp", 2, 27, "bug235229.cpp", 2, 21);
+        performTest("bug235229.cpp", 2, 40, "bug235229.cpp", 2, 36);
+        performTest("bug235229.cpp", 2, 50, "bug235229.cpp", 2, 36);
+    }
 }
