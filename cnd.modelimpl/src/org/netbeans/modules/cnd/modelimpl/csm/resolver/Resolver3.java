@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -495,7 +497,7 @@ public final class Resolver3 implements Resolver {
     @Override
     public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
         CsmObject result = null;
-
+        long time = System.currentTimeMillis();
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
@@ -504,8 +506,13 @@ public final class Resolver3 implements Resolver {
         } else if( nameTokens.length > 1 ) {
             result = resolveCompoundName(nameTokens, result, interestedKind);
         }
+        if (LOGGER.isLoggable(Level.FINE)) {
+            String fullName = fullName(nameTokens);
+            LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, System.currentTimeMillis() - time});
+        }
         return result;
     }
+    static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
     private CsmObject resolveSimpleName(CsmObject result, CharSequence name, int interestedKind) {
         CsmNamespace containingNS = null;
