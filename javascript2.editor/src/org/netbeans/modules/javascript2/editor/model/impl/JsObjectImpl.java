@@ -408,6 +408,17 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                     ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(offset, offset + typeLength));
                                 }
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
+                                JsObject parent = jsObject.getParent();
+                                if (parent != null && "window".equals(parent.getName())) {
+                                    for (JsObject property: getProperties().values()) {
+                                        if (property.isDeclared()) {
+                                            JsObject gwProp = jsObject.getProperty(property.getName());
+                                            if (gwProp == null) {
+                                                jsObject.addProperty(property.getName(), property);
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

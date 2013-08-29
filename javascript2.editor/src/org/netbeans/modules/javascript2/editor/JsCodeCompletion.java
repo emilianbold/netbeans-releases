@@ -494,14 +494,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true);
         
+        // try to map window property
+        Collection<String> windowProp = new ArrayList<String>();
+        for (TypeUsage typeUsage : resolveTypeFromExpression) {
+            if (typeUsage.isResolved() && !typeUsage.getType().startsWith("window")) {
+                windowProp.add("window." + typeUsage.getType());
+            }
+        }
+            
         Collection<String> prototypeChain = new ArrayList<String>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
             prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
         }
 
+        for (String string : windowProp) {
+            resolveTypeFromExpression.add(new TypeUsageImpl(string));
+        }
+        
         for (String string : prototypeChain) {
             resolveTypeFromExpression.add(new TypeUsageImpl(string));
         }
+        
+        
 
         HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         boolean isFunction = false; // addding Function to the prototype chain?
