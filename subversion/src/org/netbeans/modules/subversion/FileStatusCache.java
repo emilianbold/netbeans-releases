@@ -1080,7 +1080,7 @@ public class FileStatusCache {
             exists = files != null && files.length > 0;
         } 
         boolean isDirectory = exists && file.isDirectory();
-        int parentStatus = parent == null
+        int parentStatus = parent == null || isNotManagedByDefault(parent)
                 ? FileInformation.STATUS_NOTVERSIONED_NOTMANAGED
                 : getStatus(parent).getStatus();
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
