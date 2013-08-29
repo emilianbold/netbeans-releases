@@ -61,13 +61,19 @@ public class RemotePlatformProjectSaver implements J2SECustomPropertySaver {
     @Override
     public void save(@NonNull final Project project) {
         Parameters.notNull("project", project);         //NOI18N
-        if (Utilities.hasRemotePlatform(project) && !Utilities.hasRemoteExtension(project)) {
-            try {
-                Utilities.addRemoteExtension(project);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        try {
+            final boolean hasExtension = Utilities.hasRemoteExtension(project);
+            final Utilities.UpdateConfigResult res = Utilities.updateRemotePlatformConfigurations(project);
+            if (!hasExtension && res.hasRemotePlatform()) {
+                try {
+                    Utilities.addRemoteExtension(project);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
         }
-    }    
+    }
 
 }
