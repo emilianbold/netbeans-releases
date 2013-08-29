@@ -282,6 +282,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
+                    taskNode.getTask().removeIssueStatusListener(taskListener);
                 }
             }
         }
@@ -292,6 +293,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().addPropertyChangeListener(taskListener);
+                    taskNode.getTask().addIssueStatusListener(taskListener);
                 }
             }
         }
@@ -375,7 +377,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     private class TaskListener implements PropertyChangeListener {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+                    || IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 updateTask.schedule(1000);
             }
         }
