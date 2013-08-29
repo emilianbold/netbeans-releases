@@ -532,71 +532,28 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             Utilities.getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    ProjectHandle[] openedProjects = getOpenProjects();
-                        for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
-                            KenaiProject kProject = null;
-                            if (prjHandle != null) {
-                                kProject = prjHandle.getTeamProject();
-                            }
-                            final KenaiProject project = kProject;
-                            if (project != null) {
-                            try {
-                                KenaiFeature features[] = project.getFeatures(Type.SOURCE);
-                                for (final KenaiFeature feature : features) {
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
-                                                KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-                                                KenaiFeatureListItem item = new KenaiFeatureListItem(project, feature);
-                                                addElement(item);
-                                                if (prjAndFeature != null &&
-                                                    prjAndFeature.kenaiProject.getName().equals(project.getName()) &&
-                                                    prjAndFeature.feature.equals(feature)) {
-                                                    setSelectedItem(item);
-                                                }
-                                            }
+                    try {
+                        KenaiFeature features[] = prjAndFeature.kenaiProject.getFeatures(Type.SOURCE);
+                        for (final KenaiFeature feature : features) {
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
+                                        KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+                                        KenaiFeatureListItem item = new KenaiFeatureListItem(prjAndFeature.kenaiProject, feature);
+                                        addElement(item);
+                                        if (prjAndFeature != null &&
+                                            prjAndFeature.kenaiProject.getName().equals(prjAndFeature.kenaiProject.getName()) &&
+                                            prjAndFeature.feature.equals(feature)) {
+                                            setSelectedItem(item);
                                         }
-                                    });
+                                    }
                                 }
-                            } catch (KenaiException kenaiException) {
-                                Exceptions.printStackTrace(kenaiException);
-                            }
+                            });
                         }
+                    } catch (KenaiException kenaiException) {
+                        Exceptions.printStackTrace(kenaiException);
                     }
-                }
-
-                private ProjectHandle<KenaiProject>[] getOpenProjects() {
-                    if (kenai==null) {
-                        return new ProjectHandle[0];
-                    }
-                    String kenaiName = kenai.getUrl().getHost();
-                    Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
-                    int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
-                    ProjectHandle[] handles = new ProjectHandle[count];
-                    ArrayList<String> ids = new ArrayList<String>(count);
-                    for (int i = 0; i < count; i++) {
-                        String id = prefs.get(DashboardSupport.PREF_ID + i, null); //NOI18N
-                        if (null != id && id.trim().length() > 0) {
-                            ids.add(id.trim());
-                        }
-                    }
-
-                    HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessorImpl accessor = ProjectAccessorImpl.getDefault();
-                    for (String id : ids) {
-                        ProjectHandle handle = accessor.getNonMemberProject(KenaiServer.forKenai(kenai), id, false);
-                        if (handle != null) {
-                            projects.add(handle);
-                        } else {
-                            //projects=null;
-                        }
-                    }
-                    PasswordAuthentication pa = kenai.getPasswordAuthentication();
-                    if (pa!=null) {
-                        projects.addAll(accessor.getMemberProjects(KenaiServer.forKenai(kenai), new LoginHandleImpl(pa.getUserName()), false));
-                    }
-                    return projects.toArray(handles);
                 }
             });
         }
