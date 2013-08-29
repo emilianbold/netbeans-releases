@@ -1851,6 +1851,13 @@ public class FormatVisitor extends DefaultVisitor {
 
         }
         if (wasLastLineComment) {
+            while (ts.moveNext()
+                    && (ts.token().id() == PHPTokenId.PHP_COMMENT_START
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT_END
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT)) {
+                addFormatToken(formatTokens);
+            }
+            ts.movePrevious();
             FormatToken last = formatTokens.remove(formatTokens.size() - 1);
             formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
             formatTokens.add(last);
