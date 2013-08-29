@@ -92,7 +92,7 @@ import org.openide.util.NbBundle;
             if (CndUtils.isStandalone()) {
                 System.err.println(errormsg);
             } else {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
         checkModel(res, new MyCallable<Pair>() {

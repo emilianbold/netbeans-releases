@@ -465,7 +465,7 @@ public abstract class BrandingSupport {
             if (!kid.isDirectory()) {
                 if (kid.getName().endsWith(BUNDLE_NAME_PREFIX + BUNDLE_NAME_SUFFIX)) {
                     loadBundleKeys(mEntry, kid);
-                } else if (kid.getName().endsWith(BUNDLE_NAME_PREFIX + "_" + this.locale.toString().toLowerCase() + BUNDLE_NAME_SUFFIX)) {
+                } else if (kid.getName().endsWith(BUNDLE_NAME_PREFIX + "_" + this.locale.toString() + BUNDLE_NAME_SUFFIX)) {
                     loadLocalizedBundleKeys(mEntry, kid);
                     foundLocale = true;
                 } else {

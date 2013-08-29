@@ -85,6 +85,7 @@ public class DefaultSystemSettingsImpl extends DefaultSystemSettings implements 
                 kind = PredefinedToolKind.CCompiler;
                 break;
             case CPP:
+            case C_HEADER: // use CC for all headers
                 kind = PredefinedToolKind.CCCompiler;
                 break;
             case FORTRAN:

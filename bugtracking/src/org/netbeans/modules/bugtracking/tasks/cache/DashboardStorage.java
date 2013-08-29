@@ -53,6 +53,7 @@ import java.util.zip.ZipOutputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks;
 import org.netbeans.modules.bugtracking.tasks.cache.StorageUtils.FileLocks.FileLock;
+import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.modules.Places;
 
 /**
@@ -376,7 +377,7 @@ public class DashboardStorage {
     }
 
     private File getCategoryFile(File folder, String name) {
-        return new File(folder, name + CATEGORY_SUFIX);
+        return new File(folder, TextUtils.encodeURL(name) + CATEGORY_SUFIX);
     }
 
     private File getStorageRootFile() {

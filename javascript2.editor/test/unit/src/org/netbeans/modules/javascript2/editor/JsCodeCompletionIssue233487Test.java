@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript2.editor;
 
-package org.netbeans.modules.cordova.platforms.ios;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.LookupProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Parameters;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * @author Jan Becicka
+ *
+ * @author Petr Pisl
  */
-@ProjectServiceProvider(
-       projectTypes = {
-           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-clientproject")
-       },
-       service = ClientProjectEnhancedBrowserProvider.class)
-public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
-    private Project p;
-
-    public EnhancedBrowserProviderImpl(Project p) {
-        Parameters.notNull("Project", p);
-        this.p = p;
+public class JsCodeCompletionIssue233487Test  extends JsCodeCompletionBase {
+    
+    public JsCodeCompletionIssue233487Test(String testName) {
+        super(testName);
+    }
+    
+    public void testIssue228634_01() throws Exception {
+        checkCompletion("testfiles/completion/issue233487/index.html", "<input type=\"button\" onclick=\"alert(myvar.p^)\" value=\"Click me\"/>", false);
+    }
+    
+    public void testIssue228634_02() throws Exception {
+        checkCompletion("testfiles/completion/issue233487/test.js", "myvar.p^", false);
     }
     
     @Override
-    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(final WebBrowser webBrowser) {
-        if (webBrowser == null) {
-            return null;
-        }
-        if (BrowserFamilyId.IOS == webBrowser.getBrowserFamily()) {
-            BrowserSupport support = BrowserSupport.create(webBrowser);
-            return ClientProjectUtilities.createMobileBrowser(
-                    p, 
-                    webBrowser, 
-                    support, 
-                    new IOSBrowserActionProvider(support, webBrowser.getId(), p));
-        }
-        return null;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/issue233487")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
+    
 }

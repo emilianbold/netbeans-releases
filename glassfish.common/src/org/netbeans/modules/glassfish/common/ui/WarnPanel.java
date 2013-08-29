@@ -62,8 +62,10 @@ public class WarnPanel extends javax.swing.JPanel {
     /**
      * Display GlassFish 3.1.2 WS bug warning message and handle <i>Show this
      * warning next time</i> check box.
+     * <p/>
+     * @param serverName GlassFish server display name.
      */
-    public static void gf312WSWarning(String serverName) {
+    public static void gf312WSWarning(final String serverName) {
         boolean showAgain = GlassFishSettings.getGf312WarningShowAgain();
         if (showAgain) {
             String warning = NbBundle.getMessage(
@@ -77,15 +79,33 @@ public class WarnPanel extends javax.swing.JPanel {
     }
 
     /**
+     * Display GlassFish 3.1.2 WS bug warning message and handle <i>Show this
+     * warning next time</i> check box.
+     * <p/>
+     * @param serverName  GlassFish server display name.
+     * @param installRoot GlassFish server installation root.
+     */
+    public static void gfUnknownVersionWarning(final String serverName,
+            final String installRoot) {
+        String warning = NbBundle.getMessage(
+                WarnPanel.class, "WarnPanel.gfUnknownVersionWarning",
+                new String[] {serverName, installRoot});
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(
+                warning, NotifyDescriptor.PLAIN_MESSAGE);
+        DialogDisplayer.getDefault().notify(notifyDescriptor);
+    }
+
+    /**
      * Display GlassFish process kill warning message and handle <i>Show this
      * warning next time</i> check box.
      * <p/>
+     * @param serverName GlassFish server display name.
      * @return Value of <code>true</code> when <code>YES</code> button
      *         was selected or Value of <code>false</code> when <code>NO/code>
      *         button was selected. Always returns true after <i>Show this
      *         warning next time</i> check box was turned on.
      */
-    public static boolean gfKillWarning(String serverName) {
+    public static boolean gfKillWarning(final String serverName) {
         boolean showAgain = GlassFishSettings.getGf312WarningShowAgain();
         if (showAgain) {
             String warning = NbBundle.getMessage(

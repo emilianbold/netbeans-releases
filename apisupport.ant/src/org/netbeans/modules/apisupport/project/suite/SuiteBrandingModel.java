@@ -196,19 +196,19 @@ public class SuiteBrandingModel extends BrandingModel {
         }
         if(p != null && projectProperties != null) {
             if(p.getProperty("branding.locales") == null) {
-                p.setProperty("branding.locales", this.locale.toString().toLowerCase());
+                p.setProperty("branding.locales", this.locale.toString());
             } else {
                 String localizationsStr = p.getProperty("branding.locales");
                 StringTokenizer tokenizer = new StringTokenizer(localizationsStr, ",");
                 boolean containsLocale = false;
                 while (tokenizer.hasMoreElements()) {
-                    if(this.locale.toString().toLowerCase().equals(tokenizer.nextToken())) {
+                    if(this.locale.toString().equals(tokenizer.nextToken())) {
                         containsLocale = true;
                         break;
                     }
                 }
                 if(!containsLocale) {
-                    p.setProperty("branding.locales", p.getProperty("branding.locales") + "," + this.locale.toString().toLowerCase());
+                    p.setProperty("branding.locales", p.getProperty("branding.locales") + "," + this.locale.toString());
                 }
             }
             try {

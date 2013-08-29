@@ -224,8 +224,9 @@ public class HudsonJobNode extends AbstractNode {
         watchedListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(
-                        HudsonInstanceConstants.INSTANCE_SUPPRESSED_JOBS)) {
+                String pn = evt.getPropertyName();
+                if (pn.equals(HudsonInstanceConstants.INSTANCE_SUPPRESSED_JOBS)
+                        || pn.equals(HudsonInstanceConstants.INSTANCE_PREF_JOBS)) {
                     setHudsonJob(HudsonJobNode.this.job);
                 }
             }
