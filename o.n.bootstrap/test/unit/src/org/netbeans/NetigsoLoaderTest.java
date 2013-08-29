@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.Enumeration;
-import org.openide.util.Exceptions;
+import java.io.File;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class NetigsoLoader extends ClassLoader {
-    private final Module mi;
+public class NetigsoLoaderTest extends SetupHid {
 
-    public NetigsoLoader(Module mi) {
-        this.mi = mi;
+    public NetigsoLoaderTest(String s) {
+        super(s);
     }
 
-    @Override
-    public Class<?> loadClass(String string) throws ClassNotFoundException {
-        return getDelegate().loadClass(string);
+    public void testSomeMethod() throws Exception {
+        MockModuleInstaller installer = new MockModuleInstaller();
+        MockEvents ev = new MockEvents();
+        ModuleManager mgr = new ModuleManager(installer, ev);
+        mgr.mutexPrivileged().enterWriteAccess();
+        File j1 = new File(jars, "simple-module.jar");
+        Module m1 = mgr.create(j1, null, false, false, false);
+        mgr.enable(m1);
+        
+        NetigsoLoader nl = new NetigsoLoader(m1);
+        Class<?> clazz = nl.loadClass("org.foo.Something", false);
+        assertNotNull("Class found even if it is not resolved", clazz);
     }
 
-    @Override
-    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        ClassLoader d = getDelegate();
-        if (d instanceof ProxyClassLoader) {
-            return ((ProxyClassLoader)d).loadClass(name, resolve);
-        } else {
-            return d.loadClass(name);
-        }
-    }
-
-    @Override
-    public Enumeration<URL> getResources(String string) throws IOException {
-        return getDelegate().getResources(string);
-    }
-
-    @Override
-    public InputStream getResourceAsStream(String string) {
-        return getDelegate().getResourceAsStream(string);
-    }
-
-    @Override
-    public URL getResource(String string) {
-        return getDelegate().getResource(string);
-    }
-
-    private ClassLoader getDelegate() {
-        if (!mi.isEnabled()) {
-            try {
-                mi.getManager().enable(mi, false);
-            } catch (IllegalArgumentException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return mi.getClassLoader();
-    }
-    
-} // end of DelegateLoader
+}
