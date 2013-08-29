@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.bugtracking.tasks.Category;
@@ -85,12 +86,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     protected void attach() {
         super.attach();
         this.task.addPropertyChangeListener(taskListener);
+        this.task.addIssueStatusListener(taskListener);
     }
 
     @Override
     protected void dispose() {
         super.dispose();
         this.task.removePropertyChangeListener(taskListener);
+        this.task.removeIssueStatusListener(taskListener);
     }
 
     @Override
@@ -360,7 +363,8 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+                    || IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {
                     lblName.setToolTipText(task.getTooltip());
