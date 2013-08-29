@@ -4,7 +4,7 @@
     <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">
         <jar jarfile="${cluster}/${module.jar}" >
             <fileset dir="${build.classes.dir}"/>
-            <zipfileset src="external/oracle.eclipse.tools.cloud.dev.tasks_5.2.1.201307112145.jar" excludes="META-INF/ORACLE_C*, oracle/eclipse/tools/cloud/dev/tasks/CloudDevClient.class, oracle/eclipse/tools/cloud/dev/tasks/CloudDevClient$*.class"/>
+            <zipfileset src="external/oracle.eclipse.tools.cloud.dev.tasks_6.2.1.201308021156.jar" excludes="META-INF/ORACLE_C*"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>
                 <attribute name="Export-Package" value="oracle.eclipse.tools.cloud.dev.tasks,oracle.eclipse.tools.cloud.dev.tasks.data"/>

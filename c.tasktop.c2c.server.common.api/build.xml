@@ -6,6 +6,7 @@
             <zipfileset src="external/com.tasktop.c2c.server.common.api_1.1.0.20130704-213704.jar" 
                    includes="com/tasktop/c2c/server/common/service/domain/**,
                              com/tasktop/c2c/server/common/service/*Exception.*,
+                             com/tasktop/c2c/server/common/service/*JacksonJsonObjectMapper.*,
                              com/tasktop/c2c/server/common/service/web/ValidationErrors.*,
                              com/tasktop/c2c/server/common/service/web/ValidationErrors$ValidationError.*"/>
             <manifest>
