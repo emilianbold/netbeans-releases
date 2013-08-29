@@ -72,7 +72,6 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
-    private boolean unsubmitted = false;
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
@@ -246,10 +245,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         if (!task.getID().equalsIgnoreCase(other.getID())) {
             return false;
         }
-        if (!task.getDisplayName().equalsIgnoreCase(other.getDisplayName())) {
-            return false;
-        }
-        return true;
+        return task.getDisplayName().equalsIgnoreCase(other.getDisplayName());
     }
 
     @Override
@@ -348,10 +344,6 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
             return s.isUnsubmitted();
         }
         return false;
-    }
-
-    public void setUnsubmitted(boolean unsubmitted) {
-        this.unsubmitted = unsubmitted;
     }
 
     @Override
