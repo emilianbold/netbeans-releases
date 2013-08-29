@@ -60,16 +60,15 @@ import org.openide.util.lookup.Lookups;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PHPRenameFileRefactoringUI implements RefactoringUI, RefactoringUIBypass {
-
     private final AbstractRefactoring refactoring;
     private RenamePanel panel;
     private final FileObject file;
     private String newName;
 
     public PHPRenameFileRefactoringUI(FileObject file) {
-	this.file = file;
+        this.file = file;
         this.newName = file.getName();
-	this.refactoring = new RenameRefactoring(Lookups.fixed(file));
+        this.refactoring = new RenameRefactoring(Lookups.fixed(file));
     }
 
     public PHPRenameFileRefactoringUI(FileObject file, String newName) {
@@ -80,57 +79,57 @@ public class PHPRenameFileRefactoringUI implements RefactoringUI, RefactoringUIB
 
     @Override
     public String getName() {
-	return NbBundle.getMessage(PHPRenameFileRefactoringUI.class, "LBL_Rename"); //NOI18N
+        return NbBundle.getMessage(PHPRenameFileRefactoringUI.class, "LBL_Rename"); //NOI18N
     }
 
     @Override
     public String getDescription() {
-	return NbBundle.getMessage(PHPRenameFileRefactoringUI.class, "LBL_Rename_File");
+        return NbBundle.getMessage(PHPRenameFileRefactoringUI.class, "LBL_Rename_File");
     }
 
     @Override
     public boolean isQuery() {
-	return false;
+        return false;
     }
 
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
-	if (panel == null) {
-	    panel = new RenamePanel(newName, null, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
-	}
-	return panel;
+        if (panel == null) {
+            panel = new RenamePanel(newName, null, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename"), true, true); //NOI18N
+        }
+        return panel;
     }
 
     @Override
     public Problem setParameters() {
-	String panelName = panel.getNameValue();
-	if (refactoring instanceof RenameRefactoring) {
-	    ((RenameRefactoring) refactoring).setNewName(panelName);
-	}
-	return refactoring.checkParameters();
+        String panelName = panel.getNameValue();
+        if (refactoring instanceof RenameRefactoring) {
+            ((RenameRefactoring) refactoring).setNewName(panelName);
+        }
+        return refactoring.checkParameters();
     }
 
     @Override
     public Problem checkParameters() {
-	if (refactoring instanceof RenameRefactoring) {
-	    ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-	}
-	return refactoring.fastCheckParameters();
+        if (refactoring instanceof RenameRefactoring) {
+            ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
+        }
+        return refactoring.fastCheckParameters();
     }
 
     @Override
     public boolean hasParameters() {
-	return true;
+        return true;
     }
 
     @Override
     public AbstractRefactoring getRefactoring() {
-	return this.refactoring;
+        return this.refactoring;
     }
 
     @Override
     public HelpCtx getHelpCtx() {
-	return null;
+        return null;
     }
 
     @Override
@@ -140,8 +139,8 @@ public class PHPRenameFileRefactoringUI implements RefactoringUI, RefactoringUIB
 
     @Override
     public void doRefactoringBypass() throws IOException {
-        DataObject dob  = DataObject.find(file);
-        if (dob!=null) {
+        DataObject dob = DataObject.find(file);
+        if (dob != null) {
             dob.rename(panel.getNameValue());
         }
     }
