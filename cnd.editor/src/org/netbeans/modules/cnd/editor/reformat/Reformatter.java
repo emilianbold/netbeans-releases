@@ -169,7 +169,7 @@ public class Reformatter implements ReformatTask {
         }
     }
 
-    private static final int FAST_DIFF_SIZE = 1000;
+    private static final int FAST_DIFF_SIZE = 10*1000;
     private static final int GAP_SIZE = 500;
     private void reformatImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
         int prevStart = -1;
