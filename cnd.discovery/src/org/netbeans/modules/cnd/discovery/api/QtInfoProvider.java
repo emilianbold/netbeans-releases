@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -103,6 +104,8 @@ public abstract class QtInfoProvider {
 
         @Override
         public List<String> getQtAdditionalMacros(MakeConfiguration conf) {
+            final String CXXFLAGS = "CXXFLAGS"; //NOI18N
+            Map<String, String> vars = new TreeMap<>();
             FileObject projectDir = conf.getBaseFSPath().getFileObject();
             if (projectDir != null && projectDir.isValid()) {
                 try {
@@ -110,11 +113,13 @@ public abstract class QtInfoProvider {
                     Project project = ProjectManager.getDefault().findProject(projectDir);
                     if (project != null && qtMakeFile != null && qtMakeFile.isValid()) {
                         for (String str : qtMakeFile.asLines()) {
-                            if (str.startsWith("CXXFLAGS")) { //NOI18N
-                                String[] lines = str.split("="); //NOI18N
-                                if (lines.length == 2) {
+                            String[] lines = str.split("="); //NOI18N
+                            if (lines.length == 2) {
+                                String key = lines[0].trim();
+                                vars.put(lines[0].trim(), lines[1].trim());
+                                if (key.equals(CXXFLAGS)) {
                                     Artifacts artifacts = new Artifacts();
-                                    DiscoveryUtils.gatherCompilerLine(lines[1].trim(), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
+                                    DiscoveryUtils.gatherCompilerLine(getActualVarValue(vars, CXXFLAGS), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
                                     List<String> result = new ArrayList<>(artifacts.userMacros.size());
                                     for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
                                         if (pair.getValue() == null) {
@@ -125,7 +130,6 @@ public abstract class QtInfoProvider {
                                     }
                                     return result;
                                 }
-                                break;
                             }
                         }
                     }
@@ -136,6 +140,14 @@ public abstract class QtInfoProvider {
             return java.util.Collections.EMPTY_LIST;
         }
 
+        private String getActualVarValue(Map<String, String> vars, String var) {
+            String result = vars.get(var);
+            for (String v : vars.keySet()) {
+                result = result.replace("$(" + v + ")", vars.get(v)); //NOI18N
+            }
+            return result;
+        }
+        
         /**
          * Finds Qt include directories for given project configuration.
          *
