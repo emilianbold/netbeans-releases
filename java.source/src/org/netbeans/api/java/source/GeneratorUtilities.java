@@ -315,7 +315,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createAbstractMethodImplementation(TypeElement clazz, ExecutableElement method) {
         assert clazz != null && method != null;
-        return createMethod(method, clazz);
+        return createMethod(method, clazz, true);
     }
 
     /**
@@ -346,7 +346,7 @@ public final class GeneratorUtilities {
      */
     public MethodTree createOverridingMethod(TypeElement clazz, ExecutableElement method) {
         assert clazz != null && method != null;
-        return createMethod(method, clazz);
+        return createMethod(method, clazz, false);
     }
 
     /**Create a new method tree for the given method element. The method will be created as if it were member of {@link asMemberOf} type
@@ -1163,7 +1163,7 @@ public final class GeneratorUtilities {
     
     // private implementation --------------------------------------------------
 
-    private MethodTree createMethod(final ExecutableElement element, final TypeElement clazz) {
+    private MethodTree createMethod(final ExecutableElement element, final TypeElement clazz, final boolean isImplement) {
         final TreeMaker make = copy.getTreeMaker();
         MethodTree prototype = createMethod((DeclaredType)clazz.asType(), element);
         ModifiersTree mt = prototype.getModifiers();
@@ -1183,32 +1183,36 @@ public final class GeneratorUtilities {
             }
         }
         
-        if (clazz.getKind() == ElementKind.INTERFACE) {
-            mt = make.addModifiersModifier(mt, Modifier.DEFAULT);
-        }
-        
-        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
         String bodyTemplate = null;
-        try {
-            bodyTemplate = "{" + readFromTemplate(isAbstract ? GENERATED_METHOD_BODY : OVERRIDDEN_METHOD_BODY, createBindings(clazz, element)) + "\n}"; //NOI18N
-        } catch (Exception e) {
-            bodyTemplate = "{}"; //NOI18N
+        if (isImplement && clazz.getKind().isInterface()) {
+            mt = make.addModifiersModifier(mt, Modifier.DEFAULT);                                
         }
-        
-        MethodTree method = make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), bodyTemplate, null);
-        if (containsErrors(method.getBody())) {
-            copy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>emptyList(), false));
-        } else {
-            Trees trees = copy.getTrees();
-            TreePath path = trees.getPath(clazz);
-            if (path == null) {
-                path = new TreePath(copy.getCompilationUnit());
+        boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
+        if (isImplement || clazz.getKind().isClass() && (!isAbstract || !clazz.getModifiers().contains(Modifier.ABSTRACT))) {
+            try {
+                bodyTemplate = "{" + readFromTemplate(isAbstract ? GENERATED_METHOD_BODY : OVERRIDDEN_METHOD_BODY, createBindings(clazz, element)) + "\n}"; //NOI18N
+            } catch (Exception e) {
+                bodyTemplate = "{}"; //NOI18N
             }
-            Scope s = trees.getScope(path);
-            BlockTree body = method.getBody();
-            copy.getTreeUtilities().attributeTree(body, s);
-            body = importFQNs(body);
-            copy.rewrite(method.getBody(), body);
+        } else if (clazz.getKind().isClass()) {
+            mt = make.addModifiersModifier(mt, Modifier.ABSTRACT);
+        }
+        MethodTree method = make.Method(mt, prototype.getName(), prototype.getReturnType(), prototype.getTypeParameters(), prototype.getParameters(), prototype.getThrows(), bodyTemplate, null);
+        if (method.getBody() != null) {
+            if (containsErrors(method.getBody())) {
+                copy.rewrite(method.getBody(), make.Block(Collections.<StatementTree>emptyList(), false));
+            } else {
+                Trees trees = copy.getTrees();
+                TreePath path = trees.getPath(clazz);
+                if (path == null) {
+                    path = new TreePath(copy.getCompilationUnit());
+                }
+                Scope s = trees.getScope(path);
+                BlockTree body = method.getBody();
+                copy.getTreeUtilities().attributeTree(body, s);
+                body = importFQNs(body);
+                copy.rewrite(method.getBody(), body);
+            }
         }
         
         return method;
