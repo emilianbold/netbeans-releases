@@ -1082,22 +1082,23 @@ public class CPPParserEx extends CPPParser {
      * TODO: make it (optionally?) build AST. For now AST isn't built.
      */
     @Override
-    protected final void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException {
+    protected final boolean balanceBraces(int left, int right) {
         int depth = 0;
-        while (LA(1) != Token.EOF_TYPE) { // && LA(1) != CPPTokenTypes.RPAREN ) {
-            if (LA(1) == left) {
-                depth++;
-                consume();
-            } else if (LA(1) == right) {
-                consume();
-                if (depth == 0) {
-                    return;
+        try {
+            while (LA(1) != Token.EOF_TYPE) { // && LA(1) != CPPTokenTypes.RPAREN ) {
+                if (LA(1) == left) {
+                    depth++;
+                } else if (LA(1) == right) {
+                    if (--depth < 0) {
+                        return true;
+                    }
                 }
-                depth--;
-            } else {
                 consume();
             }
+        } catch (Exception ex) {
+            reportError(ex.toString());
         }
+        return false;
     }
 
     /**

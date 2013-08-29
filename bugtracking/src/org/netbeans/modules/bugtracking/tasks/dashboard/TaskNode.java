@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.bugtracking.tasks.Category;
@@ -71,7 +72,6 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
-    private boolean unsubmitted = false;
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
@@ -85,12 +85,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     protected void attach() {
         super.attach();
         this.task.addPropertyChangeListener(taskListener);
+        this.task.addIssueStatusListener(taskListener);
     }
 
     @Override
     protected void dispose() {
         super.dispose();
         this.task.removePropertyChangeListener(taskListener);
+        this.task.removeIssueStatusListener(taskListener);
     }
 
     @Override
@@ -243,10 +245,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         if (!task.getID().equalsIgnoreCase(other.getID())) {
             return false;
         }
-        if (!task.getDisplayName().equalsIgnoreCase(other.getDisplayName())) {
-            return false;
-        }
-        return true;
+        return task.getDisplayName().equalsIgnoreCase(other.getDisplayName());
     }
 
     @Override
@@ -347,10 +346,6 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         return false;
     }
 
-    public void setUnsubmitted(boolean unsubmitted) {
-        this.unsubmitted = unsubmitted;
-    }
-
     @Override
     public List<IssueImpl> getTasksToSubmit() {
         return getTasks(true);
@@ -360,7 +355,8 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
+                    || IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
                 fireContentChanged();
                 if (lblName != null) {
                     lblName.setToolTipText(task.getTooltip());

@@ -47,6 +47,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Parameters;
 
 @ProjectServiceProvider(
         projectType = "org-netbeans-modules-web-clientproject", // NOI18N
@@ -61,6 +62,7 @@ public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowser
     private Project p;
 
     public EnhancedBrowserProviderImpl(Project p) {
+        Parameters.notNull("Project", p);
         this.p = p;
     }
 

@@ -321,9 +321,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (TaskNode taskNode : getTaskNodes()) {
-                DashboardViewer.getInstance().removeTask(taskNode);
-            }
+            DashboardViewer.getInstance().removeTask(getTaskNodes());
         }
 
         @Override

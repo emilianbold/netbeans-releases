@@ -8,7 +8,7 @@ function Person(name) {
 
 var pe = new Person("John"); 
 with (pe) { //rename;8;man;9:var man =;10:(man) {,11:man.hello(),12:man.realname
-    pe.hello(); //rename;11;greeting;11:pe.greeting();4:this.greeting;87:passenger.greeting
+    pe.hello(); //rename;11;greeting;11:pe.greeting();4:this.greeting;87:passanger.greeting
     pe.realname = "Doe";
 }
 var control = {};

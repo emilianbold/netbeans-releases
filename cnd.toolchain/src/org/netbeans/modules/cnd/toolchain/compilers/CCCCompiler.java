@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.*;
+import java.net.ConnectException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +64,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -291,11 +293,15 @@ public abstract class CCCCompiler extends AbstractCompiler {
             if (execEnv.isLocal() && Utilities.isWindows()) {
                 compilerPath = LinkSupport.resolveWindowsLink(compilerPath);
             }
-            if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
-                compilerPath = getDefaultPath();
+            try {
                 if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
-                    return;
+                    compilerPath = getDefaultPath();
+                    if (!HostInfoUtils.fileExists(execEnv, compilerPath)) {
+                        return;
+                    }
                 }
+            } catch (Throwable ex) {
+                return;
             }
 
             List<String> argsList = new ArrayList<String>();
@@ -340,6 +346,7 @@ public abstract class CCCCompiler extends AbstractCompiler {
         } catch (IOException ex) {
             throw ex;
         } catch (Throwable ex) {
+            ex.printStackTrace(System.err);
             throw new IOException(ex);
         } finally {
             if (errorTask != null){
