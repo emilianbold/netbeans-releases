@@ -1,7 +1,7 @@
 /*
  * rave.css      08/13/2004
  *
- * Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
+ * Copyright Â© 1997, 2013, Oracle and/or its affiliates. All rights reserved.
  * Use is subject to license terms.
  *
  * Changes from NetBeans ide.css:
@@ -25,14 +25,14 @@
  * 
  */
 
-body  {font-size: small;
+body  {font-size: medium;
 	font-family: SansSerif, Arial, Helvetica, sans-serif;
 	margin-left: 5;
 	margin-right: 5;
 	color: Black;
 	background-color: White}
 
-p  {font-size: small;
+p  {font-size: medium;
      margin-top: 5;
      margin-bottom: 5}
 
@@ -52,7 +52,7 @@ h3 { font-size: medium;
      margin-top: 10;
      margin-bottom: 5}
 
-h4 { font-size: small;
+h4 { font-size: medium;
      font-weight: bold;
      margin-top: 10;
      margin-bottom: 5}

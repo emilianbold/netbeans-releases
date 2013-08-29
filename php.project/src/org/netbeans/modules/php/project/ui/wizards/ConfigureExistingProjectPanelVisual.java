@@ -124,6 +124,8 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_Sources")); // NOI18N
         sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
 
+        sourcesTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(sourcesBrowseButton, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_LocalServerBrowse")); // NOI18N
         sourcesBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -137,6 +139,8 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
         projectNameLabel.setLabelFor(projectNameTextField);
         Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
         projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
+
+        projectNameTextField.setColumns(20);
 
         phpVersionLabel.setLabelFor(phpVersionComboBox);
         Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(ConfigureExistingProjectPanelVisual.class, "ConfigureExistingProjectPanelVisual.phpVersionLabel.text")); // NOI18N
@@ -169,10 +173,10 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
                         .addComponent(phpVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(sourcesInfoLabel)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(sourcesTextField)
+                            .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(sourcesBrowseButton))
-                        .addComponent(projectNameTextField, Alignment.TRAILING)
+                        .addComponent(projectNameTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addComponent(encodingComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(

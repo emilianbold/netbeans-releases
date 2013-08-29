@@ -74,6 +74,10 @@ public class TplDataObjectTest extends TplTestBase {
                 TplDataObject.findEncoding(
                 "<meta charset=\"UTF-8\"/>"));
 
+        assertEquals("UTF-8",
+                TplDataObject.findEncoding(
+                "<meta CHARSET=\"UTF-8\"/>"));
+
         assertEquals(null,
                 TplDataObject.findEncoding(
                 "<meta blabla"));
@@ -85,5 +89,11 @@ public class TplDataObjectTest extends TplTestBase {
         assertEquals(null,
                 TplDataObject.findEncoding(
                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=\"/>"));
+    }
+
+    public void testIssue234945() {
+        assertEquals(null,
+                TplDataObject.findEncoding(
+                "<script type=\"text/javascript\" language=\"javascript1.2\" charset=\"ISO-8859-2\"></script>"));
     }
 }

@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.common.api;
 
 import java.util.Arrays;
@@ -62,32 +61,32 @@ import org.openide.util.Parameters;
 public class LexerUtils {
 
     /**
-     * Note: The input text must contain only \n as line terminators.
-     * This is compatible with the netbeans document which never contains \r\n
-     * line separators.
+     * Note: The input text must contain only \n as line terminators. This is
+     * compatible with the netbeans document which never contains \r\n line
+     * separators.
      *
      * @param text
      * @param offset
      * @return line offset, starting with zero.
      */
     public static int getLineOffset(CharSequence text, int offset) throws BadLocationException {
-        if(text == null) {
+        if (text == null) {
             throw new NullPointerException();
         }
 
-        if(offset < 0 || offset > text.length()) {
-            throw new BadLocationException("The given offset is out of bounds <0, " + text.length() + ">" , offset); //NOI18N
+        if (offset < 0 || offset > text.length()) {
+            throw new BadLocationException("The given offset is out of bounds <0, " + text.length() + ">", offset); //NOI18N
         }
         int line = 0;
-        for(int i = 0; i < text.length(); i++) {
+        for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if(c == '\r') {
+            if (c == '\r') {
                 throw new IllegalArgumentException("The input text cannot contain carriage return char \\r"); //NOI18N
             }
-            if(i == offset) {
+            if (i == offset) {
                 return line;
             }
-            if(c == '\n') {
+            if (c == '\n') {
                 line++;
             }
         }
@@ -95,34 +94,34 @@ public class LexerUtils {
         //for position just at the length of the text
         return line;
     }
-    
+
     /**
-     * Note: The input text must contain only \n as line terminators.
-     * This is compatible with the netbeans document which never contains \r\n
-     * line separators.
+     * Note: The input text must contain only \n as line terminators. This is
+     * compatible with the netbeans document which never contains \r\n line
+     * separators.
      *
      * @param text
      * @param line line number
      * @return offset of the beginning of the line
      */
     public static int getLineBeginningOffset(CharSequence text, int line) throws BadLocationException {
-        if(text == null) {
+        if (text == null) {
             throw new NullPointerException();
         }
 
-        if(line < 0) {
+        if (line < 0) {
             throw new IllegalArgumentException("Line number must be >= 0!");
         }
-        int linecount = 0; 
-        for(int i = 0; i < text.length(); i++) {
+        int linecount = 0;
+        for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if(c == '\r') {
+            if (c == '\r') {
                 throw new IllegalArgumentException("The input text cannot contain carriage return char \\r"); //NOI18N
             }
-            if(linecount == line) {
+            if (linecount == line) {
                 return i;
             }
-            if(c == '\n') {
+            if (c == '\n') {
                 linecount++;
             }
         }
@@ -138,83 +137,96 @@ public class LexerUtils {
     public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         return followsToken(ts, searchedIds, backwards, repositionBack, false, skipIds);
     }
-    
+
     /**
-     * Checks if the {@link TokenSequence} contains a specific token in a choosen
-     * direction from the current token sequence index.
-     * 
+     * Checks if the {@link TokenSequence} contains a specific token in a
+     * choosen direction from the current token sequence index.
+     *
      * @since 1.56
-     * 
+     *
      * @param ts the token sequence to operate on
      * @param searchedIds list of the searched token ids
-     * @param backwards should the tokens be searched backwards (true) or forward (false).
-     * @param repositionBack repositions the token sequence to the original index if set to true
-     * @param includeCurrentToken if true the current token is also taken into account when searching for the tokens
-     * @param skipIds list of token ids which should be skipped when searching. Any other token ids will break the search.
-     * @return token of the type from the searchedIds list or null if either no token is found or there's an unexpected token type in the search direction.
+     * @param backwards should the tokens be searched backwards (true) or
+     * forward (false).
+     * @param repositionBack repositions the token sequence to the original
+     * index if set to true
+     * @param includeCurrentToken if true the current token is also taken into
+     * account when searching for the tokens
+     * @param skipIds list of token ids which should be skipped when searching.
+     * Any other token ids will break the search.
+     * @return token of the type from the searchedIds list or null if either no
+     * token is found or there's an unexpected token type in the search
+     * direction.
      */
-    public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds, 
-            boolean backwards, boolean repositionBack, boolean includeCurrentToken, 
+    public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds,
+            boolean backwards, boolean repositionBack, boolean includeCurrentToken,
             TokenId... skipIds) {
         Collection<TokenId> skip = Arrays.asList(skipIds);
         int index = ts.index();
         //if the current token is to be included, then do not move to next/previous token in the first loop
-        while(includeCurrentToken || (backwards ? ts.movePrevious() : ts.moveNext())) {
-            includeCurrentToken = false; //disable the flag after first loop
-            Token token = ts.token();
-            TokenId id = token.id();
-            if(searchedIds.contains(id)) {
-                if(repositionBack) {
-                    int idx = ts.moveIndex(index);
-                    boolean moved = ts.moveNext();
-
-                    assert idx == 0 && moved;
-
+        try {
+            while (includeCurrentToken || (backwards ? ts.movePrevious() : ts.moveNext())) {
+                includeCurrentToken = false; //disable the flag after first loop
+                Token token = ts.token();
+                TokenId id = token.id();
+                if (searchedIds.contains(id)) {
+                    return token;
                 }
-                return token;
+                if (!skip.contains(id)) {
+                    break;
+                }
             }
-            if(!skip.contains(id)) {
-                break;
+        } finally {
+            if (repositionBack) {
+                int idx = ts.moveIndex(index);
+                boolean moved = ts.moveNext();
+
+                assert idx == 0 && moved;
+
             }
         }
-        
+
         return null;
     }
 
-      /** returns top most joined html token seuence for the document at the specified offset. */
+    /**
+     * returns top most joined html token seuence for the document at the
+     * specified offset.
+     */
     public static TokenSequence getJoinedTokenSequence(Document doc, int offset, Language language) {
         return getTokenSequence(doc, offset, language, true);
     }
-    
+
     public static TokenSequence getTokenSequence(Document doc, int offset, Language language, boolean joined) {
         return getTokenSequence(TokenHierarchy.get(doc), offset, language, joined);
     }
-    
+
     /**
-     * Gets instance of {@link TokenSequence} for the given {@link TokenHierarchy} and offset.
-     * 
+     * Gets instance of {@link TokenSequence} for the given
+     * {@link TokenHierarchy} and offset.
+     *
      * @since 1.55
      * @param th
      * @param offset
      * @param language
      * @param joined
-     * @return 
+     * @return
      */
     public static TokenSequence getTokenSequence(TokenHierarchy th, int offset, Language language, boolean joined) {
         TokenSequence ts = th.tokenSequence();
-        if(ts == null) {
+        if (ts == null) {
             return null;
         }
         ts.move(offset);
 
-        while(ts.moveNext() || ts.movePrevious()) {
-            if(ts.language() == language) {
+        while (ts.moveNext() || ts.movePrevious()) {
+            if (ts.language() == language) {
                 return ts;
             }
 
             ts = ts.embeddedJoined();
 
-            if(ts == null) {
+            if (ts == null) {
                 break;
             }
 
@@ -228,40 +240,44 @@ public class LexerUtils {
 
     /**
      * Trims the given {@link CharSequence} as {@link String#trim()} does.
+     *
      * @since 1.26
      */
     public static CharSequence trim(CharSequence chs) {
-        if(chs == null) {
+        if (chs == null) {
             throw new NullPointerException();
         }
-        if(chs.length() == 0) {
+        if (chs.length() == 0) {
             return chs;
         }
-        
+
         int wsPrefixLen = 0;
-        for(int i = 0; i < chs.length(); i++) {
+        for (int i = 0; i < chs.length(); i++) {
             char c = chs.charAt(i);
-            if(Character.isWhitespace(c)) {
+            if (Character.isWhitespace(c)) {
                 wsPrefixLen++;
             } else {
                 break;
             }
         }
         int wsPostfixLen = 0;
-        for(int i = chs.length() - 1; i >= wsPrefixLen; i--) {
+        for (int i = chs.length() - 1; i >= wsPrefixLen; i--) {
             char c = chs.charAt(i);
-            if(Character.isWhitespace(c)) {
+            if (Character.isWhitespace(c)) {
                 wsPostfixLen++;
             } else {
                 break;
             }
         }
-        
+
         return chs.subSequence(wsPrefixLen, chs.length() - wsPostfixLen);
-        
+
     }
-    
-    /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
+
+    /**
+     * @param optimized - first sequence is lowercase, one call to
+     * Character.toLowerCase() only
+     */
     public static boolean equals(CharSequence text1, CharSequence text2, boolean ignoreCase, boolean optimized) {
         Parameters.notNull("text1", text1);
         Parameters.notNull("text2", text2);
@@ -279,8 +295,11 @@ public class LexerUtils {
             return true;
         }
     }
-    
-    /** @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only*/
+
+    /**
+     * @param optimized - first sequence is lowercase, one call to
+     * Character.toLowerCase() only
+     */
     public static boolean startsWith(CharSequence text1, CharSequence prefix, boolean ignoreCase, boolean optimized) {
         if (text1.length() < prefix.length()) {
             return false;
@@ -288,10 +307,11 @@ public class LexerUtils {
             return equals(text1.subSequence(0, prefix.length()), prefix, ignoreCase, optimized);
         }
     }
-    
-    /** 
+
+    /**
      * @since 1.21
-     * @param optimized - first sequence is lowercase, one call to Character.toLowerCase() only
+     * @param optimized - first sequence is lowercase, one call to
+     * Character.toLowerCase() only
      */
     public static boolean endsWith(CharSequence text1, CharSequence prefix, boolean ignoreCase, boolean optimized) {
         if (text1.length() < prefix.length()) {
@@ -300,6 +320,5 @@ public class LexerUtils {
             return equals(text1.subSequence(text1.length() - prefix.length(), text1.length()), prefix, ignoreCase, optimized);
         }
     }
-
 
 }

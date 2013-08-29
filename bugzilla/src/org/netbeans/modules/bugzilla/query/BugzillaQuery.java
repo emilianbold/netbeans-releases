@@ -223,7 +223,11 @@ public class BugzillaQuery {
                         if (ret[0]) {
                             if (isSaved()) {
                                 for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
-                                    issues.add(t.getTaskId());
+                                    // as a side effect creates a BugzillaIssue instance
+                                    BugzillaIssue bzIssue = getRepository().getIssueForTask(t);
+                                    if (bzIssue != null) {
+                                        issues.add(bzIssue.getID());
+                                    }
                                 }
                             }
                             return;

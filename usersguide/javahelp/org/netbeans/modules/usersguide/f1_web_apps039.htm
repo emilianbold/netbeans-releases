@@ -2,16 +2,16 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</title>
+<title>New Web Project with Existing Sources Wizard: Server and Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" name="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref510" name="sthref510"></a>
-<h1>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</h1>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_WAR_IMPORT" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_WAR_IMPORT"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref518" name="sthref518"></a>
+<h1>New Web Project with Existing Sources Wizard: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Web Project with Existing Sources wizard creates a new standard project from an existing web application source folder. You open the New Web Project with Existing Sources wizard by opening the New Project wizard and selecting the Web Project with Existing Sources template from the Java Web category. 
+<p>The New Web Project with Existing Sources wizard creates a new standard project from an existing web application source folder. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1039">
 <param name="text" value="<html><u>How?</u></html>">
@@ -19,8 +19,7 @@
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Your existing web application source does not have to adhere to any particular directory structure. You specify the locations of the configuration files, libraries, and source roots. The only requirement is that the module contain a valid <code>web.xml</code> deployment descriptor.</p>
-<p>In the Existing Sources and Libraries page, you specify the following properties:</p>
+<p>In the Server and Settings page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -34,69 +33,55 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t47" headers="r1c1-t47">
-<p>Web Pages Folder</p>
+<p>Add to Enterprise Application</p>
 </td>
 <td align="left" headers="r2c1-t47 r1c2-t47">
-<p>Specifies the location of your web pages. You must have at least a valid web.xml deployment descriptor in the web pages folder to complete the wizard.</p>
-<p><b>Note:</b> The IDE does not convert deployment descriptors for unsupported application servers to the Glassfish application server deployment descriptors. There are external tools you can use for this purpose.</p>
+<p>Lets you add the web project to any open enterprise application project. If you do not add it here, you can do so later by expanding the enterprise application project node and right-clicking the Java EE Modules node.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t47" headers="r1c1-t47">
-<p>WEB-INF Content</p>
+<p>Server</p>
 </td>
 <td align="left" headers="r3c1-t47 r1c2-t47">
-<p>Specifies the location of the application's WEB-INF content.</p>
+<p>Specifies the web application's server. Only servers that are registered with the IDE are available to be selected here.</p>
+<p><b>Note:</b> The default installation of the IDE's Java bundle includes the Glassfish application server, and the Tomcat web server. Servers included in the installation are automatically registered in the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t47" headers="r1c1-t47">
-<p>Libraries Folder</p>
+<p>Java EE Version</p>
 </td>
 <td align="left" headers="r4c1-t47 r1c2-t47">
-<p>Specifies the location of the class libraries that the web application depends on. All JAR files in this folder are added to the web application project's classpath and packaged with the application for deployment.</p>
-<p><b>Note:</b> The IDE only scans this folder once when you create the project. After the project is created, adding JAR files to this folder outside the IDE does not add them to the module's classpath. You have to add them manually through the Libraries tab of the module's Project Properties dialog box.</p>
+<p>Specifies the Java EE level against which your web application will run. Note that Java EE 6 applications require a Java EE 6 server, such as GlassFish version 3.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t47" headers="r1c1-t47">
-<p>Source Package Folders</p>
+<p>Context Path</p>
 </td>
 <td align="left" headers="r5c1-t47 r1c2-t47">
-<p>Specifies each of the project's source package folders (containing source packages).</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t47" headers="r1c1-t47">
-<p>Test Package Folders</p>
-</td>
-<td align="left" headers="r6c1-t47 r1c2-t47">
-<p>Specifies each of the project's test package folders (containing Unit tests). You can have multiple source roots in a standard project, with the following exceptions:</p>
-<ul>
-<li>The source root cannot already exist in another IDE project.</li>
-<li>The source root cannot already be added to another compilation unit of the same project. For example, a source root that is registered under Test Packages cannot be added to the list of Source Packages.</li>
-<li>All of the source roots are packaged into the same WAR file and share the same classpath.</li>
-</ul>
-<p><b>Note:</b> If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG389">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Specifies a way to distinguish resources in one web application from resources in others that are deployed on the same server instance. The context of an application determines the URL namespace of the contents of the web application. When a web application's context property value is set, you access the web application at <code>http://hostname:port/context/some_file.some_extension</code>. For example, with the property value set to <code>/HelloWeb</code>, you could access the application's entry point <code>index.jsp</code> file at: <code>http://hostname:port/HelloWeb/index.jsp</code>.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click Finish, the folder specified as the Location property is used to determine where the web pages, Java sources and libraries are found. The project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p><b>Note:</b> You must click <b>Next</b> to specify the location of your web pages, Java sources and libraries.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, "
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG382">
 <param name="text" value="<html><u>Creating Standard Projects</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG456">
+<param name="text" value="<html><u>How to Share a Library</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

@@ -55,6 +55,7 @@ import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.netbeans.modules.jira.util.JiraUtils;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -106,7 +107,8 @@ public class Jira {
 
     public JiraRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
-            jrc = new JiraRepositoryConnector();
+            jrc = MylynRepositoryConnectorProvider.getInstance().getConnector();
+            MylynSupport.getInstance().addRepositoryListener(JiraClientFactory.getDefault());
         }
         return jrc;
     }
@@ -114,10 +116,6 @@ public class Jira {
     public JiraClient getClient(TaskRepository repo) {
         // XXX init repo connenction?
         return JiraClientFactory.getDefault().getJiraClient(repo);
-    }
-
-    public void removeClient(TaskRepository taskRepository) {
-        JiraClientFactory.getDefault().repositoryRemoved(taskRepository);
     }
 
     public JiraStorageManager getStorageManager () {

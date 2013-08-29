@@ -366,6 +366,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        urlTextField.setColumns(20);
+
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
         Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
 
@@ -379,6 +381,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         uploadDirectoryLabel.setLabelFor(uploadDirectoryTextField);
         Mnemonics.setLocalizedText(uploadDirectoryLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadDirectory")); // NOI18N
 
+        uploadDirectoryTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(remoteConnectionHintLabel, "dummy"); // NOI18N
 
         uploadFilesLabel.setLabelFor(uploadFilesComboBox);
@@ -388,6 +392,8 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setColumns(20);
 
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -418,7 +424,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                             .addComponent(indexFileTextField)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(indexFileBrowseButton))
-                        .addComponent(urlTextField, Alignment.TRAILING)
+                        .addComponent(urlTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addComponent(uploadFilesHintLabel)
                         .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                             .addComponent(remoteConnectionComboBox, 0, 1, Short.MAX_VALUE)

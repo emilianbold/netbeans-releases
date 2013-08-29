@@ -337,7 +337,7 @@ public final class PluginsPanel extends JPanel {
 
     private void updateButtonsEnabled() {
         selectSelectedButton.setEnabled(pluginsList.getSelectedIndex()!=-1);
-        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex()!=-1);
+        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex()!=-1 && selectedPluginsList.getSelectedIndex()<selectedPluginsModel.getSize());
     }
 
     private static final class PluginsListModel extends AbstractListModel {

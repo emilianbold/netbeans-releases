@@ -204,6 +204,20 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
             return cssIcon;
         }
         
+        @Override
+        public String getInsertPrefix() {
+            String name = super.getInsertPrefix();
+            if (name.charAt(0) == '#' || name.charAt(0) == '.') {
+                name = name.substring(1);
+            }
+            return name;
+        }
+        
+        @Override
+        public String getCustomInsertTemplate() {
+            return getElement().getName();
+        }
+
     }
     
     public static class JQuerySimpleItem extends HTMLTagCompletionItem {
@@ -236,6 +250,17 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
             }
             return jQIcon;
         }
+
+        @Override
+        public String getInsertPrefix() {
+            String name = super.getInsertPrefix();
+            if (name.charAt(0) == ':') {
+                name = name.substring(1);
+            }
+            return name;
+        }
+        
+        
     }
     
     public static class PropertyNameCompletionItem implements CompletionProposal {

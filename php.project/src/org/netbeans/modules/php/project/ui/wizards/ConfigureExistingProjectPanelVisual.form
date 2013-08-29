@@ -43,11 +43,11 @@
                       <Component id="phpVersionComboBox" max="32767" attributes="0"/>
                       <Component id="sourcesInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="sourcesTextField" max="32767" attributes="0"/>
+                          <Component id="sourcesTextField" pref="0" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="sourcesBrowseButton" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="projectNameTextField" alignment="1" max="32767" attributes="2"/>
+                      <Component id="projectNameTextField" alignment="1" pref="0" max="32767" attributes="2"/>
                       <Component id="encodingComboBox" alignment="0" max="32767" attributes="2"/>
                   </Group>
               </Group>
@@ -111,6 +111,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="sourcesTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureExistingProjectPanelVisual.sourcesTextField.AccessibleContext.accessibleName_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -174,6 +177,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="projectNameTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="ConfigureExistingProjectPanelVisual.projectNameTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

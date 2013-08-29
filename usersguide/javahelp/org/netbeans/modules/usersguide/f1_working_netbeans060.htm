@@ -2,216 +2,74 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Files Window</title>
+<title>Project Group: Create New Group Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="ProjectTab_Files" name="ProjectTab_Files"></a></p>
+<p><a id="org.netbeans.modules.project.ui.groups.GroupsMenu" name="org.netbeans.modules.project.ui.groups.GroupsMenu"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref62" name="sthref62"></a>
-<h1>Files Window</h1>
+<h1>Project Group: Create New Group Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Files window shows a directory-based view of your projects, including any files and folders that are not displayed in the Projects Window.</p>
-<p>You can right-click in the white space of the Files window to open a popup menu command that enables you to collapse all expanded nodes in the window.</p>
-<p>Each element in the Files window has a context-sensitive pop-up menu of commands that you can apply to that element. You open the popup menu by right-clicking the element. The commands that are available will depend upon the selected element. The popup menu for project nodes does not contain the major project commands, such as <b>Build</b>, <b>Run</b>, and <b>Debug</b>. These commands are only available in the Projects window.</p>
-<p>The following table describes many of the commands that are available when you right-click a folder or file in the Files window.</p>
+<p>The Create New Group dialog box enables you to create groupings of projects so that you can open and close several projects at once. In addition, each group can have a different main project. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2209">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You can use the dialog box to create the following types of groups:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t65">Command</th>
+<th align="left" valign="bottom" id="r1c1-t65">Element</th>
 <th align="left" valign="bottom" id="r1c2-t65">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t65" headers="r1c1-t65">
-<p>New</p>
+<p>Free Group</p>
 </td>
 <td align="left" headers="r2c1-t65 r1c2-t65">
-<p>Enables you to create a new file in the selected folder.</p>
+<p>When you create a free group, you can choose either of the following options:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t65" headers="r1c1-t65">
-<p>Find</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use Currently Open Projects</p>
 </td>
 <td align="left" headers="r3c1-t65 r1c2-t65">
-<p>Opens Find in Projects dialog box to search for instances of a specified text or a regular expression. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2293">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Adds the currently open projects to the group.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t65" headers="r1c1-t65">
-<p>Cut</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Automatically Save Project List</p>
 </td>
 <td align="left" headers="r4c1-t65 r1c2-t65">
-<p>Copies the selected element to clipboard and removes the element.</p>
+<p>Changes the contents of the project group according to the projects that you open and close when the project group is open.</p>
+<p>Deselect this option if you do not want the contents of a free group to change as you open and close projects.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t65" headers="r1c1-t65">
-<p>Copy</p>
+<p>Project and All Required Projects</p>
 </td>
 <td align="left" headers="r5c1-t65 r1c2-t65">
-<p>Copies the selected element and contents to the clipboard.</p>
+<p>Creates a group that consists of a master project and all of the projects that it depends on.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t65" headers="r1c1-t65">
-<p>Paste</p>
+<p>Folder of Projects.</p>
 </td>
 <td align="left" headers="r6c1-t65 r1c2-t65">
-<p>Adds element from clipboard to the selected folder.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t65" headers="r1c1-t65">
-<p>Delete</p>
-</td>
-<td align="left" headers="r7c1-t65 r1c2-t65">
-<p>Deletes the selected element. Also deletes the contents if the element is a folder.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t65" headers="r1c1-t65">
-<p>Refactor</p>
-</td>
-<td align="left" headers="r8c1-t65 r1c2-t65">
-<p>Opens a sub-menu with refactoring commands.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Rename</p>
-</td>
-<td align="left" headers="r9c1-t65 r1c2-t65">
-<p>Opens the Rename refactoring dialog box.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Move</p>
-</td>
-<td align="left" headers="r10c1-t65 r1c2-t65">
-<p>Opens the Move refactoring dialog box. This command is not available for all elements.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Copy</p>
-</td>
-<td align="left" headers="r11c1-t65 r1c2-t65">
-<p>Opens the Copy refactoring dialog box. This command is not available for all elements.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Safely Delete</p>
-</td>
-<td align="left" headers="r12c1-t65 r1c2-t65">
-<p>Opens the Safely Delete refactoring dialog box.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r13c1-t65" headers="r1c1-t65">
-<p>History</p>
-</td>
-<td align="left" headers="r13c1-t65 r1c2-t65">
-<p>Opens the History sub-menu.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r14c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Show History</p>
-</td>
-<td align="left" headers="r14c1-t65 r1c2-t65">
-<p>Opens the local history of the selected element. This command is not available for all elements. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG339">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r15c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Revert Deleted</p>
-</td>
-<td align="left" headers="r15c1-t65 r1c2-t65">
-<p>Restores the deleted element. This command is not available for all elements. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG341">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r16c1-t65" headers="r1c1-t65">
-<p>Tools</p>
-</td>
-<td align="left" headers="r16c1-t65 r1c2-t65">
-<p>Opens a sub-menu with various commands.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r17c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Apply Diff Patch</p>
-</td>
-<td align="left" headers="r17c1-t65 r1c2-t65">
-<p>Opens a dislog box that enables you to select a diff patch to apply to the selected element</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r18c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Add to Favorites</p>
-</td>
-<td align="left" headers="r18c1-t65 r1c2-t65">
-<p>Add the selected element as a top-level element in the Favorites window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r19c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Create Tests</p>
-</td>
-<td align="left" headers="r19c1-t65 r1c2-t65">
-<p>Opens the Create Tests dialog box. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG667">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r20c1-t65" headers="r1c1-t65">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Analyze Javadoc</p>
-</td>
-<td align="left" headers="r20c1-t65 r1c2-t65">
-<p>Opens the Analyzer window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r21c1-t65" headers="r1c1-t65">
-<p>Properties</p>
-</td>
-<td align="left" headers="r21c1-t65 r1c2-t65">
-<p>Opens the Properties window for the folder or file.</p>
+<p>Creates a group out of all of the projects that are within a folder you specify.</p>
 </td>
 </tr>
 </tbody>
@@ -221,8 +79,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG217">
-<param name="text" value="<html><u>&quot;Working with Source Files in NetBeans IDE&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG207">
+<param name="text" value="<html><u>&quot;Managing and Creating Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

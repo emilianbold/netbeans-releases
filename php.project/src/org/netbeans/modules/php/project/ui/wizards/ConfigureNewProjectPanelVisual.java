@@ -128,6 +128,8 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         Mnemonics.setLocalizedText(projectNameLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_ProjectName")); // NOI18N
         projectNameLabel.setVerticalAlignment(SwingConstants.TOP);
 
+        projectNameTextField.setColumns(20);
+
         sourcesLabel.setLabelFor(localServerComboBox);
         Mnemonics.setLocalizedText(sourcesLabel, NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_Sources")); // NOI18N
         sourcesLabel.setVerticalAlignment(SwingConstants.TOP);
@@ -165,7 +167,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
                         .addContainerGap())
                     .addGroup(layout.createParallelGroup(Alignment.LEADING)
                         .addComponent(phpVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(projectNameTextField)
+                        .addComponent(projectNameTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(localServerComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)

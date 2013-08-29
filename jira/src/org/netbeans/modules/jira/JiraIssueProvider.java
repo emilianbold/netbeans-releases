@@ -64,7 +64,7 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
 
     @Override
     public String getID(NbJiraIssue data) {
-        return data.getID();
+        return data.getKey();
     }
 
     @Override
@@ -124,7 +124,7 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
             statusProvider = new IssueStatusProvider<NbJiraIssue>() {
                 @Override
                 public Status getStatus(NbJiraIssue issue) {
-                    return issue.getIssueStatus();
+                    return issue.getStatus();
                 }
                 @Override
                 public void setSeen(NbJiraIssue issue, boolean uptodate) {
@@ -141,5 +141,10 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
             };
         }
         return statusProvider;
+    }
+
+    @Override
+    public boolean submit (NbJiraIssue data) {
+        return data.submitAndRefresh();
     }
 }

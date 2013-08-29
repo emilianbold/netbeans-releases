@@ -1222,9 +1222,6 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 long t9Timeout = getT9LockReleaseTimeOut();
                 long timeout = t9Timeout >= 0 ? t9Timeout : LOCK_TIMEOUT;
                 boolean aquired = s.tryAcquire(timeout, TimeUnit.SECONDS);
-                if(t9Timeout < 0) {
-                    assert aquired;
-                }
                 if(aquired) {
                     s.release();
                 } else {

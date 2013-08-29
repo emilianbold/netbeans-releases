@@ -424,77 +424,40 @@ public final class MavenModelUtils {
         }
     }
 
-    /** Add JAX-WS 2.1 Library.
+    /** Add Metro Library.
      *
      * @param project Project
-     * @return true if library was successfully added
      */
-    public static boolean addJaxws21Library(final Project project) {
-        if (!isJaxWs21Library(project)) {
-            //add the Metro library
-            final boolean[] libraryAdded = new boolean[1];
-            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
-
-                @Override
-                public void performOperation(POMModel model) {
-                    try {
-                        addJaxws21Library(project, model);
-                        libraryAdded[0] = true;
-                    } catch (Exception ex) {
-                        Logger.getLogger(
-                            MavenModelUtils.class.getName()).log(
-                                Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
-                        libraryAdded[0] = false;
-                    }
-                }
-
-            };
-            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-
-            if (libraryAdded[0]) {
-                addJavadoc(project);
-            }
-
-            return libraryAdded[0];
+    public static void addMetroLibrary(Project project) {
+        WSStack<JaxWs> wsStack = new WSStackUtils(project).getWsStack(JaxWs.class);
+        String scope = null;
+        if (wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT)) {
+            scope = Artifact.SCOPE_PROVIDED;
         }
-        return false;
+        ModelUtils.addDependency(project.getProjectDirectory().getFileObject("pom.xml"), 
+                "org.glassfish.metro", 
+                "webservices-rt", 
+                "2.3", 
+                null, scope, null, false);
     }
 
-    /** Add JAX-WS 2.1 Library.
-     *
-     * @param project Project
-     * @param model POMModel instance
-     * @return true if library was successfully added
-     */
-    public static void addJaxws21Library(Project project, POMModel model) {
-        Dependency dep =
-               ModelUtils.checkModelDependency(model, "com.sun.xml.ws", "webservices-rt", true); //NOI18N
-        if (dep != null) {
-            dep.setVersion("1.4"); //NOI18N
-            WSStack<JaxWs> wsStack = new WSStackUtils(project).getWsStack(JaxWs.class);
-            if (wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT)) {
-                dep.setScope(Artifact.SCOPE_PROVIDED);
-            }
-            else {
-                dep.setScope(Artifact.SCOPE_COMPILE);
-            }
-        }
-    }
-
-    /** Detect JAX-WS 2.1 Library in project.
+    /** Detect JAX-WS Library in project.
      *
      * @param project Project
      * @return true if library was detected
      */
-    public static boolean isJaxWs21Library(Project project) {
+    public static boolean hasJaxWsAPI(Project project) {
         SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (srcGroups.length > 0) {
-            ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
-            FileObject wsimportFO = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
-            if (wsimportFO == null) {
-                return false;
+            ClassPath classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.BOOT);
+            FileObject wsFeature = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
+            if (wsFeature == null) {
+                classPath = ClassPath.getClassPath(srcGroups[0].getRootFolder(), ClassPath.COMPILE);
+                wsFeature = classPath.findResource("javax/xml/ws/WebServiceFeature.class"); // NOI18N
+                if (wsFeature == null) {
+                    return false;
+                }
             }
         }
         return true;
@@ -569,9 +532,9 @@ public final class MavenModelUtils {
         return null;
     }
 
-    private static void updateLibraryScope(POMModel model, String targetScope) {
+    private static void updateLibraryScope(POMModel model, String groupId, String targetScope) {
         assert model.isIntransaction() : "need to call model modifications under transaction."; //NOI18N
-        Dependency wsDep = model.getProject().findDependencyById("com.sun.xml.ws", "webservices-rt", null); //NOI18N
+        Dependency wsDep = model.getProject().findDependencyById(groupId, "webservices-rt", null); //NOI18N
         if (wsDep != null) {
             wsDep.setScope(targetScope);
         }
@@ -587,11 +550,19 @@ public final class MavenModelUtils {
         List<org.apache.maven.model.Dependency> deps = nb.getMavenProject().getDependencies();
         String metroScope = null;
         boolean foundMetroDep = false;
+        String groupId = null;
         for (org.apache.maven.model.Dependency dep:deps) {
             if ("com.sun.xml.ws".equals(dep.getGroupId()) && "webservices-rt".equals(dep.getArtifactId())) { //NOI18N
                 String scope = dep.getScope();
                 metroScope = scope == null ? "compile" : scope; //NOI18N
                 foundMetroDep = true;
+                groupId = "com.sun.xml.ws";
+                break;
+            } else if ("org.glassfish.metro".equals(dep.getGroupId()) && "webservices-rt".equals(dep.getArtifactId())) { //NOI18N
+                String scope = dep.getScope();
+                metroScope = scope == null ? "compile" : scope; //NOI18N
+                foundMetroDep = true;
+                groupId = "org.glassfish.metro";
                 break;
             }
         }
@@ -617,12 +588,13 @@ public final class MavenModelUtils {
             }*/
             if (updateScopeTo != null) {
                 final String targetScope = updateScopeTo;
+                final String grpId = groupId;
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                     @Override
                     public void performOperation(POMModel model) {
                         // update webservices-rt library dependency scope (provided or compile)
                         // depending whether J2EE Server contains metro jars or not
-                        updateLibraryScope(model, targetScope);
+                        updateLibraryScope(model, grpId, targetScope);
                     }
                 };
                 Utilities.performPOMModelOperations(prj.getProjectDirectory().getFileObject("pom.xml"), //NOI18N

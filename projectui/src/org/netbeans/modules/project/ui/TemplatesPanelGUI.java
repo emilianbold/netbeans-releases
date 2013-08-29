@@ -68,6 +68,7 @@ import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -158,6 +159,19 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 //                });
 //            }
 //        });
+        
+
+        //Hack to add a text label to the quicksearch
+        Component qsComponent = panelFilter.getComponent( 0 );
+        if( qsComponent instanceof JComponent ) {
+            for( Component c : ((JComponent)qsComponent).getComponents() ) {
+                if( c instanceof JLabel ) {
+                    JLabel jLabel = (JLabel) c;
+                    String text = org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_QuicksearchLabel");
+                    Mnemonics.setLocalizedText(jLabel, text);
+    }
+            }
+        }
     }
 
     public void setTemplatesFolder (final FileObject folder) {

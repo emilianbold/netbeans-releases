@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms.api;
 
+import java.awt.Image;
 import java.net.URL;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -106,7 +107,10 @@ public final class WebKitDebuggingSupport {
                     transport.setBrowserURLMapper(mapper);
                 }
             }
-            transport.attach();
+            boolean attached = transport.attach();
+            if (!attached) {
+                return;
+            }
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -122,14 +126,22 @@ public final class WebKitDebuggingSupport {
             consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
             networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
             dispatcher = new MessageDispatcherImpl();
-            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
+            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(Image.class), dispatcher));
         } finally {
             startDebuggingInProgress = false;
         }
     }
     
     public void stopDebugging(final boolean fullCleanup) {
-        if (startDebuggingInProgress)
+        if (transport != null && fullCleanup) {
+            transport.flush();
+            if (webKitDebugging==null) {
+                transport.detach();
+                transport = null;
+            } 
+        }
+        
+        if (startDebuggingInProgress && !fullCleanup)
             return;
         RP.post(new Runnable() {
             @Override
@@ -143,30 +155,32 @@ public final class WebKitDebuggingSupport {
         if (webKitDebugging == null || webKitDebugging == null) {
             return;
         }
-        if (debuggerSession != null) {
-            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
-        }
-        debuggerSession = null;
-        if (consoleLogger != null) {
-            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
-        }
-        consoleLogger = null;
-        if (networkMonitor != null) {
-            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
-        }
-        networkMonitor = null;
-        if (webKitDebugging.getDebugger().isEnabled()) {
-            webKitDebugging.getDebugger().disable();
-        }
-        dispatcher.dispose();
-        if (fullCleanup) {
-            // Perform a dummy blocking call that ensures that the previous
-            // calls are processed before we continue and detach the transport.
-            webKitDebugging.getRuntime().evaluate("0"); // NOI18N
-        }
-        webKitDebugging.reset();
-        transport.detach();
-        transport = null;
+            if (debuggerSession != null) {
+                WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
+            }
+            debuggerSession = null;
+            if (consoleLogger != null) {
+                WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+            }
+            consoleLogger = null;
+            if (networkMonitor != null) {
+                WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+            }
+            networkMonitor = null;
+            if (webKitDebugging.getDebugger().isEnabled()) {
+                webKitDebugging.getDebugger().disable();
+            }
+            dispatcher.dispose();
+            if (fullCleanup) {
+                // Perform a dummy blocking call that ensures that the previous
+                // calls are processed before we continue and detach the transport.
+                webKitDebugging.getRuntime().evaluate("0"); // NOI18N
+            }
+            webKitDebugging.reset();
+            if (transport!=null) {
+                transport.detach();
+                transport = null;
+            }
         webKitDebugging = null;
     }
     

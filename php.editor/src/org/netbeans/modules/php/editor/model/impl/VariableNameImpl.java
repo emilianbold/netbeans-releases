@@ -74,6 +74,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
@@ -475,6 +476,20 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         ASTNodeInfo<FieldAccess> fieldInfo = ASTNodeInfo.create(fieldAccess);
         final OffsetRange range = fieldInfo.getRange();
         final int startOffset = fieldAccess.getStartOffset();
+        assignmentDatas.add(new LazyFieldAssignment(typeName, fldName, range, startOffset, scope));
+    }
+
+    void createLazyStaticFieldAssignment(StaticFieldAccess staticFieldAccess, Assignment node, Scope scope) {
+        String fldName = CodeUtils.extractVariableName(staticFieldAccess.getField());
+        if (fldName != null) {
+            if (!fldName.startsWith("$")) {
+                fldName = "$" + fldName; //NOI18N
+            }
+        }
+        String typeName = VariousUtils.extractVariableTypeFromAssignment(node, Collections.<String, AssignmentImpl>emptyMap());
+        ASTNodeInfo<StaticFieldAccess> fieldInfo = ASTNodeInfo.create(staticFieldAccess);
+        final OffsetRange range = fieldInfo.getRange();
+        final int startOffset = staticFieldAccess.getStartOffset();
         assignmentDatas.add(new LazyFieldAssignment(typeName, fldName, range, startOffset, scope));
     }
 

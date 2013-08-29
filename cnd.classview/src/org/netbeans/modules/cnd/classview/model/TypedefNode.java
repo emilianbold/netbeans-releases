@@ -48,6 +48,7 @@ import javax.swing.event.ChangeEvent;
 import org.openide.nodes.*;
 
 import  org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 
 /**
  * @author Vladimir Kvasihn
@@ -66,7 +67,7 @@ public class TypedefNode extends ObjectNode {
         init(typedef);
     }
     
-    private void init(CsmTypedef typedef){
+    private void init(final CsmTypedef typedef){
         CharSequence old = name;
         name = typedef.getName();
         if ((old == null) || !old.equals(name)) {
@@ -81,11 +82,15 @@ public class TypedefNode extends ObjectNode {
             fireShortDescriptionChange(old == null ? null : old.toString(),
                     qname == null ? null : qname.toString());
         }
-        //String shortName = typedef.getName().toString();
-        //String longName = typedef.getQualifiedName().toString();
-        //setName(shortName);
-        //setDisplayName(shortName);
-        //setShortDescription(longName);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(typedef);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
 
     @Override
@@ -103,7 +108,7 @@ public class TypedefNode extends ObjectNode {
         return qname.toString();
     }
 
-
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmTypedef){

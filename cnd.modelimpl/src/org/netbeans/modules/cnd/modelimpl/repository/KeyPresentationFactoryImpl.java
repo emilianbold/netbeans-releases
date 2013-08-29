@@ -123,6 +123,7 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                         case CLASS_FRIEND_DECLARATION:
                         case TEMPLATE_SPECIALIZATION:
                         case TYPEDEF:
+                        case TYPEALIAS:
                         case USING_DECLARATION:
                         case VARIABLE_DEFINITION:
                         case CLASS_FORWARD_DECLARATION:

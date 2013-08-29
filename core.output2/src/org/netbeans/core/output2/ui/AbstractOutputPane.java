@@ -375,7 +375,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         try {
             Rectangle rect = textView.modelToView(pos);
             if (rect != null) {
-                textView.scrollRectToVisible(rect);
+                int spaceAround
+                        = (textView.getVisibleRect().height - rect.height) / 2;
+                Rectangle centeredRect = new Rectangle(
+                        rect.x, rect.y - spaceAround + rect.height,
+                        rect.width, spaceAround * 2 + rect.height);
+                textView.scrollRectToVisible(centeredRect);
             }
             locked = false;
         } catch (BadLocationException ex) {
@@ -594,7 +599,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+        if (e.getOffset() + e.getLength() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             //#119985 only move caret when not in editable section
             OutputDocument doc = (OutputDocument)e.getDocument();
             if (! (e instanceof OutputDocument.DO) && getCaretPos() >= doc.getOutputLength()) {
@@ -609,7 +614,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //Ensure it is consumed
         e.getLength();
         documentChanged();
-        if (e.getOffset() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
+        if (e.getOffset() + e.getLength() >= getCaretPos() && (locked || !(e instanceof OutputDocument.DO))) {
             //#119985 only move caret when not in editable section
             OutputDocument doc = (OutputDocument)e.getDocument();
             if (! (e instanceof OutputDocument.DO) && getCaretPos() >= doc.getOutputLength()) {

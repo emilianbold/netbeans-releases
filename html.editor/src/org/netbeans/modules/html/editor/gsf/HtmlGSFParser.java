@@ -80,7 +80,9 @@ public class HtmlGSFParser extends Parser {
 
     @Override
     public Result getResult(Task task) throws ParseException {
-        return cancelled.get() || (result == null) ? null : HtmlParserResultAccessor.get().createInstance(result);
+        //avoid change of the mutable 'result' field during the following ternary operator execution.
+        final SyntaxAnalyzerResult sar = result; 
+        return cancelled.get() || (sar == null) ? null : HtmlParserResultAccessor.get().createInstance(sar);
     }
 
     @Override

@@ -1,5 +1,5 @@
 Name: JSch-agent-proxy
-Version: 0.0.5
+Version: 0.0.6
 License: BSD-jsch-agent-proxy
 Origin: http://www.jcraft.com/jsch-agent-proxy/LICENSE.txt
 Description: A proxy to ssh-agent and Pageant in Java

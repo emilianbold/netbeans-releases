@@ -105,7 +105,6 @@ public final class ApiGenScript {
     private static final String TODO_PARAM = "--todo"; // NOI18N
     private static final String DOWNLOAD_PARAM = "--download"; // NOI18N
     private static final String SOURCE_CODE_PARAM = "--source-code"; // NOI18N
-    private static final String PROGRESSBAR_PARAM = "--progressbar"; // NOI18N
     private static final String COLORS_PARAM = "--colors"; // NOI18N
     private static final String UPDATE_CHECK_PARAM = "--update-check"; // NOI18N
 
@@ -211,7 +210,6 @@ public final class ApiGenScript {
             addDownload(phpModule, params);
             addSourceCode(phpModule, params);
             addColors(phpModule, params);
-            addProgressBar(phpModule, params);
         }
         addUpdateCheck(phpModule, params);
         return params;
@@ -285,11 +283,6 @@ public final class ApiGenScript {
 
     private void addSourceCode(PhpModule phpModule, List<String> params) {
         addBoolean(params, SOURCE_CODE_PARAM, ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.SOURCE_CODE));
-    }
-
-    // disable progress bar (does not work in output window)
-    private void addProgressBar(PhpModule phpModule, List<String> params) {
-        addBoolean(params, PROGRESSBAR_PARAM, false);
     }
 
     // always set colors since output windows supports ANSI coloring

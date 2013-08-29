@@ -48,6 +48,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -59,11 +60,24 @@ public class RepositoryValidationBase extends TraceModelTestBase {
         super(testName);
     }
 
-    protected static final File localFilesStorage = new File(System.getenv("HOME"), "cnd-test-files-storage");
+    protected static final File localFilesStorage = new File(getHomeDir(), "cnd-test-files-storage");
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
     protected static final String modelimplName = "cnd.modelimpl";
     protected static final String moduleName = "cnd.repository";
     private static String goldenDirectory;
+
+    private static String getHomeDir() {
+        String path;
+        if (Utilities.isWindows()) {
+            path = System.getenv("USERPROFILE");
+        } else {
+            path = System.getenv("HOME");
+        }
+        if (path == null) { // paranoia
+            path = System.getProperty("user.home");
+        }
+        return path;
+    }
 
     @Override
     protected File getTestCaseDataDir() {

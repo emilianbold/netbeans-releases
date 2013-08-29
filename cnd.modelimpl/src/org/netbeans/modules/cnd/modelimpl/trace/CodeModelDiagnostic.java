@@ -61,8 +61,10 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputWriter;
+import static org.netbeans.modules.cnd.modelimpl.trace.Bundle.*;
 
 /**
  *
@@ -85,9 +87,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1000)
     public final static class StandAloneProviderTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"StandAloneProviderTrace.displayName=Standalone Files Information"})
         @Override
         public String getDisplayName() {
-            return "Standalone Files Information";// NOI18N 
+            return StandAloneProviderTrace_displayName();
         }
 
         @Override
@@ -106,9 +109,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1100)
     public final static class FileTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"FileTrace.displayName=General File Information"})
         @Override
         public String getDisplayName() {
-            return "General File Information";// NOI18N 
+            return FileTrace_displayName();
         }
 
         @Override
@@ -174,9 +178,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1200)    
     public final static class PPStatesTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"PPStatesTrace.displayName=Preprocessor States"})
         @Override
         public String getDisplayName() {
-            return "Preprocessor States";// NOI18N 
+            return PPStatesTrace_displayName();
         }
 
         @Override
@@ -196,9 +201,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1250)
     public final static class IncludePPStatesTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"IncludePPStatesTrace.displayName=Included Preprocessor States"})
         @Override
         public String getDisplayName() {
-            return "Included Preprocessor States";// NOI18N
+            return IncludePPStatesTrace_displayName();
         }
 
         @Override
@@ -218,9 +224,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1300)
     public final static class ModelProjectsTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ModelProjectsTrace.displayName=Model Projects"})
         @Override
         public String getDisplayName() {
-            return "Model Projects";// NOI18N 
+            return ModelProjectsTrace_displayName();
         }
 
         @Override
@@ -235,9 +242,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1350)
     public final static class ModelProjectsContainers implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ModelProjectsContainers.displayName=Model Projects File Containers"})
         @Override
         public String getDisplayName() {
-            return "Model Projects File Containers";// NOI18N 
+            return ModelProjectsContainers_displayName();
         }
 
         @Override
@@ -252,9 +260,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1325)
     public final static class ModelProjectsIndex implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ModelProjectsIndex.displayName=Model Projects Index"})
         @Override
         public String getDisplayName() {
-            return "Model Projects Index";// NOI18N 
+            return ModelProjectsIndex_displayName();
         }
 
         @Override
@@ -267,9 +276,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1375)
     public final static class ModelFileIndex implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ModelFileIndex.displayName=File References Index"})
         @Override
         public String getDisplayName() {
-            return "File References Index";// NOI18N 
+            return ModelTrace_displayName();
         }
 
         @Override
@@ -291,9 +301,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplModelTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"FileImplModelTrace.displayName=File Code Model"})
         @Override
         public String getDisplayName() {
-            return "File Code Model";// NOI18N 
+            return FileImplModelTrace_displayName();
         }
 
         @Override
@@ -308,9 +319,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1400)
     public final static class FileImplASTTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"FileImplASTTrace.displayName=File AST"})
         @Override
         public String getDisplayName() {
-            return "File AST";// NOI18N
+            return FileImplASTTrace_displayName();
         }
 
         @Override
@@ -328,9 +340,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1500)
     public final static class ProjectDeclarationsTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ProjectDeclarationsTrace.displayName=Project Declaration Containers (Huge size)"})
         @Override
         public String getDisplayName() {
-            return "Project Declaration Containers (Huge size)";// NOI18N 
+            return ProjectReferencesTrace_displayName();
         }
 
         @Override
@@ -357,9 +370,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
     public final static class ModelTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ModelTrace.displayName=Project Code Model (Huge size)"})
         @Override
         public String getDisplayName() {
-            return "Project Code Model (Huge size)";// NOI18N 
+            return ModelTrace_displayName();
         }
 
         @Override
@@ -383,9 +397,10 @@ public final class CodeModelDiagnostic {
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 1600)
     public final static class ProjectReferencesTrace implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"ProjectReferencesTrace.displayName=Project References"})
         @Override
         public String getDisplayName() {
-            return "Project References";// NOI18N
+            return ProjectReferencesTrace_displayName();
         }
 
         @Override

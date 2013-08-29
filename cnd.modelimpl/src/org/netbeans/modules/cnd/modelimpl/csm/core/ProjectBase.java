@@ -713,7 +713,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 getClassifierSorage().putClassifier((CsmClassifier) decl);
             }
 
-        } else if (CsmKindUtilities.isTypedef(decl)) { // isClassifier(decl) or isTypedef(decl) ??
+        } else if (CsmKindUtilities.isTypedef(decl) || CsmKindUtilities.isTypeAlias(decl)) { // isClassifier(decl) or isTypedef(decl) ??
             getDeclarationsSorage().putDeclaration(decl);
             getClassifierSorage().putClassifier((CsmClassifier) decl);
         } else {

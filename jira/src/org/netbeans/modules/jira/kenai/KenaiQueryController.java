@@ -50,6 +50,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Confirmation;
@@ -93,6 +94,13 @@ public class KenaiQueryController extends QueryController
         super.openIssue(issue);
     }
 
+    @Override
+    protected void onCloneQuery () {
+        FilterDefinition fd = getFilterDefinition();
+        JiraQuery q = new KenaiQuery(null, getRepository(), fd, projectName, false, true);
+        JiraUtils.openQuery(q);
+    }
+
     private boolean checkIssueProduct(NbJiraIssue issue) {
         String issueProject = issue.getFieldValue(IssueField.PROJECT);
         Project project = issue.getRepository().getConfiguration().getProjectById(issueProject);
@@ -101,7 +109,7 @@ public class KenaiQueryController extends QueryController
                                 NbBundle.getMessage(
                                     KenaiQueryController.class,
                                     "MSG_WrongProjectWarning",
-                                    new Object[] {issue.getID(), issueProject}),
+                                    new Object[] {issue.getKey(), issueProject}),
                                 Confirmation.YES_NO_OPTION);
             return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
         }

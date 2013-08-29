@@ -47,6 +47,7 @@ package org.netbeans.modules.php.editor.typinghooks;
  * @author Petr Pisl
  */
 
+import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
@@ -112,15 +113,20 @@ public class PHPBracketCompleterFileBasedTest extends PHPCodeCompletionTestBase 
 
         setupDocumentIndentation(doc, preferences);
 
-
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 
-        doc.getText(0, doc.getLength());
-        doc.insertString(caret.getDot(), "^", null);
+        // wait for generating comment
+        Future<?> future = PhpCommentGenerator.RP.submit(new Runnable() {
+            @Override
+            public void run() {
+            }
+        });
+        future.get();
 
+        doc.insertString(caret.getDot(), "^", null);
         String target = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, target, false, ".indented");
     }

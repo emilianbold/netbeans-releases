@@ -330,7 +330,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         return this;
     }
 
-    private static final class RenameFileListener implements ChangeListener {
+    private final class RenameFileListener implements ChangeListener {
         private final JCheckBox lowerCaseFileNameCheckBox;
 
         public RenameFileListener(JCheckBox lowerCaseFileNameCheckBox) {
@@ -341,6 +341,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         public void stateChanged(ChangeEvent e) {
             JCheckBox source = (JCheckBox) e.getSource();
             lowerCaseFileNameCheckBox.setEnabled(source.isVisible() && source.isSelected());
+            RenamePanel.this.parent.stateChanged(null);
         }
     }
 }

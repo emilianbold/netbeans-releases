@@ -243,4 +243,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new AmbiguousComparisonHint(), "testIssue229529.php");
     }
 
+    public void testIssue234983() throws Exception {
+        checkHints(new ParentConstructorCallHint(), "testIssue234983.php");
+    }
+
 }

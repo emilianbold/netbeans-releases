@@ -177,8 +177,23 @@ public class TypeFactory {
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
         return createType(ast, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
     }
-
+    
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        return createType(ast, classifier, file, content, ptrOperator, arrayDepth, parent, scope, null, inFunctionParameters, inTypedef);
+    }
+
+    public static TypeImpl createType(AST ast, 
+                                      CsmClassifier classifier, 
+                                      CsmFile file, 
+                                      FileContent content, 
+                                      AST ptrOperator, 
+                                      int arrayDepth, 
+                                      CsmType parent, 
+                                      CsmScope scope, 
+                                      List<CsmTemplateParameter> additionalTemplateParams,
+                                      boolean inFunctionParameters, 
+                                      boolean inTypedef) 
+    {
         int refence = 0;
         int pointerDepth = 0;
         
@@ -297,7 +312,7 @@ public class TypeFactory {
                                             // We're done here, start filling nested type
                                             type.setClassifierText(NameCache.getManager().getString(sb));
                                             type.setQName(l.toArray(new CharSequence[l.size()]));
-                                            type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope), scope);
+                                            type = createType(namePart.getNextSibling(), file, ptrOperator, arrayDepth, TemplateUtils.checkTemplateType(type, scope, additionalTemplateParams), scope);
                                             break;
                                         }
                                     } else {

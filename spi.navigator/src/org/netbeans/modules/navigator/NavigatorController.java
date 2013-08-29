@@ -597,7 +597,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         List<NavigatorPanel> fileResult = null;
         for (Node node : nodes) {
             DataObject dObj = obtainNodeDO(node);
-            if (dObj == null) {
+            if (dObj == null || !dObj.isValid()) {
                 fileResult = null;
                 break;
             }
@@ -718,6 +718,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     public void nodeDestroyed(NodeEvent ev) {
         LOG.fine("Node destroyed reaction...");
+        // #121944: don't react on node destroy when we are active
+        if (navigatorTC.getTopComponent().equals(WindowManager.getDefault().getRegistry().getActivated())) {
+            LOG.fine("NavigatorTC active, skipping node destroyed reaction.");
+            return;
+        }
         LOG.fine("invokeLater on updateContext from node destroyed reaction...");
         // #122257: update content later to fight possible deadlocks
         Lookup globalContext = Utilities.actionsGlobalContext();

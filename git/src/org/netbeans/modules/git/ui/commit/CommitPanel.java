@@ -55,6 +55,8 @@ import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
@@ -73,7 +75,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private final GitCommitParameters parameters;
     private UndoRedoSupport um; 
     private String headCommitMessage;
-    private boolean commitMessageAmended;
+    private boolean commitMessageEdited;
 
     /** Creates new form CommitPanel */
     public CommitPanel(GitCommitParameters parameters, String commitMessage, boolean preferredMessage, String user) {
@@ -101,6 +103,7 @@ public class CommitPanel extends javax.swing.JPanel {
         
         Spellchecker.register (messageTextArea);  
         initCommitMessage(commitMessage, preferredMessage);
+        attacheMessageListener();
     }
 
     private void setCaretPosition(JComboBox cbo) {
@@ -153,6 +156,30 @@ public class CommitPanel extends javax.swing.JPanel {
             }
         }
         super.removeNotify();
+    }
+
+    private void attacheMessageListener () {
+        messageTextArea.getDocument().addDocumentListener(new DocumentListener() {
+            
+            @Override
+            public void insertUpdate (DocumentEvent e) {
+                modified();
+            }
+
+            @Override
+            public void removeUpdate (DocumentEvent e) {
+                modified();
+            }
+
+            @Override
+            public void changedUpdate (DocumentEvent e) {
+            }
+            
+            private void modified () {
+                commitMessageEdited = true;
+                messageTextArea.getDocument().removeDocumentListener(this);
+            }
+        });
     }
         
     /** This method is called from within the constructor to
@@ -253,9 +280,9 @@ public class CommitPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void amendCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_amendCheckBoxActionPerformed
-        if (amendCheckBox.isSelected() && !commitMessageAmended) {
+        if (amendCheckBox.isSelected() && !commitMessageEdited) {
             this.messageTextArea.setText(headCommitMessage);
-            commitMessageAmended = true;
+            commitMessageEdited = true;
         }
     }//GEN-LAST:event_amendCheckBoxActionPerformed
 

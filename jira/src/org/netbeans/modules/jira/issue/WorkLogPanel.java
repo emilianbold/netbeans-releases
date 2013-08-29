@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.Document;
+import org.netbeans.modules.jira.issue.NbJiraIssue.NewWorkLog;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.DialogDescriptor;
@@ -89,7 +90,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         String pattern = NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.leaveEstimateChoice.text"); // NOI18N
         String leaveEstimateText = MessageFormat.format(pattern, JiraUtils.getWorkLogText(estimate, daysPerWeek, hoursPerDay, true));
         leaveEstimateChoice.setText(leaveEstimateText);
-
+        
         // Listeners
         WorkLogFormatListener workLogFormatListener = new WorkLogFormatListener();
         timeSpentField.getDocument().addDocumentListener(workLogFormatListener);
@@ -101,6 +102,24 @@ public class WorkLogPanel extends javax.swing.JPanel {
 
         updateMessagePanel();
         initialized = true;
+
+        NewWorkLog log = issue.getEditedWorkLog();
+        if (log != null && log.isToSubmit()) {
+            timeSpentField.setText(JiraUtils.getWorkLogCode(log.getTimeSpent(), daysPerWeek, hoursPerDay));
+            workDescriptionArea.setText(log.getComment());
+            startDateField.setValue(log.getStartDate());
+            if (log.isAutoAdjust()) {
+                autoAdjustChoice.setSelected(true);
+            } else if (log.isLeaveEstimate()) {
+                leaveEstimateChoice.setSelected(true);
+            } else if (log.isReduceEstimate()) {
+                reduceEstimatedTimeField.setText(JiraUtils.getWorkLogCode(log.getEstimatedTime(), daysPerWeek, hoursPerDay));
+                reduceEstimatedTimeChoice.setSelected(true);
+            } else if (log.isSetEstimate()) {
+                setEstimatedTimeField.setText(JiraUtils.getWorkLogCode(log.getEstimatedTime(), daysPerWeek, hoursPerDay));
+                setEstimatedTimeChoice.setSelected(true);
+            }
+        }
     }
 
     private int getCurrentRemainingEstimate() {
@@ -116,7 +135,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         return estimate;
     }
 
-    public boolean showDialog() {
+    public NewWorkLog showDialog() {
         DialogDescriptor dd = new DialogDescriptor(
                 this,
                 NbBundle.getMessage(WorkLogPanel.class, "WorkLogPanel.dialog.title"), // NOI18N
@@ -128,18 +147,26 @@ public class WorkLogPanel extends javax.swing.JPanel {
                 null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
-        return (submitButton == dd.getValue());
+        NewWorkLog log = null;
+        if (submitButton == dd.getValue()) {
+            log = getWorkLog();
+            log.setToSubmit(true);
+        } else if (discardButton == dd.getValue()) {
+            log = getWorkLog();
+            log.setToSubmit(false);
+        }
+        return log;
     }
 
-    public Date getStartDate() {
+    private Date getStartDate() {
         return (Date)startDateField.getValue();
     }
 
-    public int getTimeSpent() {
+    private int getTimeSpent() {
         return getWorkLog(timeSpentField);
     }
 
-    int getWorkLog(JTextField field) {
+    private int getWorkLog(JTextField field) {
         String timeSpentTxt = field.getText();
         JiraConfiguration config = issue.getRepository().getConfiguration();
         int daysPerWeek = config.getWorkDaysPerWeek();
@@ -147,11 +174,11 @@ public class WorkLogPanel extends javax.swing.JPanel {
         return JiraUtils.getWorkLogSeconds(timeSpentTxt, daysPerWeek, hoursPerDay);
     }
 
-    public String getDescription() {
+    private String getDescription() {
         return workDescriptionArea.getText();
     }
 
-    public int getRemainingEstimate() {
+    private int getRemainingEstimate() {
         if (autoAdjustChoice.isSelected()) {
             return -1;
         } else if (leaveEstimateChoice.isSelected()) {
@@ -166,11 +193,11 @@ public class WorkLogPanel extends javax.swing.JPanel {
             JiraConfiguration config = issue.getRepository().getConfiguration();
             int daysPerWeek = config.getWorkDaysPerWeek();
             int hoursPerDay = config.getWorkHoursPerDay();
-            return Math.max(0, getCurrentRemainingEstimate()-JiraUtils.getWorkLogSeconds(reduceEstimatedTimeField.getText(), daysPerWeek, hoursPerDay));
+            return JiraUtils.getWorkLogSeconds(reduceEstimatedTimeField.getText(), daysPerWeek, hoursPerDay);
         }
     }
 
-    void checkReduceEstimateTime() {
+    private void checkReduceEstimateTime() {
         reduceEstimatedTimeChoice.setSelected(true);
         int reduceAmount = getWorkLog(reduceEstimatedTimeField);
         boolean invalid = (reduceAmount < 0) || (reduceEstimatedTimeField.getText().trim().length() == 0);
@@ -180,7 +207,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         }
     }
 
-    void checkSetEstimateTime() {
+    private void checkSetEstimateTime() {
         setEstimatedTimeChoice.setSelected(true);
         int newEstimate = getWorkLog(setEstimatedTimeField);
         boolean invalid = (newEstimate < 0) || (setEstimatedTimeField.getText().trim().length() == 0);
@@ -190,12 +217,24 @@ public class WorkLogPanel extends javax.swing.JPanel {
         }
     }
 
+    private void checkTimeSpent () {
+        int timeSpent = getTimeSpent();
+        if ((timeSpent < 0) != timeSpentFormat) {
+            timeSpentFormat = (timeSpent < 0);
+            updateMessagePanel();
+        }
+        if ((timeSpent == 0) != timeSpentZero) {
+            timeSpentZero = (timeSpent == 0);
+            updateMessagePanel();
+        }
+    }
+
     private boolean timeSpentFormat;
     private boolean timeSpentZero = true;
     private boolean reduceEstimateFormat;
     private boolean setEstimateFormat;
 
-    void updateMessagePanel() {
+    private void updateMessagePanel() {
         messagePanel.removeAll();
         if (timeSpentFormat) {
             JLabel timeSpentFormatLbl = new JLabel();
@@ -424,6 +463,19 @@ public class WorkLogPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane workDescriptionScrollPane;
     // End of variables declaration//GEN-END:variables
 
+    private NewWorkLog getWorkLog () {
+        NewWorkLog log = new NewWorkLog();
+        log.setTimeSpent(getTimeSpent());
+        log.setStartDate(getStartDate());
+        log.setComment(getDescription());
+        log.setEstimateTime(getRemainingEstimate());
+        log.setAutoAdjust(autoAdjustChoice.isSelected());
+        log.setLeaveEstimate(leaveEstimateChoice.isSelected());
+        log.setReduceEstimate(reduceEstimatedTimeChoice.isSelected());
+        log.setSetEstimate(setEstimatedTimeChoice.isSelected());
+        return log;
+    }
+
     class WorkLogFormatListener implements DocumentListener {
 
         @Override
@@ -440,15 +492,7 @@ public class WorkLogPanel extends javax.swing.JPanel {
         public void changedUpdate(DocumentEvent e) {
             Document document = e.getDocument();
             if (document == timeSpentField.getDocument()) {
-                int timeSpent = getTimeSpent();
-                if ((timeSpent < 0) != timeSpentFormat) {
-                    timeSpentFormat = (timeSpent < 0);
-                    updateMessagePanel();
-                }
-                if ((timeSpent == 0) != timeSpentZero) {
-                    timeSpentZero = (timeSpent == 0);
-                    updateMessagePanel();
-                }
+                checkTimeSpent();
             } else if (document == reduceEstimatedTimeField.getDocument()) {
                 checkReduceEstimateTime();
             } else if (document == setEstimatedTimeField.getDocument()) {

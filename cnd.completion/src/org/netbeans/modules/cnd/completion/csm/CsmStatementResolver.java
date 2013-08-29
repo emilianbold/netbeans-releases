@@ -198,7 +198,7 @@ public class CsmStatementResolver {
             if (CsmUtilities.DEBUG) {
                 System.out.println("we have declarator " + decl); //NOI18N
             }
-            if (CsmKindUtilities.isTypedef(decl)) {
+            if (CsmKindUtilities.isTypedef(decl) || CsmKindUtilities.isTypeAlias(decl)) {
                 CsmClassifier classifier = ((CsmTypedef)decl).getType().getClassifier();
                 if (CsmOffsetUtilities.isInObject(decl, classifier) && !CsmOffsetUtilities.sameOffsets(decl, classifier)) {
                     decl = classifier;

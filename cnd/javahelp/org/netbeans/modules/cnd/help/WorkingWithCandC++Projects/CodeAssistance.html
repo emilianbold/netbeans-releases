@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
     <meta content="text/html; charset=UTF-8" http-equiv="content-type">
-    <link href="/org/netbeans/modules/usersguide/ide.css" type="text/css" rel="StyleSheet">
+    <link href="../ide.css" type="text/css" rel="StyleSheet">
      
     <title>Configuring Code Assistance For Projects with Existing Sources</title>
   </head>
@@ -17,7 +17,7 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
        <small><a href="#seealso">See Also</a>&nbsp;</small>
     </p>
     <p>
-      For a C/C++ Project With Existing Sources, you can specify how your code will be parsed to
+      For a C/C++ project with existing sources, you can specify how your code will be parsed to
       enable the code assistance features of the IDE.
     </p>
     <p>
@@ -25,18 +25,39 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
     See <a href="../EditingSourceFiles/EditingSourceFiles.html">About Editing C and C++ Source Files</a>
      for more about these features.
     </p>
-    <p>
-      When you create the project, you can specify the include files and macro definitions that
-      will be used by the built-in parser. Or if the project has been built with debug information,
-      you can have the built-in parser automatically search for the include files and macro
-      definitions for each compiled source file.
+    <p>The IDE can use several ways to gather information from a project to enable code assistance features.
+        The build analyzer generally provides the most accurate information and is used by default. 
+        The IDE gathers information from the build by analyzing system library exec calls on Oracle Solaris,
+      Linux, and Mac platforms.
+         </p>
+      <p>The build analyzer is used when you create a project with existing sources and whenever you build the project
+          to automatically discover changed code assistance configuration. The build analyzer also runs
+          if you manually run the Configure Code Assistance wizard.
+</p>
+<p>When the build analyzer is enabled, the IDE creates an exec log during the build and code assistance is configured
+        using the exec log to gather information.  When build analyzer is disabled code assistance is configured using
+        the build log.        
     </p>
-    <p>
-      To specify additional code assistance configuration information that will improve the
-      accuracy of the code assistance features of the IDE for a project, use the Configure Code
-      Assistance wizard. To start the wizard, right-click your project and choose Configure Code
-      Assistance.
+    <p>For some projects you might not want to use the build analyzer, so you can disable it.
     </p>
+    <p><b>To enable and disable the build analyzer:</b></p> 
+    <ol>
+        <li>Right-click your project in the Projects window and choose Properties.</li>
+        <li>Click the Code Assistance category</li>
+        <li>Click the Use Build Analyzer check box.</li>
+    </ol>
+    
+    <p><b>To start the Configure Code Assistance wizard do one of the following:</b></p>
+    <ul>
+        <li>In the Output window after building the project, click the Configure Code Assistance button in the left margin.</li>
+        <li>Right-click your project in the Projects window and choose Code Assistance &gt; Configure Code
+      Assistance.</li>
+        </ul>
+    
+    
+   
+    
+  
     <table>
       <tr>
         <th colspan="2" align="left">
@@ -50,8 +71,8 @@ Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
         <td>
           <a href="../WorkingWithCandC++Projects/CodeAssistanceWizardP1.html">Configure Code
           Assistance Wizard: Select Mode</a><br>
-           <a href="../WorkingWithCandC++Projects/ConfiguringParsingSettings.html">Configuring C
-          and C++ Code Assistance Settings</a><br>
+           <a href="../WorkingWithCandC++Projects/ConfiguringParsingSettings.html">Configuring 
+          Code Assistance Settings for C and C++ Projects</a><br>
 
         </td>
       </tr>

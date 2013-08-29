@@ -217,5 +217,9 @@
                 <package>org.netbeans.modules.bugtracking.util</package>
             </friend-packages>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>bugtracking</word>
+            <word>kenai</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

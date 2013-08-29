@@ -45,15 +45,16 @@ package org.netbeans.modules.jira.query;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import java.io.File;
 import java.util.Collection;
 import javax.swing.ListModel;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.modules.jira.*;
 import java.util.logging.Level;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -76,14 +77,17 @@ public class QueryRefreshTest extends NbTestCase {
     
     @Override
     protected void setUp() throws Exception {    
+        super.setUp();
+        clearWorkDir();
+        System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());
         JiraTestUtil.initClient(getWorkDir());
         BugtrackingManager.getInstance();
         // need this to initialize cache -> server defined status values & co
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));        
     }
 
-    @Override
-    protected void tearDown() throws Exception {        
+    public static Test suite () {
+        return NbModuleSuite.createConfiguration(QueryRefreshTest.class).gui(false).suite();
     }
 
     public void testQueryOpenNoRefresh() throws Throwable {

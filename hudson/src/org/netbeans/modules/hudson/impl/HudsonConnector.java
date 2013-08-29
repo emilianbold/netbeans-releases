@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -326,7 +327,7 @@ public class HudsonConnector extends BuilderConnector {
     private Collection<JobData> getJobsData(Document doc, String baseUrl,
             Collection<ViewData> viewsData, Collection<FolderData> foldersData,
             HudsonFolder parentFolder) {
-        Collection<JobData> jobs = new ArrayList<JobData>();
+        Map<String, JobData> jobs = new HashMap<String, JobData>();
         
         NodeList nodes = doc.getDocumentElement().getChildNodes();
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -428,10 +429,34 @@ public class HudsonConnector extends BuilderConnector {
             if (isFolder) {
                 foldersData.add(fd);
             } else {
-                jobs.add(jd);
+                addJobToMap(jobs, jd);
             }
         }
-        return jobs;
+        return jobs.values();
+    }
+
+    /**
+     * Add a JobData instance to a map and handle duplicates.
+     *
+     * Some servers (e.g. ODCS) may return duplicate jobs, so we add a job to
+     * the map only if no better job with the same name is already included. If
+     * the new job is better than the already included job, it will replace the
+     * included job. For our purposes, a standard job is better than a secured
+     * job.
+     *
+     * @param jobs Map with jobs, where keys are job names, and values are
+     * JobData instances.
+     * @param jd JobData instance to add.
+     */
+    private void addJobToMap(Map<String, JobData> jobs, JobData jd) {
+        if (jd != null && jd.getJobName() != null
+                && !jd.getJobName().isEmpty()) {
+            JobData existingJob = jobs.get(jd.getJobName());
+            if (existingJob == null
+                    || (existingJob.isSecured() && !jd.isSecured())) {
+                jobs.put(jd.getJobName(), jd);
+            }
+        }
     }
 
     /**

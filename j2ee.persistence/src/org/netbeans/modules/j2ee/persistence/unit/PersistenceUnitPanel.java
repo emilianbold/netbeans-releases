@@ -89,6 +89,7 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     private Project project;
     private boolean isContainerManaged;
     private boolean jpa2x=false;
+    private boolean ee7;
 
     //jpa2.0 specific
     private final java.lang.String[] validationModes = {"AUTO", "CALLBACK", "NONE"};//NOI18N
@@ -276,7 +277,10 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
             String jndiName = (jtaDataSource != null ? jtaDataSource : nonJtaDataSource);
             selectDatasource(jndiName);
             
-            jtaCheckBox.setSelected(jtaDataSource != null);
+            jtaCheckBox.setSelected(
+                    jtaCheckBox.isEnabled() && 
+                        (persistenceUnit.getTransactionType() == null 
+                        || persistenceUnit.getTransactionType().equals(PersistenceUnit.JTA_TRANSACTIONTYPE)));//JTA is default for container managed (enabled checkbox)
             
             ArrayList<Provider> providers = new ArrayList<Provider>();
             for(int i=0; i<providerCombo.getItemCount(); i++){
@@ -582,12 +586,18 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         }
         
         if (isJta()){
-            persistenceUnit.setJtaDataSource(jndiName);
+            String old = persistenceUnit.getJtaDataSource() == null ? "" : persistenceUnit.getJtaDataSource();
+            if (!old.equals(jndiName)) {
+                persistenceUnit.setJtaDataSource(jndiName);
+            }
             persistenceUnit.setNonJtaDataSource(null);
             persistenceUnit.setTransactionType(PersistenceUnit.JTA_TRANSACTIONTYPE);
         } else {
+            String old = persistenceUnit.getNonJtaDataSource() == null ? "" : persistenceUnit.getNonJtaDataSource();
+            if (!old.equals(jndiName)) {
+                persistenceUnit.setNonJtaDataSource(jndiName);
+            }
             persistenceUnit.setJtaDataSource(null);
-            persistenceUnit.setNonJtaDataSource(jndiName);
             persistenceUnit.setTransactionType(PersistenceUnit.RESOURCE_LOCAL_TRANSACTIONTYPE);
         }
     }

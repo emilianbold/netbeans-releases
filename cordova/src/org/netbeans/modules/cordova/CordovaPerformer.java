@@ -206,7 +206,13 @@ public class CordovaPerformer implements BuildPerformer {
                                         return;
                                     }
                                 }
-                                WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
+                                WebKitDebuggingSupport.getDefault().startDebugging(device, 
+                                        project, 
+                                        Lookups.fixed(
+                                            mapper, 
+                                            ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/ios" + (String) (device.isEmulator()?"simulator16.png":"device16.png")), 
+                                            getConfig(project).getId()), 
+                                        false);
                             }
                         }
                     }
