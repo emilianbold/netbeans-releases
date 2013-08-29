@@ -190,12 +190,34 @@ public class JDBCResource implements Datasource {
      * no values set.
      */
     public JDBCResource() {
-        this.jndiName = null;
-        this.objectType = null;
-        this.poolName = null;
-        this.enabled = false;
+        this.jndiName        = null;
+        this.objectType      = null;
+        this.poolName        = null;
+        this.enabled         = false;
         this.deploymentOrder = -1;
-        this.pool = null;
+        this.pool            = null;
+    }
+
+    /**
+     * Creates an instance of JDBC resource (data source) content with
+     * all values set.
+     * <p/>
+     * @param jndiName        Resource JNDI name.
+     * @param objectType      Resource object type.
+     * @param poolName        JDBC connection pool name.
+     * @param enabled         Is this JDBC resource enabled?
+     * @param deploymentOrder Deployment order.
+     * @param pool            JDBC connection pool reference.
+     */
+    public JDBCResource(final String jndiName, final String objectType,
+            final String poolName, final boolean enabled,
+            final int deploymentOrder, final JDBCConnectionPool pool) {
+        this.jndiName        = jndiName;
+        this.objectType      = objectType;
+        this.poolName        = poolName;
+        this.enabled         = enabled;
+        this.deploymentOrder = deploymentOrder;
+        this.pool            = pool;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -359,6 +381,18 @@ public class JDBCResource implements Datasource {
             default:
                 return false;
         }
+    }
+
+    /**
+     * Create a copy of existing JDBC data source object with new JNDI name.
+     * <p/>
+     * @param jndiName     JNDI name to be assigned to new JDBC data source
+     *                     copy.
+     */
+    public JDBCResource copy(final String jndiName) {
+        return new JDBCResource(
+                jndiName, this.objectType, this.poolName,
+                this.enabled, this.deploymentOrder, this.pool);
     }
 
 }
