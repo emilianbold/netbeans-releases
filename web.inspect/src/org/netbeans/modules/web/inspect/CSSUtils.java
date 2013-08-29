@@ -405,7 +405,7 @@ public class CSSUtils {
                         int lineStartOffset = LexerUtils.getLineBeginningOffset(modelSource, line);
                         int column = offset-lineStartOffset;
                         String sourceMapText = sourceMapFob.asText();
-                        SourceMap sourceMap = new SourceMap(sourceMapText);
+                        SourceMap sourceMap = SourceMap.parse(sourceMapText);
                         final Mapping mapping = sourceMap.findMapping(line, column);
                         if (mapping == null) {
                             Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO,
@@ -443,7 +443,7 @@ public class CSSUtils {
      * @return path to the source map or {@code null} if there is no source
      * map information in the given text.
      */
-    private static String sourceMapPath(String cssText) {
+    public static String sourceMapPath(String cssText) {
         String result = null;
         if (cssText != null) {
             String sourceMapPrefix = "/*# sourceMappingURL="; // NOI18N
