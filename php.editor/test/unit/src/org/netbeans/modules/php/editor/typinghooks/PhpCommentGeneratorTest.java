@@ -53,7 +53,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
 
 /**
- * 
+ *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PhpCommentGeneratorTest extends PHPNavTestBase {
@@ -190,6 +190,28 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                             "    }\n" +
                             "}\n" +
                             "?>\n");
+    }
+
+    public void testIssue235110() throws Exception {
+        insertBreak( "<?php\n" +
+                            "class Prdel {\n" +
+                            "    /**^\n" +
+                            "    function functionName() {\n" +
+                            "        return $this;\n" +
+                            "    }\n" +
+                            "}\n" +
+                            "?>",
+                            "<?php\n" +
+                            "class Prdel {\n" +
+                            "    /**\n" +
+                            "     * \n" +
+                            "     * @return \\Prdel^\n" +
+                            "     */\n" +
+                            "    function functionName() {\n" +
+                            "        return $this;\n" +
+                            "    }\n" +
+                            "}\n" +
+                            "?>");
     }
 
     @Override
