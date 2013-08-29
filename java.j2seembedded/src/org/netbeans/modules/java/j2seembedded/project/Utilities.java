@@ -85,6 +85,7 @@ final class Utilities {
     private static final String TARGET_RUN = "$target.run";             //NOI18N
     private static final String TARGET_DEBUG = "$target.debug";         //NOI18N
     private static final String COS_DISABLE = "compile.on.save.unsupported.remote.platform"; //NOI18N
+    private static final String DEBUG_TRANSPORT = "debug-transport";        //NOI18N
     private static final String EXTENSION_NAME = "remote-platform-1";       //NOI18N
     private static final String BUILD_SCRIPT_PATH = "nbproject/remote-platform-impl.xml";   //NOI18N
     private static final String BUILD_SCRIPT_BACK_UP = "remote-platform-impl_backup";   //NOI18N
@@ -95,6 +96,7 @@ final class Utilities {
         m.put(TARGET_RUN,"run-remote");     //NOI18N
         m.put(TARGET_DEBUG,"debug-remote");     //NOI18N
         m.put(COS_DISABLE, Boolean.TRUE.toString());
+        m.put(DEBUG_TRANSPORT,"dt_socket"); //NOI18N
         CONFIG_PROPERTIES = Collections.unmodifiableMap(m);
     }
 
