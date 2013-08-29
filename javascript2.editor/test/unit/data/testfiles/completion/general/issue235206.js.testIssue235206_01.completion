@@ -1,0 +1,13 @@
+Code completion result for source line:
+g| //cc
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getAttention(): undefined       [PUBLIC,   JS Platform
+METHOD     getComputedStyle(element: Elem  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     getSelection(): Selection       [PUBLIC,   JS Platform
+FIELD      globalThree235206: Number       [PUBLIC]   issue235206.js
+FIELD      globalTwo235206: Number         [PUBLIC]   issue235206.js
+VARIABLE   globalOne235206: Number|Window  [PUBLIC]   issue235206.js
