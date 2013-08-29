@@ -42,6 +42,7 @@ package org.netbeans.jellytools.actions;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.openide.windows.Mode;
@@ -135,7 +136,11 @@ public class MaximizeWindowAction extends Action {
             @Override
             public void run() {
                 WindowManager wm = WindowManager.getDefault();
-                Mode mode = (Mode) wm.findMode((TopComponent) tco.getSource());
+                TopComponent tc = (TopComponent) tco.getSource();
+                Mode mode = (Mode) wm.findMode(tc);
+                if (mode == null) {
+                    throw new JemmyException("Mode not found for " + tc);
+                }
                 AttachWindowAction.callWindowManager("switchMaximizedMode", mode);
             }
         });
