@@ -58,6 +58,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -69,6 +70,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.IONotifier;
+import org.netbeans.modules.terminal.api.IOTerm;
 import org.netbeans.modules.terminal.api.IOVisibility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -168,7 +170,21 @@ public final class TerminalSupportImpl {
 
                     final AtomicReference<InputOutput> ioRef = new AtomicReference<InputOutput>();
                     try {
-                        ioRef.set(term.getIO(tabTitle, null, ioContainer));
+                        InputOutput io = term.getIO(tabTitle, null, ioContainer);
+                        ioRef.set(io);
+
+                        Term term = IOTerm.term(io);
+                        // TODO: this is a temporary solution.
+
+                        // Right now xterm emulation is not fully supported. (NB7.4)
+                        // Still it has a very desired functionality - is recognises
+                        // \ESC]%d;%sBEL escape sequences.
+                        // Although \ESC]0;%sBEL is not implemented yet and window title
+                        // is not set, it, at least, can skip the whole %s.
+                        // This makes command prompt look better when this sequence is used
+                        // in PS1 (ex. cygwin set this by default).
+                        //
+                        term.setEmulation("xterm"); // NOI18N
 
                         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
                         npb.addNativeProcessListener(new NativeProcessListener(ioRef.get(), destroyed));

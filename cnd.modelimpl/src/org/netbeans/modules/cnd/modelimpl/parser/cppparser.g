@@ -725,9 +725,9 @@ tokens {
 
 	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
+	protected boolean balanceBraces(int left, int right) { throw new NotImplementedException(); };
 
-    protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
+        protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
 
         /** Is called when an error occurred */
         protected void onError(RecognitionException e) {}
@@ -3238,21 +3238,12 @@ balanceParens
  
 protected    
 balanceCurlies
-        {int depth = 1;}
         :
             LCURLY
-            (options {greedy=true;}:
-                {depth > 0}?
-                    (
-                        LCURLY
-                        {depth++;}
-                    |
-                        RCURLY
-                        {depth--;}
-                    |
-                        .
-                    )
-            )*
+            // balanceBraces will consume all tokens till the first unbalanced RCURLY
+            ({balanceBraces(CPPTokenTypes.LCURLY, CPPTokenTypes.RCURLY)}?) 
+            // consume last RCURLY
+            (options {greedy=true;} : . )? 
         ;
 
 protected    
