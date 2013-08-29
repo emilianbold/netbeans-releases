@@ -45,6 +45,7 @@
 package org.netbeans.modules.debugger.jpda.ui;
 
 import com.sun.jdi.AbsentInformationException;
+import com.sun.jdi.connect.Connector;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.beancontext.BeanContextChild;
@@ -223,11 +224,24 @@ PropertyChangeListener {
                         null
                     );
                 } else {
+                    String port = String.valueOf(c.getPortNumber());
+                    Connector.StringArgument localAddress = (Connector.StringArgument) c.getArgs().get("localAddress"); // NOI18N
+                    String address;
+                    if (localAddress == null) {
+                        address = port;
+                    } else {
+                        String host = localAddress.value();
+                        if (host.isEmpty() || "localhost".equals(host) || "127.0.0.1".equals(host)) {   // NOI18N
+                            address = port;
+                        } else {
+                            address = host+":"+port;
+                        }
+                    }
                     print (
                         "CTL_Listening_socket",
 //                        where,
                         new String[] {
-                            String.valueOf(c.getPortNumber ())
+                            address
                         },
                         null
                     );

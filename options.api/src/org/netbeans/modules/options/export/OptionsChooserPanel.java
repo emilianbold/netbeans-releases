@@ -131,6 +131,14 @@ public final class OptionsChooserPanel extends JPanel {
     private OptionsExportModel getOptionsExportModel() {
         return optionsExportModel;
     }
+    
+    private static String getDefaultUserdirRoot() {
+        String defaultUserdirRoot = System.getProperty("netbeans.default_userdir_root"); // NOI18N
+        if (defaultUserdirRoot == null) {
+	    defaultUserdirRoot = System.getProperty("user.home");  //NOI18N
+	}
+        return defaultUserdirRoot;
+    }
 
     /** Shows panel for export of options. */
     @NbBundle.Messages({"ProgressHandle_Export_DisplayName=Exporting Options",
@@ -146,6 +154,7 @@ public final class OptionsChooserPanel extends JPanel {
         optionsChooserPanel.panelType = PanelType.EXPORT;
         optionsChooserPanel.setOptionsExportModel(new OptionsExportModel(sourceUserdir));
         optionsChooserPanel.loadOptions();
+        optionsChooserPanel.txtFile.setText(getDefaultUserdirRoot().concat(File.separator));
         optionsChooserPanel.txtFile.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
@@ -588,13 +597,9 @@ public final class OptionsChooserPanel extends JPanel {
 
     private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
         FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(OptionsChooserPanel.class);
-	String defaultUserdirRoot = System.getProperty("netbeans.default_userdir_root"); // NOI18N
-	if (defaultUserdirRoot != null) {
-	    fileChooserBuilder.setDefaultWorkingDirectory(new File(defaultUserdirRoot));
-	} else {
-	    fileChooserBuilder.setDefaultWorkingDirectory(new File(System.getProperty("user.home")));  //NOI18N
-	}
-        fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
+	String defaultUserdirRoot = getDefaultUserdirRoot(); // NOI18N
+        fileChooserBuilder.setDefaultWorkingDirectory(new File(defaultUserdirRoot));
+	fileChooserBuilder.setFileFilter(new FileNameExtensionFilter("*.zip", "zip"));  //NOI18N
         String approveText = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.chooser.approve");
         fileChooserBuilder.setApproveText(approveText);
         if (panelType == PanelType.IMPORT) {
