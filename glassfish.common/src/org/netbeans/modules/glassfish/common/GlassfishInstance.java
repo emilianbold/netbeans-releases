@@ -62,6 +62,7 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
+import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -782,6 +783,16 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             // node lookup).
             ic.add(this); 
             commonInstance = ServerInstanceFactory.createServerInstance(this);
+        }
+        // Warn when creating instance of unknown version.
+        if (this.version == null) {
+            String installroot = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            String displayName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
+            WarnPanel.gfUnknownVersionWarning(displayName, installroot);
+            LOGGER.log(Level.INFO, NbBundle.getMessage(
+                    GlassfishInstance.class,
+                    "GlassfishInstance.init.versionNull",
+                    new String[] {displayName, installroot}));
         }
     }
 

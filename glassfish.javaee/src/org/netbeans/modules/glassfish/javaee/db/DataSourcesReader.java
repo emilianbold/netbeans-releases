@@ -49,6 +49,7 @@ import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.StringPrefixTree;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
@@ -154,6 +155,13 @@ public class DataSourcesReader {
     /** GlassFish server resource property identifier. */
     public static final String PROPERTY_IDENT = "property";
 
+    /** Default JDBC data source registered in GF. */
+    static final String DEFAULT_DATA_SOURCE = "jdbc/__default";
+
+    /** JavaEE 7 new default data source linked to old default data source. */
+    static final String DEFAULT_DATA_SOURCE_EE7
+            = "comp/DefaultDataSource";
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -190,7 +198,12 @@ public class DataSourcesReader {
             Map<String, JDBCConnectionPool> pools = new HashMap<>();
             Map<String, JDBCResource> resources = new HashMap<>();
             buildJDBCContentObjects(properties, pools, resources);
-            assignConnectionPoolsToResources(pools, resources);            
+            assignConnectionPoolsToResources(pools, resources);
+            // Add Java EE 7 comp/DefaultDataSource data source (since GF 4).
+            if (server.getVersion().ordinal()
+                    >= GlassFishVersion.GF_4.ordinal()) {
+                addNewJavaEE7dataSource(resources);
+            }
             return new HashSet<Datasource>(resources.values());
         } else {
             return null;
@@ -247,7 +260,26 @@ public class DataSourcesReader {
         }
     }
 
-    
+    /**
+     * Add new Java EE 7 <code>comp/DefaultDataSource</code> data source as old
+     * default <code>jdbc/__default</code> data source clone.
+     * <p/>
+     * Data source will be added only if <code>jdbc/__default</code> data source
+     * exists and Java EE 7 new data source is not registered yet. Old data
+     * source must be already fully initialized and linked with connection pool.
+     * <p/>
+     * @param resources Existing JDBC resources map.
+     */
+    private void addNewJavaEE7dataSource(
+            final Map<String, JDBCResource> resources) {
+        JDBCResource defaultResource = resources.get(DEFAULT_DATA_SOURCE);
+        if (defaultResource != null
+                && !resources.containsKey(DEFAULT_DATA_SOURCE_EE7)) {
+            resources.put(DEFAULT_DATA_SOURCE_EE7,
+                    defaultResource.copy(DEFAULT_DATA_SOURCE_EE7));
+        }
+    }
+
     /**
      * Process one step of building <code>Map</code> of JDBC connection pool
      * content objects.
@@ -360,16 +392,6 @@ public class DataSourcesReader {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Process data sources properties from GlassFish server.
-     * <p/>
-     * @param properties Data sources properties from GlassFish server.
-     */
-    private void processPropertiesFromServer(
-            final Map<String, String> properties) {
-        
     }
 
 }

@@ -146,6 +146,7 @@ public class JPDAStart extends Task implements Runnable {
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
     private String                  listeningCP = null;
+    private boolean                 useLoopBackAddress = true;
     private RequestProcessor        rp = new RequestProcessor("JPDAStart", 5);
 
     
@@ -194,6 +195,11 @@ public class JPDAStart extends Task implements Runnable {
 
     public void setListeningcp(String listeningCP) {
         this.listeningCP = listeningCP;
+    }
+    
+    public void setUseLoopBackAddress(String useLoopBackAddress) { // useLoopBackAddress
+        this.useLoopBackAddress = Boolean.parseBoolean(useLoopBackAddress);
+        logger.log(Level.FINE, "setUseLoopBackAddress = ''{0}'' => {1}", new Object[] { useLoopBackAddress, this.useLoopBackAddress });
     }
 
     public void addClasspath (Path path) {
@@ -350,8 +356,18 @@ public class JPDAStart extends Task implements Runnable {
                 final Map args = lc.defaultArguments ();
                 Connector.StringArgument localAddress = (Connector.StringArgument) args.get("localAddress"); // NOI18N
                 if (localAddress != null) {
-                    localAddress.setValue("127.0.0.1"); // NOI18N
+                    String host = null;
+                    if (!useLoopBackAddress) {
+                        try {
+                            host = InetAddress.getLocalHost().getCanonicalHostName();
+                        } catch (UnknownHostException uhex) {}
+                    }
+                    if (host == null) {
+                        host = "127.0.0.1"; // NOI18N
+                    }
+                    localAddress.setValue(host);
                 }
+                logger.log(Level.FINE, "Assigned host = ''{0}''", localAddress);
                 String address = null;
                 try {
                     address = lc.startListening (args);
