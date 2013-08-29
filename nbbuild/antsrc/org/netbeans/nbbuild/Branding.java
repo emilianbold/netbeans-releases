@@ -155,9 +155,9 @@ public final class Branding extends Task {
         scanner.setBasedir(srcDir);
         String localeToken = "";
         if(locale != null) {
-            String [] includes = {"**/*_" + locale.toString().toLowerCase() + ".*"};
+            String [] includes = {"**/*_" + locale.toString() + ".*"};
             scanner.setIncludes(includes);
-            localeToken = "_" + locale.toString().toLowerCase();
+            localeToken = "_" + locale.toString();
         } else {
             String [] excludes = {"**/*_??_??.*", "**/*_??.*"};
             scanner.setExcludes(excludes);

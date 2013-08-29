@@ -701,8 +701,8 @@ public abstract class BrandingModel {
     private BrandingSupport.BundleKey findInModifiedInternationalizedBundleKeys (String codenamebase, String bundlepath, String key) {
         for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
             String localizedBundlepath = bundlepath;
-            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
             if (key.equals(bundleKey.getKey()) &&
                 backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
@@ -718,8 +718,8 @@ public abstract class BrandingModel {
     public final void addModifiedInternationalizedBundleKey (BrandingSupport.BundleKey key) {
         Set<BrandingSupport.BundleKey> brandedBundleKeys = branding.getBrandedBundleKeys();
         String localizedBundlepath = key.getBundleFilePath();
-        if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = localizedBundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+        if(!localizedBundlepath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = localizedBundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
         File bundleFile = new File(localizedBundlepath);
         if(!bundleFile.exists()) {
             for(BrandingSupport.BundleKey keyIter:brandedBundleKeys) {
@@ -777,8 +777,8 @@ public abstract class BrandingModel {
         for (BundleKey bundleKey : bundleKeys) {
             String bundleFilePath = bundleKey.getBundleFilePath();
             String localizedBundlepath = bundlepath;
-            if(bundleFilePath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if(bundleFilePath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
             if (key.equals(bundleKey.getKey()) &&
                 backslashesToSlashes(bundleFilePath).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
@@ -804,8 +804,8 @@ public abstract class BrandingModel {
         // in modified keys?
         for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
             String localizedBundlepath = bundlepath;
-            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
             if (key.equals(bundleKey.getKey()) &&
                 backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
@@ -837,8 +837,8 @@ public abstract class BrandingModel {
         for (BundleKey bundleKey : bundleKeys) {
             String bundleFilePath = bundleKey.getBundleFilePath();
             String localizedBundlepath = bundlepath;
-            if(bundleFilePath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if(bundleFilePath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
             if (backslashesToSlashes(bundleFilePath).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
@@ -862,8 +862,8 @@ public abstract class BrandingModel {
         // in modified keys?
         for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
             String localizedBundlepath = bundlepath;
-            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
-                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString() + ".properties");
             if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
