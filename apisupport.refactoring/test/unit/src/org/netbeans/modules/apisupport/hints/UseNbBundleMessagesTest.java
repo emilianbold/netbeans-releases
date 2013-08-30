@@ -403,7 +403,7 @@ public class UseNbBundleMessagesTest {
                        "class Test {\n" +
                        "    @Messages({\"one=first\", \"two=second\"})\n" +
                        "    String m(boolean flag1, boolean flag2) {\n" +
-                       "        return flag 1? one() : flag2 ? two() : org.openide.util.NbBundle.getMessage(Test.class, \"three\");\n" +
+                       "        return flag1 ? one() : flag2 ? two() : org.openide.util.NbBundle.getMessage(Test.class, \"three\");\n" +
                        "    }\n" +
                        "}\n", false).
                 input("test/Bundle.properties", "three=third\n", false).
@@ -417,7 +417,7 @@ public class UseNbBundleMessagesTest {
                        "class Test {\n" +
                        "    @Messages({\"one=first\", \"two=second\", \"three=third\"})\n" +
                        "    String m(boolean flag1, boolean flag2) {\n" +
-                       "        return flag 1? one() : flag2 ? two() : three();\n" +
+                       "        return flag1 ? one() : flag2 ? two() : three();\n" +
                        "    }\n" +
                        "}\n");
     }
