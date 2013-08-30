@@ -73,6 +73,20 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="UnitTestsUsage">
+        <api name="CommonTestrunnerAPI"/>
+        <summary>API to log unit test's library usage.</summary>
+        <version major="1" minor="37"/>
+        <date day="30" month="8" year="2013"/>
+        <author login="theofanis"/>
+        <compatibility addition="yes"/>
+        <description>
+            Added API to log unit test's library usage so that it can be used in
+            statistics visualization.
+        </description>
+        <class package="org.netbeans.modules.gsf.testrunner.api" name="UnitTestsUsage"/>
+        <issue number="235112"/>
+    </change>
     <change id="TestMethodProviders.isTestClass">
         <api name="CommonTestrunnerAPI"/>
         <summary>Method to determine if a node is a test class.</summary>
