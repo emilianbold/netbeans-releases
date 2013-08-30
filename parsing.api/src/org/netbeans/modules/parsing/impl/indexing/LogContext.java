@@ -531,6 +531,11 @@ import org.openide.util.Utilities;
     long getFinishedTime() {
         return finished;
     }
+
+    @NonNull
+    StackTraceElement[] getCaller() {
+        return Arrays.copyOf(stackTrace, stackTrace.length);
+    }
     
     private static ThreadLocal<RootInfo>    currentlyIndexedRoot = new ThreadLocal<RootInfo>();
     private static ThreadLocal<LogContext>    currentLogContext = new ThreadLocal<LogContext>();

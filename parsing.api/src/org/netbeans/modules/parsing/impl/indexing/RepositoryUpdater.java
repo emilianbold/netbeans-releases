@@ -4134,7 +4134,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Pair<FileObject, Boolean> fileObject = null;
 
                         if (fileOrFileObject.first() instanceof File) {
-                            FileObject f = FileUtil.toFileObject((File) fileOrFileObject.first());
+                            FileObject f;
+                            try {
+                                f = FileUtil.toFileObject((File) fileOrFileObject.first());
+                            } catch (IllegalArgumentException e) {
+                                throw new IllegalArgumentException(
+                                    "Non-normalized file among files to rescan.",   //NOI18N
+                                    e) {
+                                    {
+                                        final LogContext logCtx = getLogContext();
+                                        if (logCtx != null) {
+                                            setStackTrace(logCtx.getCaller());
+                                        }
+                                    }
+                                };
+                            }
                             if (f != null) {
                                 fileObject = Pair.<FileObject, Boolean>of(f, fileOrFileObject.second());
                             }
