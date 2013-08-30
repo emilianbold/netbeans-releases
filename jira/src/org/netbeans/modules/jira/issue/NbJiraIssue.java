@@ -183,6 +183,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/remote.png"); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
+    private boolean loading;
 
     @Override
     protected void taskDeleted (NbTask task) {
@@ -256,10 +257,13 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     @Override
     protected boolean synchronizeTask () {
         try {
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
-            getRepository().getExecutor().execute(cmd);
-            return !cmd.hasFailed();
+            NbTask task = getNbTask();
+            synchronized (task) {
+                SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                        getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+                getRepository().getExecutor().execute(cmd);
+                return !cmd.hasFailed();
+            }
         } catch (CoreException ex) {
             // should not happen
             Jira.LOG.log(Level.WARNING, null, ex);
@@ -403,10 +407,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     void opened() {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getKey()});
         open = true;
+        loading = true;
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
+                    loading = false;
                     refreshViewData(true);
                 } else {
                     // should close somehow
@@ -672,17 +678,15 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      */
     private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        try {
-            NbTask task = getNbTask();
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
-            getRepository().getExecutor().execute(cmd);
-            assert this == getRepository().getIssueForTask(task);
+        NbTask task = getNbTask();
+        boolean synced = synchronizeTask();
+        assert this == getRepository().getIssueForTask(task);
+        if (!loading) {
+            // refresh only when model is not currently being loaded
+            // otherwise it most likely ends up in editor not fully initialized
             refreshViewData(afterSubmitRefresh);
-        } catch (CoreException ex) {
-            Jira.LOG.log(Level.SEVERE, null, ex);
         }
-        return true;
+        return synced;
     }
 
     /**

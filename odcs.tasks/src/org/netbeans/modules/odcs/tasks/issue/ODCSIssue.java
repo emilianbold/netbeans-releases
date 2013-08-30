@@ -89,7 +89,6 @@ import org.netbeans.modules.mylyn.util.commands.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.odcs.tasks.ODCS;
-import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.awt.StatusDisplayer;
@@ -141,6 +140,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/remote.png"); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
+    private boolean loading;
 
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
@@ -408,11 +408,13 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     void opened() {
+        loading = true;
         ODCS.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
 //                    ensureConfigurationUptodate();
+                    loading = false;
                     refreshViewData(true);
                 } else {
                     // should close somehow
@@ -464,7 +466,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        return refresh(getID(), false);
+        return refresh(false);
     }
 
     public static final String RESOLVE_FIXED = "FIXED";    
@@ -593,7 +595,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                     repository.getTaskRepository(), getNbTask(), attAttribute, attachmentSource, comment);
             repository.getExecutor().execute(cmd);
             if (!cmd.hasFailed()) {
-                refresh(getID(), true); // XXX to much refresh - is there no other way?
+                refresh(true); // XXX to much refresh - is there no other way?
             }
         } catch (CoreException ex) {
             // should not happen
@@ -799,10 +801,14 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     @Override
     protected boolean synchronizeTask () {
         try {
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
-            getRepository().getExecutor().execute(cmd);
-            return !cmd.hasFailed();
+            NbTask task = getNbTask();
+            synchronized (task) {
+                ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", getID()); // NOI18N
+                SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                        getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+                getRepository().getExecutor().execute(cmd);
+                return !cmd.hasFailed();
+            }
         } catch (CoreException ex) {
             // should not happen
             ODCS.LOG.log(Level.WARNING, null, ex);
@@ -1053,23 +1059,18 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
     }
 
-    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        // XXX 
-        // XXX gettaskdata the same for bugzilla, jira, odcs, ...
-        try {
-            ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
-            NbTask task = getNbTask();
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
-            getRepository().getExecutor().execute(cmd);
-            assert this == getRepository().getIssueForTask(task);
+        NbTask task = getNbTask();
+        boolean synced = synchronizeTask();
+        assert this == getRepository().getIssueForTask(task);
 //            getRepository().ensureConfigurationUptodate(this);
+        if (!loading) {
+            // refresh only when model is not currently being loaded
+            // otherwise it most likely ends up in editor not fully initialized
             refreshViewData(afterSubmitRefresh);
-        } catch (CoreException ex) {
-            ODCS.LOG.log(Level.SEVERE, null, ex);
         }
-        return true;
+        return synced;
     }
 
     private void refreshViewData(boolean force) {
