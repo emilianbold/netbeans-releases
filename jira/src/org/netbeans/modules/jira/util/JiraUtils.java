@@ -382,7 +382,6 @@ public class JiraUtils {
         if (config != null) {
             switch (field) {
                 case TYPE:
-                    value = JiraUtils.toReadable(config, projectId, field, value);
                     IssueType type = config.getIssueTypeById(value);
                     if (type != null) {
                         value = type.getName();
