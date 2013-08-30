@@ -117,18 +117,21 @@ public class ExpandNodesProjectsViewTest extends PerformanceTestCase {
     public void testExpandFolderWith50JavaFiles(){
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder50";
+        expectedTime = 1500;
         doMeasurement();
     }
     
     public void testExpandFolderWith100JavaFiles(){
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder100";
+        expectedTime = 1500;
         doMeasurement();
     }
 
     public void testExpandFolderWith1000JavaFiles(){
         project = "PerformanceTestFoldersData";
         pathToFolderNode = CommonUtilities.SOURCE_PACKAGES + "|folders.javaFolder1000";
+        expectedTime = 1500;
         doMeasurement();
     }
 
