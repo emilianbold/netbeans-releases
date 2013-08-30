@@ -61,6 +61,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +69,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -96,6 +98,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
@@ -103,6 +106,7 @@ import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.commands.PostAttachmentCommand;
@@ -175,6 +179,10 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private String tooltip = "";
     private boolean open;
     private static final String NB_WORK_LOGNEW_ESTIMATE_TIME = "NB.WorkLog.newEstimateTime"; //NOI18N
+
+    private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/remote.png"); //NOI18N
+    private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/conflict.png"); //NOI18N
+    private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
 
     @Override
     protected void taskDeleted (NbTask task) {
@@ -965,10 +973,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     public String getTooltip() {
-        return "Issue: " + getKey(); // + " " + getType() + " " + getPriority() + " " + getStatus();
+        return tooltip;
     }
-
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("hh24:mmm:ss dd.mm.yyyy");
 
     public IssueNode getNode() {
         if(node == null) {
@@ -1097,12 +1103,96 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private boolean updateTooltip () {
         String displayName = getDisplayName();
         String oldTooltip = tooltip;
-        // TODO construct tooltip
+        SynchronizationState state = getSynchronizationState();
+        URL iconPath = getStateIcon(state);
+        String iconCode = "";
+        if (iconPath != null) {
+            iconCode = "<img src=\"" + iconPath + "\">&nbsp;"; //NOI18N
+        }
+        String stateName = getStateDisplayName(state);
+
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
-        sb.append("<b>").append(displayName).append("</b>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
+        if (stateName != null && !stateName.isEmpty()) {
+            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p>"); //NOI18N
+        }
+        
+        JiraConfiguration config = getRepository().getConfiguration();
+        String projectId = getRepositoryFieldValue(IssueField.PROJECT);        
+        if (config != null && !projectId.isEmpty()) {
+            String projectLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Project_Title"); //NOI18N
+            String project = JiraUtils.toReadable(config, projectId, IssueField.PROJECT, projectId);
+            
+            String priorityLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Priority_Title"); //NOI18N
+            String priority = getRepositoryFieldValue(IssueField.PRIORITY);
+            String priorityIcon = JiraConfig.getInstance().getPriorityIconURL(priority);
+            priority = JiraUtils.toReadable(config, projectId, IssueField.PRIORITY, priority);
+
+            String componentLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Components_Title"); //NOI18N
+            List<String> components = new ArrayList<>(getRepositoryFieldValues(IssueField.COMPONENT));
+            for (ListIterator<String> it = components.listIterator(); it.hasNext();) {
+                String value = it.next();
+                it.set(JiraUtils.toReadable(config, projectId, IssueField.COMPONENT, value));
+            }
+            String component = JiraUtils.mergeValues(components);
+
+            String assigneeLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Title"); //NOI18N
+            String assignee = JiraUtils.toReadable(config, projectId, IssueField.ASSIGNEE, getRepositoryFieldValue(IssueField.ASSIGNEE));
+
+            String statusLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Status_Title"); //NOI18N
+            String status = JiraUtils.toReadable(config, projectId, IssueField.STATUS, getRepositoryFieldValue(IssueField.STATUS));
+            String resolution = JiraUtils.toReadable(config, projectId, IssueField.RESOLUTION, getRepositoryFieldValue(IssueField.RESOLUTION));
+
+            if (resolution != null && !resolution.trim().isEmpty()) {
+                status += "/" + resolution; //NOI18N
+            }
+
+            String fieldTable = "<table>" //NOI18N
+                + "<tr><td><b>" + projectLabel + ":</b></td><td>" + project + "</td><td style=\"padding-left:25px;\"><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td></tr>" //NOI18N
+                + "<tr><td><b>" + componentLabel + ":</b></td><td colspan=\"3\">" + component + "</td></tr>" //NOI18N
+                + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
+                + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+                + "</table>"; //NOI18N
+            sb.append("<hr>"); //NOI18N
+            sb.append(fieldTable);
+        }
         sb.append("</html>"); //NOI18N
         tooltip = sb.toString();
         return !oldTooltip.equals(tooltip);
+    }
+    
+    private URL getStateIcon (NbTask.SynchronizationState state) {
+        URL iconPath = null;
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            iconPath = ICON_CONFLICT_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING) || state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            iconPath = ICON_REMOTE_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING) || state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            iconPath = ICON_UNSUBMITTED_PATH;
+        }
+        return iconPath;
+    }
+
+    @NbBundle.Messages({
+        "LBL_ConflictShort=Conflict - your unsubmitted changes conflict with remote changes",
+        "LBL_RemoteShort=Incoming - contains remote changes",
+        "LBL_RemoteNewShort=Incoming New - new task created in repository",
+        "LBL_UnsubmittedShort=Unsubmitted - contains unsubmitted changes",
+        "LBL_UnsubmittedNewShort=Unsubmitted New - newly created task, not yet submitted"})
+    private String getStateDisplayName (NbTask.SynchronizationState state) {
+        String displayName = "";
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            displayName = Bundle.LBL_ConflictShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING)) {
+            displayName = Bundle.LBL_RemoteShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            displayName = Bundle.LBL_RemoteNewShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING)) {
+            displayName = Bundle.LBL_UnsubmittedShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            displayName = Bundle.LBL_UnsubmittedNewShort();
+        }
+        return displayName;
     }
 
     private boolean updateRecentChanges () {
