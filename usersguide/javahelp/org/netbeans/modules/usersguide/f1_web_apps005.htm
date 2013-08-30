@@ -14,7 +14,14 @@
 <p>Use the Servlet Filters section and the Filter Mappings section of the <code>web.xml</code> Visual Editor to add, remove, and view the deployment information of your web application's servlet filters. A filter is a piece of re-usable code that modifies requests to and responses from a servlet.</p>
 <p>To deploy a filter, you must register it in the <code>web.xml</code> file. When you do this, you provide information needed by the server to deploy the filter. For example, you tell the server which types of requests should cause the filter to be deployed.</p>
 <p>Before you can register a filter in the <code>web.xml</code> file, you must create it in the New File wizard or import it from your existing sources. You can use the Configure Filter Deployment panel of the New File wizard to register a filter. If you have not done so, or if you want to modify a registered filter's deployment information, use the Filters view of the <code>web.xml</code> Visual Editor.</p>
-<p>You open the <code>web.xml</code> Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the web.xml file. Click Filters at the top of the editor to open the Filters view.</p>
+<p>In the Visual Editor, click <b>Filters</b> at the top of the editor to open the Filters view. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p>First, click <b>Add Filter Element</b> to define the filter element with the following properties.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -154,7 +161,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t11" headers="r1c1-t11">
-<p>Request</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Request</p>
 </td>
 <td align="left" headers="r5c1-t11 r1c2-t11">
 <p>(Default) Only when the request come directly from the client.</p>
@@ -162,7 +169,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t11" headers="r1c1-t11">
-<p>Forward</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Forward</p>
 </td>
 <td align="left" headers="r6c1-t11 r1c2-t11">
 <p>Only when the request has been forwarded to a component.</p>
@@ -170,7 +177,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t11" headers="r1c1-t11">
-<p>Include</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Include</p>
 </td>
 <td align="left" headers="r7c1-t11 r1c2-t11">
 <p>Only when the request is being processed by a component that has been included.</p>
@@ -178,7 +185,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t11" headers="r1c1-t11">
-<p>Error</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Error</p>
 </td>
 <td align="left" headers="r8c1-t11 r1c2-t11">
 <p>Only when the request is being processed with the error page mechanism.</p>
@@ -191,22 +198,22 @@
 <p>You can select one or more of the dispatcher types above.</p>
 <p>Note that when you click <b>Remove</b> at the top of the Servlet Filters section, you remove the filter's deployment information from the <code>web.xml</code> file, but you do not remove the filter itself. To delete the filter, right-click it in the Projects window and choose Delete.</p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1103">
-<param name="text" value="<html><u>Using Filters</u></html>">
+<param name="text" value="<html><u>&quot;Using Filters&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
-<param name="text" value="<html><u>Configuring a Web Application</u></html>">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

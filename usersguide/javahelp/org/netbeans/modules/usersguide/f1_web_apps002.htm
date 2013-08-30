@@ -11,7 +11,14 @@
 <!-- infolevel="all" infotype="General" --><a id="sthref481" name="sthref481"></a>
 <h1>web.xml Visual Editor: Context Parameters</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Context Parameters section in the <code>web.xml</code> Visual Editor to add, remove, and view the web application's context parameters. Context parameters are initialization paramaters that are available throughout a web application. You can use them, for example, to provide configuration information to all servlets and JSP pages in a web application.</p>
+<p>Use the Context Parameters section in the <code>web.xml</code>Visual Editor to add, remove, and view the web application's context parameters. Context parameters are initialization paramaters that are available throughout a web application. You can use them, for example, to provide configuration information to all servlets and JSP pages in a web application. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p>You can access context parameters in your code using the <code>javax.servlet.ServletContext.getInitParameter()</code> and <code>javax.servlet.ServletContext.getInitParameterNames()</code> methods, as shown in <a href="#CHDDHBHI">Example: Methods to access context parameters in code</a>.</p>
 <a id="CHDDHBHI" name="CHDDHBHI"></a>
 <p>Methods to access context parameters in code</p>
@@ -22,7 +29,7 @@ String mainPage = context.getInitParameter("mainPage");
 <!-- -->
 <p>If a company name changes frequently, you can define its value as a context parameter in the <code>web.xml</code> file instead of hard-coding it in all your JSP files and servlets. Then define and declare a listener that reads the value and stores it in the servlet context. Next, define and declare another listener that monitors changes to the name.</p>
 <p>To declare a context parameter, you must register it in the <code>web.xml</code> file. When you do this, you provide information needed by the server to use the parameter. You tell the server which value should be returned when a context parameter is referred to in the web application.</p>
-<p>You open the <code>web.xml</code> Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the <code>web.xml</code> file. Click General at the top of the editor to open the General section, then click the Context Parameters header to open the Context Parameters section.</p>
+<p>In the Visual Editor, click <b>General</b> at the top of the editor to open the General section, then click the Context Parameters header to open the Context Parameters section.</p>
 <p>Click <b>Add</b> to define the context parameter element with the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -85,22 +92,22 @@ String mainPage = context.getInitParameter("mainPage");
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1872">
-<param name="text" value="<html><u>Using Annotations and Deployment Descriptors</u></html>">
+<param name="text" value="<html><u>&quot;Using Annotations and Deployment Descriptors&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
-<param name="text" value="<html><u>Configuring a Web Application</u></html>">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</p>
 
 <!-- -->
 <!-- Start Footer -->
