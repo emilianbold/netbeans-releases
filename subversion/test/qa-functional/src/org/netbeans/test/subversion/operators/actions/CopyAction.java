@@ -58,7 +58,7 @@ public class CopyAction extends SvnAction {
     /**
      * "Copy..." popup item.
      */
-    public static final String COPY_POPUP_SUBITEM = "Copy To...";
+    public static final String COPY_POPUP_SUBITEM = "Copy to...";
 
     /**
      * Creates a new instance of CopyAction

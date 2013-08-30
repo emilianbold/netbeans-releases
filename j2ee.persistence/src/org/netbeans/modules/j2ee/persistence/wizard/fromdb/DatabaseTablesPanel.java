@@ -346,7 +346,10 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
             if(pu !=null ){
                 if(withDatasources){
                     String jtaDs = pu.getJtaDataSource();
-                    if(jtaDs !=null ){
+                    boolean jta = jtaDs != null || (Util.isContainerManaged(project) && 
+                            (pu.getTransactionType() == null 
+                            || pu.getTransactionType().equals(PersistenceUnit.JTA_TRANSACTIONTYPE)));
+                    if(jta){
                         selectDatasource(jtaDs, true);
                     }
                     else {
@@ -412,6 +415,9 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
         JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
         if (dsProvider == null){
             return false;
+        }
+        if(jndiName == null) {
+            jndiName = "java:comp/DefaultDataSource";//try default
         }
         JPADataSource datasource = null;
         for (JPADataSource each : dsProvider.getDataSources()){
