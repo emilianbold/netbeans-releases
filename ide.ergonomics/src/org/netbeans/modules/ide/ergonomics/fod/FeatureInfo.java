@@ -241,10 +241,6 @@ public final class FeatureInfo {
         if (p != null) {
             return p;
         }
-        
-        if (this.clusterName.equals("download")) {
-            return cachePresent = true;
-        }
 
         Set<String> codeNames = new HashSet<String>(getCodeNames());
         for (ModuleInfo moduleInfo : Lookup.getDefault().lookupAll(ModuleInfo.class)) {

@@ -237,29 +237,24 @@ implements PropertyChangeListener, LookupListener {
             for (String c : paths) {
                 int last = c.lastIndexOf(File.separatorChar);
                 String clusterName = c.substring(last + 1).replaceFirst("[0-9\\.]*$", "");
-                registerCluster(clusterName, ic);
+                String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;
+                String layerName = basename + "/layer.xml";
+                String bundleName = basename + "/Bundle.properties";
+                URL layer = FeatureManager.class.getResource(layerName);
+                URL bundle = FeatureManager.class.getResource(bundleName);
+                if (layer != null && bundle != null) {
+                    FeatureInfo info;
+                    try {
+                        info = FeatureInfo.create(clusterName, layer, bundle);
+                        ic.add(info);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
             }
-            registerCluster("download", ic);
             featureTypesLookup = l;
         }
         return featureTypesLookup;
-    }
-
-    private static void registerCluster(String clusterName, InstanceContent ic) {
-        String basename = "/org/netbeans/modules/ide/ergonomics/" + clusterName;
-        String layerName = basename + "/layer.xml";
-        String bundleName = basename + "/Bundle.properties";
-        URL layer = FeatureManager.class.getResource(layerName);
-        URL bundle = FeatureManager.class.getResource(bundleName);
-        if (layer != null && bundle != null) {
-            FeatureInfo info;
-            try {
-                info = FeatureInfo.create(clusterName, layer, bundle);
-                ic.add(info);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     public void addChangeListener(ChangeListener l) {

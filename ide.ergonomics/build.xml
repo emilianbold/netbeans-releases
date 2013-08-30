@@ -41,11 +41,6 @@
     </target>
 
     <target name="-init-clusters">
-        <autoupdate todir="${netbeans.dest.dir}/download/" 
-            updatecenter="http://plugins.netbeans.org/nbpluginportal/files/nbms/pluginportal-update-center.xml"
-        >
-            <modules includes=".*scala.*"/>
-        </autoupdate>
         <property name="common.ergonomics" location="src-ant/org/netbeans/modules/ide/ergonomics/ant/common-ergonomics.xml"/>
         <resolvelist
             name="ergonomic.clusters.includes"
@@ -63,7 +58,6 @@
             <exclude name="platform"/>
             <exclude name="ergonomics"/>
             <exclude name="extra"/>
-            <include name="download"/>
             <exclude name="nb"/>
         </dirset>
     </target>
