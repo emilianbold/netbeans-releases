@@ -105,7 +105,8 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn
  */
 public final class Resolver3 implements Resolver {
-    private static boolean TRACE_CACHE = CndUtils.getBoolean("cnd.csmcache", false);
+    static final boolean TRACE_CSM_CACHE = CndUtils.getBoolean("cnd.csmcache", false);
+    static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
     private final ProjectBase project;
     private final CsmFile file;
@@ -526,7 +527,10 @@ public final class Resolver3 implements Resolver {
         if (resolverCache != null) {
             cacheValue = (NameResolveCacheValue) resolverCache.get(cacheKey);
         } else {
-            LOGGER.log(TRACE_CACHE ? Level.INFO : Level.FINE, "NO CACHE ACTIVITY ", new Exception());
+            Level level = TRACE_CSM_CACHE ? Level.INFO : Level.FINE;
+            if (LOGGER.isLoggable(level)) {
+                LOGGER.log(level, "NO CACHE ACTIVITY ", new Exception());
+            }
         }
         if (cacheValue != null) {
             result = cacheValue.resolveResult;
@@ -549,7 +553,6 @@ public final class Resolver3 implements Resolver {
         }
         return result;
     }
-    static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
     private CsmObject resolveSimpleName(CsmObject result, CharSequence name, int interestedKind) {
         CsmNamespace containingNS = null;
@@ -1125,7 +1128,7 @@ public final class Resolver3 implements Resolver {
 
         @Override
         public void cleanup() {
-            if (LOGGER.isLoggable(Level.FINE) || TRACE_CACHE) {
+            if (LOGGER.isLoggable(Level.FINE) || TRACE_CSM_CACHE) {
                 Map<Object, Object> values = values();
                 int hits = 0;
                 int savedTime = 0;
