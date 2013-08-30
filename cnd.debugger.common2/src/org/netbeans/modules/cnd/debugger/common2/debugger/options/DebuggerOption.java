@@ -399,7 +399,7 @@ public class DebuggerOption extends Option {
     public static final DebuggerOption OUTPUT_MAX_STRING_LENGTH  =
 	new DebuggerOption( // NOI18N
 			    "output_max_string_length", // NOI18N //name  
-			    "512",            // NOI18N //defaultValue  
+			    "4096",            // NOI18N //defaultValue  
 			    true, // is engine option
 			    Type.TEXT_AREA, true);  //type
 

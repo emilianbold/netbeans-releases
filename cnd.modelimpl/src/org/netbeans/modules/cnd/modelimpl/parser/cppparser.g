@@ -3101,10 +3101,12 @@ parameter_declaration[boolean inTemplateParams]
 		|
 			ELLIPSIS
 		)
-		(ASSIGNEQUAL
+		(ASSIGNEQUAL 
                     (   
                         {inTemplateParams}? template_param_expression
                     |
+                        array_initializer // c++11 extended initilizer list
+                    |	
                         assignment_expression
                     )
 		)?

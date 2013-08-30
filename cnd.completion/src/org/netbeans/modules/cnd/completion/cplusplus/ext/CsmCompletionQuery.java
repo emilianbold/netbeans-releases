@@ -2632,12 +2632,12 @@ abstract public class CsmCompletionQuery {
             }
 
             if ((result == null || result.getItems().isEmpty()) && lastType != null) {
-                if(lastType.isTemplateBased() ||
-                        CsmFileReferences.isTemplateParameterInvolved(lastType) ||
-                        CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
-                    Collection<CsmObject> data = new ArrayList<CsmObject>();
-                    data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
-                    result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                if (last) {
+                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)) {
+                        Collection<CsmObject> data = new ArrayList<CsmObject>();
+                        data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
+                        result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                    }
                 }
             }
 
