@@ -827,7 +827,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 }
                 break;
             default:
-                assert false : typeElement.getPhpElementKind();
+                //noop
         }
         if (LOG.isLoggable(Level.FINE)) {
             logQueryTime("Set<TypeConstantElement> getTypeConstants", typeQuery, constantQuery, start); //NOI18N
