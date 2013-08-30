@@ -58,6 +58,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -87,6 +89,8 @@ import org.openide.util.Utilities;
  * @author David Konecny, Jesse Glick
  */
 public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provider {
+
+    private static final Logger LOG = Logger.getLogger(ClasspathPanel.class.getName());
 
     private DefaultListModel listModel;
     private File lastChosenFile = null;
@@ -619,17 +623,44 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
         for (int i=0; i<classpath.getModel().getSize(); i++) {
             String path = (String) classpath.getModel().getElementAt(i);
             File resolvedFile = PropertyUtils.resolveFile(model.getBaseFolder(), path);
+            LOG.log(
+                Level.FINE,
+                "Model path: {0}, Resolved file: {1}",  //NOI18N
+                new Object[] {
+                    path,
+                    resolvedFile
+                });
             // first check if they are collocated, it's more important than relative path
             if (CollocationQuery.areCollocated(model.getBaseFolder(), resolvedFile)) {
                 path = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), resolvedFile);
+                LOG.log(
+                    Level.FINE,
+                    "Collocated path: {0}, Base Folder: {1}, NetBeans Project Folder: {2}",  //NOI18N
+                    new Object[] {
+                        path,
+                        model.getBaseFolder(),
+                        model.getNBProjectFolder()
+                    });
             } else {
                 File unresolvedFile = new File(path);
                 // if base folder is not project folder then prefix ${project.dir}/
                 if (!unresolvedFile.isAbsolute() && !model.getBaseFolder().equals(model.getNBProjectFolder())) {
                     path = ProjectConstants.PROJECT_LOCATION_PREFIX + path;
+                    LOG.log(
+                        Level.FINE,
+                        "Project relative path: {0}, Base Folder: {1}, NetBeans Project Folder: {2}",  //NOI18N
+                        new Object[] {
+                            path,
+                            model.getBaseFolder(),
+                            model.getNBProjectFolder()
+                        });
                 }
             }
             // otherwise store value provided by user, either absolute or relative
+            LOG.log(
+                Level.FINE,
+                "Final path: {0}",  //NOI18N
+                path);
             sb.append(path);
 
             if (i+1<classpath.getModel().getSize()) {
@@ -666,9 +697,15 @@ public class ClasspathPanel extends javax.swing.JPanel implements HelpCtx.Provid
                     if (path != null) {
                         // if the file is inside base folder then remove base folder path prefix
                         // and show only the relative location in the list
-                        String baseFolderPath = model.getBaseFolder().getAbsolutePath();
-                        if (path.startsWith(baseFolderPath)) {
-                            path = path.substring(baseFolderPath.length() + 1);
+                        final String baseFolderPath = model.getBaseFolder().getAbsolutePath();
+                        final String absolutePath;
+                        if (new File(path).isAbsolute()) {
+                            absolutePath = path;
+                        } else {
+                            absolutePath = PropertyUtils.resolveFile(model.getNBProjectFolder(), path).getAbsolutePath();
+                        }
+                        if (absolutePath.startsWith(baseFolderPath)) {
+                            path = absolutePath.substring(baseFolderPath.length() + 1);
                         }
                         listModel.addElement(path);
                     }
