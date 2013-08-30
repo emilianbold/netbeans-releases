@@ -160,7 +160,7 @@ public class DataSourcesReader {
 
     /** JavaEE 7 new default data source linked to old default data source. */
     static final String DEFAULT_DATA_SOURCE_EE7
-            = "comp/DefaultDataSource";
+            = "java:comp/DefaultDataSource";
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
