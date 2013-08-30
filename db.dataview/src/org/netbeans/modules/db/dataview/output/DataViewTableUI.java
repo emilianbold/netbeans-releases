@@ -165,22 +165,16 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
         static int borderThickness = 1;
-        static Color emptyNullForeground;
         static Color selectedForeground;
         static Color unselectedForeground;
         private JComponent holder = new JComponent() {};
 
         static {
-            Color emptyNullFromMngr = UIManager.getColor(
-                    "nb.dataview.tablecell.edited.selected.emptyNull.foreground"); //NOI18N
-            emptyNullForeground = emptyNullFromMngr != null
-                    ? emptyNullFromMngr
-                    : new Color(245, 245, 245); // gray color
             Color selectedFgFromMngr = UIManager.getColor(
                     "nb.dataview.tablecell.edited.selected.foreground"); //NOI18N
             selectedForeground = selectedFgFromMngr != null
                     ? selectedFgFromMngr
-                    : Color.ORANGE;
+                    : new Color(229, 148, 0);
             Color unselectedFgFromMngr = UIManager.getColor(
                     "nb.dataview.tablecell.edited.unselected.foreground"); //NOI18N
             unselectedForeground = unselectedFgFromMngr != null
@@ -197,32 +191,9 @@ final class DataViewTableUI extends ResultSetJXTable {
 
             assert (table.getModel() instanceof DataViewTableUIModel) : "Assuming usage with DataViewTableUIModel";
 
-            int modelRow = table.convertRowIndexToModel(row);
-            int modelColumn = table.convertColumnIndexToModel(column);
+            Color color = isSelected ? selectedForeground : unselectedForeground;
 
-            DataViewTableUIModel model = (DataViewTableUIModel) table.getModel();
-
-            Color color;
-            boolean override = false;
-
-            if (isSelected) {
-                if (! model.hasUpdates(modelRow, modelColumn)) {
-                    color = emptyNullForeground;
-                    override = true;
-                } else {
-                    color = selectedForeground;
-                    override = true;
-                }
-            } else {
-                if (! model.hasUpdates(modelRow, modelColumn)) {
-                    color = table.getForeground();
-                } else {
-                    color = unselectedForeground;
-                    override = true;
-                }
-            }
-
-            if(override && c instanceof JRendererCheckBox) {
+            if (c instanceof JRendererCheckBox) {
                 holder.removeAll();
                 holder.setBorder(new LineBorder(color, borderThickness));
                 holder.add(c);
@@ -251,6 +222,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     editor.stopCellEditing();
                 }
                 handler.deleteRecordActionPerformed();
+                e.consume();
             } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
@@ -266,6 +238,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     setValueAt("<NULL>", row, col);
                 }
                 setRowSelectionInterval(row, row);
+                e.consume();
             } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_1) {
                 int row = getSelectedRow();
                 int col = getSelectedColumn();
@@ -284,6 +257,7 @@ final class DataViewTableUI extends ResultSetJXTable {
                     setValueAt("<DEFAULT>", row, col);
                 }
                 setRowSelectionInterval(row, row);
+                e.consume();
             }
         }
 
