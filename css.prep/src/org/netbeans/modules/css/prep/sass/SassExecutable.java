@@ -217,11 +217,13 @@ public final class SassExecutable {
         // debug
         boolean debug = CssPrepOptions.getInstance().getSassDebug();
         if (debug) {
-            params.add(DEBUG_PARAM);
             Version installedVersion = getVersion();
             if (installedVersion != null
                     && installedVersion.isAboveOrEqual(MINIMAL_VERSION_WITH_SOURCEMAP)) {
                 params.add(SOURCEMAP_PARAM);
+            } else {
+                // older versions
+                params.add(DEBUG_PARAM);
             }
         }
         // compiler options

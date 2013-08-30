@@ -114,6 +114,7 @@ import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -1238,6 +1239,8 @@ public final class PhpProject implements Project {
 
         private static final RequestProcessor RP = new RequestProcessor(ClientSideDevelopmentSupport.class);
 
+        private final UsageLogger browserUsageLogger = UsageLogger.projectBrowserUsageLogger(PhpProjectUtils.USAGE_LOGGER_NAME);
+
         final PhpProject project;
         private final RequestProcessor.Task reloadTask;
 
@@ -1343,6 +1346,12 @@ public final class PhpProject implements Project {
             } else {
                 HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
+            // usage logging
+            if (browser == null) {
+                // default ide browser
+                browser = BrowserUISupport.getDefaultBrowserChoice(true);
+            }
+            browserUsageLogger.log(PhpProjectType.TYPE, browser.getId(), browser.getBrowserFamily().name());
         }
 
         private void initProjectUrl() {
@@ -1437,6 +1446,7 @@ public final class PhpProject implements Project {
             if (PhpProjectProperties.URL.equals(propertyName)) {
                 projectRootUrl = null;
             } else if (PhpProjectProperties.BROWSER_ID.equals(propertyName)) {
+                browserUsageLogger.reset();
                 resetBrowser();
                 resetBrowserSupport();
             } else if (PhpProjectProperties.BROWSER_RELOAD_ON_SAVE.equals(propertyName)) {
@@ -1496,6 +1506,7 @@ public final class PhpProject implements Project {
             return browserSupport;
         }
 
+        @CheckForNull
         private WebBrowser getWebBrowser() {
             initBrowser();
             if (browserId == null) {

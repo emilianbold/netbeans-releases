@@ -70,11 +70,8 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase1 = testCases1.get(0);
         assertEquals("testVoid", testCase1.getName());
         assertEquals(TestCase.Status.PENDING, testCase1.getStatus());
-        // XXX should be null
-        assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase1.getMessage());
-        // XXX should be the line above
-        assertNull(testCase1.getFile());
-        // XXX should be some number != -1
+        assertNull(testCase1.getMessage());
+        assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase1.getFile());
         assertEquals(-1, testCase1.getLine());
         assertEquals(100L, testCase1.getTime());
 
@@ -188,6 +185,25 @@ public class TapParserTest extends NbTestCase {
         assertEquals(100L, testCase.getTime());
     }
 
+    public void testParseIssue235280() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-235280.log"), 100L);
+        assertEquals(1, suites.size());
+        TestCaseVo testCase1 = suites.get(0).getTestCases().get(0);
+        assertEquals("testDivide", testCase1.getName());
+        assertEquals(TestCase.Status.ABORTED, testCase1.getStatus());
+        assertEquals("Fatal error : Call to undefined method netbeans\\sample\\Calculator::divide()", testCase1.getMessage());
+        assertNull(testCase1.getDiff());
+        assertEquals("/Users/jubianchi/NetBeansProjects/nb-atoum-blog/tests/units/netbeans/sample/Calculator.php", testCase1.getFile());
+        assertEquals(-1, testCase1.getLine());
+        TestCaseVo testCase2 = suites.get(0).getTestCases().get(1);
+        assertEquals("testAdd", testCase2.getName());
+        assertEquals(TestCase.Status.ABORTED, testCase2.getStatus());
+        assertEquals("Fatal error : Call to undefined method netbeans\\sample\\Calculator::add()", testCase2.getMessage());
+        assertNull(testCase2.getDiff());
+        assertEquals("/Users/jubianchi/NetBeansProjects/nb-atoum-blog/tests/units/netbeans/sample/Calculator.php", testCase2.getFile());
+        assertEquals(-1, testCase2.getLine());
+    }
 
     private String getFileContent(String filePath) throws IOException {
         File file = new File(getDataDir(), filePath);
