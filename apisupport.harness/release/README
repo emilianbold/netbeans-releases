@@ -931,6 +931,13 @@ test.unit.folder - output directory for tests of module.
 test.unit.out.folder - this property can be overriden when you want to change 
 test.unit.folder property.
 
+test.includes - is needed when all or a single test is run. In the latter case
+a TestNG suite xml file could alternatively be provided.
+
+test.class - is needed when a single method is run/debugged or when a single 
+test is debugged. In the latter case a TestNG suite xml file could 
+alternatively be provided.
+
 continue.after.failing.tests - controls behavior of running tests on all modules
 in suite. Default value is "true", which causes suite.test target to continue 
 with another module even if tests in previous module failed. Set to "false" 
