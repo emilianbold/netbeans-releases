@@ -260,6 +260,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         comboBoxPreloaderClass.setModel(jfxProps.getPreloaderClassModel());
         setupWebBrowsersCombo();
         configChanged(configs.getActive());
+        //#233876 - width of width/height text fields should not be changed when panel is resized
+        textFieldWidth.setMinimumSize(textFieldWidth.getPreferredSize());
+        textFieldHeight.setMinimumSize(textFieldHeight.getPreferredSize());
     }
 
     void setEmphasizedFont(Component label, boolean emphasized) {
