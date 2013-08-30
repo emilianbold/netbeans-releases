@@ -48,8 +48,6 @@ import org.netbeans.lib.profiler.heap.Field;
 import org.netbeans.lib.profiler.heap.FieldValue;
 import org.netbeans.lib.profiler.heap.Instance;
 
-import org.netbeans.api.debugger.jpda.Variable;
-
 /**
  *
  * @author Martin Entlicher
@@ -70,14 +68,17 @@ public class FieldValueImpl implements FieldValue {
         this.value = field.getValue();
     }
 
+    @Override
     public Field getField() {
         return new FieldImpl(heap, field);
     }
 
+    @Override
     public String getValue() {
         return value;
     }
 
+    @Override
     public Instance getDefiningInstance() {
         return defInstance;
     }
