@@ -619,10 +619,12 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective)val).getReferencedNamespace();
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (val == null) {
                             val = findNamespace(nsp);
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (CsmKindUtilities.isNamespace(val)) {
@@ -659,6 +661,7 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective) val).getReferencedNamespace();
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                             if (val != null) {
                                 Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases((CsmNamespace)val);

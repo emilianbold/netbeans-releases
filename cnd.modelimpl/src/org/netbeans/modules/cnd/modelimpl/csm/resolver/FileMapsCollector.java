@@ -113,11 +113,16 @@ public final class FileMapsCollector {
     }
 
     Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> getUsedNamespaces() {
-        return new HashMap<>(usedNamespaces);
+        // XXX: do not copy yet
+        if (false) {
+            return new HashMap<>(usedNamespaces);
+        }
+        return usedNamespaces;
     }
 
     void rememberResolvedUsing(CharSequence key, CsmNamespace value) {
-        usedNamespaces.put(key, value);
+        // XXX: do not modify if not copied above
+        if (false) usedNamespaces.put(key, value);
     }
     
     void initFileMaps(boolean needClassifiers, int stopAtOffset, Callback callback) {
