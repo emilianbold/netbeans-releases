@@ -11,7 +11,7 @@
 <!-- infolevel="all" infotype="General" --><a id="sthref618" name="sthref618"></a>
 <h1>New Enterprise Application Wizard: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This wizard creates a new &nbsp; containing an enterprise application client module. You open the wizard by opening the and selecting the Enterprise Application Client template from the Java EE category.</p>
+<p>This wizard creates a new standard project&nbsp; containing an enterprise application client module. You open the wizard by opening the New Project wizard and selecting the Enterprise Application Client template from the Java EE category.</p>
 <p>In the Server and Settings page, you have to set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -74,18 +74,26 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t34" headers="r1c1-t34">
-<p>Main Class</p>
+<p>Create EJB Module</p>
 </td>
 <td align="left" headers="r8c1-t34 r1c2-t34">
-<p>Specifies the package and name of the main class. You should enter the fully qualified name of the class without the .java extension (for example, com.me.MyClass).</p>
+<p>Sets whether an EJB module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-ejb</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create an EJB Module Project later.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t34" headers="r1c1-t34">
+<p>Create Web Application Module</p>
+</td>
+<td align="left" headers="r9c1-t34 r1c2-t34">
+<p>Sets whether a web application module is created as a submodule of the enterprise application, and its name. By default, it is created and named <code>project-name-war</code>. If you do not let the IDE create the EJB module together with the enterprise application, you can create a Web Application project later.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click Finish, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
-<p><b>Note</b>: If you are creating an application client with existing sources, you must click Next to specify existing sources and libraries.</p>
+<p>When you click <b>Finish</b>, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p><b>Note</b>: If you are creating an application client with existing sources, you must click <b>Next</b> to specify existing sources and libraries.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, "
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

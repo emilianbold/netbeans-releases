@@ -138,6 +138,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      */
     private boolean isAcceptable;
     
+    /**
+     * is the current project a j2me project?
+     * 
+     */
+    private boolean isJ2meProject;
+    
     /** layer index for a message about an empty set of target folders */
     private static final int MSG_TYPE_NO_TARGET_FOLDERS = 0;
     /** layer index for a message about invalid class name */
@@ -146,8 +152,10 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 2;
     /** layer index for a message about modified files */
     private static final int MSG_TYPE_MODIFIED_FILES = 3;
+    /** layer index for a message about j2me project type */
+    private static final int MSG_TYPE_J2ME_PROJECT = 4;
     /** */
-    private MessageStack msgStack = new MessageStack(4);
+    private MessageStack msgStack = new MessageStack(5);
 
     private Collection<SourceGroup> createdSourceRoots = new ArrayList<SourceGroup>();
     
@@ -165,10 +173,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      *        displayed on the panel, otherwise (i.e. if {@code false}) then
      *        the message won't be displayed.
      */
-    public void createCfgPanel(boolean isShowMsgFilesWillBeSaved) {
+    @NbBundle.Messages("MSG_J2ME_PROJECT_TYPE=Tests cannot be created for this project type. Please use the New File wizard to create a JMUnit test instead.")
+    public void createCfgPanel(boolean isShowMsgFilesWillBeSaved, boolean isJ2meProject) {
 //        assert (nodes != null) && (nodes.length != 0);
 //        this.nodes = nodes;
         multipleClasses = checkMultipleClasses();
+        this.isJ2meProject = isJ2meProject;
         
         initBundle();
         try {
@@ -176,6 +186,9 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             if(isShowMsgFilesWillBeSaved) {
                 String msg = bundle.getString("MSG_MODIFIED_FILES"); // NOI18N
                 setMessage(msg, MSG_TYPE_MODIFIED_FILES);
+            }
+            if(isJ2meProject) {
+                setMessage(Bundle.MSG_J2ME_PROJECT_TYPE(), MSG_TYPE_J2ME_PROJECT);
             }
             setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
             addAccessibleDescriptions();
@@ -790,7 +803,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      */
     private void checkAcceptability() {
         final boolean wasAcceptable = isAcceptable;
-        isAcceptable = hasTargetFolders && classNameValid;
+        isAcceptable = hasTargetFolders && classNameValid && !isJ2meProject;
         if (isAcceptable != wasAcceptable) {
             fireStateChange();
         }

@@ -11,7 +11,14 @@
 <!-- infolevel="all" infotype="General" --><a id="sthref496" name="sthref496"></a>
 <h1>web.xml Visual Editor: Resource References</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Resource References section to add, remove, and view the web application's resource references.</p>
+<p>Use the Resource References section to add, remove, and view the web application's resource references. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p>To access a data source, a JMS connection factory, a JavaMail session, or a URL link from a web application, you must declare a resource reference in the application's web application deployment descriptor. The resource reference specifies a JNDI name, the object type, and the kind of authentication used when the resource is accessed. To connect the resource reference to the resource, you must map the JNDI name of the former to the latter. This mapping is done in the server-specific deployment descriptor file, such as the <code>sun-web.xml</code> file for the Glassfish application server.</p>
 <p>You use the resource reference in your code to extract the resource you need. For example, a resource reference defined in the <code>web.xml</code> file is used to extract data from a data source as shown in <a href="#CHDHFBIA">Example: Resource Reference</a></p>
 <a id="CHDHFBIA" name="CHDHFBIA"></a>
@@ -35,7 +42,7 @@ public BookDBAO () throws Exception {
 </pre>
 <!-- -->
 <p>To declare a resource reference, you must register it in the <code>web.xml</code> file. When you do this, you provide information needed by the server to use the resource reference.</p>
-<p>You open the <code>web.xml</code> Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the <code>web.xml</code> file. Click References at the top of the editor to open the References section, then click the Resource References header to open the Resource References section. 
+<p>In the Visual Editor, click <b>References</b> at the top of the editor to open the References section, then click the Resource References header to open the Resource References section. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
 <param name="text" value="<html><u>How?</u></html>">
@@ -81,7 +88,7 @@ public BookDBAO () throws Exception {
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t20" headers="r1c1-t20">
-<p>Application</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Application</p>
 </td>
 <td align="left" headers="r5c1-t20 r1c2-t20">
 <p>Programmatic authentification, provided by the application.</p>
@@ -89,7 +96,7 @@ public BookDBAO () throws Exception {
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t20" headers="r1c1-t20">
-<p>Container</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Container</p>
 </td>
 <td align="left" headers="r6c1-t20 r1c2-t20">
 <p>(Default) Provided by the caller who logged in to the server and created the component instance.</p>
@@ -116,22 +123,22 @@ public BookDBAO () throws Exception {
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
-<param name="text" value="<html><u>About Deployment Descriptors</u></html>">
+<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
-<param name="text" value="<html><u>Configuring a Web Application</u></html>">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</p>
 
 <!-- -->
 <!-- Start Footer -->
