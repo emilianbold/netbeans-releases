@@ -1076,7 +1076,7 @@ public class EvaluatorApp {
     }
     
     // Then package private class
-    public String failtestPrivatePackageClass2() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public String testPrivatePackageClass2() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         // return java.beans.ThreadGroupContext.getContext().getClass().getCanonicalName();
         // Must use introspection to evaluate:
         Class<?> tgc = Class.forName("java.beans.ThreadGroupContext");
