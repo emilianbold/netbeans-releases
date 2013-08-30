@@ -394,7 +394,11 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-        changedUpdate(e);
+        if (getNewClassName() == null) {
+            fireChange(e);
+        } else {
+            changedUpdate(e);
+        }
     }
 
     @Override
