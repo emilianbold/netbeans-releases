@@ -305,6 +305,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
             }
             JComboBox combo = (JComboBox) ae.getSource();
             combo.setSelectedItem(lastSelected);
+            combo.hidePopup();
             if (JOptionPane.showConfirmDialog(combo, 
             Bundle.MSG_ReallyDeleteConfig(lastSelected),
             Bundle.DeleteConfigTitle(),
