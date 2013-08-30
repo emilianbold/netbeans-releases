@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JButton;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.support.ui.ShellValidationStatusPanel;
 import org.openide.DialogDescriptor;
@@ -101,7 +100,9 @@ public final class ShellValidationSupport {
         String cygwinBitness = "";
         File uname_exe = new File(shell.bindir, "uname.exe"); // NOI18N
         if (uname_exe.exists()) {
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(ExecutionEnvironmentFactory.getLocal(), uname_exe.getPath(), "-m"); // NOI18N
+            // Should not use NativeProcess here as it needs expander, which is
+            // not available yet ...
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.execute(new ProcessBuilder(uname_exe.getPath(), "-m")); // NOI18N
             if (exitStatus.isOK()) {
                 cygwinBitness = exitStatus.output.trim();
             }
