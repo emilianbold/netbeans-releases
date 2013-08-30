@@ -249,7 +249,7 @@ public abstract class JavaSourceTaskFactory {
     private final Map<FileObject, JavaSource> file2JS;
     private final Object filesLock = new Object();
 
-    private static RequestProcessor WORKER = new RequestProcessor("JavaSourceTaskFactory", 1); // NOI18N
+    private static RequestProcessor WORKER = new RequestProcessor("JavaSourceTaskFactory", 1, false, false); // NOI18N
     
     static {
         JavaSourceTaskFactoryManager.ACCESSOR = new JavaSourceTaskFactoryManager.Accessor() {
