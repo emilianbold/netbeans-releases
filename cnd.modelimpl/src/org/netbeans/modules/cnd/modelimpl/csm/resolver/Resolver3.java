@@ -51,7 +51,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +78,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -88,11 +92,13 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -501,14 +507,34 @@ public final class Resolver3 implements Resolver {
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-        if( nameTokens.length == 1 ) {
-            result = resolveSimpleName(result, nameTokens[0], interestedKind);
-        } else if( nameTokens.length > 1 ) {
-            result = resolveCompoundName(nameTokens, result, interestedKind);
+        String fullName = fullName(nameTokens);
+        Object cacheKey = new NameResolveCacheKey(fullName, this.origOffset, this.startFile, this.file, interestedKind);
+        NameResolverCache resolverCache = CsmCacheManager.getClientCache(NameResolverCache.class, CACHE_INITIALIZER);
+        NameResolveCacheValue cacheValue = null;
+        if (resolverCache != null) {
+            cacheValue = (NameResolveCacheValue) resolverCache.get(cacheKey);
+        } else {
+            CndUtils.assertNonUiThread();
+            LOGGER.log(Level.INFO, "NO CACHE ACTIVITY ", new Exception());
         }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            String fullName = fullName(nameTokens);
-            LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, System.currentTimeMillis() - time});
+        if (cacheValue != null) {
+            result = cacheValue.resolveResult;
+            cacheValue.hits++;
+            LOGGER.log(Level.FINE, "HIT RESOLVED {0} ({1}) at {2}[{4}] Hits {3}=>{5}\n", new Object[]{fullName, interestedKind, origOffset, cacheValue.hits, file.getName(), result});
+        } else {
+            if( nameTokens.length == 1 ) {
+                result = resolveSimpleName(result, nameTokens[0], interestedKind);
+            } else if( nameTokens.length > 1 ) {
+                result = resolveCompoundName(nameTokens, result, interestedKind);
+            }
+            time = System.currentTimeMillis() - time;
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, time});
+            }
+            if (resolverCache != null) {
+                LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
+                resolverCache.put(cacheKey, new NameResolveCacheValue(result, time));
+            }
         }
         return result;
     }
@@ -991,6 +1017,133 @@ public final class Resolver3 implements Resolver {
         }
         return false;
     }
+
+    private static final class NameResolveCacheKey {
+        private final String fullName;
+        private final int origOffset;
+        private final CsmFile startFile;
+        private final CsmFile file;
+        private final int interestedKind;
+        private int hashCode = 0;
+
+        public NameResolveCacheKey(String fullName, int origOffset, CsmFile startFile, CsmFile file, int interestedKind) {
+            this.fullName = fullName;
+            this.origOffset = origOffset;
+            this.startFile = startFile;
+            this.file = file;
+            this.interestedKind = interestedKind;
+        }
+
+        @Override
+        public String toString() {
+            return "NameResolveCacheKey{" + "name=" + fullName + ", origOffset=" + origOffset + ", startFile=" + startFile + ", file=" + file + ", interestedKind=" + interestedKind + ", hashCode=" + hashCode + '}';
+        }
+    
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                int hash = 7;
+                hash = 41 * hash + Objects.hashCode(this.fullName);
+                hash = 41 * hash + this.origOffset;
+                hash = 41 * hash + Objects.hashCode(this.startFile);
+                hash = 41 * hash + Objects.hashCode(this.file);
+                hash = 41 * hash + this.interestedKind;
+                hashCode = hash;
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameResolveCacheKey other = (NameResolveCacheKey) obj;
+            if (this.hashCode != other.hashCode && (this.hashCode != 0 && other.hashCode != 0)) {
+                return false;
+            }
+            if (this.origOffset != other.origOffset) {
+                return false;
+            }
+            if (this.interestedKind != other.interestedKind) {
+                return false;
+            }
+            if (!Objects.equals(this.fullName, other.fullName)) {
+                return false;
+            }
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            if (!Objects.equals(this.startFile, other.startFile)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static final class NameResolveCacheValue {
+        final CsmObject resolveResult;
+        final long resolveTime;
+        int hits;
+
+        public NameResolveCacheValue(CsmObject resolveResult, long resolveTime) {
+            this.resolveResult = resolveResult;
+            this.resolveTime = resolveTime;
+            this.hits = 0;
+        }
+
+        @Override
+        public String toString() {
+            String saved = "";
+            if (hits > 0 && resolveTime > 0) {
+                saved = ", saved=" + (hits*resolveTime) + "ms";
+            }
+            return "HITS=" + hits + ", resolveTime=" + resolveTime + saved + ", result=" + resolveResult; // NOI18N
+        }
+    }
+    
+    private static final class NameResolverCache extends CsmCacheMap {
+        public NameResolverCache() {
+        }                
+
+        @Override
+        public void cleanup() {
+            if (LOGGER.isLoggable(Level.INFO)) {
+                Map<Object, Object> values = values();
+                int hits = 0;
+                int savedTime = 0;
+                int nullResolved = 0;
+                for (Map.Entry<Object, Object> entry : values.entrySet()) {
+                    Object v = entry.getValue();
+                    if (v instanceof NameResolveCacheValue) {
+                        NameResolveCacheValue value = (NameResolveCacheValue) v;
+                        hits += value.hits;
+                        savedTime += value.hits * value.resolveTime;
+                        if (value.resolveResult == null) {
+                            nullResolved++;
+                        }
+                    }
+                }
+                if (hits > 0) {
+                    long usedTime = super.timeSinceInitialization();
+                    LOGGER.log(Level.INFO, "ResolverCache: HITS={1}, Used {4}ms, SavedTime={2}ms, {0} Values; NULLs={3} ({5})\n", new Object[]{values.size(), hits, savedTime, nullResolved, usedTime, Thread.currentThread().getName()});
+                }
+            }
+            super.cleanup();
+        }
+    }
+    
+    private static final Callable<NameResolverCache> CACHE_INITIALIZER = new Callable<NameResolverCache>() {
+
+        @Override
+        public NameResolverCache call() {
+            return new NameResolverCache();
+        }
+
+    };
     
     private class FindCurrLocalClassifier implements FileMapsCollector.Callback {
 
