@@ -339,7 +339,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 10);
         add(listAppClassesScrollPane, gridBagConstraints);
 
-        labelMessage.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
+        labelMessage.setFont(labelMessage.getFont().deriveFont((labelMessage.getFont().getStyle() | java.awt.Font.ITALIC)));
         labelMessage.setText(org.openide.util.NbBundle.getMessage(JSEApplicationClassChooser.class, "LBL_ChooseMainClass_SCANNING_MESSAGE")); // NOI18N
         labelMessage.setMinimumSize(new java.awt.Dimension(300, 30));
         gridBagConstraints = new java.awt.GridBagConstraints();
