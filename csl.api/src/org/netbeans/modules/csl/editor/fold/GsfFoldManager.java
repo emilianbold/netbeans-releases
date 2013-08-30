@@ -669,23 +669,6 @@ public class GsfFoldManager implements FoldManager {
             operation.getHierarchy().lock();
             try {
                 if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
-                    Throwable t = (Throwable)scannedDocument.getProperty("Issue-222763-debug");
-                    StringWriter sw = new StringWriter();
-                    PrintWriter pw = new PrintWriter(sw);
-                    if (t != null) {
-                        pw.print("Scanned document: ");
-                        t.printStackTrace(pw);
-                    }
-                    t = (Throwable)operation.getHierarchy().getComponent().getDocument().getProperty("Issue-222763-debug");
-                    if (t != null) {
-                        pw.print("Manager document: ");
-                        t.printStackTrace(pw);
-                    }
-                    // hopefully will be removed before release, see issue #223800
-                    pw.flush();
-                    LOG.warning("Fold manager works with different document than scanner. FmDoc: " + operation.getHierarchy().getComponent().getDocument() +
-                            ", ScanDoc: " + scannedDocument + ", source: " + scanSource);
-                    LOG.warning("Creation stacks: " + sw.toString());
                     // prevent folding, bad offsets, see issue #223800
                     return;
                 }
