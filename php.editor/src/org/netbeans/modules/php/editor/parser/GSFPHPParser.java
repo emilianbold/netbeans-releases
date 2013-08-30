@@ -124,7 +124,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     private void doNotProcessParsing(FileObject fileObject, Snapshot snapshot) {
-        Program emptyProgram = new Program(0, snapshot.getText().toString().length(), Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
+        Program emptyProgram = new Program(0, 0, Collections.<Statement>emptyList(), Collections.<Comment>emptyList());
         result = new PHPParseResult(snapshot, emptyProgram);
         LOGGER.log(
                 Level.INFO,
@@ -427,7 +427,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
                             context.setSanitizedPart(new SanitizedPartImpl(
-                                    new OffsetRange(start + currentLeftOffset - 1 - (phpOpenDelimiter.length() - shortOpenTag.length()), 
+                                    new OffsetRange(start + currentLeftOffset - 1 - (phpOpenDelimiter.length() - shortOpenTag.length()),
                                             start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1),
                                     sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)));
                             return true;
