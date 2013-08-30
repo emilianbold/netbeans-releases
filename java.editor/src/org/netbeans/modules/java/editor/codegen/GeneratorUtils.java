@@ -133,10 +133,14 @@ public class GeneratorUtils {
         if (ERR.isLoggable(ErrorManager.INFORMATIONAL))
             ERR.log(ErrorManager.INFORMATIONAL, "findOverridable(" + info + ", " + impl + ")");
         List<ExecutableElement> overridable = new ArrayList<ExecutableElement>();
+        final Set<Modifier> notOverridable = EnumSet.copyOf(NOT_OVERRIDABLE);
+        if (!impl.getModifiers().contains(Modifier.ABSTRACT)) {
+            notOverridable.add(Modifier.ABSTRACT);
+        }
         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(impl))) {
-            Set<Modifier> set = EnumSet.copyOf(NOT_OVERRIDABLE);                
+            Set<Modifier> set = EnumSet.copyOf(notOverridable);                
             set.removeAll(ee.getModifiers());                
-            if (set.size() == NOT_OVERRIDABLE.size()
+            if (set.size() == notOverridable.size()
                     && !overridesPackagePrivateOutsidePackage(ee, impl) //do not offer package private methods in case they're from different package
                     && !isOverridden(info, ee, impl)) {
                 overridable.add(ee);
@@ -544,7 +548,7 @@ public class GeneratorUtils {
         return true;
     }
 
-    private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.ABSTRACT, Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
+    private static final Set<Modifier> NOT_OVERRIDABLE = EnumSet.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
 
     public static boolean isAccessible(TypeElement from, Element what) {
         if (what.getModifiers().contains(Modifier.PUBLIC))

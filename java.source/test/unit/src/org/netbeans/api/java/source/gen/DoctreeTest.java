@@ -161,6 +161,79 @@ public class DoctreeTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    public void test232353 () throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    private void test() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "        public Inner(String message) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n");
+        String golden
+                = "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "\n"
+                + "    /**\n"
+                + "     * Test method\n"
+                + "     * @param test\n"
+                + "     */\n"
+                + "    private void test() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "\n"
+                + "        /**\n"
+                + "         *\n"
+                + "         * @param message\n"
+                + "         */\n"
+                + "        public Inner(String message) {\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            @Override
+            public void run(final WorkingCopy wc) throws IOException {
+                wc.toPhase(JavaSource.Phase.RESOLVED);
+                final TreeMaker make = wc.getTreeMaker();
+                new TreePathScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(final MethodTree mt, Void p) {
+                        if("test".contentEquals(mt.getName())) {
+                            ParamTree param = make.Param(false, make.DocIdentifier("test"), new LinkedList<DocTree>());
+                            DocCommentTree newDoc = make.DocComment(
+                                    Collections.singletonList(make.Text("Test method")),
+                                    Collections.EMPTY_LIST,
+                                    Collections.singletonList(param));
+                            wc.rewrite(mt, null, newDoc);
+                        } else {
+                            ParamTree param = make.Param(false, make.DocIdentifier("message"), new LinkedList<DocTree>());
+                            DocCommentTree newDoc = make.DocComment(
+                                    Collections.singletonList(make.Text("")),
+                                    Collections.EMPTY_LIST,
+                                    Collections.singletonList(param));
+                            wc.rewrite(mt, null, newDoc);
+                        }
+                        return super.visitMethod(mt, p);
+                    }
+                }.scan(wc.getCompilationUnit(), null);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     public void testAddDocCommentTagA() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile,

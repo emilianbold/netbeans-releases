@@ -152,8 +152,13 @@ public final class TapParser {
         if (setFileLine(lastLine)) {
             commentLines.remove(lastIndex);
         } else {
-            // aborted test
             // XXX
+            // aborted test
+            if (lastLine.toLowerCase().endsWith(".php")) { // NOI18N
+                // php file
+                commentLines.remove(lastIndex);
+                testCase.setFile(lastLine);
+            }
             if (testCase.getStatus() == TestCase.Status.FAILED) {
                 testCase.setStatus(TestCase.Status.ABORTED);
             }

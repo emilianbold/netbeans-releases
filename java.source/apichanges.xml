@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="toScopeWithDisabledAccessibilityChecks">
+            <api name="general"/>
+            <summary>Adding <code>TreeUtilities.toScopeWithDisabledAccessibilityChecks</code> method.</summary>
+            <version major="0" minor="129"/>
+            <date day="20" month="8" year="2013"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Adding the utility method to create a Scope capable to access
+                all private methods and fields when parsing and evaluating expressions.
+            </description>
+            <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+            <issue number="234645"/>
+        </change>
         <change id="findBodySpan">
              <api name="general"/>
              <summary>Added utility method to find span of a ClassTree's body in the source.</summary>

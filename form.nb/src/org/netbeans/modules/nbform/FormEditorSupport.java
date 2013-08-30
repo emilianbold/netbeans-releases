@@ -1245,18 +1245,20 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      */
     @Override
     public Boolean getFoldState(int offset) {
-        JEditorPane[] panes = getOpenedPanes();
-        if (panes != null && panes.length > 0) {
-            FoldHierarchy hierarchy = FoldHierarchy.get(panes[0]);
-            if (hierarchy != null) {
-                try {
-                    hierarchy.lock();
-                    Fold fold = FoldUtilities.findNearestFold(hierarchy, offset);
-                    if (fold != null) {
-                        return fold.isCollapsed();
+        if (EventQueue.isDispatchThread()) {
+            JEditorPane[] panes = getOpenedPanes();
+            if (panes != null && panes.length > 0) {
+                FoldHierarchy hierarchy = FoldHierarchy.get(panes[0]);
+                if (hierarchy != null) {
+                    try {
+                        hierarchy.lock();
+                        Fold fold = FoldUtilities.findNearestFold(hierarchy, offset);
+                        if (fold != null) {
+                            return fold.isCollapsed();
+                        }
+                    } finally {
+                        hierarchy.unlock();
                     }
-                } finally {
-                    hierarchy.unlock();
                 }
             }
         }

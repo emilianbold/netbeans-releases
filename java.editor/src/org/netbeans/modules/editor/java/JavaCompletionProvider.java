@@ -4260,7 +4260,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             int nextMemberPos = (int)Diagnostic.NOPOS;            
             for (Tree member : cls.getMembers()) {
                 int pos = (int)sourcePositions.getStartPosition(root, member);
-                if (pos > caretOffset) {
+                if (pos >= caretOffset) {
                     nextMemberPos = pos;
                     break;
                 }
@@ -4280,26 +4280,32 @@ public class JavaCompletionProvider implements CompletionProvider {
                     return;
             }
             final Trees trees = controller.getTrees();
-            TypeElement te = (TypeElement)trees.getElement(clsPath);            
-            if (te == null || !te.getKind().isClass())
+            TypeElement te = (TypeElement)trees.getElement(clsPath);
+            if (te == null)
                 return;
             String prefix = env.getPrefix();
             Types types = controller.getTypes();
-            DeclaredType clsType = (DeclaredType)te.asType();            
-            for (ExecutableElement ee : GeneratorUtils.findUndefs(controller, te)) {
-                if (startsWith(env, ee.getSimpleName().toString())) {
-                    TypeMirror tm = asMemberOf(ee, clsType, types);
-                    if (tm.getKind() == TypeKind.EXECUTABLE)
-                        results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, true, env.getWhiteList()));
-                }
-            }            
-            for (ExecutableElement ee : GeneratorUtils.findOverridable(controller, te)) {
-                if (startsWith(env, ee.getSimpleName().toString())) {
-                    TypeMirror tm = asMemberOf(ee, clsType, types);
-                    if (tm.getKind() == TypeKind.EXECUTABLE)
-                        results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, false, env.getWhiteList()));
+            DeclaredType clsType = (DeclaredType)te.asType();
+            if (te.getKind().isClass() || te.getKind().isInterface() && SourceVersion.RELEASE_8.compareTo(controller.getSourceVersion()) <= 0) {
+                for (ExecutableElement ee : GeneratorUtils.findUndefs(controller, te)) {
+                    if (startsWith(env, ee.getSimpleName().toString())) {
+                        TypeMirror tm = asMemberOf(ee, clsType, types);
+                        if (tm.getKind() == TypeKind.EXECUTABLE)
+                            results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, true, env.getWhiteList()));
+                    }
                 }
             }
+            if (te.getKind().isClass() || te.getKind().isInterface()) {
+                for (ExecutableElement ee : GeneratorUtils.findOverridable(controller, te)) {
+                    if (startsWith(env, ee.getSimpleName().toString())) {
+                        TypeMirror tm = asMemberOf(ee, clsType, types);
+                        if (tm.getKind() == TypeKind.EXECUTABLE)
+                            results.add(JavaCompletionItem.createOverrideMethodItem(env.getController(), ee, (ExecutableType)tm, anchorOffset, false, env.getWhiteList()));
+                    }
+                }
+            }
+            if (!te.getKind().isClass())
+                return;
             if (prefix == null || startsWith(env, "get") || startsWith(env, "set") || startsWith(env, "is")
                     || startsWith(env, prefix, "get") || startsWith(env, prefix, "set") || startsWith(env, prefix, "is")) {
                 List<? extends Element> members = controller.getElements().getAllMembers(te);

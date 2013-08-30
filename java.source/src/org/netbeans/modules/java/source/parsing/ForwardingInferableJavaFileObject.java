@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Tomas Zezula
  */
-class ForwardingInferableJavaFileObject extends ForwardingJavaFileObject<InferableJavaFileObject> implements InferableJavaFileObject {
+public class ForwardingInferableJavaFileObject extends ForwardingJavaFileObject<InferableJavaFileObject> implements InferableJavaFileObject {
 
     public ForwardingInferableJavaFileObject(@NonNull final InferableJavaFileObject delegate) {
         super (delegate);
@@ -60,6 +60,4 @@ class ForwardingInferableJavaFileObject extends ForwardingJavaFileObject<Inferab
     public String inferBinaryName() {
         return fileObject.inferBinaryName();
     }
-
-
 }

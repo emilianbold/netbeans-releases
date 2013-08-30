@@ -45,6 +45,7 @@
 package org.openide.text;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.VetoableChangeListener;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,8 +58,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import javax.swing.text.Position.Bias;
 import org.netbeans.junit.NbTestCase;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -86,7 +90,7 @@ implements CloneableEditorSupport.Env {
     /** if not null contains message why this document cannot be modified */
     private transient String cannotBeModified;
     private transient Date date = new Date ();
-    private transient List<PropertyChangeListener> propL = new ArrayList<PropertyChangeListener>();
+    private transient PropertyChangeSupport prop = new PropertyChangeSupport(this);
     private transient VetoableChangeListener vetoL;
 
     private List<Exception> inits = new ArrayList<Exception>();
@@ -108,7 +112,7 @@ implements CloneableEditorSupport.Env {
     
     @Override
     protected boolean runInEQ() {
-        return true;
+        return false;
     }
     
     private Object writeReplace () {
@@ -134,8 +138,23 @@ implements CloneableEditorSupport.Env {
             }
         }
 
+        PositionRef one = support.createPositionRef(1, Bias.Forward);
         Document doc = support.openDocument();
         assertNotNull("Document is opened", doc);
+        
+        PositionRef two = support.createPositionRef(2, Bias.Forward);
+        
+        assertEquals(1, one.getOffset());
+        assertEquals(2, two.getOffset());
+        
+        // For FilterDocument the test must check GC of real (delegated) document as well
+        // Without this the test would not work for real docs because they would be held from
+        // EditorSupportLineSet->LineListener->root field (made a weak-ref in order to make
+        // this test to pass).
+        Document nonFilterDoc = null;
+        if (doc instanceof FilterDocument) {
+            nonFilterDoc = doc.getDefaultRootElement().getDocument();
+        }
 
         Object o = new Object();
         R r = new R(o);
@@ -143,18 +162,34 @@ implements CloneableEditorSupport.Env {
         //It will block active reference queue thread
         System.gc();
         while (!waiting) {
+            System.gc();
             Thread.sleep(100);
         }
 
         Reference<?> ref = new WeakReference<Object>(doc);
         doc = null;
+        Reference<?> nonFilterRef = new WeakReference<Object>(nonFilterDoc);
+        nonFilterDoc = null;
+
         assertGC("Document can disappear",ref);
+        assertGC("Non filtered document can disappear", nonFilterRef);
 
         doc = support.getDocument();
         assertNull("No document is opened", doc);
         
+        assertEquals(1, one.getOffset());
+        assertEquals(2, two.getOffset());
+        
         doc = support.openDocument();
         assertNotNull("Document is opened", doc);
+
+        assertEquals(1, one.getOffset());
+        assertEquals(2, two.getOffset());
+
+        doc.insertString(0, "a", null);
+
+        assertEquals(2, one.getOffset());//XXX
+        assertEquals(3, two.getOffset());
 
         //Unblock active reference queue thread
         synchronized(LOCK) {
@@ -162,15 +197,49 @@ implements CloneableEditorSupport.Env {
         }
     }
     
+    public void testReload() throws Exception {
+        final Pane[] pane = new Pane[1];
+        SwingUtilities.invokeAndWait(new Runnable() {
+
+            @Override
+            public void run() {
+                support.open();
+                pane[0] = support.getAnyEditor();
+            }
+        });
+        PositionRef one = support.createPositionRef(1, Bias.Forward);
+        Document doc = support.getDocument();
+        assertNotNull("Document is opened", doc);
+        
+        PositionRef two = support.createPositionRef(2, Bias.Forward);
+        
+        assertEquals(1, one.getOffset());
+        assertEquals(2, two.getOffset());
+    
+        setNewTime(new Date());
+
+        Thread.sleep(2000);
+        
+        assertNotNull("Document is opened", doc);
+
+        assertEquals(1, one.getOffset());
+        assertEquals(2, two.getOffset());
+        
+        doc.insertString(0, "a", null);
+        
+        assertEquals(2, one.getOffset());
+        assertEquals(3, two.getOffset());
+    }
+    
     //
     // Implementation of the CloneableEditorSupport.Env
     //
     
     public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        propL.add (l);
+        prop.addPropertyChangeListener(l);
     }    
     public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        propL.remove (l);
+        prop.removePropertyChangeListener(l);
     }
     
     public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
@@ -190,12 +259,17 @@ implements CloneableEditorSupport.Env {
         return "text/plain";
     }
     
+    void setNewTime(Date d) {
+	date = d;
+        prop.firePropertyChange (PROP_TIME, null, null);
+    }
+    
     public Date getTime() {
         return date;
     }
     
     public synchronized InputStream inputStream() throws IOException {
-        return new ByteArrayInputStream(new byte[0]);
+        return new ByteArrayInputStream("abcdef".getBytes());
     }
     
     public OutputStream outputStream() throws IOException {

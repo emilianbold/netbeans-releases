@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Insets;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -379,6 +380,7 @@ final class CloneableEditorInitializer implements Runnable {
 
         try {
             setDocument(ces.openDocument());
+            ces.getPositionManager().documentOpened(new WeakReference<StyledDocument>(doc));
             assert (doc != null) : "ces.openDocument() returned null"; // NOI18N
             return true;
         } catch (UserQuestionException ex) {

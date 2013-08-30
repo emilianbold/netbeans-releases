@@ -91,8 +91,11 @@ import org.openide.util.UserQuestionException;
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
 public final class PhpProjectUtils {
+
+    public static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.php"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
-    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger(USAGE_LOGGER_NAME);
 
     private PhpProjectUtils() {
     }

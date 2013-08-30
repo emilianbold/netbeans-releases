@@ -305,7 +305,9 @@ public class GlassFishState {
             case UNKNOWN: case ONLINE: case SHUTDOWN: case STARTUP:
                 return false;
             default:
-                return !ServerUtils.isDASRunning(instance);
+                // Allow start even with admin port occupied.
+                //return !ServerUtils.isDASRunning(instance);
+                return true;
         }
 
     }

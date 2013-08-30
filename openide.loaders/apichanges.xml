@@ -109,6 +109,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="org.openide.text.big.file.size">
+          <api name="editor"/>
+          <summary>Introduces system property to change file size threshold.</summary>
+          <version major="7" minor="51"/>
+          <date day="23" month="8" year="2013"/>
+          <author login="igor_nikiforov"/>
+          <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+          <description>
+              <p>We need a way to replace hardcoded "1024 * 1024" constant for file size, as
+                 in native space 1Mb file is rather common situation. So org.openide.text.big.file.size
+                 system property is introduced, which allows to set this threshhold in megabytes.
+                 The default threshold is 1Mb.
+              </p>
+          </description>
+          <class package="org.openide.text" name="DataEditorSupport"/>
+          <issue number="213882"/>
+      </change>      
       <change id="TemplateRegistration.requireProject">
           <api name="loaders"/>
           <summary>Allow registration of templates which do not require a Project instance</summary>

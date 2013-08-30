@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
+import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  * resolve file objects under offset
@@ -145,6 +146,10 @@ public class CsmOffsetResolver {
                     context.setLastObject(type);
                     return type;
                 }
+                MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
+                if (findInExpression(param.getInitialValue(), param, offset, context, innerObj)) {
+                    return innerObj.value;
+                }
                 context.setLastObject(param);
                 return param;
             }
@@ -192,22 +197,9 @@ public class CsmOffsetResolver {
                 context.setLastObject(type);
                 last = type;
             }
-            CsmExpression initialValue = ((CsmVariable)lastObj).getInitialValue();
-            if(initialValue != null) {
-                for (CsmStatement csmStatement : initialValue.getLambdas()) {
-                    CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
-                    if ((!CsmOffsetUtilities.sameOffsets(lastObj, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
-                        last = null;
-                        // offset is in body, try to find inners statement
-                        if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
-                            // if found exact object => return it, otherwise return last found scope
-                            CsmObject found = context.getLastObject();
-                            if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
-                                lastObj = last = found;
-                            }
-                        }
-                    }
-                }
+            MutableObject<CsmObject> innerObj = new MutableObject<CsmObject>();
+            if (findInExpression(((CsmVariable)lastObj).getInitialValue(), lastObj, offset, context, innerObj)) {
+                lastObj = last = innerObj.value;
             }
         } else if (CsmKindUtilities.isClassForwardDeclaration(lastObj) || CsmKindUtilities.isEnumForwardDeclaration(lastObj)) {
             // check template parameters
@@ -246,6 +238,29 @@ public class CsmOffsetResolver {
             }
         }
         return last;
+    }
+    
+    private static boolean findInExpression(CsmExpression initialValue, CsmObject lastObj, int offset, CsmContext context, MutableObject<CsmObject> result) {
+        if(initialValue != null) {
+            for (CsmStatement csmStatement : initialValue.getLambdas()) {
+                CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
+                if ((!CsmOffsetUtilities.sameOffsets(lastObj, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
+                    result.value = null;
+                    
+                    // offset is in body, try to find inners statement
+                    if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
+                        // if found exact object => return it, otherwise return last found scope
+                        CsmObject found = context.getLastObject();
+                        if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
+                            result.value = found;
+                        }
+                    }
+                    
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {

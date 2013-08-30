@@ -455,7 +455,7 @@ public class ImportProject implements PropertyChangeListener {
                         if (runMake) {
                             makeProject(null);
                         } else {
-                            discovery(1, existingBuildLog, null);
+                            discovery(1, existingBuildLog, null, null);
                         }
                     }
                 } else {
@@ -553,9 +553,11 @@ public class ImportProject implements PropertyChangeListener {
                             FileObject createdFolder = mkDir(configureFileObject.getParent(), configureRunFolder);
                             if (createdFolder != null) {
                                 ses.setRunDirectory(createdFolder.getPath());
+                                expectedCmakeLog = new File(createdFolder.getPath()+"/compile_commands.json"); // NOI18N
                             }
                         } else {
                             ses.setRunDirectory(configureFileObject.getParent().getPath());
+                            expectedCmakeLog = new File(configureFileObject.getParent().getPath()+"/compile_commands.json"); // NOI18N
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -916,10 +918,37 @@ public class ImportProject implements PropertyChangeListener {
                         execLog = null;
                     }
                 }
+                if (execLog != null) {
+                    if (execLog.exists()) {
+                        FileObject fo = FileUtil.toFileObject(execLog);
+                        try
+                          {
+                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-exec.log"); // NOI18N
+                          } catch (IOException ex) {
+                              ex.printStackTrace(System.err);
+                          }
+                    }
+                }
+                if (makeLog != null) {
+                    if (makeLog.exists()) {
+                        FileObject fo = FileUtil.toFileObject(makeLog);
+                        try
+                          {
+                              FileUtil.copyFile(fo, projectFolder.getFileObject().getFileObject("nbproject/private"), "Default-build.log"); // NOI18N
+                          } catch (IOException ex) {
+                              ex.printStackTrace(System.err);
+                          }
+                    }
+                }
+                if (expectedCmakeLog != null) {
+                    if (!expectedCmakeLog.exists()) {
+                        expectedCmakeLog = null;
+                    }
+                }
                 if (rc == 0) {
-                    discovery(rc, makeLog, execLog);
+                    discovery(rc, makeLog, execLog, expectedCmakeLog);
                 } else {
-                    discovery(-1, makeLog, execLog);
+                    discovery(-1, makeLog, execLog, expectedCmakeLog);
                 }
             }
         };
@@ -1083,7 +1112,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     
-    private void discovery(int rc, File makeLog, File execLog) {
+    private void discovery(int rc, File makeLog, File execLog, File expectedCmakeLog) {
         try {
             if (!isProjectOpened()) {
                 isFinished = true;
@@ -1098,11 +1127,17 @@ public class ImportProject implements PropertyChangeListener {
             boolean exeLogDone = false;
             boolean makeLogDone = false;
             if (!manualCA) {
+                if (expectedCmakeLog != null) {
+                    done = discoveryByExecLog(expectedCmakeLog, done);
+                    exeLogDone = true;
+                }
                 if (rc == 0) {
                     // build successful 
-                    if (execLog != null) {
-                        done = discoveryByExecLog(execLog, done);
-                        exeLogDone = true;
+                    if (!done) {
+                        if (execLog != null) {
+                            done = discoveryByExecLog(execLog, done);
+                            exeLogDone = true;
+                        }
                     }
                     if (!done) {
                         if (!isProjectOpened()) {
@@ -1114,13 +1149,15 @@ public class ImportProject implements PropertyChangeListener {
                     }
                 } else if (rc == 1) {
                     // build skiped
-                    if (makeLog != null) {
-                        // have a build log
-                        done = dicoveryByBuildLog(makeLog, done);
-                        makeLogDone = true;
-                    } else {
-                        done = discoveryByDwarfOrBuildLog(done);
-                        buildArifactWasAnalyzed = true;
+                    if (!done) {
+                        if (makeLog != null) {
+                            // have a build log
+                            done = dicoveryByBuildLog(makeLog, done);
+                            makeLogDone = true;
+                        } else {
+                            done = discoveryByDwarfOrBuildLog(done);
+                            buildArifactWasAnalyzed = true;
+                        }
                     }
                 } else if (rc == -1) {
                     // build faled
@@ -1261,6 +1298,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private File makeLog = null;
     private File execLog = null;
+    private File expectedCmakeLog = null;
     private String remoteExecLog = null;
     public void setMakeLog(File makeLog) {
         this.makeLog = makeLog;

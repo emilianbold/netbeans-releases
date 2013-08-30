@@ -3085,10 +3085,12 @@ public final class TreeMaker {
                       ExpressionTree defaultValue) 
     {
         SourcePositions[] positions = new SourcePositions[1];
-        StatementTree body = copy.getTreeUtilities().parseStatement(bodyText, positions);
-        assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
-        mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
-        new TreePosCleaner().scan(body, null);
+        StatementTree body = bodyText != null ? copy.getTreeUtilities().parseStatement(bodyText, positions) : null;
+        if (body != null) {
+            assert Tree.Kind.BLOCK == body.getKind() : "Not a statement block!";
+            mapComments((BlockTree) body, bodyText, copy, handler, positions[0]);
+            new TreePosCleaner().scan(body, null);
+        }
         return delegate.Method(modifiers, name, returnType, typeParameters, parameters, throwsList, (BlockTree) body, defaultValue);
     }
     

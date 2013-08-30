@@ -54,7 +54,6 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import java.beans.PropertyVetoException;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -231,7 +230,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
             if (addJaxWsLib) {
                 MavenModelUtils.addMetroLibrary(project);
             }
-            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project), false);
+            generateJaxWSImplFromTemplate(pkg, WSUtils.isEJB(project), false, false);
             handle.finish();
         } else if (serviceType == WizardProperties.ENCAPSULATE_SESSION_BEAN) {
             String wsName = Templates.getTargetName(wiz);
@@ -347,7 +346,10 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                     // create empty web service implementation class
                     FileObject pkg = Templates.getTargetFolder(wiz);
-                    final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, false, true);
+                    boolean useProvider = (Boolean)wiz.getProperty(WizardProperties.USE_PROVIDER);
+                    boolean isStateless = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN);
+                    
+                    final FileObject targetFile = generateJaxWSImplFromTemplate(pkg, isStateless, true, useProvider);
 
                     // execute wsimport goal
                     RunConfig cfg = RunUtils.createRunConfig(
@@ -364,7 +366,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                     try {
                         String wsdlLocationPrefix = WSUtils.isWeb(project) ? "WEB-INF/wsdl/" : "META-INF/wsdl/"; //NOI18N
-                        generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath); //NOI18N
+                        generateJaxWsImplClass(targetFile, wsdlService, wsdlPort, wsdlLocationPrefix+relativePath, useProvider); //NOI18N
                         DataObject targetDo = DataObject.find(targetFile);
                         if (targetDo != null) {
                             SaveCookie save = targetDo.getCookie(SaveCookie.class);
@@ -384,11 +386,18 @@ public class JaxWsServiceCreator implements ServiceCreator {
         handle.finish();
     }
     
-    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate, boolean fromWsdl) throws IOException {
+    private FileObject generateJaxWSImplFromTemplate(FileObject pkg, boolean isEjbTemplate, boolean fromWsdl, boolean useProvider) throws IOException {
         DataFolder df = DataFolder.findFolder(pkg);
         FileObject template = Templates.getTemplate(wiz);
 
-        if (!fromWsdl && (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
+        if (useProvider) {
+            FileObject templateParent = template.getParent();
+            if (isEjbTemplate) {
+                template = templateParent.getFileObject("EjbWebServiceProvider", "java"); //NOI18N
+            } else {
+                template = templateParent.getFileObject("WebServiceProvider", "java"); //NOI18N
+            }
+        } else if (!fromWsdl && (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN)) {
             FileObject templateParent = template.getParent();
             template = templateParent.getFileObject("EjbWebService", "java"); //NOI18N
         }
@@ -437,7 +446,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         }
     }
 
-    private void generateJaxWsImplClass(FileObject targetFile, final WsdlService service, final WsdlPort port, final String wsdlLocation) throws IOException {
+    private void generateJaxWsImplClass(FileObject targetFile, final WsdlService service, final WsdlPort port, final String wsdlLocation, final boolean useProvider) throws IOException {
 
         final JavaSource targetSource = JavaSource.forFileObject(targetFile);
         final boolean[] isIncomplete = new boolean[1];
@@ -459,9 +468,12 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     attrs.add(
                             make.Assignment(make.Identifier("portName"), 
                                     make.Literal(port.getName()))); //NOI18N
-                    attrs.add(
+                    
+                    if (!useProvider) {
+                        attrs.add(
                             make.Assignment(make.Identifier("endpointInterface"), 
                                     make.Literal(port.getJavaName()))); //NOI18N
+                    }
                     attrs.add(
                             make.Assignment(make.Identifier("targetNamespace"), 
                                     make.Literal(port.getNamespaceURI()))); //NOI18N
@@ -470,7 +482,8 @@ public class JaxWsServiceCreator implements ServiceCreator {
                                     make.Literal(wsdlLocation))); //NOI18N
 
                     AnnotationTree WSAnnotation = make.Annotation(
-                            make.QualIdent("javax.jws.WebService"),      //NOI18N
+                            useProvider ? 
+                                make.QualIdent("javax.xml.ws.WebServiceProvider") : make.QualIdent("javax.jws.WebService"),      //NOI18N
                             attrs);
                     ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, 
                             WSAnnotation);
@@ -497,74 +510,76 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         }
                     }
 
-                    // add @Stateless annotation
-                    if (WSUtils.isEJB(project)) {
-                        TypeElement statelessAn = workingCopy.getElements().
-                            getTypeElement("javax.ejb.Stateless"); //NOI18N
-                        if (statelessAn != null) {
-                            AnnotationTree StatelessAnnotation = make.Annotation(
-                                    make.QualIdent(statelessAn),
-                                    Collections.<ExpressionTree>emptyList());
-                            modifiedClass = genUtils.addAnnotation(modifiedClass, 
-                                    StatelessAnnotation);
-                        }
-                        else {
-                            isIncomplete[0] = true;
-                        }
-                    }
-
-                    List<WsdlOperation> operations = port.getOperations();
-                    for (WsdlOperation operation : operations) {
-
-                        // return type
-                        String returnType = operation.getReturnTypeName();
-
-                        // create parameters
-                        List<WsdlParameter> parameters = operation.getParameters();
-                        List<VariableTree> params = new ArrayList<VariableTree>();
-                        for (WsdlParameter parameter : parameters) {
-                            // create parameter:
-                            // final ObjectOutput arg0
-                            params.add(make.Variable(
-                                    make.Modifiers(
-                                    Collections.<Modifier>emptySet(),
-                                    Collections.<AnnotationTree>emptyList()),
-                                    parameter.getName(), // name
-                                    make.Identifier(parameter.getTypeName()), // parameter type
-                                    null // initializer - does not make sense in parameters.
-                                    ));
-                        }
-
-                        // create exceptions
-                        Iterator<String> exceptions = operation.getExceptions();
-                        List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
-                        while (exceptions.hasNext()) {
-                            String exception = exceptions.next();
-                            TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
-                            if (excEl != null) {
-                                exc.add(make.QualIdent(excEl));
-                            } else {
+                    if (!useProvider) {
+                        // add @Stateless annotation
+                        if (WSUtils.isEJB(project)) {
+                            TypeElement statelessAn = workingCopy.getElements().
+                                getTypeElement("javax.ejb.Stateless"); //NOI18N
+                            if (statelessAn != null) {
+                                AnnotationTree StatelessAnnotation = make.Annotation(
+                                        make.QualIdent(statelessAn),
+                                        Collections.<ExpressionTree>emptyList());
+                                modifiedClass = genUtils.addAnnotation(modifiedClass, 
+                                        StatelessAnnotation);
+                            }
+                            else {
                                 isIncomplete[0] = true;
-                                exc.add(make.Identifier(exception));
                             }
                         }
 
-                        // create method
-                        ModifiersTree methodModifiers = make.Modifiers(
-                                Collections.<Modifier>singleton(Modifier.PUBLIC),
-                                Collections.<AnnotationTree>emptyList());
-                        MethodTree method = make.Method(
-                                methodModifiers, // public
-                                operation.getJavaName(), // operation name
-                                make.Identifier(returnType), // return type
-                                Collections.<TypeParameterTree>emptyList(), // type parameters - none
-                                params,
-                                exc, // throws
-                                "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
-                                null // default value - not applicable here, used by annotations
-                                );
+                        List<WsdlOperation> operations = port.getOperations();
+                        for (WsdlOperation operation : operations) {
 
-                        modifiedClass = make.addClassMember(modifiedClass, method);
+                            // return type
+                            String returnType = operation.getReturnTypeName();
+
+                            // create parameters
+                            List<WsdlParameter> parameters = operation.getParameters();
+                            List<VariableTree> params = new ArrayList<VariableTree>();
+                            for (WsdlParameter parameter : parameters) {
+                                // create parameter:
+                                // final ObjectOutput arg0
+                                params.add(make.Variable(
+                                        make.Modifiers(
+                                        Collections.<Modifier>emptySet(),
+                                        Collections.<AnnotationTree>emptyList()),
+                                        parameter.getName(), // name
+                                        make.Identifier(parameter.getTypeName()), // parameter type
+                                        null // initializer - does not make sense in parameters.
+                                        ));
+                            }
+
+                            // create exceptions
+                            Iterator<String> exceptions = operation.getExceptions();
+                            List<ExpressionTree> exc = new ArrayList<ExpressionTree>();
+                            while (exceptions.hasNext()) {
+                                String exception = exceptions.next();
+                                TypeElement excEl = workingCopy.getElements().getTypeElement(exception);
+                                if (excEl != null) {
+                                    exc.add(make.QualIdent(excEl));
+                                } else {
+                                    isIncomplete[0] = true;
+                                    exc.add(make.Identifier(exception));
+                                }
+                            }
+
+                            // create method
+                            ModifiersTree methodModifiers = make.Modifiers(
+                                    Collections.<Modifier>singleton(Modifier.PUBLIC),
+                                    Collections.<AnnotationTree>emptyList());
+                            MethodTree method = make.Method(
+                                    methodModifiers, // public
+                                    operation.getJavaName(), // operation name
+                                    make.Identifier(returnType), // return type
+                                    Collections.<TypeParameterTree>emptyList(), // type parameters - none
+                                    params,
+                                    exc, // throws
+                                    "{ //TODO implement this method\nthrow new UnsupportedOperationException(\"Not implemented yet.\") }", // body text
+                                    null // default value - not applicable here, used by annotations
+                                    );
+
+                            modifiedClass = make.addClassMember(modifiedClass, method);
+                        }
                     }
                     workingCopy.rewrite(javaClass, modifiedClass);
 

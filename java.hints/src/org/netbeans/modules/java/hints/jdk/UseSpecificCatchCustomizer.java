@@ -218,6 +218,8 @@ public class UseSpecificCatchCustomizer extends javax.swing.JPanel
         tfNewType = new javax.swing.JTextField();
         btnAddGeneric = new javax.swing.JButton();
 
+        setPreferredSize(new java.awt.Dimension(360, 121));
+
         org.openide.awt.Mnemonics.setLocalizedText(lblGenericList, org.openide.util.NbBundle.getMessage(UseSpecificCatchCustomizer.class, "UseSpecificCatchCustomizer.lblGenericList.text")); // NOI18N
 
         lstGenericTypes.setVisibleRowCount(5);
@@ -235,7 +237,7 @@ public class UseSpecificCatchCustomizer extends javax.swing.JPanel
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(scrGenericTypes, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 342, Short.MAX_VALUE)
+                    .addComponent(scrGenericTypes, javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tfNewType, javax.swing.GroupLayout.Alignment.LEADING))
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -243,7 +245,7 @@ public class UseSpecificCatchCustomizer extends javax.swing.JPanel
                     .addComponent(btnAddGeneric, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(lblGenericList)
-                .addGap(0, 266, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

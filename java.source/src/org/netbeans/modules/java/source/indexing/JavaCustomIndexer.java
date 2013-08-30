@@ -775,13 +775,12 @@ public class JavaCustomIndexer extends CustomIndexer {
                     }
                     return ret;
                 case ENABLED_WITHIN_ROOT:
-                    if (depRoots == null) {
-                        depRoots = Collections.singletonList(root);
-                    } else {
+                    if (depRoots != null) {
                         for (URL url : depRoots) {
                             JavaIndex.setAttribute(url, ClassIndexManager.PROP_DIRTY_ROOT, Boolean.TRUE.toString());
                         }
                     }
+                    depRoots = Collections.singletonList(root);
                     break;
                 case ENABLED_WITHIN_PROJECT:
                     final Project rootPrj = FileOwnerQuery.getOwner(root.toURI());

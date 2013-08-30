@@ -59,6 +59,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -182,18 +187,35 @@ public final class WhiteListSupport {
                 return;
             }
             final ElementKind k = e.getKind();
+            ElementHandle<?> eh = null;
             Tree toReport =  null;
             if (k.isClass() || k.isInterface()) {
-                toReport=node;
+                TypeMirror type = e.asType();
+                if (type != null) {
+                    type = findComponentType(type);
+                    if (type.getKind() == TypeKind.DECLARED) {
+                        eh = ElementHandle.create(((DeclaredType)type).asElement());
+                        toReport=node;
+                    }
+                }
             } else if ((k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) &&
                     !methodInvocation.isEmpty()) {
                 toReport=methodInvocation.peekFirst();
+                eh = ElementHandle.create(e);
             }
             final WhiteListQuery.Result res;
             if (toReport != null &&
-                !(res=whiteList.check(ElementHandle.create(e),WhiteListQuery.Operation.USAGE)).isAllowed()) {
+                !(res=whiteList.check(eh,WhiteListQuery.Operation.USAGE)).isAllowed()) {
                     p.put(toReport,res);
             }
+        }
+
+        @NonNull
+        private TypeMirror findComponentType(@NonNull TypeMirror type) {
+            if (type.getKind() != TypeKind.ARRAY) {
+                return type;
+            }
+            return findComponentType(((ArrayType)type).getComponentType());
         }
 
         private void checkCancel() {
