@@ -502,6 +502,17 @@ public final class Resolver3 implements Resolver {
      */
     @Override
     public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
+        if (nameTokens == null || nameTokens.length == 0) {
+            String position = file.getAbsolutePath().toString();
+            if (file instanceof FileImpl) {
+                int[] lineColumn = ((FileImpl)file).getLineColumn(origOffset);
+                if (lineColumn != null) {
+                    position = "line=" + lineColumn[0] + ":" + lineColumn[1] + position; // NOI18N
+                }
+            }
+            CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            return null;
+        }
         CsmObject result = null;
         long time = System.currentTimeMillis();
         names = nameTokens;
