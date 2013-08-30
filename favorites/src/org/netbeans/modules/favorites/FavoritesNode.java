@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.favorites;
 
+import java.awt.EventQueue;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -443,10 +444,13 @@ public final class FavoritesNode extends FilterNode implements Index {
     } // end of Chldrn
     
     static Node createFilterNode(Node node) {
-        return new ProjectFilterNode(node, Children.LEAF);
+        return new ProjectFilterNode(node, EventQueue.isDispatchThread()
+                ? Children.LEAF
+                : findChildren(node));
     }
     private static org.openide.nodes.Children findChildren(Node node) {
-        org.openide.nodes.Children ch = Children.LEAF;
+        assert !EventQueue.isDispatchThread();
+        org.openide.nodes.Children ch;
         DataFolder folder = node.getLookup().lookup(DataFolder.class);
         if (folder != null) {
             ch = new Chldrn(new FilterNode(node, folder.createNodeChildren(new VisQ())), true);

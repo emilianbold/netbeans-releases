@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -465,8 +465,8 @@ initializeVariables() {
 	fi
         if [ 1 -eq $isMacOSX ] ; then
                 # set default userdir and cachedir on MacOS
-                DEFAULT_USERDIR_ROOT=${HOME}/Library/Application Support/NetBeans
-                DEFAULT_CACHEDIR_ROOT=${HOME}/Library/Caches/NetBeans
+                DEFAULT_USERDIR_ROOT="${HOME}/Library/Application Support/NetBeans"
+                DEFAULT_CACHEDIR_ROOT="${HOME}/Library/Caches/NetBeans"
         else
                 # set default userdir and cachedir on unix systems
                 DEFAULT_USERDIR_ROOT=${HOME}/.netbeans

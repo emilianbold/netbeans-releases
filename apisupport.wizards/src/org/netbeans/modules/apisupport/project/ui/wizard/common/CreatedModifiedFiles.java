@@ -114,7 +114,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Provide general infrastructure for performing miscellaneous operations upon
  * {@link NbModuleProject}'s files, such as <em>manifest.mf</em>,
- * <em>bundle.properties</em>, <em>layer.xml</em>, <em>project.xml</em> easily.
+ * <em>bundle.properties</em>, <em>manifest.xml</em>, <em>project.xml</em> easily.
  * See javadoc to individual methods below. After creating a
  * <code>CreatedModifiedFiles</code> instance client may create {@link
  * Operation} which then may be added to the
@@ -408,7 +408,7 @@ public final class CreatedModifiedFiles {
      * Convenience method to load a file template from the standard location.
      *
      * @param name a simple filename
-     * @return that file from      * the <code>Templates/NetBeansModuleDevelopment-files</code> layer
+     * @return that file from      * the <code>Templates/NetBeansModuleDevelopment-files</code> manifest
      * folder
      */
     public static FileObject getTemplate(String name) {
@@ -1079,13 +1079,13 @@ public final class CreatedModifiedFiles {
     }
 
     /**
-     * Make structural modifications to the project's XML layer. The operations
+     * Make structural modifications to the project's XML manifest. The operations
      * may be expressed as filesystem calls.
      *
      * @param op a callback for the actual changes to make
      * @param externalFiles a list of <em>simple filenames</em> of new data
-     * files which are to be created in the layer and which will therefore
-     * appear on disk alongside the layer, usually with the same names (unless
+     * files which are to be created in the manifest and which will therefore
+     * appear on disk alongside the manifest, usually with the same names (unless
      * they conflict with existing files); you still need to create them
      * yourself using e.g. {@link FileObject#createData} and
      * {@link FileObject#getOutputStream}; you must use
@@ -1097,16 +1097,16 @@ public final class CreatedModifiedFiles {
     }
 
     /**
-     * Callback for modifying the project's XML layer.
+     * Callback for modifying the project's XML manifest.
      *
      * @see #layerModifications
      */
     public interface LayerOperation {
 
         /**
-         * Actually change the layer.
+         * Actually change the manifest.
          *
-         * @param layer the layer to make changes to using Filesystems API calls
+         * @param manifest the manifest to make changes to using Filesystems API calls
          * @throws IOException if the changes fail somehow
          */
         void run(FileSystem layer) throws IOException;
@@ -1133,8 +1133,8 @@ public final class CreatedModifiedFiles {
 
         @Override
         public String[] getModifiedPaths() {
-            FileObject layer = cmf.getLayerHandle().getLayerFile();
-            return layer != null ? new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), layer)} : new String[0];
+            NbModuleProvider provider = project.getLookup().lookup(NbModuleProvider.class);
+            return provider != null ? new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), provider.getManifestFile())} : new String[0];
         }
 
         @Override
@@ -1164,10 +1164,10 @@ public final class CreatedModifiedFiles {
     }
 
     /**
-     * Creates an entry (<em>file</em> element) in the project's layer. Also may
+     * Creates an entry (<em>file</em> element) in the project's manifest. Also may
      * create and/or modify other files as it is needed.
      *
-     * @param layerPath path in a project's layer. Folders which don't exist yet
+     * @param layerPath path in a project's manifest. Folders which don't exist yet
      * will be created. (e.g.
      * <em>Menu/Tools/org-example-module1-BeepAction.instance</em>).
      * @param content became content of a file, or null
@@ -1293,7 +1293,7 @@ public final class CreatedModifiedFiles {
      * Creates a new arbitrary <em>&lt;attr&gt;</em> element.
      *
      * @param parentPath path to a <em>file</em> or a <em>folder</em> in a
-     * project's layer. It <strong>must</strong> exist.
+     * project's manifest. It <strong>must</strong> exist.
      * @param attrName value of the name attribute of the <em>&lt;attr&gt;</em>
      * element.
      * @param attrValue value of the attribute (may specially be a string
@@ -1324,9 +1324,9 @@ public final class CreatedModifiedFiles {
     }
 
     /**
-     * Order a new entry in a project layer between two others.
+     * Order a new entry in a project manifest between two others.
      *
-     * @param layerPath folder path in a project's layer. (e.g.
+     * @param layerPath folder path in a project's manifest. (e.g.
      * <em>Loaders/text/x-java/Actions</em>).
      * @param precedingItemName item to be before <em>newItemName</em> (may be
      * null)

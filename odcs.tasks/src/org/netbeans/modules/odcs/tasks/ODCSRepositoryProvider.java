@@ -114,6 +114,11 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
         r.addPropertyChangeListener(listener);
     }
 
+    @Override
+    public Collection<ODCSIssue> getUnsubmittedIssues (ODCSRepository r) {
+        return r.getUnsubmittedIssues();
+    }
+
     /************************************************************************************
      * Team Support
      ************************************************************************************/
