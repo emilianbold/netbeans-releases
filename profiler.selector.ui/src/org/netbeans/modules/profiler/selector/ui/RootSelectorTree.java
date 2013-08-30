@@ -390,7 +390,12 @@ public class RootSelectorTree extends JPanel {
 
     public void setBuilderType(SelectionTreeBuilderType type) {
         builderType = type;
-        refreshTree();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                refreshTree();
+            }
+        });
     }
 
     /**

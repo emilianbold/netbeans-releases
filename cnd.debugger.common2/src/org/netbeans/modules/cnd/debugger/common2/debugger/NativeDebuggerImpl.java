@@ -115,6 +115,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Inst
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerSetFactory;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -880,7 +881,19 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                 final boolean haveSource = haveSource();
                 // Locations should already be in local path form.
                 final Line curentLine = !haveSource ? null : EditorBridge.getLine(fmap().engineToWorld(getVisitedLocation().src()), getVisitedLocation().line(),
-                        NativeDebuggerImpl.this);                            
+                        NativeDebuggerImpl.this);
+
+                // To prevent locks on EDT when updateLocation is initiated by
+                // dbx using glue (which is binded to EDT) we need to prepare
+                // a document before entering the dispatch thread.
+                // See IZ#234276
+                if (curentLine != null) {
+                    EditorCookie ec = curentLine.getLookup().lookup(EditorCookie.class);
+                    if (ec != null) {
+                        ec.prepareDocument().waitFinished();
+                    }
+                }
+
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
