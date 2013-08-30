@@ -191,6 +191,12 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug230589.cpp", 22, 25, "bug230589.cpp", 14, 9);
     }    
     
+    public void testBug234973() throws Exception { 
+        // Bug 234973 - Unresolved identifier in specialization
+        performTest("bug234973.cpp", 28, 11, "bug234973.cpp", 14, 9);
+        performTest("bug234973.cpp", 31, 11, "bug234973.cpp", 23, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

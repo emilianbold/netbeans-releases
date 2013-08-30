@@ -623,7 +623,7 @@ public class DiscoveryUtils {
         }
     }
     
-    private static String removeQuotes(String path) {
+    public static String removeQuotes(String path) {
         if (path.length() >= 2 && (path.charAt(0) == '\'' && path.charAt(path.length() - 1) == '\'' || // NOI18N
             path.charAt(0) == '"' && path.charAt(path.length() - 1) == '"')) {// NOI18N
 

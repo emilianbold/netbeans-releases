@@ -313,9 +313,9 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
                                 }
                             } else if (configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                                 if (isSUN) {
-                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g -DCMAKE_C_FLAGS_DEBUG=-g";
+                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=cc -DCMAKE_CXX_COMPILER=CC -DCMAKE_CXX_FLAGS_DEBUG=-g -DCMAKE_C_FLAGS_DEBUG=-g -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
                                 } else {
-                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\"";
+                                    return "-G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_C_FLAGS_DEBUG=\"-g3 -gdwarf-2\" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON";
                                 }
                             } else if (configure.getAbsolutePath().endsWith(".pro")) {
                                 if (isSUN) {

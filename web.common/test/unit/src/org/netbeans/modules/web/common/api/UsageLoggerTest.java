@@ -39,27 +39,55 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.repository.layering;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+package org.netbeans.modules.web.common.api;
 
-/**
- *
- * @author vkvashin
- */
-public class RepositoryRelocationTest extends CndBaseTestSuite {
+import junit.framework.Assert;
+import org.junit.Test;
 
-    public RepositoryRelocationTest() {
-        super("RepositoryRelocation"); // NOI18N
-        
-        addTestSuite(RepositoryRelocationGoldens.class);
-        addTestSuite(RepositoryRelocationFinal.class);
+public class UsageLoggerTest {
+
+    @Test
+    public void testRepeated() {
+        UsageLogger logger = new UsageLogger.Builder("mylogger")
+                .create();
+        Assert.assertTrue(logger.isLoggingEnabled());
+        Assert.assertTrue(logger.isLoggingEnabled());
     }
 
-    public static Test suite() {
-        TestSuite suite = new RepositoryRelocationTest();
-        return suite;
+    @Test
+    public void testUnrepeated() {
+        UsageLogger logger = new UsageLogger.Builder("mylogger")
+                .unrepeated(true)
+                .create();
+        Assert.assertTrue(logger.isLoggingEnabled());
+        Assert.assertFalse(logger.isLoggingEnabled());
+        logger.reset();
+        Assert.assertTrue(logger.isLoggingEnabled());
+        Assert.assertFalse(logger.isLoggingEnabled());
     }
+
+    @Test
+    public void testDefaultMessage() {
+        UsageLogger logger = new UsageLogger.Builder("mylogger")
+                .message(UsageLoggerTest.class, "mymessage")
+                .create();
+        logger.log();
+        logger.log();
+    }
+
+    @Test
+    public void testMoreMessages() {
+        UsageLogger logger = new UsageLogger.Builder("mylogger")
+                .create();
+        logger.log(UsageLoggerTest.class, "message1");
+        logger.log(UsageLoggerTest.class, "message2");
+        try {
+            logger.log();
+            Assert.fail("should not get here");
+        } catch (IllegalStateException ex) {
+            // expected
+        }
+    }
+
 }
