@@ -46,6 +46,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Color;
 import java.awt.Component;
@@ -758,7 +759,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             headerLabel.setPreferredSize(new Dimension(0, dim.height));
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
-            String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
+            String reporter = issue.getFieldValue(NbJiraIssue.IssueField.REPORTER);
+            User user = config.getUser(reporter);
+            if (user != null) {
+                reporter = user.getFullName();
+            }
             String creation = JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
