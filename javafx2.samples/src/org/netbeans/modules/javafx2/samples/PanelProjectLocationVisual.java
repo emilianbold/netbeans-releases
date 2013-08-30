@@ -61,7 +61,6 @@ import org.openide.util.NbPreferences;
 public class PanelProjectLocationVisual extends JPanel implements DocumentListener {
 
     private PanelConfigureProject panel;
-    private static final String NEW_PROJECT_COUNT = "newProjectCount"; //NOI18N
 
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel) {
@@ -232,10 +231,10 @@ public class PanelProjectLocationVisual extends JPanel implements DocumentListen
             formater = projectName + "{0}"; //NOI18N
         }
         if ((projectName == null) || (validFreeProjectName(projectLocation, projectName) == null)) {
-            int baseCount = NbPreferences.forModule(PanelProjectLocationVisual.class).getInt(NEW_PROJECT_COUNT, 0) + 1;
-            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null)
+            int baseCount = 1;
+            while ((projectName = validFreeProjectName(projectLocation, formater, baseCount)) == null) {
                 baseCount++;
-            NbPreferences.forModule(PanelProjectLocationVisual.class).putInt(NEW_PROJECT_COUNT, baseCount);
+            }
         }
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
