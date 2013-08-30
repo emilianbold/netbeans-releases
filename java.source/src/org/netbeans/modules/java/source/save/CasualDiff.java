@@ -1747,6 +1747,7 @@ public class CasualDiff {
                     printer.print(" = ");
                 else
                     printer.print("=");
+                localPointer = lhsBounds[0];
             }
         }
         //#174552 end

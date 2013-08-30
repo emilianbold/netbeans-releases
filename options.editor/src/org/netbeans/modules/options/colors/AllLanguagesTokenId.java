@@ -58,7 +58,7 @@ public enum AllLanguagesTokenId implements TokenId {
     OPERATOR ("operator"),
     SEPARATOR ("separator"),
     STRING ("string"),
-    CHARACTER ("character"),
+    CHARACTER ("char"),
     NUMBER ("number"),
     WHITESPACE ("whitespace"),
     IDENTIFIER ("identifier"),

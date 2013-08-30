@@ -767,10 +767,8 @@ final class DocumentOpenClose {
                 setDocRef(loadDoc);
 
                 // opening the document, inform position manager
-                if (reload) {
+                if (reload && reloadOpenPanes != null) {
                     ces.getPositionManager().processPositions(true);
-                } else {
-                    ces.getPositionManager().documentOpened(new WeakReference<StyledDocument>(loadDoc));
                 }
 
                 // create new description of lines

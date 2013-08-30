@@ -247,6 +247,8 @@ public class BroadCatchCustomizer extends javax.swing.JPanel
         tfNewUmbrella = new javax.swing.JTextField();
         btnAddUmbrella = new javax.swing.JButton();
 
+        setPreferredSize(new java.awt.Dimension(360, 169));
+
         org.openide.awt.Mnemonics.setLocalizedText(cbCommonTypes, org.openide.util.NbBundle.getMessage(BroadCatchCustomizer.class, "BroadCatchCustomizer.cbCommonTypes.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbSuppressUmbrellas, org.openide.util.NbBundle.getMessage(BroadCatchCustomizer.class, "BroadCatchCustomizer.cbSuppressUmbrellas.text")); // NOI18N
@@ -278,7 +280,7 @@ public class BroadCatchCustomizer extends javax.swing.JPanel
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(tfNewUmbrella, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(scrUmbrellaTypes, javax.swing.GroupLayout.DEFAULT_SIZE, 330, Short.MAX_VALUE)
+                            .addComponent(scrUmbrellaTypes)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(lblUmbrellaList)
                                 .addGap(0, 0, Short.MAX_VALUE)))))

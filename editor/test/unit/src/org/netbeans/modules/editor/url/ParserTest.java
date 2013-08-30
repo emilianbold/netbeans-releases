@@ -98,6 +98,9 @@ public class ParserTest {
         performTest("    http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 75);
         performTest("    https://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 76);
         performTest("    ht+tp://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", null);
+        performTest("    http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission(v=vs.85).aspx\n", 4,89);
+        performTest("    http://hudson.gotdns.com/wiki/display/#!/api/dd13\n", 4,53);
+        performTest("    file:///C:/CodeSourceryG++Lite/share/doc/arm-arm-none-eabi/html/getting-started/sec-cs3-startup.html", 4, 104);
     }
 
     @Test

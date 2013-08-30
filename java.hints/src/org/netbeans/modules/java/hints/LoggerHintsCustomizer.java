@@ -102,7 +102,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
         btnRemove = new javax.swing.JButton();
         lblInstructions = new javax.swing.JLabel();
 
-        setPreferredSize(new java.awt.Dimension(390, 150));
+        setPreferredSize(new java.awt.Dimension(360, 150));
 
         org.openide.awt.Mnemonics.setLocalizedText(loggersCheckbox, org.openide.util.NbBundle.getMessage(LoggerHintsCustomizer.class, "LoggerHintsCustomizer.loggersCheckbox.text")); // NOI18N
         loggersCheckbox.addActionListener(new java.awt.event.ActionListener() {
@@ -111,7 +111,7 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
             }
         });
 
-        loggersPanel.setPreferredSize(new java.awt.Dimension(390, 121));
+        loggersPanel.setPreferredSize(new java.awt.Dimension(360, 121));
 
         customLogClass.setText(org.openide.util.NbBundle.getMessage(LoggerHintsCustomizer.class, "LoggerHintsCustomizer.customLogClass.text")); // NOI18N
 
@@ -172,11 +172,11 @@ public class LoggerHintsCustomizer extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(loggersPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(loggersCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(loggersPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                .addComponent(loggersCheckbox)
+                .addContainerGap(115, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

@@ -151,12 +151,19 @@ public final class PositionRef extends Object implements Serializable {
         if (doc == null) {
             doc = manager.getCloneableEditorSupport().openDocument();
         }
+        
+        Object old = Manager.DOCUMENT.get();
+        
+        try {
+            Manager.DOCUMENT.set(doc);
+            synchronized (manager.getLock()) {
+                // Fix for IZ#67761 - ClassCastException: org.openide.text.PositionRef$Manager$OffsetKind
+                Manager.PositionKind p = kind.toMemory( insertAfter );
 
-        synchronized (manager.getLock()) {
-            // Fix for IZ#67761 - ClassCastException: org.openide.text.PositionRef$Manager$OffsetKind
-            Manager.PositionKind p = kind.toMemory( insertAfter );
-
-            return p.pos;
+                return p.pos;
+            }
+        } finally {
+            Manager.DOCUMENT.set(old);
         }
     }
 

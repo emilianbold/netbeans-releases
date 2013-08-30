@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.parsing;
 
+import java.io.IOException;
 import javax.tools.ForwardingJavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
- * @author Tomas Zezula
+ * @author Dusan Balek
  */
-public class ForwardingInferableJavaFileObject extends ForwardingJavaFileObject<InferableJavaFileObject> implements InferableJavaFileObject {
+public class ForwardingPrefetchableJavaFileObject extends ForwardingJavaFileObject<PrefetchableJavaFileObject> implements PrefetchableJavaFileObject {
 
-    public ForwardingInferableJavaFileObject(@NonNull final InferableJavaFileObject delegate) {
-        super (delegate);
+    public ForwardingPrefetchableJavaFileObject(@NonNull final PrefetchableJavaFileObject delegate) {
+        super(delegate);
         assert delegate != null;
+    }
+
+    @Override
+    public int prefetch() throws IOException {
+        return fileObject.prefetch();
+    }
+
+    @Override
+    public int dispose() {
+        return fileObject.dispose();
     }
 
     @Override

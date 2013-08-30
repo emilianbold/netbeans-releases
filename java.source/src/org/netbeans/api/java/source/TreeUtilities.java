@@ -88,9 +88,10 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.nbjavac.services.NBResolve;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
-import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -255,14 +256,10 @@ public final class TreeUtilities {
         return pathFor(new TreePath(info.getCompilationUnit()), pos);
     }
 
-    /*XXX: dbalek
-     */
     public TreePath pathFor(TreePath path, int pos) {
         return pathFor(path, pos, info.getTrees().getSourcePositions());
     }
 
-    /*XXX: dbalek
-     */
     public TreePath pathFor(TreePath path, int pos, SourcePositions sourcePositions) {
         if (info == null || path == null || sourcePositions == null)
             throw new IllegalArgumentException();
@@ -639,33 +636,69 @@ public final class TreeUtilities {
         return scope;
     }
     
-    //XXX dbalek:
+    /**
+     * Creates {@link Scope} capable to access all private methods and fields when
+     * parsing and evaluating expressions. When using this Scope, the accessibility
+     * checks would not be enforced during a tree attribution.
+     * @param scope an existing scope
+     * @return scope with disabled accessibility checks
+     * @since 0.129
+     */
+    public Scope toScopeWithDisabledAccessibilityChecks(Scope scope) {
+        return new NBScope((JavacScope)scope);
+    }
+    
     /**Attribute the given tree in the given context.
      */
     public TypeMirror attributeTree(Tree tree, Scope scope) {
-        return info.impl.getJavacTask().attributeTree((JCTree)tree, ((JavacScope)scope).getEnv());
+        if (scope instanceof NBScope && ((NBScope)scope).areAccessibilityChecksDisabled()) {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).disableAccessibilityChecks();
+        }
+        try {
+            return info.impl.getJavacTask().attributeTree((JCTree) tree, ((JavacScope) scope).getEnv());
+        } finally {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).restoreAccessbilityChecks();
+        }
     }
     
-    //XXX dbalek:
     /**Attribute the given tree until the given <code>to</code> tree is reached.
      * Returns scope valid at point when <code>to</code> is reached.
      */
     public Scope attributeTreeTo(Tree tree, Scope scope, Tree to) {
-        return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, ((JavacScope)scope).getEnv(), (JCTree)to);
+        if (scope instanceof NBScope && ((NBScope)scope).areAccessibilityChecksDisabled()) {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).disableAccessibilityChecks();
+        }
+        try {
+            return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, ((JavacScope)scope).getEnv(), (JCTree)to);
+        } finally {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).restoreAccessbilityChecks();
+        }
     }
     
-    //XXX dbalek:
     public TypeMirror reattributeTree(Tree tree, Scope scope) {
         Env<AttrContext> env = ((JavacScope)scope).getEnv();
         copyInnerClassIndexes(env.tree, tree);
-        return info.impl.getJavacTask().attributeTree((JCTree)tree, env);
+        if (scope instanceof NBScope && ((NBScope)scope).areAccessibilityChecksDisabled()) {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).disableAccessibilityChecks();
+        }
+        try {
+            return info.impl.getJavacTask().attributeTree((JCTree)tree, env);
+        } finally {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).restoreAccessbilityChecks();
+        }
     }
     
-    //XXX dbalek:
     public Scope reattributeTreeTo(Tree tree, Scope scope, Tree to) {
         Env<AttrContext> env = ((JavacScope)scope).getEnv();
         copyInnerClassIndexes(env.tree, tree);
-        return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, env, (JCTree)to);
+        if (scope instanceof NBScope && ((NBScope)scope).areAccessibilityChecksDisabled()) {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).disableAccessibilityChecks();
+        }
+        try {
+            return info.impl.getJavacTask().attributeTreeTo((JCTree)tree, env, (JCTree)to);
+        } finally {
+            NBResolve.instance(info.impl.getJavacTask().getContext()).restoreAccessbilityChecks();
+        }
     }
     
     /**Returns tokens for a given tree.
@@ -1527,5 +1560,16 @@ public final class TreeUtilities {
         ((JavacTrees) this.info.getTrees()).ensureDocReferenceAttributed(tp, ref);
         
         return ref.paramTypes;
+    }
+    
+    private static final class NBScope extends JavacScope {
+
+        private NBScope(JavacScope scope) {
+            super(scope.getEnv());
+        }
+        
+        private boolean areAccessibilityChecksDisabled() {
+            return true;
+        }
     }
 }

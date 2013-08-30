@@ -189,7 +189,11 @@ public class ComputeAnnotations extends ParserResultTask<Result> {
             LOG.log(Level.WARNING, null, e);
         }
 
-        AnnotationsHolder.get(file).setNewAnnotations(annotations);
+        AnnotationsHolder holder = AnnotationsHolder.get(file);
+
+        if (holder != null) {
+            holder.setNewAnnotations(annotations);
+        }
 //        Logger.getLogger("TIMER").log(Level.FINE, "Is Overridden Annotations", new Object[] {info.getFileObject(), end - start});
     }
 

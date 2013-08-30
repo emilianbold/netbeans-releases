@@ -1,3 +1,6 @@
+public boolean equals(Object arg0) - override
+public native int hashCode() - override
+public String toString() - override
 abstract
 boolean
 byte
