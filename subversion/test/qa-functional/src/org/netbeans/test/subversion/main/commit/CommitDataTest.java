@@ -455,6 +455,7 @@ public class CommitDataTest extends JellyTestCase {
 
         VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
+        new EventTool().waitNoEvent(2000);
         TableModel model = vo.tabFiles().getModel();
         String[] actual = new String[model.getRowCount()];
         for (int i = 0; i < actual.length; i++) {

@@ -49,6 +49,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -493,7 +495,33 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         String path = fileChooser.getSelectedFile().getPath();
         path = CndPathUtilities.normalizeSlashes(path);
         configureNameTextField.setText(path);
-        update((DocumentEvent )null);        
+        update(new DocumentEvent() {
+
+            @Override
+            public int getOffset() {
+                return 0;
+            }
+
+            @Override
+            public int getLength() {
+                return configureNameTextField.getText().length();
+            }
+
+            @Override
+            public Document getDocument() {
+                return configureNameTextField.getDocument();
+            }
+
+            @Override
+            public DocumentEvent.EventType getType() {
+                return DocumentEvent.EventType.CHANGE;
+            }
+
+            @Override
+            public DocumentEvent.ElementChange getChange(Element elem) {
+                return null;
+            }
+        });
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
 
     private void makefileBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileBrowseButtonActionPerformed
