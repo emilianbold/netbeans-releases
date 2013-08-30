@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner.Phase;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -488,7 +489,12 @@ public abstract class CsmFileTaskFactory {
         public void run() {
             CsmFile file = getCsmFile(fileObject, false);
             if (file !=  null && file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
-                run.run();
+                try {
+                    CsmCacheManager.enter();
+                    run.run();
+                } finally {
+                    CsmCacheManager.leave();
+                }
             }
         }
     }

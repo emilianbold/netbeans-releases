@@ -254,7 +254,16 @@ public final class CndTextIndexImpl {
         When the force is true is even tries to open the index which sometimes throws Exception when index is broken.
         However sometimes no exception is thrown and it's thrown when you close the index for writing.
         */
-        return !getLockFile(cacheLocation).exists() && CndTextIndexManager.validate(cacheLocation);
+        File lockFile = getLockFile(cacheLocation);
+        if (lockFile.exists()) {
+            LOG.log(Level.WARNING, "Detected old lock file {0}\n", lockFile);
+            return false;
+        }
+        if (!CndTextIndexManager.validate(cacheLocation)) {
+            LOG.log(Level.WARNING, "Detected invalid text index at {0}\n", cacheLocation);
+            return false;
+        }
+        return true;
     }
 
     private static File getLockFile(CacheLocation location) {
