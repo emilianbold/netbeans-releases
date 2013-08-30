@@ -66,10 +66,12 @@ public class PrimitiveArrayInstanceImpl extends InstanceImpl implements Primitiv
         this.array = array;
     }
 
+    @Override
     public int getLength() {
         return array.getFieldsCount();
     }
 
+    @Override
     public List<String> getValues() {
         Variable[] values = array.getFields(0, getLength());
         List<String> strValues = new ArrayList<String>();

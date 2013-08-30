@@ -63,6 +63,7 @@ public class ObjectFieldValueImpl extends FieldValueImpl implements ObjectFieldV
         this.valueInstance = valueInstance;
     }
 
+    @Override
     public Instance getInstance() {
         return valueInstance;
     }

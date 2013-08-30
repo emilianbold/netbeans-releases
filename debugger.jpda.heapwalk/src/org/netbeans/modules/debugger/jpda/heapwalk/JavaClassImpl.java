@@ -51,7 +51,6 @@ import org.netbeans.lib.profiler.heap.JavaClass;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.JPDAArrayType;
@@ -92,6 +91,7 @@ public class JavaClassImpl implements JavaClass {
         this.heap = heap;
     }
 
+    @Override
     public long getJavaClassId() {
         // TODO ??
         if (classType != null) {
@@ -101,6 +101,7 @@ public class JavaClassImpl implements JavaClass {
         }
     }
 
+    @Override
     public Instance getClassLoader() {
         if (classType != null) {
             return InstanceImpl.createInstance(heap, classType.getClassLoader());
@@ -109,6 +110,7 @@ public class JavaClassImpl implements JavaClass {
         }
     }
 
+    @Override
     public JavaClass getSuperClass() {
         if (classType != null) {
             Super superClass = classType.getSuperClass();
@@ -119,14 +121,17 @@ public class JavaClassImpl implements JavaClass {
         return null;
     }
 
+    @Override
     public int getInstanceSize() {
         return -1;
     }
 
+    @Override
     public long getAllInstancesSize() {
         return -1;
     }
 
+    @Override
     public List<Field> getFields() {
         return Collections.emptyList();
         // TODO
@@ -138,9 +143,10 @@ public class JavaClassImpl implements JavaClass {
         return fields;*/
     }
 
+    @Override
     public List<FieldValue> getStaticFieldValues() {
         if (classType == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<org.netbeans.api.debugger.jpda.Field> refFields = classType.staticFields();
         List<FieldValue> fields = new ArrayList<FieldValue>(refFields.size());
@@ -162,14 +168,16 @@ public class JavaClassImpl implements JavaClass {
         return fields;
     }
 
+    @Override
     public Object getValueOfStaticField(String name) {
         // TODO
         return Collections.EMPTY_LIST;
     }
 
+    @Override
     public List<Instance> getInstances() {
         if (classType == null) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
         List<ObjectVariable> typeInstances = classType.getInstances(0);
         List<Instance> instances = new ArrayList<Instance>(typeInstances.size());
@@ -180,6 +188,7 @@ public class JavaClassImpl implements JavaClass {
         return instances;
     }
 
+    @Override
     public int getInstancesCount() {
         if (instanceCount != -1L) {
             return (int) instanceCount;
@@ -191,6 +200,7 @@ public class JavaClassImpl implements JavaClass {
         return (int) classType.getInstanceCount();
     }
 
+    @Override
     public String getName() {
         if (classType != null) {
             return classType.getName();
@@ -199,10 +209,12 @@ public class JavaClassImpl implements JavaClass {
         }
     }
 
+    @Override
     public boolean isArray() {
         return classType instanceof JPDAArrayType;
     }
     
+    @Override
     public List<JavaClass> getSubClasses() {
         if (classType != null) {
             try {
@@ -233,7 +245,7 @@ public class JavaClassImpl implements JavaClass {
             }
         }
          */
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
     
     @Override
