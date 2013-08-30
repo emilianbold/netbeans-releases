@@ -74,9 +74,6 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="upgrade-to-cordova-project" depends="check-cordova-project,check-cordova-version" unless="cordova.project">
-        <move todir="www_nb_temp" failonerror="false" quiet="true">
-            <fileset dir="www"/>
-        </move>
         <echo level="info" message="${cordova.command} -d create . com.coolappz.${project.name} ${project.name}" />
         <exec executable="${cordova.command}" resolveexecutable="true" searchpath="true" failonerror="true" >
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
@@ -87,16 +84,10 @@ made subject to such option by the copyright holder.
             <arg value="com.coolappz.${project.name}"/>
             <arg value="${project.name}" />
         </exec>
-        <delete includeemptydirs="true">
-            <fileset dir="www" includes="**/*" excludes="config.xml"/>
-        </delete>
-        <move todir="www" failonerror="false" quiet="true">
-            <fileset dir="www_nb_temp"/>
-        </move>
-        <delete dir="www_nb_temp"/>
-        <move todir="www">
+        <delete dir="www"/>
+        <copy todir="www" failonerror="false" quiet="true" >
             <fileset dir="${site.root}"/>
-        </move>
+        </copy>
     </target>
 
     <target name="create-hello-world" depends="check-cordova-version">
@@ -114,6 +105,7 @@ made subject to such option by the copyright holder.
         <mkdir dir="www"/>
         <move file="www_nb_temp/www" tofile="www"/>
         <delete dir="www_nb_temp"/>
+        <delete file="www/config.xml"/>
     </target>
     
     <taskdef 
