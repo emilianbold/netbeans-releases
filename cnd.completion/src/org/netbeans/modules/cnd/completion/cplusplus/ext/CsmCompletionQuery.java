@@ -123,6 +123,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableR
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
+import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
@@ -2203,7 +2204,7 @@ abstract public class CsmCompletionQuery {
                             if (opType != null) {
                                 lastType = opType;
                             } else if (lastType != null) {
-                                CsmType lastNestedType = extractLastNestedType(lastType, new ConstantPredicate<CsmType>(false));
+                                CsmType lastNestedType = CsmUtilities.iterateTypeChain(lastType, new CsmUtilities.ConstantPredicate<CsmType>(false));
 
                                 int ptrDepth = lastNestedType.getPointerDepth();
                                 if (ptrDepth > 0 && opKind == CsmFunction.OperatorKind.POINTER) {
@@ -2877,7 +2878,7 @@ abstract public class CsmCompletionQuery {
             }
             if (type != null) {
                 if (kind == ExprKind.DOT) {
-                    type = extractLastNestedType(type, new Predicate<CsmType>() {
+                    type = CsmUtilities.iterateTypeChain(type, new CsmUtilities.Predicate<CsmType>() {
 
                         @Override
                         public boolean check(CsmType value) {
@@ -3709,52 +3710,6 @@ abstract public class CsmCompletionQuery {
         }
     }
     
-    private static interface Predicate<T> {
-        
-        boolean check(T value);
-        
-    }
-    
-    private static final class ConstantPredicate<T> implements Predicate<T> {
-        
-        private final boolean constant;
-        
-        public ConstantPredicate(boolean value) {
-            constant = value;
-        }
-
-        @Override
-        public boolean check(T value) {
-            return constant;
-        }
-        
-    }
-    
-    private static CsmType extractLastNestedType(CsmType type, Predicate<CsmType> stopFilter) {
-        CsmType lastNestedType = type;
-        
-        Set<CsmType> antiLoop = new HashSet<CsmType>();
-        
-        while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
-            lastNestedType = type;
-            
-            if (stopFilter.check(type)) {
-                break;
-            }
-            
-            antiLoop.add(type);                
-            
-            CsmClassifier classifier = type.getClassifier();                
-            
-            type = null;
-            
-            if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
-                type = ((CsmTypedef)classifier).getType();
-            }
-        }
-        
-        return lastNestedType;
-    }    
 //    
 //    static int getPointerDepth(CsmType type) {
 //        type = extractLastNestedType(type, new TruePredicate<CsmType>());
