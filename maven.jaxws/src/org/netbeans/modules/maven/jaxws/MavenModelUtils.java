@@ -376,11 +376,13 @@ public final class MavenModelUtils {
         Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
             List<PluginExecution> executions = plugin.getExecutions();
-            for (PluginExecution exec : executions) {
-                String execId = WSIPMORT_GENERATE_PREFIX+id;
-                if (execId.equals(exec.getId())) {
-                    plugin.removeExecution(exec);
-                    break;
+            if (executions != null) {
+                for (PluginExecution exec : executions) {
+                    String execId = WSIPMORT_GENERATE_PREFIX+id;
+                    if (execId.equals(exec.getId())) {
+                        plugin.removeExecution(exec);
+                        break;
+                    }
                 }
             }
         }
