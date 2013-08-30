@@ -59,12 +59,15 @@ public class FieldValueImpl implements FieldValue {
     private org.netbeans.api.debugger.jpda.Field field;
     private Instance defInstance;
     private HeapImpl heap;
+    private String value;
     
     /** Creates a new instance of FieldValueImpl */
     public FieldValueImpl(HeapImpl heap, Instance defInstance, org.netbeans.api.debugger.jpda.Field field) {
         this.field = field;
         this.defInstance = defInstance;
         this.heap = heap;
+        // Preload the value, so that it's not retrieved in AWT.
+        this.value = field.getValue();
     }
 
     public Field getField() {
@@ -72,7 +75,7 @@ public class FieldValueImpl implements FieldValue {
     }
 
     public String getValue() {
-        return field.getValue();
+        return value;
     }
 
     public Instance getDefiningInstance() {
