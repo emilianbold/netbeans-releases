@@ -221,11 +221,13 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         }
         String stateName = getStateDisplayName(state);
 
-        String priorityLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Priority_Title"); //NOI18N
-        String priority = getRepositoryFieldValue(IssueField.PRIORITY);
+        String priorityLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Priority_Title") //NOI18N
+                + "/" + NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Severity_Title"); //NOI18N
+        String priority = getRepositoryFieldValue(IssueField.PRIORITY)
+                + "/" + getRepositoryFieldValue(IssueField.SEVERITY); // NOI18N
 
-        String typeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Severity_Title"); //NOI18N
-        String type = getRepositoryFieldValue(IssueField.SEVERITY);
+        String typeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Type_Title"); //NOI18N
+        String type = getRepositoryFieldValue(IssueField.TASK_TYPE);
 
         String productLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Product_Title"); //NOI18N
         String product = getRepositoryFieldValue(IssueField.PRODUCT);

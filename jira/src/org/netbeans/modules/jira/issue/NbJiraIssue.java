@@ -1136,6 +1136,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
             String component = JiraUtils.mergeValues(components);
 
+            String typeLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Type_Title"); //NOI18N
+            String type = JiraUtils.toReadable(config, projectId, IssueField.TYPE, getRepositoryFieldValue(IssueField.TYPE));
+
             String assigneeLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Assigned_Title"); //NOI18N
             String assignee = JiraUtils.toReadable(config, projectId, IssueField.ASSIGNEE, getRepositoryFieldValue(IssueField.ASSIGNEE));
 
@@ -1148,8 +1151,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
 
             String fieldTable = "<table>" //NOI18N
-                + "<tr><td><b>" + projectLabel + ":</b></td><td>" + project + "</td><td style=\"padding-left:25px;\"><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td></tr>" //NOI18N
-                + "<tr><td><b>" + componentLabel + ":</b></td><td colspan=\"3\">" + component + "</td></tr>" //NOI18N
+                + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
+                + "<tr><td><b>" + projectLabel + ":</b></td><td>" + project + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
                 + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
                 + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
                 + "</table>"; //NOI18N
