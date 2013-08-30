@@ -243,10 +243,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                             }
                             checkBoxPreloader.setSelected(preloaderEnabled && preloaderClassAvailable);
                             checkBoxPreloader.setEnabled(preloaderClassAvailable);
-                            textFieldPreloader.setEnabled(preloaderClassAvailable);
-                            labelPreloaderClass.setEnabled(preloaderClassAvailable);
-                            comboBoxPreloaderClass.setEnabled(preloaderClassAvailable);
-                            
+                            textFieldPreloader.setEnabled(preloaderEnabled && preloaderClassAvailable);
+                            labelPreloaderClass.setEnabled(preloaderEnabled && preloaderClassAvailable);
+                            comboBoxPreloaderClass.setEnabled(preloaderEnabled && preloaderClassAvailable);
+
                             boolean change = preloaderConfigDiffersFromDefault(config);
                             setEmphasizedFont(checkBoxPreloader, change);
                             setEmphasizedFont(labelPreloaderClass, change);
