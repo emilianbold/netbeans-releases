@@ -67,6 +67,38 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test235299a() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    private final String introduced;\n"
+                        + "    public static void testMethod() {\n"
+                        + "         String[] args = null;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(string[] args) {\n"
+                        + "        testMethod();\n"
+                        + "    }\n"
+                        + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(true, "ERR_NameAlreadyUsedField"));
+    }
+    
+    public void test235299b() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    public static void testMethod() {\n"
+                        + "         String introduced = \"\";\n"
+                        + "         String[] args = null;\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(string[] args) {\n"
+                        + "        testMethod();\n"
+                        + "    }\n"
+                        + "}\n"));
+        performIntroduce(src.getFileObject("t/A.java"), source.indexOf("null") + 1, Javadoc.NONE, false, false, new Problem(true, "ERR_NameAlreadyUsed"));
+    }
+    
     public void test231635() throws Exception {
         String source;
         writeFilesAndWaitForScan(src,
