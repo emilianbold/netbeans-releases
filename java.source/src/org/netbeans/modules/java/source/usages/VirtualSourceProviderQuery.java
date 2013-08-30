@@ -56,6 +56,7 @@ import java.util.Map;
 import javax.tools.JavaFileObject;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.ForwardingPrefetchableJavaFileObject;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -212,13 +213,23 @@ public final class VirtualSourceProviderQuery {
 
         public void add(final File source, final String packageName, final String relativeName, final CharSequence content) {
             try {
-                final String baseName = relativeName + JavaFileObject.Kind.SOURCE.extension;
                 final Indexable indexable = this.file2indexables.get(source);
                 assert indexable != null : "Unknown file: " + source.getAbsolutePath();
+                final String baseName = relativeName + '.' + FileObjects.getExtension(source.getName());
+                String folder = FileObjects.convertPackage2Folder(packageName);
+                if (folder.length() > 0) {
+                    folder += '/';
+                }
                 res.add(new CompileTuple(
+                        new ForwardingPrefetchableJavaFileObject(
                         FileObjects.memoryFileObject(packageName,
-                            baseName,new URI(rootURL + FileObjects.convertPackage2Folder(packageName) + '/' + baseName),
-                            System.currentTimeMillis(), content),
+                            baseName,new URI(rootURL + folder + baseName),
+                            System.currentTimeMillis(), content)) {
+                                @Override
+                                public JavaFileObject.Kind getKind() {
+                                    return JavaFileObject.Kind.SOURCE;
+                                }
+                            },
                         indexable,true, this.currentProvider.index()));
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);

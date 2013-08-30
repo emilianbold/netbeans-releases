@@ -93,7 +93,6 @@ import org.netbeans.modules.editor.indent.api.Indent;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import org.openide.util.Exceptions;
-import org.openide.util.Pair;
 
 public class CasualDiff {
 
@@ -102,6 +101,7 @@ public class CasualDiff {
     protected final Collection<Diff> diffs;
     protected CommentHandler comments;
     protected JCCompilationUnit oldTopLevel;
+    protected TreeUtilities treeUtilities;
     protected final DiffContext diffContext;
 
     private TokenSequence<JavaTokenId> tokenSequence;
@@ -122,9 +122,10 @@ public class CasualDiff {
     private boolean parameterPrint = false;
     private boolean enumConstantPrint = false;
 
-    protected CasualDiff(Context context, DiffContext diffContext, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
+    protected CasualDiff(Context context, DiffContext diffContext, TreeUtilities treeUtilities, Map<Tree, ?> tree2Tag, Map<Tree, DocCommentTree> tree2Doc, Map<?, int[]> tag2Span, Set<Tree> oldTrees) {
         diffs = new LinkedHashSet<Diff>();
         comments = CommentHandlerService.instance(context);
+        this.treeUtilities = treeUtilities;
         this.diffContext = diffContext;
         this.tokenSequence = diffContext.tokenSequence;
         this.origText = diffContext.origText;
@@ -144,6 +145,7 @@ public class CasualDiff {
 
     public static Collection<Diff> diff(Context context,
             DiffContext diffContext,
+            TreeUtilities treeUtilities,
             TreePath oldTreePath,
             JCTree newTree,
             Map<Integer, String> userInfo,
@@ -152,7 +154,7 @@ public class CasualDiff {
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        final CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
+        final CasualDiff td = new CasualDiff(context, diffContext, treeUtilities, tree2Tag, tree2Doc, tag2Span, oldTrees);
         JCTree oldTree = (JCTree) oldTreePath.getLeaf();
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
@@ -314,6 +316,7 @@ public class CasualDiff {
 
     public static Collection<Diff> diff(Context context,
             DiffContext diffContext,
+            TreeUtilities treeUtilities,
             List<? extends ImportTree> original,
             List<? extends ImportTree> nue,
             Map<Integer, String> userInfo,
@@ -322,7 +325,7 @@ public class CasualDiff {
             Map<?, int[]> tag2Span,
             Set<Tree> oldTrees)
     {
-        CasualDiff td = new CasualDiff(context, diffContext, tree2Tag, tree2Doc, tag2Span, oldTrees);
+        CasualDiff td = new CasualDiff(context, diffContext, treeUtilities, tree2Tag, tree2Doc, tag2Span, oldTrees);
         td.oldTopLevel = diffContext.origUnit;
         int start = td.oldTopLevel.getPackageName() != null ? td.endPos(td.oldTopLevel.getPackageName()) : 0;
 
@@ -1744,6 +1747,7 @@ public class CasualDiff {
                     printer.print(" = ");
                 else
                     printer.print("=");
+                localPointer = lhsBounds[0];
             }
         }
         //#174552 end
@@ -1927,9 +1931,14 @@ public class CasualDiff {
             }
         }
         if (nameChanged(oldT.name, newT.name)) {
+            int[] nameSpan = treeUtilities.findNameSpan(oldT);
             printer.print(newT.name);
             diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo",oldT.name));
-            localPointer = localPointer + oldT.name.length();
+            if (nameSpan != null) {
+                localPointer = nameSpan[1];
+            } else {
+                localPointer = localPointer + oldT.name.length();
+            }
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -3198,6 +3207,7 @@ public class CasualDiff {
                     bounds[0] = Math.min(bounds[0], getCommentCorrectedOldPos(oldList.get(i)));
                     copyTo(localPointer, bounds[0], printer);
                     localPointer = diffTree(oldList.get(i), item.element, bounds);
+                    lastdel = null;
                     ++i;
                     break;
                 }

@@ -61,6 +61,8 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.QueryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedCategoryNode;
+import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedRepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
@@ -319,9 +321,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (TaskNode taskNode : getTaskNodes()) {
-                DashboardViewer.getInstance().removeTask(taskNode);
-            }
+            DashboardViewer.getInstance().removeTask(getTaskNodes());
         }
 
         @Override
@@ -586,7 +586,6 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            boolean parent = super.isEnabled();
             boolean singleNode = getRepositoryNodes().length == 1;
             boolean allMutable = true;
             for (RepositoryNode n : getRepositoryNodes()) {
@@ -595,7 +594,7 @@ public class Actions {
                     break;
                 }
             }
-            return parent && singleNode && allMutable;
+            return singleNode && allMutable;
         }
     }
 
@@ -781,16 +780,18 @@ public class Actions {
             for (String key : map.keySet()) {
                 List<TreeListNode> value = map.get(key);
                 Action action = null;
-                if (key.equals(RepositoryNode.class.getName())) {
+                if (key.equals(RepositoryNode.class.getName()) || key.equals(ClosedRepositoryNode.class.getName())) {
                     action = new Actions.RemoveRepositoryAction(value.toArray(new RepositoryNode[value.size()]));
-                } else if (key.equals(CategoryNode.class.getName())) {
+                } else if (key.equals(CategoryNode.class.getName()) || key.equals(ClosedCategoryNode.class.getName())) {
                     action = new Actions.DeleteCategoryAction(value.toArray(new CategoryNode[value.size()]));
                 } else if (key.equals(QueryNode.class.getName())) {
                     action = new Actions.DeleteQueryAction(value.toArray(new QueryNode[value.size()]));
-                } else {
+                } else if (key.equals(TaskNode.class.getName())){
                     action = new Actions.RemoveTaskAction(value.toArray(new TaskNode[value.size()]));
                 }
-                action.actionPerformed(e);
+                if (action != null) {
+                    action.actionPerformed(e);
+                }
             }
         }
 

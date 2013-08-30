@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.classview.model;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.classview.NameCache;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -65,13 +66,29 @@ public class CVUtil {
     public static CharSequence getNamespaceDisplayName(CsmNamespace ns){
         CharSequence displayName = ns.getName();
         if (displayName.length() == 0) {
+            Collection<CsmNamespaceDefinition> definitions = ns.getDefinitions();
+            CharSequence fileName = null;
+            if (definitions.size() == 1) {
+                CsmNamespaceDefinition def = definitions.iterator().next();
+                CsmScope file = def.getScope();
+                if (file instanceof CsmFile) {
+                    fileName = ((CsmFile)file).getName();
+                }
+            }
             displayName = ns.getQualifiedName();
             int scope = CharSequenceUtils.lastIndexOf(displayName, "::"); // NOI18N
             if (scope != -1) {
                 displayName = displayName.subSequence(scope + 2, displayName.length());
             }
-            if (CharSequenceUtils.indexOf(displayName, '<') >=0 || CharSequenceUtils.indexOf(displayName, '>') >=0) { // NOI18N
-                displayName = displayName.toString().replace('<', ' ').replace('>', ' '); // NOI18N
+            int start = CharSequenceUtils.indexOf(displayName, '<');
+            int end = CharSequenceUtils.indexOf(displayName, '>');
+            if (start >=0 && end >= 0 && start < end && fileName != null) {
+                CharSequence name = displayName.subSequence(start+1, end);
+                displayName = name+" ("+fileName+")"; // NOI18N
+            } else {
+                if (CharSequenceUtils.indexOf(displayName, '<') >=0 || CharSequenceUtils.indexOf(displayName, '>') >=0) { // NOI18N
+                    displayName = displayName.toString().replace('<', ' ').replace('>', ' '); // NOI18N
+                }
             }
         }
         return  NameCache.getManager().getString(displayName);

@@ -705,15 +705,28 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         private final boolean expand; // should this item expand to a constructor body?
         private final String name;
         private final String paramListString;
-        private final List<MethodParameter> paramList;
+        private final List<MethodParameter> parameters;
 
-        
-        public ConstructorItem(String name, String paramListString, List<MethodParameter> paramList, int anchorOffset, boolean expand) {
+
+        public ConstructorItem(String name, List<MethodParameter> parameters, int anchorOffset, boolean expand) {
             super(null, anchorOffset);
             this.name = name;
             this.expand = expand;
-            this.paramListString = paramListString;
-            this.paramList = paramList;
+            this.parameters = parameters;
+            this.paramListString = parseParams();
+        }
+
+        private String parseParams() {
+            StringBuilder sb = new StringBuilder();
+            if (!parameters.isEmpty()) {
+                for (MethodParameter parameter : parameters) {
+                    sb.append(parameter.getType());
+                    sb.append(", ");
+                }
+                // Removing last ", "
+                sb.delete(sb.length() - 2, sb.length());
+            }
+            return sb.toString();
         }
 
         @Override
@@ -778,8 +791,8 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             // sb.append("${cursor}"); // NOI18N
 
-            if (paramList != null) {
-                for (MethodParameter paramDesc : paramList) {
+            if (parameters != null) {
+                for (MethodParameter paramDesc : parameters) {
 
                     LOG.log(Level.FINEST, "-------------------------------------------------------------------");
                     LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFqnType());
@@ -801,7 +814,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
                     // sb.append(paramDesc.name);
 
 
-                    if (id < paramList.size()) {
+                    if (id < parameters.size()) {
                         sb.append(", "); //NOI18N
                     }
 
@@ -837,7 +850,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             if ((this.paramListString == null) ? (other.paramListString != null) : !this.paramListString.equals(other.paramListString)) {
                 return false;
             }
-            if (this.paramList != other.paramList && (this.paramList == null || !this.paramList.equals(other.paramList))) {
+            if (this.parameters != other.parameters && (this.parameters == null || !this.parameters.equals(other.parameters))) {
                 return false;
             }
             return true;
@@ -849,7 +862,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             hash = 61 * hash + (this.expand ? 1 : 0);
             hash = 61 * hash + (this.name != null ? this.name.hashCode() : 0);
             hash = 61 * hash + (this.paramListString != null ? this.paramListString.hashCode() : 0);
-            hash = 61 * hash + (this.paramList != null ? this.paramList.hashCode() : 0);
+            hash = 61 * hash + (this.parameters != null ? this.parameters.hashCode() : 0);
             return hash;
         }
     }

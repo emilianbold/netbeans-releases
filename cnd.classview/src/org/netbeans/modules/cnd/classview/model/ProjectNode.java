@@ -67,7 +67,7 @@ import org.openide.util.lookup.Lookups;
 public class ProjectNode extends NPNode {
     public static final boolean EXPORT = Boolean.getBoolean("cnd.classview.export"); // NOI18N
     protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
-    private boolean isLibrary;
+    private final boolean isLibrary;
     
     public ProjectNode(final CsmProject project, Children.Array key) {
         super(key, Lookups.fixed(project));
@@ -86,6 +86,7 @@ public class ProjectNode extends NPNode {
         return getProject().getHtmlDisplayName();
     }
         
+    @Override
     protected CsmNamespace getNamespace() {
         CsmProject prj = getProject();
         if (prj != null){
@@ -119,7 +120,7 @@ public class ProjectNode extends NPNode {
         }
     }
     
-    private CsmProject project;
+    private final CsmProject project;
     
     private class TraverseAction extends AbstractAction {
         private Map<BaseNode,BaseNode> map;
@@ -127,6 +128,7 @@ public class ProjectNode extends NPNode {
             putValue(Action.NAME, "Measure traverse project node time and memory."); //NOI18N
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {
             map = new HashMap<BaseNode,BaseNode>();
             System.gc();
@@ -139,6 +141,7 @@ public class ProjectNode extends NPNode {
                 System.out.println(message);
             }
             traverse(new BaseNode.Callback() {
+                @Override
                 public void call(BaseNode node) {
                     map.put(node, node);
                 }
@@ -164,6 +167,7 @@ public class ProjectNode extends NPNode {
             putValue(Action.NAME, "Export project node."); //NOI18N
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             dump(System.out);
         }
@@ -211,6 +215,7 @@ public class ProjectNode extends NPNode {
             return na.createContextAwareInstance(Lookups.fixed(node)).isEnabled();
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             na.createContextAwareInstance(Lookups.fixed(node)).actionPerformed(e);
         }

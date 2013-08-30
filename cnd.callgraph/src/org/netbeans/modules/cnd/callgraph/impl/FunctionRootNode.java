@@ -48,15 +48,18 @@ import javax.swing.Action;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
 public class FunctionRootNode extends AbstractNode {
-    private Function object;
-    private CallGraphState model;
-    private boolean isCalls;
+    private final Function object;
+    private final CallGraphState model;
+    private final boolean isCalls;
+    private volatile Image image;
+    private static final RequestProcessor RP = new RequestProcessor("Call Graph icon updater",1); //NOI18N
 
     public FunctionRootNode(Function element, CallGraphState model, boolean isCalls) {
         super(new CallChildren(element, model, isCalls));
@@ -79,10 +82,22 @@ public class FunctionRootNode extends AbstractNode {
     
     @Override
     public Image getIcon(int param) {
-        Image res = object.getIcon();
-        if (res == null){
-            res = super.getIcon(param);
+        Image res = image;
+        if (res == null) {
+            RP.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    Image icon = object.getIcon();
+                    image = mergeBadge(icon);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                }
+            });
+        } else {
+            return res;
         }
+        res = super.getIcon(param);
         return mergeBadge(res);
     }
     

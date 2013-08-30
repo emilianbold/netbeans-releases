@@ -208,6 +208,10 @@ public final class NbTask {
         return syncState == SynchronizationState.OUTGOING_NEW;
     }
 
+    public final String getTaskKey () {
+        return delegate.getTaskKey();
+    }
+
     public static enum SynchronizationState {
         INCOMING_NEW,
         INCOMING,

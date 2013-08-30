@@ -165,7 +165,7 @@ public class ProjectServicesImpl implements ProjectServices {
     @Override
     public <T> T runAfterProjectOpenFinished(Callable<T> operation) throws Exception {
         // wait until projects are opened
-        OpenProjects.getDefault().getOpenProjects();
+        OpenProjects.getDefault().openProjects().get();
         return operation.call();
     }
 

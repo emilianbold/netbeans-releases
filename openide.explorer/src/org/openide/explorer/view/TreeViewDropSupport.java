@@ -305,7 +305,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         // prepare selection or line
         if (pointAt == DragDropUtilities.NODE_CENTRAL) {
             // no line
-            dropPane.setDropLine(null);
+            if( null != dropPane )
+                dropPane.setDropLine(null);
         } else {
             // line and selection of parent if any
             if (pointAt == DragDropUtilities.NODE_UP) {
@@ -394,7 +395,8 @@ final class TreeViewDropSupport implements DropTargetListener, Runnable {
         Point p1 = SwingUtilities.convertPoint(tree, x1, y1, tree.getRootPane());
         Point p2 = SwingUtilities.convertPoint(tree, x2, y2, tree.getRootPane());
         line.setLine(p1, p2);
-        dropPane.setDropLine(line);
+        if( null != dropPane )
+            dropPane.setDropLine(line);
     }
 
     /** Removes timer and all listeners. */

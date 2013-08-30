@@ -84,8 +84,16 @@ class CloseButtonHandler extends MouseAdapter {
                     if( null != tab ) {
                         int tabIndex = displayer.getModel().indexOf( tab );
                         if( tabIndex >= 0 ) {
-                            TabActionEvent tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE, tabIndex );
-                            controller.postActionEvent( tae );
+                            TabActionEvent tae = null;
+                            if( (e.getModifiersEx()& MouseEvent.SHIFT_DOWN_MASK) > 0 ) {
+                                tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE_ALL, tabIndex );
+                            } else if( (e.getModifiersEx()& MouseEvent.ALT_DOWN_MASK) > 0  ) {
+                                tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE_ALL_BUT_THIS, tabIndex );
+                            } else {
+                                tae = new TabActionEvent( displayer, TabbedContainer.COMMAND_CLOSE, tabIndex );
+                            }
+                            if( null != tae )
+                                controller.postActionEvent( tae );
                         }
                     }
                 }

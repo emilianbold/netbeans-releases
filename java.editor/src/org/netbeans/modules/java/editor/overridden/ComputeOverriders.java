@@ -294,11 +294,14 @@ public class ComputeOverriders {
         try {
             List<ElementHandle<TypeElement>> l = new LinkedList<ElementHandle<TypeElement>>(base);
             Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+            Set<ElementHandle<TypeElement>> seen = new HashSet<ElementHandle<TypeElement>>();
 
             while (!l.isEmpty()) {
                 if (cancel.get()) return null;
                 
                 ElementHandle<TypeElement> eh = l.remove(0);
+
+                if (!seen.add(eh)) continue;
 
                 result.add(eh);
                 Set<ElementHandle<TypeElement>> typeElements = cpinfo.getClassIndex().getElements(eh, Collections.singleton(SearchKind.IMPLEMENTORS), EnumSet.of(scope));

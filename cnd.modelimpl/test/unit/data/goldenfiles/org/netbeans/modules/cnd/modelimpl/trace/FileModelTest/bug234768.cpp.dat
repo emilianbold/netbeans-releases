@@ -12,15 +12,15 @@ Includes:
 Macros:
     <no macros>
 NAMESPACE DEFINITOIN  [1:1/0-36:2/433] SCOPE: bug234768.cpp
-    TYPEDEF A  [2:3/14-4:4/52] TYPE: <unnamed>::AA TEXT=AA  [2:13/24-4:4/52] SCOPE:  
+    TYPEALIAS A  [2:3/14-4:5/53] TYPE: <unnamed>::AA TEXT=AA  [2:13/24-4:4/52] SCOPE:  
     STRUCT AA (<unnamed>::AA ) [2:13/24-4:4/52] lcurly=34 SCOPE:  
         BASE CLASSES:
         MEMBERS:
             FIELD PUBLIC x [3:7/42-3:13/48]  TYPE: int TEXT=int  [3:7/42-3:10/45]  INIT: null  SCOPE: AA 
-    TYPEDEF B  [6:3/57-8:4/88] TYPE: <unnamed>::BB TEXT=BB  [6:13/67-8:4/88] SCOPE:  
+    TYPEALIAS B  [6:3/57-8:5/89] TYPE: <unnamed>::BB TEXT=BB  [6:13/67-8:4/88] SCOPE:  
     ENUM BB [6:13/67-8:4/88] SCOPE:  
         Y
-    TYPEDEF C  [10:3/93-14:4/164] TYPE: <unnamed>::CC TEXT=CC  [10:13/103-14:4/164] SCOPE:  
+    TYPEALIAS C  [10:3/93-14:5/165] TYPE: <unnamed>::CC TEXT=CC  [10:13/103-14:4/164] SCOPE:  
     STRUCT CC (<unnamed>::CC ) [10:13/103-14:4/164] lcurly=113 SCOPE:  
         BASE CLASSES:
         MEMBERS:
@@ -35,7 +35,7 @@ NAMESPACE DEFINITOIN  [1:1/0-36:2/433] SCOPE: bug234768.cpp
     STRUCT AAA (<unnamed>::AAA ) [16:3/171-24:4/315] lcurly=182 SCOPE:  
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF AAA_B  [17:5/192-19:6/241] TYPE: <unnamed>::AAA::BBB TEXT=BBB  [17:19/206-19:6/241] SCOPE: AAA 
+            TYPEALIAS AAA_B  [17:5/192-19:7/242] TYPE: <unnamed>::AAA::BBB TEXT=BBB  [17:19/206-19:6/241] SCOPE: AAA 
             STRUCT BBB (<unnamed>::AAA::BBB ) [17:19/206-19:6/241] lcurly=217 SCOPE: AAA 
                 BASE CLASSES:
                 MEMBERS:
@@ -72,15 +72,15 @@ NAMESPACE DEFINITOIN  [1:1/0-36:2/433] SCOPE: bug234768.cpp
 NAMESPACE DEFINITIONS for  (<unnamed>) 
     bug234768.cpp  [1:1/0-36:2/433]
 NAMESPACE  (<unnamed>) 
-    TYPEDEF A  [2:3/14-4:4/52] TYPE: <unnamed>::AA TEXT=AA  [2:13/24-4:4/52] SCOPE:  
+    TYPEALIAS A  [2:3/14-4:5/53] TYPE: <unnamed>::AA TEXT=AA  [2:13/24-4:4/52] SCOPE:  
     STRUCT AA (<unnamed>::AA ) [2:13/24-4:4/52] lcurly=34 SCOPE:  
         BASE CLASSES:
         MEMBERS:
             FIELD PUBLIC x [3:7/42-3:13/48]  TYPE: int TEXT=int  [3:7/42-3:10/45]  INIT: null  SCOPE: AA 
-    TYPEDEF B  [6:3/57-8:4/88] TYPE: <unnamed>::BB TEXT=BB  [6:13/67-8:4/88] SCOPE:  
+    TYPEALIAS B  [6:3/57-8:5/89] TYPE: <unnamed>::BB TEXT=BB  [6:13/67-8:4/88] SCOPE:  
     ENUM BB [6:13/67-8:4/88] SCOPE:  
         Y
-    TYPEDEF C  [10:3/93-14:4/164] TYPE: <unnamed>::CC TEXT=CC  [10:13/103-14:4/164] SCOPE:  
+    TYPEALIAS C  [10:3/93-14:5/165] TYPE: <unnamed>::CC TEXT=CC  [10:13/103-14:4/164] SCOPE:  
     STRUCT CC (<unnamed>::CC ) [10:13/103-14:4/164] lcurly=113 SCOPE:  
         BASE CLASSES:
         MEMBERS:
@@ -95,7 +95,7 @@ NAMESPACE  (<unnamed>)
     STRUCT AAA (<unnamed>::AAA ) [16:3/171-24:4/315] lcurly=182 SCOPE:  
         BASE CLASSES:
         MEMBERS:
-            TYPEDEF AAA_B  [17:5/192-19:6/241] TYPE: <unnamed>::AAA::BBB TEXT=BBB  [17:19/206-19:6/241] SCOPE: AAA 
+            TYPEALIAS AAA_B  [17:5/192-19:7/242] TYPE: <unnamed>::AAA::BBB TEXT=BBB  [17:19/206-19:6/241] SCOPE: AAA 
             STRUCT BBB (<unnamed>::AAA::BBB ) [17:19/206-19:6/241] lcurly=217 SCOPE: AAA 
                 BASE CLASSES:
                 MEMBERS:

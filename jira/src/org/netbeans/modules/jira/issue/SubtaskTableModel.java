@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.NbBundle;
@@ -87,15 +86,11 @@ public class SubtaskTableModel extends DefaultTableModel {
 
     private static Object[][] data(NbJiraIssue issue) {
         JiraRepository repository = issue.getRepository();
-        IssueCache cache = repository.getIssueCache();
         List<String> keys = issue.getSubtaskKeys();
         Object[][] data = new Object[keys.size()][];
         int count = 0;
         for (String key : keys) {
-            NbJiraIssue subTask = (NbJiraIssue)cache.getIssue(key);
-            if (subTask == null) {
-                subTask = (NbJiraIssue)repository.getIssue(key);
-            }
+            NbJiraIssue subTask = (NbJiraIssue)repository.getIssue(key);
             if(subTask != null) {
                 data[count] = new Object[] {
                     key,

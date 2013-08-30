@@ -94,6 +94,11 @@ class HeapStorage implements Storage {
         return oldSize;
     }
 
+    @Override
+    public void removeBytesFromEnd(int length) throws IOException {
+        size = size - length;
+    }
+
     public synchronized void dispose() {
         bytes = new byte[0];
         size = 0;

@@ -260,11 +260,15 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         urlLabel.setLabelFor(urlTextField);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_ProjectUrl")); // NOI18N
 
+        urlTextField.setColumns(20);
+
         runAsLabel.setLabelFor(runAsCombo);
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_RunAs")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setColumns(20);
 
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
@@ -291,7 +295,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
                     .addPreferredGap(ComponentPlacement.RELATED)
                     .addGroup(layout.createParallelGroup(Alignment.LEADING)
                         .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(urlTextField)
+                        .addComponent(urlTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(indexFileTextField)
                             .addPreferredGap(ComponentPlacement.RELATED)

@@ -95,6 +95,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private static final boolean DEBUG = TRACE | DEBUG_SUMMARY;
     //    public static final int RESOLVE_CLASS_ENUMERATORS       = 1 << 13;
     private int resolveTypes = RESOLVE_NONE;
+    private boolean resolveContextMode  = false;
     private int hideTypes = ~RESOLVE_NONE;
     private CsmFile file;
     private CsmContext context;
@@ -152,6 +153,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     private CompletionResolverImpl(CsmFile file, int resolveTypes, boolean caseSensitive, boolean sort, boolean naturalSort, FileReferencesContext fileReferncesContext) {
         this.file = file;
         this.resolveTypes = resolveTypes;
+        this.resolveContextMode = ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT);
         this.caseSensitive = caseSensitive;
         this.naturalSort = naturalSort;
         this.sort = sort;
@@ -161,6 +163,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     @Override
     public void setResolveTypes(int resolveTypes) {
         this.resolveTypes = resolveTypes;
+        this.resolveContextMode = ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT);
     }
 
     @Override
@@ -441,7 +444,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
-                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses);
+                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses, resolveContextMode);
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
                             return true;
                         }
@@ -487,7 +490,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                     }
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
-                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses);
+                        resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, inspectOuterAndParentClasses, inspectOuterAndParentClasses, resolveContextMode);
                         if (isEnough(strPrefix, match, resImpl.classesEnumsTypedefs)) {
                             return true;
                         }
@@ -504,7 +507,9 @@ public class CompletionResolverImpl implements CompletionResolver {
         if (needClasses(context, offset) || needContextClasses(context, offset)) {
             // list of classesEnumsTypedefs
             if (resImpl.classesEnumsTypedefs == null) {
-                resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
+                resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>();
+            } else {
+                resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>(resImpl.classesEnumsTypedefs);
             }
             Collection<CsmClassifier> classesEnums = getClassesEnums(context, prj, strPrefix, match, offset, !needClasses(context, offset));
             Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
@@ -690,7 +695,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 // we should add class to resolve ambiguity class/constructor in favor of class
                 
                 if (resImpl.classesEnumsTypedefs == null) {
-                    resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
+                    resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>();
                 }                        
 
                 resImpl.classesEnumsTypedefs.add(clazz);
@@ -977,7 +982,8 @@ public class CompletionResolverImpl implements CompletionResolver {
             CsmDeclaration.Kind.STRUCT,
             CsmDeclaration.Kind.UNION,
             CsmDeclaration.Kind.ENUM,
-            CsmDeclaration.Kind.TYPEDEF
+            CsmDeclaration.Kind.TYPEDEF,
+            CsmDeclaration.Kind.TYPEALIAS
         };
         if (!contextOnly && checkNamespaceDeclarations()) {
             Collection usedDecls = getUsedDeclarations(this.file, offset, strPrefix, match, kinds);

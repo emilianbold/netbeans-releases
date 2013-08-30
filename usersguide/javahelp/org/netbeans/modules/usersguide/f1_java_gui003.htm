@@ -44,7 +44,8 @@
 <p>Name</p>
 </td>
 <td align="left" headers="r2c1-t3 r1c2-t3">
-<p>Enables you to create a name for the binding, which gives you more flexibility for managing your bindings. The name is added to the constructor of the binding and can be referenced with the binding's <code>getName()</code> method.</p>
+<p>Enables you to create a name for the binding, which gives you more flexibility for managing your bindings.</p>
+<p>The name is added to the constructor of the binding and can be referenced with the binding's <code>getName()</code> method.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -68,7 +69,8 @@
 <p>Only read from source (read only)</p>
 </td>
 <td align="left" headers="r5c1-t3 r1c2-t3">
-<p>The target is only updated the first time the source value is set. Changes that are made to the source are updated in the target. Changes made to the target are not updated in the source.</p>
+<p>The target is only updated the first time the source value is set.</p>
+<p>Changes that are made to the source are updated in the target. Changes made to the target are not updated in the source.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -103,14 +105,13 @@
 </td>
 <td align="left" headers="r9c1-t3 r1c2-t3">
 <p>If your binding involves properties with different data types, you can specify code that converts values between the types. The beans binding library handles many commonly needed conversions, but you might need to provide your own converters for other combinations of property types. Such converters need to extend the <code>org.jdesktop.beansbinding.Converter</code> class.</p>
-<p>The Converter drop-down list is populated with any converters that have been added as beans to your form. See: <code>
+<p>The Converter drop-down list is populated with any converters that have been added as beans to your form. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1016">
-<param name="text" value="<html><u>How to Convert Values Between Source and Target Properties (Java Desktop Applications)</u></html>">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
 <p>You can also add the conversion code directly by clicking the ellipsis (...) button, and selecting Custom Code from the Select Converter Property Using drop-down list.</p>
 </td>
@@ -129,7 +130,8 @@
 <p>Null Source Value</p>
 </td>
 <td align="left" headers="r11c1-t3 r1c2-t3">
-<p>Enables you to specify a different value to use if the source property has a null value when the binding is attempted. This field corresponds with the <code>setSourceNullValue()</code> method of the <code>org.jdesktop.beansbinding.Binding class</code>.</p>
+<p>Enables you to specify a different value to use if the source property has a null value when the binding is attempted.</p>
+<p>This field corresponds with the <code>setSourceNullValue()</code> method of the <code>org.jdesktop.beansbinding.Binding class</code>.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -137,7 +139,8 @@
 <p>Unreadable Source Value</p>
 </td>
 <td align="left" headers="r12c1-t3 r1c2-t3">
-<p>Enables you to specify a different value to use if the binding expression can not be resolved when the binding is attempted. This field corresponds with the <code>setSourceUnreadableValue()</code> method of the <code>org.jdesktop.beansbinding.Binding</code> class.</p>
+<p>Enables you to specify a different value to use if the binding expression can not be resolved when the binding is attempted.</p>
+<p>This field corresponds with the <code>setSourceUnreadableValue()</code> method of the <code>org.jdesktop.beansbinding.Binding</code> class.</p>
 </td>
 </tr>
 </tbody>

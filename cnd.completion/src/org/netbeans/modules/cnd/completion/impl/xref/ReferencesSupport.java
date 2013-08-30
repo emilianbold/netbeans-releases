@@ -120,7 +120,9 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver.QueryScope;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.openide.util.CharSequences;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import static org.netbeans.modules.cnd.completion.impl.xref.Bundle.*;
 
 /**
  *
@@ -327,7 +329,7 @@ public final class ReferencesSupport {
 //                // Exit now, don't look for variables, types and etc.
 //                return null;
 //            }
-        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset)) {
+        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset) || CsmKindUtilities.isTypeAlias(objUnderOffset)) {
             CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
             CsmParameter parameter = null;
             boolean repeat;
@@ -789,9 +791,10 @@ public final class ReferencesSupport {
     @ServiceProvider(service=CndDiagnosticProvider.class, position=2000)
     public static final class RefSupportDiagnostic implements CndDiagnosticProvider {
 
+        @NbBundle.Messages({"RefSupportDiagnostic.displayName=Cache of xRef for file"})
         @Override
         public String getDisplayName() {
-            return "Cache of xRef for file"; // NOI18N
+            return RefSupportDiagnostic_displayName();
         }
 
         @Override

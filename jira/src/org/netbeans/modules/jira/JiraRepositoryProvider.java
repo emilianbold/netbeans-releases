@@ -103,12 +103,17 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
 
     @Override
     public void removePropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
-        
+        r.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
-    
+        r.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public Collection<NbJiraIssue> getUnsubmittedIssues (JiraRepository r) {
+        return r.getUnsubmittedIssues();
     }
     
     /********************************************************************************

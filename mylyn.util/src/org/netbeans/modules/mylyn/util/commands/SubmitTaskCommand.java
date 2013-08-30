@@ -59,6 +59,8 @@ import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -70,30 +72,54 @@ import org.netbeans.modules.mylyn.util.internal.Accessor;
  */
 public class SubmitTaskCommand extends BugtrackingCommand {
 
-    private final MylynSubmitTaskJob job;
     private final CancelableProgressMonitor monitor;
     private RepositoryResponse rr;
     private NbTask submittedTask;
+    private final Set<TaskAttribute> changedOldAttributes;
+    private final TaskData taskData;
+    private final ITask task;
+    private final TaskRepository taskRepository;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final TaskDataManager taskDataManager;
+    private String stringValue;
+    private SubmitJobListener submitJobListener;
 
-    SubmitTaskCommand (MylynSubmitTaskJob job) {
-        this.job = job;
+    SubmitTaskCommand (TaskDataManager taskDataManager,
+            AbstractRepositoryConnector repositoryConnector,
+            TaskRepository taskRepository, ITask task, TaskData taskData,
+            Set<TaskAttribute> changedOldAttributes) {
+        this.taskDataManager = taskDataManager;
+        this.repositoryConnector = repositoryConnector;
+        this.taskRepository = taskRepository;
+        this.task = task;
+        this.taskData = taskData;
+        this.changedOldAttributes = changedOldAttributes;
         this.monitor = new CancelableProgressMonitor();
     }
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
         
+        LogUtils.logBugtrackingUsage(repositoryConnector.getConnectorKind(), "ISSUE_EDIT");
+        
+        MylynSubmitTaskJob job = new MylynSubmitTaskJob(taskDataManager, repositoryConnector, taskRepository,
+                task, taskData, changedOldAttributes);
+        if (submitJobListener != null) {
+            job.addSubmitJobListener(submitJobListener);
+        }
+        
         Logger log = Logger.getLogger(this.getClass().getName());
         if(log.isLoggable(Level.FINE)) {
             log.log(
                 Level.FINE, 
                 "executing SubmitJobCommand for task with id {0}:{1} ", //NOI18N
-                new Object[] { job.task.getTaskId(), job.taskRepository.getUrl() });
+                new Object[] { task.getTaskId(), taskRepository.getUrl() });
         }
         
         job.startJob(monitor);
         IStatus status = job.getStatus();
         rr = job.getResponse();
+        submittedTask = Accessor.getInstance().toNbTask(job.getTask());
         if (status != null && status != Status.OK_STATUS) {
             log.log(Level.INFO, "Command failed with status: {0}", status); //NOI18N
             if (status.getException() instanceof CoreException) {
@@ -106,7 +132,22 @@ public class SubmitTaskCommand extends BugtrackingCommand {
 
     @Override
     public String toString() {
-        return job.toString();
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder();
+            if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+                sb.append("SubmitTaskCommand new issue [repository="); //NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]"); //NOI18N
+            } else {
+                sb.append("SubmitTaskCommand [task #"); //NOI18N
+                sb.append(taskData.getTaskId());
+                sb.append(",repository="); //NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]"); //NOI18N
+            }
+            stringValue = sb.toString();
+        }
+        return stringValue;
     }
 
     @Override
@@ -120,54 +161,26 @@ public class SubmitTaskCommand extends BugtrackingCommand {
      * 
      */
     public NbTask getSubmittedTask () {
-        if (submittedTask == null) {
-            ITask task = job.getTask();
-            submittedTask = Accessor.getInstance().toNbTask(task);
-        }
         return submittedTask;
     }
 
     public RepositoryResponse getRepositoryResponse () {
         return rr;
     }
+
+    void setSubmitJobListener (SubmitJobListener submitJobListener) {
+        this.submitJobListener = submitJobListener;
+    }
     
-    static class MylynSubmitTaskJob extends SubmitTaskJob {
-        
-        private String stringValue;
-        private final ITask task;
-        private final TaskData taskData;
-        private final TaskRepository taskRepository;
+    private static class MylynSubmitTaskJob extends SubmitTaskJob {
         
         public MylynSubmitTaskJob (TaskDataManager taskDataManager, AbstractRepositoryConnector connector,
                 TaskRepository taskRepository, ITask task, TaskData taskData, Set<TaskAttribute> oldAttributes) {
             super(taskDataManager, connector, taskRepository, task, taskData, oldAttributes);
-            this.task = task;
-            this.taskData = taskData;
-            this.taskRepository = taskRepository;
         }
 
         public IStatus startJob (IProgressMonitor jobMonitor) {
             return run(jobMonitor);
-        }
-
-        @Override
-        public String toString () {
-            if(stringValue == null) {
-                StringBuilder sb = new StringBuilder();
-                if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
-                    sb.append("SubmitTaskCommand new issue [repository="); //NOI18N
-                    sb.append(taskRepository.getUrl());
-                    sb.append("]"); //NOI18N
-                } else {
-                    sb.append("SubmitTaskCommand [task #"); //NOI18N
-                    sb.append(taskData.getTaskId());
-                    sb.append(",repository="); //NOI18N
-                    sb.append(taskRepository.getUrl());
-                    sb.append("]"); //NOI18N
-                }
-                stringValue = sb.toString();
-            }
-            return stringValue;
         }
     };
 }

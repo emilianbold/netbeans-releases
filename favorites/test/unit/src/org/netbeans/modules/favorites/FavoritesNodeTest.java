@@ -50,6 +50,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -67,28 +68,47 @@ public class FavoritesNodeTest extends NbTestCase {
         ic.add(folder);
         AbstractNode node = new AbstractNode(Children.LEAF, new AbstractLookup(ic));
         
-        final CountDownLatch l = new CountDownLatch(1);
-        FavoritesNode.RP.post(new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    l.await();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
         Node res = FavoritesNode.createFilterNode(node);
-        assertTrue("No children", res.isLeaf());
-        l.countDown();
-        final CountDownLatch l2 = new CountDownLatch(1);
-        FavoritesNode.RP.post(new Runnable() {
+        assertFalse("Now it has children", res.isLeaf());
+    }
+
+    public void testCreateNodeAndChangeDataObjectInAWT () throws Exception {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        final DataFolder folder = DataFolder.findFolder(fo);
+        
+        final InstanceContent ic = new InstanceContent();
+        ic.add(folder);
+        final AbstractNode node = new AbstractNode(Children.LEAF, new AbstractLookup(ic));
+        
+        Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Void>() {
+            
             @Override
-            public void run () {
-                l2.countDown();
+            public Void run () throws Exception {
+                final CountDownLatch l = new CountDownLatch(1);
+                FavoritesNode.RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        try {
+                            l.await();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                Node res = FavoritesNode.createFilterNode(node);
+                assertTrue("No children", res.isLeaf());
+                l.countDown();
+                final CountDownLatch l2 = new CountDownLatch(1);
+                FavoritesNode.RP.post(new Runnable() {
+                    @Override
+                    public void run () {
+                        l2.countDown();
+                    }
+                });
+                l2.await();
+                assertFalse("Now it has children", res.isLeaf());
+                return null;
             }
         });
-        l2.await();
-        assertFalse("Now it has children", res.isLeaf());
     }
 }

@@ -108,7 +108,7 @@ class KenaiHandler {
                     } else {
                         // logged in
                         String user = getKenaiUser();
-                        if(!user.equals(lastLoggedUser)) {
+                        if(user != null && !user.equals(lastLoggedUser)) {
                             for(Map<String, QueryHandle> m : queryHandles.values()) {
                                 for(QueryHandle qh : m.values()) {
                                     if(qh instanceof LoginAwareQueryHandle) {
@@ -117,7 +117,7 @@ class KenaiHandler {
                                 }
                             }
                         }
-                        user = lastLoggedUser;
+                        lastLoggedUser = user;
                     }
                 }
             }
@@ -415,13 +415,12 @@ class KenaiHandler {
     }
 
     private class LoginAwareQueryHandle extends QueryHandleImpl {
-        private String notLoggedIn = NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"); // NOI18N
         public LoginAwareQueryHandle(Query query, boolean needsRefresh, boolean predefined) {
             super(query, needsRefresh, predefined);
         }
         @Override
         public String getDisplayName() {
-            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(kenai) ? "" : " " + notLoggedIn);        // NOI18N
+            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(kenai) ? "" : " " +  NbBundle.getMessage(QueryAccessorImpl.class, "LBL_NotLoggedIn"));        // NOI18N
         }
         @Override
         List<QueryResultHandle> getQueryResults() {

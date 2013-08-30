@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.classview.model;
 
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.openide.nodes.Children;
 
 /**
@@ -53,20 +54,44 @@ import org.openide.nodes.Children;
  * @author Alexander Simon
  */
 public class FriendClassNode extends ObjectNode {
-    
+    private CharSequence shortName;
+    private CharSequence longName;
+
     public FriendClassNode(CsmFriendClass fun) {
         super(fun, Children.LEAF);
         init(fun);
     }
     
-    private void init(CsmFriendClass cls){
-        String shortName = cls.getName().toString();
-        String longName = cls.getQualifiedName().toString();
-        setName(shortName);
-        setDisplayName(shortName);
-        setShortDescription(longName);
+    private void init(final CsmFriendClass cls){
+        shortName = cls.getName();
+        longName = cls.getQualifiedName();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                image = CsmImageLoader.getImage(cls);
+                fireIconChange();
+                fireOpenedIconChange();
+            }
+        });
     }
     
+    @Override
+    public String getName() {
+        return shortName.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return shortName.toString();
+    }
+
+    @Override
+    public String getShortDescription() {
+        return longName.toString();
+    }
+    
+    @Override
     public void stateChanged(ChangeEvent e) {
         Object o = e.getSource();
         if (o instanceof CsmFriendClass){

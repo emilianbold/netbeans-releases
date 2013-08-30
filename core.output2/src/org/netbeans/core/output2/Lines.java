@@ -49,6 +49,7 @@ import org.openide.windows.OutputListener;
 import javax.swing.event.ChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import org.openide.util.Pair;
 import org.openide.windows.IOColors;
 
 /**
@@ -354,6 +355,21 @@ public interface Lines {
     void hideFold(int foldStartIndex);
 
     /**
+     * Show all parent folds of the fold starting at line
+     * {@code foldStartIndex}.
+     *
+     * @param foldStartIndex Real index of the line where the fold starts.
+     */
+    void showFoldAndParentFolds(int foldStartIndex);
+
+    /**
+     * Expand all parent folds of a line, so that the line is visible.
+     *
+     * @param realLineIndex Real line index of the line to show.
+     */
+    void showFoldsForLine(int realLineIndex);
+
+    /**
      * Show all folds in the output, including nested folds.
      */
     void showAllFolds();
@@ -420,4 +436,15 @@ public interface Lines {
      * starts. If the line is not inside a fold, value -1 is returned.
      */
     int getParentFoldStart(int realLineIndex);
+
+    /**
+     * Remove characters from the end of the last unfinished line.
+     *
+     * @param length Number of characters to remove, -1 to remove all characters
+     * in the last line.
+     * @return Pair, where the first items is number of removed characters (can
+     * be different from parameter {@code length}), and the second item is
+     * number of removed tab spaces.
+     */
+    public Pair<Integer, Integer> removeCharsFromLastLine(int length);
 }

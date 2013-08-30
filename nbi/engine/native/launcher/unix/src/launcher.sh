@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -465,8 +465,8 @@ initializeVariables() {
 	fi
         if [ 1 -eq $isMacOSX ] ; then
                 # set default userdir and cachedir on MacOS
-                DEFAULT_USERDIR_ROOT=${HOME}/Library/Application Support/NetBeans
-                DEFAULT_CACHEDIR_ROOT=${HOME}/Library/Caches/NetBeans
+                DEFAULT_USERDIR_ROOT="${HOME}/Library/Application Support/NetBeans"
+                DEFAULT_CACHEDIR_ROOT="${HOME}/Library/Caches/NetBeans"
         else
                 # set default userdir and cachedir on unix systems
                 DEFAULT_USERDIR_ROOT=${HOME}/.netbeans
@@ -973,6 +973,18 @@ installBundledJVMs() {
 	fi
 }
 
+searchJavaOnMacOs() {
+        if [ -x "/usr/libexec/java_home" ]; then
+            javaOnMacHome=`/usr/libexec/java_home --version 1.7.0_10+ --failfast`
+        fi
+
+        if [ ! -x "$javaOnMacHome/bin/java" -a -f "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java" ] ; then
+            javaOnMacHome=`echo "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home"`
+        fi
+
+        verifyJVM "$javaOnMacHome"
+}
+
 searchJavaSystemDefault() {
         if [ -z "$LAUNCHER_JAVA_EXE" ] ; then
             debug "... check default java in the path"
@@ -1047,6 +1059,7 @@ searchJavaUserDefined() {
         	fi
 	fi
 }
+
 searchJava() {
 	message "$MSG_JVM_SEARCH"
         if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
@@ -1058,7 +1071,10 @@ searchJava() {
 		installBundledJVMs
 		searchJavaEnvironment
 		searchJavaSystemDefault
-		searchJavaSystemPaths		
+		searchJavaSystemPaths
+                if [ 1 -eq $isMacOSX ] ; then
+                    searchJavaOnMacOs
+                fi
         fi
 
 	if [ -z "$LAUNCHER_JAVA_EXE" ] ; then

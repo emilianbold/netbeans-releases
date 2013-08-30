@@ -89,6 +89,10 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.fold.Fold;
+import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldHierarchyEvent;
+import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -189,7 +193,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     private FormDataObject formDataObject;
     
     /** The embracing multiview TopComponent (holds the form designer and
-     * java editor) - we remeber the last active TopComponent (not all clones) */
+     * java editor) - we remember the last active TopComponent (not all clones) */
     private CloneableTopComponent multiviewTC;
 
     /**
@@ -198,9 +202,10 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
      */
     private NodeListener nodeListener;
 
-    // listeners
     private static PropertyChangeListener topcompsListener;
-    
+
+    private FoldHierarchyListener foldHierarchyListener;
+
     private UndoRedo.Manager editorUndoManager;
     
     private FormEditor formEditor;
@@ -1184,7 +1189,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
     
     /** This is called by the multiview elements whenever they are created
      * (and given a observer knowing their multiview TopComponent). It is
-     * important during deserialization and clonig the multiview - i.e. during
+     * important during deserialization and cloning the multiview - i.e. during
      * the operations we have no control over. But anytime a multiview is
      * created, this method gets called.
      */
@@ -1229,7 +1234,104 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         }
         return showing;
     }
-    
+
+    /**
+     * Called before regenerating initComponents guarded section to obtain the
+     * actual state of the editor fold for the generated code. Needed for the case
+     * the user expanded it manually to expand it again after recreating the fold
+     * for the new content.
+     * @param offset the start offset of the initComponents section
+     * @return true if the fold is collapsed, false if expanded
+     */
+    @Override
+    public Boolean getFoldState(int offset) {
+        if (EventQueue.isDispatchThread()) {
+            JEditorPane[] panes = getOpenedPanes();
+            if (panes != null && panes.length > 0) {
+                FoldHierarchy hierarchy = FoldHierarchy.get(panes[0]);
+                if (hierarchy != null) {
+                    try {
+                        hierarchy.lock();
+                        Fold fold = FoldUtilities.findNearestFold(hierarchy, offset);
+                        if (fold != null) {
+                            return fold.isCollapsed();
+                        }
+                    } finally {
+                        hierarchy.unlock();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Called after setting new content to the initComponents section to restore
+     * the remembered state of the fold. Setting the text creates a new fold that
+     * is initially collapsed, we may want to expand it (if the user expanded it
+     * manually in the editor before).
+     * @param collapse
+     * @param startOffset
+     * @param endOffset 
+     */
+    @Override
+    public void restoreFoldState(boolean collapse, int startOffset, int endOffset) {
+        if (collapse) {
+            return; // the fold will be initially collapsed
+        }
+        JEditorPane[] panes = getOpenedPanes();
+        if (panes != null && panes.length > 0) {
+            FoldHierarchy hierarchy = FoldHierarchy.get(panes[0]);
+            if (hierarchy != null) {
+                try {
+                    hierarchy.lock();
+                    Fold fold = FoldUtilities.findCollapsedFold(hierarchy, startOffset, endOffset);
+                    if (fold != null) {
+                        hierarchy.expand(fold);
+                    } else {
+                        // in fact we don't really know when the new fold will appear
+                        // in the hierarchy, it happens somehow asynchronously
+                        if (foldHierarchyListener == null) {
+                            foldHierarchyListener = new FoldHierarchyListener();
+                        } else {
+                            hierarchy.removeFoldHierarchyListener(foldHierarchyListener);
+                        }
+                        hierarchy.addFoldHierarchyListener(foldHierarchyListener);
+                        foldHierarchyListener.setOffsets(startOffset, endOffset);
+                    }
+                } finally {
+                    hierarchy.unlock();
+                }
+            }
+        }
+    }
+
+    private static class FoldHierarchyListener implements org.netbeans.api.editor.fold.FoldHierarchyListener {
+        private int startOffset = -1;
+        private int endOffset;
+
+        private void setOffsets(int startOffset, int endOffset) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+        }
+
+        @Override
+        public void foldHierarchyChanged(FoldHierarchyEvent evt) {
+            if (startOffset >= 0
+                && evt.getAddedFoldCount() > 0
+                && evt.getAffectedStartOffset() < endOffset && evt.getAffectedEndOffset() > startOffset
+                && evt.getSource() instanceof FoldHierarchy) {
+                // here we should have the fold for the new initComponents code added
+                FoldHierarchy hierarchy = (FoldHierarchy) evt.getSource();
+                Fold fold = FoldUtilities.findCollapsedFold(hierarchy, startOffset, endOffset);
+                if (fold != null) {
+                    startOffset = -1; // ignore any futher events
+                    hierarchy.expand(fold);
+                }
+            }
+        }
+    }
+
     private static Boolean groupVisible = null;
     
     static void checkFormGroupVisibility() {

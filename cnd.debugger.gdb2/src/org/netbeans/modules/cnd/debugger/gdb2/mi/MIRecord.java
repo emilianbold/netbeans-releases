@@ -60,7 +60,7 @@ public class MIRecord {
     char type = '?';
     boolean isStream;
     String stream = "";				// NOI18N
-    String cls;
+    String cls = "";
     MITList results;
 
     // Make sure default constructor is package-private.

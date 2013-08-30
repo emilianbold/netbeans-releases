@@ -52,6 +52,7 @@ import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhanced
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Parameters;
 
 /**
  * @author Jan Becicka
@@ -65,6 +66,7 @@ public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowser
     private Project p;
 
     public EnhancedBrowserProviderImpl(Project p) {
+        Parameters.notNull("Project", p);
         this.p = p;
     }
     

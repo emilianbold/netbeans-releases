@@ -338,7 +338,7 @@ public class SourceMultiViewElement extends CloneableEditor
 
     @Override
     public Lookup getLookup() {
-        return new ProxyLookup(super.getLookup(), myLookup);
+        return new ProxyLookup(super.getLookup(), myLookup, getEditorSupport().getDataObject().getLookup());
      }
 
 }

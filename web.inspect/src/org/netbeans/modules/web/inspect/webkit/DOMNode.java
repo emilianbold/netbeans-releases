@@ -134,6 +134,10 @@ public class DOMNode extends AbstractNode {
             String pattern = bundle.getString("DOMNode.elementDisplayName"); //NOI18N
             String tagName = node.getNodeName().toLowerCase(Locale.ENGLISH);
             String selector = getSelector();
+            int maxSelectorLength = 100;
+            if (selector.length() > maxSelectorLength) {
+                selector = selector.substring(0, maxSelectorLength) + "..."; // NOI18N
+            }
             displayName = MessageFormat.format(pattern, tagName, selector);
         } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N

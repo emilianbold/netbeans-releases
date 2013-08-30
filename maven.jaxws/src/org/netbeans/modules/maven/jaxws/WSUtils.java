@@ -693,8 +693,8 @@ public class WSUtils {
         }
     }
 
-    public static boolean generateNonJsr109Artifacts(Project prj) {
-        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+    private static boolean generateNonJsr109Artifacts(Project prj) {
+        Preferences prefs = ProjectUtils.getPreferences(prj, WSUtils.class, true);
         if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
             ConfirmationPanel panel =
                 new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_GenerateDDEntries", prj.getProjectDirectory().getName()));
@@ -717,7 +717,7 @@ public class WSUtils {
     }
 
     private static boolean removeNonJsr109Artifacts(Project prj) {
-        Preferences prefs = ProjectUtils.getPreferences(prj, MavenWebService.class,true);
+        Preferences prefs = ProjectUtils.getPreferences(prj, WSUtils.class, true);
         if (prefs == null || prefs.get(NON_JSR109_DONT_ASK , null) == null) {
             ConfirmationPanel panel =
                 new ConfirmationPanel(NbBundle.getMessage(WSUtils.class,"MSG_RemoveDDEntries"));

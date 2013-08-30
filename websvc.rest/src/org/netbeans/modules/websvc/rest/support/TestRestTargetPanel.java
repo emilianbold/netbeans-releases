@@ -91,6 +91,7 @@ public class TestRestTargetPanel extends javax.swing.JPanel {
         initComponents();
         myNotice.setText( NbBundle.getMessage(TestRestTargetPanel.class, 
                 "TXT_Notice"));
+        myNotice.putClientProperty(javax.swing.JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         myLocal.setSelected(true);
         myBrowse.setEnabled( false );
         ActionListener listener = new ActionListener() {

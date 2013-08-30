@@ -44,6 +44,8 @@ package org.netbeans.modules.php.editor.index;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -54,6 +56,8 @@ public final class Signature {
     public static final char ITEM_DELIMITER = ';';
     public static final String ITEM_DELIMITER_ALTERNATIVE = "**NB_SEMI**"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
+    private static final Pattern DECODE_PATTERN = Pattern.compile("\\*\\*NB_SEMI\\*\\*"); //NOI18N
+    private static final Pattern ENCODE_PATTERN = Pattern.compile(";"); //NOI18N
     //shared array for better performance,
     //access is supposed from one thread so perf
     //shouldn't degrade due to synchronization
@@ -113,7 +117,8 @@ public final class Signature {
     public static String encodeItem(final String item) {
         String result = null;
         if (item != null) {
-            result = item.replace(String.valueOf(ITEM_DELIMITER), ITEM_DELIMITER_ALTERNATIVE);
+            Matcher matcher = ENCODE_PATTERN.matcher(item);
+            result = matcher.replaceAll(ITEM_DELIMITER_ALTERNATIVE);
         }
         return result;
     }
@@ -121,7 +126,8 @@ public final class Signature {
     private static String decodeItem(final String item) {
         String result = null;
         if (item != null) {
-            result = item.replace(ITEM_DELIMITER_ALTERNATIVE, String.valueOf(ITEM_DELIMITER));
+            Matcher matcher = DECODE_PATTERN.matcher(item);
+            result = matcher.replaceAll(String.valueOf(ITEM_DELIMITER));
         }
         return result;
     }

@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=100)
 class FtpSyncFactory extends BaseSyncFactory {
 
-    /*package*/ static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", false);
+    private static final boolean ENABLE_FTP = CndUtils.getBoolean("cnd.remote.scp", true);
 
     /** this factory ID -  public for test purposes */
     public static final String ID = "ftp"; //NOI18N

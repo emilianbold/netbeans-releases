@@ -84,7 +84,6 @@ public class ODCSIssueController extends BugtrackingController {
         ODCSIssue issue = panel.getIssue();
         if (issue != null) {
             panel.opened();
-            issue.opened();
         }
     }
 
@@ -92,7 +91,6 @@ public class ODCSIssueController extends BugtrackingController {
     public void closed() {
         ODCSIssue issue = panel.getIssue();
         if (issue != null) {
-            issue.closed();
             panel.closed();
         }
     }
@@ -113,6 +111,10 @@ public class ODCSIssueController extends BugtrackingController {
 
     void refreshViewData(boolean force) {
         panel.reloadFormInAWT(force);
+    }
+
+    void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
+        panel.modelStateChanged(modelDirty, modelHasLocalChanges);
     }
 
 }

@@ -60,6 +60,9 @@ public final class Parser {
         HTTPS,
         HTTPC, // // (ht|f)tp(s?)
         HTTPCS, // (ht|f)tp(s?):/
+        FI,
+        FIL,
+        FILE,
         END // (ht|f)tp(s?)://
     }
 
@@ -83,6 +86,7 @@ public final class Parser {
                     case '%': case '_': case '~': case '=': //NOI18N
                     case '\\':case '&': case '$': case '-': //NOI18N
                     case '#': case ',': case ':': case ';': //NOI18N
+                    case '!': case '(': case ')': //NOI18N
                         continue OUTER;
                 }
 
@@ -121,6 +125,21 @@ public final class Parser {
                         continue OUTER;
                     }
                     break;
+                case 'i': //NOI18N
+                    if (state == STATE.F) {
+                        state = STATE.FI;
+                        continue OUTER;
+                    }
+                case 'l': //NOI18N
+                    if (state == STATE.FI) {
+                        state = STATE.FIL;
+                        continue OUTER;
+                    }
+                case 'e': //NOI18N
+                    if (state == STATE.FIL) {
+                        state = STATE.FILE;
+                        continue OUTER;
+                    }
                 case 'p': //NOI18N
                     if (state == STATE.HTT_FT) {
                         state = STATE.HTTP_FTP;
@@ -134,7 +153,7 @@ public final class Parser {
                     }
                     break;
                 case ':': //NOI18N
-                    if (state == STATE.HTTP_FTP || state == STATE.HTTPS) {
+                    if (state == STATE.HTTP_FTP || state == STATE.HTTPS || state == STATE.FILE) {
                         state = STATE.HTTPC;
                         continue OUTER;
                     }
@@ -161,7 +180,7 @@ public final class Parser {
         return result;
     }
     
-    private static final Pattern URL_PATTERN = Pattern.compile("(ht|f)tp(s?)://[0-9a-zA-Z/.?%+_~=\\\\&$\\-#,:]*"); //NOI18N
+    private static final Pattern URL_PATTERN = Pattern.compile("(ht|f)(tp(s?)|ile)://[0-9a-zA-Z/.?%+_~=\\\\&$\\-#,:!/(/)]*"); //NOI18N
 
     public static Iterable<int[]> recognizeURLsREBased(CharSequence text) {
         Matcher m = URL_PATTERN.matcher(text);

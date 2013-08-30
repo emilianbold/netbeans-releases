@@ -105,6 +105,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
     private char yy_old_buffer[] = new char[ZZ_BUFFERSIZE];
     private int yy_old_pushbackPos;
     protected int commentStartPosition;
+    private int whitespaceEndPosition;
+    private boolean isEndedPhp;
     private final PHPDocCommentParser docParser = new PHPDocCommentParser();
     private final PHPVarCommentParser varParser = new PHPVarCommentParser();
 
@@ -124,6 +126,14 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
      */
     public int getCurlyBalance() {
         return bracket;
+    }
+
+    public int getWhitespaceEndPosition() {
+        return whitespaceEndPosition;
+    }
+
+    public boolean isEndedPhp() {
+        return isEndedPhp;
     }
 
     /*public void setAST(AST ast) {
@@ -475,6 +485,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 }
 
 <ST_IN_SCRIPTING,ST_LOOKING_FOR_PROPERTY>{WHITESPACE}+ {
+    whitespaceEndPosition = getTokenStartPosition() + yylength();
 }
 
 <ST_LOOKING_FOR_PROPERTY>"->" {
@@ -885,6 +896,8 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 }
 
 <YYINITIAL>"<?php"([ \t]|{NEWLINE}) {
+    isEndedPhp = false;
+    whitespaceEndPosition = getTokenStartPosition() + yylength();
     yybegin(ST_IN_SCRIPTING);
     //return T_OPEN_TAG;
     //return createSymbol(ASTPHP5Symbols.T_OPEN_TAG);
@@ -986,6 +999,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_ONE_LINE_COMMENT>"?>"|"%>" {
     if (asp_tags || yytext().charAt(0)!='%') { /* asp comment? */
+        isEndedPhp = true;
 	    handleLineCommentEnd();
         yypushback(yylength());
 		yybegin(ST_IN_SCRIPTING);
@@ -1052,6 +1066,7 @@ yybegin(ST_DOCBLOCK);
 }
 
 <ST_IN_SCRIPTING>("?>"|"</script"{WHITESPACE}*">"){NEWLINE}? {
+    isEndedPhp = true;
     yybegin(YYINITIAL);
     return createSymbol(ASTPHP5Symbols.T_SEMICOLON);  /* implicit ';' at php-end tag */
 }

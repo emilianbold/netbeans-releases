@@ -74,7 +74,9 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="upgrade-to-cordova-project" depends="check-cordova-project,check-cordova-version" unless="cordova.project">
-        <move file="www" tofile="www_nb_temp" failonerror="false" quiet="true"/>
+        <move todir="www_nb_temp" failonerror="false" quiet="true">
+            <fileset dir="www"/>
+        </move>
         <echo level="info" message="${cordova.command} -d create . com.coolappz.${project.name} ${project.name}" />
         <exec executable="${cordova.command}" resolveexecutable="true" searchpath="true" failonerror="true" >
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>

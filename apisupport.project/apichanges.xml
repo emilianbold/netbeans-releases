@@ -110,6 +110,19 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Capitalizing language variant for internationalization</summary>
+            <version major="1" minor="68"/>
+            <date day="29" month="8" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                Internationalization branding option is now creating localized branding files with capitalized language variant.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="BrandingModel"/>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="BrandingSupport"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Extending branding model for internationalization</summary>
             <version major="1" minor="67"/>
             <date day="13" month="8" year="2013"/>

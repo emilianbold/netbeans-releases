@@ -112,7 +112,7 @@ public class UnbufferSupport {
 
         try {
             unbufferPath = macroExpander.expandPredefinedMacros(
-                    "bin/nativeexecution/$osname-$platform"); // NOI18N
+                    "bin/nativeexecution/$osname-$platform" + (isWindows ? "${_isa}" : "")); // NOI18N
             unbufferLib = macroExpander.expandPredefinedMacros(
                     "unbuffer.$soext"); // NOI18N
         } catch (ParseException ex) {

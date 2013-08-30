@@ -190,21 +190,21 @@ public class ScssCompletionTest extends CssModuleTestBase {
     public void testSelectorsInMixin() throws ParseException {
         //we are checking insert prefixes!
         checkCC("@mixin mymixin() { | } ", arr("div"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { tabl| } ", arr("table"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { table| } ", arr("table"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { | \n color: blue} ", arr("table"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { ta| \n color: blue} ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { tabl| } ", arr("table-layout: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { table| } ", arr("table-layout: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { | \n color: blue} ", arr("table-layout: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { ta| \n color: blue} ", arr("table-layout: "), Match.CONTAINS);
     }
 
     public void testSelectorsInMixinWithNestedRule() throws ParseException {
         //we are checking insert prefixes!
         checkCC("@mixin mymixin() { | div { } } ", arr("div"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { tabl| div { } } ", arr("table"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { table| div { } } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { tabl| div { } } ", arr("table-layout: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { table| div { } } ", arr("table-layout: "), Match.CONTAINS);
 
         checkCC("@mixin mymixin() { div {} | } ", arr("div"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { div {} tabl|  } ", arr("table"), Match.CONTAINS);
-        checkCC("@mixin mymixin() { div {} table|  } ", arr("table"), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div {} tabl|  } ", arr("table-layout: "), Match.CONTAINS);
+        checkCC("@mixin mymixin() { div {} table|  } ", arr("table-layout: "), Match.CONTAINS);
     }
 
     public void testPropertyValueInRuleNestedInMixinBody() throws ParseException {
@@ -257,10 +257,63 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC("@media tv {  \n"
                 + "    @| \n"
                 + "}", arr("@if"), Match.CONTAINS);
-        
+
         checkCC("@media tv {  \n"
                 + "    @ea| \n"
                 + "}", arr("@each"), Match.EXACT);
     }
+
+    public void testPseudoForParentSelectorPrefix() throws ParseException {
+        //test pseudo class w/ prefix
+        assertCompletion("#main {\n"
+                + "    &:hov|\n"
+                + "\n"
+                + "}", Match.EXACT, "hover");
+
+        //pseudo element w/ prefix
+        assertCompletion("#main {\n"
+                + "    &::first-li|\n"
+                + "\n"
+                + "}", Match.EXACT, "first-line");
+    }
     
+    public void testPseudoForParentSelectorNoPrefix() throws ParseException {
+        assertCompletion("#main {\n"
+                + "    &:|\n"
+                + "\n"
+                + "}", Match.CONTAINS, "hover");
+
+        //pseudo element w/o prefix
+        assertCompletion("#main {\n"
+                + "    &::|\n"
+                + "\n"
+                + "}", Match.CONTAINS, "first-line");
+
+    }
+    
+     public void testPseudoForParentSelectorNoGarbage() throws ParseException {
+        //test if it doesn't contain a garbage - like properties
+        assertCompletion("#main {\n"
+                + "    &:|\n"
+                + "\n"
+                + "}", Match.DOES_NOT_CONTAIN, "color: ");
+
+        assertCompletion("#main {\n"
+                + "    &:colo|\n"
+                + "\n"
+                + "}", Match.EMPTY);
+        
+        //test if it doesn't contain a garbage - like properties
+        assertCompletion("#main {\n"
+                + "    &::|\n"
+                + "\n"
+                + "}", Match.DOES_NOT_CONTAIN, "color");
+
+         //test if it doesn't contain a garbage - like properties
+        assertCompletion("#main {\n"
+                + "    &::colo|\n"
+                + "\n"
+                + "}", Match.EMPTY, "color");
+        
+    }
 }

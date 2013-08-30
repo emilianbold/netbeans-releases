@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
-import javax.xml.parsers.ParserConfigurationException;
-import org.netbeans.modules.glassfish.javaee.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,38 +59,51 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.OsUtils;
+import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.common.GlassFishState;
+import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.netbeans.modules.glassfish.javaee.*;
+import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
-import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import org.netbeans.modules.glassfish.eecommon.api.UrlData;
-import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
- *
- * @author Peter Williams
+ * GlassFish server data source manager.
+ * <p/>
+ * @author Peter Williams, Tomas Kraus
  */
 public class Hk2DatasourceManager implements DatasourceManager {
     
-    private static final String DOMAIN_XML_PATH = "config/domain.xml";
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish server domain configuration file. */
+    private static final String DOMAIN_XML_PATH = OsUtils.joinPaths(
+            ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME,
+            ServerUtils.GF_DOMAIN_CONFIG_FILE_NAME);
     
     /** List of base file names containing server resources. */
     public static final String[] RESOURCE_FILES = {
@@ -100,30 +111,58 @@ public class Hk2DatasourceManager implements DatasourceManager {
         "sun-resources"
     };
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish server deployment manager. */
     private Hk2DeploymentManager dm;
 
-   
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of GlassFish server data source manager.
+     * <p/>
+     * @param dm GlassFish server deployment manager.
+     */
     public Hk2DatasourceManager(Hk2DeploymentManager dm) {
         this.dm = dm;
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Retrieves the data sources deployed on the server.
-     *
-     * @return the set of data sources deployed on the server.
+     * <p/>
+     * @return The set of data sources deployed on the server.
      * @throws ConfigurationException reports problems in retrieving data source
      *         definitions.
      */
     @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
-        GlassfishModule commonSupport = dm.getCommonServerSupport();
-        String domainsDir = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR);
-        String domainName = commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR);
-        // XXX Fix to work with current server domain, not just default domain.
-        if (null != domainsDir) {
+        GlassFishServer server = dm.getCommonServerSupport().getInstance();
+        String domainsDir = server.getDomainsFolder();
+        String domainName = server.getDomainName();
+        // Try to retrieve data sources from asadmin interface if possible
+        if (GlassFishState.isOnline(server) || server.isRemote()) {
+            DataSourcesReader dataSourcesReader
+                    = new DataSourcesReader(server);
+            Set<Datasource> dataSources = dataSourcesReader.getDataSourcesFromServer();
+            // Return when data sources were retrieved successfully.
+            if (dataSources != null) {
+                return dataSources;
+            }
+        }
+        // Fallback option to retrieve data sources from domain.xml
+        // for local server
+        if (!server.isRemote() && null != domainsDir) {
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
-            // TODO -- need to account for remote domain here?
-            return readDatasources(domainXml, "/domain/", null);
+            return readDatasources(
+                    domainXml, "/domain/", null, server.getVersion());
         } else {
             return Collections.EMPTY_SET;
         }
@@ -160,15 +199,17 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @param baseNames List of resource file base names to search for.
      * @return <code>Datasource</code> objects found in first available file.
      */
-    private static Set<Datasource> getDatasources(File resourceDir, String[] baseNames) {
+    private static Set<Datasource> getDatasources(
+            final File resourceDir, final String[] baseNames,
+            final GlassFishVersion version) {
         for (String baseName : baseNames) {
             File file = new File(resourceDir, baseName+".xml");
             // Return Datasource objects from first available file.
             if (file.isFile())
-                return readDatasources(file, "/", resourceDir);
+                return readDatasources(file, "/", resourceDir, version);
         }
         // Return empty set when no resource file was found.
-        return new HashSet<Datasource>();
+        return new HashSet<>();
     }
 
     /**
@@ -179,7 +220,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @return <code>Datasource</code> objects found in first available file.
      */
     public static Set<Datasource> getDatasources(File resourceDir) {
-        return getDatasources(resourceDir, RESOURCE_FILES);
+        return getDatasources(resourceDir, RESOURCE_FILES, null);
     }
 
 //    public Datasource createDataSource(String jndiName, String url, String username,
@@ -232,21 +273,30 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
     /**
      * Parse resource file and build <code>Datasource</code> objects from it.
-     *
+     * <p/>
+     * For GlassFish server version 4 and higher new Java EE 7
+     * <<code>comp/DefaultDataSource</code> data source is added if default
+     * <code>jdbc/__default</code> data source exists. This does not apply
+     * to calls with <code>null</code> value of <code>version</code> attribute.
+     * <p/>
      * @param xmlFile      Resource file to be read. This file must exists, and must
-     *                         be readable regular file containing XML.
+     *                     be readable regular file containing XML.
      * @param xPathPrefix  XML path prefix,
      * @param resourcesDir Directory containing resource files.
-     * @return 
+     * @param version      GlassFish server version to determine if Java EE 7
+     *                     new data source shall be added.
+     * @return Data sources found in resource file.
      */
-    private static Set<Datasource> readDatasources(File xmlFile, String xPathPrefix, File resourcesDir) {
-        Set<Datasource> dataSources = new HashSet<Datasource>();
+    private static Set<Datasource> readDatasources(
+            final File xmlFile, final String xPathPrefix,
+            final File resourcesDir, final GlassFishVersion version) {
+        Set<Datasource> dataSources = new HashSet<>();
 
         if (xmlFile.canRead()) {
-            Map<String, JdbcResource> jdbcResourceMap = new HashMap<String, JdbcResource>();
-            Map<String, ConnectionPool> connectionPoolMap = new HashMap<String, ConnectionPool>();
+            Map<String, JdbcResource> jdbcResourceMap = new HashMap<>();
+            Map<String, ConnectionPool> connectionPoolMap = new HashMap<>();
 
-            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            List<TreeParser.Path> pathList = new ArrayList<>();
             pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResourceMap)));
             pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool", new ConnectionPoolReader(connectionPoolMap)));
 
@@ -264,19 +314,28 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
                         // add to sun datasource list
                         String url = pool.getProperty("URL"); //NOI18N
-                        if ((url != null) && (!url.equals(""))) { //NOI18N
-                            String username = pool.getProperty("User"); //NOI18N
-                            String password = pool.getProperty("Password"); //NOI18N
-                            String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                            dataSources.add(new SunDatasource(jdbc.getJndiName(), url, username,
-                                    password, driverClassName, resourcesDir));
+                        String username = pool.getProperty("User"); //NOI18N
+                        String password = pool.getProperty("Password"); //NOI18N
+                        String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                        SunDatasource dataSource = new SunDatasource(
+                                jdbc.getJndiName(), url, username,
+                                password, driverClassName, resourcesDir);
+                        dataSources.add(dataSource);
+                        // Add Java EE 7 comp/DefaultDataSource data source
+                        // as jdbc/__default clone (since GF 4).
+                        if (version != null && version.ordinal()
+                                >= GlassFishVersion.GF_4.ordinal()
+                                && DataSourcesReader.DEFAULT_DATA_SOURCE
+                                .equals(dataSource.getJndiName()) ) {
+                            dataSources.add(dataSource.copy(
+                                    DataSourcesReader.DEFAULT_DATA_SOURCE_EE7));
                         }
                     } catch (NullPointerException npe) {
                         Logger.getLogger("glassfish-javaee").log(Level.INFO, pool.toString(), npe);
                     }
                 }
             }
-        }
+        }        
         return dataSources;
     }
     
@@ -321,11 +380,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
             String type = attributes.getValue("object-type");
             
-            // Ignore system resources
-            if(type != null && type.startsWith("system-")) {
-                return;
-            }
-            
             String jndiName = attributes.getValue("jndi-name");
             String poolName = attributes.getValue("pool-name");
             if(jndiName != null && jndiName.length() > 0 && 
@@ -342,7 +396,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         private final Map<String, String> properties;
         
         public ConnectionPool(String poolName) {
-            this.properties = new HashMap<String, String>();
+            this.properties = new HashMap<>();
         }
         
         public void setProperty(String key, String value) {
@@ -440,7 +494,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         File xmlFile = new File(resourceDir, baseName+".xml");
         if(xmlFile.exists()) {
-            List<TreeParser.Path> pathList = new ArrayList<TreeParser.Path>();
+            List<TreeParser.Path> pathList = new ArrayList<>();
             pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
             pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
             
@@ -515,7 +569,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
     private static boolean isSameDatabaseConnection(final CPool pool, final String url, 
             final String username, final String password) {
         boolean result = false;
-        boolean matchedSettings = false;
+        boolean matchedSettings;
         
         UrlData urlData = new UrlData(url);
         if(DbUtil.strEmpty(pool.getUrl())) {
@@ -607,16 +661,16 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
 
 
-        if (doc == null) return;
+        if (doc == null || docBuilder == null) return;
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
-        Node resourcesNode = null;
+        Node resourcesNode;
         if(resourcesNodes.getLength()<1){
             resourcesNode = doc.createElement("resources");//NOI18N
             doc.getDocumentElement().appendChild(resourcesNode);
         } else {
             resourcesNode = resourcesNodes.item(0);
         }
-        Node newPool = null;
+        Node newPool;
         try {
             newPool = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(CP_TAG_1+CP_TAG_2+CP_TAG_3+CP_TAG_4+CP_TAG_5))).getDocumentElement(), true));
             UrlData urlData = new UrlData(url);
@@ -638,7 +692,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
             appendProperty(doc, newPool, PROP_URL, url, true);
             appendProperty(doc, newPool, PROP_DRIVER_CLASS, driver, true);
 
-            Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + newPool.getTextContent());
+            Logger.getLogger("glassfish-javaee").log(Level.FINER,
+                    "New connection pool resource:\n{0}", newPool.getTextContent());
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -666,10 +721,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         StringBuilder poolName = new StringBuilder(vendorName);
         String dbName = getDatabaseName(urlData);
         if (dbName != null) {
-            poolName.append("_" + dbName); //NOI18N
+            poolName.append("_").append(dbName); //NOI18N
         }
         if (username != null) {
-            poolName.append("_" + username); //NOI18N
+            poolName.append("_").append(username); //NOI18N
         }
         poolName.append("Pool"); //NOI18N
         return poolName.toString(); 
@@ -713,7 +768,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
             Exceptions.printStackTrace(ex);
         }
 
-        if (null == doc) return;
+        if (doc == null || docBuilder == null) {
+            return;
+        }
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
         Node resourcesNode = null;
         if(resourcesNodes.getLength()<1){
@@ -721,13 +778,15 @@ public class Hk2DatasourceManager implements DatasourceManager {
         } else {
             resourcesNode = resourcesNodes.item(0);
         }
-        Node newJdbcRes = null;
+        Node newJdbcRes;
         try {
-            newJdbcRes = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(JDBC_TAG_1+JDBC_TAG_2))).getDocumentElement(), true));
+            newJdbcRes = resourcesNode.appendChild(doc.importNode(
+                    docBuilder.parse(new InputSource(new StringReader(JDBC_TAG_1+JDBC_TAG_2))).getDocumentElement(), true));
             appendAttr(doc, newJdbcRes, ATTR_POOLNAME, poolName, true);
             appendAttr(doc, newJdbcRes, ATTR_JNDINAME, jndiName, true);
 
-            Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + newJdbcRes.getTextContent());
+            Logger.getLogger("glassfish-javaee").log(Level.FINER,
+                    "New JDBC resource:\n{0}", newJdbcRes.getTextContent());
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -864,11 +923,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
     private static class ConnectionPoolFinder extends TreeParser.NodeReader {
         
         private Map<String, String> properties = null;
-        private Map<String, CPool> pools = new HashMap<String, CPool>();
+        private Map<String, CPool> pools = new HashMap<>();
         
         @Override
         public void readAttributes(String qname, Attributes attributes) throws SAXException {
-            properties = new HashMap<String, String>();
+            properties = new HashMap<>();
             
             String poolName = attributes.getValue("name");
             if(poolName != null && poolName.length() > 0) {
@@ -908,7 +967,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
         public List<String> getPoolNames() {
-            return new ArrayList<String>(pools.keySet());
+            return new ArrayList<>(pools.keySet());
         }
         
         public Map<String, CPool> getPoolData() {

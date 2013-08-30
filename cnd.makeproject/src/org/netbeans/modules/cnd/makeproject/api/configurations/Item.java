@@ -967,6 +967,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         for(String macro: getUserMacroDefinitions()) {
             res += 37 * macro.hashCode();
         }
+        for(String macro: getUndefinedMacros()) {
+            res += 37 * macro.hashCode();
+        }
         for(FSPath aPath : getSystemIncludePaths()) {
             res += 37 * aPath.getPath().hashCode();
         }

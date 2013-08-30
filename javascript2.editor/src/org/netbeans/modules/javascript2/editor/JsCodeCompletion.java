@@ -137,11 +137,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
             switch (context) {
                 case GLOBAL:
-                    Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                    for (IndexedElement indexElement : fromIndex) {
-                        addPropertyToMap(request, added, indexElement);
-                    }
-//                    added.putAll(getWithCompletionResults(request, null));
+                    addGlobalObjectsFromIndex(request, added);
                     break;    
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -192,11 +188,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     completeKeywords(request, resultList);
-                    JsIndex jsIndex = JsIndex.get(fileObject);
-                    Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
-                    for (IndexedElement indexElement : fromIndex) {
-                        addPropertyToMap(request, addedProperties, indexElement);
-                    }
+                    addGlobalObjectsFromIndex(request, addedProperties);
                     completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
@@ -229,6 +221,22 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return new DefaultCompletionResult(resultList, false);
         }
         return CodeCompletionResult.NONE;
+    }
+
+    private void addGlobalObjectsFromIndex(CompletionRequest request, HashMap<String, List<JsElement>> addedProperties) {
+        FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
+        if (fileObject != null) {
+            JsIndex jsIndex = JsIndex.get(fileObject);
+            Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
+            for (IndexedElement indexElement : fromIndex) {
+                addPropertyToMap(request, addedProperties, indexElement);
+            }
+
+            fromIndex = jsIndex.getPropertiesWithPrefix("window", request.prefix);
+            for (IndexedElement indexElement : fromIndex) {
+                addPropertyToMap(request, addedProperties, indexElement);
+            }
+        }
     }
 
     @Override
@@ -486,14 +494,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
         resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true);
         
+        // try to map window property
+        Collection<String> windowProp = new ArrayList<String>();
+        for (TypeUsage typeUsage : resolveTypeFromExpression) {
+            if (typeUsage.isResolved() && !typeUsage.getType().startsWith("window")) {
+                windowProp.add("window." + typeUsage.getType());
+            }
+        }
+            
         Collection<String> prototypeChain = new ArrayList<String>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
             prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
         }
 
+        for (String string : windowProp) {
+            resolveTypeFromExpression.add(new TypeUsageImpl(string));
+        }
+        
         for (String string : prototypeChain) {
             resolveTypeFromExpression.add(new TypeUsageImpl(string));
         }
+        
+        
 
         HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         boolean isFunction = false; // addding Function to the prototype chain?
@@ -564,7 +586,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             char ch = text.charAt(index);
             String part = "";
             while (index > -1 && ch != ' ' && ch != '\n' && ch != ';' && ch != '}'
-                    && ch != '{' && ch != '(' && ch != '=' && ch != '+') {
+                    && ch != '{' && ch != '(' && ch != '=' && ch != '+' && ch != '[') {
                 if (ch == '.') {
                     if (!part.isEmpty()) {
                         exp.add(part);
@@ -934,9 +956,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
     /** XXX - Once the JS framework support becomes plugable, should be moved to jQueryCompletionHandler getPrefix() */
     private static int getPrefixIndexFromSequence(String prefix) {
         int spaceIndex = prefix.lastIndexOf(" ") + 1; //NOI18N
-        int dotIndex = prefix.lastIndexOf("."); //NOI18N
-        int hashIndex = prefix.lastIndexOf("#"); //NOI18N
-        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, spaceIndex))));
+        int dotIndex = prefix.lastIndexOf(".") + 1; //NOI18N
+        int hashIndex = prefix.lastIndexOf("#") + 1; //NOI18N
+        int bracketIndex = prefix.lastIndexOf("[") + 1; //NOI18N
+        int columnIndex = prefix.lastIndexOf(":") + 1; //NOI18N
+        int parenIndex = prefix.lastIndexOf("(") + 1; //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, spaceIndex)))))));
     }
 
 }

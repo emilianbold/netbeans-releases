@@ -104,7 +104,7 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
 
     private List<Fix> analyze(CompilationInfo info, int offset) throws IOException {
         TreePath errorPath = ErrorHintsProvider.findUnresolvedElement(info, offset);
-        if (errorPath == null) return Collections.<Fix>emptyList();
+        if (errorPath == null || /*#208510, usecase unknown:*/errorPath.getParentPath() == null) return Collections.<Fix>emptyList();
         
         Tree error = errorPath.getParentPath().getLeaf();
         if (error == null) return Collections.<Fix>emptyList();

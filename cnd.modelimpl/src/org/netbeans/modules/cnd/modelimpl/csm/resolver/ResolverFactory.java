@@ -53,6 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
@@ -134,7 +136,17 @@ public class ResolverFactory {
         } else {
             if (contextFile == null) {
                 if (parent == null) {
-                    contextFile = file;
+                    // init contextFile for correct checks of visibility in Resolver
+                    for (CsmCompilationUnit cu : CsmFileInfoQuery.getDefault().getCompilationUnits(file, offset)) {
+                        final CsmFile startFile = cu.getStartFile();
+                        if (startFile != null) {
+                            contextFile = startFile;
+                            break;
+                        }
+                    }                  
+                    if (contextFile == null) {
+                        contextFile = file;
+                    }
                 } else {
                     contextFile = parent.getStartFile();
                 }

@@ -338,6 +338,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     public void testIssue220621_02() throws Exception {
         checkCompletion("testfiles/completion/general/issue220621.js", "cript.m^", false);
     }
+    
+    public void testIssue235206_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue235206.js", "g^ //cc", false);
+    }
  
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

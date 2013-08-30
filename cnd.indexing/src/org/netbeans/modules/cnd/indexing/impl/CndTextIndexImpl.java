@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -84,7 +85,8 @@ public final class CndTextIndexImpl {
         }
     });
     private static final int STORE_DELAY = 3000;
-    private final UnitCodec unitCodec;
+    private volatile UnitCodec unitCodec = null;
+    private final CacheLocation location;
 
     public static CndTextIndexImpl create(CacheLocation location) throws IOException {
         File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
@@ -92,16 +94,14 @@ public final class CndTextIndexImpl {
         File lock = getLockFile(location);
         lock.createNewFile();
         DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
-        UnitCodec codec = RelocationSupport.get(location);
-        CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, codec);
+        CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, location);
         return impl;
     }
 
-    private CndTextIndexImpl(DocumentIndex index, File lockFile, UnitCodec unitCodec) {
+    private CndTextIndexImpl(DocumentIndex index, File lockFile, CacheLocation location) {
         this.index = index;
         this.lockFile = lockFile;
-        assert unitCodec != null;
-        this.unitCodec = unitCodec;
+        this.location = location;
     }
 
     public void put(CndTextIndexKey key, Collection<CharSequence> values) {
@@ -202,20 +202,38 @@ public final class CndTextIndexImpl {
         return Collections.emptySet();
     }
 
+    private UnitCodec getUnitCodec() {
+        // this has to be lazy, because we may create CndTextIndexImpl from validate
+        // and RelocationSupport.get may call it again causing endless recursion
+        if (unitCodec == null) {
+            unitCodec = RelocationSupport.get(location);
+        }
+        return unitCodec;
+    }
+
     private String toPrimaryKeyPrefix(int unitId) {
-        return String.valueOf(unitCodec.unmaskRepositoryID(unitId));
+        return String.valueOf(getUnitCodec().unmaskRepositoryID(unitId));
     }
 
     private String toPrimaryKey(CndTextIndexKey key) {
-        return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
+        return String.valueOf(((long) getUnitCodec().unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
     }
 
     private CndTextIndexKey fromPrimaryKey(String ext) {
         long value = Long.parseLong(ext);
         int unitId = (int) (value >> 32);
-        unitId = unitCodec.maskByRepositoryID(unitId);
+        unitId = getUnitCodec().maskByRepositoryID(unitId);
         int fileNameIndex = (int) (value & 0xFFFFFFFF);
         return new CndTextIndexKey(unitId, fileNameIndex);
+    }
+    
+    boolean isValid() {
+        try {
+            return index.getStatus() != Index.Status.INVALID;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
     }
 
     static boolean validate(CacheLocation cacheLocation) {
@@ -236,7 +254,7 @@ public final class CndTextIndexImpl {
         When the force is true is even tries to open the index which sometimes throws Exception when index is broken.
         However sometimes no exception is thrown and it's thrown when you close the index for writing.
         */
-        return !getLockFile(cacheLocation).exists();
+        return !getLockFile(cacheLocation).exists() && CndTextIndexManager.validate(cacheLocation);
     }
 
     private static File getLockFile(CacheLocation location) {

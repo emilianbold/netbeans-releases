@@ -75,12 +75,42 @@ public class SaveOptionsOffEDTTest extends JellyTestCase {
      */
     public static Test suite() {
         return NbModuleSuite.createConfiguration(SaveOptionsOffEDTTest.class).
-                addTest("testSaveOptionsOffEDT").clusters(".*").enableModules(".*").gui(true).suite();
+                addTest("testSaveOptionsOffEDT").
+                addTest("testCorrectTabSelected").clusters(".*").enableModules(".*").gui(true).suite();
     }
     
     public void testSaveOptionsOffEDT() {
         for(String category: Arrays.asList("General", "FontsAndColors", "Editor", "Keymaps", "Java", "PHP", "C/C++", "Miscellaneous")) {
             selectTabAndSave(category);
+        }
+    }
+    
+    public void testCorrectTabSelected() {
+        for(String category: Arrays.asList("General", "FontsAndColors", "Editor", "Keymaps", "Java", "PHP", "C/C++", "Miscellaneous")) {
+            selectTabAndClose(category);
+        }
+    }
+    
+    private void selectTabAndClose(String category) {
+        open(category, true);
+        if (category.equals("General") || category.equals("Keymaps")) {
+            optionsOperator.btOK().doClick();
+        } else {
+            jTabbedPaneOperator = new JTabbedPaneOperator(optionsOperator);
+            for (int i = 0; i < jTabbedPaneOperator.getTabCount(); i++) {
+                if (i > 0) {
+                    open(category, false);
+                    jTabbedPaneOperator = new JTabbedPaneOperator(optionsOperator);
+                    assertEquals("Wrong selected tab index", i - 1, jTabbedPaneOperator.getSelectedIndex());
+                }
+                jTabbedPaneOperator.selectPage(i);
+                new EventTool().waitNoEvent(500);
+                if(i % 2 == 0) {
+                    optionsOperator.btOK().doClick();
+                } else {
+                    optionsOperator.btCancel().doClick();
+                }
+            }
         }
     }
     

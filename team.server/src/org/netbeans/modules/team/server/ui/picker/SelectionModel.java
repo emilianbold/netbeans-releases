@@ -112,7 +112,7 @@ final class SelectionModel {
         synchronized( lists ) {
             if( !lists.contains( sl ) )
                 return;
-            boolean hasSelection = null != getSelectedItem();
+//            boolean hasSelection = null != getSelectedItem();
             lists.remove( sl );
             sl.getSelectionModel().removeListSelectionListener( selectionListener );
 //            if( hasSelection )  //TODO to fire or to fire not?

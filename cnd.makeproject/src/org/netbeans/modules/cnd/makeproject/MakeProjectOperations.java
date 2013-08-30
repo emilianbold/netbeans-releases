@@ -223,9 +223,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         MakeProject.InfoInterface info = (MakeProject.InfoInterface) project.getLookup().lookup(ProjectInformation.class);
         info.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
-        configurationDescriptor.setModified(); // IZ 186029
+        //ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        //ConfigurationDescriptor configurationDescriptor = pdp.getConfigurationDescriptor();
+        //configurationDescriptor.setModified(); // IZ 186029
     }
 
     @Override

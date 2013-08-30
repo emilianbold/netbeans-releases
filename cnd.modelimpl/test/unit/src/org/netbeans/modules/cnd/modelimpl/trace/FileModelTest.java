@@ -375,7 +375,7 @@ public class FileModelTest extends TraceModelTestBase {
         for(CsmProject p : getModel().projects()){
             for(CsmFile f : p.getAllFiles()){
                 for (CsmDeclaration d : f.getDeclarations()){
-                    if (CsmKindUtilities.isTypedef(d)) {
+                    if (CsmKindUtilities.isTypedef(d) || CsmKindUtilities.isTypeAlias(d)) {
                         CsmType t = ((CsmTypedef)d).getType();
                         if (t != null) {
                             t.isTemplateBased();

@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -181,6 +182,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private OwnerInfo ownerInfo;
     private UndoRedoSupport undoRedoSupport;
     private final Set<IssueField> unsavedFields = new HashSet<IssueField>();
+    private boolean customFieldsLoaded;
 
     static {
         incomingChangesColor = UIManager.getColor( "nb.bugtracking.label.highlight" ); //NOI18N
@@ -313,11 +315,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (!reloading && isDirty) {
                     issue.markUserChange();
                 }
-                btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
                     unsavedFields.clear();
                 }
-                cancelButton.setEnabled(isModified);
+                if (enableMap.isEmpty()) {
+                    btnSaveChanges.setEnabled(isDirty);
+                    cancelButton.setEnabled(isModified);
+                } else {
+                    enableMap.put(btnSaveChanges, isDirty);
+                    enableMap.put(cancelButton, isModified);
+                }
             }
         });
     }
@@ -359,7 +366,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         this.issue = issue;
         initCombos();
-        initCustomFields();
         List<String> kws = issue.getRepository().getConfiguration().getKeywords();
         keywords.clear();
         for (String keyword : kws) {
@@ -654,6 +660,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, ccField, IssueField.CC);
             reloadField(force, dependsField, IssueField.DEPENDS_ON);
             reloadField(force, blocksField, IssueField.BLOCKS);
+            if (!customFieldsLoaded) {
+                customFieldsLoaded = true;
+                initCustomFields();
+            }
             reloadCustomFields(force);
         }
         int newCommentCount = issue.getComments().length;
@@ -839,21 +849,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (fieldLabel != null && fieldLabel.getFont().isBold()) {
                     fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
                 }
-                if (visible && !valueModifiedByUser && !fieldDirty && valueModifiedByServer) {
-                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
-                    // do not use ||
-                    change = fieldsLocal.remove(field) != null | fieldsConflict.remove(field) != null
-                            | !message.equals(fieldsIncoming.put(field, message));
-                    tooltipsIncoming.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedRemotelyTT(
-                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
-                } else if (visible && valueModifiedByServer) {
+                if (visible && valueModifiedByServer && (valueModifiedByUser || fieldDirty) && !newValue.equals(repositoryValue)) {
                     String message = Bundle.IssuePanel_fieldModifiedConflict(fieldName, lastSeenValue, repositoryValue);
                     // do not use ||
                     change = fieldsLocal.remove(field) != null | fieldsIncoming.remove(field) != null
                             | !message.equals(fieldsConflict.put(field, message));
                     tooltipsConflict.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedConflictTT(
                             fieldName, lastSeenValue, repositoryValue, newValue, ICON_CONFLICT_PATH));
-                } else if (visible && (valueModifiedByUser || fieldDirty)) {
+                } else if (visible && valueModifiedByServer) {
+                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
+                    // do not use ||
+                    change = fieldsLocal.remove(field) != null | fieldsConflict.remove(field) != null
+                            | !message.equals(fieldsIncoming.put(field, message));
+                    tooltipsIncoming.addTooltip(warningLabel, field, Bundle.IssuePanel_fieldModifiedRemotelyTT(
+                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
+                } else if (visible && (valueModifiedByUser || fieldDirty) && !newValue.equals(lastSeenValue)) {
                     String message;
                     if (field == IssueField.COMMENT) {
                         message = Bundle.IssuePanel_commentAddedLocally();
@@ -1111,9 +1121,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
         updateFieldStatus(assignedLabel, IssueField.ASSIGNED_TO);
         if (assignedField.getParent() == null) {
-            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
-        } else {
             updateFieldDecorations(assignedCombo, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+        } else {
+            updateFieldDecorations(assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
         }
         updateFieldStatus(qaContactLabel, IssueField.QA_CONTACT);
         updateFieldDecorations(qaContactField, IssueField.QA_CONTACT, qaContactWarning, qaContactLabel);
@@ -1134,11 +1144,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldDecorations(deadlineField, IssueField.DEADLINE, timetrackingWarning, deadlineLabel);
         updateFieldStatus(addCommentLabel);
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, addCommentLabel);
+        updateCustomFieldStatuses();
+        repaint();
+    }
+
+    private void updateCustomFieldStatuses () {
         for (CustomFieldInfo field : customFields) {
             updateFieldStatus(field.label, field.field);
             updateFieldDecorations(field.comp, field.field, field.warning, field.label);
         }
-        repaint();
     }
 
     private void updateFieldStatus(JComponent label, IssueField... fields) {
@@ -1191,17 +1205,22 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             changed = true;
             if (value.equals("CLOSED")) { // NOI18N
                 issue.close();
+                issue.setFieldValue(IssueField.RESOLUTION, resolutionField.getText());
             } else if (value.equals("VERIFIED")) { // NOI18N
                 issue.verify();
+                issue.setFieldValue(IssueField.RESOLUTION, resolutionField.getText());
             } else if (value.equals("REOPENED")) { // NOI18N
                 issue.reopen();
+                issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             } else if (value.equals("RESOLVED")) { // NOI18N
                 issue.resolve(resolutionCombo.getSelectedItem().toString());
                 unsavedFields.add(IssueField.RESOLUTION);
                 issue.setFieldValue(IssueField.RESOLUTION, resolutionCombo.getSelectedItem().toString());
             } else if (value.equals("ASSIGNED")) { // NOI18N
                 issue.accept();
+                issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             } else {
+                issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
                 changed = false;
             }
         } else if (field == IssueField.RESOLUTION && "RESOLVED".equals(statusCombo.getSelectedItem())) {
@@ -1563,6 +1582,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         fieldLayout.setVerticalGroup(fieldVerticalGroup);
         customFieldsPanelLeft.setVisible(anyField);
         customFieldsPanelRight.setVisible(anyField);
+        setupCustomFieldsListeners();
     }
     
     private boolean isNbExceptionReport(IssueField field) {
@@ -2610,10 +2630,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (resolutionCombo.getParent() == null) {
                 ((GroupLayout)getLayout()).replace(resolutionField, resolutionCombo);
             }
+            boolean setResolution = !resolutionCombo.isVisible();
             resolutionCombo.setVisible(true);
             resolutionWarning.setVisible(true);
             resolutionLabel.setVisible(true);
-            resolutionCombo.setSelectedItem("FIXED"); // NOI18N
+            String resolution = issue.getRepositoryFieldValue(IssueField.RESOLUTION);
+            if (resolution.isEmpty()) {
+                resolution = "FIXED"; //NOI18N
+            }
+            if (setResolution) {
+                resolutionCombo.setSelectedItem(resolution);
+            }
         } else {
             resolutionCombo.setVisible(false);
             resolutionLabel.setVisible(false);
@@ -2726,13 +2753,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
         unsavedFields.add(IssueField.CC);
-        issue.setFieldValue(IssueField.CC, ccField.getText());
+        issue.setFieldValues(IssueField.CC, new ArrayList<>(ccs(ccField.getText())));
         storeFieldValue(IssueField.REMOVECC, removedCCs);
         storeFieldValue(IssueField.NEWCC, addedCCs);
     }
 
     private Set<String> ccs(String values) {
-        Set<String> ccs = new HashSet<String>();
+        Set<String> ccs = new LinkedHashSet<>();
         StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
         while (st.hasMoreTokens()) {
             ccs.add(st.nextToken());
@@ -2903,6 +2930,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 issueTypeCombo.setSelectedItem(issueType);
                             }
                             reloadCustomFields(true);
+                            updateCustomFieldStatuses();
                         } finally {
                             reloading = false;
                             enableComponents(true);
@@ -3521,7 +3549,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                 return super.isEnabled() && !deadlineField.getText().trim().equals(YYYY_MM_DD);
             }
         });
-
+    }
+    
+    private void setupCustomFieldsListeners () {
         // custom fields
         for (CustomFieldInfo field : customFields) {
             if (field.comp instanceof JTextComponent) {

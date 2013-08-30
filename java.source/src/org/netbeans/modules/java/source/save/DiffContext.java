@@ -117,7 +117,7 @@ public class DiffContext {
         this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
     }
 
-    public static CodeStyle getCodeStyle(CompilationInfo info) {
+    public static final CodeStyle getCodeStyle(CompilationInfo info) {
         if (info != null) {
             try {
                 Document doc = info.getDocument();

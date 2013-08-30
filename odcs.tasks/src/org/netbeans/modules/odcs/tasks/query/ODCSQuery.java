@@ -46,31 +46,29 @@ import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
@@ -105,6 +103,7 @@ public abstract class ODCSQuery {
     
     private final Object ISSUES_LOCK = new Object();
     private final Set<String> issues = new HashSet<String>();
+    private SynchronizeQueryCommand queryCmd;
     
     public static ODCSQuery createNew(ODCSRepository repository) {
         return new CustomQuery(repository);
@@ -291,7 +290,8 @@ public abstract class ODCSQuery {
             @Override
             public void run() {
                 ODCS.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(CloudDevConstants.QUERY_CRITERIA)}); // NOI18N
-                IssuesCollector ic = new IssuesCollector();
+                MylynSupport supp = MylynSupport.getInstance();
+                IRepositoryQuery runningQuery = null;
                 try {
                     
                     synchronized(ISSUES_LOCK) {
@@ -300,12 +300,15 @@ public abstract class ODCSQuery {
                     
                     firstRun = false;
 
-                    PerformQueryCommand queryCmd = 
-                        new PerformQueryCommand(
-                            ODCS.getInstance().getRepositoryConnector(),
-                            repository.getTaskRepository(), 
-                            ic,
-                            getRepositoryQuery());
+                    runningQuery = getRepositoryQuery();
+                    if (supp.getRepositoryQuery(getRepository().getTaskRepository(),
+                            runningQuery.getSummary()) == null) {
+                        supp.addQuery(getRepository().getTaskRepository(), runningQuery);
+                    }
+                    queryCmd = MylynSupport.getInstance().getCommandFactory()
+                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
+                    QueryProgressListener list = new QueryProgressListener();
+                    queryCmd.addCommandProgressListener(list);
                     repository.getExecutor().execute(queryCmd, true, !autoRefresh);
                     
                     if(queryCmd.hasFailed()) {
@@ -318,17 +321,14 @@ public abstract class ODCSQuery {
                             repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
                         }
                     }
-
-                    //XXX opened issues must have complete task data
-                    //is there another way?
-                    if (!ic.openedIssues.isEmpty()) {
-                        getController().switchToDeterminateProgress(ic.openedIssues.size());
-                        for (ODCSIssue issue : ic.openedIssues) {
-                            getController().addProgressUnit(issue.getDisplayName());
-                            repository.getIssue(issue.getID());
-                        }
-                    }                    
+                } catch (CoreException ex) {
+                    ODCS.LOG.log(Level.INFO, null, ex);
                 } finally {
+                    queryCmd = null;
+                    if (!isSaved() && runningQuery != null) {
+                        // ad-hoc queries cannot be saved in tasklist
+                        MylynSupport.getInstance().deleteQuery(runningQuery);
+                    }
                     synchronized(ISSUES_LOCK) {
                         logQueryEvent(issues.size(), autoRefresh);
                     }
@@ -360,34 +360,61 @@ public abstract class ODCSQuery {
         }
     }
 
-    private class IssuesCollector extends TaskDataCollector {
-        List<ODCSIssue> openedIssues = new LinkedList<ODCSIssue>();
-        
-        public IssuesCollector() {}
-        @Override
-        public void accept(TaskData taskData) {
-            String id = ODCSIssue.getID(taskData);
-            synchronized(ISSUES_LOCK) {
-                issues.add(id);
-            }
-            ODCSIssue issue;
-            try {
-                IssueCache<ODCSIssue> cache = repository.getIssueCache();
-                issue = cache.getIssue(id);
-                if(issue != null) {
-                    issue.setTaskData(taskData);
-                }
-                issue = (ODCSIssue) cache.setIssueData(id, issue != null ? issue : new ODCSIssue(taskData, repository));                
-                if (!issue.isNew() && issue.isOpened()) {
-                    openedIssues.add(issue);
-                }
-            } catch (IOException ex) {
-                ODCS.LOG.log(Level.SEVERE, null, ex);
-                return;
-            }
-            fireNotifyData(issue); // XXX - !!! triggers getIssues()
+    void cancel () {
+        SynchronizeQueryCommand cmd = queryCmd;
+        if (cmd != null) {
+            cmd.cancel();
         }
-    };    
+    }
+
+    private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
+        
+        private final Set<String> addedIds = new HashSet<String>();
+        private final Set<String> ids = new HashSet<String>();
+        
+        @Override
+        public void queryRefreshStarted (Collection<NbTask> tasks) {
+            for (NbTask task : tasks) {
+                taskAdded(task);
+            }
+        }
+
+        @Override
+        public void tasksRefreshStarted (Collection<NbTask> tasks) {
+            getController().switchToDeterminateProgress(tasks.size());
+        }
+
+        @Override
+        public void taskAdded (NbTask task) {
+            synchronized(ISSUES_LOCK) {
+                ids.add(task.getTaskId());
+            }
+            // when issue table or task dashboard is able to handle deltas
+            // fire an event from here
+        }
+
+        @Override
+        public void taskRemoved (NbTask task) {
+            synchronized(ISSUES_LOCK) {
+                ids.remove(task.getTaskId());
+            }
+            // when issue table or task dashboard is able to handle removals
+            // fire an event from here
+        }
+
+        @Override
+        public void taskSynchronized (NbTask task) {
+            if (ids.contains(task.getTaskId()) && addedIds.add(task.getTaskId())) {
+                getController().addProgressUnit(task.getSummary());
+                ODCSIssue issue = repository.getIssueForTask(task);
+                if (issue != null) {
+                    issues.add(task.getTaskId());
+                    fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                }
+            }
+        }
+
+    };
     
     private static class CustomQuery extends ODCSQuery {
 
@@ -415,8 +442,21 @@ public abstract class ODCSQuery {
         protected IRepositoryQuery getRepositoryQuery() {
             // XXX synchronize
             if(repositoryQuery == null) {
-                repositoryQuery = new RepositoryQuery(ODCS.getInstance().getRepositoryConnector().getConnectorKind(), "ODCS query -" + getDisplayName()); // NOI18N
-                repositoryQuery.setUrl(CloudDevConstants.CRITERIA_QUERY);                
+                MylynSupport supp = MylynSupport.getInstance();
+                String name = getDisplayName();
+                if (name == null) {
+                    name = "ODCS ad hoc query - " + System.currentTimeMillis();
+                }
+                try {
+                    repositoryQuery = supp.getRepositoryQuery(getRepository().getTaskRepository(), name);
+                    if (repositoryQuery == null) {
+                        repositoryQuery = supp.createNewQuery(getRepository().getTaskRepository(), name);
+                        repositoryQuery.setUrl(CloudDevConstants.CRITERIA_QUERY);                
+                        repositoryQuery.setAttribute(CloudDevConstants.QUERY_NAME, name);
+                    }
+                } catch (CoreException ex) {
+                    ODCS.LOG.log(Level.INFO, null, ex);
+                }
             }
             return repositoryQuery;
         }
@@ -476,6 +516,9 @@ public abstract class ODCSQuery {
                 }
             }
 
+            if (repositoryQuery != null) {
+                repositoryQuery.setSummary(name);
+            }
             setSaved(name); 
             getRepository().saveQuery(this);
             fireQuerySaved();            
@@ -499,6 +542,9 @@ public abstract class ODCSQuery {
                 return;
             }
             getRepository().removeQuery(this);
+            if (repositoryQuery != null) {
+                MylynSupport.getInstance().deleteQuery(repositoryQuery);
+            }
             fireQueryRemoved();
         }
         

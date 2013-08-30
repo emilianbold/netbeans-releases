@@ -47,14 +47,16 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import java.io.File;
 import org.netbeans.modules.jira.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import junit.framework.Test;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
@@ -69,14 +71,17 @@ public class JiraQueryTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {    
+        super.setUp();
+        clearWorkDir();
+        System.setProperty("netbeans.user", new File(getWorkDir(), "userdir").getAbsolutePath());
         JiraTestUtil.initClient(getWorkDir());
         // need this to initialize cache -> server defined status values & co
 //        getClient().getCache().refreshDetails(JiraTestUtil.nullProgressMonitor);
         JiraTestUtil.cleanProject(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()));
     }
 
-    @Override
-    protected void tearDown() throws Exception {        
+    public static Test suite () {
+        return NbModuleSuite.createConfiguration(JiraQueryTest.class).gui(false).suite();
     }
 
     public void testQuery() throws Throwable {

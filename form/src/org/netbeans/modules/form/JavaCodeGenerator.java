@@ -991,10 +991,12 @@ class JavaCodeGenerator extends CodeGenerator {
 
         try {
             boolean foldGeneratedCode = FormLoaderSettings.getInstance().getFoldGeneratedCode();
+            Boolean foldState = null;
             if (foldGeneratedCode) {
                 writer.write("// <editor-fold defaultstate=\"collapsed\" desc=\""); // NOI18N
                 writer.write(FormUtils.getBundleString("MSG_GeneratedCode")); // NOI18N
                 writer.write("\">\n"); // NOI18N
+                foldState = formEditorSupport.getFoldState(initComponentsSection.getStartPosition().getOffset());
             }
 
             writer.write("private void initComponents() {\n"); // NOI18N
@@ -1060,7 +1062,13 @@ class JavaCodeGenerator extends CodeGenerator {
                 newText = indentCode(newText, 1);
             }
             initComponentsSection.setText(newText);
-            
+
+            if (foldState != null) {
+                formEditorSupport.restoreFoldState(foldState,
+                        initComponentsSection.getStartPosition().getOffset(),
+                        initComponentsSection.getEndPosition().getOffset());
+            }
+
             clearUndo();
         }
         catch (IOException e) { // should not happen

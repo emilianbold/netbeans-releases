@@ -56,6 +56,7 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.util.NbPreferences;
@@ -93,6 +94,8 @@ public class CCKit extends NbEditorKit {
         Language<CppTokenId> language = getLanguage();
         doc.putProperty(Language.class, language);
         doc.putProperty(InputAttributes.class, getLexerAttributes(language, doc));
+        // make sure that preferences in mime lookup are inited
+        CodeStyle.getDefault(doc);
     }
 
     protected Language<CppTokenId> getLanguage() {

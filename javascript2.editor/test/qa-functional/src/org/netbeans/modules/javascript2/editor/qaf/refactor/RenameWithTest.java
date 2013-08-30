@@ -181,7 +181,7 @@ public class RenameWithTest extends RenameTest {
 
     public void doRefactoring(EditorOperator eo, int lineNumber) {
         waitScanFinished();
-        evt.waitEvent(500);
+        evt.waitNoEvent(500);
         String rawLine = eo.getText(lineNumber);
         int start = rawLine.indexOf("//rename");
         String rawConfig = rawLine.substring(start + 2);

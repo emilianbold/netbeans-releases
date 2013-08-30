@@ -280,16 +280,20 @@ public class CSS {
                 matchedStyles = new MatchedStyles(result);
                 for (Rule rule : matchedStyles.getMatchedRules()) {
                     returnHoverToSelector(rule);
-                    String styleSheetId = rule.getStyle().getId().getStyleSheetId();
-                    StyleSheetBody body = getStyleSheet(styleSheetId);
-                    rule.setParentStyleSheet(body);
+                    if (rule.getOrigin() != StyleSheetOrigin.USER_AGENT) { // Issue 234848
+                        String styleSheetId = rule.getStyle().getId().getStyleSheetId();
+                        StyleSheetBody body = getStyleSheet(styleSheetId);
+                        rule.setParentStyleSheet(body);
+                    }
                 }
                 for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
                     for (Rule rule : entry.getMatchedRules()) {
                         returnHoverToSelector(rule);
-                        String styleSheetId = rule.getStyle().getId().getStyleSheetId();
-                        StyleSheetBody body = getStyleSheet(styleSheetId);
-                        rule.setParentStyleSheet(body);                        
+                        if (rule.getOrigin() != StyleSheetOrigin.USER_AGENT) { // Issue 234848
+                            String styleSheetId = rule.getStyle().getId().getStyleSheetId();
+                            StyleSheetBody body = getStyleSheet(styleSheetId);
+                            rule.setParentStyleSheet(body);
+                        }
                     }
                 }
             }

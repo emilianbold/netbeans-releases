@@ -74,6 +74,7 @@ public class DiffOptionsController extends OptionsPanelController {
 
     private DiffOptionsPanel panel;
     
+    @Override
     public void update() {
         panel.getInternalDiff().setSelected(DiffModuleConfig.getDefault().isUseInteralDiff());
         panel.getExternalDiff().setSelected(!DiffModuleConfig.getDefault().isUseInteralDiff());
@@ -81,9 +82,11 @@ public class DiffOptionsController extends OptionsPanelController {
         panel.getIgnoreInnerWhitespace().setSelected(DiffModuleConfig.getDefault().getOptions().ignoreInnerWhitespace);
         panel.getIgnoreCase().setSelected(DiffModuleConfig.getDefault().getOptions().ignoreCase);
         panel.getExternalCommand().setText(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}")); // NOI18N
+        panel.refreshComponents();
         panel.setChanged(false);
     }
 
+    @Override
     public void applyChanges() {
         checkExternalCommand();
         DiffModuleConfig.getDefault().setUseInteralDiff(panel.getInternalDiff().isSelected());
@@ -106,22 +109,25 @@ public class DiffOptionsController extends OptionsPanelController {
             // the command seems invalid
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(NbBundle.getMessage(DiffOptionsController.class, "MSG_InvalidDiffCommand"), NotifyDescriptor.WARNING_MESSAGE));
-            return ;
         }
     }
 
+    @Override
     public void cancel() {
         // nothing to do
     }
 
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public boolean isChanged() {
         return panel.isChanged();
     }
 
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
         if (panel == null) {
             panel = new DiffOptionsPanel(); 
@@ -129,13 +135,16 @@ public class DiffOptionsController extends OptionsPanelController {
         return panel;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(DiffOptionsController.class);
+        return new HelpCtx("org.netbeans.modules.diff.options.DiffOptionsController"); //NOI18N
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
     }
 }

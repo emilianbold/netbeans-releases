@@ -381,13 +381,17 @@ public class TemplateUtils {
     }
     
     public static CsmType checkTemplateType(CsmType type, CsmScope scope) {
+        return checkTemplateType(type, scope, null);
+    }
+    
+    public static CsmType checkTemplateType(CsmType type, CsmScope scope, List<CsmTemplateParameter> additionalParams) {
         if (!(type instanceof TypeImpl)) {            
             return type;
         }
 
         if (type instanceof NestedType) {
             NestedType nestedType = (NestedType) type;
-            type = NestedType.create(checkTemplateType(nestedType.getParent(), scope), nestedType);
+            type = NestedType.create(checkTemplateType(nestedType.getParent(), scope, additionalParams), nestedType);
         }
         
         // Check instantiation parameters
@@ -396,7 +400,7 @@ public class TemplateUtils {
             List<CsmSpecializationParameter> params = typeImpl.getInstantiationParams();
             for (CsmSpecializationParameter instParam : params) {
                 if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam)) {
-                    CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope);
+                    CsmType newType = checkTemplateType(((CsmTypeBasedSpecializationParameter) instParam).getType(), scope, additionalParams);
                     if (newType != instParam) {
                         params.set(params.indexOf(instParam), new TypeBasedSpecializationParameterImpl(newType));
                     }
@@ -404,17 +408,20 @@ public class TemplateUtils {
             }
         }
         
-        // first check scope and super classes if needed
+        // first check additional params
+        if (additionalParams != null) {
+            CsmType paramType = checkTemplateType(type, additionalParams);
+            if (paramType != type) {
+                return paramType;
+            }
+        }        
+        
+        // then check scope and super classes if needed
         while (scope != null) {
             if (CsmKindUtilities.isTemplate(scope)) {
-                List<CsmTemplateParameter> params = ((CsmTemplate)scope).getTemplateParameters();
-                if (!params.isEmpty()) {
-                    CharSequence classifierText = ((TypeImpl)type).getClassifierText();
-                    for (CsmTemplateParameter param : params) {
-                        if (CharSequences.comparator().compare(param.getName(), classifierText) == 0) {
-                            return new TemplateParameterTypeImpl(type, param);
-                        }
-                    }
+                CsmType paramType = checkTemplateType(type, ((CsmTemplate)scope).getTemplateParameters());
+                if (paramType != type) {
+                    return paramType;
                 }
             }
             // then check class or super class
@@ -423,10 +430,10 @@ public class TemplateUtils {
             } else {
                 break;
             }
-        }
+        }        
         
         return type;
-    }
+    }   
 
     public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
@@ -447,6 +454,19 @@ public class TemplateUtils {
     public static String getTemplateQualifiedNameWithoutSiffix(String name) {
         return name.replaceAll("<.*", ""); // NOI18N
     }
+    
+
+    private static CsmType checkTemplateType(CsmType type, List<CsmTemplateParameter> params) {
+        if (params != null && !params.isEmpty()) {
+            CharSequence classifierText = ((TypeImpl)type).getClassifierText();
+            for (CsmTemplateParameter param : params) {
+                if (CharSequences.comparator().compare(param.getName(), classifierText) == 0) {
+                    return new TemplateParameterTypeImpl(type, param);
+                }
+            }
+        }     
+        return type;
+    }    
 
     private TemplateUtils() {
     }

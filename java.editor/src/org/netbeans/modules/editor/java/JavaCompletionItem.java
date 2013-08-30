@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -971,7 +972,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                         if (tas != null && tas.hasNext()) {
                                             sb.append('<'); //NOI18N
                                             if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT)
-                                                || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+                                                || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0
+                                                || !allowDiamond(controller, offset, type)) {
                                                 while (tas.hasNext()) {
                                                     TypeMirror ta = tas.next();
                                                     sb.append("${PAR#"); //NOI18N
@@ -1093,6 +1095,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
             return template;
+        }
+
+        private boolean allowDiamond(CompilationInfo info, int offset, DeclaredType type) {
+            TreeUtilities tu = info.getTreeUtilities();
+            TreePath path = tu.pathFor(offset);
+            while (path != null && !(path.getLeaf() instanceof StatementTree)) {
+                path = path.getParentPath();
+            }
+            if (path != null) {
+                Trees trees = info.getTrees();
+                int pos = (int)trees.getSourcePositions().getStartPosition(path.getCompilationUnit(), path.getLeaf());
+                if (pos >= 0) {
+                    Scope scope = tu.scopeFor(pos);
+                    String stmt = info.getText().substring(pos, offset);
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('{').append(stmt).append(Utilities.getTypeName(info, type, true)).append("();}"); //NOI18N;
+                    SourcePositions[] sp = new SourcePositions[1];
+                    StatementTree st = tu.parseStatement(sb.toString(), sp);
+                    tu.attributeTree(st, scope);
+                    TreePath tp = tu.pathFor(new TreePath(path, st), offset - pos, sp[0]);
+                    TypeMirror tm = tp != null ? trees.getTypeMirror(tp) : null;
+                    sb = new StringBuilder();
+                    sb.append('{').append(stmt).append(((TypeElement)type.asElement()).getQualifiedName()).append("<>();}"); //NOI18N
+                    st = tu.parseStatement(sb.toString(), sp);
+                    tu.attributeTree(st, scope);
+                    tp = tu.pathFor(new TreePath(path, st), offset - pos, sp[0]);
+                    TypeMirror tmd = tp != null ? trees.getTypeMirror(tp) : null;
+                    return tm != null && tmd != null && info.getTypes().isSameType(tm, tmd);
+                }
+            }
+            return false;
         }
 
         @Override

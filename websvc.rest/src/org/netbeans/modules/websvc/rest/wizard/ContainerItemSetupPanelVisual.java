@@ -219,7 +219,8 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
         locationLabel.setLabelFor(locationComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_SrcLocation")); // NOI18N
 
-        locationComboBox.setPreferredSize(new java.awt.Dimension(4, 20));
+        locationComboBox.setMinimumSize(new java.awt.Dimension(34, 20));
+        locationComboBox.setPreferredSize(new java.awt.Dimension(4, 25));
         locationComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 locationComboBoxActionPerformed(evt);
@@ -231,7 +232,8 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
 
         packageComboBox.setEditable(true);
         packageComboBox.setInheritsPopupMenu(true);
-        packageComboBox.setPreferredSize(new java.awt.Dimension(4, 20));
+        packageComboBox.setMinimumSize(new java.awt.Dimension(133, 20));
+        packageComboBox.setPreferredSize(new java.awt.Dimension(4, 25));
         packageComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 packageChanged(evt);
@@ -244,6 +246,7 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel
         });
 
         medaTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        medaTypeComboBox.setMinimumSize(new java.awt.Dimension(69, 20));
 
         mediaTypeLabel.setLabelFor(medaTypeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mediaTypeLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_MimeType")); // NOI18N

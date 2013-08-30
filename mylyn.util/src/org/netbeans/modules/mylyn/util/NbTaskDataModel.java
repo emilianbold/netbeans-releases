@@ -44,11 +44,14 @@ package org.netbeans.modules.mylyn.util;
 
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskAttributeDiff;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
@@ -68,6 +71,7 @@ public final class NbTaskDataModel {
     private final TaskDataModel delegateModel;
     private final List<NbTaskDataModelListener> listeners = new CopyOnWriteArrayList<NbTaskDataModelListener>();
     private final NbTask task;
+    private final Set<TaskAttribute> unsavedChangedAttributes = new HashSet<TaskAttribute>();
     
     NbTaskDataModel (TaskRepository taskRepository, NbTask task, ITaskDataWorkingCopy workingCopy) {
         this.task = task;
@@ -137,7 +141,10 @@ public final class NbTaskDataModel {
     }
 
     public void attributeChanged (TaskAttribute a) {
-        delegateModel.attributeChanged(a);
+        synchronized (unsavedChangedAttributes) {
+            unsavedChangedAttributes.add(a);
+            delegateModel.attributeChanged(a);
+        }
     }
 
     public Set<TaskAttribute> getChangedAttributes () {
@@ -167,7 +174,33 @@ public final class NbTaskDataModel {
     }
 
     public void save (IProgressMonitor monitor) throws CoreException {
+        // clear delegate model changes
         delegateModel.save(monitor);
+        // now bit of hacking
+        // task attributes with same values as local changes must be reverted
+        TaskData editsData = workingCopy.getEditsData();
+        TaskData repositoryData = workingCopy.getRepositoryData();
+        synchronized (unsavedChangedAttributes) {
+            if (editsData != null && repositoryData != null) {
+                for (Iterator<TaskAttribute> it = unsavedChangedAttributes.iterator(); it.hasNext(); ) {
+                    TaskAttribute ta = it.next();
+                    TaskAttribute repositoryTA = repositoryData.getRoot().getMappedAttribute(ta.getPath());
+                    if (!editsDiffer(ta, repositoryData)) {
+                        if (repositoryTA != null) {
+                            editsData.getRoot().removeAttribute(repositoryTA.getId());
+                        }
+                        it.remove();
+                    }
+                }
+            }
+            // are there any edits 
+            boolean noChanges = unsavedChangedAttributes.isEmpty() && !hasOutgoingChanged();
+            if (noChanges) {
+                task.discardLocalEdits();
+            }
+            delegateModel.revert();
+            unsavedChangedAttributes.clear();
+        }
     }
 
     public boolean hasBeenRead () {
@@ -188,6 +221,21 @@ public final class NbTaskDataModel {
 
     public boolean hasOutgoingChanged () {
         return isDirty() || !getChangedAttributes().isEmpty();
+    }
+
+    private boolean editsDiffer (TaskAttribute ta, TaskData repositoryData) {
+        TaskAttribute repositoryTA = repositoryData.getRoot().getMappedAttribute(ta.getPath());
+        boolean changes = new TaskAttributeDiff(ta, repositoryTA).hasChanges();
+        if (!changes) {
+            // is a child attribue changed??
+            for (TaskAttribute childTA : ta.getAttributes().values()) {
+                if (editsDiffer(childTA, repositoryData)) {
+                    changes = true;
+                    break;
+                }
+            }
+        }
+        return changes;
     }
     
     public static interface NbTaskDataModelListener extends EventListener {

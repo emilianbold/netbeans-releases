@@ -170,7 +170,7 @@ public class ToggleBlockCommentAction extends BaseAction {
                             commentUncommentBlock(target, th, ToggleBlockCommentAction.this.commentHandler, false);
                         }
                     } catch (BadLocationException e) {
-                        Exceptions.printStackTrace(e);
+                        target.getToolkit().beep();
                     }
                 }
             });

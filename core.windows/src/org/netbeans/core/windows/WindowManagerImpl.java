@@ -572,6 +572,11 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             // Log something?
             return null;
         }
+
+        //#235242
+        TopComponent multiviewParent = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, tc);
+        if( null != multiviewParent )
+            tc = multiviewParent;
         
         for(Iterator it = getModes().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next();

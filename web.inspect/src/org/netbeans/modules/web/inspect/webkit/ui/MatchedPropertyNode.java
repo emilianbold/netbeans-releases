@@ -85,10 +85,9 @@ public class MatchedPropertyNode extends AbstractNode {
         this.property = property;
         setDisplayName(property.getName());
         RuleInfo ruleInfo = new RuleInfo();
-        ruleInfo.fillMetaSourceInfo(rule);
-        String sourceURL;
-        if (ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
-            sourceURL = ruleInfo.getMetaSourceFile();
+        ruleInfo.fillMetaSourceInfo(rule, ruleOrigin.getProject());
+        String sourceURL = ruleInfo.getMetaSourceFile();
+        if (sourceURL != null && ruleInfo.getMetaSourceLine() != -1) {
             if (sourceURL.startsWith("file://") && !sourceURL.startsWith("file:///")) { // NOI18N
                 // file://C:/file is understood as file on host C, should be file:///C:/file
                 sourceURL = "file:/" + sourceURL.substring(5); // NOI18N

@@ -58,7 +58,9 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 
@@ -69,7 +71,12 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ThreadDumpStack", description = "#DESC_org.netbeans.modules.java.hints.ThreadDumpStack", category="code_maturity", suppressWarnings="CallToPrintStackTrace")
 public class ThreadDumpStack {
 
-    @TriggerPattern (value="Thread.dumpStack ()")
+    @TriggerPatterns({
+        @TriggerPattern (value="java.lang.Thread.dumpStack ()"),
+        @TriggerPattern(value="$t.dumpStack()",
+                        constraints=@ConstraintVariableType(variable="$t",
+                                                            type="java.lang.Thread"))
+    })
     public static ErrorDescription checkThreadDumpStack (HintContext ctx) {
         TreePath treePath = ctx.getPath ();
         CompilationInfo compilationInfo = ctx.getInfo ();

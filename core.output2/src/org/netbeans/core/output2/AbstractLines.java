@@ -59,9 +59,9 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Pair;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.output2.options.OutputOptions;
@@ -70,7 +70,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.IOColors;
 import org.openide.windows.OutputListener;
-import org.netbeans.swing.plaf.LFCustoms;
 /**
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
  */
@@ -1301,11 +1300,27 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    void removeLastTab() {
+    /**
+     * Remove last tab.
+     *
+     * @return Size of the last tab (characters).
+     */
+    int removeLastTab() {
         synchronized (readLock()) {
             LOG.log(Level.FINEST, "removeLastTabAt");
+            int size = tabLengthSums.size();
+            if (size == 0) {
+                return 0;
+            }
             tabCharOffsets.shorten(tabCharOffsets.size() - 1);
-            tabLengthSums.shorten(tabLengthSums.size() - 1);
+            int tabLen;
+            if (size > 1) {
+                tabLen = tabLengthSums.get(size - 1) - tabLengthSums.get(size - 2);
+            } else {
+                tabLen = tabLengthSums.get(0);
+            }
+            tabLengthSums.shorten(size - 1);
+            return tabLen;
         }
     }
 
@@ -1436,6 +1451,28 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             if (isFoldStartValid(foldStartIndex)) {
                 setFoldTreeExpanded(foldStartIndex, true);
             }
+        }
+    }
+
+    @Override
+    public void showFoldAndParentFolds(int foldStartIndex) {
+        synchronized (readLock()) {
+            int foldOffset = getFoldOffsets().get(foldStartIndex);
+            if (foldOffset > 0) {
+                int parentFoldStart = foldStartIndex - foldOffset;
+                if (parentFoldStart >= 0) {
+                    showFoldAndParentFolds(parentFoldStart);
+                }
+            }
+            showFold(foldStartIndex);
+        }
+    }
+
+    @Override
+    public void showFoldsForLine(int realLineIndex) {
+        synchronized (readLock()) {
+            int foldStart = getFoldStart(realLineIndex);
+            showFoldAndParentFolds(foldStart);
         }
     }
 
@@ -1646,6 +1683,44 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                     return result >= 0 ? result : -1;
                 } else {
                     return -1;
+                }
+            }
+        }
+    }
+
+    /**
+     * @param length Value 1 for last character, -1 for the whole line.
+     */
+    @Override
+    public Pair<Integer, Integer> removeCharsFromLastLine(int length) {
+        synchronized (readLock()) {
+            if (lastLineFinished) {
+                return Pair.of(0, 0);
+            } else {
+                String lastLine;
+                try {
+                    lastLine = getLine(getLineCount() - 1);
+                } catch (IOException e) {
+                    LOG.log(Level.INFO, null, e);
+                    return Pair.of(0, 0);
+                }
+                if (lastLine.isEmpty()) {
+                    return Pair.of(0, 0);
+                } else {
+                    int removed;
+                    if (length < 0) {
+                        removed = lastLine.length();
+                    } else {
+                        removed = Math.max(length, lastLine.length());
+                    }
+                    int tabs = 0;
+                    for (int i = 0; i < removed; i++) {
+                        if (lastLine.charAt(lastLine.length() - 1 - i) == '\t') {
+                            tabs += removeLastTab();
+                        }
+                    }
+                    lastLineLength -= removed;
+                    return Pair.of(removed, tabs);
                 }
             }
         }

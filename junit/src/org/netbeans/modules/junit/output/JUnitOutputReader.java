@@ -84,6 +84,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 import static java.util.logging.Level.FINER;
+import org.netbeans.modules.junit.DefaultPlugin;
 import static org.netbeans.modules.junit.output.RegexpUtils.ADD_ERROR_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.ADD_FAILURE_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.END_OF_TEST_PREFIX;
@@ -94,6 +95,7 @@ import static org.netbeans.modules.junit.output.RegexpUtils.TESTS_COUNT_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_PREFIX;
 import static org.netbeans.modules.junit.output.RegexpUtils.TESTSUITE_STATS_PREFIX;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Obtains events from a single session of an Ant <code>junit</code> task
@@ -183,6 +185,10 @@ final class JUnitOutputReader {
 
         this.testSession = new JUnitTestSession(sName, project, sessionType, new JUnitTestRunnerNodeFactory()); //NOI18N
         testSession.setRerunHandler(new JUnitExecutionManager(session, testSession, props));
+        File projectFile = FileUtil.toFile(project.getProjectDirectory());
+        if(projectFile != null) {
+            DefaultPlugin.logJUnitUsage(Utilities.toURI(projectFile));
+        }
     }
 
     TestSession getTestSession() {

@@ -725,9 +725,9 @@ tokens {
 
 	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
+	protected boolean balanceBraces(int left, int right) { throw new NotImplementedException(); };
 
-    protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
+        protected boolean checkTemplateExplicitSpecialization() { throw new NotImplementedException(); }
 
         /** Is called when an error occurred */
         protected void onError(RecognitionException e) {}
@@ -2780,7 +2780,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 protected
 is_post_declarator_token
     :
-        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF 
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF | RPAREN
     ;
 
 trailing_type
@@ -3101,10 +3101,12 @@ parameter_declaration[boolean inTemplateParams]
 		|
 			ELLIPSIS
 		)
-		(ASSIGNEQUAL
+		(ASSIGNEQUAL 
                     (   
                         {inTemplateParams}? template_param_expression
                     |
+                        array_initializer // c++11 extended initilizer list
+                    |	
                         assignment_expression
                     )
 		)?
@@ -3125,7 +3127,8 @@ simple_parameter_declaration
 
 type_name // aka type_id
 	:
-	declaration_specifiers[true, false] abstract_declarator
+	declaration_specifiers[true, false] 
+        abstract_declarator
 	;
 
 /* This rule looks a bit weird because (...) can happen in two
@@ -3237,21 +3240,12 @@ balanceParens
  
 protected    
 balanceCurlies
-        {int depth = 1;}
         :
             LCURLY
-            (options {greedy=true;}:
-                {depth > 0}?
-                    (
-                        LCURLY
-                        {depth++;}
-                    |
-                        RCURLY
-                        {depth--;}
-                    |
-                        .
-                    )
-            )*
+            // balanceBraces will consume all tokens till the first unbalanced RCURLY
+            ({balanceBraces(CPPTokenTypes.LCURLY, CPPTokenTypes.RCURLY)}?) 
+            // consume last RCURLY
+            (options {greedy=true;} : . )? 
         ;
 
 protected    
@@ -3881,7 +3875,7 @@ using_declaration
 alias_declaration
 	:	LITERAL_using
 		IDENT ASSIGNEQUAL alias_declaration_type
-		SEMICOLON! //{end_of_stmt();}
+		SEMICOLON //{end_of_stmt();}
 	;
 
 // Rule to catch class definition inside type alias
@@ -3904,9 +3898,15 @@ alias_declaration_type
                     (init_declarator_list[declOther])?
                     {#alias_declaration_type = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #alias_declaration_type);}
             |
-                type_name
+                alias_type_name
             )
     ;
+
+alias_type_name
+        :
+            type_name
+            (trailing_type)?
+	;
 
 visibility_redef_declaration
 {String qid="";}

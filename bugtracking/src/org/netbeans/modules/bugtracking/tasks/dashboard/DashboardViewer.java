@@ -390,10 +390,18 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         for (Entry<Category, List<TaskNode>> entry : map.entrySet()) {
             Category category = entry.getKey();
+            List<TaskNode> tasks = entry.getValue();
             CategoryNode categoryNode = mapCategoryToNode.get(category);
+            //Log the failure
+            if (categoryNode == null) {
+                LOG.log(Level.WARNING, "categoryNode is null: categoryNode={0}, category={1}", new Object[]{categoryNode, category});
+                LOG.log(Level.WARNING, "tasks.size()={0}, tasks:", tasks.size());
+                for (TaskNode taskNode : tasks) {
+                    LOG.log(Level.WARNING, "taskNode={0}, taskNode.category={2}", new Object[]{taskNode, taskNode.getCategory()});
+                }
+            }
             final boolean isOldInFilter = isCategoryInFilter(categoryNode);
 
-            List<TaskNode> tasks = entry.getValue();
             for (TaskNode taskNode : tasks) {
                 taskNode.setCategory(null);
                 categoryNode.removeTaskNode(taskNode);
@@ -470,6 +478,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 for (CategoryNode categoryNode : toDelete) {
                     model.removeRoot(categoryNode);
                     categoryNodes.remove(categoryNode);
+                    mapCategoryToNode.remove(categoryNode.getCategory());
                 }
             }
             REQUEST_PROCESSOR.post(new Runnable() {

@@ -57,6 +57,7 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
+import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -351,6 +352,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             frameViewer.toFront(); // #20048
             Installer.log.fine("\talready visible, just repainting");
         } else {
+            bindFrameViewerToCurrentDialog();
             frameViewer.setVisible(true);
         }
         //#29417: This call of requestFocus causes lost focus when Help window
@@ -358,6 +360,48 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
         //frameViewer.requestFocus();
         lastJH = jh;
     }
+
+    /**
+     * If the help frame is opened from a modal dialog, it should be closed
+     * automatically if that dialog closes. See bug 233543. Also the windows
+     * should be rearranged so that both are visible. See bug #233542.
+     */
+    private void bindFrameViewerToCurrentDialog() {
+        int maxDepth = 0;
+        Dialog topDialog = null;
+        for (Window w : JDialog.getWindows()) {
+            if (w instanceof Dialog && w.isVisible()) {
+                Dialog d = (Dialog) w;
+                if (isRelevantDialog(d)) {
+                    int depth = 0;
+                    for (Window o = d.getOwner(); o != null; o = o.getOwner()) {
+                        depth++;
+                        if (o == WindowManager.getDefault().getMainWindow()
+                                && depth > maxDepth) {
+                            maxDepth = depth;
+                            topDialog = d;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (topDialog != null) {
+            rearrange(topDialog, frameViewer);
+            final Dialog finalTopDialog = topDialog;
+            topDialog.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    if (frameViewer != null) {
+                        frameViewer.setVisible(false);
+                    }
+                    finalTopDialog.removeWindowListener(this);
+                }
+            });
+        }
+    }
+
     private void displayHelpInDialog(JHelp jh) {
         Installer.log.fine("displayHelpInDialog");
         if (jh == null) jh = lastJH;
@@ -387,7 +431,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             Installer.log.fine("\tcopying bounds from frame viewer: " + bounds);
             dialogViewer.setBounds(bounds);
         }
-        rearrange(currentModalDialog());
+        rearrange(currentModalDialog(), dialogViewer);
         if (dialogViewer.isVisible()) {
             Installer.log.fine("\talready visible, just repainting");
             dialogViewer.repaint();
@@ -575,17 +619,8 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
         }
         if (w instanceof Dialog) {
             Dialog d = (Dialog)w;
-            String dlgClass = d.getClass().getName();
-            if ((d.isModal() && !(d instanceof ProgressDialog)) || d == dialogViewer) {
-                //#40950: Print and Page Setup dialogs was not displayed from java help window.
-                if ("sun.awt.windows.WPageDialog".equals(dlgClass) || // NOI18N
-                    "sun.awt.windows.WPrintDialog".equals(dlgClass) || // NOI18N
-                    "sun.print.ServiceDialog".equals(dlgClass) ||
-                    "apple.awt.CPrinterJobDialog".equals(dlgClass) ||
-                    "apple.awt.CPrinterPageDialog".equals(dlgClass)) { // NOI18N
-                    //It is the print or print settings dialog for javahelp, do nothing
-                    return;
-                }
+
+            if (isRelevantDialog(d) || d == dialogViewer) {
                 
                 //#47150: Race condition in toolkit if two dialogs are shown in a row
                 if (d instanceof JDialog) {
@@ -665,6 +700,25 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             //Installer.log.fine("frame event: " + ev);
         }
     }
+
+    /**
+     * Test whether a window is a dialog that is relevant to the help displayer.
+     * Only modal dialogs that are NOT print dialogs, progress dialog or similar
+     * system dialogs are relevant.
+     */
+    private static boolean isRelevantDialog(Dialog d) {
+        if (!d.isModal() || d instanceof ProgressDialog) {
+            return false;
+        }
+        String dlgClass = d.getClass().getName();
+        return !"sun.awt.windows.WPageDialog".equals(dlgClass) //NOI18N
+                && !"sun.awt.windows.WPrintDialog".equals(dlgClass) //NOI18N
+                && !"sun.print.ServiceDialog".equals(dlgClass) //NOI18N
+                && !"apple.awt.CPrinterJobDialog".equals(dlgClass) //NOI18N
+                && !"apple.awt.CPrinterPageDialog".equals(dlgClass); //NOI18N
+
+    }
+
     private void showDialogStack() {
         if (Installer.log.isLoggable(Level.FINE)) {
             StringBuffer buf = new StringBuffer("new modal dialog stack: ["); // NOI18N
@@ -686,10 +740,11 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
     /** If needed, visually rearrange dialogViewer and dlg on screen.
      * If they overlap, try to make them not overlap.
      * @param dlg the visible modal dialog
+     * @param dialogOrFrameViewer The viewer, a dialog of a frame.
      */
-    private void rearrange(Dialog dlg) {
+    private void rearrange(Dialog dlg, Window dialogOrFrameViewer) {
         Rectangle r1 = dlg.getBounds();
-        Rectangle r2 = dialogViewer.getBounds();
+        Rectangle r2 = dialogOrFrameViewer.getBounds();
         if (r1.intersects(r2)) {
             Installer.log.fine("modal dialog and dialog viewer overlap");
             Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
@@ -779,7 +834,7 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
                 }
             }
             dlg.setBounds(r1);
-            dialogViewer.setBounds(r2);
+            dialogOrFrameViewer.setBounds(r2);
         }
     }
     

@@ -94,6 +94,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
     private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
+    private int lastDividerLoc;
 
     public DiffResultsView(SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -112,8 +113,17 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     public void ancestorAdded(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.addPropertyChangeListener(this);
-        if (!dividerSet) {
-            SwingUtilities.invokeLater(new Runnable() {
+        if (dividerSet) {
+            if (lastDividerLoc != 0) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        diffView.setDividerLocation(lastDividerLoc);
+                    }
+                });
+            }
+        } else {
+            EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     dividerSet = true;
@@ -129,6 +139,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
     @Override
     public void ancestorRemoved(AncestorEvent event) {
+        if (dividerSet) {
+            lastDividerLoc = diffView.getDividerLocation();
+        }
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
         cancelBackgroundTasks();
@@ -522,7 +535,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
 
             if (currentTask != this) return;
 
-            SwingUtilities.invokeLater(new Runnable() {
+            EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {

@@ -169,13 +169,22 @@ public class Reformatter implements ReformatTask {
         }
     }
 
-    private static final int FAST_DIFF_SIZE = 1000;
+    private static final int FAST_DIFF_SIZE = 10*1000;
     private static final int GAP_SIZE = 500;
     private void reformatImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset) throws BadLocationException {
         int prevStart = -1;
         int prevEnd = -1;
         String prevText = null;
         LinkedList<Diff> reformatDiffs = new ReformatterImpl(ts, startOffset, endOffset, codeStyle).reformat();
+        LinkedList<Diff> pack = new LinkedList<Diff>();
+        for(Diff diff : reformatDiffs) {
+            if (diff.getStartOffset() == diff.getEndOffset() &&
+                diff.getText(expandTabToSpaces, tabSize).length() == 0){
+                continue;
+            }
+            pack.add(diff);
+        }
+        reformatDiffs = pack;
         if (reformatDiffs.size() < FAST_DIFF_SIZE) {
             for (Diff diff : reformatDiffs) {
                 int curStart = diff.getStartOffset();

@@ -57,6 +57,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -457,10 +458,15 @@ class OutWriter extends PrintWriter {
                 } else if (c == '\b') {
                     int skip = handleBackspace(charBuff);
                     if (skip == -2) {
-                        lines.removeLastTab();
-                        lineCLVT -= tabLength;
+                        lineCLVT -= lines.removeLastTab();;
                     } else if (skip == 2) {
                         lineCLVT--;
+                    } else if (skip == 1) {
+                        Pair<Integer, Integer> removedInfo;
+                        removedInfo = lines.removeCharsFromLastLine(1);
+                        storage.removeBytesFromEnd(removedInfo.first() * 2);
+                        lineLength -= removedInfo.first() * 2;
+                        lineCharLengthWithTabs -= removedInfo.second();
                     }
                     skipped += Math.abs(skip);
                 } else if (c == '\r' || (c == '\n' && lastChar != '\r')) {
@@ -612,7 +618,10 @@ class OutWriter extends PrintWriter {
                 print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, outKind, false);
             }
             text = m.end();
-            if (!"m".equals(m.group(3))) {                              //NOI18N
+            if ("K".equals(m.group(3)) && "2".equals(m.group(1))) {     //NOI18N
+                clearLineANSI();
+                continue;
+            } else if (!"m".equals(m.group(3))) {                       //NOI18N
                 continue; // not a SGR ANSI sequence
             }
             String paramsS = m.group(1);
@@ -675,6 +684,22 @@ class OutWriter extends PrintWriter {
             printLineEnd();
         }
         return true;
+    }
+
+    /**
+     * Clears the current line. Called when ANSI sequence "\u001B[2K" is
+     * detected.
+     */
+    private void clearLineANSI() {
+        //NOI18N
+        Pair<Integer, Integer> r = lines.removeCharsFromLastLine(-1);
+        try {
+            getStorage().removeBytesFromEnd(r.first() * 2);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        lineLength -= r.first() * 2;
+        lineCharLengthWithTabs -= r.second();
     }
 
     synchronized void print(CharSequence s, LineInfo info, boolean important) {

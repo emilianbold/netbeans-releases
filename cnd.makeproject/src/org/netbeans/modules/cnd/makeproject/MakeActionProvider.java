@@ -99,6 +99,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfigurat
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
@@ -151,6 +152,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /** Action provider of the Make project. This is the place where to do
@@ -803,6 +806,25 @@ public final class MakeActionProvider implements ActionProvider {
         if (conf.isCompileConfiguration() && !validateProject(conf)) {
             return true;
         }
+        Lookup lookup = null;
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
+            for(ProjectActionEvent event : actionEvents) {
+                SnapShot snapShot = event.getContext().lookup(SnapShot.class);
+                if (snapShot != null) {
+                    lookup = event.getContext();
+                    break;
+                }
+            }
+            if (lookup == null) {
+                ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
+                lookup = Lookups.fixed(cdp.startModifications());
+            }
+        }
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
+        }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand;
         String makeCommand = getMakeCommand(pd, conf);
@@ -819,7 +841,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
         actionEvents.add(projectActionEvent);
         return true;
     }
@@ -865,6 +887,25 @@ public final class MakeActionProvider implements ActionProvider {
     }
 
     private boolean onCleanStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Type actionEvent) {
+        Lookup lookup = null;
+        if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION ||
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB ||
+            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
+            for(ProjectActionEvent event : actionEvents) {
+                SnapShot snapShot = event.getContext().lookup(SnapShot.class);
+                if (snapShot != null) {
+                    lookup = event.getContext();
+                    break;
+                }
+            }
+            if (lookup == null) {
+                ConfigurationDescriptorProvider cdp = pd.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
+                lookup = Lookups.fixed(cdp.startModifications());
+            }
+        }
+        if (lookup == null) {
+            lookup = Lookup.EMPTY;
+        }
         MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
         String buildCommand = makeArtifact.getCleanCommand(getMakeCommand(pd, conf), ""); // NOI18N
         String args = ""; // NOI18N
@@ -875,7 +916,7 @@ public final class MakeActionProvider implements ActionProvider {
         }
         RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
         profile.setArgs(args);
-        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, buildCommand, conf, profile, true, lookup);
         actionEvents.add(projectActionEvent);
         return true;
     }

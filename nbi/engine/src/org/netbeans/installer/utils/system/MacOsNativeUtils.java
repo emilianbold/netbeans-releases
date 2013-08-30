@@ -73,6 +73,9 @@ import org.xml.sax.SAXException;
  * @author Dmitry Lipin
  */
 public class MacOsNativeUtils extends UnixNativeUtils {
+    
+    private static final String FILE_LOCALHOST = "file://localhost"; //NOI18N
+    
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     
@@ -438,7 +441,7 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                     LogManager.log(ErrorLevel.DEBUG,
                             "Total dict/dict/dict/string items = " + dcts.size());
                     LogManager.log(ErrorLevel.DEBUG,
-                            "        location = " + location);
+                            "        location = " + location);                   
                     
                     File locationFile = new File(location);
                     
@@ -446,8 +449,14 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         Node item = dcts.get(index);
                         String content = item.getTextContent();
                         LogManager.log(ErrorLevel.DEBUG, "        content = " + content);
-                        if(content!=null && !content.equals("")) {
+                        
+                        if (content!=null && !content.equals("")) {
+                            if (content.startsWith(FILE_LOCALHOST)) {
+                                content = content.substring(FILE_LOCALHOST.length());
+                            }
+
                             File contentFile = new File(content);
+                                                
                             if(locationFile.equals(contentFile)) {
                                 dct = item;
                                 break;

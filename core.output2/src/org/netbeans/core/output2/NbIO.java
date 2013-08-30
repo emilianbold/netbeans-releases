@@ -640,7 +640,7 @@ class NbIO implements InputOutput, Lookup.Provider {
                 synchronized (out()) {
                     if (expanded) {
                         if (expandParents) {
-                            showFoldAndParentFolds(start);
+                            getLines().showFoldAndParentFolds(start);
                         } else {
                             getLines().showFold(start);
                         }
@@ -648,20 +648,6 @@ class NbIO implements InputOutput, Lookup.Provider {
                         getLines().hideFold(start);
                     }
                 }
-            }
-
-            /**
-             * Show all parent folds of the fold starting at line {@code start}.
-             */
-            private void showFoldAndParentFolds(int start) {
-                int foldOffset = getLines().getFoldOffsets().get(start);
-                if (foldOffset > 0) {
-                    int parentFoldStart = start - foldOffset;
-                    if (parentFoldStart >= 0) {
-                        showFoldAndParentFolds(parentFoldStart);
-                    }
-                }
-                getLines().showFold(start);
             }
 
             private void setCurrentFoldStart(int foldStartIndex) {

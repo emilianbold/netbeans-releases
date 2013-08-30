@@ -131,7 +131,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     
     public CsmObject instantiate(CsmTemplate template, List<CsmSpecializationParameter> params, boolean specialize) {
         CsmObject result = template;
-        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
+        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypeAlias(template)) {
             List<CsmTemplateParameter> templateParams = template.getTemplateParameters();
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
             Iterator<CsmSpecializationParameter> paramsIter = params.iterator();
@@ -178,7 +178,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     public CsmObject instantiate(CsmTemplate template, CsmInstantiation instantiation, boolean specialize) {
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
         CsmObject result = template;
-        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template)) {
+        if (CsmKindUtilities.isClass(template) || CsmKindUtilities.isFunction(template) || CsmKindUtilities.isTypeAlias(template)) {
             result = Instantiation.create(template, mapping);
             if (specialize && CsmKindUtilities.isClassifier(result)) {
                 CsmClassifier specialization = specialize((CsmClassifier) result);
@@ -607,11 +607,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             isPointer(paramsType.get(i))) {
                                         match += 1;
                                     }
-                                    int checkReference = checkReference(paramsType.get(i));
-                                    if (tbsp.isReference() && (checkReference > 0)) {
-                                        match += 1;
-                                        if ((checkReference == 2) == tbsp.isRValueReference()) {
-                                            match +=1;
+                                    if (tbsp.isReference()) {
+                                        int checkReference = checkReference(paramsType.get(i));
+                                        if (checkReference > 0) {
+                                            match += 1;
+                                            if ((checkReference == 2) == tbsp.isRValueReference()) {
+                                                match +=1;
+                                            }
                                         }
                                     }
                                 }
@@ -709,7 +711,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return true;
             }
             CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls)) {
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                 CsmTypedef td = (CsmTypedef) cls;
                 type = td.getType();
             } else {
@@ -730,7 +732,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 return 1;
             }
             CsmClassifier cls = type.getClassifier();
-            if (CsmKindUtilities.isTypedef(cls)) {
+            if (CsmKindUtilities.isTypedef(cls) || CsmKindUtilities.isTypeAlias(cls)) {
                 CsmTypedef td = (CsmTypedef) cls;
                 type = td.getType();
             } else {

@@ -879,14 +879,10 @@ public class FormatVisitor extends DefaultVisitor {
             addAllUntilOffset(body.getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
             scan(node.getStatement());
-            if (ts.token().id() == PHPTokenId.T_INLINE_HTML) {
-                // we are at the embeded html and we need to put the indent after
-                // php open tag
-                while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDFOREACH) {
-                    addFormatToken(formatTokens);
-                }
-                ts.movePrevious();
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDFOREACH) {
+                addFormatToken(formatTokens);
             }
+            ts.movePrevious();
             formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
         } else if (body != null && !(body instanceof Block)) {
             addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
@@ -929,10 +925,10 @@ public class FormatVisitor extends DefaultVisitor {
             addAllUntilOffset(body.getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
             scan(node.getBody());
-            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
-                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+            while (ts.moveNext() && ts.token().id() != PHPTokenId.PHP_ENDFOR) {
                 addFormatToken(formatTokens);
             }
+            ts.movePrevious();
             formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
         } else if (body != null && !(body instanceof Block)) {
             addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
@@ -1855,6 +1851,13 @@ public class FormatVisitor extends DefaultVisitor {
 
         }
         if (wasLastLineComment) {
+            while (ts.moveNext()
+                    && (ts.token().id() == PHPTokenId.PHP_COMMENT_START
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT_END
+                        || ts.token().id() == PHPTokenId.PHP_COMMENT)) {
+                addFormatToken(formatTokens);
+            }
+            ts.movePrevious();
             FormatToken last = formatTokens.remove(formatTokens.size() - 1);
             formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
             formatTokens.add(last);

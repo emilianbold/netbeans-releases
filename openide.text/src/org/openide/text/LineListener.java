@@ -43,6 +43,7 @@
  */
 package org.openide.text;
 
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import org.openide.util.WeakListeners;
 
@@ -58,7 +59,7 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
     private int orig;
 
     /** root element of all lines */
-    private Element root;
+    private Reference<Element> rootRef;
 
     /** last tested amount of lines */
     private int lines;
@@ -72,8 +73,9 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
     /** Creates new LineListener */
     public LineListener(StyledDocument doc, CloneableEditorSupport support) {
         this.struct = new LineStruct();
-        root = NbDocument.findLineRootElement(doc);
+        Element root = NbDocument.findLineRootElement(doc);
         orig = lines = root.getElementCount();
+        rootRef = new WeakReference<Element>(root);
         this.support = support;
 
         doc.addDocumentListener(WeakListeners.document(this, doc));
@@ -95,6 +97,7 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
     }
 
     public void removeUpdate(javax.swing.event.DocumentEvent p0) {
+        Element root = rootRef.get();
         int elem = root.getElementCount();
         int delta = lines - elem;
         lines = elem;
@@ -132,6 +135,7 @@ final class LineListener extends Object implements javax.swing.event.DocumentLis
     }
 
     public void insertUpdate(javax.swing.event.DocumentEvent p0) {
+        Element root = rootRef.get();
         int elem = root.getElementCount();
 
         int delta = elem - lines;
