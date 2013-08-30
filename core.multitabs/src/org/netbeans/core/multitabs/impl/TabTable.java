@@ -59,6 +59,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -144,6 +145,9 @@ public class TabTable extends JTable {
         int row = rowAtPoint( event.getPoint() );
         int col = columnAtPoint( event.getPoint() );
         if( row >= 0 && col >= 0 ) {
+            if( isCloseButtonHighlighted( row, col ) ) {
+                return NbBundle.getMessage( TabTable.class, "BtnClose_Tooltip" );
+            }
             TabData td = ( TabData ) getValueAt( row, col );
             if( null != td ) {
                 return td.getTooltip();
