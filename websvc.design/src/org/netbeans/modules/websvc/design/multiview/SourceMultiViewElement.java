@@ -58,6 +58,7 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
@@ -182,12 +183,15 @@ public class SourceMultiViewElement extends CloneableEditor
     }
     
     public JComponent getToolbarRepresentation() {
-        Document doc = getEditorPane().getDocument();
-        if (doc instanceof NbDocument.CustomToolbar) {
-            if (toolbar == null) {
-                toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
+        JEditorPane editorPane = getEditorPane();
+        if (editorPane != null) {
+            Document doc = editorPane.getDocument();
+            if (doc instanceof NbDocument.CustomToolbar) {
+                if (toolbar == null) {
+                    toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(getEditorPane());
+                }
+                return toolbar;
             }
-            return toolbar;
         }
         return null;
     }

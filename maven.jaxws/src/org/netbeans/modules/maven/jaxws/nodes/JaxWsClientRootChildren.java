@@ -53,11 +53,15 @@ import java.beans.PropertyChangeListener;
 import org.openide.util.RequestProcessor;
 
 public class JaxWsClientRootChildren extends Children.Keys<WebService> {
+    
+    private static final RequestProcessor JAX_WS_CLIENT_ROOT_RP =
+            new RequestProcessor(JaxWsClientRootChildren.class); //NOI18N
+    
     JaxWsListener listener;
     //MavenWebServicesProvider wsDataProvider;
     WebServiceData wsData;
 
-    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+    private final RequestProcessor.Task updateNodeTask = JAX_WS_CLIENT_ROOT_RP.create(new Runnable() {
         @Override
         public void run() {
             updateKeys();
