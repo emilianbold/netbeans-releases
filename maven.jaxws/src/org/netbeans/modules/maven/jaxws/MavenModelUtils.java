@@ -143,9 +143,8 @@ public final class MavenModelUtils {
         Dependency webservicesDep = model.getFactory().createDependency();
         webservicesDep.setGroupId("javax.xml"); //NOI18N
         webservicesDep.setArtifactId("webservices-api"); //NOI18N
-        webservicesDep.setVersion("1.4"); //NOI18N
+        webservicesDep.setVersion("2.0"); //NOI18N
         plugin.addDependency(webservicesDep);
-        
         return plugin; 
     }
 
