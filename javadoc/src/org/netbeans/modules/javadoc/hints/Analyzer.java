@@ -229,7 +229,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                                     && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
                             Tree returnTree = methodTree.getReturnType();
                             DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                            errors.add(ErrorDescriptionFactory.forTree(ctx, returnTree, MISSING_RETURN_DESC(), AddTagFix.createAddReturnTagFix(dtph).toEditorFix()));
+                            if(dtph != null) {
+                                errors.add(ErrorDescriptionFactory.forTree(ctx, returnTree, MISSING_RETURN_DESC(), AddTagFix.createAddReturnTagFix(dtph).toEditorFix()));
+                            }
                         }
                     }
 //                    checkThrowsDocumented(ee.getThrownTypes());
@@ -321,6 +323,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     public Void visitParam(ParamTree tree, List<ErrorDescription> errors) {
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        if(dtph == null) {
+            return null;
+        }
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
@@ -384,8 +389,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 CharSequence paramName = (isTypeParam)
                         ? "<" + e.getSimpleName() + ">"
                         : e.getSimpleName();
-                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                if (dtph != null) {
                     errors.add(ErrorDescriptionFactory.forTree(ctx, t, MISSING_PARAM_DESC(paramName), AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()));
+                }
             }
         }
     }
@@ -446,8 +453,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     }
                 }
                 if(!found) {
-                        DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                    if(dtph != null) {
                         errors.add(ErrorDescriptionFactory.forTree(ctx, t, NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()), AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()));
+                    }
                 }
             }
         }
@@ -479,6 +488,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     public Void visitReturn(ReturnTree node, List<ErrorDescription> errors) {
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        if(dtph == null) {
+            return null;
+        }
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
@@ -544,6 +556,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         TypeMirror runtime = elements.getTypeElement("java.lang.RuntimeException").asType();
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        if(dtph == null) {
+            return null;
+        }
         DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);

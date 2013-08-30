@@ -733,6 +733,9 @@ AtomicLockListener, FoldHierarchyListener {
         caretUpdatePending = false;
         JTextComponent c = component;
         if (c != null) {
+            if (!c.isValid()) {
+                c.validate();
+            }
             BaseTextUI ui = (BaseTextUI)c.getUI();
             BaseDocument doc = Utilities.getDocument(c);
             if (doc != null) {

@@ -53,6 +53,8 @@ public class WizardSettings {
 
     private static final String NEW_PROJECT_COUNT = "newProjectCount"; // NOI18N
     private static final String NEW_APP_COUNT = "newApplicationCount";  // NOI18N
+    private static final String NEW_PRELOADER_COUNT = "newPreloaderCount";  // NOI18N
+    private static final String NEW_SWING_COUNT = "newFxSwingAppCount";  // NOI18N
     private static final String NEW_LIB_COUNT = "newLibraryCount"; // NOI18N
 
     private WizardSettings() {
@@ -86,4 +88,19 @@ public class WizardSettings {
         getPreferences().putInt(NEW_LIB_COUNT, count);
     }
 
+    public static int getNewPreloaderCount() {
+        return getPreferences().getInt(NEW_PRELOADER_COUNT, 0);
+    }
+
+    public static void setNewPreloaderCount(int count) {
+        getPreferences().putInt(NEW_PRELOADER_COUNT, count);
+    }
+
+    public static int getNewFxSwingCount() {
+        return getPreferences().getInt(NEW_SWING_COUNT, 0);
+    }
+
+    public static void setNewFxSwingCount(int count) {
+        getPreferences().putInt(NEW_SWING_COUNT, count);
+    }
 }

@@ -1552,8 +1552,6 @@ public final class JFXProjectUtils {
                 readFromFile(projDir, privatePath) : new EditableProperties(true);
         assert privateCfgProps != null;
         if(privateCfgProps.isEmpty() || setBrowserProps) {
-            privateCfgProps.setProperty("$label", configName); // NOI18N
-            privateCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             privateCfgProps.setProperty(JFXProjectProperties.RUN_AS, runAs.getString());
             privateCfgProps.setComment(JFXProjectProperties.RUN_AS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             if(setBrowserProps) {

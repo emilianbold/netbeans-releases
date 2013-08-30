@@ -52,6 +52,7 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -955,21 +956,16 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         List<SourceFolder> srcFolders = new ArrayList<SourceFolder>();
         File baseFolder = model.getBaseFolder();
         FileObject baseFolderFO = FileUtil.toFileObject(baseFolder);
-        FileObject baseChildrenFO[] = baseFolderFO.getChildren();
-        for (FileObject fo : baseChildrenFO) {
-            if (fo.isFolder()) {
-                FileObject possibleSrcRoot = JavadocAndSourceRootDetection.findSourceRoot(fo);
-                if (possibleSrcRoot != null) {
-                    JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
-                    File sourceLoc = FileUtil.normalizeFile(FileUtil.toFile(possibleSrcRoot));
-                    sf.location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
-                    sf.type = ProjectModel.TYPE_JAVA;
-                    sf.style = JavaProjectNature.STYLE_PACKAGES;
-                    sf.label = getDefaultLabel(sf.location, false);
-                    sf.encoding = model.getEncoding();
-                    srcFolders.add(sf);
-                }
-            }
+        final Collection<? extends FileObject> sourceRoots = JavadocAndSourceRootDetection.findSourceRoots(baseFolderFO, null);
+        for (FileObject possibleSrcRoot : sourceRoots) {
+            JavaProjectGenerator.SourceFolder sf = new JavaProjectGenerator.SourceFolder();
+            File sourceLoc = FileUtil.normalizeFile(FileUtil.toFile(possibleSrcRoot));
+            sf.location = Util.relativizeLocation(model.getBaseFolder(), model.getNBProjectFolder(), sourceLoc);
+            sf.type = ProjectModel.TYPE_JAVA;
+            sf.style = JavaProjectNature.STYLE_PACKAGES;
+            sf.label = getDefaultLabel(sf.location, false);
+            sf.encoding = model.getEncoding();
+            srcFolders.add(sf);
         }
         return srcFolders;
     }

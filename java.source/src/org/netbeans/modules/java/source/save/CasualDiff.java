@@ -1139,7 +1139,10 @@ public class CasualDiff {
         int localPointer = bounds[0];
 
         int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        int oldIndent = newT.body.hasTag(Tag.BLOCK) ? -1 : printer.indent();
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
+        if (!newT.body.hasTag(Tag.BLOCK))
+            printer.undent(oldIndent);
         int[] condBounds = getBounds(oldT.cond);
         if (oldT.body.getKind() != Kind.BLOCK && newT.body.getKind() == Kind.BLOCK) {
             moveBackToToken(tokenSequence, condBounds[0], JavaTokenId.WHILE);
@@ -1161,7 +1164,10 @@ public class CasualDiff {
         localPointer = diffTree(oldT.cond, newT.cond, condPos);
         // body
         int[] bodyPos = new int[] { localPointer, endPos(oldT.body) };
+        int oldIndent = newT.body.hasTag(Tag.BLOCK) ? -1 : printer.indent();
         localPointer = diffTree(oldT.body, newT.body, bodyPos, oldT.getKind());
+        if (!newT.body.hasTag(Tag.BLOCK))
+            printer.undent(oldIndent);
 
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1228,7 +1234,10 @@ public class CasualDiff {
 
         // body
         int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        int oldIndent = newT.body.hasTag(Tag.BLOCK) ? -1 : printer.indent();
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
+        if (!newT.body.hasTag(Tag.BLOCK))
+            printer.undent(oldIndent);
 
         copyTo(localPointer, bounds[1]);
         return bounds[1];
@@ -1256,7 +1265,10 @@ public class CasualDiff {
         localPointer = diffTree(oldT.expr, newT.expr, exprBounds);
         // body
         int[] bodyBounds = new int[] { localPointer, endPos(oldT.body) };
+        int oldIndent = newT.body.hasTag(Tag.BLOCK) ? -1 : printer.indent();
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
+        if (!newT.body.hasTag(Tag.BLOCK))
+            printer.undent(oldIndent);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];
@@ -1334,7 +1346,10 @@ public class CasualDiff {
         // body
         int[] bodyBounds = getBounds(oldT.body);
         copyTo(localPointer, bodyBounds[0]);
+        int oldIndent = newT.body.hasTag(Tag.BLOCK) ? -1 : printer.indent();
         localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+        if (!newT.body.hasTag(Tag.BLOCK))
+            printer.undent(oldIndent);
         copyTo(localPointer, bounds[1]);
 
         return bounds[1];

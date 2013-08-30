@@ -189,6 +189,9 @@ public final class DocTreePathHandle {
         Parameters.notNull("javac", javac);
 
         TreePathHandle treePathHandle = TreePathHandle.create(docTreePath.getTreePath(), javac);
+        if(treePathHandle.getFileObject() == null) {
+            return null;
+        }
         int position = (int) ((DCTree) docTreePath.getLeaf()).getSourcePosition((DCTree.DCDocComment)docTreePath.getDocComment());
         if (position == (-1)) {
             DocTree docTree = docTreePath.getLeaf();

@@ -319,7 +319,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                     break;
                 case PRELOADER:
-                    baseCount = WizardSettings.getNewApplicationCount() + 1;
+                    baseCount = WizardSettings.getNewPreloaderCount() + 1;
                     formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXPreloaderApplication"); // NOI18N
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;
@@ -327,7 +327,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                     break;
                 case SWING:
-                    baseCount = WizardSettings.getNewApplicationCount() + 1;
+                    baseCount = WizardSettings.getNewFxSwingCount() + 1;
                     formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXSwingApplication"); // NOI18N
                     while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
                         baseCount++;

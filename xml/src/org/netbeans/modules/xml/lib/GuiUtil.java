@@ -70,8 +70,12 @@ public final class GuiUtil {
      * Perform default action on specified data object.
      */
     public static void performDefaultAction (DataObject dataObject) {
-        Node node = dataObject.getNodeDelegate();
-        callAction(node.getPreferredAction(), node, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+        final Node node = dataObject.getNodeDelegate();
+        Mutex.EVENT.readAccess(new Runnable() {
+            public void run() {
+                callAction(node.getPreferredAction(), node, new ActionEvent (node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
+            }
+        });
     }
     
     /**
