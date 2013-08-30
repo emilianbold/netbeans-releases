@@ -68,7 +68,7 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), PHPTokenId.language());
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
         TokenSequence<PHPTokenId> sequence = th.tokenSequence(PHPTokenId.language());
 
         //issue #159775 logging >>>
