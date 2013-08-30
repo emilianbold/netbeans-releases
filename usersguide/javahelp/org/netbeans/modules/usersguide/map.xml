@@ -273,7 +273,7 @@
   <!-- "Output Window"-->
   <mapID target="f1_working_netbeans067.htm-sthref69" url="f1_working_netbeans067.htm#sthref69" />
   <!-- "Output Window"-->
-  <mapID target="org.netbeans.modules.bugzilla.NBLoginPanel" url="f1_working_netbeans068.htm#org.netbeans.modules.bugzilla.NBLoginPanel" />
+  <mapID target="org.netbeans.modules.bugzilla.api.NBLoginPanel" url="f1_working_netbeans068.htm#org.netbeans.modules.bugzilla.api.NBLoginPanel" />
   <!-- "Login to netbeans.org Dialog Box"-->
   <mapID target="f1_working_netbeans068.htm-sthref70" url="f1_working_netbeans068.htm#sthref70" />
   <!-- "Login to netbeans.org Dialog Box"-->
@@ -282,9 +282,9 @@
   <mapID target="f1_working_netbeans069.htm-sthref71" url="f1_working_netbeans069.htm#sthref71" />
   <!-- "Using the IDE Help System"-->
   <mapID target="ide.credits" url="f1_working_netbeans070.htm#ide.credits" />
-  <!-- "Legal Notice"-->
+  <!-- "Legal Notices"-->
   <mapID target="f1_working_netbeans070.htm-sthref72" url="f1_working_netbeans070.htm#sthref72" />
-  <!-- "Legal Notice"-->
+  <!-- "Legal Notices"-->
   <mapID target="f1_css_editor.htm" url="f1_css_editor.htm" />
   <!-- "Using CSS Source Editor"-->
   <mapID target="text.css" url="f1_css_editor001.htm#text.css" />

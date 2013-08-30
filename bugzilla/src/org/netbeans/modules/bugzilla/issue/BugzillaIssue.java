@@ -564,8 +564,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
         Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
         if (!value.equals(a.getValue())) {
-            a.setValue(value);
-            m.attributeChanged(a);
+            setValue(m, a, value);
         }
     }
 
@@ -670,8 +669,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     TaskAttribute rta = getModel().getLocalTaskData().getRoot();
                     TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
                     if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
-                        ta.setValue(resolution);
-                        getModel().attributeChanged(ta);
+                        setValue(getModel(), ta, resolution);
                     }
                 }
             }
@@ -687,8 +685,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         setOperation(BugzillaOperation.duplicate);
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
-        ta.setValue(id);
-        m.attributeChanged(ta);
+        setValue(m, ta, id);
     }
 
     boolean canReassign() {
@@ -739,13 +736,11 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
         if(ta != null) {
-            ta.setValue(user);
-            m.attributeChanged(ta);
+            setValue(m, ta, user);
         }
         ta = rta.getMappedAttribute(BugzillaAttribute.ASSIGNED_TO.getKey());
         if(ta != null) {
-            ta.setValue(user);
-            m.attributeChanged(ta);
+            setValue(m, ta, user);
         }
     }
 
@@ -770,6 +765,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 return;
             }
         }
+        // no operation found, leave to NO_OP ~ Leave as...
+        setOperation(BugzillaOperation.none);
     }
     
     private void setOperation (TaskOperation operation) {
@@ -909,8 +906,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     } else {
                         value += "\n\n" + comment; //NOI18N
                     }
-                    ta.setValue(value);
-                    getModel().attributeChanged(ta);
+                    setValue(getModel(), ta, value);
                 }
             });
         }
@@ -930,8 +926,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             if (ta == null) {
                 ta = BugzillaTaskDataHandler.createAttribute(getModel().getLocalTaskData().getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
             }
-            ta.setValue("1");                                                   // NOI18N
-            getModel().attributeChanged(ta);
+            setValue(getModel(), ta, "1"); //NOI18N
         }
     }
 
@@ -1307,6 +1302,23 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     boolean save () {
         return saveChanges();
+    }
+
+    private void setValue (NbTaskDataModel model, TaskAttribute ta, String value) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (value.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValue(value);
+            }
+        } else {
+            ta.setValue(value);
+        }
+        model.attributeChanged(ta);
     }
 
     class Comment {

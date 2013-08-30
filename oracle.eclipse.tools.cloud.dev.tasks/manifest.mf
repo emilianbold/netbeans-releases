@@ -1,1 +1,2 @@
 OpenIDE-Module: oracle.eclipse.tools.cloud.dev.tasks
+OpenIDE-Module-Specification-Version: 1.0

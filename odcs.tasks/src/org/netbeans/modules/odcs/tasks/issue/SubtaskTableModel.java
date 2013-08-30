@@ -97,7 +97,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                 data[count] = new Object[] {
                     id,
                     subTask.getSummary(),
-                    subTask.getType(),
+                    subTask.getRepositoryFieldValue(IssueField.TASK_TYPE),
                     subTask.getStatus(),
                     subTask.getPriority()
                 };

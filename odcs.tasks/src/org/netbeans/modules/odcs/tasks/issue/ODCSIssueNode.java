@@ -143,7 +143,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
         }
         @Override
         public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
-            return getODCSIssue().getStatus();
+            return getODCSIssue().getTaskStatus();
         }
     }
     
@@ -228,15 +228,15 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
         }
         @Override
         public String getValue() {
-            return getODCSIssue().getFieldValue(field);
+            return getODCSIssue().getRepositoryFieldValue(field);
         }
         @Override
         public int compareTo(IssueNode<ODCSIssue>.IssueProperty<String> p) {
             if(p == null) {
                 return 1;
             }
-            String s1 = getODCSIssue().getFieldValue(field);
-            String s2 = p.getIssueData().getFieldValue(field);
+            String s1 = getODCSIssue().getRepositoryFieldValue(field);
+            String s2 = p.getIssueData().getRepositoryFieldValue(field);
             return s1.compareTo(s2);
         }
     }
