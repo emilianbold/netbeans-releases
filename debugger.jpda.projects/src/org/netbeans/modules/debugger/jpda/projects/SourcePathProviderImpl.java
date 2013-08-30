@@ -261,8 +261,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             }
         } else {
-            RequestProcessor rp = contextProvider.lookupFirst(null, RequestProcessor.class);
-            pathRegistryListener = new PathRegistryListener(rp);
+            pathRegistryListener = new PathRegistryListener();
             GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(
                     WeakListeners.create(GlobalPathRegistryListener.class,
                                          pathRegistryListener,
@@ -1471,14 +1470,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private class PathRegistryListener implements GlobalPathRegistryListener, PropertyChangeListener {
 
-        private RequestProcessor rp;
+        private RequestProcessor rp = new RequestProcessor(PathRegistryListener.class.getName(), 1);
         private RequestProcessor.Task task;
         private List<URL> addedRoots = null;
         private List<URL> removedRoots = null;
         private final Object rootsLock = new Object();
 
-        public PathRegistryListener(RequestProcessor rp) {
-            this.rp = rp;
+        public PathRegistryListener() {
             task = rp.create(new Runnable() {
                 @Override
                 public void run() {
