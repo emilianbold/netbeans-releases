@@ -368,7 +368,7 @@ public class CreatedModifiedFilesTest extends LayerTestBase {
         cmf.add(cmf.layerModifications(new CreatedModifiedFiles.LayerOperation() {@Override public void run(FileSystem layer) throws IOException {}}, Collections.<String>emptySet()));
         assertNull(p.getProjectDirectory().getFileObject("src/test/layer.xml"));
         assertEquals("[src/test/layer.xml]", Arrays.toString(cmf.getCreatedPaths()));
-        assertEquals("[]", Arrays.toString(cmf.getModifiedPaths()));
+        assertEquals("[manifest.mf]", Arrays.toString(cmf.getModifiedPaths()));
         assertEquals("[]", Arrays.toString(cmf.getInvalidPaths()));
         cmf.run();
         assertNotNull(p.getProjectDirectory().getFileObject("src/test/layer.xml"));

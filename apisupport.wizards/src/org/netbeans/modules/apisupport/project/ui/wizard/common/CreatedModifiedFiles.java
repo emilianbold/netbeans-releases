@@ -1133,8 +1133,10 @@ public final class CreatedModifiedFiles {
 
         @Override
         public String[] getModifiedPaths() {
+            FileObject layer = cmf.getLayerHandle().getLayerFile();
             NbModuleProvider provider = project.getLookup().lookup(NbModuleProvider.class);
-            return provider != null ? new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), provider.getManifestFile())} : new String[0];
+            return layer != null ? new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), layer)}:
+                    new String[]{FileUtil.getRelativePath(project.getProjectDirectory(), provider.getManifestFile())};
         }
 
         @Override
