@@ -56,6 +56,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -88,6 +89,7 @@ import org.netbeans.modules.mylyn.util.commands.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.odcs.tasks.ODCS;
+import org.netbeans.modules.odcs.tasks.ODCSConfig;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.openide.awt.StatusDisplayer;
@@ -136,6 +138,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private String recentChanges = "";
     private String tooltip = "";
     
+    private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/remote.png"); //NOI18N
+    private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
+    private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
+
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
@@ -167,7 +173,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public String getTooltip() {
-        return getDisplayName();
+        return tooltip;
     }
     
     // XXX merge with bugzilla
@@ -207,12 +213,89 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private boolean updateTooltip () {
         String displayName = getDisplayName();
         String oldTooltip = tooltip;
-        // TODO construct tooltip
+        NbTask.SynchronizationState state = getSynchronizationState();
+        URL iconPath = getStateIcon(state);
+        String iconCode = "";
+        if (iconPath != null) {
+            iconCode = "<img src=\"" + iconPath + "\">&nbsp;"; //NOI18N
+        }
+        String stateName = getStateDisplayName(state);
+
+        String priorityLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Priority_Title"); //NOI18N
+        String priority = getRepositoryFieldValue(IssueField.PRIORITY);
+
+        String typeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Severity_Title"); //NOI18N
+        String type = getRepositoryFieldValue(IssueField.SEVERITY);
+
+        String productLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Product_Title"); //NOI18N
+        String product = getRepositoryFieldValue(IssueField.PRODUCT);
+
+        String componentLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Component_Title"); //NOI18N
+        String component = getRepositoryFieldValue(IssueField.COMPONENT);
+
+        String assigneeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Owner_Title"); //NOI18N
+        String assignee = getRepositoryFieldValue(IssueField.OWNER);
+
+        String statusLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Status_Title"); //NOI18N
+        String status = getRepositoryFieldValue(IssueField.STATUS);
+        String resolution = getRepositoryFieldValue(IssueField.RESOLUTION);
+
+        if (resolution != null && !resolution.trim().isEmpty()) {
+            status += "/" + resolution; //NOI18N
+        }
+
+
+        String fieldTable = "<table>" //NOI18N
+            + "<tr><td><b>" + priorityLabel + ":</b></td><td>" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+            + "</table>"; //NOI18N
+
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
-        sb.append("<b>").append(displayName).append("</b>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
+        if (stateName != null && !stateName.isEmpty()) {
+            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p>"); //NOI18N
+        }
+        sb.append("<hr>"); //NOI18N
+        sb.append(fieldTable);
         sb.append("</html>"); //NOI18N
         tooltip = sb.toString();
         return !oldTooltip.equals(tooltip);
+    }
+    
+    private URL getStateIcon(NbTask.SynchronizationState state) {
+        URL iconPath = null;
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            iconPath = ICON_CONFLICT_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING) || state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            iconPath = ICON_REMOTE_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING) || state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            iconPath = ICON_UNSUBMITTED_PATH;
+        }
+        return iconPath;
+    }
+
+    @NbBundle.Messages({
+        "LBL_ConflictShort=Conflict - your unsubmitted changes conflict with remote changes",
+        "LBL_RemoteShort=Incoming - contains remote changes",
+        "LBL_RemoteNewShort=Incoming New - new task created in repository",
+        "LBL_UnsubmittedShort=Unsubmitted - contains unsubmitted changes",
+        "LBL_UnsubmittedNewShort=Unsubmitted New - newly created task, not yet submitted"})
+    private String getStateDisplayName(NbTask.SynchronizationState state) {
+        String displayName = "";
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            displayName = Bundle.LBL_ConflictShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING)) {
+            displayName = Bundle.LBL_RemoteShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            displayName = Bundle.LBL_RemoteNewShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING)) {
+            displayName = Bundle.LBL_UnsubmittedShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            displayName = Bundle.LBL_UnsubmittedNewShort();
+        }
+        return displayName;
     }
 
     @Messages({"LBL_NEW_STATUS=New", "LBL_SUMMARY_CHANGED_STATUS=Summary changed",
