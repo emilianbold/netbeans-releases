@@ -802,6 +802,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	autos.clear();
 	localUpdater.batchOffForce();	// cause a pull to clear view
 
+        setVisitedLocation(null);
         resetCurrentLine();
         if (MemoryWindow.getDefault().isShowing()) {
             MemoryWindow.getDefault().setDebugger(null);
