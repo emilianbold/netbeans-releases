@@ -2,80 +2,28 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>JavaMail Session: General Attributes</title>
+<title>JMS Resource Properties</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="AS_Wiz_Mail_general" name="AS_Wiz_Mail_general"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref659" name="sthref659"></a>
-<h1>JavaMail Session: General Attributes</h1>
+<p><a id="AS_Wiz_JMS_props" name="AS_Wiz_JMS_props"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref662" name="sthref662"></a>
+<h1>JMS Resource Properties</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the New File wizard when you are defining a JavaMail Session resource. On this page you specify general and advanced configuration information for a JavaMail Session resource and specify the JNDI name of the resource.</p>
-<p>Use this page as follows:</p>
+<p>You see this page of the New File wizard when you are defining a JMS resource.</p>
+<p>This page of the wizard enables you to add additional configuration information and properties for a JMS resource.</p>
+<p>To enter new properties and values:</p>
 <ol>
+<li>Click Add to add a row for the new property to the table.</li>
+<li>In the Properties table, enter the Name and Value of the new property.</li>
+<li>Click Enter to save the changes to the property table.</li>
 <li>
-<p>Supply the general information for the resource. The following information is required and must be supplied before you can Finish or proceed to the next screen:</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t72">Element</th>
-<th align="left" valign="bottom" id="r1c2-t72">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t72" headers="r1c1-t72">
-<p>JNDI Name</p>
-</td>
-<td align="left" headers="r2c1-t72 r1c2-t72">
-<p>The JNDI must be unique to the resource. JavaMail Session resources are usually placed withing the <code>mail</code> naming subcontext.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t72" headers="r1c1-t72">
-<p>Mail Host</p>
-</td>
-<td align="left" headers="r3c1-t72 r1c2-t72">
-<p>The host name is the DNS name of the default mail server. The name must be resolvable to an actual host name.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t72" headers="r1c1-t72">
-<p>Default User</p>
-</td>
-<td align="left" headers="r4c1-t72 r1c2-t72">
-<p>Enter the user name to use when connecting to the mail server.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t72" headers="r1c1-t72">
-<p>Default Return Address</p>
-</td>
-<td align="left" headers="r5c1-t72 r1c2-t72">
-<p>Enter the email address of the default user, in the form <code>username@host.domain</code>.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- --></li>
-<li>
-<p>Advanced information is optional. It is best to leave the advanced settings at their default values unless the Application Server's mail provider has been reconfigured to use a nondefault store or transport protocol.</p>
-<p><b>Note</b>: Setting Debug Enabled to True, enables extra debugging output including a protocol trace, for this mail session. If the JavaMail log level is set to FINE or finer, the debugging output is generated and is included in the system log file. See "Configuring Log Levels" for information about setting the log level.</p>
-</li>
-<li>
-<p>Click Finish to create the resource. Click Next to proceed to the advanced properties screen.</p>
-<p>When you complete the wizard, the resource properties are added to glassfish-resources.xml. If you need to edit the properties of the resource, you can open glassfish-resources.xml in the Source Editor by expanding the Server Resources node of your project in the Projects window and double-clicking the file.</p>
+<p>Click Finish to exit the wizard.</p>
+<p><b>Note</b>: If the Finish button is dimmed, ensure that both the Name and Value properties are not empty and hit Enter on your keyboard.</p>
 </li>
 </ol>
-<p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it. The resource is automatically registered when you deploy your project.</p>
-<p>After the resource is registered, the resource appears in the JavaMail Sessions node under the Resources node for the server instance in the Services window.</p>
-<p>For more on the JavaMail API, see:</p>
-<p><a href="http://www.oracle.com/technetwork/java/javamail/javamail-138606.html">"<code>JavaMail API</code>"</a></p>
+<p>To remove a property, select the property in the Properties table and click Remove.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
