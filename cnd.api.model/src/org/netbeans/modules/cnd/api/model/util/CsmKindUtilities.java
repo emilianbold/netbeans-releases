@@ -232,6 +232,10 @@ public class CsmKindUtilities {
         }
     }    
     
+    public static boolean isTypedefOrTypeAlias(CsmObject obj) {
+        return isTypedef(obj) || isTypeAlias(obj);
+    }        
+    
     public static boolean isStatement(CsmObject obj) {
         if (obj instanceof CsmStatement) {
             return true;

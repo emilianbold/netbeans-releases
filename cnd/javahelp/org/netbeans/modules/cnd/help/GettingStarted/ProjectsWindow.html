@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -57,8 +57,10 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
     <p>
        A logical folder is not a directory. It is a way for you to organize your files, and does
       not reflect where the files are physically stored. Files added to the Source Files folder,
-      Header Files folder, and other logical folders are automatically part of a project and are
-      compiled when you build the project.
+      Header Files folder, and other logical folders become part of a project and are
+      compiled when you build the project. Note that header files added to the Header Files folder
+      must be referenced in your C/C++ source files through #include statements in the usual way if you want
+      them to be compiled into the program.  
     </p>
     <p>
        Files added to the Important Files folder are not part of the project and are not compiled

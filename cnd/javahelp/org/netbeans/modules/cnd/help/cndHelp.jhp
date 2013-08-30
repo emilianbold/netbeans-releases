@@ -384,6 +384,7 @@
 				<file title="SettingCandC++FolderProperties.html"/>
 				<file title="SettingCandC++ProjectProperties.html"/>
 				<file title="SettingMainCorC++Project.html"/>
+				<file title="UsingCandC++Launchers.html"/>
 				<file title="WorkingWithCandC++Projects.html"/>
 			</directory>
 			<file title="cnd.hs"/>

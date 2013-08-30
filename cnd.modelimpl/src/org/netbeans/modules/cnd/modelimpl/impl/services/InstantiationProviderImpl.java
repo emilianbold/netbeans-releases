@@ -607,11 +607,13 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                             isPointer(paramsType.get(i))) {
                                         match += 1;
                                     }
-                                    int checkReference = checkReference(paramsType.get(i));
-                                    if (tbsp.isReference() && (checkReference > 0)) {
-                                        match += 1;
-                                        if ((checkReference == 2) == tbsp.isRValueReference()) {
-                                            match +=1;
+                                    if (tbsp.isReference()) {
+                                        int checkReference = checkReference(paramsType.get(i));
+                                        if (checkReference > 0) {
+                                            match += 1;
+                                            if ((checkReference == 2) == tbsp.isRValueReference()) {
+                                                match +=1;
+                                            }
                                         }
                                     }
                                 }

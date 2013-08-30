@@ -42,7 +42,8 @@
 				<tocitem text="Adding Files and Folders to a C/C++/Fortran Project" target="AddingFilesandFolders" />
 				<tocitem text="Adding Unit Tests to a C/C++/Fortran Project" target="AddingUnitTests" />
 				<tocitem text="Running a C/C++/Fortran Project" target="RunningCorC++Project1" />
-				<tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
+				<tocitem text="Using C or C++ Project Launchers" target="UsingCandC++Launchers" />		
+                                <tocitem text="Moving, Copying, or Renaming a C/C++/Fortran Project" target="MovingCorC++Project" />
 				<tocitem text="Deleting a C/C++/Fortran Project" target="DeletingCorC++Project" />
 			</tocitem>
 			<tocitem text="Building and Running C/C++/Fortran Projects">

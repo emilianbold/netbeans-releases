@@ -73,6 +73,8 @@ import org.openide.util.RequestProcessor;
  */
 public class HtmlDataObjectTest extends CslTestBase {
 
+    private static final RequestProcessor RP = new RequestProcessor(HtmlDataObjectTest.class);
+
     @SuppressWarnings("deprecation")
     private static void init() {
         FileUtil.setMIMEType("html", "text/html");
@@ -154,33 +156,40 @@ public class HtmlDataObjectTest extends CslTestBase {
                 //remove the listener
                 saveCookieResult.removeLookupListener(this);
 
-                synchronized(lock) {
+                synchronized (lock) {
                     lock.notifyAll();
                 }
             }
 
         });
 
-        ((BaseDocument) doc).runAtomic(new Runnable() {
+        RP.post(new Runnable() {
+
             @Override
             public void run() {
-                try {
-                    doc.insertString(0, "hello", null);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                ((BaseDocument) doc).runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            doc.insertString(0, "hello", null);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
             }
+
         });
 
         //wait for some time until the savecookie is asynchronously added
         synchronized (lock) {
             try {
-                lock.wait(1000);
+                lock.wait(2000);
             } catch (InterruptedException ex) {
                 throw new AssertionError("No SaveCookie added to DataObject's lookup upon bound document instance change!");
             }
         }
-        
+
         assertNotNull(obj.getLookup().lookup(SaveCookie.class));
 
         obj.getLookup().lookup(SaveCookie.class).save();
