@@ -54,8 +54,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -1143,6 +1145,38 @@ public class CsmUtilities {
         return dob;
     }
     
+    /**
+     * Iterates type chain until end is reached or stopFilter returned true
+     * @param type from iterate should start
+     * @param stopFilter
+     * @return last type
+     */
+    public static CsmType iterateTypeChain(CsmType type, Predicate<CsmType> stopFilter) {
+        CsmType lastNestedType = type;
+        
+        Set<CsmType> antiLoop = new HashSet<CsmType>();
+        
+        while (type != null && !antiLoop.contains(type) && antiLoop.size() < 50) {
+            lastNestedType = type;
+            
+            if (stopFilter.check(type)) {
+                break;
+            }
+            
+            antiLoop.add(type);                
+            
+            CsmClassifier classifier = type.getClassifier();                
+            
+            type = null;
+            
+            if (CsmKindUtilities.isTypedef(classifier) || CsmKindUtilities.isTypeAlias(classifier)) {
+                type = ((CsmTypedef)classifier).getType();
+            }
+        }
+        
+        return lastNestedType;
+    }                 
+    
     //-----------------------------------------------------------------
 
     private static final class FileTarget implements CsmOffsetable {
@@ -1201,7 +1235,31 @@ public class CsmUtilities {
         public int getColumn() {
             return -1;
         }
-    };
+    };      
+    
+    public static interface Predicate<T> {
+        
+        /**
+         * @param value to check
+         */
+        boolean check(T value);        
+        
+    }      
+    
+    public static final class ConstantPredicate<T> implements Predicate<T> {
+        
+        private final boolean constant;
+        
+        public ConstantPredicate(boolean value) {
+            constant = value;
+        }
+
+        @Override
+        public boolean check(T value) {
+            return constant;
+        }
+        
+    }   
 
     private CsmUtilities() {
     }
