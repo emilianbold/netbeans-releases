@@ -305,7 +305,6 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         private volatile OptionsPanel panel;
-
         private volatile WizardDescriptor settings = null;
 
 
