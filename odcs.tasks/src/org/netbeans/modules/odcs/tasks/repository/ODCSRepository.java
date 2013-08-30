@@ -85,7 +85,6 @@ import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
-import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.ODCSExecutor;
@@ -378,7 +377,7 @@ public class ODCSRepository implements PropertyChangeListener {
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, true, false);
             for (NbTask task : cmd.getTasks()) {
-                ODCSIssue issue = getIssueForTask(task, false);
+                ODCSIssue issue = getIssueForTask(task);
                 if (issue != null) {
                     issues.add(issue);
                 }
@@ -605,32 +604,15 @@ public class ODCSRepository implements PropertyChangeListener {
     }
     
     public ODCSIssue getIssueForTask (NbTask task) {
-        return getIssueForTask(task, true);
-    }
-    
-    private ODCSIssue getIssueForTask (NbTask task, boolean onlyInitializedTasks) {
         ODCSIssue issue = null;
         if (task != null) {
-            try {
-                if (onlyInitializedTasks) {
-                    NbTaskDataState tdState = task.getTaskDataState();
-                    if (tdState == null) {
-                        // this happens when a query is canceled. All yet unsynchronized tasks
-                        // are still incomplete. What now? Should the task be deleted?
-                        return null;
-                    }
+            synchronized (CACHE_LOCK) {
+                String taskId = ODCSIssue.getID(task);
+                Cache issueCache = getCache();
+                issue = issueCache.getIssue(taskId);
+                if (issue == null) {
+                    issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
                 }
-                synchronized (CACHE_LOCK) {
-                    String taskId = ODCSIssue.getID(task);
-                    Cache issueCache = getCache();
-                    issue = issueCache.getIssue(taskId);
-                    if (issue == null) {
-                        issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
-                    }
-                }
-            } catch (CoreException ex) {
-                ODCS.LOG.log(Level.SEVERE, null, ex);
-                issue = null;
             }
         }
         return issue;
