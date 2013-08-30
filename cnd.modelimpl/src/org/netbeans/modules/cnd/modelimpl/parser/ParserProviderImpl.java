@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -199,63 +200,68 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
         @Override
         public void render(Object... context) {
-            long start = System.currentTimeMillis();
-            switch (kind) {
-                case TRY_BLOCK:
-                case COMPOUND_STATEMENT:
-                    @SuppressWarnings("unchecked")
-                    List<CsmStatement> list = (List<CsmStatement>) context[0];
-                    ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
-                    break;
-                case TRANSLATION_UNIT_WITH_COMPOUND:
-                case TRANSLATION_UNIT:
-                    if (ast != null) {
-                        CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
-                        FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
-                        new AstRenderer(file, parseFileContent, language, objects).render(ast);
-                    }            
-                    break;
-                case NAMESPACE_DEFINITION_BODY:
-                {
-                    FileContent fileContent = (FileContent) context[0];
-                    FileImpl nsBodyFile = fileContent.getFile();
-                    NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
-                    CsmNamespace ns = nsDef.getNamespace();
-                    if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, fileContent, language, objects).render(ast, (NamespaceImpl) ns, nsDef);
-                    }     
-                    RepositoryUtils.put(ns);
-                    break;
-                }
-                case CLASS_BODY:
-                {
-                    FileContent fileContent = (FileContent) context[0];
-                    ClassImpl cls = (ClassImpl) context[1];
-                    CsmVisibility visibility = (CsmVisibility) context[2];
-                    boolean localClass = (Boolean) context[3];
-                    cls.fixFakeRender(language, fileContent, visibility, ast, localClass);
-                    if (!localClass) {
-                        RepositoryUtils.put(cls);
-                    }
-                    break;
-                }
-                case ENUM_BODY:
+            try {
+                CsmCacheManager.enter();
+                long start = System.currentTimeMillis();
+                switch (kind) {
+                    case TRY_BLOCK:
+                    case COMPOUND_STATEMENT:
+                        @SuppressWarnings("unchecked")
+                        List<CsmStatement> list = (List<CsmStatement>) context[0];
+                        ((LazyStatementImpl)parserContainer).renderStatements(ast, list, objects);
+                        break;
+                    case TRANSLATION_UNIT_WITH_COMPOUND:
+                    case TRANSLATION_UNIT:
+                        if (ast != null) {
+                            CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
+                            FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
+                            new AstRenderer(file, parseFileContent, language, objects).render(ast);
+                        }                        
+                        break;
+                    case NAMESPACE_DEFINITION_BODY: 
                     {
-                    FileContent fileContent = (FileContent) context[0];
-                    EnumImpl enumImpl = (EnumImpl) context[1];
-                    boolean localEnum = (Boolean) context[2];
-                    enumImpl.fixFakeRender(fileContent, ast, localEnum);
-                    if (!localEnum) {
-                        RepositoryUtils.put(enumImpl);
-                    }                    
-                    break;
+                        FileContent fileContent = (FileContent) context[0];
+                        FileImpl nsBodyFile = fileContent.getFile();
+                        NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
+                        CsmNamespace ns = nsDef.getNamespace();
+                        if (ast != null && ns instanceof NamespaceImpl) {
+                            new AstRenderer(nsBodyFile, fileContent, language, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        }                        
+                        RepositoryUtils.put(ns);
+                        break;
+                    }
+                    case CLASS_BODY: 
+                    {
+                        FileContent fileContent = (FileContent) context[0];
+                        ClassImpl cls = (ClassImpl) context[1];
+                        CsmVisibility visibility = (CsmVisibility) context[2];
+                        boolean localClass = (Boolean) context[3];
+                        cls.fixFakeRender(language, fileContent, visibility, ast, localClass);
+                        if (!localClass) {
+                            RepositoryUtils.put(cls);
+                        }
+                        break;
+                    }
+                    case ENUM_BODY: 
+                    {
+                        FileContent fileContent = (FileContent) context[0];
+                        EnumImpl enumImpl = (EnumImpl) context[1];
+                        boolean localEnum = (Boolean) context[2];
+                        enumImpl.fixFakeRender(fileContent, ast, localEnum);
+                        if (!localEnum) {
+                            RepositoryUtils.put(enumImpl);
+                        }                        
+                        break;
+                    }
+                    default:
+                        assert false : "unexpected parse kind " + kind;
                 }
-                default:
-                    assert false : "unexpected parse kind " + kind;
+                file.incParseCount();
+                renderTime = System.currentTimeMillis() - start;
+                dumpParseStatistics();
+            } finally {
+                CsmCacheManager.leave();
             }
-            file.incParseCount();
-            renderTime = System.currentTimeMillis() - start;
-            dumpParseStatistics();
         }
         
         @Override

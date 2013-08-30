@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -229,11 +230,16 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                     setChildren(new Node[]{new NoCodeModelNode(cdo)});
                 }
             } else {
-                PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
-                synchronized(lock) {
-                    if (fileModel.buildModel(buildPreModel, csmFile, force)){
-                        setChildren(fileModel.getNodes());
+                try {
+                    CsmCacheManager.enter();
+                    PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
+                    synchronized(lock) {
+                        if (fileModel.buildModel(buildPreModel, csmFile, force)){
+                            setChildren(fileModel.getNodes());
+                        }
                     }
+                } finally {
+                    CsmCacheManager.leave();
                 }
             }
         } finally {

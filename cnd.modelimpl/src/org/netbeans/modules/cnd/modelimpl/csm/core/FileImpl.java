@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -1841,11 +1842,16 @@ public final class FileImpl implements CsmFile,
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
     private boolean fixFakeRegistrations(boolean projectParsedMode) {
-        checkNotInParsingThreadImpl();
-        boolean result = false;
-        result |= fixFakeFunctionRegistrations(projectParsedMode);
-        result |= fixFakeIncludeRegistrations(projectParsedMode);
-        return result;
+        try {
+            CsmCacheManager.enter();
+            checkNotInParsingThreadImpl();
+            boolean result = false;
+            result |= fixFakeFunctionRegistrations(projectParsedMode);
+            result |= fixFakeIncludeRegistrations(projectParsedMode);
+            return result;
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     private boolean fixFakeFunctionRegistrations(boolean projectParsedMode) {
