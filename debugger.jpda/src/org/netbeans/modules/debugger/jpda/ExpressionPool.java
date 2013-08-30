@@ -155,6 +155,13 @@ public class ExpressionPool {
             // Ignore
         }
     }
+    
+    /**
+     * Clean cached expressions.
+     */
+    synchronized void clear() {
+        expressions.clear();
+    }
 
     private Expression createExpressionAt(Location loc, String url) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
         VirtualMachine vm = MirrorWrapper.virtualMachine(loc);
