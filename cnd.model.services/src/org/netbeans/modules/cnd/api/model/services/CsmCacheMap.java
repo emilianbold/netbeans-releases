@@ -41,34 +41,44 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
+import static org.netbeans.modules.cnd.api.model.services.CsmCacheManager.LOGGER;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 
 /**
  * map-based implementation for CsmCacheManager.CsmCacheEntry.
  * @author Vladimir Voskresensky
  */
-public class CsmCacheMap implements CsmCacheManager.CsmClientCache {
+public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
     private final long initTime;
-    private final Map<Object, Object> values;
+    private final Map<Object, Value> values;
+    private final String name;
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
 
-    public CsmCacheMap() {
-        this(DEFAULT_INITIAL_CAPACITY);
+    public CsmCacheMap(String name) {
+        this(name, DEFAULT_INITIAL_CAPACITY);
     }
 
-    public CsmCacheMap(int initialCapacity) {
-        this.values = new HashMap<Object, Object>(initialCapacity);
+    public CsmCacheMap(String name, int initialCapacity) {
+        this.name = name;
+        this.values = new HashMap<Object, Value>(initialCapacity);
         this.initTime = System.currentTimeMillis();
     }
 
-    public final Object get(@NonNull Object key) {
+    public final Value get(@NonNull Object key) {
         if (key == null) {
             throw new NullPointerException();
         }        
-        return values.get(key);
+        Value res = values.get(key);
+        if (res instanceof TraceValue) {
+            TraceValue out = (TraceValue)res;
+            out.onCacheHit();
+            LOGGER.log(Level.FINE, "HIT {0} (Hits {1}) {2}=>{3}\n", new Object[]{this.name, out.getHitsCount(), key, out.getResult()});
+        }
+        return res;
     }
 
     /**
@@ -79,7 +89,7 @@ public class CsmCacheMap implements CsmCacheManager.CsmClientCache {
      * @return the previous value associated with <tt>key</tt>, or
      * <tt>null</tt> if there was no mapping for <tt>key</tt>.
      */
-    public final Object put(@NonNull Object key, Object value) {
+    public final Value put(@NonNull Object key, Value value) {
         if (key == null) {
             throw new NullPointerException();
         }
@@ -88,24 +98,115 @@ public class CsmCacheMap implements CsmCacheManager.CsmClientCache {
 
     @Override
     public void cleanup() {
+        if (CndTraceFlags.TRACE_CSM_CACHE || LOGGER.isLoggable(Level.FINE)) {
+            int hits = 0;
+            int savedTime = 0;
+            int nullResolved = 0;
+            for (Map.Entry<Object, Value> entry : values.entrySet()) {
+                Value v = entry.getValue();
+                if (v instanceof TraceValue) {
+                    TraceValue value = (TraceValue) v;
+                    hits += value.getHitsCount();
+                    savedTime += value.getHitsCount() * value.getCalculationTime();
+                    if (value.getResult() == null) {
+                        nullResolved++;
+                    }
+                }
+            }
+            if (hits > 0) {
+                long usedTime = System.currentTimeMillis() - initTime;
+                LOGGER.log(Level.INFO, "{0}: HITS={1}, Used {2}ms, SavedTime={3}ms, Cached {4} Values (NULLs={5}) ({6})\n", new Object[]{name, hits, usedTime, savedTime, values.size(), nullResolved, Thread.currentThread().getName()});
+            }
+        }        
         values.clear();
-    }
-
-    protected final Map<Object, Object> values() {
-        return Collections.unmodifiableMap(values);
-    }
-    
-    protected final long timeSinceInitialization() {
-        return System.currentTimeMillis() - initTime;
     }
     
     @Override
     public String toString() {
         StringBuilder out = new StringBuilder();
-        for (Map.Entry<Object, Object> entry : values.entrySet()) {
+        for (Map.Entry<Object, Value> entry : values.entrySet()) {
             out.append(entry.getKey()).append("=").append(entry.getValue()).append("\n"); // NOI18N
         }
         return out.toString();
     }
     
+    public static Value toValue(Object cachedResult) {
+        return toValue(cachedResult, 0);
+    }
+    
+    public static Value toValue(Object cachedResult, long resultCalculationTime) {
+        if (CndTraceFlags.TRACE_CSM_CACHE) {
+            return new TraceValueImpl(cachedResult, resultCalculationTime);
+        } else {
+            return new ValueImpl(cachedResult);
+        }
+    }
+    
+    public interface Value {
+        Object getResult();
+    }
+    
+    public interface TraceValue extends Value {
+        int onCacheHit();
+        int getHitsCount();
+        long getCalculationTime();
+    }
+    
+    private static final class ValueImpl implements Value {
+        private final Object cachedResult;
+        private ValueImpl(Object cachedResult) {
+            this.cachedResult = cachedResult;
+        }
+
+        @Override
+        public String toString() {
+            return "result=" + getResult(); // NOI18N
+        }
+    
+        @Override
+        public final Object getResult() {
+            return cachedResult;
+        }
+    }
+    
+    private static final class TraceValueImpl implements TraceValue {
+        private final Object cachedResult;
+        private final long calculationTime;
+        private int hits;
+
+        private TraceValueImpl(Object cachedResult, long resultCalculationTime) {
+            this.cachedResult = cachedResult;
+            this.calculationTime = resultCalculationTime;
+            this.hits = 0;
+        }
+
+        @Override
+        public String toString() {
+            String saved = "";// NOI18N
+            if (hits > 0 && calculationTime > 0) {
+                saved = ", saved=" + (hits*calculationTime) + "ms";// NOI18N
+            }
+            return "HITS=" + hits + ", resolveTime=" + calculationTime + saved + ", result=" + cachedResult; // NOI18N
+        }
+
+        @Override
+        public Object getResult() {
+            return cachedResult;
+        }
+
+        @Override
+        public int onCacheHit() {
+            return ++hits;
+        }
+
+        @Override
+        public int getHitsCount() {
+            return hits;
+        }
+
+        @Override
+        public long getCalculationTime() {
+            return calculationTime;
+        }
+    }
 }
