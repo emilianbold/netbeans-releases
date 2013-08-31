@@ -77,7 +77,7 @@ public class Commit extends GeneralPHP {
     static private final String INDEX_PHP_INITIAL_CONTENT
             = "<!DOCTYPEhtml><!--Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.Tochangethistemplatefile,chooseTools|Templatesandopenthetemplateintheeditor.--><html><head><metacharset=\"UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
     static private final String EMPTY_PHP_INITIAL_CONTENT
-            = "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*/";
+            = "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
     static private final String CLASS_PHP_INITIAL_CONTENT
             = "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty("user.name") + "*/classnewPHPClass{//putyourcodehere}";
     static private final int COMPLETION_LIST_INCLASS = 22;
@@ -469,7 +469,9 @@ public class Commit extends GeneralPHP {
 
     public void CreateEmptyPHP() {
         startTest();
-        CreatePHPFile(TEST_PHP_NAME_1, "PHP File", null);
+        EditorOperator eo = CreatePHPFile(TEST_PHP_NAME_1, "PHP File", null);
+        // #209028 - need to close namespace
+        eo.replace(" */", " */\n\n?>");
         endTest();
     }
 
