@@ -50,22 +50,30 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 
 /**
  * map-based implementation for CsmCacheManager.CsmCacheEntry.
+ * TimeThreshold parameter allows to keep only values which took big creation time and skip 
+ * caching fast calculated values.
  * @author Vladimir Voskresensky
  */
 public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
     private final long initTime;
     private final Map<Object, Value> values;
     private final String name;
+    private final int timeThreshold;
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
 
     public CsmCacheMap(String name) {
-        this(name, DEFAULT_INITIAL_CAPACITY);
+        this(name, 0, DEFAULT_INITIAL_CAPACITY);
     }
 
-    public CsmCacheMap(String name, int initialCapacity) {
+    public CsmCacheMap(String name, int timeThreshold) {
+        this(name, timeThreshold, DEFAULT_INITIAL_CAPACITY);
+    }
+    
+    public CsmCacheMap(String name, int timeThreshold, int initialCapacity) {
         this.name = name;
         this.values = new HashMap<Object, Value>(initialCapacity);
         this.initTime = System.currentTimeMillis();
+        this.timeThreshold = timeThreshold;
     }
 
     public final Value get(@NonNull Object key) {
@@ -93,7 +101,15 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         if (key == null) {
             throw new NullPointerException();
         }
-        return values.put(key, value);
+        if (value == null) {
+            return values.put(key, null);
+        } else {
+            if (timeThreshold == 0 || !(value instanceof TimeConsumingValue) || 
+                (((TimeConsumingValue)value).getCalculationTime() > timeThreshold)) {
+                return values.put(key, value);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -113,7 +129,7 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
                     }
                 }
             }
-            if (hits > 0) {
+            if ((hits > 0 && savedTime > 0) || LOGGER.isLoggable(Level.FINE)) {
                 long usedTime = System.currentTimeMillis() - initTime;
                 LOGGER.log(Level.INFO, "{0}: HITS={1}, Used {2}ms, SavedTime={3}ms, Cached {4} Values (NULLs={5}) ({6})\n", new Object[]{name, hits, usedTime, savedTime, values.size(), nullResolved, Thread.currentThread().getName()});
             }
@@ -130,15 +146,18 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         return out.toString();
     }
     
-    public static Value toValue(Object cachedResult) {
-        return toValue(cachedResult, 0);
-    }
-    
+    /**
+     * wrap cachedResult object calculated during resultCalculationTime.
+     * @param cachedResult result to wrap
+     * @param resultCalculationTime time needed to re-create value.
+     * use Integer.MAX_VALUE to make sure value is always kept by map
+     * @return value ready to be put into map
+     */
     public static Value toValue(Object cachedResult, long resultCalculationTime) {
         if (CndTraceFlags.TRACE_CSM_CACHE) {
             return new TraceValueImpl(cachedResult, resultCalculationTime);
         } else {
-            return new ValueImpl(cachedResult);
+            return new ValueImpl(cachedResult, resultCalculationTime);
         }
     }
     
@@ -146,27 +165,41 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         Object getResult();
     }
     
-    public interface TraceValue extends Value {
-        int onCacheHit();
-        int getHitsCount();
+    public interface TimeConsumingValue extends Value {
         long getCalculationTime();
     }
     
-    private static final class ValueImpl implements Value {
+    public interface TraceValue extends TimeConsumingValue {
+        int onCacheHit();
+        int getHitsCount();
+    }
+    
+    private static final class ValueImpl implements TimeConsumingValue {
         private final Object cachedResult;
-        private ValueImpl(Object cachedResult) {
+        private final int calculationTime;
+        private ValueImpl(Object cachedResult, long calculationTime) {
             this.cachedResult = cachedResult;
+            if (calculationTime < Integer.MAX_VALUE) {
+                this.calculationTime = (int)calculationTime;
+            } else {
+                this.calculationTime = Integer.MAX_VALUE;
+            }
         }
 
         @Override
         public String toString() {
-            return "result=" + getResult(); // NOI18N
+            return "resolveTime=" + calculationTime + "result=" + getResult(); // NOI18N
         }
     
         @Override
         public final Object getResult() {
             return cachedResult;
         }
+
+        @Override
+        public long getCalculationTime() {
+            return calculationTime;
+        }                
     }
     
     private static final class TraceValueImpl implements TraceValue {
