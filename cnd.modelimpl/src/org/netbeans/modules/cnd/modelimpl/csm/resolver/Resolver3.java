@@ -123,7 +123,6 @@ public final class Resolver3 implements Resolver {
     private int interestedKind;
     private boolean resolveInBaseClass;
     private final boolean SUPRESS_RECURSION_EXCEPTION = Boolean.getBoolean("cnd.modelimpl.resolver3.hide.exception"); // NOI18N
-    private final CsmCacheMap resolverCache;
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -149,14 +148,13 @@ public final class Resolver3 implements Resolver {
         this.startFile = startFile;
         context = new Context(file, origOffset, this);
         fileMaps = new FileMapsCollector(file, startFile, origOffset);
-        resolverCache = CsmCacheManager.getClientCache(Resolver3.class, CACHE_INITIALIZER);        
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
 
-    public void initFileMaps() {
+    private void initFileMaps() {
         FindCurrLocalClassifier cb = new FindCurrLocalClassifier();
         fileMaps.initFileMaps(needClassifiers(), cb);
     }
@@ -268,6 +266,21 @@ public final class Resolver3 implements Resolver {
 
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        Object cacheKey = new OrigClassifierCacheKey(this.origOffset, this.file, this.startFile, orig);
+        CsmCacheMap origClassifiersCache = CsmCacheManager.getClientCache(OrigClassifierCacheKey.class, ORIG_CLASSIFIER_CACHE_INITIALIZER);
+        CsmClassifier out = (CsmClassifier) getFromCache(origClassifiersCache, cacheKey);
+        if (out == null) {
+            long time = System.currentTimeMillis();
+            out = getOriginalClassifierImpl(orig);
+            time = System.currentTimeMillis() - time;
+            if (origClassifiersCache != null) {
+                origClassifiersCache.put(cacheKey, CsmCacheMap.toValue(out, time));
+            }
+        }
+        return out;
+    }
+    
+    private CsmClassifier getOriginalClassifierImpl(CsmClassifier orig) {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
@@ -520,9 +533,10 @@ public final class Resolver3 implements Resolver {
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-        String fullName = fullName(nameTokens);
+        String fullName = fullName(nameTokens);        
         Object cacheKey = new NameResolveCacheKey(fullName, this.origOffset, this.startFile, this.file, interestedKind);
-        CsmObject result = getFromCache(cacheKey);
+        CsmCacheMap nameResolverCache = CsmCacheManager.getClientCache(NameResolveCacheKey.class, NAME_CACHE_INITIALIZER);
+        CsmObject result = (CsmObject) getFromCache(nameResolverCache, cacheKey);
         if (result == null) {
             if( nameTokens.length == 1 ) {
                 result = resolveSimpleName(result, nameTokens[0], interestedKind);
@@ -533,22 +547,22 @@ public final class Resolver3 implements Resolver {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, time});
             }
-            if (resolverCache != null) {
+            if (nameResolverCache != null) {
                 LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
-                resolverCache.put(cacheKey, CsmCacheMap.toValue(result, time));
+                nameResolverCache.put(cacheKey, CsmCacheMap.toValue(result, time));
             }
         }
         return result;
     }
 
-    private CsmObject getFromCache(Object cacheKey) {
-        CsmObject result = null;
+    private static Object getFromCache(CsmCacheMap cache, Object cacheKey) {
+        Object result = null;
         CsmCacheMap.Value cacheValue = null;
-        if (resolverCache != null) {
-            cacheValue = resolverCache.get(cacheKey);
+        if (cache != null) {
+            cacheValue = cache.get(cacheKey);
         }
         if (cacheValue != null) {
-            result = (CsmObject) cacheValue.getResult();
+            result = cacheValue.getResult();
         }
         return result;
     }
@@ -1034,6 +1048,74 @@ public final class Resolver3 implements Resolver {
         return false;
     }
 
+    private static final class OrigClassifierCacheKey {
+        private final int origOffset;
+        private final CsmFile file;
+        private final CsmFile startFile;
+        private final CsmClassifier orig;
+        private int hashCode = 0;
+
+        public OrigClassifierCacheKey(int origOffset, CsmFile file, CsmFile startFile, CsmClassifier orig) {
+            this.origOffset = origOffset;
+            this.file = file;
+            this.startFile = startFile;
+            this.orig = orig;
+        }
+
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                int hash = 5;
+                hash = 79 * hash + this.origOffset;
+                hash = 79 * hash + Objects.hashCode(this.file);
+                hash = 79 * hash + Objects.hashCode(this.startFile);
+                hash = 79 * hash + Objects.hashCode(this.orig);
+                hashCode = hash;
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final OrigClassifierCacheKey other = (OrigClassifierCacheKey) obj;
+            if (this.hashCode != other.hashCode && (this.hashCode != 0 && other.hashCode != 0)) {
+                return false;
+            }            
+            if (this.origOffset != other.origOffset) {
+                return false;
+            }
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            if (!Objects.equals(this.startFile, other.startFile)) {
+                return false;
+            }
+            if (!Objects.equals(this.orig, other.orig)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "OrigClassifierCacheKey{" + "origOffset=" + origOffset + ", file=" + file.getAbsolutePath() + ", startFile=" + startFile.getAbsolutePath() + ", orig=" + orig + '}'; // NOI18N
+        }
+    }
+    
+    private static final Callable<CsmCacheMap> ORIG_CLASSIFIER_CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("OrigClassifier Cache", 1); // NOI18N
+        }
+    };
+    
     private static final class NameResolveCacheKey {
         private final String fullName;
         private final int origOffset;
@@ -1105,7 +1187,7 @@ public final class Resolver3 implements Resolver {
         }
     }
     
-    private static final Callable<CsmCacheMap> CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+    private static final Callable<CsmCacheMap> NAME_CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
 
         @Override
         public CsmCacheMap call() {
