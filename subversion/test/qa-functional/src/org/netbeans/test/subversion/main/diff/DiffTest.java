@@ -164,6 +164,7 @@ public class DiffTest extends JellyTestCase {
             Thread.sleep(1000);
             VersioningOperator vo = VersioningOperator.invoke();
             vo = VersioningOperator.invoke();
+            new EventTool().waitNoEvent(2000);
             //Save action should change the file annotations
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
             String color = TestKit.getColor(nodeIDE.getHtmlDisplayName());

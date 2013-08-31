@@ -267,7 +267,10 @@ public class Util {
                 }
             }
         }
-        return providers!=null && providers.size()>0 ? providers.get(defIndex) : null;
+        if(providers.isEmpty()) {
+            Logger.getLogger(RelatedCMPWizard.class.getName()).log(Level.INFO, "Can't find any providers supported by the project: {0}", project); //NOI18N
+        }
+        return providers.size()>0 ? providers.get(defIndex) : null;
     }
 
     public static boolean isDefaultProvider(Project project, Provider provider) {

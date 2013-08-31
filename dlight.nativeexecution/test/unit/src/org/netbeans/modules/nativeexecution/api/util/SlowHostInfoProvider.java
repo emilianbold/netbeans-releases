@@ -56,7 +56,8 @@ final public class SlowHostInfoProvider implements HostInfoProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
 
-    public HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException {
+    @Override
+    public HostInfo getHostInfo(final ExecutionEnvironment execEnv) throws IOException, InterruptedException {
         boolean enabled = Boolean.getBoolean("dlight.nativeexecution.SlowHostInfoProviderEnabled"); // NOI18N
 
         if (!enabled) {
@@ -77,7 +78,7 @@ final public class SlowHostInfoProvider implements HostInfoProvider {
             try {
                 for (int i = 0; i < 3; i++) {
                     try {
-                        log.info("Trying hard to get some information about the host... Not an easy task... [provider " + providerIdx + "/ delay " + i + "]"); // NOI18N
+                        log.log(Level.INFO, "Trying hard to get some information about the host... Not an easy task... [provider {0}/ delay {1}]", new Object[]{providerIdx, i}); // NOI18N
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {
                         log.log(Level.SEVERE, "InterruptedException", ex); // NOI18N

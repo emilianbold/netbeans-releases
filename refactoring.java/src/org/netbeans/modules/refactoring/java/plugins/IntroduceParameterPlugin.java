@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -99,9 +100,8 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
     @Override
     protected Problem fastCheckParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
-        Problem p = null;
-        p = initDelegate(javac);
-        TreePath resolved = treePathHandle.resolve(javac);
+        Problem p = initDelegate(javac);
+        final TreePath resolved = treePathHandle.resolve(javac);
         final Element variableElement = javac.getTrees().getElement(resolved);
         ChangeParametersPlugin.Checks check = new ChangeParametersPlugin.Checks(javac) {
 
@@ -111,17 +111,17 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 int originalIndex = paramTable[index].getOriginalIndex();
                 final VariableElement parameterElement = originalIndex == -1 ? null : method.getParameters().get(originalIndex);
                 TreeScanner<Boolean, String> scanner = new TreeScanner<Boolean, String>() {
-
+               
                     @Override
                     public Boolean visitVariable(VariableTree vt, String p) {
                         super.visitVariable(vt, p);
                         TreePath path = javac.getTrees().getPath(javac.getCompilationUnit(), vt);
                         Element element = javac.getTrees().getElement(path);
                         boolean sameName = vt.getName().contentEquals(p) && !element.equals(parameterElement);
-
+                
                         return sameName && element != variableElement;
                     }
-
+                
                     @Override
                     public Boolean reduce(Boolean left, Boolean right) {
                         return (left == null ? false : left) || (right == null ? false : right);
@@ -133,6 +133,36 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                         p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
                     }
                 }
+                
+                Scope s = javac.getTrees().getScope(resolved);
+                OUTER:
+                while (s != null) {
+                    for (Element element : javac.getElementUtilities().getLocalMembersAndVars(s, new ElementUtilities.ElementAcceptor() {
+                        @Override
+                        public boolean accept(Element e, TypeMirror type) {
+                            return true;
+                        }
+                    })) {
+                        if(element.getKind() == ElementKind.FIELD || element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.PARAMETER || element.getKind() == ElementKind.RESOURCE_VARIABLE) {
+                            boolean sameName = element.getSimpleName().contentEquals(name) && !element.equals(parameterElement);
+                            if (sameName) {
+                                if(!element.equals(variableElement) && element.getEnclosingElement() != method) {
+                                    if (!isParameterBeingRemoved(method, name, paramTable)) {
+                                        if(element.getKind() == ElementKind.FIELD) {
+                                            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsedField", name)); // NOI18N
+                                        } else {
+                                            p = createProblem(p, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_NameAlreadyUsed", name)); // NOI18N
+                                        }
+                                        
+                                        break OUTER;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    s = s.getEnclosingScope();
+                }
+                
                 return p;
             }
         };

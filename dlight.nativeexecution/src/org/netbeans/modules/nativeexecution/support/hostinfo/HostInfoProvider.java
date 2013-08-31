@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.nativeexecution.support.hostinfo;
 
 import java.io.IOException;
@@ -49,5 +48,6 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 public interface HostInfoProvider {
     // May return null if provider cannot provide info about requested execution
     // environment
-    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException;
+
+    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException;
 }

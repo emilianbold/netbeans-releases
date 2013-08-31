@@ -50,7 +50,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
@@ -71,7 +70,6 @@ import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
 
 import org.netbeans.modules.websvc.project.api.WebService;
 import org.netbeans.modules.websvc.project.spi.LookupMergerSupport;
-import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.modules.websvc.project.spi.WebServiceFactory;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 
@@ -79,10 +77,6 @@ import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -355,9 +349,6 @@ public class MavenJaxWsSupportProvider extends ProjectOpenedHook
                     public Map<String, ServiceInfo> run(WebservicesMetadata metadata) {
                         Map<String, ServiceInfo> result = new HashMap<String, ServiceInfo>();
                         Webservices webServices = metadata.getRoot();
-                        LOG.log(Level.INFO, "Inside update JAX-WS , WS root :"+
-                                webServices+" ; number of descriptions :"+
-                                webServices.getWebserviceDescription().length);// NOI18N
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
                             PortComponent[] ports = wsDesc.getPortComponent();
                             for (PortComponent port : ports) {

@@ -304,7 +304,8 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     }
 
     private boolean isIgnoreModification() {
-        return Boolean.TRUE.equals(doc.getProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY));
+        return Boolean.TRUE.equals(doc.getProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY)) ||
+                !DocumentUtilities.isTypingModification(doc);
     }
     
     private boolean isAbbrevDisabled() {
