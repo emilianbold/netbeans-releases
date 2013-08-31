@@ -47,6 +47,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
@@ -73,10 +74,18 @@ import org.openide.util.Exceptions;
  * </pre>
  *
  * There are several ways to access cached information including shortcut help
- * methods.
+ * methods to get/put into default cache.
  * <pre>
- * Object value = CsmCacheManager.getValue(ClientCacheKey, key);
- * Object prevValue = CsmCacheManager.putValue(ClientCacheKey, key, newValue);
+ * CsmCacheMap.Value value = CsmCacheManager.getValue(key);
+ * if (value != null) {
+ *  result = value.getResult();
+ * } else {
+ *  long time = System.currentTimeMillis();
+ *  ... calculate
+ *  time = System.currentTimeMillis() - time;
+ *  CsmCacheMap.Value newValue = CsmCacheMap.toValue(cachedResult, time, traceName);
+ *  CsmCacheMap.Value prevValue = CsmCacheManager.putValue(key, newValue);
+ * }
  * </pre>
  *
  * @author Vladimir Voskresensky
@@ -107,60 +116,57 @@ public final class CsmCacheManager {
     }
 
     /**
-     * Query for cached value.
+     * Query for cached value in shared map-based cache.
      *
-     * @param mapKey cache-map entry key
-     * @param key key in map
+     * @param key key in shared map-based cache
      * @return If no cache transaction were started then null is returned. If
      * cache transaction is active, then value associated with key if any.
      * @see getCacheMap#getMapBasedCache
      */
-    public static Object getValue(@NonNull Object mapKey, @NonNull Object key) {
-        if (mapKey == null) {
+    public static CsmCacheMap.Value getValue(@NonNull Object key) {
+        if (key == null) {
             throw new NullPointerException();
         }
-        CsmCacheMap map = getMapCache(mapKey);
+        CsmCacheMap map = getSharedCache();
         if (map == null) {
             return null;
         }
-        Object value = map.get(key);
-        LOGGER.log(Level.FINE, "getValue {0}:{1}->{2}\n", new Object[]{mapKey, key, value});
+        CsmCacheMap.Value value = map.get(key);
+        LOGGER.log(Level.FINE, "getValue {1}->{2}\n", new Object[]{key, value});
         return value;
     }
 
     /**
-     * cache value if has active cache transaction, no-op otherwise.
+     * cache the value if has active cache transaction, no-op otherwise.
      *
-     * @param mapKey cache-map entry key
      * @param key key
-     * @param value value to put in cache
+     * @param value value to put in shared map-based cache
      * @return If no cache transaction were started then null is returned and
      * nothing is put into cache. If cache transaction is active, then returns
      * previous value associated with key if any.
      */
-    public static Object putValue(@NonNull Object mapKey, @NonNull Object key, Object value) {
-        if (mapKey == null) {
+    public static Object putValue(@NonNull Object key, CsmCacheMap.Value value) {
+        if (key == null) {
             throw new NullPointerException();
         }
-        CsmCacheMap map = getMapCache(mapKey);
+        CsmCacheMap map = getSharedCache();
         if (map == null) {
             return null;
         }
         Object prev = map.put(key, value);
-        LOGGER.log(Level.FINE, "putValue {0}:{1}->{2} (replaced {3})\n", new Object[] {mapKey, key, value, prev});
+        LOGGER.log(Level.FINE, "putValue {1}->{2} (replaced {3})\n", new Object[] {key, value, prev});
         return prev;
     }
 
     /**
-     * If cache transaction is started returns map-based cache for key, null
+     * If cache transaction is started returns shared map-based cache for key, null
      * otherwise
      *
-     * @param mapKey cache-map entry key
      * @return map-based cache for key if cache transaction is started, null
      * otherwise
      */
-    public static CsmCacheMap getMapCache(@NonNull Object mapKey) {
-        return (CsmCacheMap) storagesPool.get().getEntry(mapKey, INIT_AS_MAP);
+    public static CsmCacheMap getSharedCache() {
+        return (CsmCacheMap) storagesPool.get().getEntry(CsmCacheStorage.class, INIT_AS_MAP);
     }
 
     /**
@@ -191,11 +197,11 @@ public final class CsmCacheManager {
         public void cleanup();
     }
 
-    public static final Callable<CsmCacheMap> INIT_AS_MAP = new Callable<CsmCacheMap>() {
+    private static final Callable<CsmCacheMap> INIT_AS_MAP = new Callable<CsmCacheMap>() {
 
         @Override
         public CsmCacheMap call() {
-            return new CsmCacheMap();
+            return new CsmCacheMap(CsmCacheStorage.class.getSimpleName());
         }
 
     };
@@ -263,6 +269,9 @@ public final class CsmCacheManager {
          * @return true if cache is active, false otherwise.
          */
         boolean isActive() {
+            if (!CndTraceFlags.USE_CSM_CACHE) {
+                return false;
+            }
             return activeReferences > 0;
         }
 
@@ -277,8 +286,13 @@ public final class CsmCacheManager {
          * @return entry for key
          */
         CsmClientCache getEntry(@NonNull Object entryKey, Callable<? extends CsmClientCache> init) {
+            if (!CndTraceFlags.USE_CSM_CACHE) {
+                return null;
+            }
             if (activeReferences == 0) {
-                LOGGER.log(Level.INFO, "no any active cache transaction {0}\n", entryKey);
+                if (LOGGER.isLoggable(Level.FINE) || CndTraceFlags.TRACE_CSM_CACHE) {
+                    LOGGER.log(Level.INFO, "no any active cache transaction\n", new Exception("" + entryKey));
+                }
                 return null;
             }
             CsmClientCache out = cacheEntries.get(entryKey);
@@ -306,7 +320,7 @@ public final class CsmCacheManager {
         @Override
         public String toString() {
             StringBuilder out = new StringBuilder();
-            out.append("activeReferences=").append(activeReferences).append("\n");
+            out.append("activeReferences=").append(activeReferences).append("\n"); // NOI18N
             for (Map.Entry<Object, CsmClientCache> entry : cacheEntries.entrySet()) {
                 out.append(entry.getKey()).append("=>\n{").append(entry.getValue()).append("}\n"); // NOI18N
             }

@@ -57,4 +57,8 @@ public interface CndTraceFlags {
     public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
     
     public static final boolean USE_INDEXING_API = DebugUtils.getBoolean("cnd.use.indexing.api", true); // NOI18N
+  
+    public static final boolean USE_CSM_CACHE = DebugUtils.getBoolean("cnd.use.csm.cache", true); // NOI18N;
+
+    public static final boolean TRACE_CSM_CACHE = DebugUtils.getBoolean("cnd.trace.csm.cache", false); // NOI18N;
 }
