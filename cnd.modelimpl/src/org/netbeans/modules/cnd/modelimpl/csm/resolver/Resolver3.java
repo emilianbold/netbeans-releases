@@ -105,7 +105,6 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn
  */
 public final class Resolver3 implements Resolver {
-    static final boolean TRACE_CSM_CACHE = CndUtils.getBoolean("cnd.csmcache", false);
     static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
     private final ProjectBase project;
@@ -124,6 +123,7 @@ public final class Resolver3 implements Resolver {
     private int interestedKind;
     private boolean resolveInBaseClass;
     private final boolean SUPRESS_RECURSION_EXCEPTION = Boolean.getBoolean("cnd.modelimpl.resolver3.hide.exception"); // NOI18N
+    private final CsmCacheMap resolverCache;
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -148,7 +148,8 @@ public final class Resolver3 implements Resolver {
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
         context = new Context(file, origOffset, this);
-        fileMaps = new FileMapsCollector(file, startFile);
+        fileMaps = new FileMapsCollector(file, startFile, origOffset);
+        resolverCache = CsmCacheManager.getClientCache(Resolver3.class, CACHE_INITIALIZER);        
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
@@ -157,7 +158,7 @@ public final class Resolver3 implements Resolver {
 
     public void initFileMaps() {
         FindCurrLocalClassifier cb = new FindCurrLocalClassifier();
-        fileMaps.initFileMaps(needClassifiers(), origOffset, cb);
+        fileMaps.initFileMaps(needClassifiers(), cb);
     }
     
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart, AtomicBoolean outVisibility) {
@@ -515,28 +516,14 @@ public final class Resolver3 implements Resolver {
             CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
             return null;
         }
-        CsmObject result = null;
         long time = System.currentTimeMillis();
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
         String fullName = fullName(nameTokens);
         Object cacheKey = new NameResolveCacheKey(fullName, this.origOffset, this.startFile, this.file, interestedKind);
-        NameResolverCache resolverCache = CsmCacheManager.getClientCache(NameResolverCache.class, CACHE_INITIALIZER);
-        NameResolveCacheValue cacheValue = null;
-        if (resolverCache != null) {
-            cacheValue = (NameResolveCacheValue) resolverCache.get(cacheKey);
-        } else {
-            Level level = TRACE_CSM_CACHE ? Level.INFO : Level.FINE;
-            if (LOGGER.isLoggable(level)) {
-                LOGGER.log(level, "NO CACHE ACTIVITY ", new Exception());
-            }
-        }
-        if (cacheValue != null) {
-            result = cacheValue.resolveResult;
-            cacheValue.hits++;
-            LOGGER.log(Level.FINE, "HIT RESOLVED {0} ({1}) at {2}[{4}] Hits {3}=>{5}\n", new Object[]{fullName, interestedKind, origOffset, cacheValue.hits, file.getName(), result});
-        } else {
+        CsmObject result = getFromCache(cacheKey);
+        if (result == null) {
             if( nameTokens.length == 1 ) {
                 result = resolveSimpleName(result, nameTokens[0], interestedKind);
             } else if( nameTokens.length > 1 ) {
@@ -548,12 +535,24 @@ public final class Resolver3 implements Resolver {
             }
             if (resolverCache != null) {
                 LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
-                resolverCache.put(cacheKey, new NameResolveCacheValue(result, time));
+                resolverCache.put(cacheKey, CsmCacheMap.toValue(result, time));
             }
         }
         return result;
     }
 
+    private CsmObject getFromCache(Object cacheKey) {
+        CsmObject result = null;
+        CsmCacheMap.Value cacheValue = null;
+        if (resolverCache != null) {
+            cacheValue = resolverCache.get(cacheKey);
+        }
+        if (cacheValue != null) {
+            result = (CsmObject) cacheValue.getResult();
+        }
+        return result;
+    }
+    
     private CsmObject resolveSimpleName(CsmObject result, CharSequence name, int interestedKind) {
         CsmNamespace containingNS = null;
         if (result == null && needClassifiers()) {
@@ -1053,7 +1052,12 @@ public final class Resolver3 implements Resolver {
 
         @Override
         public String toString() {
-            return "NameResolveCacheKey{" + "name=" + fullName + ", origOffset=" + origOffset + ", startFile=" + startFile + ", file=" + file + ", interestedKind=" + interestedKind + ", hashCode=" + hashCode + '}';
+            return "NameResolveCacheKey{" + "name=" + fullName + // NOI18N
+                    ", origOffset=" + origOffset + // NOI18N
+                    ", startFile=" + startFile.getAbsolutePath() + // NOI18N
+                    ", file=" + file.getAbsolutePath() + // NOI18N
+                    ", interestedKind=" + interestedKind + // NOI18N
+                    ", hashCode=" + hashCode + '}';// NOI18N
         }
     
         @Override
@@ -1100,64 +1104,12 @@ public final class Resolver3 implements Resolver {
             return true;
         }
     }
-
-    private static final class NameResolveCacheValue {
-        final CsmObject resolveResult;
-        final long resolveTime;
-        int hits;
-
-        public NameResolveCacheValue(CsmObject resolveResult, long resolveTime) {
-            this.resolveResult = resolveResult;
-            this.resolveTime = resolveTime;
-            this.hits = 0;
-        }
-
-        @Override
-        public String toString() {
-            String saved = "";
-            if (hits > 0 && resolveTime > 0) {
-                saved = ", saved=" + (hits*resolveTime) + "ms";
-            }
-            return "HITS=" + hits + ", resolveTime=" + resolveTime + saved + ", result=" + resolveResult; // NOI18N
-        }
-    }
     
-    private static final class NameResolverCache extends CsmCacheMap {
-        public NameResolverCache() {
-        }                
+    private static final Callable<CsmCacheMap> CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
 
         @Override
-        public void cleanup() {
-            if (LOGGER.isLoggable(Level.FINE) || TRACE_CSM_CACHE) {
-                Map<Object, Object> values = values();
-                int hits = 0;
-                int savedTime = 0;
-                int nullResolved = 0;
-                for (Map.Entry<Object, Object> entry : values.entrySet()) {
-                    Object v = entry.getValue();
-                    if (v instanceof NameResolveCacheValue) {
-                        NameResolveCacheValue value = (NameResolveCacheValue) v;
-                        hits += value.hits;
-                        savedTime += value.hits * value.resolveTime;
-                        if (value.resolveResult == null) {
-                            nullResolved++;
-                        }
-                    }
-                }
-                if (hits > 0) {
-                    long usedTime = super.timeSinceInitialization();
-                    LOGGER.log(Level.INFO, "ResolverCache: HITS={1}, Used {4}ms, SavedTime={2}ms, {0} Values; NULLs={3} ({5})\n", new Object[]{values.size(), hits, savedTime, nullResolved, usedTime, Thread.currentThread().getName()});
-                }
-            }
-            super.cleanup();
-        }
-    }
-    
-    private static final Callable<NameResolverCache> CACHE_INITIALIZER = new Callable<NameResolverCache>() {
-
-        @Override
-        public NameResolverCache call() {
-            return new NameResolverCache();
+        public CsmCacheMap call() {
+            return new CsmCacheMap("Resolver3 Cache"); // NOI18N
         }
 
     };
