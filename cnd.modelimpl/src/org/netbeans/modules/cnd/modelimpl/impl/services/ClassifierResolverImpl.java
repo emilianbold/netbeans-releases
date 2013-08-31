@@ -217,7 +217,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         if (!visibles.isEmpty()) {
             visible.set(true);
             // trace
-            if (CndUtils.isDebugMode() && !CndUtils.isUnitTestMode()) {
+            if (TRACE_MULTIPLE_VISIBE_OBJECTS) {
                 if (visibles.size() > 1) {
                     // we have several visible classifiers
                     System.err.printf("findVisibleDeclaration: we have several classifiers %s visible from %s\n", uniqueName, file.getAbsolutePath()); // NOI18N
@@ -238,6 +238,7 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
         }
         return first;
     }
+    private static final boolean TRACE_MULTIPLE_VISIBE_OBJECTS = Boolean.getBoolean("cnd.trace.multiple.visible");
 
     private Collection<CsmProject> getLibraries(CsmFile file, int contextOffset) {
         CsmProject project = file.getProject();
