@@ -156,14 +156,20 @@ import org.openide.util.lookup.Lookups;
 public class JaxWsNode extends AbstractNode implements
         WsWsdlCookie, JaxWsTesterCookie, ConfigureHandlerCookie {
 
-    private static final RequestProcessor rp = 
-        new RequestProcessor("JaxWsNode-request-processor");            // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(JaxWsNode.class);
     Service service;
     FileObject srcRoot;
     JaxWsModel jaxWsModel;
     private FileObject implBeanClass;
     InstanceContent content;
     Project project;
+    
+    private final RequestProcessor.Task implClassModifiedTask = RP.create(new Runnable () {
+        @Override
+        public void run() {
+            setShortDescription(getWsdlURL());
+        }
+    });
 
     public JaxWsNode(JaxWsModel jaxWsModel, Service service, FileObject srcRoot, FileObject implBeanClass) {
         this(jaxWsModel, service, srcRoot, implBeanClass, new InstanceContent());
@@ -238,7 +244,7 @@ public class JaxWsNode extends AbstractNode implements
             }
         };
         content.add(cookie);
-        rp.post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
@@ -252,8 +258,8 @@ public class JaxWsNode extends AbstractNode implements
 
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ( DataObject.PROP_MODIFIED.equals( evt.getPropertyName())){
-                        setShortDescription(getWsdlURL());
+                    if ( DataObject.PROP_MODIFIED.equals( evt.getPropertyName()) ) {
+                        implClassModifiedTask.schedule(500);
                     }
                 }
             });

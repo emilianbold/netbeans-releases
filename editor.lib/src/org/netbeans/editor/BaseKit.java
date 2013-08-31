@@ -1088,18 +1088,16 @@ public class BaseKit extends DefaultEditorKit {
                     final BaseDocument doc = (BaseDocument)target.getDocument();
                     // Check rectangular selection => special mode
                     if (RectangularSelectionUtils.isRectangularSelection(target)) {
+                        final boolean[] changed = new boolean[1];
                         doc.runAtomicAsUser(new Runnable() {
                             @Override
                             public void run() {
                                 try {
                                     List<Position> regions = RectangularSelectionUtils.regionsCopy(target);
-                                    if (regions != null) {
+                                    if (regions != null && regions.size() > 2) {
+                                        changed[0] = true;
                                         RectangularSelectionUtils.removeSelection(doc, regions);
                                         RectangularSelectionUtils.insertText(doc, regions, cmd);
-                                        Caret caret = target.getCaret();
-                                        if (caret instanceof BaseCaret) {
-                                            ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
-                                        }
                                     }
                                 } catch (BadLocationException ble) {
                                     LOG.log(Level.FINE, null, ble);
@@ -1107,7 +1105,13 @@ public class BaseKit extends DefaultEditorKit {
                                 }
                             }
                         });
-                        return;
+                        Caret caret = target.getCaret();
+                        if (caret instanceof BaseCaret) {
+                            ((BaseCaret)caret).setRectangularSelectionToDotAndMark();
+                        }
+                        if (changed[0]) {
+                            return;
+                        }
                     }
 
                     try {
