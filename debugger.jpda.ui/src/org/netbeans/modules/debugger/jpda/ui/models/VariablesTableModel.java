@@ -218,9 +218,10 @@ public class VariablesTableModel implements TableModel, Constants {
                 }
             }
         } else {
-            synchronized (mirrors) {
+            return var.getValue();
+            /*synchronized (mirrors) {
                 values.put(var, var.getValue());
-            }
+            }*/
         }
         boolean isROCheck;
         synchronized (checkReadOnlyMutables) {

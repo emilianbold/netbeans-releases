@@ -54,6 +54,7 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -475,8 +476,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             String msg;
             if (sel != null) {
                 getOutputPane().unlockScroll();
-                getOutputPane().setSelection(sel[0], sel[1]);
                 int line = out.getLines().getLineAt(sel[0]);
+                ensureLineVisible(out, line);
+                getOutputPane().setSelection(sel[0], sel[1]);
                 int col = sel[0] - out.getLines().getLineStart(line);
                 msg = NbBundle.getMessage(OutputTab.class, "MSG_Found", lastPattern, line + 1, col + 1);
                 if (appendMsg != null) {
@@ -489,6 +491,19 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             return sel != null;
         }
         return false;
+    }
+
+    /**
+     * Ensure that a line is visible (not inside a collapsed fold). If a change
+     * in the lines object is needed, fire immediately.
+     */
+    private void ensureLineVisible(OutWriter out, int line) {
+        if (!out.getLines().isVisible(line)) {
+            out.getLines().showFoldsForLine(line);
+            if (out.getLines() instanceof ActionListener) {
+                ((ActionListener) out.getLines()).actionPerformed(null);
+            }
+        }
     }
 
     /**

@@ -287,6 +287,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             tearDown();
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getSource() instanceof JPDADebugger) {
                 int state = ((JPDADebugger) e.getSource()).getState();

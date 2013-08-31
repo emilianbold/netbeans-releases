@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import org.jdesktop.swingx.renderer.*;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
@@ -197,13 +198,23 @@ class NullObjectCellRenderer extends SQLConstantsCellRenderer {
 
 class SQLConstantsCellRenderer extends CellFocusCustomRenderer {
 
+    private static final Color foregroundColor;
+
+    static {
+        Color foregroundColorFromMngr = UIManager.getColor(
+                "nb.dataview.table.sqlconstant.foreground"); //NOI18N
+        foregroundColor = foregroundColorFromMngr != null
+                ? foregroundColorFromMngr
+                : Color.DARK_GRAY;
+    }
+
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         c.setFont(new Font(c.getFont().getFamily(), Font.ITALIC, 9));
         ((JLabel) c).setToolTipText(value.toString());
         if (!isSelected) {
-            c.setForeground(Color.DARK_GRAY);
+            c.setForeground(foregroundColor);
         }
 
         return c;

@@ -80,6 +80,7 @@ public class IssueField {
     public static final IssueField MODIFIED = new IssueField(CloudDevAttribute.MODIFIED_DATE.getTaskName(), "CTL_Issue_Modification_Title", "CTL_Issue_Modification_Desc"); // NOI18N
     public static final IssueField CREATED = new IssueField(CloudDevAttribute.CREATION_DATE.getTaskName(), "CTL_Issue_Creation_Title", "CTL_Issue_Creation_Desc"); // NOI18N
     
+    public static final IssueField COMMENT = new IssueField(TaskAttribute.COMMENT_NEW, null, null, true);
     public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, null, false);
     public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, null, false);
 

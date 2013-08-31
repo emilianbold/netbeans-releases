@@ -75,7 +75,6 @@ import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.CheckBoxProvider;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.jdesktop.swingx.renderer.StringValues;
-import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.table.celleditor.*;
 import org.netbeans.modules.db.dataview.util.BinaryToStringConverter;
@@ -218,7 +217,7 @@ public class ResultSetJXTable extends JXTableDecorator {
         setDefaultEditor(Boolean.class, new BooleanTableCellEditor(b));
 
         try {
-            DatePickerCellEditor dateEditor = new DatePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
+            DateTimePickerCellEditor dateEditor = new DateTimePickerCellEditor(new SimpleDateFormat (DateType.DEFAULT_FOMAT_PATTERN));
             setDefaultEditor(java.sql.Date.class, dateEditor);
         } catch (NullPointerException npe) {
             mLogger.log(Level.WARNING, "While creating DatePickerCellEditor was thrown " + npe, npe);

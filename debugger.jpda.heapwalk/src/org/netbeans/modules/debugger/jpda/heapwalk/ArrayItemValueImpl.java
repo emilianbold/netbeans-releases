@@ -64,14 +64,17 @@ public class ArrayItemValueImpl implements ArrayItemValue {
         this.index = index;
     }
 
+    @Override
     public int getIndex() {
         return index;
     }
 
+    @Override
     public Instance getInstance() {
         return instance;
     }
 
+    @Override
     public Instance getDefiningInstance() {
         return defInstance;
     }

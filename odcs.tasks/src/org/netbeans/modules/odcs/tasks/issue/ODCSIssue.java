@@ -46,50 +46,52 @@ import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
-import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
+import oracle.eclipse.tools.cloud.dev.tasks.CloudDevOperation;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
-import org.eclipse.mylyn.tasks.core.IRepositoryElement;
-import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
-import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
-import org.netbeans.modules.mylyn.util.SubmitCommand;
+import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.NbTaskDataModel;
+import org.netbeans.modules.mylyn.util.NbTaskDataState;
+import org.netbeans.modules.mylyn.util.commands.PostAttachmentCommand;
+import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
+import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -98,22 +100,14 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Tomas Stupka
  */
-public class ODCSIssue {
+public class ODCSIssue extends AbstractNbTaskWrapper {
 
-    private TaskData data;
     private final ODCSRepository repository;
     private final PropertyChangeSupport support;
 
     private ODCSIssueController controller;
     
-    private String initialProduct = null;
-    
     private ODCSIssueNode node;
-    private static final Set<IssueField> UNAVAILABLE_FIELDS_IF_PARTIAL_DATA = new HashSet<IssueField>(Arrays.asList(
-            IssueField.SUBTASK
-    ));
-    private Map<String, String> seenAtributes;
-    private boolean open;
     
     /**
      * IssueProvider wasn't seen yet
@@ -126,20 +120,34 @@ public class ODCSIssue {
     static final int FIELD_STATUS_UPTODATE = 1;
 
     /**
-     * Field has a value in oposite to the last time when it was seen
+     * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_NEW = 2;
+    static final int FIELD_STATUS_MODIFIED = 2;
 
     /**
      * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_MODIFIED = 4;
-    private HashMap<String, String> attributes;
+    static final int FIELD_STATUS_OUTGOING = 4;
+
+    /**
+     * Field was changed both locally and in repository
+     */
+    static final int FIELD_STATUS_CONFLICT = FIELD_STATUS_MODIFIED | FIELD_STATUS_OUTGOING;
     
-    public ODCSIssue(TaskData data, ODCSRepository repo) {
-        this.data = data;
+    private String recentChanges = "";
+    private String tooltip = "";
+    
+    private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/remote.png"); //NOI18N
+    private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
+    private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
+    private boolean loading;
+
+    public ODCSIssue(NbTask task, ODCSRepository repo) {
+        super(task);
         this.repository = repo;
         support = new PropertyChangeSupport(this);
+        updateRecentChanges();
+        updateTooltip();
     }
 
     public IssueNode getNode() {
@@ -149,62 +157,30 @@ public class ODCSIssue {
         return node;
     }
     
-    TaskData getTaskData() {
-        return data;
-    }
-    
     public String getDisplayName() {
-        return getDisplayName(data);
+        return getDisplayName(getNbTask());
     }
     
     /**
      * Determines the issue display name depending on the issue new state
-     * @param td
+     * @param task
      * @return 
      */
-    public static String getDisplayName(TaskData td) {
-        return td.isNew() ?
-                NbBundle.getMessage(ODCSIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(ODCSIssue.class, "CTL_Issue", new Object[] {getID(td), getSummary(td)}); // NOI18N
-    }
-
-    /**
-     * Determines the issue id
-     * @param td
-     * @return 
-     */
-    public String getID() {
-        return getID(data);
-    }
-       
-    /**
-     * determines the given TaskData id
-     * @param td
-     * @return 
-     */
-    public static String getID(TaskData td) {
-        return td.getTaskId();
+    public static String getDisplayName (NbTask task) {
+        return task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW ?
+                task.getSummary() :
+                NbBundle.getMessage(ODCSIssue.class, "CTL_Issue", new Object[] {getID(task), task.getSummary()}); //NOI18N
     }
 
     public String getTooltip() {
-        return getDisplayName();
+        return tooltip;
     }
-    
-    /**
-     * Returns the id from the given taskData or null if taskData.isNew()
-     * @param taskData
-     * @return id or null
-     */
-    public static String getSummary(TaskData taskData) {
-        if(taskData.isNew()) {
-            return null;
-        }
-        return getFieldValue(IssueField.SUMMARY, taskData);
-    }    
     
     // XXX merge with bugzilla
     Comment[] getComments() {
-        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
+        NbTaskDataModel m = getModel();
+        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
             return new Comment[0];
         }
@@ -217,7 +193,9 @@ public class ODCSIssue {
     
     // XXX merge with bugzilla
     List<Attachment> getAttachments() {
-        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        NbTaskDataModel m = getModel();
+        List<TaskAttribute> attrs = m == null ? null : m.getLocalTaskData()
+                .getAttributeMapper().getAttributesByType(m.getLocalTaskData(), TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return Collections.emptyList();
         }
@@ -228,33 +206,98 @@ public class ODCSIssue {
         return attachments;
     }
 
-    public void setSeen(boolean seen) {
-        try {
-            repository.getIssueCache().setSeen(getID(), seen);
-        } catch (IOException ex) {
-            ODCS.LOG.log(Level.WARNING, null, ex);
-        }
+    public String getRecentChanges() {
+        return recentChanges;
     }
     
-    private boolean wasSeen() {
-        return repository.getIssueCache().wasSeen(getID());
+    private boolean updateTooltip () {
+        String displayName = getDisplayName();
+        String oldTooltip = tooltip;
+        NbTask.SynchronizationState state = getSynchronizationState();
+        URL iconPath = getStateIcon(state);
+        String iconCode = "";
+        if (iconPath != null) {
+            iconCode = "<img src=\"" + iconPath + "\">&nbsp;"; //NOI18N
+        }
+        String stateName = getStateDisplayName(state);
+
+        String priorityLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Priority_Title") //NOI18N
+                + "/" + NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Severity_Title"); //NOI18N
+        String priority = getRepositoryFieldValue(IssueField.PRIORITY)
+                + "/" + getRepositoryFieldValue(IssueField.SEVERITY); // NOI18N
+
+        String typeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Type_Title"); //NOI18N
+        String type = getRepositoryFieldValue(IssueField.TASK_TYPE);
+
+        String productLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Product_Title"); //NOI18N
+        String product = getRepositoryFieldValue(IssueField.PRODUCT);
+
+        String componentLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Component_Title"); //NOI18N
+        String component = getRepositoryFieldValue(IssueField.COMPONENT);
+
+        String assigneeLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Owner_Title"); //NOI18N
+        String assignee = getRepositoryFieldValue(IssueField.OWNER);
+
+        String statusLabel = NbBundle.getMessage(ODCSIssue.class, "CTL_Issue_Status_Title"); //NOI18N
+        String status = getRepositoryFieldValue(IssueField.STATUS);
+        String resolution = getRepositoryFieldValue(IssueField.RESOLUTION);
+
+        if (resolution != null && !resolution.trim().isEmpty()) {
+            status += "/" + resolution; //NOI18N
+        }
+
+
+        String fieldTable = "<table>" //NOI18N
+            + "<tr><td><b>" + priorityLabel + ":</b></td><td>" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+            + "</table>"; //NOI18N
+
+        StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
+        if (stateName != null && !stateName.isEmpty()) {
+            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p>"); //NOI18N
+        }
+        sb.append("<hr>"); //NOI18N
+        sb.append(fieldTable);
+        sb.append("</html>"); //NOI18N
+        tooltip = sb.toString();
+        return !oldTooltip.equals(tooltip);
+    }
+    
+    private URL getStateIcon(NbTask.SynchronizationState state) {
+        URL iconPath = null;
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            iconPath = ICON_CONFLICT_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING) || state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            iconPath = ICON_REMOTE_PATH;
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING) || state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            iconPath = ICON_UNSUBMITTED_PATH;
+        }
+        return iconPath;
     }
 
-    public void setTaskData(TaskData taskData) {
-//        assert !taskData.isPartial();
-        data = taskData;
-        
-        // XXX
-        attributes = null; // reset
-//        availableOperations = null;
-        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-//        XXX        ((ODCSIssueNode)getNode()).fireDataChanged();
-                fireDataChanged();
-                refreshViewData(false);
-            }
-        });
+    @NbBundle.Messages({
+        "LBL_ConflictShort=Conflict - your unsubmitted changes conflict with remote changes",
+        "LBL_RemoteShort=Incoming - contains remote changes",
+        "LBL_RemoteNewShort=Incoming New - new task created in repository",
+        "LBL_UnsubmittedShort=Unsubmitted - contains unsubmitted changes",
+        "LBL_UnsubmittedNewShort=Unsubmitted New - newly created task, not yet submitted"})
+    private String getStateDisplayName(NbTask.SynchronizationState state) {
+        String displayName = "";
+        if (state.equals(NbTask.SynchronizationState.CONFLICT)) {
+            displayName = Bundle.LBL_ConflictShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING)) {
+            displayName = Bundle.LBL_RemoteShort();
+        } else if (state.equals(NbTask.SynchronizationState.INCOMING_NEW)) {
+            displayName = Bundle.LBL_RemoteNewShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING)) {
+            displayName = Bundle.LBL_UnsubmittedShort();
+        } else if (state.equals(NbTask.SynchronizationState.OUTGOING_NEW)) {
+            displayName = Bundle.LBL_UnsubmittedNewShort();
+        }
+        return displayName;
     }
 
     @Messages({"LBL_NEW_STATUS=New", "LBL_SUMMARY_CHANGED_STATUS=Summary changed",
@@ -277,166 +320,116 @@ public class ODCSIssue {
         "# {0} - number of changes", "LBL_CHANGES_INCL_TAGS={0} changes, incl. keywords",
         "# {0} - number of changes", "LBL_CHANGES_INCL_OWNER={0} changes, incl. owner",
         "# {0} - number of changes", "LBL_CHANGES_INCL_ASSOCIATIONS={0} changes, incl. associations"})
-    public String getRecentChanges() {
-        if(wasSeen()) {
-            return ""; //NOI18N
-        }
-        IssueStatusProvider.Status status = getIssueStatus();
-        if(status == IssueStatusProvider.Status.NEW) {
-            return Bundle.LBL_NEW_STATUS();
-        } else if(status == IssueStatusProvider.Status.MODIFIED) {
-            List<IssueField> changedFields = new ArrayList<IssueField>();
-            assert getSeenAttributes() != null;
-            for (IssueField f : IssueField.getFields()) {
-                if (f == IssueField.MODIFIED || f == IssueField.CREATED || f == IssueField.REPORTER
-                        || f == IssueField.ATTACHEMENT_COUNT && data.isPartial() // attachments not available with partial data
-                        ) {
-                    continue;
-                }
-                String value = getFieldValue(f);
-                String seenValue = getSeenValue(f);
-                if(!value.trim().equals(seenValue)) {
-                    changedFields.add(f);
-                }
-            }
-            int changedCount = changedFields.size();
-            if (changedCount == 1) {
-                String ret = null;
-                for (IssueField changedField : changedFields) {
-                    if (changedField == IssueField.SUMMARY) {
-                        ret = Bundle.LBL_SUMMARY_CHANGED_STATUS();
-                    } else if (changedField == IssueField.CC) {
-                        ret = Bundle.LBL_CC_FIELD_CHANGED_STATUS();
-                    } else if (changedField == IssueField.KEYWORDS) {
-                        ret = Bundle.LBL_TAGS_CHANGED_STATUS();
-                    } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
-                        ret = Bundle.LBL_DEPENDENCE_CHANGED_STATUS();
-                    } else if (changedField == IssueField.COMMENT_COUNT) {
-                        String value = getFieldValue(changedField);
-                        String seenValue = getSeenValue(changedField);
-                        if(seenValue.equals("")) {
-                            seenValue = "0"; //NOI18N
+    private boolean updateRecentChanges () {
+        String oldChanges = recentChanges;
+        recentChanges = "";
+        NbTask.SynchronizationState syncState = getSynchronizationState();
+        if (syncState == NbTask.SynchronizationState.INCOMING
+                || syncState == NbTask.SynchronizationState.CONFLICT) {
+            try {
+                NbTaskDataState taskDataState = getNbTask().getTaskDataState();
+                if (taskDataState != null) {
+                    TaskData repositoryData = taskDataState.getRepositoryData();
+                    TaskData lastReadData = taskDataState.getLastReadData();
+                    List<IssueField> changedFields = new ArrayList<IssueField>();
+                    for (IssueField f : IssueField.getFields()) {
+                        if (f == IssueField.MODIFIED || f == IssueField.CREATED || f == IssueField.REPORTER) {
+                            continue;
                         }
-                        int count = 0;
-                        try {
-                            count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                        } catch(NumberFormatException ex) {
-                            ODCS.LOG.log(Level.WARNING, ret, ex);
+                        String value = getFieldValue(repositoryData, f);
+                        String seenValue = getFieldValue(lastReadData, f);
+                        if(!value.trim().equals(seenValue)) {
+                            changedFields.add(f);
                         }
-                        ret = Bundle.LBL_COMMENTS_CHANGED(count);
-                    } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
-                        ret = Bundle.LBL_ATTACHMENTS_CHANGED();
+                    }
+                    int changedCount = changedFields.size();
+                    if(changedCount == 1) {
+                        for (IssueField changedField : changedFields) {
+                            String value = getFieldValue(repositoryData, changedField);
+                            String seenValue = getFieldValue(lastReadData, changedField);
+                            if (changedField == IssueField.SUMMARY) {
+                                recentChanges = Bundle.LBL_SUMMARY_CHANGED_STATUS();
+                            } else if (changedField == IssueField.CC) {
+                                recentChanges = Bundle.LBL_CC_FIELD_CHANGED_STATUS();
+                            } else if (changedField == IssueField.KEYWORDS) {
+                                recentChanges = Bundle.LBL_TAGS_CHANGED_STATUS();
+                            } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
+                                recentChanges = Bundle.LBL_DEPENDENCE_CHANGED_STATUS();
+                            } else if (changedField == IssueField.COMMENT_COUNT) {
+                                if (seenValue.isEmpty()) {
+                                    seenValue = "0"; //NOI18N
+                                }
+                                int count = 0;
+                                try {
+                                    count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                                } catch (NumberFormatException ex) {
+                                    ODCS.LOG.log(Level.WARNING, recentChanges, ex);
+                                }
+                                recentChanges = Bundle.LBL_COMMENTS_CHANGED(count);
+                            } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                                recentChanges = Bundle.LBL_ATTACHMENTS_CHANGED();
+                            } else {
+                                recentChanges = Bundle.LBL_CHANGED_TO(changedField.getDisplayName(), value);
+                            }
+                        }
                     } else {
-                        ret = Bundle.LBL_CHANGED_TO(changedField.getDisplayName(), getFieldValue(changedField));
+                        for (IssueField changedField : changedFields) {
+                            if (changedField == IssueField.SUMMARY) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_SUMMARY(changedCount);
+                            } else if (changedField == IssueField.PRIORITY) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_PRIORITY(changedCount);
+                            } else if (changedField == IssueField.SEVERITY) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_SEVERITY(changedCount);
+                            } else if (changedField == IssueField.TASK_TYPE) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_ISSUE_TYPE(changedCount);
+                            } else if (changedField == IssueField.PRODUCT) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_PRODUCT(changedCount);
+                            } else if (changedField == IssueField.COMPONENT) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_COMPONENT(changedCount);
+                            } else if (changedField == IssueField.MILESTONE) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_MILESTONE(changedCount);
+                            } else if (changedField == IssueField.ITERATION) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_ITERATION(changedCount);
+                            } else if (changedField == IssueField.KEYWORDS) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_TAGS(changedCount);
+                            } else if (changedField == IssueField.OWNER) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_OWNER(changedCount);
+                            } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
+                                recentChanges = Bundle.LBL_CHANGES_INCL_ASSOCIATIONS(changedCount);
+                            }
+                        }
                     }
                 }
-                return ret;
-            } else {
-                String ret = Bundle.LBL_CHANGES(changedCount);
-                for (IssueField changedField : changedFields) {
-                    String msg = null;
-                    if (changedField == IssueField.SUMMARY) {
-                        msg = Bundle.LBL_CHANGES_INCL_SUMMARY(changedCount);
-                    } else if (changedField == IssueField.PRIORITY) {
-                        msg = Bundle.LBL_CHANGES_INCL_PRIORITY(changedCount);
-                    } else if (changedField == IssueField.SEVERITY) {
-                        msg = Bundle.LBL_CHANGES_INCL_SEVERITY(changedCount);
-                    } else if (changedField == IssueField.TASK_TYPE) {
-                        msg = Bundle.LBL_CHANGES_INCL_ISSUE_TYPE(changedCount);
-                    } else if (changedField == IssueField.PRODUCT) {
-                        msg = Bundle.LBL_CHANGES_INCL_PRODUCT(changedCount);
-                    } else if (changedField == IssueField.COMPONENT) {
-                        msg = Bundle.LBL_CHANGES_INCL_COMPONENT(changedCount);
-                    } else if (changedField == IssueField.MILESTONE) {
-                        msg = Bundle.LBL_CHANGES_INCL_MILESTONE(changedCount);
-                    } else if (changedField == IssueField.ITERATION) {
-                        msg = Bundle.LBL_CHANGES_INCL_ITERATION(changedCount);
-                    } else if (changedField == IssueField.KEYWORDS) {
-                        msg = Bundle.LBL_CHANGES_INCL_TAGS(changedCount);
-                    } else if (changedField == IssueField.OWNER) {
-                        msg = Bundle.LBL_CHANGES_INCL_OWNER(changedCount);
-                    } else if (changedField == IssueField.SUBTASK || changedField == IssueField.PARENT) {
-                        msg = Bundle.LBL_CHANGES_INCL_ASSOCIATIONS(changedCount);
-                    }
-                    if (msg != null) {
-                        return msg;
-                    }
-                }
-                return ret;
+            } catch (CoreException ex) {
+                ODCS.LOG.log(Level.WARNING, null, ex);
             }
         }
-        return ""; //NOI18N
-    }
-
-    public Date getLastModifyDate() {
-        String value = getFieldValue(IssueField.MODIFIED);
-        if(value != null && !value.trim().equals("")) {
-            return ODCSUtil.parseLongDate(value);
-        }
-        return null;
-    }
-
-    public long getLastModify() {
-        Date lastModifyDate = getLastModifyDate();
-        if(lastModifyDate != null) {
-            return lastModifyDate.getTime();
-        } else {
-            return -1;
-        }
-    }
-
-    public Date getCreatedDate() {
-        String value = getFieldValue(IssueField.CREATED);
-        if(value != null && !value.trim().equals("")) { // NOI18N
-            return ODCSUtil.parseLongDate(value);
-        }
-        return null;
-    }
-
-    public long getCreated() {
-        Date createdDate = getCreatedDate();
-        if (createdDate != null) {
-            return createdDate.getTime();
-        } else {
-            return -1;
-        }
-    }
-
-    public Map<String, String> getAttributes() {
-        if(attributes == null) {
-            attributes = new HashMap<String, String>();
-            String value;
-            for (IssueField field : IssueField.getFields()) {
-                value = getFieldValue(field);
-                if(value != null && !value.trim().equals("")) {                 // NOI18N
-                    attributes.put(field.getKey(), value);
-                }
-            }
-        }
-        return attributes;
-    }
-
-    public String getSummary() {
-        return getFieldValue(IssueField.SUMMARY);
-    }
-
-    public boolean isNew() {
-        return data == null || data.isNew();
+        return !oldChanges.equals(recentChanges);
     }
 
     void opened() {
-        open = true;
-        if(!data.isNew()) {
-            // 1.) to get seen attributes makes no sense for new issues
-            // 2.) set seenAtributes on issue open, before its actuall
-            //     state is written via setSeen().
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-        }
+        loading = true;
+        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (editorOpened()) {
+//                    ensureConfigurationUptodate();
+                    loading = false;
+                    refreshViewData(true);
+                } else {
+                    // should close somehow
+                }
+            }
+        });
     }
 
     void closed() {
-        open = false;
-        seenAtributes = null;
+        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                editorClosed();
+            }
+        });
     }
     
     /**
@@ -444,102 +437,120 @@ public class ODCSIssue {
      * <ul>
      *  <li>{@link #FIELD_STATUS_IRELEVANT} - issue wasn't seen yet
      *  <li>{@link #FIELD_STATUS_UPTODATE} - field value wasn't changed
-     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed
-     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
+     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed in repository
+     *  <li>{@link #FIELD_STATUS_OUTGOING} - field value was changed locally
+     *  <li>{@link #FIELD_STATUS_CONFLICT} - field value was changed both locally and remotely
      * </ul>
      * @param f IssueField
      * @return a status value
      */
-    int getFieldStatus(IssueField f) {
-        String seenValue = getSeenValue(f);
-        if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {       // NOI18N
-            return FIELD_STATUS_NEW;
-        } else if (!seenValue.equals(getFieldValue(f))) {
+    public int getFieldStatus(IssueField f) {
+        NbTaskDataModel m = getModel();
+        if (m == null) {
+            return FIELD_STATUS_UPTODATE;
+        }
+        TaskAttribute ta = m.getLocalTaskData().getRoot().getMappedAttribute(f.getKey());
+        boolean incoming = ta != null && m.hasIncomingChanges(ta, true);
+        boolean outgoing = ta != null && m.hasOutgoingChanges(ta);
+        if (ta == null) {
+            return FIELD_STATUS_UPTODATE;
+        } else if (incoming & outgoing) {
+            return FIELD_STATUS_CONFLICT;
+        } else if (incoming) {
             return FIELD_STATUS_MODIFIED;
+        } else if (outgoing) {
+            return FIELD_STATUS_OUTGOING;
         }
         return FIELD_STATUS_UPTODATE;
-    }
-    
-    private Map<String, String> getSeenAttributes() {
-        if(seenAtributes == null) {
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-            if(seenAtributes == null) {
-                seenAtributes = new HashMap<String, String>();
-            }
-        }
-        return seenAtributes;
-    }
-
-    String getSeenValue(IssueField f) {
-        Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.getKey()) : null;
-        if(seenValue == null) {
-            seenValue = "";                                                     // NOI18N
-        }
-        return seenValue;
-    }
-
-    public boolean isOpened () {
-        return open;
-    }
-
-    public boolean isFinished() {
-        String value = getFieldValue(IssueField.STATUS);
-        // XXX shouldn't this be resolved via some repository settings?
-        return Arrays.asList("RESOLVED", "VERIFIED", "CLOSED").contains(value); // NOI18N
     }
 
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        return refresh(getID(), false);
+        return refresh(false);
     }
 
     public static final String RESOLVE_FIXED = "FIXED";    
-    public void addComment(String comment, boolean closeAsFixed) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+    public void addComment (final String comment, final boolean closeAsFixed) {
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !closeAsFixed) {
             return;
         }
         refresh();
 
-        // resolved attrs
-        if(closeAsFixed) {
-            ODCS.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()}); // NOI18N
-            resolve(RESOLVE_FIXED); // XXX constant?
-        }
-        if(comment != null) {
-            addComment(comment);
-        }        
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                // resolved attrs
+                if (closeAsFixed) {
+                    ODCS.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()}); // NOI18N
+                    resolve(RESOLVE_FIXED); // XXX constant?
+                }
+                if(comment != null) {
+                    addComment(comment);
+                }        
 
-        submitAndRefresh();
+                submitAndRefresh();
+            }
+        });
     }
 
-    public void addComment(String comment) {
-        if(comment != null) {
-            ODCS.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()}); // NOI18N
-            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-            ta.setValue(comment);
+    private void addComment (final String comment) {
+        if(comment != null && !comment.isEmpty()) {
+            runWithModelLoaded(new Runnable() {
+                @Override
+                public void run () {
+                    ODCS.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
+                    NbTaskDataModel model = getModel();
+                    TaskAttribute ta = model.getLocalTaskData().getRoot().getMappedAttribute(IssueField.COMMENT.getKey());
+                    String value = ta.getValue();
+                    if (value == null || value.trim().isEmpty()) {
+                        value = comment;
+                    } else {
+                        value += "\n\n" + comment; //NOI18N
+                    }
+                    setTaskAttributeValue(model, ta, value);
+                }
+            });
         }
     }
     
-    void resolve(String resolution) {
-        assert !data.isNew();
-
-        String value = getFieldValue(IssueField.STATUS);
-        if(!value.equals("RESOLVED")) { // NOI18N
-            RepositoryConfiguration clientData = repository.getRepositoryConfiguration(false);
-            List<TaskResolution> resolutions = clientData.getResolutions(); 
-            for (TaskResolution r : resolutions) {
-                if(r.getValue().equals(resolution)) {
-                    TaskAttribute rta = data.getRoot();
-                    TaskAttribute ta = rta.getMappedAttribute(CloudDevAttribute.STATUS.getTaskName());
-                    ta.setValue("RESOLVED"); // NOI18N
-                    ta = rta.getMappedAttribute(CloudDevAttribute.RESOLUTION.getTaskName());
-                    ta.setValue(r.getValue());
+    void resolve (final String resolution) {
+        assert !isNew();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                String value = getFieldValue(IssueField.STATUS);
+                if(!(value.equals("RESOLVED") && resolution.equals(getFieldValue(IssueField.RESOLUTION)))) { // NOI18N
+                    setOperation(CloudDevOperation.RESOLVED);
+                    NbTaskDataModel model = getModel();
+                    TaskAttribute rta = model.getLocalTaskData().getRoot();
+                    TaskAttribute ta = rta.getMappedAttribute(CloudDevOperation.RESOLVED.getInputId());
+                    if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
+                        setTaskAttributeValue(model, ta, resolution);
+                    }
                 }
             }
-        }
+        });
     }   
+    
+    private void setOperation (CloudDevOperation operation) {
+        NbTaskDataModel m = getModel();
+        TaskAttributeMapper mapper = m.getLocalTaskData().getAttributeMapper();
+        for (TaskOperation op : mapper.getTaskOperations(m.getLocalTaskData().getRoot())) {
+            if (op.getOperationId().equals(operation.toString())) {
+                setOperation(op);
+                return;
+            }
+        }
+    }
+    
+    private void setOperation (TaskOperation operation) {
+        NbTaskDataModel m = getModel();
+        TaskAttribute rta = m.getLocalTaskData().getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
+        m.getLocalTaskData().getAttributeMapper().setTaskOperation(ta, operation);
+        m.attributeChanged(ta);
+    }
     
     public void attachPatch(File file, String description) {
         // HACK for attaching hg bundles - they are NOT patches
@@ -561,7 +572,13 @@ public class ODCSIssue {
         }
         attachmentSource.setContentType(contentType);
 
-        final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        TaskData repositoryTaskData = getRepositoryTaskData();
+        if (repositoryTaskData == null && (!synchronizeTask()
+                || (repositoryTaskData = getRepositoryTaskData()) == null)) {
+            // not fully initialized task, sync failed
+            return;            
+        }
+        final TaskAttribute attAttribute = new TaskAttribute(repositoryTaskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
         TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
         a.setValue(desc);
@@ -573,68 +590,94 @@ public class ODCSIssue {
         a.setValue(file.getName());
 
         refresh(); // refresh might fail, but be optimistic and still try to force add attachment
-        PostAttachmentCommand cmd = new PostAttachmentCommand(ODCS.getInstance().getRepositoryConnector(),
-                repository.getTaskRepository(), getAsTask(), attAttribute, attachmentSource, comment);
-        repository.getExecutor().execute(cmd);
-        if (!cmd.hasFailed()) {
-            refresh(getID(), true); // XXX to much refresh - is there no other way?
+        try {
+            PostAttachmentCommand cmd = MylynSupport.getInstance().getCommandFactory().createPostAttachmentCommand(
+                    repository.getTaskRepository(), getNbTask(), attAttribute, attachmentSource, comment);
+            repository.getExecutor().execute(cmd);
+            if (!cmd.hasFailed()) {
+                refresh(true); // XXX to much refresh - is there no other way?
+            }
+        } catch (CoreException ex) {
+            // should not happen
+            ODCS.LOG.log(Level.WARNING, null, ex);
         }
     }
 
-    boolean submitAndRefresh() {
+    @NbBundle.Messages({
+        "# {0} - task id and summary", "MSG_ODCSIssue.statusBar.submitted=Task {0} submitted."
+    })
+    public boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-//        prepareSubmit(); XXX
-        final boolean wasNew = data.isNew();
-        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        
-        SubmitCommand submitCmd = 
-            new SubmitCommand(
-                ODCS.getInstance().getRepositoryConnector(),
-                getRepository().getTaskRepository(), 
-                data);
-        repository.getExecutor().execute(submitCmd);
+        final boolean[] result = new boolean[1];
+        runWithModelLoaded(new Runnable() {
 
-        if (!wasNew) {
-            refresh();
-        } else {
-            RepositoryResponse rr = submitCmd.getRepositoryResponse();
-            if(!submitCmd.hasFailed()) {
-                assert rr != null;
-                String id = rr.getTaskId();
-                ODCS.LOG.log(Level.FINE, "created issue #{0}", id); // NOI18N
-                refresh(id, true);
-            } else {
-                ODCS.LOG.log(Level.FINE, "submiting failed"); // NOI18N
-                if(rr != null) {
-                    ODCS.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind()); // NOI18N
-                } else { 
-                    ODCS.LOG.log(Level.FINE, "no repository response available"); // NOI18N
+            @Override
+            public void run () {
+                assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+                final boolean wasNew = isNew();
+
+                SubmitTaskCommand submitCmd;
+                try {
+                    if (saveChanges()) {
+                        submitCmd = MylynSupport.getInstance().getCommandFactory().createSubmitTaskCommand(getModel());
+                    } else {
+                        result[0] = false;
+                        return;
+                    }
+                } catch (CoreException ex) {
+                    ODCS.LOG.log(Level.WARNING, null, ex);
+                    result[0] = false;
+                    return;
                 }
+                repository.getExecutor().execute(submitCmd);
+                if (!submitCmd.hasFailed()) {
+                    taskSubmitted(submitCmd.getSubmittedTask());
+                }
+
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    RepositoryResponse rr = submitCmd.getRepositoryResponse();
+                    if(!submitCmd.hasFailed()) {
+                        updateRecentChanges();
+                        updateTooltip();
+                        fireDataChanged();
+                        String id = getID();
+                        try {
+                            repository.getIssueCache().setIssueData(id, ODCSIssue.this);
+                        } catch (IOException ex) {
+                            ODCS.LOG.log(Level.INFO, null, ex);
+                        }
+                        ODCS.LOG.log(Level.FINE, "created issue #{0}", id);
+                    } else {
+                        ODCS.LOG.log(Level.FINE, "submiting failed");
+                        if(rr != null) {
+                            ODCS.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                        } else {
+                            ODCS.LOG.log(Level.FINE, "no repository response available");
+                        }
+                    }
+                }
+
+                if(submitCmd.hasFailed()) {
+                    result[0] = false;
+                    return;
+                }
+                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ODCSIssue_statusBar_submitted(
+                        getDisplayName()));
+
+                setUpToDate(true, false);
+                result[0] = true;
             }
-        }
+            
+        });
+        return result[0];
+    }
 
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
-
-        // it was the user who made the changes, so preserve the seen status if seen already
-        if (wasSeenAlready) {
-            try {
-                repository.getIssueCache().setSeen(getID(), true);
-                // it was the user who made the changes, so preserve the seen status if seen already
-            } catch (IOException ex) {
-                ODCS.LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-        if(wasNew) {
-            // a new issue was created -> refresh all queries
-            // XXX repository.refreshAllQueries();
-        }
-
-        seenAtributes = null;
-        setSeen(true);
-        return true;
+    boolean updateModelAndRefresh () {
+        return updateModel() && refresh();
     }
 
     public BugtrackingController getController() {
@@ -645,7 +688,7 @@ public class ODCSIssue {
     }
 
     public String[] getSubtasks() {
-        String value = getFieldValue(IssueField.SUBTASK);
+        String value = getRepositoryFieldValue(IssueField.SUBTASK);
         value = value != null ? value.trim() : ""; // NOI18N
         if("".equals(value)) { // NOI18N
             return new String[0];
@@ -659,7 +702,7 @@ public class ODCSIssue {
     }
     
     public boolean isSubtask() {
-        String value = getFieldValue(IssueField.PARENT);
+        String value = getRepositoryFieldValue(IssueField.PARENT);
         return value != null && !value.trim().isEmpty();
     }
 
@@ -668,7 +711,7 @@ public class ODCSIssue {
     }
 
     public String getParentId() {
-        return getFieldValue(IssueField.PARENT);
+        return getRepositoryFieldValue(IssueField.PARENT);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -706,37 +749,134 @@ public class ODCSIssue {
     }
 
     TaskResolution getResolution() {
-        String value = getFieldValue(IssueField.RESOLUTION);
+        String value = getRepositoryFieldValue(IssueField.RESOLUTION);
         return ODCSUtil.getResolutionByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Priority getPriority() {
-        String value = getFieldValue(IssueField.PRIORITY);
+        String value = getRepositoryFieldValue(IssueField.PRIORITY);
         return ODCSUtil.getPriorityByValue(repository.getRepositoryConfiguration(false), value);
-    }
-    
-    String getType() {
-        return getFieldValue(IssueField.TASK_TYPE);
     }
 
     TaskSeverity getSeverity() {
-        String value = getFieldValue(IssueField.SEVERITY);
+        String value = getRepositoryFieldValue(IssueField.SEVERITY);
         return ODCSUtil.getSeverityByValue(repository.getRepositoryConfiguration(false), value);
     }
 
-    TaskStatus getStatus() {
-        String value = getFieldValue(IssueField.STATUS);
+    TaskStatus getTaskStatus() {
+        String value = getRepositoryFieldValue(IssueField.STATUS);
         return ODCSUtil.getStatusByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Iteration getIteration() {
-        String value = getFieldValue(IssueField.ITERATION);
+        String value = getRepositoryFieldValue(IssueField.ITERATION);
         return ODCSUtil.getIterationByValue(repository.getRepositoryConfiguration(false), value);
     }
 
     Milestone getMilestone() {
-        String value = getFieldValue(IssueField.MILESTONE);
+        String value = getRepositoryFieldValue(IssueField.MILESTONE);
         return ODCSUtil.getMilestoneByValue(repository.getRepositoryConfiguration(false), value);
+    }
+
+    @Override
+    protected void taskDeleted (NbTask task) {
+        getRepository().taskDeleted(getID(task));
+    }
+
+    @Override
+    protected void attributeChanged (NbTaskDataModel.NbTaskDataModelEvent event, NbTaskDataModel model) {
+        if (controller != null) {
+            // view might not exist yet and we won't unnecessarily create it
+            controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
+        }
+    }
+
+    @Override
+    protected void modelSaved (NbTaskDataModel model) {
+        if (controller != null) {
+            controller.modelStateChanged(model.isDirty(), model.hasOutgoingChanged());
+        }
+    }
+    
+    @Override
+    protected boolean synchronizeTask () {
+        try {
+            NbTask task = getNbTask();
+            synchronized (task) {
+                ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", getID()); // NOI18N
+                SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                        getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+                getRepository().getExecutor().execute(cmd);
+                return !cmd.hasFailed();
+            }
+        } catch (CoreException ex) {
+            // should not happen
+            ODCS.LOG.log(Level.WARNING, null, ex);
+            return false;
+        }
+    }
+
+    @Override
+    protected String getSummary (TaskData taskData) {
+        return getFieldValue(taskData, IssueField.SUMMARY);
+    }
+
+    @Override
+    protected void taskDataUpdated () {
+//        ensureConfigurationUptodate();
+        ODCS.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+                if (updateTooltip()) {
+                    fireDataChanged();
+                }
+                fireDataChanged();
+                refreshViewData(false);
+            }
+        });
+    }
+
+    @Override
+    protected void taskModified (boolean syncStateChanged) {
+        boolean seen = isSeen();
+        if (updateRecentChanges() | updateTooltip()) {
+            fireDataChanged();
+        }
+        if (syncStateChanged) {
+            fireSeenChanged(!seen, seen);
+        }
+    }
+
+    @Override
+    protected void repositoryTaskDataLoaded (TaskData repositoryTaskData) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+                if (updateTooltip()) {
+                    fireDataChanged();
+                }
+            }
+        });
+    }
+
+    boolean save () {
+        return saveChanges();
+    }
+    
+    void markUserChange () {
+        if (isMarkedNewUnread()) {
+            markNewRead();
+        }
+    }
+
+    void delete () {
+        deleteTask();
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {
@@ -790,6 +930,20 @@ public class ODCSIssue {
      * private
      **************************************************************************/
 
+    public String getRepositoryFieldValue (IssueField f) {
+        NbTaskDataModel m = getModel();
+        TaskData td;
+        if (m == null) {
+            td = getRepositoryTaskData();
+            if (td == null) {
+                return ""; //NOI18N
+            }
+        } else {
+            td = m.getRepositoryTaskData();
+        }
+        return getFieldValue(td, f);
+    }
+    
     /**
      * Returns the value represented by the given field
      *
@@ -797,10 +951,19 @@ public class ODCSIssue {
      * @return
      */
     public String getFieldValue(IssueField f) {
-        return getFieldValue(f, data);
+        NbTaskDataModel m = getModel();
+        return getFieldValue(m == null ? null : m.getLocalTaskData(), f);
     }
 
-    private static String getFieldValue(IssueField f, TaskData taskData) {
+    String getLastSeenFieldValue (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValue(m == null ? null : m.getLastReadTaskData(), f);
+    }
+
+    private static String getFieldValue (TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return "";
+        }
         if(f.isSingleFieldAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null && a.getValues().size() > 1) {
@@ -814,8 +977,9 @@ public class ODCSIssue {
         }
     }
 
-    public String getPersonName(IssueField f) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+    String getPersonName (IssueField f) {
+        NbTaskDataModel m = getModel();
+        TaskAttribute a = m == null ? null : m.getLocalTaskData().getRoot().getMappedAttribute(f.getKey());
         a = a!= null ? a.getMappedAttribute(TaskAttribute.PERSON_NAME) : null;
         return a != null ? a.getValue() : null; 
     }
@@ -843,9 +1007,27 @@ public class ODCSIssue {
         return sb.toString();
     }
 
+    public List<String> getRepositoryFieldValues (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
+    }
+
     public List<String> getFieldValues(IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? null : m.getLocalTaskData(), f);
+    }
+
+    List<String> getLastSeenFieldValues (IssueField f) {
+        NbTaskDataModel m = getModel();
+        return getFieldValues(m == null ? null : m.getLastReadTaskData(), f);
+    }
+    
+    private static List<String> getFieldValues(TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return Collections.<String>emptyList();
+        }
         if(f.isSingleFieldAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
                 return a.getValues();
             } else {
@@ -853,16 +1035,12 @@ public class ODCSIssue {
             }
         } else {
             List<String> ret = new ArrayList<String>();
-            ret.add(getFieldValue(f));
+            ret.add(getFieldValue(taskData, f));
             return ret;
         }
     }
 
-    boolean isFieldValueAvailable (IssueField field) {
-        return !(data.isPartial() && UNAVAILABLE_FIELDS_IF_PARTIAL_DATA.contains(field));
-    }
-
-    private String getMappedValue(TaskAttribute a, String key) {
+    private static String getMappedValue(TaskAttribute a, String key) {
         TaskAttribute ma = a.getMappedAttribute(key);
         if(ma != null) {
             return ma.getValue();
@@ -876,25 +1054,23 @@ public class ODCSIssue {
     private void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+    
+    private void fireSeenChanged(boolean wasSeen, boolean seen) {
+        support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
+    }
 
-    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+    private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        // XXX 
-        // XXX gettaskdata the same for bugzilla, jira, odcs, ...
-        try {
-            ODCS.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
-            TaskData td = ODCSUtil.getTaskData(repository, id);
-            if (td == null) {
-                return false;
-            }
-            setTaskData(td);
-            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
+        NbTask task = getNbTask();
+        boolean synced = synchronizeTask();
+        assert this == getRepository().getIssueForTask(task);
 //            getRepository().ensureConfigurationUptodate(this);
+        if (!loading) {
+            // refresh only when model is not currently being loaded
+            // otherwise it most likely ends up in editor not fully initialized
             refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
-            ODCS.LOG.log(Level.SEVERE, null, ex);
         }
-        return true;
+        return synced;
     }
 
     private void refreshViewData(boolean force) {
@@ -905,201 +1081,68 @@ public class ODCSIssue {
     }
     
     void setFieldValue(IssueField f, String value) {
-//        if(f.isReadOnly()) { XXX
-//            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
-//            return;
-//        }
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
-        if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.getKey());
+        NbTaskDataModel m = getModel();
+        // should not happen, setFieldValue either runs with model lock
+        // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
+        assert m != null;
+        TaskData taskData = m.getLocalTaskData();
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
+        if (a == null) {
+            a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
-        if(f == IssueField.PRODUCT) {
-            handleProductChange(a);
+        ODCS.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
+        if (!value.equals(a.getValue())) {
+            setTaskAttributeValue(m, a, value);
         }
-        ODCS.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}); // NOI18N
-        a.setValue(value);
     }
 
-    void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+    void setFieldValues(IssueField f, List<String> values) {
+        NbTaskDataModel m = getModel();
+        // should not happen, setFieldValue either runs with model lock
+        // or it is called from issue editor in AWT - the editor could not be closed by user in the meantime
+        assert m != null;
+        TaskData taskData = m.getLocalTaskData();
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.getKey());
+            a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
-        a.setValues(ccs);
+        if (!values.equals(a.getValues())) {
+            setTaskAttributeValues(m, a, values);
+        }
     }
-    
-    private void handleProductChange(TaskAttribute a) {
-        if(!data.isNew() && initialProduct == null) {
-            initialProduct = a.getValue();
-        }
-    }    
 
-    private ITask getAsTask () {
-        return new ITask() {
-            //<editor-fold defaultstate="collapsed" desc="dummy impl">
-            @Override
-            public String getAttribute(String id) {
-                TaskAttribute rta = data.getRoot();
-                return rta.getMappedAttribute(id).getValue();
+    private void setTaskAttributeValue (NbTaskDataModel model, TaskAttribute ta, String value) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (value.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValue(value);
             }
-            
-            @Override
-            public void setAttribute(String id, String value) {
-                TaskAttribute rta = data.getRoot();
-                rta.getMappedAttribute(id).setValue(value);
+        } else {
+            ta.setValue(value);
+        }
+        model.attributeChanged(ta);
+    }
+
+    private void setTaskAttributeValues (NbTaskDataModel model, TaskAttribute ta, List<String> values) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (values.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValues(values);
             }
-            
-            @Override
-            public String getTaskId() {
-                return data.getTaskId();
-            }
-            
-            @Override
-            public Date getCompletionDate() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getConnectorKind() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public Date getCreationDate() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public Date getDueDate() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getHandleIdentifier() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public Date getModificationDate() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getOwner() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getPriority() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getRepositoryUrl() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getSummary() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public ITask.SynchronizationState getSynchronizationState() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getTaskKey() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getTaskKind() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public boolean isActive() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public boolean isCompleted() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setCompletionDate(Date date) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setCreationDate(Date date) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setDueDate(Date date) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setModificationDate(Date date) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setOwner(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setPriority(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setSummary(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setTaskKind(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setUrl(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public void setTaskKey(String string) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public String getUrl() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public int compareTo(IRepositoryElement o) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public Object getAdapter(Class type) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            
-            @Override
-            public Map<String, String> getAttributes() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            //</editor-fold>
-        };
+        } else {
+            ta.setValues(values);
+        }
+        model.attributeChanged(ta);
     }
 
     private RepositoryConfiguration getConfiguration () {
@@ -1228,7 +1271,7 @@ public class ODCSIssue {
                 TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
                 authorName = nameAttr != null ? nameAttr.getValue() : null;
             } else {
-                authorAttr = data.getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
+                authorAttr = ta.getTaskData().getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
                 if(authorAttr != null) {
                     author = authorAttr.getValue();
                     TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
@@ -1302,27 +1345,18 @@ public class ODCSIssue {
         @Override
         public void getAttachementData(final OutputStream os) {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
-            repository.getExecutor().execute(new GetAttachmentCommand(ODCS.getInstance().getRepositoryConnector(), 
-                    repository.getTaskRepository(),
-                    null, ta, os));
+            try {
+                repository.getExecutor().execute(MylynSupport.getInstance().getCommandFactory()
+                        .createGetAttachmentCommand(repository.getTaskRepository(), getNbTask(), ta, os));
+            } catch (CoreException ex) {
+                // should not happen
+                ODCS.LOG.log(Level.WARNING, null, ex);
+            }
         }
 
     }    
-    
-    public IssueStatusProvider.Status getIssueStatus() {
-        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
-        IssueStatusProvider.Status ret = null;
-        switch(status) {
-            case ISSUE_STATUS_NEW:
-                ret = IssueStatusProvider.Status.NEW;
-                break;
-            case ISSUE_STATUS_MODIFIED:
-                ret = IssueStatusProvider.Status.MODIFIED;
-                break;
-            case ISSUE_STATUS_SEEN:
-                ret = IssueStatusProvider.Status.SEEN;
-                break;
-        }
-        return ret;        
+
+    public void setUpToDate (boolean seen) {
+        setUpToDate(seen, true);
     }
 }

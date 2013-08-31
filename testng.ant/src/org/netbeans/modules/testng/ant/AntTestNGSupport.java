@@ -189,9 +189,20 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
                 String xml = FileUtil.getRelativePath(testRoot, test);
                 assert xml != null;
                 props.put("test.includes", xml); //NOI18N
+                if (isNbModuleProject()) {
+                    props.setProperty("continue.after.failing.tests", "true");  //NOI18N
+                }
             } else if (Action.DEBUG_TESTSUITE.equals(action)) {
-                cmd = "debug-test"; //NOI18N
-                props.put("test.class", "'".concat(FileUtil.toFile(test).getAbsolutePath()).concat("'")); //NOI18N
+                if (isNbModuleProject()) {
+                    cmd = "debug-test-single-nb"; //NOI18N
+                    String xml = FileUtil.getRelativePath(testRoot, test);
+                    assert xml != null;
+                    props.put("test.class", xml); //NOI18N
+                    props.setProperty("continue.after.failing.tests", "true");  //NOI18N
+                } else {
+                    cmd = "debug-test"; //NOI18N
+                    props.put("test.class", "'".concat(FileUtil.toFile(test).getAbsolutePath()).concat("'")); //NOI18N
+                }
             } else if (Action.RUN_TESTMETHOD.equals(action)) {
                 if (isNbModuleProject()) {
                     cmd = "test-method"; //NOI18N

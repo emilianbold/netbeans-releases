@@ -89,6 +89,7 @@ public class InstancesView extends TopComponent {
         putClientProperty("KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     protected void componentShowing() {
         super.componentShowing ();
         listener = new DebuggerSessionListener();
@@ -107,6 +108,7 @@ public class InstancesView extends TopComponent {
             showTheContent(state);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     showTheContent(state);
                 }
@@ -145,6 +147,7 @@ public class InstancesView extends TopComponent {
         }
     }
     
+    @Override
     protected void componentHidden () {
         super.componentHidden ();
         if (hfwPanel != null) {
@@ -185,14 +188,17 @@ public class InstancesView extends TopComponent {
         return hfw;
     }
     
+    @Override
     public String getName () {
         return NbBundle.getMessage (InstancesView.class, "CTL_Instances_view");
     }
     
+    @Override
     public String getToolTipText () {
         return NbBundle.getMessage (InstancesView.class, "CTL_Instances_tooltip");// NOI18N
     }
 
+    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
@@ -205,7 +211,7 @@ public class InstancesView extends TopComponent {
     
     private class DebuggerSessionListener extends DebuggerManagerAdapter {
         
-        private Set attachedTo = new WeakSet();
+        private Set<JPDADebugger> attachedTo = new WeakSet<JPDADebugger>();
         private int lastState = -1;
         
         public int getState() {
@@ -254,6 +260,7 @@ public class InstancesView extends TopComponent {
             }
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             int state;

@@ -84,7 +84,7 @@ public class InstanceImpl implements Instance {
         InstanceImpl instance;
         JPDAClassType type = var.getClassType();
         if (type instanceof JPDAArrayType) {
-            boolean isPrimitiveArray = false;
+            boolean isPrimitiveArray;
             isPrimitiveArray = !(((JPDAArrayType) type).getComponentType() instanceof JPDAClassType);
             if (isPrimitiveArray) {
                 instance = new PrimitiveArrayInstanceImpl(heap, var);
@@ -107,14 +107,17 @@ public class InstanceImpl implements Instance {
         }
     }
     
+    @Override
     public JavaClass getJavaClass() {
         return varClass;
     }
 
+    @Override
     public long getInstanceId() {
         return var.getUniqueID();
     }
 
+    @Override
     public int getInstanceNumber() {
         return (int) var.getUniqueID();
     }
@@ -135,10 +138,12 @@ public class InstanceImpl implements Instance {
         return i;
     }*/
     
+    @Override
     public int getSize() {
         return 0;
     }
 
+    @Override
     public List<FieldValue> getFieldValues() {
         int fieldsCount = var.getFieldsCount();
         org.netbeans.api.debugger.jpda.Field[] varFields = var.getFields(0, fieldsCount);
@@ -161,6 +166,7 @@ public class InstanceImpl implements Instance {
         return fields;
     }
 
+    @Override
     public Object getValueOfField(String name) {
         Iterator fIt = getFieldValues().iterator();
         FieldValue matchingFieldValue = null;
@@ -185,14 +191,16 @@ public class InstanceImpl implements Instance {
 
    }
 
+    @Override
     public List<FieldValue> getStaticFieldValues() {
         return getJavaClass().getStaticFieldValues();
     }
 
+    @Override
     public List<Value> getReferences() {
         List<ObjectVariable> references = var.getReferringObjects(0);
         List<Value> values = new ArrayList<Value>(references.size());
-        Set referencedFields = new HashSet();
+        Set<org.netbeans.api.debugger.jpda.Field> referencedFields = new HashSet<org.netbeans.api.debugger.jpda.Field>();
         for (ObjectVariable obj : references) {
             JPDAClassType type = obj.getClassType();
             if (type instanceof JPDAArrayType) {
@@ -257,22 +265,27 @@ public class InstanceImpl implements Instance {
         return values;
     }
 
+    @Override
     public boolean isGCRoot() {
         return false;
     }
 
+    @Override
     public int getRetainedSize() {
         return 0;
     }
 
+    @Override
     public int getReachableSize() {
         return 0;
     }
     
+    @Override
     public Instance getNearestGCRootPointer() {
         return null;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof InstanceImpl)) {
             return false;
@@ -280,6 +293,7 @@ public class InstanceImpl implements Instance {
         return var.getUniqueID() == ((InstanceImpl) obj).var.getUniqueID();
     }
 
+    @Override
     public int hashCode() {
         return (int) var.getUniqueID();
     }

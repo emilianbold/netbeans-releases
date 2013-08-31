@@ -59,6 +59,7 @@ public class TypeImpl implements Type {
         this.type = type;
     }
 
+    @Override
     public String getName() {
         return type;
     }

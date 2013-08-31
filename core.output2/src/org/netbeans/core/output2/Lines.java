@@ -355,6 +355,21 @@ public interface Lines {
     void hideFold(int foldStartIndex);
 
     /**
+     * Show all parent folds of the fold starting at line
+     * {@code foldStartIndex}.
+     *
+     * @param foldStartIndex Real index of the line where the fold starts.
+     */
+    void showFoldAndParentFolds(int foldStartIndex);
+
+    /**
+     * Expand all parent folds of a line, so that the line is visible.
+     *
+     * @param realLineIndex Real line index of the line to show.
+     */
+    void showFoldsForLine(int realLineIndex);
+
+    /**
      * Show all folds in the output, including nested folds.
      */
     void showAllFolds();

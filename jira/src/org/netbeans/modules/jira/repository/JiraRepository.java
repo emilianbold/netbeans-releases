@@ -91,7 +91,6 @@ import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
-import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
@@ -440,8 +439,7 @@ public class JiraRepository {
             SimpleQueryCommand cmd = MylynSupport.getInstance().getCommandFactory().createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd);
             for (NbTask task : cmd.getTasks()) {
-                // simple query command, remember?
-                NbJiraIssue issue = getIssueForTask(task, false);
+                NbJiraIssue issue = getIssueForTask(task);
                 if (issue != null) {
                     issues.add(issue);
                 }
@@ -760,32 +758,15 @@ public class JiraRepository {
     }
     
     public NbJiraIssue getIssueForTask (NbTask task) {
-        return getIssueForTask(task, true);
-    }
-    
-    private NbJiraIssue getIssueForTask (NbTask task, boolean onlyInitializedTasks) {
         NbJiraIssue issue = null;
         if (task != null) {
-            try {
-                if (onlyInitializedTasks) {
-                    NbTaskDataState tdState = task.getTaskDataState();
-                    if (tdState == null) {
-                        // this happens when a query is canceled. All yet unsynchronized tasks
-                        // are still incomplete. What now? Should the task be deleted?
-                        return null;
-                    }
+            synchronized (CACHE_LOCK) {
+                String taskKey = NbJiraIssue.getKey(task);
+                Cache issueCache = getCache();
+                issue = issueCache.getIssue(taskKey);
+                if (issue == null) {
+                    issue = issueCache.setIssueData(taskKey, new NbJiraIssue(task, this));
                 }
-                synchronized (CACHE_LOCK) {
-                    String taskKey = NbJiraIssue.getKey(task);
-                    Cache issueCache = getCache();
-                    issue = issueCache.getIssue(taskKey);
-                    if (issue == null) {
-                        issue = issueCache.setIssueData(taskKey, new NbJiraIssue(task, this));
-                    }
-                }
-            } catch (Exception ex) {
-                Jira.LOG.log(Level.SEVERE, null, ex);
-                issue = null;
             }
         }
         return issue;

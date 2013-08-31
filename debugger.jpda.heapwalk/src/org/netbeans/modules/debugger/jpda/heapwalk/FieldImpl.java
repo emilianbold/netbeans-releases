@@ -63,18 +63,22 @@ public class FieldImpl implements Field {
         this.heap = heap;
     }
 
+    @Override
     public JavaClass getDeclaringClass() {
         return new JavaClassImpl(heap, field.getDeclaringClass());
     }
 
+    @Override
     public String getName() {
         return field.getName();
     }
 
+    @Override
     public boolean isStatic() {
         return field.isStatic();
     }
 
+    @Override
     public Type getType() {
         return new TypeImpl(field.getDeclaredType());
     }

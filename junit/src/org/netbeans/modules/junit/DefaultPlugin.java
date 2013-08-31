@@ -48,7 +48,9 @@ import java.util.logging.Level;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,11 +121,13 @@ import static java.util.logging.Level.FINEST;
 import static org.netbeans.api.java.classpath.ClassPath.SOURCE;
 import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
+import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
 import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
+import org.openide.util.Utilities;
 
 /**
  * Default JUnit plugin.
@@ -145,7 +149,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 = "org/junit/Test.class";               //NOI18N
     
     /** */
-    private JUnitVersion junitVer;
+    private static JUnitVersion junitVer;
 
     /** name of FreeMarker template property - generate {@code &#64;BeforeClass} method? */
     private static final String templatePropBeforeClass = "classSetUp"; //NOI18N
@@ -172,6 +176,24 @@ public final class DefaultPlugin extends JUnitPlugin {
     /** */
     private static java.util.ResourceBundle bundle = org.openide.util.NbBundle.getBundle(
             DefaultPlugin.class);
+    
+    public static void logJUnitUsage(URI projectURI) {
+        String version = "";
+        if (junitVer == null) {
+            Project project = FileOwnerQuery.getOwner(projectURI);
+            final ClassPath classPath = getTestClassPath(project);
+            if (classPath != null) {
+                if (classPath.findResource(JUNIT4_SPECIFIC) != null) {
+                    version = JUnitVersion.JUNIT4.toString();
+                } else if (classPath.findResource(JUNIT3_SPECIFIC) != null) {
+                    version = JUnitVersion.JUNIT3.toString();
+                }
+            }
+        } else {
+            version = junitVer.toString();
+        }
+        UnitTestsUsage.getInstance().logUnitTestUsage(projectURI, version);
+    }
 
     /**
      * 
@@ -813,7 +835,13 @@ public final class DefaultPlugin extends JUnitPlugin {
                                 final Map<CreateTestParam, Object> params) {
         //XXX: not documented that in case that if filesToTest is <null>,
         //the target root param works as a target folder
-        
+        Project project = FileOwnerQuery.getOwner(targetRoot);
+        if (project != null) {
+            File projectFile = FileUtil.toFile(project.getProjectDirectory());
+            if (projectFile != null) {
+                logJUnitUsage(Utilities.toURI(projectFile));
+            }
+        }
         ProgressIndicator progress = new ProgressIndicator();
         progress.show();
 

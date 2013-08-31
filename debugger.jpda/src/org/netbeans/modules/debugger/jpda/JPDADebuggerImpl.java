@@ -553,6 +553,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 bel.fixBreakpointImpls ();
             }
         }
+        expressionPool.clear();
     }
 
     @Override

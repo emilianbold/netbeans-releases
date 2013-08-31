@@ -46,6 +46,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Color;
 import java.awt.Component;
@@ -758,7 +759,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             headerLabel.setPreferredSize(new Dimension(0, dim.height));
             // Created field
             String createdFormat = bundle.getString("IssuePanel.createdField.format"); // NOI18N
-            String reporter = config.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName();
+            String reporter = issue.getFieldValue(NbJiraIssue.IssueField.REPORTER);
+            User user = config.getUser(reporter);
+            if (user != null) {
+                reporter = user.getFullName();
+            }
             String creation = JiraUtils.dateByMillis(issue.getFieldValue(NbJiraIssue.IssueField.CREATION), true);
             String createdTxt = MessageFormat.format(createdFormat, creation, reporter);
             createdField.setText(createdTxt);
@@ -944,9 +949,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             JComponent component = p.second();
             IssueField field = p.first();
             if (component instanceof JList) {
-                newValue += " " + mergeValues(toReadable(issue.getFieldValues(field), field));
-                lastSeenValue += " " + mergeValues(toReadable(issue.getLastSeenFieldValues(field), field));
-                repositoryValue += " " + mergeValues(toReadable(issue.getRepositoryFieldValues(field), field));
+                newValue += " " + JiraUtils.mergeValues(toReadable(issue.getFieldValues(field), field));
+                lastSeenValue += " " + JiraUtils.mergeValues(toReadable(issue.getLastSeenFieldValues(field), field));
+                repositoryValue += " " + JiraUtils.mergeValues(toReadable(issue.getRepositoryFieldValues(field), field));
             } else {
                 newValue += " " + toReadable(issue.getFieldValue(field), field);
                 lastSeenValue += " " + toReadable(issue.getLastSeenFieldValue(field), field);
@@ -1017,21 +1022,21 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (fieldLabel != null && fieldLabel.getFont().isBold()) {
                     fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
                 }
-                if (visible && !valueModifiedByUser && !fieldDirty && valueModifiedByServer) {
-                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
-                    // do not use ||
-                    change = fieldsLocal.remove(fieldKey) != null | fieldsConflict.remove(fieldKey) != null
-                            | !message.equals(fieldsIncoming.put(fieldKey, message));
-                    tooltipsIncoming.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedRemotelyTT(
-                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
-                } else if (visible && valueModifiedByServer) {
+                if (visible && valueModifiedByServer && (valueModifiedByUser || fieldDirty) && !newValue.equals(repositoryValue)) {
                     String message = Bundle.IssuePanel_fieldModifiedConflict(fieldName, lastSeenValue, repositoryValue);
                     // do not use ||
                     change = fieldsLocal.remove(fieldKey) != null | fieldsIncoming.remove(fieldKey) != null
                             | !message.equals(fieldsConflict.put(fieldKey, message));
                     tooltipsConflict.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedConflictTT(
                             fieldName, lastSeenValue, repositoryValue, newValue, ICON_CONFLICT_PATH));
-                } else if (visible && (valueModifiedByUser || fieldDirty)) {
+                } else if (visible && valueModifiedByServer) {
+                    String message = Bundle.IssuePanel_fieldModifiedRemotely(fieldName, lastSeenValue, repositoryValue);
+                    // do not use ||
+                    change = fieldsLocal.remove(fieldKey) != null | fieldsConflict.remove(fieldKey) != null
+                            | !message.equals(fieldsIncoming.put(fieldKey, message));
+                    tooltipsIncoming.addTooltip(warningLabel, fieldKey, Bundle.IssuePanel_fieldModifiedRemotelyTT(
+                            fieldName, lastSeenValue, repositoryValue, ICON_REMOTE_PATH));
+                } else if (visible && (valueModifiedByUser || fieldDirty) && !newValue.equals(lastSeenValue)) {
                     String message;
                     if (fieldKey.equals(IssueField.COMMENT.getKey())) {
                         message = Bundle.IssuePanel_commentAddedLocally();
@@ -2861,19 +2866,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
     }
-    
-    private String mergeValues (List<String> values) {
-        String newValue;
-        StringBuilder sb = new StringBuilder();
-        for (String value : values) {
-            if (sb.length()!=0) {
-                sb.append(',');
-            }
-            sb.append(value);
-        }
-        newValue = sb.toString();
-        return newValue;
-    }
 
     private void updateIcon (JLabel label) {
         label.setToolTipText(null);
@@ -2924,42 +2916,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     } catch (ParseException ex) { }
                 }
                 break;
-            case TYPE:
-                IssueType type = config.getIssueTypeById(value);
-                if (type != null) {
-                    value = type.getName();
-                }
-                break;
-            case STATUS:
-                JiraStatus status = config.getStatusById(value);
-                if (status != null) {
-                    value = status.getName();
-                }
-                break;
-            case RESOLUTION:
-                Resolution res = config.getResolutionById(value);
-                if (res != null) {
-                    value = res.getName();
-                }
-                break;
-            case PRIORITY:
-                Priority priority = config.getPriorityById(value);
-                if (priority != null) {
-                    value = priority.getName();
-                }
-                break;
-            case COMPONENT:
-                com.atlassian.connector.eclipse.internal.jira.core.model.Component comp = config.getComponentById(projectId, value);
-                if (comp != null) {
-                    value = comp.getName();
-                }
-                break;
-            case FIXVERSIONS:
-            case AFFECTSVERSIONS:
-                Version version = config.getVersionById(projectId, value);
-                if (version != null) {
-                    value = version.getName();
-                }
+            default:
+                value = JiraUtils.toReadable(config, projectId, field, value);
                 break;
         }
         return value;
@@ -2983,9 +2941,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean fieldDirty = false;
             boolean valueModifiedByUser = false;
             boolean valueModifiedByServer = false;
-            String newValue = mergeValues(field.getValues());
-            String lastSeenValue = mergeValues(field.getLastSeenValues());
-            String repositoryValue = mergeValues(field.getRepositoryValues());
+            String newValue = JiraUtils.mergeValues(field.getValues());
+            String lastSeenValue = JiraUtils.mergeValues(field.getLastSeenValues());
+            String repositoryValue = JiraUtils.mergeValues(field.getRepositoryValues());
             fieldDirty |= unsavedFields.contains(id);
             valueModifiedByUser |= (issue.getFieldStatus(id) & NbJiraIssue.FIELD_STATUS_OUTGOING) != 0;
             valueModifiedByServer |= (issue.getFieldStatus(id) & NbJiraIssue.FIELD_STATUS_MODIFIED) != 0;

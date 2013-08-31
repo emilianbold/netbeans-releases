@@ -57,8 +57,6 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.TableCellEditor;
 import org.jdesktop.swingx.JXDatePicker;
-import org.netbeans.modules.db.dataview.meta.DBColumn;
-import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.JXDateTimePicker;
 import org.netbeans.modules.db.dataview.util.TimestampType;
@@ -138,17 +136,16 @@ public class DateTimePickerCellEditor extends AbstractCellEditor implements Tabl
     protected Timestamp getValueAsTimestamp(Object value) {
         if (isEmpty(value) || DataViewUtils.isSQLConstantString(value, null)) {
             return new Timestamp(System.currentTimeMillis());
-        }
-
-        if (value instanceof Timestamp) {
+        } else if (value instanceof Timestamp) {
             return (Timestamp) value;
-        }
-        if (value instanceof Long) {
+        } else if (value instanceof java.util.Date) {
+            return new Timestamp(((java.util.Date) value).getTime());
+        } else if (value instanceof java.util.Calendar) {
+            return new Timestamp(((java.util.Calendar) value).getTime().getTime());
+        } else if (value instanceof Long) {
             return new Timestamp((Long) value);
-        }
-        if (value instanceof String) {
+        } else if (value instanceof String) {
             try {
-
                 return new Timestamp(dateFormat.parse((String) value).getTime());
             } catch (ParseException e) {
                 //mLogger.log(Level.SEVERE, e.getMessage(), e.getMessage());

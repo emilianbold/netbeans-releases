@@ -65,15 +65,18 @@ public class DebuggerHeapFragmentWalker extends HeapFragmentWalker {
         super(heap, new HeapWalker(heap));
     }
 
+    @Override
     public JPanel getPanel() {
         // Not supported
         return null;
     }
 
+    @Override
     public void switchToClassesView() {
         openComponent("classes", true);
     }
 
+    @Override
     public void switchToInstancesView() {
         openComponent("dbgInstances", true);
     }

@@ -106,10 +106,12 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
         }
     }
     
+    @Override
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
         original.performDefaultAction(node);
     }
 
+    @Override
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         Action [] actions = original.getActions (node);
         if (node instanceof ObjectVariable && debugger.canGetInstanceInfo()) {
@@ -130,8 +132,9 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
     }
 
     private final Action HEAP_REFERENCES_ACTION = Models.createAction (
-        NbBundle.getBundle(HeapActionsFilter.class).getString("CTL_References_Label"),
+        NbBundle.getMessage(HeapActionsFilter.class, "CTL_References_Label"),
         new Models.ActionPerformer () {
+            @Override
             public boolean isEnabled (Object node) {
                 if ((node == null) || (!(node instanceof ObjectVariable))) {
                     return false;
@@ -144,14 +147,16 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
                 }
                 return var.getUniqueID() != 0L;
             }
+            @Override
             public void perform (Object[] nodes) {
                 ObjectVariable var = (ObjectVariable) nodes[0];
                 if (var.getUniqueID() == 0L) return ;
                 final InstancesView instances = openInstances(true);
-                final Reference<ObjectVariable> varRef = new WeakReference(var);
-                final Reference<JPDADebugger> debuggerRef = new WeakReference(debugger);
+                final Reference<ObjectVariable> varRef = new WeakReference<ObjectVariable>(var);
+                final Reference<JPDADebugger> debuggerRef = new WeakReference<JPDADebugger>(debugger);
                 InstancesView.HeapFragmentWalkerProvider provider =
                         new InstancesView.HeapFragmentWalkerProvider() {
+                    @Override
                     public synchronized HeapFragmentWalker getHeapFragmentWalker() {
                         HeapFragmentWalker hfw = instances.getCurrentFragmentWalker();
                         HeapImpl heap = (hfw != null) ? (HeapImpl) hfw.getHeapFragment() : null;

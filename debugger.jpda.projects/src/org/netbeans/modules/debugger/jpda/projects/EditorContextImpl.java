@@ -2252,6 +2252,7 @@ public class EditorContextImpl extends EditorContext {
                 }
             }
             if (scope != null) {
+                scope = ci.getTreeUtilities().toScopeWithDisabledAccessibilityChecks(scope);
                 ci.getTreeUtilities().attributeTree(tree, scope);
             }
             try {

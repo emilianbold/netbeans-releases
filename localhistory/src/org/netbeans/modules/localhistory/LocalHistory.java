@@ -457,25 +457,20 @@ public class LocalHistory {
         private final RequestProcessor rp = new RequestProcessor("LocalHistory.OpenedFilesListener", 1); // NOI18N
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
-            rp.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
-                        Object obj = evt.getNewValue();
-                        if (obj instanceof TopComponent) {
-                            TopComponent tc = (TopComponent) obj;
-                            handleTCFiles(tc, true);
-                        }
-                    } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-                        Object obj = evt.getNewValue();
-                        if (obj instanceof TopComponent) {
-                            TopComponent tc = (TopComponent) obj;
-                            handleTCFiles(tc, false);
-                            removeLookupListeners(tc);
-                        }
-                    }
+            if (Registry.PROP_TC_OPENED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    TopComponent tc = (TopComponent) obj;
+                    handleTCFiles(tc, true);
                 }
-            });
+            } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
+                Object obj = evt.getNewValue();
+                if (obj instanceof TopComponent) {
+                    TopComponent tc = (TopComponent) obj;
+                    handleTCFiles(tc, false);
+                    removeLookupListeners(tc);
+                }
+            }
         }
 
         private void addLookupListener(TopComponent tc) {
@@ -668,6 +663,7 @@ public class LocalHistory {
                                     @Override
                                     public void propertyChange(PropertyChangeEvent evt) {
                                         if(EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                            // XXX perhaps this doesn't have to be called from awt 
                                             addOpenedFiles(getFiles(dataObject));
                                             o.removePropertyChangeListener(this);
                                         }
@@ -687,6 +683,7 @@ public class LocalHistory {
                             hasEditorPanes = true;
                         }
                         if(hasEditorPanes) {
+                            // XXX perhaps this doesn't have to be called from awt 
                             if(addFiles) {
                                 addOpenedFiles(getFiles(dataObject));
                             } else {

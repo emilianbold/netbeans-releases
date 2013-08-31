@@ -450,13 +450,13 @@ public class MacOsNativeUtils extends UnixNativeUtils {
                         String content = item.getTextContent();
                         LogManager.log(ErrorLevel.DEBUG, "        content = " + content);
                         
-                        if (content.startsWith(FILE_LOCALHOST)) {
-                            content = content.substring(FILE_LOCALHOST.length());
-                        }
-                        
-                        File contentFile = new File(content);
-                        
                         if (content!=null && !content.equals("")) {
+                            if (content.startsWith(FILE_LOCALHOST)) {
+                                content = content.substring(FILE_LOCALHOST.length());
+                            }
+
+                            File contentFile = new File(content);
+                                                
                             if(locationFile.equals(contentFile)) {
                                 dct = item;
                                 break;

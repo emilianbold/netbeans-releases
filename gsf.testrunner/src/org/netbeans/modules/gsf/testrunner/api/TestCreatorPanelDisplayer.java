@@ -44,9 +44,12 @@ package org.netbeans.modules.gsf.testrunner.api;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -72,13 +75,19 @@ public final class TestCreatorPanelDisplayer {
     public void displayPanel(Node[] activatedNodes, Object location, String testingFramework) {
 	final DataObject[] modified = DataObject.getRegistry().getModified();
 	CommonTestsCfgOfCreate cfg = new CommonTestsCfgOfCreate(activatedNodes);
-	cfg.createCfgPanel(modified.length == 0 ? false : true);
+        boolean isJ2MEProject = isJ2MEProject(activatedNodes);
+	cfg.createCfgPanel(modified.length == 0 ? false : true, isJ2MEProject);
+        if (isJ2MEProject) {
+            return;
+        }
 
 	ArrayList<String> testingFrameworks = new ArrayList<String>();
 	Collection<? extends Lookup.Item<TestCreatorProvider>> providers = Lookup.getDefault().lookupResult(TestCreatorProvider.class).allItems();
-	for (Lookup.Item<TestCreatorProvider> provider : providers) {
-	    testingFrameworks.add(provider.getDisplayName());
-	}
+        if (!isJ2MEProject) {
+            for (Lookup.Item<TestCreatorProvider> provider : providers) {
+                testingFrameworks.add(provider.getDisplayName());
+            }
+        }
 	cfg.addTestingFrameworks(testingFrameworks);
 	cfg.setPreselectedLocation(location);
 	cfg.setPreselectedFramework(testingFramework);
@@ -114,6 +123,24 @@ public final class TestCreatorPanelDisplayer {
 		break;
 	    }
 	}
+    }
+
+    private boolean isJ2MEProject(Node[] activatedNodes) {
+        DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
+        if (dataObject != null) {
+            Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+            if (p != null) {
+                return p.getLookup().lookup(TestCreatorPanelDisplayerProjectServiceProvider.class) != null;
+            }
+        }
+        return false;
+    }
+
+    @ProjectServiceProvider(service = TestCreatorPanelDisplayerProjectServiceProvider.class, projectType = "org-netbeans-modules-mobility-project")
+    public static class TestCreatorPanelDisplayerProjectServiceProvider {
+
+        public TestCreatorPanelDisplayerProjectServiceProvider(Project p) {
+        }
     }
 
     private void saveAll(DataObject[] dataObjects) {

@@ -176,6 +176,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/remote.png"); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/unsubmitted.png"); //NOI18N
+    private boolean loading;
 
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         super(task);
@@ -221,11 +222,13 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     public void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        loading = true;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
                     ensureConfigurationUptodate();
+                    loading = false;
                     refreshViewData(true);
                 } else {
                     // should close somehow
@@ -564,8 +567,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
         Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
         if (!value.equals(a.getValue())) {
-            a.setValue(value);
-            m.attributeChanged(a);
+            setValue(m, a, value);
         }
     }
 
@@ -670,8 +672,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     TaskAttribute rta = getModel().getLocalTaskData().getRoot();
                     TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
                     if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
-                        ta.setValue(resolution);
-                        getModel().attributeChanged(ta);
+                        setValue(getModel(), ta, resolution);
                     }
                 }
             }
@@ -687,8 +688,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         setOperation(BugzillaOperation.duplicate);
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
-        ta.setValue(id);
-        m.attributeChanged(ta);
+        setValue(m, ta, id);
     }
 
     boolean canReassign() {
@@ -739,13 +739,11 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         TaskAttribute rta = m.getLocalTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
         if(ta != null) {
-            ta.setValue(user);
-            m.attributeChanged(ta);
+            setValue(m, ta, user);
         }
         ta = rta.getMappedAttribute(BugzillaAttribute.ASSIGNED_TO.getKey());
         if(ta != null) {
-            ta.setValue(user);
-            m.attributeChanged(ta);
+            setValue(m, ta, user);
         }
     }
 
@@ -770,6 +768,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 return;
             }
         }
+        // no operation found, leave to NO_OP ~ Leave as...
+        setOperation(BugzillaOperation.none);
     }
     
     private void setOperation (TaskOperation operation) {
@@ -909,8 +909,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     } else {
                         value += "\n\n" + comment; //NOI18N
                     }
-                    ta.setValue(value);
-                    getModel().attributeChanged(ta);
+                    setValue(getModel(), ta, value);
                 }
             });
         }
@@ -930,8 +929,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             if (ta == null) {
                 ta = BugzillaTaskDataHandler.createAttribute(getModel().getLocalTaskData().getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
             }
-            ta.setValue("1");                                                   // NOI18N
-            getModel().attributeChanged(ta);
+            setValue(getModel(), ta, "1"); //NOI18N
         }
     }
 
@@ -1019,19 +1017,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
-        NbTask task = getNbTask();
-        assert task != null;
         assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        try {
-            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
-            getRepository().getExecutor().execute(cmd);
+        boolean synced = synchronizeTask();
+        if (!loading) {
+            // refresh only when model is not currently being loaded
+            // otherwise it most likely ends up in editor not fully initialized
             refreshViewData(afterSubmitRefresh);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
-        return true;
+        return synced;
     }
 
     private void refreshViewData(boolean force) {
@@ -1294,10 +1287,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     @Override
     protected boolean synchronizeTask () {
         try {
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
-            getRepository().getExecutor().execute(cmd);
-            return !cmd.hasFailed();
+            NbTask task = getNbTask();
+            synchronized (task) {
+                Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
+                SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                        getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+                getRepository().getExecutor().execute(cmd);
+                return !cmd.hasFailed();
+            }
         } catch (CoreException ex) {
             // should not happen
             Bugzilla.LOG.log(Level.WARNING, null, ex);
@@ -1307,6 +1304,23 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     boolean save () {
         return saveChanges();
+    }
+
+    private void setValue (NbTaskDataModel model, TaskAttribute ta, String value) {
+        TaskData repositoryTaskData = model.getRepositoryTaskData();
+        if (value.isEmpty() && repositoryTaskData != null) {
+            // should be empty or set to ""???
+            TaskAttribute a = repositoryTaskData.getRoot().getAttribute(ta.getId());
+            if (a == null || a.getValues().isEmpty()) {
+                // repository value is also empty list, so let's set to the same
+                ta.clearValues();
+            } else {
+                ta.setValue(value);
+            }
+        } else {
+            ta.setValue(value);
+        }
+        model.attributeChanged(ta);
     }
 
     class Comment {

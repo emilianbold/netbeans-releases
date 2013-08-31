@@ -372,7 +372,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         if(savedQueryInitialized) {
             return;
         }
-        setModelProperties(query.isSaved());
+        setModelProperties();
         if(descriptors.length > 0) {
             Map<Integer, Integer> sorting = getColumnSorting();
             if(descriptors.length > 1) {
@@ -669,7 +669,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     @Override
     public void ancestorRemoved(AncestorEvent event) { }
 
-    private void setModelProperties(boolean isSaved) {
+    private void setModelProperties() {
         List<ColumnDescriptor> properties = new ArrayList<ColumnDescriptor>(descriptors.length + (query.isSaved() ? 2 : 0));
         int i = 0;
         for (; i < descriptors.length; i++) {
@@ -685,7 +685,9 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         Map<String, Integer> persistedColumnsMap = getPersistedColumnValues();
         if(persistedColumnsMap.size() > 0) {
             for (ColumnDescriptor cd : properties) {
-                cd.setVisible(persistedColumnsMap.containsKey(cd.getName()));
+                if(!cd.getName().equals(IssueNode.LABEL_NAME_SEEN)) { // always show seen, no matter if persisted or not
+                    cd.setVisible(persistedColumnsMap.containsKey(cd.getName()));
+                }
             }
         }
         descriptors = properties.toArray(new ColumnDescriptor[properties.size()]);
@@ -846,10 +848,12 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
                 sb.append(tableModel.getColumnId(i));
-                sb.append(CONFIG_DELIMITER);                                               // NOI18N
-                sb.append(cm.getColumn(i).getWidth());
-                if(i < count - 1) {
-                    sb.append(CONFIG_DELIMITER);                                           // NOI18N
+                if(!tableModel.getColumnId(i).equals(IssueNode.LABEL_NAME_SEEN)) {
+                    sb.append(CONFIG_DELIMITER);
+                    sb.append(cm.getColumn(i).getWidth());
+                    if(i < count - 1) {
+                        sb.append(CONFIG_DELIMITER);
+                    }
                 }
             }
             BugtrackingConfig.getInstance().storeColumns(getColumnsKey(), sb.toString());

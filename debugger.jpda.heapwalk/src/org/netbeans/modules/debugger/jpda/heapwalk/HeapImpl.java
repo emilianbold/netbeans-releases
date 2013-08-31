@@ -53,7 +53,6 @@ import org.netbeans.lib.profiler.heap.JavaClass;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -81,6 +80,7 @@ public class HeapImpl implements Heap {
         return debugger;
     }
 
+    @Override
     public HeapSummary getSummary() {
         return new DebuggerHeapSummary(debugger, instanceTotalCountPtr);
     }
@@ -103,6 +103,7 @@ public class HeapImpl implements Heap {
         }
     }
 
+    @Override
     public List<JavaClass> getAllClasses() {
         List<JavaClass> javaClasses;
         synchronized (classesCacheAccessLock) {
@@ -117,29 +118,34 @@ public class HeapImpl implements Heap {
         }
     }
     
+    @Override
     public List getBiggestObjectsByRetainedSize(int number) {
         return null;
     }
  
+    @Override
     public Instance getInstanceByID(long id) {
          return null;
     }
     
+    @Override
     public JavaClass getJavaClassByID(long id) {
         return null;
     }
     
+    @Override
     public JavaClass getJavaClassByName(String name) {
         List<JPDAClassType> classes = debugger.getClassesByName(name);
-        if (classes.size() == 0) {
+        if (classes.isEmpty()) {
             return null;
         }
         return new JavaClassImpl(this, classes.get(0), classes.get(0).getInstanceCount());
     }
 
+    @Override
     public Collection getJavaClassesByRegExp(String regexp) {
         List<JPDAClassType> allClasses = debugger.getAllClasses();
-        Collection result = new ArrayList(256);
+        Collection<JavaClass> result = new ArrayList<JavaClass>(256);
         Pattern pattern = Pattern.compile(regexp);
 
         for (JPDAClassType clazz : allClasses) {
@@ -151,14 +157,17 @@ public class HeapImpl implements Heap {
     }
 
 
+    @Override
     public Collection getGCRoots() {
         return Collections.emptyList();
     }
 
+    @Override
     public GCRoot getGCRoot(Instance instance) {
         return null;
     }
     
+    @Override
     public Properties getSystemProperties() {
         // TODO
         return null;
@@ -174,10 +183,12 @@ public class HeapImpl implements Heap {
             this.instanceTotalCountPtr = instanceTotalCountPtr;
         }
         
+        @Override
         public long getTotalLiveBytes() {
             return -1;
         }
 
+        @Override
         public long getTotalLiveInstances() {
             long sum = instanceTotalCountPtr[0];
             if (sum >= 0) {
@@ -191,14 +202,17 @@ public class HeapImpl implements Heap {
             return sum;
         }
 
+        @Override
         public long getTotalAllocatedBytes() {
             return -1L;
         }
 
+        @Override
         public long getTotalAllocatedInstances() {
             return -1L;
         }
 
+        @Override
         public long getTime() {
             return System.currentTimeMillis();
         }

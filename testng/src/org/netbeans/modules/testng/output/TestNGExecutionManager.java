@@ -141,7 +141,11 @@ public class TestNGExecutionManager implements RerunHandler {
     }
 
     public void rerun() {
-        if (properties.getProperty("test.includes") != null && properties.getProperty("test.includes").endsWith(".xml")) {   //NOI18N
+        if ((properties.getProperty("test.includes") != null && properties.getProperty("test.includes").endsWith(".xml")) ||    //NOI18N
+                (properties.getProperty("test.class") != null && properties.getProperty("test.class").endsWith(".xml"))) {   //NOI18N
+            if (properties.getProperty("continue.after.failing.tests") == null) {   //NOI18N
+                properties.setProperty("continue.after.failing.tests", "true");  //NOI18N
+            }
             try {
                 runAnt(FileUtil.toFileObject(scriptFile), targets, properties);
             } catch (IOException ex) {

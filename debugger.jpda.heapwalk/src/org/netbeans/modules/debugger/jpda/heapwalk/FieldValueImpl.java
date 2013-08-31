@@ -48,8 +48,6 @@ import org.netbeans.lib.profiler.heap.Field;
 import org.netbeans.lib.profiler.heap.FieldValue;
 import org.netbeans.lib.profiler.heap.Instance;
 
-import org.netbeans.api.debugger.jpda.Variable;
-
 /**
  *
  * @author Martin Entlicher
@@ -59,22 +57,28 @@ public class FieldValueImpl implements FieldValue {
     private org.netbeans.api.debugger.jpda.Field field;
     private Instance defInstance;
     private HeapImpl heap;
+    private String value;
     
     /** Creates a new instance of FieldValueImpl */
     public FieldValueImpl(HeapImpl heap, Instance defInstance, org.netbeans.api.debugger.jpda.Field field) {
         this.field = field;
         this.defInstance = defInstance;
         this.heap = heap;
+        // Preload the value, so that it's not retrieved in AWT.
+        this.value = field.getValue();
     }
 
+    @Override
     public Field getField() {
         return new FieldImpl(heap, field);
     }
 
+    @Override
     public String getValue() {
-        return field.getValue();
+        return value;
     }
 
+    @Override
     public Instance getDefiningInstance() {
         return defInstance;
     }

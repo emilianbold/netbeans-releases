@@ -79,6 +79,7 @@ final class LayerPanel extends BasicWizardIterator.Panel {
     @Messages("already_layer=This project already has an XML layer.")
     @Override protected void readFromDataModel() {
         createdFiles.setText(WizardUtils.generateTextAreaContent(cmf.getCreatedPaths()));
+        modifiedFiles.setText(WizardUtils.generateTextAreaContent(cmf.getModifiedPaths()));
         if (LayerHandle.forProject(data.getProject()).getLayerFile() != null) {
             setError(already_layer());
         } else {
@@ -98,6 +99,8 @@ final class LayerPanel extends BasicWizardIterator.Panel {
         project = new JTextField(ProjectUtils.getInformation(data.getProject()).getDisplayName());
         createdFilesLabel = new javax.swing.JLabel();
         createdFiles = new javax.swing.JTextArea();
+        modifiedFilesLabel = new javax.swing.JLabel();
+        modifiedFiles = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -120,7 +123,7 @@ final class LayerPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 6, 0);
         add(project, gridBagConstraints);
 
-        createdFilesLabel.setLabelFor(createdFiles);
+        createdFilesLabel.setLabelFor(modifiedFiles);
         org.openide.awt.Mnemonics.setLocalizedText(createdFilesLabel, org.openide.util.NbBundle.getMessage(LayerPanel.class, "LBL_CreatedFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -131,9 +134,9 @@ final class LayerPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
         add(createdFilesLabel, gridBagConstraints);
 
+        createdFiles.setEditable(false);
         createdFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         createdFiles.setColumns(20);
-        createdFiles.setEditable(false);
         createdFiles.setRows(5);
         createdFiles.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -146,6 +149,31 @@ final class LayerPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
         add(createdFiles, gridBagConstraints);
 
+        org.openide.awt.Mnemonics.setLocalizedText(modifiedFilesLabel, "&Modified Files");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 12);
+        add(modifiedFilesLabel, gridBagConstraints);
+
+        modifiedFiles.setEditable(false);
+        modifiedFiles.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
+        modifiedFiles.setColumns(20);
+        modifiedFiles.setRows(5);
+        modifiedFiles.setBorder(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.5;
+        gridBagConstraints.insets = new java.awt.Insets(36, 0, 6, 0);
+        add(modifiedFiles, gridBagConstraints);
+
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LayerPanel.class, "ACN_LayerPanel", new Object[] {})); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LayerPanel.class, "ACD_LayerPanel", new Object[] {})); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -154,6 +182,8 @@ final class LayerPanel extends BasicWizardIterator.Panel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea createdFiles;
     private javax.swing.JLabel createdFilesLabel;
+    private javax.swing.JTextArea modifiedFiles;
+    private javax.swing.JLabel modifiedFilesLabel;
     private javax.swing.JTextField project;
     private javax.swing.JLabel projectLabel;
     // End of variables declaration//GEN-END:variables

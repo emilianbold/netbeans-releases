@@ -62,6 +62,7 @@ public class JiraConfig {
     private static final String ISSUE_REFRESH_INT   = "jira.issue_refresh";         // NOI18N
 
     private HashMap<String, Icon> priorityIcons;
+    private HashMap<String, String> priorityIconsURL;
     private JiraConfig() { }
 
     public static JiraConfig getInstance() {
@@ -117,6 +118,18 @@ public class JiraConfig {
             priorityIcons.put(Priority.TRIVIAL_ID, ImageUtilities.loadImageIcon("org/netbeans/modules/jira/resources/trivial.png", true));   // NOI18N
         }
         return priorityIcons.get(priorityId);
+    }
+
+    public String getPriorityIconURL (String priorityId) {
+        if(priorityIconsURL == null) {
+            priorityIconsURL = new HashMap<>();
+            priorityIconsURL.put(Priority.BLOCKER_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/blocker.png").toString()); //NOI18N
+            priorityIconsURL.put(Priority.CRITICAL_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/critical.png").toString()); //NOI18N
+            priorityIconsURL.put(Priority.MAJOR_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/major.png").toString()); //NOI18N
+            priorityIconsURL.put(Priority.MINOR_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/minor.png").toString()); //NOI18N
+            priorityIconsURL.put(Priority.TRIVIAL_ID, JiraConfig.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/trivial.png").toString()); //NOI18N
+        }
+        return priorityIconsURL.get(priorityId);
     }
 
 }

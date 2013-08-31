@@ -78,6 +78,7 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
@@ -175,6 +176,10 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 	    if (prj != null) {
 		NbMavenProject mvnprj = prj.getLookup().lookup(NbMavenProject.class);
 		if (mvnprj != null) {
+                    File projectFile = FileUtil.toFile(prj.getProjectDirectory());
+                    if (projectFile != null) {
+                        UnitTestsUsage.getInstance().logUnitTestUsage(Utilities.toURI(projectFile), getJUnitVersion(config.getMavenProject()));
+                    }
 		    TestSession.SessionType type = TestSession.SessionType.TEST;
 		    String action = config.getActionName();
 		    if (action != null) { //custom
@@ -294,6 +299,22 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         }
         return false;
     }   
+    
+    private String getJUnitVersion(MavenProject prj) {
+        String juVersion = "";
+        for (Artifact a : prj.getArtifacts()) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
+                String version = a.getVersion();
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
+                    return "JUNIT4"; //NOI18N
+                }
+                if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("3.8")) >= 0) {
+                    return "JUNIT3"; //NOI18N
+                }
+            }
+        }
+        return juVersion;
+    }
 
     private boolean usingJUnit4(MavenProject prj) { // SUREFIRE-724
         for (Artifact a : prj.getArtifacts()) {

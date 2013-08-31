@@ -63,7 +63,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.diff.DiffStreamSource;
@@ -80,7 +79,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     protected final SearchHistoryPanel parent;
 
     protected DiffTreeTable treeView;
-    private JSplitPane    diffView;
+    private final JSplitPane    diffView;
     
     protected GitProgressSupport            currentTask;
     
@@ -94,6 +93,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
     private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
+    private int lastDividerLoc;
 
     public DiffResultsView (SearchHistoryPanel parent, List<RepositoryRevision> results) {
         this.parent = parent;
@@ -112,8 +112,17 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     public void ancestorAdded(AncestorEvent event) {
         ExplorerManager em = ExplorerManager.find(treeView);
         em.addPropertyChangeListener(this);
-        if (!dividerSet) {
-            SwingUtilities.invokeLater(new Runnable() {
+        if (dividerSet) {
+            if (lastDividerLoc != 0) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        diffView.setDividerLocation(lastDividerLoc);
+                    }
+                });
+            }
+        } else {
+            EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     dividerSet = true;
@@ -129,6 +138,9 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     @Override
     public void ancestorRemoved(AncestorEvent event) {
+        if (dividerSet) {
+            lastDividerLoc = diffView.getDividerLocation();
+        }
         ExplorerManager em = ExplorerManager.find(treeView);
         em.removePropertyChangeListener(this);
     }
@@ -472,7 +484,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
             if (currentTask != this) return;
 
-            SwingUtilities.invokeLater(new Runnable() {
+            EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {

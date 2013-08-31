@@ -56,6 +56,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -79,7 +80,9 @@ import org.netbeans.modules.odcs.tasks.ODCSConnector;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
-import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NbTask;
+import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -162,31 +165,6 @@ public class ODCSUtil {
     public static RepositoryResponse postTaskData(AbstractRepositoryConnector rc, TaskRepository repository, TaskData data, Set<TaskAttribute> attrs) throws CoreException {
         RepositoryResponse rr = rc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
         return rr;
-    }
-    
-    /**
-     * Returns TaskData for the given issue id or null if an error occured
-     * @param repository
-     * @param id
-     * @return
-     */
-    public static TaskData getTaskData(final ODCSRepository repository, final String id) {
-        return getTaskData(repository, id, true);
-    }
-
-    /**
-     * Returns TaskData for the given issue id or null if an error occured
-     * @param repository
-     * @param id
-     * @return
-     */
-    public static TaskData getTaskData(final ODCSRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = new GetTaskDataCommand(ODCS.getInstance().getRepositoryConnector(), repository.getTaskRepository(), id);
-        repository.getExecutor().execute(cmd, true, handleExceptions);
-        if(cmd.hasFailed() && ODCS.LOG.isLoggable(Level.FINE)) {
-            ODCS.LOG.log(Level.FINE, cmd.getErrorMessage());
-        }
-        return cmd.getTaskData();
     }
     
     public static void openIssue(ODCSIssue odcsIssue) {
@@ -414,5 +392,35 @@ public class ODCSUtil {
             default:
                 throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
         }
+    }
+
+    /**
+     * Returns Task for the given issue id or null if an error occurred
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static NbTask getRepositoryTask (final ODCSRepository repository, final String id, boolean handleExceptions) {
+        MylynSupport supp = MylynSupport.getInstance();
+        try {
+            GetRepositoryTasksCommand cmd = supp.getCommandFactory()
+                    .createGetRepositoryTasksCommand(repository.getTaskRepository(), Collections.<String>singleton(id));
+            repository.getExecutor().execute(cmd, true, handleExceptions);
+            if(cmd.hasFailed()) {
+                ODCS.LOG.log(Level.FINE, cmd.getErrorMessage());
+            }
+            if (cmd.getTasks().isEmpty()) {
+                // fallback on local
+                NbTask task = supp.getTask(repository.getTaskRepository().getRepositoryUrl(), id);
+                if (cmd.hasFailed() && task != null) {
+                    return task;
+                }
+            } else {
+                return cmd.getTasks().iterator().next();
+            }
+        } catch (CoreException ex) {
+            ODCS.LOG.log(Level.INFO, null, ex);
+        }
+        return null;
     }
 }

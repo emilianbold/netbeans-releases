@@ -378,7 +378,7 @@ public final class TeamView {
                 public void actionPerformed(ActionEvent e) {
                     try {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(
-                                new URL(NbBundle.getMessage(DashboardSupport.class, "URL_TeamOverview"))); //NOI18N
+                                new URL(NbBundle.getMessage(TeamView.class, "URL_TeamOverview"))); //NOI18N
                     } catch( MalformedURLException ex ) {
                         //shouldn't happen
                         Exceptions.printStackTrace(ex);

@@ -102,6 +102,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 
@@ -217,8 +218,8 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             }
 
             projectSourceRoots = getSourceRoots(originalSourcePath);
-            Set<FileObject> preferredRoots = new HashSet<FileObject>();
-            preferredRoots.addAll(Arrays.asList(originalSourcePath.getRoots()));
+            //Set<FileObject> preferredRoots = new HashSet<FileObject>();
+            //preferredRoots.addAll(Arrays.asList(originalSourcePath.getRoots()));
             /*
             Set<FileObject> globalRoots = new TreeSet<FileObject>(new FileObjectComparator());
             globalRoots.addAll(GlobalPathRegistry.getDefault().getSourceRoots());
@@ -238,7 +239,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
                 srcRootsToListenForArtifactsUpdates = new HashSet<FileObject>();
                 for (String cp : listeningCP.split(File.pathSeparator)) {
-                    logger.log(Level.FINE, "Listening cp = '" + cp + "'");
+                    logger.log(Level.FINE, "Listening cp = ''{0}''", cp);
                     File f = new File(cp);
                     f = FileUtil.normalizeFile(f);
                     URL entry = FileUtil.urlForArchiveOrDir(f);
@@ -260,8 +261,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 }
             }
         } else {
-            RequestProcessor rp = contextProvider.lookupFirst(null, RequestProcessor.class);
-            pathRegistryListener = new PathRegistryListener(rp);
+            pathRegistryListener = new PathRegistryListener();
             GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(
                     WeakListeners.create(GlobalPathRegistryListener.class,
                                          pathRegistryListener,
@@ -409,7 +409,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private ClassPath getAdditionalClassPath(File baseDir) {
         try {
-            String root = baseDir.toURI().toURL().toExternalForm();
+            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
             Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
             List<String> additionalSourceRoots = (List<String>) sourcesProperties.
                     getProperties("additional_source_roots").
@@ -460,7 +460,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (baseDir != null) {
             String projectRoot;
             try {
-                projectRoot = baseDir.toURI().toURL().toExternalForm();
+                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -487,7 +487,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private Set<String> getDisabledSourceRoots(File baseDir) {
         try {
-            String root = baseDir.toURI().toURL().toExternalForm();
+            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
             Properties sourcesProperties = Properties.getDefault ().getProperties ("debugger").getProperties ("sources");
             return (Set<String>) sourcesProperties.getProperties("source_roots").
                 getMap("project_disabled", Collections.emptyMap()).
@@ -509,7 +509,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         if (baseDir != null) {
             String projectRoot;
             try {
-                projectRoot = baseDir.toURI().toURL().toExternalForm();
+                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -527,7 +527,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private static Map<String, Integer> getSourceRootsOrder(File baseDir) {
         try {
-            String root = baseDir.toURI().toURL().toExternalForm();
+            String root = Utilities.toURI(baseDir).toURL().toExternalForm();
             return getSourceRootsOrder(root);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -552,7 +552,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         String projectRoot;
         if (baseDir != null) {
             try {
-                projectRoot = baseDir.toURI().toURL().toExternalForm();
+                projectRoot = Utilities.toURI(baseDir).toURL().toExternalForm();
             } catch (MalformedURLException ex) {
                 Exceptions.printStackTrace(ex);
                 return ;
@@ -628,7 +628,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                 os = originalSourcePath;
             }
         }
-        if (ss != null) {
+        if (ss != null && os != null) {
             fo = ss.findResource(relativePath);
             if (fo == null && global) {
                 fo = os.findResource(relativePath);
@@ -1460,7 +1460,7 @@ public class SourcePathProviderImpl extends SourcePathProvider {
             // remove ".class" from and use dots for for separator
             ClassPath cp = ClassPath.getClassPath (fo, ClassPath.EXECUTE);
             if (cp == null) {
-                logger.warning("Did not find EXECUTE class path for "+fo);
+                logger.log(Level.WARNING, "Did not find EXECUTE class path for {0}", fo);
                 return null;
             }
     //        FileObject root = cp.findOwnerRoot (fo);
@@ -1470,14 +1470,13 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
     private class PathRegistryListener implements GlobalPathRegistryListener, PropertyChangeListener {
 
-        private RequestProcessor rp;
+        private RequestProcessor rp = new RequestProcessor(PathRegistryListener.class.getName(), 1);
         private RequestProcessor.Task task;
         private List<URL> addedRoots = null;
         private List<URL> removedRoots = null;
         private final Object rootsLock = new Object();
 
-        public PathRegistryListener(RequestProcessor rp) {
-            this.rp = rp;
+        public PathRegistryListener() {
             task = rp.create(new Runnable() {
                 @Override
                 public void run() {

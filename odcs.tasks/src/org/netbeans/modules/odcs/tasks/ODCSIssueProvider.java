@@ -44,12 +44,10 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -129,11 +127,11 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
             statusProvider = new IssueStatusProvider<ODCSIssue>() {
                 @Override
                 public Status getStatus(ODCSIssue issue) {
-                    return issue.getIssueStatus();
+                    return issue.getStatus();
                 }
                 @Override
                 public void setSeen(ODCSIssue issue, boolean seen) {
-                    issue.setSeen(seen);
+                    issue.setUpToDate(seen);
                 }
                 @Override
                 public void removePropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
@@ -146,6 +144,11 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
             };
         }
         return statusProvider;
+    }
+
+    @Override
+    public boolean submit (ODCSIssue data) {
+        return data.submitAndRefresh();
     }
     
     

@@ -1455,6 +1455,28 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     @Override
+    public void showFoldAndParentFolds(int foldStartIndex) {
+        synchronized (readLock()) {
+            int foldOffset = getFoldOffsets().get(foldStartIndex);
+            if (foldOffset > 0) {
+                int parentFoldStart = foldStartIndex - foldOffset;
+                if (parentFoldStart >= 0) {
+                    showFoldAndParentFolds(parentFoldStart);
+                }
+            }
+            showFold(foldStartIndex);
+        }
+    }
+
+    @Override
+    public void showFoldsForLine(int realLineIndex) {
+        synchronized (readLock()) {
+            int foldStart = getFoldStart(realLineIndex);
+            showFoldAndParentFolds(foldStart);
+        }
+    }
+
+    @Override
     public void hideFoldTree(int foldStartIndex) {
         synchronized (readLock()) {
             if (isFoldStartValid(foldStartIndex)) {

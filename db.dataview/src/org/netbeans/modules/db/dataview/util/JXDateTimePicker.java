@@ -378,10 +378,10 @@ public class JXDateTimePicker extends JComponent {
             _monthView.setMonthStringForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.monthStringForeground")); //NOI18N
         }
         if (UIManager.getColor("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground") != null) { //NOI18N
-            _monthView.setMonthStringForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground")); //NOI18N
+            _monthView.setDaysOfTheWeekForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.daysOfTheWeekForeground")); //NOI18N
         }
         if (UIManager.getColor("nb.dataview.jxdatetimepicker.todayBackground") != null) { //NOI18N
-            _monthView.setMonthStringForeground(UIManager.getColor("nb.dataview.jxdatetimepicker.todayBackground")); //NOI18N
+            _monthView.setTodayBackground(UIManager.getColor("nb.dataview.jxdatetimepicker.todayBackground")); //NOI18N
         }
         _monthView.addPropertyChangeListener(getMonthViewListener());
     }

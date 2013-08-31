@@ -67,10 +67,12 @@ public class ObjectArrayInstanceImpl extends InstanceImpl implements ObjectArray
         this.array = array;
     }
 
+    @Override
     public int getLength() {
         return array.getFieldsCount();
     }
 
+    @Override
     public List<Instance> getValues() {
         Variable[] values = array.getFields(0, getLength());
         List<Instance> instances = new ArrayList<Instance>(values.length);

@@ -760,7 +760,10 @@ made subject to such option by the copyright holder.
                 <condition property="test.runner" value ="testng" else="junit">
                     <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
-                <antcall target="-do-${test.runner}-single">
+                <condition property="is.test.suite" value ="-suite" else="">
+                    <contains string="${test.includes}" substring=".xml"/>
+                </condition>
+                <antcall target="-do-${test.runner}-single${is.test.suite}">
                     <param name="test.type" value="@{test.type}"/>
                 </antcall>
             </sequential>
@@ -821,6 +824,33 @@ made subject to such option by the copyright holder.
         <testng-impl test.type="${test.type}"/>
     </target>
 
+    <target name="-do-testng-single-suite" depends="test-init">
+        <macrodef name="testng-impl">
+            <attribute name="test.type"/>
+            <sequential>
+                <fileset id="testng.test" dir="${test.@{test.type}.src.dir}" includes="${test.includes}"/>
+                <taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="test.@{test.type}.run.cp"/>
+                <testng  mode="mixed"
+                         xmlfilesetref="testng.test"
+                         failureProperty="tests.failed"
+                         outputdir="${build.test.@{test.type}.results.dir}"
+                         workingDir="${build.test.@{test.type}.results.dir}"
+                         suitename="${code.name.base}"
+			 listener="org.testng.reporters.VerboseReporter"
+                >
+                    <propertyset refid="test.@{test.type}.properties"/>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
+                    <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
+                </testng>
+                <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
+            </sequential>
+        </macrodef>
+        <testng-impl test.type="${test.type}"/>
+    </target>
+
     <target name="do-debug-test-single" depends="test-init">
         <macrodef name="do-debug-test-single">
             <attribute name="test.type"/>
@@ -830,7 +860,10 @@ made subject to such option by the copyright holder.
                 <condition property="test.runner" value ="testng" else="junit">
                     <available classname="org.testng.annotations.Test" classpath="${test.@{test.type}.runtime.cp}"/>
                 </condition>
-                <antcall target="-do-${test.runner}-debug-single">
+                <condition property="is.test.suite" value ="-suite" else="">
+                    <contains string="${test.class}" substring=".xml"/>
+                </condition>
+                <antcall target="-do-${test.runner}-debug-single${is.test.suite}">
                     <param name="test.type" value="@{test.type}"/>
                 </antcall>
             </sequential>
@@ -911,6 +944,35 @@ made subject to such option by the copyright holder.
                     <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
                 </testng>
                 -->
+            </sequential>
+        </macrodef>
+        <testng-impl test.type="${test.type}"/>
+    </target>
+
+    <target name="-do-testng-debug-single-suite" depends="test-init">
+        <macrodef name="testng-impl">
+            <attribute name="test.type"/>
+            <sequential>
+                <fileset id="testng.test" dir="${test.@{test.type}.src.dir}" includes="${test.class}"/>
+                <taskdef name="testng" classname="org.testng.TestNGAntTask" classpathref="test.@{test.type}.run.cp"/>
+                <testng  mode="mixed"
+                         xmlfilesetref="testng.test"
+                         failureProperty="tests.failed"
+                         outputdir="${build.test.@{test.type}.results.dir}"
+                         workingDir="${build.test.@{test.type}.results.dir}"
+                         suitename="${code.name.base}"
+			 listener="org.testng.reporters.VerboseReporter"
+                >
+                    <propertyset refid="test.@{test.type}.properties"/>
+                    <classpath refid="test.@{test.type}.run.cp"/>
+                    <jvmarg value="${test.bootclasspath.prepend.args}"/>
+                    <jvmarg line="${test.run.args}"/>
+                    <jvmarg value="-Xdebug"/>
+                    <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+                    <!-- needed to have tests NOT to steal focus when running, works in latest apple jdk update only.-->
+                    <sysproperty key="apple.awt.UIElement" value="@{disable.apple.ui}"/>
+                </testng>
+                <fail if="tests.failed" unless="continue.after.failing.tests">Some tests failed; see details above.</fail>
             </sequential>
         </macrodef>
         <testng-impl test.type="${test.type}"/>
