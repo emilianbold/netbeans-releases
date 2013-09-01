@@ -1018,7 +1018,12 @@ public final class DocumentViewOp
     /**
      * Get displayed portion of the component (either viewport.getViewRect())
      * or (if viewport is missing) size of the component.
-     * @return 
+     * <br/>
+     * Note: The value may be obsolete during paint - clipping bounds may already
+     *  incorporate a just performed scroll while visibleRect does not yet.
+     *
+     * @return visible rectangle of the editor either viewport's view or editor component
+     *  bounds.
      */
     Rectangle getVisibleRect() {
         return visibleRect;

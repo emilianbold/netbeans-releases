@@ -42,15 +42,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.resolver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -69,10 +71,13 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import static org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3.LOGGER;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.openide.util.CharSequences;
 
@@ -84,6 +89,9 @@ import org.openide.util.CharSequences;
 public final class FileMapsCollector {
     private final CsmFile currentFile;
     private final CsmFile startFile;
+    private final int stopAtOffset;
+    private CsmCacheMap filesCollectorCache;
+    private boolean collectedDependencies;
 
     private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces = new LinkedHashMap<>();
     private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<>();
@@ -91,6 +99,7 @@ public final class FileMapsCollector {
 
     private final Set<CsmFile> visitedFiles = new HashSet<>();
     
+    private static final int INCLUDE_STACK_MARKER = -1;
     private static final CsmSelect.CsmFilter NO_FILTER = CsmSelect.getFilterBuilder().createOffsetFilter(0, Integer.MAX_VALUE);
     private static final CsmSelect.CsmFilter NAMESPACE_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
             CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.NAMESPACE_ALIAS, CsmDeclaration.Kind.USING_DECLARATION, CsmDeclaration.Kind.USING_DIRECTIVE
@@ -99,9 +108,11 @@ public final class FileMapsCollector {
             CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.NAMESPACE_ALIAS, CsmDeclaration.Kind.USING_DECLARATION, CsmDeclaration.Kind.USING_DIRECTIVE, CsmDeclaration.Kind.TYPEDEF, CsmDeclaration.Kind.TYPEALIAS, CsmDeclaration.Kind.CLASS, CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.STRUCT, CsmDeclaration.Kind.UNION
     );
 
-    public FileMapsCollector(CsmFile file, CsmFile startFile) {
+    public FileMapsCollector(CsmFile file, CsmFile startFile, int stopAtOffset) {
         this.currentFile = file;
         this.startFile = startFile;
+        this.stopAtOffset = stopAtOffset;
+        this.collectedDependencies = false;
     }
 
     CsmDeclaration getUsingDeclaration(CharSequence name) {
@@ -125,17 +136,54 @@ public final class FileMapsCollector {
         if (false) usedNamespaces.put(key, value);
     }
     
-    void initFileMaps(boolean needClassifiers, int stopAtOffset, Callback callback) {
+    void initFileMaps(boolean needClassifiers, Callback callback) {
         // when in parsing mode, we do not gather dependencies for
         // probably not yet parsed files
         if (!FileImpl.isFileBeingParsedInCurrentThread(currentFile)) {
-            MapsCollection out = new MapsCollection(EMPTY_CALLBACK, needClassifiers, visitedFiles, usedNamespaces, namespaceAliases, usingDeclarations);
-            long time = System.currentTimeMillis();
-            initMapsFromIncludeStack(out, currentFile);
-            Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
-            time = System.currentTimeMillis();
-            initMapsFromIncludes(out, currentFile, stopAtOffset);
-            Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - time, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+            if (!collectedDependencies) {
+                this.filesCollectorCache = CsmCacheManager.getClientCache(FileMapsCollector.class, CACHE_INITIALIZER);
+                collectedDependencies = true;
+                // check which includes need to traverse
+                int lastIncludeOffset = 0;
+                ArrayList<CsmInclude> incBeforeOffset = new ArrayList<>();
+                Iterator<CsmInclude> iter = CsmSelect.getIncludes(currentFile, CsmSelect.getFilterBuilder().createOffsetFilter(0, stopAtOffset));
+                while (iter.hasNext()) {
+                    CsmInclude inc = iter.next();
+                    if (inc.getStartOffset() >= stopAtOffset) {
+                        break;
+                    }
+                    incBeforeOffset.add(inc);
+                    lastIncludeOffset = inc.getEndOffset();
+                }
+                MapsCollection out = new MapsCollection(EMPTY_CALLBACK, needClassifiers, visitedFiles, usedNamespaces, namespaceAliases, usingDeclarations);
+                FileMapsCacheKey incKey = new FileMapsCacheKey(lastIncludeOffset, this.startFile, this.currentFile, out.needClassifiers());
+                if (!findInCache(incKey, out)) {
+                    long allTime = System.currentTimeMillis();
+                    // gather all visible by this file's include stack
+                    List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(this.currentFile);
+                    for (CsmInclude inc : includeStack) {
+                        CsmFile includedFrom = inc.getContainingFile();
+                        int incOffset = inc.getStartOffset();
+                        gatherMaps(includedFrom, incOffset, out);
+                    }
+                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludeStack for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - allTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    // gather all visible by #include directives in this file till offset
+                    long incTime = System.currentTimeMillis();
+                    for (CsmInclude inc : incBeforeOffset) {
+                        CsmFile incFile = inc.getIncludeFile();
+                        if (incFile != null) {
+                            gatherMaps(incFile, Integer.MAX_VALUE, out);
+                        }
+                    }
+                    // cache 
+                    Resolver3.LOGGER.log(Level.FINE, "{0}ms initMapsFromIncludes for {1}\n\twith start file {2}\n", new Object[]{System.currentTimeMillis() - incTime, currentFile.getAbsolutePath(), this.startFile.getAbsolutePath()});
+                    allTime = System.currentTimeMillis() - allTime;
+                    if (filesCollectorCache != null) {
+                        LOGGER.log(Level.FINE, "KEEP INCLUDE STACK {0}=>{1} ({2}) Took {3}ms\n", new Object[]{startFile, currentFile, out.needClassifiers(), allTime});
+                        filesCollectorCache.put(incKey, new FileMapsCacheValue(out, allTime));
+                    }                    
+                }
+            }
         }
         initMapsFromCurrentFileOnly(needClassifiers, stopAtOffset, callback);
     }
@@ -148,35 +196,19 @@ public final class FileMapsCollector {
         gatherMaps(declarations, false, stopAtOffset, out);
     }
     
-    private void initMapsFromIncludeStack(MapsCollection out, CsmFile aFile) {
-        if (aFile == null || out.antiLoop.contains(aFile)) {
-            return;
+    private boolean findInCache(FileMapsCacheKey cacheKey, MapsCollection maps) {
+        FileMapsCacheValue cacheValue = null;
+        if (filesCollectorCache != null) {
+            cacheValue = (FileMapsCacheValue) filesCollectorCache.get(cacheKey);
         }
-        // gather all visible by this file's include stack
-        List<CsmInclude> includeStack = CsmFileInfoQuery.getDefault().getIncludeStack(aFile);
-        for (CsmInclude inc : includeStack) {
-            CsmFile includedFrom = inc.getContainingFile();
-            int incOffset = inc.getStartOffset();
-            gatherMaps(includedFrom, incOffset, out);
-        }
-    }
-
-    private static void initMapsFromIncludes(MapsCollection out, CsmFile aFile, int stopAtOffset) {
-        if (aFile == null || out.antiLoop.contains(aFile)) {
-            return;
-        }
-        // gather all visible by #include directives in this file till offset
-        Iterator<CsmInclude> iter = CsmSelect.getIncludes(aFile, CsmSelect.getFilterBuilder().createOffsetFilter(0, stopAtOffset));
-        while (iter.hasNext()) {
-            CsmInclude inc = iter.next();
-            if (inc.getStartOffset() >= stopAtOffset) {
-                break;
-            }
-            CsmFile incFile = inc.getIncludeFile();
-            if (incFile != null) {
-                gatherMaps(incFile, Integer.MAX_VALUE, out);
-            }
-        }
+        if (cacheValue != null) {
+            cacheValue.copyTo(maps);
+            cacheValue.hits++;
+            String kind = (cacheKey.lastSearchedIncudeOffset == INCLUDE_STACK_MARKER) ? "STACK" : "INCLUDE";// NOI18N
+            LOGGER.log(Level.FINE, "HIT {4} {0}=>{1} ({2}) Hits {3}\n", new Object[]{startFile, currentFile, maps.needClassifiers(), cacheValue.hits, kind});
+            return true;
+        }        
+        return false;
     }
 
     interface Callback {
@@ -416,4 +448,129 @@ public final class FileMapsCollector {
             }
         }
     }
+    
+    private static final class FileMapsCacheKey {
+
+        private final CsmFile startFile;
+        private final CsmFile file;
+        private final boolean needClassifiers;
+        private final int lastSearchedIncudeOffset;
+        private int hashCode = 0;
+
+        public FileMapsCacheKey(int lastSearchedIncudeOffset, CsmFile startFile, CsmFile file, boolean needClassifiers) {
+            this.startFile = startFile;
+            this.file = file;
+            this.lastSearchedIncudeOffset = lastSearchedIncudeOffset;
+            this.needClassifiers = needClassifiers;
+        }
+
+        @Override
+        public String toString() {
+            return "FileMapsCacheKey{file=" + file + "startFile=" + startFile + ", needClassifiers=" + needClassifiers + ", hashCode=" + hashCode + '}';// NOI18N
+        }
+
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                int hash = 7;
+                hash = 41 * hash + this.lastSearchedIncudeOffset;
+                hash = 41 * hash + Objects.hashCode(this.startFile);
+                hash = 41 * hash + Objects.hashCode(this.file);
+                hash = 41 * hash + (this.needClassifiers ? 0 : 1);
+                hashCode = hash;
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileMapsCacheKey other = (FileMapsCacheKey) obj;
+            if (this.hashCode != other.hashCode && (this.hashCode != 0 && other.hashCode != 0)) {
+                return false;
+            }
+            if (this.lastSearchedIncudeOffset != other.lastSearchedIncudeOffset) {
+                return false;
+            }
+            if (this.needClassifiers != other.needClassifiers) {
+                return false;
+            }
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            if (!Objects.equals(this.startFile, other.startFile)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static final class FileMapsCacheValue implements CsmCacheMap.TraceValue {
+
+        private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces;
+        private final Map<CharSequence, CsmNamespace> namespaceAliases;
+        private final Map<CharSequence, CsmDeclaration> usingDeclarations;
+        private final Set<CsmFile> antiLoop;
+
+        final long resolveTime;
+        int hits = 0;
+
+        public FileMapsCacheValue(MapsCollection out, long resolveTime) {
+            this.antiLoop = new HashSet<>(out.antiLoop);
+            this.usedNamespaces = new LinkedHashMap<>(out.usedNamespaces);
+            this.namespaceAliases = new HashMap<>(out.namespaceAliases);
+            this.usingDeclarations = new HashMap<>(out.usingDeclarations);
+            this.resolveTime = resolveTime;
+        }
+
+        public void copyTo(MapsCollection out) {
+            out.antiLoop.addAll(this.antiLoop);
+            out.usedNamespaces.putAll(this.usedNamespaces);
+            out.namespaceAliases.putAll(this.namespaceAliases);
+            out.usingDeclarations.putAll(this.usingDeclarations);
+        }
+        
+        @Override
+        public String toString() {
+            String saved = "";
+            if (hits > 0 && resolveTime > 0) {
+                saved = ", saved=" + (hits * resolveTime) + "ms";// NOI18N
+            }
+            return "HITS=" + hits + ", resolveTime=" + resolveTime + saved; // NOI18N
+        }
+
+        @Override
+        public Object getResult() {
+            return this;
+        }
+
+        @Override
+        public int onCacheHit() {
+            return ++hits;
+        }
+
+        @Override
+        public int getHitsCount() {
+            return hits;
+        }
+
+        @Override
+        public long getCalculationTime() {
+            return resolveTime;
+        }
+    }
+
+    private static final Callable<CsmCacheMap> CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("FileMaps Cache"); // NOI18N
+        }
+
+    };    
 }
