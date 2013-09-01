@@ -212,7 +212,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             return false;
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
-            if (var.getType() == RemoteObject.Type.OBJECT) {
+            if (var != null && var.getType() == RemoteObject.Type.OBJECT) {
                 if (var.hasFetchedProperties()) {
                     return var.getProperties().isEmpty();
                 } else {
@@ -310,6 +310,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return null;
+                }
                 String value = var.getValueAsString();
                 if (value.isEmpty()) {
                     RemoteObject.Type type = var.getType();
@@ -321,6 +324,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 }
                 return toHTML(value);
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return "";
+                }
                 RemoteObject.Type type = var.getType();
                 if (type == RemoteObject.Type.OBJECT) {
                     String clazz = var.getClassName();
@@ -333,6 +339,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                     return toHTML(type.getName());
                 }
             } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return null;
+                }
                 return toHTML(var.getValueAsString());
             }
         }
