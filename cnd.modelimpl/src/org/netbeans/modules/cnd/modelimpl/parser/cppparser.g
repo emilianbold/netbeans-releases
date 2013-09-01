@@ -4508,9 +4508,15 @@ lazy_type_decltype[int templateLevel]
         RPAREN
     ;
 
+decltype_expression
+        :
+        LPAREN expression_list RPAREN
+        {#decltype_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #decltype_expression);}        
+        ;
+
 type_decltype 
     :
-        literal_decltype LPAREN expression RPAREN
+        literal_decltype decltype_expression
         {#type_decltype=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_decltype);}
     ;
 
