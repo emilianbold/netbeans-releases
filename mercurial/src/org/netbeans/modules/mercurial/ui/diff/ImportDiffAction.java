@@ -259,6 +259,7 @@ public class ImportDiffAction extends ContextAction {
                     @Override
                     public Void call () throws Exception {
                         List<String> list = HgCommand.doImport(repository, patchFile, logger);
+                        Mercurial.getInstance().historyChanged(repository);
                         Mercurial.getInstance().changesetChanged(repository);
                         logger.output(list);
                         return null;

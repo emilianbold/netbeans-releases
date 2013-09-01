@@ -82,6 +82,7 @@ public class HistoryRegistry {
         SearchCriteria crit = new SearchCriteria();
         crit.setFrom(from);
         crit.setTo(to);
+        crit.setRevisionTo(GitUtils.HEAD);
         crit.setFiles(files);
         crit.setFollowRenames(true);
         crit.setIncludeMerges(false);
