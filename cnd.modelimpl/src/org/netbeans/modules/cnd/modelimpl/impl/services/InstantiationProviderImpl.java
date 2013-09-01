@@ -223,6 +223,15 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
     
     @Override
+    public CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation) {
+        return instantiate(templateParam, instantiation.getMapping());        
+    }    
+    
+    public CsmType instantiate(CsmTemplateParameter templateParam, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return Instantiation.resolveTemplateParameter(templateParam, mapping);
+    }
+    
+    @Override
     public CharSequence getInstantiatedText(CsmType type) {
         return Instantiation.getInstantiatedText(type);
     }

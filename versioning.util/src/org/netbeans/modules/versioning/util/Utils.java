@@ -1531,7 +1531,7 @@ public final class Utils {
                 File file = node.getLookup().lookup(File.class);
                 if (file == null) {
                     FileObject fo = node.getLookup().lookup(FileObject.class);
-                    if (fo != null) {
+                    if (fo != null && fo.isData()) {
                         file = FileUtil.toFile(fo);
                     }
                 }

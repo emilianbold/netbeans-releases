@@ -231,8 +231,9 @@ abstract public class CsmCompletionQuery {
      * Perform the query on the given component to get type of expression.
      * 
      * @param expression - expression to get type from
+     * @param instantiations - context
      */
-    public CsmType queryType(CsmExpression expression) {
+    public CsmType queryType(CsmExpression expression, List<CsmInstantiation> instantiations) {
         if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
             try {
                 CsmCacheManager.enter();
@@ -268,7 +269,7 @@ abstract public class CsmCompletionQuery {
 
                 if (!checkErrorTokenState(tp)) {
                     CsmCompletionExpression exp = tp.getResultExp();
-                    ret = getResultType(baseDocument, exp, endOffset, true, true);
+                    ret = getResultType(baseDocument, exp, instantiations, endOffset, true, true);
                     if (TRACE_COMPLETION) {
                         System.err.println("expression " + exp);
                     }
@@ -575,7 +576,7 @@ abstract public class CsmCompletionQuery {
             if (!openingSource && context == null) {
                 instantiateTypes = false;
             }
-            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
+            Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes, null);
             ctx.resolveExp(exp, true);
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
@@ -640,7 +641,7 @@ abstract public class CsmCompletionQuery {
 //	return result;
     }
     
-    private CsmType getResultType(Document doc, CsmCompletionExpression expression, int offset, boolean openingSource, boolean instantiateTypes) {
+    private CsmType getResultType(Document doc, CsmCompletionExpression expression, List<CsmInstantiation> instantiations, int offset, boolean openingSource, boolean instantiateTypes) {
         CompletionResolver resolver = getCompletionResolver(openingSource, false, false);
         if (resolver != null) {
             CompletionSupport sup = CompletionSupport.get(doc);
@@ -649,7 +650,7 @@ abstract public class CsmCompletionQuery {
                 instantiateTypes = false;
             }
             
-            Context ctx = new Context(null, sup, openingSource, offset, getFinder(), resolver, context, false, instantiateTypes);
+            Context ctx = new Context(null, sup, openingSource, offset, getFinder(), resolver, context, false, instantiateTypes, instantiations);
             ctx.setFindType(true);
             
             ctx.resolveExp(expression, true);
@@ -1043,11 +1044,14 @@ abstract public class CsmCompletionQuery {
         /** function or class in context */
         private CsmOffsetableDeclaration contextElement;
         private final boolean instantiateTypes;
+        /** Top level context (always null if this is first [top level] query) */
+        private List<CsmInstantiation> instantiations;
 
         public Context(JTextComponent component,
                 CompletionSupport sup, boolean openingSource, int endOffset,
                 CsmFinder finder,
-                CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, boolean sort, boolean instantiateTypes) {
+                CompletionResolver compResolver, CsmOffsetableDeclaration contextElement, boolean sort, boolean instantiateTypes,
+                List<CsmInstantiation> instantiations) {
             this.component = component;
             this.sup = sup;
             this.openingSource = openingSource;
@@ -1058,6 +1062,7 @@ abstract public class CsmCompletionQuery {
             this.contextElement = contextElement;
             this.sort = sort;
             this.instantiateTypes = instantiateTypes;
+            this.instantiations = instantiations;
         }
 
         private int convertOffset(int pos) {
@@ -1105,6 +1110,7 @@ abstract public class CsmCompletionQuery {
             }
             if (!visibleObject.isEmpty()) {
                 resolveObj = visibleObject.get(0);
+//                resolveObj = createInstantiation(resolveObj);
                 resolveType = CsmCompletion.getObjectType(resolveObj, _const);
                 visible.set(true);
                 // trace
@@ -1291,7 +1297,7 @@ abstract public class CsmCompletionQuery {
 
         @Override
         protected Object clone() {
-            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort, instantiateTypes);
+            return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort, instantiateTypes, instantiations);
         }
 
         private CsmClassifier extractLastTypeClassifier(ExprKind expKind) {
@@ -1300,11 +1306,11 @@ abstract public class CsmCompletionQuery {
         }
         
         private CsmClassifier extractTypeClassifier(CsmType type, ExprKind expKind) {
-            if (type != null) {
+            if (type != null) {                
                 CsmClassifier cls;
                 if (type.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {                    
                     // Not array or deref array with arrow
-                    cls = getClassifier(type, contextFile, endOffset);
+                    cls = getClassifier(type, contextFile, endOffset);                    
                 } else {
                     // Array of some depth
                     cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
@@ -1509,7 +1515,7 @@ abstract public class CsmCompletionQuery {
             boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
-            switch (exp.getExpID()) {
+             switch (exp.getExpID()) {
                 case CsmCompletionExpression.DOT_OPEN: // Dot expression with the dot at the end
                 case CsmCompletionExpression.ARROW_OPEN: // Arrow expression with the arrow at the end
                     lastDot = true;
@@ -2648,6 +2654,13 @@ abstract public class CsmCompletionQuery {
             if ((result == null || result.getItems().isEmpty()) && lastType != null) {
                 if (last) {
                     if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)) {
+                        if (instantiations != null && CsmKindUtilities.isTemplateParameter(lastType.getClassifier())) {
+                            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                            CsmType resolvedType = ip.instantiate((CsmTemplateParameter) lastType.getClassifier(), instantiations.get(0));
+                            if (resolvedType != null) {
+                                lastType = resolvedType;
+                            }
+                        }
                         Collection<CsmObject> data = new ArrayList<CsmObject>();
                         data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
                         result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
@@ -2715,7 +2728,7 @@ abstract public class CsmCompletionQuery {
                 return ip.instantiate(template, params);
             }
             return null;
-        }
+        }              
 
         private CsmType findBuiltInFunctionReturnType(String mtdName, int tokenOffset) {
             CsmType out = null;

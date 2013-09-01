@@ -526,7 +526,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     public void componentShowing() {}
 
     @Override
-    public void componentHidden() {}
+    public void componentHidden() {
+        if(masterView != null) {
+            masterView.hidden();
+        }
+    }
 
     @Override
     public void componentDeactivated() {}

@@ -156,7 +156,7 @@ public class QGoToPatchAction extends ContextAction {
                         logger.output(""); // NOI18N
                         return;
                     }
-                    Mercurial.getInstance().refreshOpenedFiles(root);
+                    Mercurial.getInstance().historyChanged(root);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
                     logger.output(""); // NOI18N
                     HgUtils.logHgLog(parent, logger);
