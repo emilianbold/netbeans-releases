@@ -945,7 +945,7 @@ public class Reindenter implements IndentTask {
             case METHOD_INVOCATION:
                 MethodInvocationTree mit = (MethodInvocationTree)tree;
                 startOffset = (int)sp.getEndPosition(cut, mit.getMethodSelect());
-                TokenSequence<JavaTokenId> token = findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN);
+                TokenSequence<JavaTokenId> token = startOffset >= 0 ? findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN) : null;
                 if (token != null) {
                     startOffset = token.offset();
                 }
@@ -953,7 +953,7 @@ public class Reindenter implements IndentTask {
             case NEW_CLASS:
                 NewClassTree nct = (NewClassTree)tree;
                 startOffset = (int)sp.getEndPosition(cut, nct.getIdentifier());
-                token = findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN);
+                token = startOffset >= 0 ? findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN) : null;
                 if (token != null) {
                     startOffset = token.offset();
                 }
@@ -961,7 +961,7 @@ public class Reindenter implements IndentTask {
             case ANNOTATION:
                 AnnotationTree at = (AnnotationTree)tree;
                 startOffset = (int)sp.getEndPosition(cut, at.getAnnotationType());
-                token = findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN);
+                token = startOffset >= 0 ? findFirstTokenOccurrence(startOffset, (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN) : null;
                 if (token != null) {
                     startOffset = token.offset();
                 }
@@ -969,13 +969,20 @@ public class Reindenter implements IndentTask {
             case METHOD:
                 MethodTree mt = (MethodTree)tree;
                 startOffset = (int)sp.getEndPosition(cut, mt.getReturnType());
-                token = findFirstTokenOccurrence(startOffset, mt.getBody() != null ? (int)sp.getStartPosition(cut, mt.getBody()) : (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN);
+                if (startOffset < 0) {
+                    startOffset = (int)sp.getEndPosition(cut, mt.getModifiers());
+                }
+                if (startOffset < 0) {
+                    startOffset = (int)sp.getStartPosition(cut, tree);
+                }
+                token = startOffset >= 0 ? findFirstTokenOccurrence(startOffset, mt.getBody() != null ? (int)sp.getStartPosition(cut, mt.getBody()) : (int)sp.getEndPosition(cut, tree), JavaTokenId.LPAREN) : null;
                 if (token != null) {
                     startOffset = token.offset();
                 }
                 break;
-            default:
-                startOffset = (int)sp.getStartPosition(cut, tree);
+        }
+        if (startOffset < 0) {
+            startOffset = (int)sp.getStartPosition(cut, tree);
         }
         startOffset = getOriginalOffset(startOffset);
         if (startOffset < 0) {

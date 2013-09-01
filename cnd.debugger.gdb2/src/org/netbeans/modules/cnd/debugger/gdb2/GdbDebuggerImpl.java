@@ -1589,6 +1589,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             postKill();
         }
 
+        setVisitedLocation(null);
         resetCurrentLine();
     }
 

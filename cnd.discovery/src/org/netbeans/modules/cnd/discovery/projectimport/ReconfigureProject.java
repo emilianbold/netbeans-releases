@@ -631,6 +631,7 @@ public class ReconfigureProject {
             buf.append(" -DCMAKE_C_FLAGS_DEBUG=").append(cCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_CXX_FLAGS_DEBUG=").append(cppCompilerFlags); // NOI18N
             buf.append(" -DCMAKE_EXE_LINKER_FLAGS_DEBUG=").append(ldFlags); // NOI18N
+            buf.append(" -DCMAKE_EXPORT_COMPILE_COMMANDS=").append("ON"); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             if (isSunCompiler && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) {
                 buf.append(" -spec solaris-cc"); // NOI18N
@@ -715,6 +716,7 @@ public class ReconfigureProject {
             lastFlags = removeFlag(lastFlags, "-DCMAKE_C_COMPILER=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_CXX_COMPILER=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-DCMAKE_EXE_LINKER_FLAGS_DEBUG=", false); // NOI18N
+            lastFlags = removeFlag(lastFlags, "-DCMAKE_EXPORT_COMPILE_COMMANDS=", false); // NOI18N
             lastFlags = removeFlag(lastFlags, "-G", false); // NOI18N
         } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
             lastFlags = removeFlag(lastFlags, "QMAKE_CFLAGS=", false); // NOI18N

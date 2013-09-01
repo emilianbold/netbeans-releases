@@ -143,9 +143,8 @@ public final class MavenModelUtils {
         Dependency webservicesDep = model.getFactory().createDependency();
         webservicesDep.setGroupId("javax.xml"); //NOI18N
         webservicesDep.setArtifactId("webservices-api"); //NOI18N
-        webservicesDep.setVersion("1.4"); //NOI18N
+        webservicesDep.setVersion("2.0"); //NOI18N
         plugin.addDependency(webservicesDep);
-        
         return plugin; 
     }
 
@@ -376,11 +375,13 @@ public final class MavenModelUtils {
         Plugin plugin = bld.findPluginById(JAXWS_GROUP_ID, JAXWS_ARTIFACT_ID);
         if (plugin != null) {
             List<PluginExecution> executions = plugin.getExecutions();
-            for (PluginExecution exec : executions) {
-                String execId = WSIPMORT_GENERATE_PREFIX+id;
-                if (execId.equals(exec.getId())) {
-                    plugin.removeExecution(exec);
-                    break;
+            if (executions != null) {
+                for (PluginExecution exec : executions) {
+                    String execId = WSIPMORT_GENERATE_PREFIX+id;
+                    if (execId.equals(exec.getId())) {
+                        plugin.removeExecution(exec);
+                        break;
+                    }
                 }
             }
         }

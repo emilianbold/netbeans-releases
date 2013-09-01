@@ -317,10 +317,14 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         int ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         switch (type) {
             case APPLICATION:
-            case PRELOADER:
             case FXML:
-            case SWING:
                 WizardSettings.setNewApplicationCount(ind);
+                break;
+            case PRELOADER:
+                WizardSettings.setNewPreloaderCount(ind);
+                break;
+            case SWING:
+                WizardSettings.setNewFxSwingCount(ind);
                 break;
             case LIBRARY:
                 WizardSettings.setNewLibraryCount(ind);

@@ -363,6 +363,7 @@ public class RebaseAction extends ContextAction {
         }
         logger.output(rebaseResult.getOutput());
         File repository = rebaseCtx.repository;
+        Mercurial.getInstance().historyChanged(repository);
         getNetBeansRebaseInfoFile(repository).delete();
         
         if (rebaseResult.getState() == State.ABORTED) {

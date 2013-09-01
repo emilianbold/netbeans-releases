@@ -68,7 +68,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
     private static final java.util.logging.Logger log = Logger.getInstance();
 
     @Override
-    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
+    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException {
         // Windows is supported for localhosts only.
         if (!execEnv.isLocal() || !Utilities.isWindows()) {
             return null;

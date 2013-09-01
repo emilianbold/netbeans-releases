@@ -43,10 +43,12 @@
 package org.netbeans.modules.jira.util;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.IssueType;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraAction;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraStatus;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
+import com.atlassian.connector.eclipse.internal.jira.core.model.User;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,6 +56,7 @@ import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
@@ -67,6 +70,7 @@ import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -372,5 +376,81 @@ public class JiraUtils {
 
     public static boolean isLeaveOperation (TaskOperation value) {
         return "leave".equals(value.getOperationId());
+    }
+
+    public static String toReadable (JiraConfiguration config, String projectId, NbJiraIssue.IssueField field, String value) {
+        if (config != null) {
+            switch (field) {
+                case TYPE:
+                    IssueType type = config.getIssueTypeById(value);
+                    if (type != null) {
+                        value = type.getName();
+                    }
+                    break;
+                case STATUS:
+                    JiraStatus status = config.getStatusById(value);
+                    if (status != null) {
+                        value = status.getName();
+                    }
+                    break;
+                case RESOLUTION:
+                    Resolution res = config.getResolutionById(value);
+                    if (res != null) {
+                        value = res.getName();
+                    }
+                    break;
+                case PRIORITY:
+                    Priority priority = config.getPriorityById(value);
+                    if (priority != null) {
+                        value = priority.getName();
+                    }
+                    break;
+                case COMPONENT:
+                    if (!projectId.isEmpty()) {
+                        com.atlassian.connector.eclipse.internal.jira.core.model.Component comp = config.getComponentById(projectId, value);
+                        if (comp != null) {
+                            value = comp.getName();
+                        }
+                    }
+                    break;
+                case FIXVERSIONS:
+                case AFFECTSVERSIONS:
+                    if (!projectId.isEmpty()) {
+                        Version version = config.getVersionById(projectId, value);
+                        if (version != null) {
+                            value = version.getName();
+                        }
+                    }
+                    break;
+                case ASSIGNEE:
+                    User user = config.getUser(value);
+                    if (user != null) {
+                        value = user.getFullName();
+                    }
+                    break;
+                case PROJECT:
+                    Project project = config.getProjectById(value);
+                    if (project != null) {
+                        value = project.getName();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return value;
+    }
+
+    public static String mergeValues (List<String> values) {
+        String newValue;
+        StringBuilder sb = new StringBuilder();
+        for (String value : values) {
+            if (sb.length() != 0) {
+                sb.append(',');
+            }
+            sb.append(value);
+        }
+        newValue = sb.toString();
+        return newValue;
     }
 }

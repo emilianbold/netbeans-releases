@@ -53,6 +53,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -289,7 +290,7 @@ final class JavadocCompletionItem implements CompletionItem {
             int i = 0;
             for (VariableElement p : params) {
                 TypeMirror asType = p.asType();
-                this.paramTypes[i++] = resolveTypeName(asType).toString();
+                this.paramTypes[i++] = resolveTypeName(asType, ee.isVarArgs()).toString();
             }
         }
         
@@ -297,7 +298,7 @@ final class JavadocCompletionItem implements CompletionItem {
          * uses FQNs where possible since javadoc does not match imports for
          * parameter types
          */
-        private CharSequence resolveTypeName(TypeMirror asType) {
+        private CharSequence resolveTypeName(TypeMirror asType, boolean isVarArgs) {
             CharSequence ptype;
             if (asType.getKind() == TypeKind.DECLARED) {
                 // snip generics
@@ -310,7 +311,9 @@ final class JavadocCompletionItem implements CompletionItem {
                     // Type Erasure JLS 4.6
                     asType = ((TypeVariable) asType).getUpperBound();
                 } while (asType.getKind() == TypeKind.TYPEVAR);
-                ptype = resolveTypeName(asType);
+                ptype = resolveTypeName(asType, isVarArgs);
+            } else if (isVarArgs && asType.getKind() == TypeKind.ARRAY) {
+                ptype = resolveTypeName(((ArrayType)asType).getComponentType(), false) + "..."; //NOI18N
             } else {
                 ptype = asType.toString();
             }

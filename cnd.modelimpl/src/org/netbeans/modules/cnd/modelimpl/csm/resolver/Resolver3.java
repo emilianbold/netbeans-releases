@@ -51,7 +51,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,6 +78,8 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
@@ -88,17 +92,20 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.BaseUtilitiesProviderImpl;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
  */
 public final class Resolver3 implements Resolver {
+    static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
     private final ProjectBase project;
     private final CsmFile file;
@@ -140,16 +147,16 @@ public final class Resolver3 implements Resolver {
         this.project = (ProjectBase) file.getProject();
         this.startFile = startFile;
         context = new Context(file, origOffset, this);
-        fileMaps = new FileMapsCollector(file, startFile);
+        fileMaps = new FileMapsCollector(file, startFile, origOffset);
     }
 
     private Resolver3(CsmFile file, int offset, Resolver parent) {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
 
-    public void initFileMaps() {
+    private void initFileMaps() {
         FindCurrLocalClassifier cb = new FindCurrLocalClassifier();
-        fileMaps.initFileMaps(needClassifiers(), origOffset, cb);
+        fileMaps.initFileMaps(needClassifiers(), cb);
     }
     
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart, AtomicBoolean outVisibility) {
@@ -259,6 +266,21 @@ public final class Resolver3 implements Resolver {
 
     @Override
     public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+        Object cacheKey = new OrigClassifierCacheKey(this.origOffset, this.file, this.startFile, orig);
+        CsmCacheMap origClassifiersCache = CsmCacheManager.getClientCache(OrigClassifierCacheKey.class, ORIG_CLASSIFIER_CACHE_INITIALIZER);
+        CsmClassifier out = (CsmClassifier) getFromCache(origClassifiersCache, cacheKey);
+        if (out == null) {
+            long time = System.currentTimeMillis();
+            out = getOriginalClassifierImpl(orig);
+            time = System.currentTimeMillis() - time;
+            if (origClassifiersCache != null) {
+                origClassifiersCache.put(cacheKey, CsmCacheMap.toValue(out, time));
+            }
+        }
+        return out;
+    }
+    
+    private CsmClassifier getOriginalClassifierImpl(CsmClassifier orig) {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
@@ -496,24 +518,55 @@ public final class Resolver3 implements Resolver {
      */
     @Override
     public CsmObject resolve(CharSequence[] nameTokens, int interestedKind) {
-        CsmObject result = null;
+        if (nameTokens == null || nameTokens.length == 0) {
+            String position = file.getAbsolutePath().toString();
+            if (file instanceof FileImpl) {
+                int[] lineColumn = ((FileImpl)file).getLineColumn(origOffset);
+                if (lineColumn != null) {
+                    position = "line=" + lineColumn[0] + ":" + lineColumn[1] + position; // NOI18N
+                }
+            }
+            CndUtils.assertTrueInConsole(false, "no names are passed to resolve at " + position); // NOI18N
+            return null;
+        }
         long time = System.currentTimeMillis();
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-        if( nameTokens.length == 1 ) {
-            result = resolveSimpleName(result, nameTokens[0], interestedKind);
-        } else if( nameTokens.length > 1 ) {
-            result = resolveCompoundName(nameTokens, result, interestedKind);
-        }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            String fullName = fullName(nameTokens);
-            LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, System.currentTimeMillis() - time});
+        String fullName = fullName(nameTokens);        
+        Object cacheKey = new NameResolveCacheKey(fullName, this.origOffset, this.startFile, this.file, interestedKind);
+        CsmCacheMap nameResolverCache = CsmCacheManager.getClientCache(NameResolveCacheKey.class, NAME_CACHE_INITIALIZER);
+        CsmObject result = (CsmObject) getFromCache(nameResolverCache, cacheKey);
+        if (result == null) {
+            if( nameTokens.length == 1 ) {
+                result = resolveSimpleName(result, nameTokens[0], interestedKind);
+            } else if( nameTokens.length > 1 ) {
+                result = resolveCompoundName(nameTokens, result, interestedKind);
+            }
+            time = System.currentTimeMillis() - time;
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "RESOLVE {0} ({1}) at {2} Took {3}ms\n", new Object[]{fullName, interestedKind, origOffset, time});
+            }
+            if (nameResolverCache != null) {
+                LOGGER.log(Level.FINE, "KEEP NEW RESOLVED {0} ({1}) at {2}[{4}] Took {3}ms=>{5}\n", new Object[]{fullName, interestedKind, origOffset, time, file.getName(), result});
+                nameResolverCache.put(cacheKey, CsmCacheMap.toValue(result, time));
+            }
         }
         return result;
     }
-    static final Logger LOGGER = Logger.getLogger("Resolver3"); // NOI18N
 
+    private static Object getFromCache(CsmCacheMap cache, Object cacheKey) {
+        Object result = null;
+        CsmCacheMap.Value cacheValue = null;
+        if (cache != null) {
+            cacheValue = cache.get(cacheKey);
+        }
+        if (cacheValue != null) {
+            result = cacheValue.getResult();
+        }
+        return result;
+    }
+    
     private CsmObject resolveSimpleName(CsmObject result, CharSequence name, int interestedKind) {
         CsmNamespace containingNS = null;
         if (result == null && needClassifiers()) {
@@ -582,10 +635,12 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective)val).getReferencedNamespace();
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (val == null) {
                             val = findNamespace(nsp);
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                         }
                         if (CsmKindUtilities.isNamespace(val)) {
@@ -622,6 +677,7 @@ public final class Resolver3 implements Resolver {
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
                             val = ((CsmUsingDirective) val).getReferencedNamespace();
+                            entry.setValue((CsmNamespace) val);
                             fileMaps.rememberResolvedUsing(entry.getKey(), (CsmNamespace) val);
                             if (val != null) {
                                 Collection<CsmNamespaceAlias> aliases = CsmUsingResolver.getDefault().findNamespaceAliases((CsmNamespace)val);
@@ -991,6 +1047,154 @@ public final class Resolver3 implements Resolver {
         }
         return false;
     }
+
+    private static final class OrigClassifierCacheKey {
+        private final int origOffset;
+        private final CsmFile file;
+        private final CsmFile startFile;
+        private final CsmClassifier orig;
+        private int hashCode = 0;
+
+        public OrigClassifierCacheKey(int origOffset, CsmFile file, CsmFile startFile, CsmClassifier orig) {
+            this.origOffset = origOffset;
+            this.file = file;
+            this.startFile = startFile;
+            this.orig = orig;
+        }
+
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                int hash = 5;
+                hash = 79 * hash + this.origOffset;
+                hash = 79 * hash + Objects.hashCode(this.file);
+                hash = 79 * hash + Objects.hashCode(this.startFile);
+                hash = 79 * hash + Objects.hashCode(this.orig);
+                hashCode = hash;
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final OrigClassifierCacheKey other = (OrigClassifierCacheKey) obj;
+            if (this.hashCode != other.hashCode && (this.hashCode != 0 && other.hashCode != 0)) {
+                return false;
+            }            
+            if (this.origOffset != other.origOffset) {
+                return false;
+            }
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            if (!Objects.equals(this.startFile, other.startFile)) {
+                return false;
+            }
+            if (!Objects.equals(this.orig, other.orig)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "OrigClassifierCacheKey{" + "origOffset=" + origOffset + ", file=" + file.getAbsolutePath() + ", startFile=" + startFile.getAbsolutePath() + ", orig=" + orig + '}'; // NOI18N
+        }
+    }
+    
+    private static final Callable<CsmCacheMap> ORIG_CLASSIFIER_CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("OrigClassifier Cache", 1); // NOI18N
+        }
+    };
+    
+    private static final class NameResolveCacheKey {
+        private final String fullName;
+        private final int origOffset;
+        private final CsmFile startFile;
+        private final CsmFile file;
+        private final int interestedKind;
+        private int hashCode = 0;
+
+        public NameResolveCacheKey(String fullName, int origOffset, CsmFile startFile, CsmFile file, int interestedKind) {
+            this.fullName = fullName;
+            this.origOffset = origOffset;
+            this.startFile = startFile;
+            this.file = file;
+            this.interestedKind = interestedKind;
+        }
+
+        @Override
+        public String toString() {
+            return "NameResolveCacheKey{" + "name=" + fullName + // NOI18N
+                    ", origOffset=" + origOffset + // NOI18N
+                    ", startFile=" + startFile.getAbsolutePath() + // NOI18N
+                    ", file=" + file.getAbsolutePath() + // NOI18N
+                    ", interestedKind=" + interestedKind + // NOI18N
+                    ", hashCode=" + hashCode + '}';// NOI18N
+        }
+    
+        @Override
+        public int hashCode() {
+            if (hashCode == 0) {
+                int hash = 7;
+                hash = 41 * hash + Objects.hashCode(this.fullName);
+                hash = 41 * hash + this.origOffset;
+                hash = 41 * hash + Objects.hashCode(this.startFile);
+                hash = 41 * hash + Objects.hashCode(this.file);
+                hash = 41 * hash + this.interestedKind;
+                hashCode = hash;
+            }
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameResolveCacheKey other = (NameResolveCacheKey) obj;
+            if (this.hashCode != other.hashCode && (this.hashCode != 0 && other.hashCode != 0)) {
+                return false;
+            }
+            if (this.origOffset != other.origOffset) {
+                return false;
+            }
+            if (this.interestedKind != other.interestedKind) {
+                return false;
+            }
+            if (!Objects.equals(this.fullName, other.fullName)) {
+                return false;
+            }
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            if (!Objects.equals(this.startFile, other.startFile)) {
+                return false;
+            }
+            return true;
+        }
+    }
+    
+    private static final Callable<CsmCacheMap> NAME_CACHE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("Resolver3 Cache"); // NOI18N
+        }
+
+    };
     
     private class FindCurrLocalClassifier implements FileMapsCollector.Callback {
 

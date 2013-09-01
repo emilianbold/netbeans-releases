@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.api.model.services;
 
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
@@ -52,8 +54,14 @@ import org.openide.util.Lookup;
  */
 public final class CsmTypeResolver {
     
-    public static CsmType resolveType(CsmExpression expression) {
-        return DEFAULT.resolveType(expression);
+    /**
+     * Resolves type of expression with the given context (instantiations)
+     * @param expression to resolve
+     * @param instantiations - context
+     * @return type
+     */
+    public static CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+        return DEFAULT.resolveType(expression, instantiations);
     }
     
 //<editor-fold defaultstate="collapsed" desc="impl">
@@ -91,8 +99,8 @@ public final class CsmTypeResolver {
         }
         
         @Override
-        public CsmType resolveType(CsmExpression expression) {
-            return getDelegate().resolveType(expression);
+        public CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+            return getDelegate().resolveType(expression, instantiations);
         }
     }
 //</editor-fold>

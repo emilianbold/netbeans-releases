@@ -144,6 +144,7 @@ public class RollbackAction extends ContextAction {
                             logger.output(list.get(0));
                             if (HgCommand.hasHistory(root)) {
                                 HgUtils.forceStatusRefreshProject(ctx);
+                                Mercurial.getInstance().historyChanged(root);
                                 Mercurial.getInstance().changesetChanged(root);
                             } else {
                                 JOptionPane.showMessageDialog(null,

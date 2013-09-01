@@ -95,6 +95,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         LifecycleManager.getDefault().saveAll();
+        if (COMMAND_RUN_SINGLE.equals(command)
+                || COMMAND_RUN.equals(command)) {
+            project.logBrowserUsage();
+        }
         // XXX sorry no idea how to do this correctly
         if (COMMAND_RENAME.equals(command)) {
             renameProject();

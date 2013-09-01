@@ -176,6 +176,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/remote.png"); //NOI18N
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/unsubmitted.png"); //NOI18N
+    private boolean loading;
 
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         super(task);
@@ -221,11 +222,13 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     public void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
+        loading = true;
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
                 if (editorOpened()) {
                     ensureConfigurationUptodate();
+                    loading = false;
                     refreshViewData(true);
                 } else {
                     // should close somehow
@@ -1014,19 +1017,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
-        NbTask task = getNbTask();
-        assert task != null;
         assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        try {
-            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
-            getRepository().getExecutor().execute(cmd);
+        boolean synced = synchronizeTask();
+        if (!loading) {
+            // refresh only when model is not currently being loaded
+            // otherwise it most likely ends up in editor not fully initialized
             refreshViewData(afterSubmitRefresh);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
-        return true;
+        return synced;
     }
 
     private void refreshViewData(boolean force) {
@@ -1289,10 +1287,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     @Override
     protected boolean synchronizeTask () {
         try {
-            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
-                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
-            getRepository().getExecutor().execute(cmd);
-            return !cmd.hasFailed();
+            NbTask task = getNbTask();
+            synchronized (task) {
+                Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
+                SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                        getRepository().getTaskRepository(), Collections.<NbTask>singleton(task));
+                getRepository().getExecutor().execute(cmd);
+                return !cmd.hasFailed();
+            }
         } catch (CoreException ex) {
             // should not happen
             Bugzilla.LOG.log(Level.WARNING, null, ex);

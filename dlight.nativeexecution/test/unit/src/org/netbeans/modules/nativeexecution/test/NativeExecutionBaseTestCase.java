@@ -58,6 +58,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.ConnectException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -678,18 +679,6 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
-    protected void copyFile(File srcFile, File dstFile) throws IOException  {
-        InputStream in = new FileInputStream(srcFile);
-        OutputStream out = new FileOutputStream(dstFile);
-        byte[] buf = new byte[8*1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
-    }
-
     protected void copyDirectory(File srcDir, File dstDir) throws IOException {
         assertTrue(srcDir.getPath() + " should exist and be a directory", srcDir.isDirectory());
         if (!dstDir.exists()) {
@@ -701,7 +690,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             if (child.isDirectory()) {
                 copyDirectory(child, dst);
             } else {
-                copyFile(child, dst);
+                Files.copy(child.toPath(), dst.toPath());
             }
         }
     }

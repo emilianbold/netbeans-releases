@@ -835,21 +835,12 @@ class FilesystemInterceptor extends VCSInterceptor {
         private final RequestProcessor.Task refreshOpenFilesTask = rp.create(new Runnable() {
             @Override
             public void run() {
-                HashSet<File> repositories;
+                Set<File> repositories;
                 synchronized (refreshedRepositories) {
                     repositories = new HashSet<File>(refreshedRepositories);
                     refreshedRepositories.clear();
                 }
-                Set<File> openFiles = Utils.getOpenFiles();
-                for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
-                    File file = it.next();
-                    if (!repositories.contains(Git.getInstance().getRepositoryRoot(file))) {
-                        it.remove();
-                    }
-                }
-                if (!openFiles.isEmpty()) {
-                    Git.getInstance().headChanged(openFiles);
-                }
+                GitUtils.headChanged(repositories.toArray(new File[repositories.size()]));
             }
         });
         private final GitRepositories gitRepositories = GitRepositories.getInstance();

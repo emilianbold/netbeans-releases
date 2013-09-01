@@ -846,11 +846,14 @@ public abstract class ErrorManager extends Object {
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
             String sep = "";
-            for (LogRecord r : records) {
-                if (r.getMessage() != null) {
-                    sb.append(sep);
-                    sb.append(r.getMessage());
-                    sep = "\n";
+            List<LogRecord> arr = records;
+            if (arr != null) {
+                for (LogRecord r : arr) {
+                    if (r.getMessage() != null) {
+                        sb.append(sep);
+                        sb.append(r.getMessage());
+                        sep = "\n";
+                    }
                 }
             }
             return sb.toString();

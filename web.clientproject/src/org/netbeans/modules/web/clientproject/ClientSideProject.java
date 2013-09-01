@@ -86,6 +86,7 @@ import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -136,6 +137,8 @@ public class ClientSideProject implements Project {
 
     @StaticResource
     public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
+
+    final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
     final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
@@ -213,6 +216,7 @@ public class ClientSideProject implements Project {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
+                    projectBrowserUsageLogger.reset();
                     refreshOnSaveListener = null;
                     ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
                     if (ebi != null) {
@@ -220,12 +224,6 @@ public class ClientSideProject implements Project {
                     }
                     projectEnhancedBrowserImpl = null;
                     projectWebBrowser = null;
-                    WebBrowser wb = getProjectWebBrowser();
-                    if (wb != null) {
-                        ClientSideProjectUtilities.logUsage(ClientSideProject.class,
-                                "USG_PROJECT_HTML5_CONFIGURATION_CHANGE", // NOI18N
-                                new Object[] { wb.getId()});
-                    }
                     ebi = getEnhancedBrowserImpl();
                     if (ebi != null) {
                         lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
@@ -237,6 +235,11 @@ public class ClientSideProject implements Project {
         projectHelper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, antProjectListenerImpl, projectHelper));
         WindowManager windowManager = WindowManager.getDefault();
         windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
+    }
+
+    public void logBrowserUsage() {
+        WebBrowser webBrowser = getProjectWebBrowser();
+        projectBrowserUsageLogger.log(ClientSideProjectType.TYPE, webBrowser.getId(), webBrowser.getBrowserFamily().name());
     }
 
     public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
@@ -576,9 +579,14 @@ public class ClientSideProject implements Project {
                 browserId = wb.getId();
             }
             CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
+            // usage logging
+            FileObject cordova = project.getProjectDirectory().getFileObject(".cordova"); // NOI18N
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
-                    new Object[] { browserId,
-                    project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
+                    new Object[] {
+                        browserId,
+                        project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO", // NOI18N
+                        cordova != null && cordova.isFolder() ? "YES" : "NO", // NOI18N
+                    });
         }
 
         @Override
@@ -680,13 +688,13 @@ public class ClientSideProject implements Project {
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
             checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
-            
+
             if (fe.getFile().equals(siteRootFolder)) {
                 final ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(p);
                 projectProperties.setSiteRootFolder(siteRootFolder.getNameExt());
                 projectProperties.save();
             }
-            
+
         }
 
         @Override
@@ -835,7 +843,7 @@ public class ClientSideProject implements Project {
             public String getWebContextRoot() {
                 return getProjectProperties().getWebRoot();
             }
-            
+
             private ClientSideProjectProperties getProjectProperties() {
                 return new ClientSideProjectProperties(project);
             }

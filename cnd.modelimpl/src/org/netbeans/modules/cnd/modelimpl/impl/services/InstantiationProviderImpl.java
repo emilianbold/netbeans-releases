@@ -111,6 +111,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
 import org.netbeans.modules.cnd.spi.model.services.CsmVisibilityQueryProvider;
 
@@ -219,6 +220,15 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             }
         }
         return result;
+    }
+    
+    @Override
+    public CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation) {
+        return instantiate(templateParam, instantiation.getMapping());        
+    }    
+    
+    public CsmType instantiate(CsmTemplateParameter templateParam, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return Instantiation.resolveTemplateParameter(templateParam, mapping);
     }
     
     @Override
@@ -587,31 +597,65 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             CsmSpecializationParameter param = params.get(i);
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) &&
                                     CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                                CsmTypeBasedSpecializationParameter tbsp = (CsmTypeBasedSpecializationParameter) specParam;
-                                CsmClassifier cls2 = tbsp.getClassifier();
-                                if (cls2 != null) {
-                                    if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
+                                CsmTypeBasedSpecializationParameter instSpecParam = (CsmTypeBasedSpecializationParameter)param;                                
+                                CsmTypeBasedSpecializationParameter declSpecParam = (CsmTypeBasedSpecializationParameter) specParam;                                
+                                CsmClassifier declCls = declSpecParam.getClassifier();                                                                
+                                if (declCls != null) {
+                                    String declClsQualifiedName = declCls.getQualifiedName().toString();
+                                    if (declClsQualifiedName.equals(paramsText.get(i).toString())) {
                                         match += 2;
-                                    } else if (cls2.isValid() && cls2.getQualifiedName().toString().contains(paramsText.get(i))) {
-                                        CsmTypeBasedSpecializationParameter usedSpecializationParam = (CsmTypeBasedSpecializationParameter)param;
-                                        CsmClassifier usedSpecParamClassifier = usedSpecializationParam.getClassifier();
-                                        if (usedSpecParamClassifier != null && usedSpecParamClassifier.getQualifiedName() != null) {
-                                            if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
+                                    } else if (declCls.isValid() && declClsQualifiedName.contains(paramsText.get(i))) {
+                                        CsmClassifier instCls = instSpecParam.getClassifier();
+                                        if (instCls != null && instCls.getQualifiedName() != null) {
+                                            if (declClsQualifiedName.equals(instCls.getQualifiedName().toString())) {
                                                 match += 1;
                                             } else {
                                                 match -= 1;
                                             }
                                         }
+                                    } else if (declCls.isValid() && !instSpecParam.isInstantiation()) {
+                                        // It is safe to get classifier from param type which is not instantiation
+                                        CsmClassifier instCls = instSpecParam.getClassifier();
+                                        if (CsmKindUtilities.isTypedefOrTypeAlias(instCls)) {                                            
+                                            final List<String> nestedQualifiedNames = new ArrayList<String>();                                            
+                                            
+                                            CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
+
+                                                boolean first = true;
+                                                
+                                                @Override
+                                                public boolean check(CsmType value) {
+                                                    if (!first) {
+                                                        CsmClassifier classifier = value.getClassifier();
+                                                        if (classifier != null) {
+                                                            nestedQualifiedNames.add(classifier.getQualifiedName().toString());
+                                                        }
+                                                    } else {
+                                                        first = false;
+                                                    }
+                                                    return false;
+                                                }
+                                                
+                                            });
+                                            
+                                            for (String nestedQualifiedName : nestedQualifiedNames) {
+                                                if (declClsQualifiedName.equals(nestedQualifiedName)) {
+                                                    match += 1;
+                                                    break;
+                                                }
+                                                // TODO: maybe should decrement match variable if no matches found
+                                            }
+                                        }
                                     }
-                                    if (tbsp.isPointer() &&
+                                    if (declSpecParam.isPointer() &&
                                             isPointer(paramsType.get(i))) {
                                         match += 1;
                                     }
-                                    if (tbsp.isReference()) {
+                                    if (declSpecParam.isReference()) {
                                         int checkReference = checkReference(paramsType.get(i));
                                         if (checkReference > 0) {
                                             match += 1;
-                                            if ((checkReference == 2) == tbsp.isRValueReference()) {
+                                            if ((checkReference == 2) == declSpecParam.isRValueReference()) {
                                                 match +=1;
                                             }
                                         }

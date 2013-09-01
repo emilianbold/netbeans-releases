@@ -62,7 +62,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
@@ -85,8 +84,10 @@ import org.w3c.dom.NodeList;
  */
 public final class ClientSideProjectUtilities {
 
+    public static final String USAGE_LOGGER_NAME = "org.netbeans.ui.metrics.web.clientproject"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectUtilities.class.getName());
-    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.clientproject"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger(USAGE_LOGGER_NAME);
 
     public static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
 

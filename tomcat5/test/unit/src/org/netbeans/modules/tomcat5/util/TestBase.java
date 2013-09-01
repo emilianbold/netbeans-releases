@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -92,8 +94,16 @@ public class TestBase extends NbTestCase {
             setProxyLookups(new Lookup[] {
                 Lookups.singleton(repository),
             });
-            
-            DataFolder services = DataFolder.findFolder(FileUtil.getConfigFile("Services"));
+
+            FileObject servicesFolder = FileUtil.getConfigFile("Services");
+            if (servicesFolder == null) {
+                try {
+                    servicesFolder = FileUtil.getConfigRoot().createFolder("Services");
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+            DataFolder services = DataFolder.findFolder(servicesFolder);
             FolderLookup lookup = new FolderLookup(services);
             setProxyLookups(new Lookup[] {
                 Lookups.singleton(repository),

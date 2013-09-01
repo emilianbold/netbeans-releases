@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.openide.util.Lookup;
@@ -125,6 +126,15 @@ public abstract class CsmInstantiationProvider {
      * @return - instantiation
      */
     public abstract CsmObject instantiate(CsmTemplate template, CsmType type);
+    
+    /**
+     * Returns template parameter instantiated type
+     * 
+     * @param templateParam
+     * @param instantiation
+     * @return parameter type
+     */
+    public abstract CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation);
 
     /**
      * Creates specialization parameter based on type.
@@ -191,6 +201,10 @@ public abstract class CsmInstantiationProvider {
             return template;
         }
 
+        @Override
+        public CsmType instantiate(CsmTemplateParameter templateParam, CsmInstantiation instantiation) {
+            return null;
+        }
 
         @Override
         public CsmTypeBasedSpecializationParameter createTypeBasedSpecializationParameter(CsmType type) {
