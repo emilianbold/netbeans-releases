@@ -223,7 +223,7 @@ public class FetchAction extends ContextAction {
                             logger.output(""); // NOI18N
                             HgUtils.logHgLog(parent, logger);
                         }
-                        Mercurial.getInstance().refreshOpenedFiles(root);
+                        Mercurial.getInstance().historyChanged(root);
                         HgUtils.notifyUpdatedFiles(root, list);
                         HgUtils.forceStatusRefresh(root);
                     }

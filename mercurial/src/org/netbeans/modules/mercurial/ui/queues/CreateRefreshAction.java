@@ -206,6 +206,7 @@ abstract class CreateRefreshAction extends ContextAction {
                         HgUtils.notifyException(ex);
                     } finally {
                         Mercurial.getInstance().getFileStatusCache().refreshAllRoots(filesToRefresh);
+                        Mercurial.getInstance().getMercurialHistoryProvider().fireHistoryChange(filesToRefresh.toArray(new File[filesToRefresh.size()]));
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_DONE." + bundleKeyPostfix)); // NOI18N
                         logger.output(""); // NOI18N
                     }
