@@ -50,6 +50,8 @@ import java.util.*;
 import javax.swing.*;
 import java.text.MessageFormat;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.border.*;
 
 import org.openide.ErrorManager;
@@ -63,15 +65,11 @@ import org.openide.explorer.*;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.palette.*;
 import org.openide.nodes.Node.PropertySet;
+import org.openide.util.Exceptions;
 
 /**
  * A property editor for swing border class.
- *
- * This editor should be in some subpackage under developerx package,
- * but it is not possible now, because this package is only package where are
- * property editors searched.
  */
-
 public final class BorderEditor extends PropertyEditorSupport
                                 implements FormAwareEditor,
                                            XMLPropertyEditor,
@@ -85,7 +83,7 @@ public final class BorderEditor extends PropertyEditorSupport
     private static final String NO_BORDER_BASE =
         "org/netbeans/modules/form/editors2/nullBorder.gif"; // NOI18N
 
-    private static FormProperty[] EMPTY_PROPERTIES = new FormProperty[0];
+    private static final FormProperty[] EMPTY_PROPERTIES = new FormProperty[0];
     
     // --------------
     // variables
@@ -360,6 +358,20 @@ public final class BorderEditor extends PropertyEditorSupport
                 selectNode = noBorder;
             root.getChildren().add(new Node[] { noBorder });
 
+            if (selectNode == null && border instanceof BorderDesignSupport && border == borderSupport) {
+                // likely a custom border no longer in palette (loaded with form)
+                try {
+                    BorderDesignSupport bds = new BorderDesignSupport(borderSupport, propertyContext);
+                    AbstractNode dummyPaletteNode = new AbstractNode(Children.LEAF);
+                    dummyPaletteNode.setDisplayName(bds.getDisplayName());
+                    dummyPaletteNode.setIconBaseWithExtension(UNKNOWN_BORDER_BASE);
+                    selectNode = new BorderNode(bds, dummyPaletteNode);
+                    bordersList.add(selectNode);
+                } catch (Exception ex) {
+                    Logger.getLogger(BorderEditor.class.getName()).log(Level.INFO, "", ex);
+                }
+            }
+
             Node[] bordersArray = new Node[bordersList.size()];
             bordersList.toArray(bordersArray);
             Arrays.sort(bordersArray, new Comparator<Node>() {
@@ -474,6 +486,9 @@ public final class BorderEditor extends PropertyEditorSupport
 
         void setBorder(Object border) {
             this.border = border;
+            if (border instanceof BorderDesignSupport) {
+                border = ((BorderDesignSupport)border).getBorder();
+            }
             String longName = border.getClass().getName();
             int dot = longName.lastIndexOf('.');
             String shortName =(dot < 0) ? longName : longName.substring(dot + 1);
@@ -494,7 +509,10 @@ public final class BorderEditor extends PropertyEditorSupport
     private static final String ATTR_INFO = "info"; // NOI18N
     private static final String PROP_NAME = "PropertyName"; // NOI18N
     private static final String XML_PROPERTY = "Property"; // NOI18N
+    private static final String XML_PROPERTY_BEAN = "PropertyBean"; // NOI18N
     private static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
+    private static final String ATTR_BEAN_PROPERTY_TYPE = "type"; // NOI18N
+    private static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
     private static final String ATTR_PROPERTY_RES_KEY ="resourceKey"; // NOI18N
     private static final String ATTR_PROPERTY_NORES = "noResource"; // NOI18N
 
@@ -546,7 +564,7 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     /** Called to load property value from specified XML subtree.
-     * If succesfully loaded, the value should be available via getValue().
+     * If successfully loaded, the value should be available via getValue().
      * An IOException should be thrown when the value cannot be restored from
      * the specified XML element
      * @param element the XML DOM element representing a subtree of XML from
@@ -627,11 +645,12 @@ public final class BorderEditor extends PropertyEditorSupport
         org.w3c.dom.Node valueNode = null;
 
         Object value;
+        Object realValue;
         try {
             value = prop.getValue();
-        }
-        catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // problem getting value => ignore
+            realValue = prop.getRealValue();
+        } catch (Exception ex) { // should not happen
+            Exceptions.printStackTrace(ex);
             return;
         }
 
@@ -654,48 +673,49 @@ public final class BorderEditor extends PropertyEditorSupport
         if (propEd instanceof ResourceWrapperEditor) {
             propEd = ((ResourceWrapperEditor)propEd).getDelegatedPropertyEditor();
         }
-        if (propEd instanceof XMLPropertyEditor) {
+
+        if (propEd instanceof BeanPropertyEditor) {
             propEd.setValue(value);
-            valueNode = ((XMLPropertyEditor)propEd).storeToXML(doc);
-            if (valueNode != null) {
-                el.appendChild(valueNode);
-                if (valueNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                    ((org.w3c.dom.Element)valueNode).setAttribute(PROP_NAME, propName);
-                    if (noResource) {
-                        ((org.w3c.dom.Element)valueNode).setAttribute(ATTR_PROPERTY_NORES, "true"); // NOI18N
+            BeanPropertyEditor bpe = (BeanPropertyEditor) propEd;
+            if (bpe.valueIsBeanProperty()) {
+                // this mimics GandalfPersistenceManager.saveBeanProperty
+                org.w3c.dom.Element valueEl = doc.createElement(XML_PROPERTY_BEAN);
+                valueEl.setAttribute(ATTR_BEAN_PROPERTY_TYPE, realValue.getClass().getName());
+                for (Node.Property p : bpe.getProperties()) {
+                    FormProperty subProp = (FormProperty) p;
+                    if (subProp.isChanged()) {
+                        writeProperty(subProp.getName(), subProp, valueEl, doc);
                     }
                 }
-                return;
+                valueNode = valueEl;
             }
         }
 
-        // TODO for custom borders
-/*        // writing property to XML didn't succeed (should not happen
-        // for standard swing borders)
-        try {
-            String encodedSerializeValue = GandalfPersistenceManager
-                                                 .encodeValue(prop.getValue());
-            if (encodedSerializeValue != null)
-                el.setAttribute(propName, encodedSerializeValue);
-
-
-
-
-
-
+        if (valueNode == null && propEd instanceof XMLPropertyEditor) {
+            propEd.setValue(value);
+            valueNode = ((XMLPropertyEditor)propEd).storeToXML(doc);
         }
-        catch (Exception ex) { // should not happen
-            ex.printStackTrace();
-        } */
+
+        if (valueNode != null) {
+            el.appendChild(valueNode);
+            if (valueNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                ((org.w3c.dom.Element)valueNode).setAttribute(PROP_NAME, propName);
+                if (noResource) {
+                    ((org.w3c.dom.Element)valueNode).setAttribute(ATTR_PROPERTY_NORES, "true"); // NOI18N
+                }
+            }
+        } else { // i.e. no XMLPropertyEditor so expecting a basic value (primitive, String)
+            org.w3c.dom.Element propElement = doc.createElement(XML_PROPERTY);
+            propElement.setAttribute(ATTR_PROPERTY_NAME, propName);
+            propElement.setAttribute(ATTR_PROPERTY_VALUE, value.toString());
+            el.appendChild(propElement);
+        }
     }
 
-    private static Object readProperty(String xmlPropName,
-                                       String borderPropName,
-                                       BorderDesignSupport bSupport,
-                                       org.w3c.dom.Node element)
-        throws IOException
-    {
-        Object value = null;
+    private Object readBorderProperty(String xmlPropName,
+                                      String borderPropName,
+                                      BorderDesignSupport bSupport,
+                                      org.w3c.dom.Node element) throws IOException {
         String resourceKey = null;
         org.w3c.dom.Element propElement = null;
 
@@ -715,11 +735,11 @@ public final class BorderEditor extends PropertyEditorSupport
         }
 
         if (propElement != null) { // node found
-            FormProperty prop = (FormProperty)
-                bSupport.getPropertyOfName(borderPropName);
-            if (prop == null) {
+            FormProperty prop = (FormProperty) bSupport.getPropertyOfName(borderPropName);
+            if (prop != null) {
+                return readProperty(prop, resourceKey, propElement);
+            } else {
                 IOException ex = new IOException("Unknown property"); // NOI18N
-                
                 ErrorManager.getDefault().annotate(
                     ex,
                     MessageFormat.format(
@@ -728,56 +748,130 @@ public final class BorderEditor extends PropertyEditorSupport
                                        bSupport.getBorderClass().getName() }));
                 throw ex;
             }
+        }
 
-            IOException lastEx = null;
-            boolean valueRead = false;
+        return null;
+    }
 
-            if (resourceKey != null) { // load as resource
-                value = ResourceSupport.findResource(resourceKey, prop);
+    private Object readProperty(FormProperty prop, String resourceKey, org.w3c.dom.Element propElement) throws IOException {
+        Object value = null;
+        IOException lastEx = null;
+        boolean valueRead = false;
+
+        if (resourceKey != null) { // load as resource
+            value = ResourceSupport.findResource(resourceKey, prop);
+            try {
+                prop.setValue(value);
+                valueRead = true;
+            } catch (Exception ex) {
+                lastEx = new IOException();
+                ErrorManager.getDefault().annotate(lastEx, ex);
+            }
+        } else if (XML_PROPERTY_BEAN.equals(propElement.getNodeName())) {
+            // bean property - i.e. having sub properties
+            String valueTypeStr = propElement.getAttribute(ATTR_BEAN_PROPERTY_TYPE);
+            Class valueType = null;
+            BeanPropertyEditor beanPropertyEditor = null;
+            try {
+                valueType = FormUtils.loadClass(valueTypeStr, propertyContext.getFormModel());
+                for (PropertyEditor prEd : FormPropertyEditorManager.getAllEditors(prop)) {
+                    if (prEd instanceof BeanPropertyEditor) { // [assuming there's just the right one BeanPropertyEditor]
+                        if (prEd instanceof FormAwareEditor && propertyContext != null) {
+                            ((FormAwareEditor)prEd).setContext(propertyContext.getFormModel(), prop);
+                        }
+                        ((BeanPropertyEditor)prEd).intializeFromType(valueType);
+                        beanPropertyEditor = (BeanPropertyEditor) prEd;
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                lastEx = new IOException(ex);
+            } catch (LinkageError ex) {
+                lastEx = new IOException(ex);
+            }
+            if (beanPropertyEditor != null) {
+                org.w3c.dom.NodeList children = propElement.getChildNodes();	
+                Node.Property[] subProperties = beanPropertyEditor.getProperties();
+                for (int i=0; i < children.getLength(); i++) {
+                    org.w3c.dom.Node subNode = children.item(i);	  
+                    if (subNode != null && subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        org.w3c.dom.Element subElement = (org.w3c.dom.Element) subNode;
+                        String subPropName = subElement.getAttribute(
+                                XML_PROPERTY.equals(subNode.getNodeName()) ? ATTR_PROPERTY_NAME : PROP_NAME);
+                        for (Node.Property p : subProperties) {
+                            if (p.getName().equals(subPropName)) {
+                                if (p instanceof FormProperty) {
+                                    readProperty((FormProperty)p, null, subElement);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
                 try {
+                    PropertyEditor prEd = (PropertyEditor) beanPropertyEditor;
+                    value = prEd.getValue();
                     prop.setValue(value);
+                    prop.setCurrentEditor(prEd);
+                    if (Boolean.parseBoolean(propElement.getAttribute(ATTR_PROPERTY_NORES))) {
+                        ResourceSupport.setExcludedProperty(prop, true);
+                    }
                     valueRead = true;
                 } catch (Exception ex) {
                     lastEx = new IOException();
                     ErrorManager.getDefault().annotate(lastEx, ex);
                 }
-            } else { // load via a XMLPropertyEditor
-                for (PropertyEditor prEd : FormPropertyEditorManager.getAllEditors(prop)) {
-                    if (!(prEd instanceof XMLPropertyEditor) && prEd instanceof ResourceWrapperEditor) {
-                        prEd = ((ResourceWrapperEditor)prEd).getDelegatedPropertyEditor();
+            }
+        } else if (XML_PROPERTY.equals(propElement.getNodeName())) {
+            // simple property value
+            try {
+                String valueStr = propElement.getAttribute(ATTR_PROPERTY_VALUE);
+                value = FormUtils.decodePrimitiveValue(valueStr, prop.getValueType());
+                prop.setValue(value);
+                if (Boolean.parseBoolean(propElement.getAttribute(ATTR_PROPERTY_NORES))) {
+                    ResourceSupport.setExcludedProperty(prop, true);
+                }
+                valueRead = true;
+            } catch (Exception ex) {
+                lastEx = new IOException();
+                ErrorManager.getDefault().annotate(lastEx, ex);
+            }
+        } else { // load via a XMLPropertyEditor
+            for (PropertyEditor prEd : FormPropertyEditorManager.getAllEditors(prop)) {
+                if (!(prEd instanceof XMLPropertyEditor) && prEd instanceof ResourceWrapperEditor) {
+                    prEd = ((ResourceWrapperEditor)prEd).getDelegatedPropertyEditor();
+                }
+                if (prEd instanceof XMLPropertyEditor) {
+                    try {
+                        prop.getPropertyContext().initPropertyEditor(prEd, prop);
+                        ((XMLPropertyEditor)prEd).readFromXML(propElement);
+                        value = prEd.getValue();
+                        prop.setValue(value);
+                        prop.setCurrentEditor(prEd);
+                        if (Boolean.parseBoolean(propElement.getAttribute(ATTR_PROPERTY_NORES))) {
+                            ResourceSupport.setExcludedProperty(prop, true);
+                        }
+                        valueRead = true;
+                        break;
                     }
-                    if (prEd instanceof XMLPropertyEditor) {
-                        try {
-                            prop.getPropertyContext().initPropertyEditor(prEd, prop);
-                            ((XMLPropertyEditor)prEd).readFromXML(propElement);
-                            value = prEd.getValue();
-                            prop.setValue(value);
-                            prop.setCurrentEditor(prEd);
-                            if (Boolean.parseBoolean(propElement.getAttribute(ATTR_PROPERTY_NORES))) {
-                                ResourceSupport.setExcludedProperty(prop, true);
-                            }
-                            valueRead = true;
-                            break;
-                        }
-                        catch (IOException ex) {
-                            lastEx = ex;
-                        }
-                        catch (Exception ex) {
-                            lastEx = new IOException();
-                            ErrorManager.getDefault().annotate(lastEx, ex);
-                        }
+                    catch (IOException ex) {
+                        lastEx = ex;
+                    }
+                    catch (Exception ex) {
+                        lastEx = new IOException();
+                        ErrorManager.getDefault().annotate(lastEx, ex);
                     }
                 }
             }
+        }
 
-            if (!valueRead && lastEx != null) {
-                ErrorManager.getDefault().annotate(
-                    lastEx,
-                    MessageFormat.format(
-                        getBundle().getString("FMT_ERR_CannotReadBorderProperty"), // NOI18N
-                        new Object[] { xmlPropName }));
-                throw lastEx;
-            }
+        if (!valueRead && lastEx != null) {
+            ErrorManager.getDefault().annotate(
+                lastEx,
+                MessageFormat.format(
+                    getBundle().getString("FMT_ERR_CannotReadBorderProperty"), // NOI18N
+                    new Object[] { prop.getName() }));
+            throw lastEx;
         }
 
         return value;
@@ -872,10 +966,10 @@ public final class BorderEditor extends PropertyEditorSupport
             borderSupport.setPropertyContext(propertyContext);
             FormProperty prop;
 
-            readProperty(ATTR_BORDER, "border", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_BORDER, "border", borderSupport, element); // NOI18N
 
             // for title, first try to read FormDesignValue
-            Object title = readProperty(ATTR_TITLE_X, "title", borderSupport, element); // NOI18N
+            Object title = readBorderProperty(ATTR_TITLE_X, "title", borderSupport, element); // NOI18N
             if (title == null // no design value, get simple String attribute
                   && (node = attributes.getNamedItem(ATTR_TITLE)) != null
                   && (prop = (FormProperty)borderSupport
@@ -892,9 +986,9 @@ public final class BorderEditor extends PropertyEditorSupport
                                   .getPropertyOfName("titlePosition")) != null) // NOI18N
                 prop.setValue(new Integer(node.getNodeValue()));
 
-            readProperty(ATTR_FONT, "titleFont", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_FONT, "titleFont", borderSupport, element); // NOI18N
 
-            readProperty(ATTR_TITLE_COLOR, "titleColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_TITLE_COLOR, "titleColor", borderSupport, element); // NOI18N
         } 
         catch (IOException ex) {
             throw ex;
@@ -961,9 +1055,9 @@ public final class BorderEditor extends PropertyEditorSupport
                                        .getPropertyOfName("etchType")) != null) // NOI18N
                 prop.setValue(new Integer(node.getNodeValue()));
 
-            readProperty(ATTR_HIGHLIGHT, "highlightColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_HIGHLIGHT, "highlightColor", borderSupport, element); // NOI18N
 
-            readProperty(ATTR_SHADOW, "shadowColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_SHADOW, "shadowColor", borderSupport, element); // NOI18N
         } 
         catch (IOException ex) {
             throw ex;
@@ -1025,7 +1119,7 @@ public final class BorderEditor extends PropertyEditorSupport
             borderSupport.setPropertyContext(propertyContext);
             FormProperty prop;
 
-            readProperty(ATTR_LINE_COLOR, "lineColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_LINE_COLOR, "lineColor", borderSupport, element); // NOI18N
 
             node = attributes.getNamedItem(ATTR_THICKNESS);
             if (node != null && (prop = (FormProperty)borderSupport
@@ -1162,8 +1256,8 @@ public final class BorderEditor extends PropertyEditorSupport
             borderSupport = new BorderDesignSupport(CompoundBorder.class);
             borderSupport.setPropertyContext(propertyContext);
 
-            readProperty(ATTR_OUTSIDE, "outsideBorder", borderSupport, element); // NOI18N
-            readProperty(ATTR_INSIDE, "insideBorder", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_OUTSIDE, "outsideBorder", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_INSIDE, "insideBorder", borderSupport, element); // NOI18N
         } 
         catch (IOException ex) {
             throw ex;
@@ -1246,10 +1340,10 @@ public final class BorderEditor extends PropertyEditorSupport
                                        .getPropertyOfName("bevelType")) != null) // NOI18N
                 prop.setValue(new Integer(node.getNodeValue()));
 
-            readProperty(ATTR_HIGHLIGHT_OUTER, "highlightOuterColor", borderSupport, element); // NOI18N
-            readProperty(ATTR_HIGHLIGHT_INNER, "highlightInnerColor", borderSupport, element); // NOI18N
-            readProperty(ATTR_SHADOW_OUTER, "shadowOuterColor", borderSupport, element); // NOI18N
-            readProperty(ATTR_SHADOW_INNER, "shadowInnerColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_HIGHLIGHT_OUTER, "highlightOuterColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_HIGHLIGHT_INNER, "highlightInnerColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_SHADOW_OUTER, "shadowOuterColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_SHADOW_INNER, "shadowInnerColor", borderSupport, element); // NOI18N
         } 
         catch (IOException ex) {
             throw ex;
@@ -1326,8 +1420,8 @@ public final class BorderEditor extends PropertyEditorSupport
             borderSupport = new BorderDesignSupport(MatteBorder.class);
             borderSupport.setPropertyContext(propertyContext);
 
-            readProperty(ATTR_MATTE_ICON, "tileIcon", borderSupport, element); // NOI18N
-            readProperty(ATTR_MATTE_COLOR, "matteColor", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_MATTE_ICON, "tileIcon", borderSupport, element); // NOI18N
+            readBorderProperty(ATTR_MATTE_COLOR, "matteColor", borderSupport, element); // NOI18N
 
             org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
             org.w3c.dom.Node node;

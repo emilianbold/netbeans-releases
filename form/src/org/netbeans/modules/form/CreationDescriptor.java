@@ -77,9 +77,8 @@ public class CreationDescriptor {
         public Object createInstance(Object[] paramValues)
             throws InstantiationException, IllegalAccessException,
                    IllegalArgumentException, InvocationTargetException;
-        
-        // [this will become useless when we can rely on getCodeOrigin(...)]
-        public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes);
+
+        public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes);
 
         public CodeExpressionOrigin getCodeOrigin(CodeExpression[] params);
     }
@@ -378,7 +377,7 @@ public class CreationDescriptor {
         }        
         
         @Override
-        public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
+        public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
             StringBuilder buf = new StringBuilder();
             buf.append("new "); // NOI18N
             buf.append(theClass.getCanonicalName());
@@ -388,14 +387,29 @@ public class CreationDescriptor {
             buf.append("("); // NOI18N
 
             for (int i=0; i < constructorPropNames.length; i++) {
-                FormProperty prop = CreationFactory.findProperty(
-                                        constructorPropNames[i], props);
-                if (prop == null)
+                String propCode = null;
+                if (propNames != null) { // find explicitly provided code for the property
+                    for (int j=0; j < propNames.length; j++) {
+                        if (constructorPropNames[i].equals(propNames[j])) {
+                            propCode = propCodes[j];
+                            break;
+                        }
+                    }
+                }
+                if (propCode == null) { // no explicite code provided
+                    FormProperty prop = CreationFactory.findProperty(constructorPropNames[i], props);
+                    if (prop != null) { // use standard code created by the property
+                        propCode = prop.getJavaInitializationString();
+                    }
+                }
+                if (propCode == null) {
                     return null; // should not happen
+                }
 
-                buf.append(prop.getJavaInitializationString());
-                if (i+1 < constructorPropNames.length)
+                buf.append(propCode);
+                if (i+1 < constructorPropNames.length) {
                     buf.append(", "); // NOI18N
+                }
             }
 
             buf.append(")"); // NOI18N
@@ -438,8 +452,7 @@ public class CreationDescriptor {
             this.properties = properties; 
             
         }
-    
-            
+
         @Override
         public final int getParameterCount() {
             return propertyNames.length; 
@@ -501,7 +514,7 @@ public class CreationDescriptor {
         }
         
         @Override
-        public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
+        public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
             StringBuilder buf = new StringBuilder();
             if (expressionType == null) expressionType = describedClass;
             if (!expressionType.isAssignableFrom(method.getReturnType())) { // Issue 71220
@@ -512,19 +525,31 @@ public class CreationDescriptor {
             buf.append(method.getName());
             buf.append("("); // NOI18N
 
-
             for (int i=0; i < properties.length; i++) {
-                
-                String name = properties[i].getPropertyName();                
-                FormProperty prop = CreationFactory.findProperty(name, props);
-                
-                if (prop == null)
-                    return null; // should not happen
-                        
-                    buf.append(properties[i].getJavaParametersString(prop));                     
+                String propName = properties[i].getPropertyName();                
+                String propCode = null;
+                if (propNames != null) { // find explicitly provided code for the property
+                    for (int j=0; j < propNames.length; j++) {
+                        if (propName.equals(propNames[j])) {
+                            propCode = propCodes[j];
+                            break;
+                        }
+                    }
+                }
+                if (propCode == null) { // no explicite code provided
+                    FormProperty prop = CreationFactory.findProperty(propName, props);
+                    if (prop != null) { // create the property code the standard way
+                        propCode = properties[i].getJavaParametersString(prop);
+                    }
+                }
+                if (propCode == null) {
+                    propCode = "null"; // NOI18N
+                }
 
-                if (i+1 < properties.length)
+                buf.append(propCode);
+                if (i+1 < properties.length) {
                     buf.append(", "); // NOI18N
+                }
             }
 
             buf.append(")"); // NOI18N

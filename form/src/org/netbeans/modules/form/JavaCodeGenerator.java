@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
 import javax.swing.text.BadLocationException;
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -65,7 +68,6 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
 import org.netbeans.modules.form.project.ClassPathUtils;
 
-import java.awt.*;
 import java.beans.*;
 import java.io.*;
 import java.lang.reflect.*; 
@@ -76,6 +78,7 @@ import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassSource.Entry;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -196,9 +199,9 @@ class JavaCodeGenerator extends CodeGenerator {
     private int emptyLineCounter;
     private int emptyLineRequest;
 
-    private Map<RADComponent, java.util.List<FormProperty>> constructorProperties;
-    private Map<RADComponent, java.util.List<FormProperty>> parentDependentProperties;
-    private Map<RADComponent, java.util.List<FormProperty>> childrenDependentProperties;
+    private Map<RADComponent, List<FormProperty>> constructorProperties;
+    private Map<RADComponent, List<FormProperty>> parentDependentProperties;
+    private Map<RADComponent, List<FormProperty>> childrenDependentProperties;
 
     private SwingLayoutCodeGenerator swingGenerator;
 
@@ -207,9 +210,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static class PropertiesFilter implements FormProperty.Filter {
 		
-	private final java.util.List<FormProperty> properties;
+	private final List<FormProperty> properties;
 	
-	public PropertiesFilter(java.util.List<FormProperty> properties) {
+	public PropertiesFilter(List<FormProperty> properties) {
 	    this.properties = properties;
 	}
 	
@@ -269,7 +272,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     /**
-     * Alows the code generator to provide synthetic properties for specified
+     * Allows the code generator to provide synthetic properties for specified
      * component which are specific to the code generation method.  E.g. a
      * JavaCodeGenerator will return variableName property, as it generates
      * global Java variable for every component
@@ -278,7 +281,7 @@ class JavaCodeGenerator extends CodeGenerator {
     @Override
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
         ResourceBundle bundle = FormUtils.getBundle();
-        java.util.List<Node.Property> propList = new ArrayList<Node.Property>();
+        List<Node.Property> propList = new ArrayList<Node.Property>();
         if (component == null) {
             propList.add(new VariablesModifierProperty());
             propList.add(new LocalVariablesProperty());
@@ -1486,9 +1489,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 FormProperty[] props;
                 if (propNames.length > 0) {
                     if (constructorProperties == null)
-                        constructorProperties = new HashMap<RADComponent, java.util.List<FormProperty>>();
+                        constructorProperties = new HashMap<RADComponent, List<FormProperty>>();
 
-		    java.util.List<FormProperty> usedProperties = new ArrayList<FormProperty>(propNames.length);
+		    List<FormProperty> usedProperties = new ArrayList<FormProperty>(propNames.length);
                     props = new FormProperty[propNames.length];
 
                     for (int i=0; i < propNames.length; i++) {
@@ -1503,7 +1506,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
                 String typeParams = (String)comp.getAuxValue(AUX_TYPE_PARAMETERS);
 
-                String defaultCreationCode = creator.getJavaCreationCode(props, null, typeParams);
+                String defaultCreationCode = creator.getJavaCreationCode(props, null, null, null, typeParams);
                 buf.append(" = ").append(defaultCreationCode).append(";\n"); // NOI18N
                 initCodeWriter.write(buf.toString());
 
@@ -1579,18 +1582,18 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized, generate properties
-	    java.util.List<FormProperty> usedProperties = constructorProperties != null ? constructorProperties.get(comp) : null;
+	    List<FormProperty> usedProperties = constructorProperties != null ? constructorProperties.get(comp) : null;
             Iterator<? extends FormProperty> it = comp.getBeanPropertiesIterator(new PropertiesFilter(usedProperties), false);
             while (it.hasNext()) {
                 FormProperty prop = it.next();
 
-                java.util.List<FormProperty> depPropList = null;
+                List<FormProperty> depPropList = null;
                 if (FormUtils.isMarkedParentDependentProperty(prop)) {
                     // needs to be generated after the component is added to the parent container
                     if (parentDependentProperties != null)
                         depPropList = parentDependentProperties.get(comp);
                     else {
-                        parentDependentProperties = new HashMap<RADComponent,java.util.List<FormProperty>>();
+                        parentDependentProperties = new HashMap<RADComponent,List<FormProperty>>();
                         depPropList = null;
                     }
                     if (depPropList == null) {
@@ -1604,7 +1607,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     if (childrenDependentProperties != null)
                         depPropList = childrenDependentProperties.get(comp);
                     else {
-                        childrenDependentProperties = new HashMap<RADComponent,java.util.List<FormProperty>>();
+                        childrenDependentProperties = new HashMap<RADComponent,List<FormProperty>>();
                         depPropList = null;
                     }
                     if (depPropList == null) {
@@ -1878,7 +1881,7 @@ class JavaCodeGenerator extends CodeGenerator {
     {
         // some known (i.e. hardcoded) properties need to be set after
         // the component is added to the parent container
-        java.util.List<FormProperty> postProps;
+        List<FormProperty> postProps;
         if (parentDependentProperties != null
             && (postProps = parentDependentProperties.get(comp)) != null)
         {
@@ -2000,7 +2003,7 @@ class JavaCodeGenerator extends CodeGenerator {
     {
         // some known (i.e. hardcoded) container properties need to be set after
         // all sub-components are added
-        java.util.List<FormProperty> postProps;
+        List<FormProperty> postProps;
         if (childrenDependentProperties != null
             && (postProps = childrenDependentProperties.get(cont)) != null)
         {
@@ -2207,7 +2210,11 @@ class JavaCodeGenerator extends CodeGenerator {
 
         PropertyEditor currentEditor = prop.getCurrentEditor();
         if (currentEditor instanceof BeanPropertyEditor && value != null) {
-            generatePropertyBeanSetterCode(prop, value, setterVariable, initCodeWriter, codeData);
+            String propertyInitializationString = generatePropertyBeanInitialization(prop, value, initCodeWriter, codeData);
+            if (propertyInitializationString != null) {
+                generateSimpleSetterCode(prop, prop.getPartialSetterCode(propertyInitializationString),
+                                         setterVariable, initCodeWriter);
+            }
         } else if (currentEditor instanceof FormCodeAwareEditor) {
             if (currentEditor.getValue() != value) {
                 currentEditor.setValue(value);
@@ -2246,23 +2253,17 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private void generatePropertyBeanSetterCode(FormProperty prop, 	
-						Object value,
-						String setterVariable, 						
-						CodeWriter initCodeWriter,
-                                                CustomCodeData codeData)
-	throws IOException
-    {
-	
-	FormProperty[] properties = null;
-	Class propertyType = null;
-	Object realValue = prop.getRealValue(value);
-	propertyType = realValue.getClass();	   
-			    
+    private String generatePropertyBeanInitialization(FormProperty prop,
+                                                      Object value,
+                                                      CodeWriter initCodeWriter,
+                                                      CustomCodeData codeData) throws IOException {
+	Class propertyType = prop.getRealValue(value).getClass();
 	prop.getCurrentEditor().setValue(value);
-	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();	    		    
-	properties = (FormProperty[]) beanPropertyEditor.getProperties();	    
-        if (properties == null) return;
+	BeanPropertyEditor beanPropertyEditor = (BeanPropertyEditor) prop.getCurrentEditor();
+	FormProperty[] properties = (FormProperty[]) beanPropertyEditor.getProperties();
+        if (properties == null) {
+            return null;
+        }
 
 	CreationDescriptor.Creator creator = getPropertyCreator(propertyType, properties);
         if (creator == null) { // Issue 136252
@@ -2272,39 +2273,68 @@ class JavaCodeGenerator extends CodeGenerator {
                 message += "\nCheck " + prop.getName() + " property of " + component + " component."; // NOI18N
             }
             Logger.getLogger(getClass().getName()).log(Level.WARNING, message);
-            return;
+            return null;
         }
-	java.util.List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
-															
-	java.util.List<FormProperty> remainingProperties = new ArrayList<FormProperty>();
-        for (int i = 0; i < properties.length; i++) {
-            if( properties[i].isChanged() &&
-                !creatorProperties.contains(properties[i]) )
-            {
-                remainingProperties.add(properties[i]);
+
+	List<FormProperty> creatorProperties = getCreatorProperties(creator, properties);
+	List<FormProperty> remainingProperties = null;
+        List<String> subBeanPropNames = null;
+        List<String> subBeanPropCodes = null;
+        for (FormProperty subProp : properties) {
+            if (!subProp.isChanged()) {
+                continue;
+            }
+            if (creatorProperties.contains(subProp)) {
+                PropertyEditor prEd = subProp.getCurrentEditor();
+                if (prEd instanceof BeanPropertyEditor) {
+                    Object val = null;
+                    try {
+                        val = subProp.getValue();
+                    } catch (Exception ex) { // should not happen
+                        Exceptions.printStackTrace(ex);
+                    }
+                    if (val != null) {
+                        // if the sub-property is a "bean property", it may also need to generate
+                        // additional property setters, then represented by a variable (propCode)
+                        String propCode = generatePropertyBeanInitialization(subProp, val, initCodeWriter, null);
+                        if (propCode != null) {
+                            if (subBeanPropNames == null) {
+                                subBeanPropNames = new ArrayList<String>();
+                                subBeanPropCodes = new ArrayList<String>();
+                            }
+                            subBeanPropNames.add(subProp.getName());
+                            subBeanPropCodes.add(propCode);
+                        }
+                    }
+                }
+            } else {
+                if (remainingProperties == null) {
+                    remainingProperties = new ArrayList<FormProperty>();
+                }
+                remainingProperties.add(subProp);
             }
         }
 
-	String propertyInitializationString = 
-		creator.getJavaCreationCode(
-		    creatorProperties.toArray(new FormProperty[creatorProperties.size()]), prop.getValueType(), null);
-        if (codeData != null)
+	String propertyInitializationString = creator.getJavaCreationCode(
+	        creatorProperties.toArray(new FormProperty[creatorProperties.size()]),
+                subBeanPropNames != null ? subBeanPropNames.toArray(new String[subBeanPropNames.size()]) : null,
+                subBeanPropCodes != null ? subBeanPropCodes.toArray(new String[subBeanPropCodes.size()]) : null,
+                prop.getValueType(),
+                null);
+        if (codeData != null) {
             propertyInitializationString = CUSTOM_CODE_MARK + propertyInitializationString + CUSTOM_CODE_MARK;
+        }
 
-	if(remainingProperties.isEmpty()) {
-	    generateSimpleSetterCode(prop, 
-				     prop.getPartialSetterCode(propertyInitializationString),
-				     setterVariable, 
-				     initCodeWriter);
-	} else if(remainingProperties.size() > 0) {
-	    generateWholePropertyInitialization(prop, propertyType, setterVariable, 
-				 propertyInitializationString, remainingProperties, initCodeWriter);	    	    
-	}
+        if (remainingProperties != null && !remainingProperties.isEmpty()) {
+	    return generatePropertiesInitialization(propertyType,  propertyInitializationString, remainingProperties, initCodeWriter);
+	} else {
+            return propertyInitializationString;
+        }
     }
 
-    private java.util.List<FormProperty> getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
+    private List<FormProperty> getCreatorProperties(CreationDescriptor.Creator creator, FormProperty[] properties) {
 	String[] propNames = creator.getPropertyNames();	
-	java.util.List<FormProperty> creatorProperties; 
+	List<FormProperty> creatorProperties; 
 	if (propNames.length > 0) {
 	    creatorProperties = new ArrayList<FormProperty>(propNames.length);		    
 	    for (int i=0; i < propNames.length; i++) {
@@ -2328,30 +2358,20 @@ class JavaCodeGenerator extends CodeGenerator {
 					    CreationDescriptor.CHANGED_ONLY | CreationDescriptor.PLACE_ALL);	
     }
     
-    private void generateWholePropertyInitialization(FormProperty prop,
-					      Class propertyType, 
-					      String setterVariable,
-					      String propertyInitializationString, 
-					      java.util.List<FormProperty> remainingProperties,
-					      CodeWriter initCodeWriter)
-	throws IOException					    
-    {
+    private String generatePropertiesInitialization(Class propertyType,
+                                                    String propertyInitializationString,
+                                                    List<FormProperty> remainingProperties,
+                                                    CodeWriter initCodeWriter) throws IOException {
 	String variableName = formModel.getCodeStructure().getExternalVariableName(propertyType, null, true);
-
-	String javaStr = propertyType.getName() + " " + variableName + " = " + propertyInitializationString; // NOI18N		
+	String javaStr = propertyType.getName() + " " + variableName + " = " + propertyInitializationString; // NOI18N
 	initCodeWriter.write(javaStr);
-	initCodeWriter.write(";\n"); // NOI18N		    		
-
-	for (Iterator<FormProperty> it = remainingProperties.iterator(); it.hasNext();) {
-	    generateProperty(it.next(), null, variableName + ".", initCodeWriter, null); // NOI18N 	
+	initCodeWriter.write(";\n"); // NOI18N
+	for (FormProperty p : remainingProperties) {
+	    generateProperty(p, null, variableName + ".", initCodeWriter, null); // NOI18N
 	}
-
-	generateSimpleSetterCode(prop,
-				 prop.getWriteMethod().getName() + "(" + variableName + ")", // NOI18N
-				 setterVariable,
-				 initCodeWriter);
+        return variableName;
     }
-    
+
     private void generateSimpleSetterCode(FormProperty prop,
 				          String partialSetterCode,
 	                                  String setterVariable,
@@ -2388,7 +2408,7 @@ class JavaCodeGenerator extends CodeGenerator {
         Writer writer = initCodeWriter.getWriter();
 
         EventSetDescriptor lastEventSetDesc = null;
-        java.util.List<Event> listenerEvents = null;
+        List<Event> listenerEvents = null;
 
         // we must deal somehow with the fact that for some (pathological)
         // events only anonymous innerclass listener can be generated
@@ -2466,7 +2486,7 @@ class JavaCodeGenerator extends CodeGenerator {
     // (one component.addXXXListener() call)
     private void generateListenerAddCode(RADComponent comp,
                                          EventSetDescriptor eventSetDesc,
-                                         java.util.List<Event> eventList,
+                                         List<Event> eventList,
                                          int mode,
                                          Writer codeWriter)
         throws IOException
@@ -2691,7 +2711,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private Iterator<CodeVariable> getSortedVariables(int type, int typeMask) {
         Collection allVariables = formModel.getCodeStructure().getAllVariables();
-        java.util.List<CodeVariable> variables = new ArrayList<CodeVariable>(allVariables.size());
+        List<CodeVariable> variables = new ArrayList<CodeVariable>(allVariables.size());
         Iterator it = allVariables.iterator();
         while (it.hasNext()) {
             CodeVariable var = (CodeVariable) it.next();
@@ -3486,7 +3506,7 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private void importFQNs(boolean handleInitComponents, boolean handleVariables, String... eventHandlers) {
-        java.util.List<int[]> list = new ArrayList();
+        List<int[]> list = new ArrayList();
         if (handleInitComponents) {
             SimpleSection initComponentsSection = formEditor.getInitComponentSection();
             int[] span = formEditor.getFormJavaSource().getMethodSpan("initComponents"); // NOI18N
