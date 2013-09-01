@@ -41,9 +41,11 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -70,7 +72,11 @@ public class DeclTypeImpl extends TypeImpl {
                && AstUtil.findChildOfType(node, CPPTokenTypes.CSM_EXPRESSION) != null;
     }    
     
-    private final CsmExpression typeExpression;       
+    
+    private final CsmExpression typeExpression;
+    
+    private transient List<CsmInstantiation> instantiations;
+    
 
     DeclTypeImpl(AST ast, CsmFile file, CsmScope scope, int pointerDepth, int reference, int arrayDepth, int constQualifiers, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, constQualifiers, startOffset, endOffset);
@@ -80,20 +86,27 @@ public class DeclTypeImpl extends TypeImpl {
 
     public CsmExpression getTypeExpression() {
         return typeExpression;
-    }
+    }   
 
     @Override
     protected CsmClassifier _getClassifier() {
-        CsmClassifier classifier = super._getClassifier();
+        CsmClassifier classifier = null;
+        
+        if (canUseCache()) {
+            classifier = super._getClassifier();
+        }
+        
         if (classifier == null) {
             synchronized (this) {
-                if (!isClassifierInitialized()) {
-                    CsmType type = CsmTypeResolver.resolveType(typeExpression);
+                if (!isClassifierInitialized() || !canUseCache()) {
+                    CsmType type = CsmTypeResolver.resolveType(typeExpression, instantiations);
                     classifier = type != null ? type.getClassifier() : null;
                     if (classifier == null) {
                         classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
                     }
-                    initClassifier(classifier);
+                    if (canUseCache()) {
+                        initClassifier(classifier);
+                    }
                 } else {
                     classifier = super._getClassifier();
                     assert (classifier != null);
@@ -101,6 +114,23 @@ public class DeclTypeImpl extends TypeImpl {
             }
         }
         return classifier;
+    }
+    
+    @Override
+    public CsmClassifier getClassifier(List<CsmInstantiation> instantiations, boolean specialize) {    
+        CsmClassifier classifier;
+        try {
+            this.instantiations = instantiations;
+            classifier = super.getClassifier(instantiations, specialize);
+        } finally {
+            this.instantiations = null;
+        }
+        return classifier;
+    }    
+    
+    private boolean canUseCache() {
+        // We are allowed to use cache only if context is null
+        return instantiations == null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -114,5 +144,6 @@ public class DeclTypeImpl extends TypeImpl {
     public DeclTypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.typeExpression = (ExpressionBase) PersistentUtils.readExpression(input);
+        this.instantiations = null;
     }    
 }
