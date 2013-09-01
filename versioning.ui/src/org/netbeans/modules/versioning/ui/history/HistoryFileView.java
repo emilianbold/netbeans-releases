@@ -75,8 +75,8 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -99,11 +99,14 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     
     private Date currentDateFrom; 
     private LoadNextAction loadNextAction;
+    private boolean visible;
+    private VCSHistoryProvider pendingProviderToRefresh;
     
     public HistoryFileView(VersioningSystem versioningSystem, VersioningSystem lh, HistoryComponent tc) {                       
         this.tc = tc;
         this.versioningSystem = versioningSystem;
         this.lh = lh;
+        this.visible = tc.isShowing();
         
         tablePanel = new FileTablePanel();
         loadNextAction = new LoadNextAction();
@@ -151,19 +154,40 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         unregisterHistoryListener(lh, this);
     }    
     
-    private synchronized void refreshTablePanel(VCSHistoryProvider providerToRefresh) {    
-        if(refreshTask != null) {
-            refreshTask.cancel();
-            if(vcsTask != null) {
-                vcsTask.cancel();
-                vcsTask = null;
+    private synchronized void refreshTablePanel(final VCSHistoryProvider providerToRefresh) {    
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                Task t = refreshTask;
+                if(t != null) {
+                    t.cancel();
+                    if(vcsTask != null) {
+                        vcsTask.cancel();
+                        vcsTask = null;
+                    }
+                }
+                refreshTask = t = rp.create(new RefreshTable(mergeProvidersToRefresh(providerToRefresh, t)));
+                if (visible) {
+                    t.schedule(100);
+                }
             }
-        }
-        refreshTask = rp.create(new RefreshTable(providerToRefresh));                    
-        refreshTask.schedule(100);
+
+            private VCSHistoryProvider mergeProvidersToRefresh (VCSHistoryProvider providerToRefresh, Task t) {
+                if (t != null) {
+                    // there was an unfinished refresh task
+                    // we should definitely refresh also its entries
+                    if (providerToRefresh != pendingProviderToRefresh) {
+                        // need to refresh all
+                        providerToRefresh = null;
+                    }
+                }
+                return providerToRefresh;
+            }
+        });
     }
 
     void requestActive() {
+        visible = true;
         if(getRootNode() == null) {
             // invoked for the first time -> refresh
             History.getInstance().getRequestProcessor().post(new Runnable() {
@@ -175,7 +199,15 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             });
         } else {
             tablePanel.requestActivate();
+            Task t = refreshTask;
+            if (t != null) {
+                t.schedule(100);
+            }
         }
+    }
+    
+    void hidden () {
+        visible = false;
     }
 
     FileObject[] getFiles() {
@@ -496,6 +528,8 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
 
         RefreshTable(VCSHistoryProvider providerToRefresh) {
             this.providerToRefresh = providerToRefresh;
+            // mark unfinished providers
+            pendingProviderToRefresh = providerToRefresh;
         }
         
         @Override
@@ -529,6 +563,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 logFiles("Refreshing VCS entries for: ", fos); // NOI18N
                 loadVCSEntries(proxies, false);
             }
+            refreshTask = null;
             tablePanel.revalidate();
             tablePanel.repaint();
             
