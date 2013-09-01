@@ -11,6 +11,14 @@
 <!-- infolevel="all" infotype="General" --><a id="sthref545" name="sthref545"></a>
 <h1>Add Forward/Include Action Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>Use to register an action forward or an action include in the <code>struts-config.xml</code> file. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1189">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p>A Struts action responds to a request. Writing an action means subclassing one of the Action classes and then overriding the class's execute method. Use the New Struts Action wizard for this purpose. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1188">
@@ -52,7 +60,6 @@
 <br />
 <!-- -->
 <p><b>Note:</b> When you use the <b>Add Forward/Include Action</b> dialog box, the forward or include is an attribute, rather than an element. The attribute makes the mapping functionally equivalent to the element, however, the tag is shorter.</p>
-<p>You use the <b>Add Forward/Include Action</b> dialog box to register an action forward or an action include in the <code>struts-config.xml</code> file. You open the <b>Add Forward/Include Action</b> dialog box by right-clicking in a <code>struts-config.xml</code> file and choosing <b>Struts</b> &gt; <b>Add Forward/Include Action</b>.</p>
 <p>In the <b>Add Forward/Include Action</b> dialog box, you set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -77,11 +84,13 @@
 <td align="left" id="r3c1-t18" headers="r1c1-t18">
 <p>Action Type</p>
 </td>
-<td align="left" headers="r3c1-t18 r1c2-t18"></td>
+<td align="left" headers="r3c1-t18 r1c2-t18">
+<p>Sets the type of action.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t18" headers="r1c1-t18">
-<p>Forward Action</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Forward Action</p>
 </td>
 <td align="left" headers="r4c1-t18 r1c2-t18">
 <p>Specifies a bridge from the JSP page to another JSP page or an action.</p>
@@ -89,7 +98,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t18" headers="r1c1-t18">
-<p>Include Action</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Include Action</p>
 </td>
 <td align="left" headers="r5c1-t18 r1c2-t18">
 <p>Specifies the same as a forwardaction, except that the JSP page or action is going to be included by another JSP page or action.</p>
@@ -99,11 +108,13 @@
 <td align="left" id="r6c1-t18" headers="r1c1-t18">
 <p>Call</p>
 </td>
-<td align="left" headers="r6c1-t18 r1c2-t18"></td>
+<td align="left" headers="r6c1-t18 r1c2-t18">
+<p>Sets the call made.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t18" headers="r1c1-t18">
-<p>Resource File</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Resource File</p>
 </td>
 <td align="left" headers="r7c1-t18 r1c2-t18">
 <p>Specifies the path to the JSP page that handles the action.</p>
@@ -111,7 +122,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t18" headers="r1c1-t18">
-<p>Action</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Action</p>
 </td>
 <td align="left" headers="r8c1-t18 r1c2-t18">
 <p>Specifies the action that handles the forwardaction or includeaction.</p>
@@ -123,30 +134,22 @@
 <!-- -->
 <p><b>Note:</b> If you want to change a registered forwardaction or includeaction, you can do so by manually editing the XML tags in the <code>struts-config.xml</code> file.</p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1189">
-<param name="text" value="<html><u>How to Create a New Project with Struts Framework Support</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1188">
+<param name="text" value="<html><u>&quot;Working with the Struts Framework&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1191">
-<param name="text" value="<html><u>How to Add Struts Framework Support to an Existing Application</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1140">
-<param name="text" value="<html><u>About Using Web Application Frameworks</u></html>">
+<param name="text" value="<html><u>&quot;About Using Web Application Frameworks&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</p>
 
 <!-- -->
 <!-- Start Footer -->
