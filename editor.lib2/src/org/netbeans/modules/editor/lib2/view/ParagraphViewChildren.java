@@ -449,7 +449,13 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                 // Extend till end of screen (docView's width)
                 Rectangle2D.Double childRect = ViewUtils.shape2Bounds(childAlloc);
                 DocumentView docView = pView.getDocumentView();
-                childRect.width = docView.op.getVisibleRect().getMaxX() - childRect.getX();
+                // Note that op.getVisibleRect() may be obsolete - it does not incorporate
+                // possible just performed horizontal scroll while clipBounds already does.
+                double maxX = Math.max(
+                        Math.max(docView.op.getVisibleRect().getMaxX(), clipBounds.getMaxX()),
+                        childRect.getMaxX()
+                );
+                childRect.width = (maxX - childRect.x);
                 childAlloc = childRect;
             }
             view.paint(g, childAlloc, clipBounds);
