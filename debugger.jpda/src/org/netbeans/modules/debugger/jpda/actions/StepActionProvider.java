@@ -372,14 +372,14 @@ implements Executor {
         lock.lock();
         try {
             st.setInStep(false, null);
-            removeStepRequests (tr);
+            boolean suspended = false;
             try {
-                boolean suspended = ThreadReferenceWrapper.isSuspended0(tr);
-                if (!suspended) {
-                    // The thread was already resumed in the mean time by someone else.
-                    return false;
-                }
+                suspended = ThreadReferenceWrapper.isSuspended0(tr);
             } catch (IllegalThreadStateExceptionWrapper itsex) {
+            }
+            if (!suspended) {
+                // The thread was already resumed in the mean time by someone else.
+                removeStepRequests (tr);
                 return false;
             }
             /*if (stepWatch != null) {
@@ -388,6 +388,7 @@ implements Executor {
             }*/
             String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(LocatableWrapper.location(event)));
             setLastOperation(tr);
+            removeStepRequests (tr);
             //S ystem.out.println("/nStepAction.exec");
 
             int suspendPolicy = getDebuggerImpl().getSuspend();
