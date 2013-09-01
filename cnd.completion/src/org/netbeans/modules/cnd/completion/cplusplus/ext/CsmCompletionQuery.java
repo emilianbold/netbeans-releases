@@ -105,6 +105,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.deep.CsmRangeForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
@@ -145,7 +146,7 @@ abstract public class CsmCompletionQuery {
     private static final String NO_SUGGESTIONS = NbBundle.getMessage(CsmCompletionQuery.class, "completion-no-suggestions");
     private static final String PROJECT_BEEING_PARSED = NbBundle.getMessage(CsmCompletionQuery.class, "completion-project-beeing-parsed");
     private static final boolean TRACE_COMPLETION = Boolean.getBoolean("cnd.completion.trace");
-    private static final boolean TRACE_MULTIPLE_VISIBE_OBJECTS = Boolean.getBoolean("cnd.completion.trace.multiple.visible");
+    private static final boolean TRACE_MULTIPLE_VISIBE_OBJECTS = Boolean.getBoolean("cnd.trace.multiple.visible");
     private static CsmItemFactory itemFactory;
 
     private static final int MAX_DEPTH = 15;
@@ -234,6 +235,7 @@ abstract public class CsmCompletionQuery {
     public CsmType queryType(CsmExpression expression) {
         if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
             try {
+                CsmCacheManager.enter();
                 baseDocument = (BaseDocument) CsmUtilities.getDocument(expression.getContainingFile());                
                 if (baseDocument == null) {
                     CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(expression.getContainingFile());
@@ -279,6 +281,7 @@ abstract public class CsmCompletionQuery {
                 ex.printStackTrace(System.err);
             } finally {
                 exitThreadLocalAntiloop(AntiloopClient.query_type, expression);
+                CsmCacheManager.leave();
             }
         }
         return null;
@@ -365,8 +368,18 @@ abstract public class CsmCompletionQuery {
             boolean openingSource, boolean sort, boolean instantiateTypes) {
         return query(component, doc, offset, openingSource, sort, instantiateTypes, false);
     }
-    
+
     public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
+            boolean openingSource, boolean sort, boolean instantiateTypes, boolean tooltip) {
+        try {
+            CsmCacheManager.enter();
+            return queryImpl(component, doc, offset, openingSource, sort, instantiateTypes, tooltip);
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private CsmCompletionResult queryImpl(JTextComponent component, final BaseDocument doc, final int offset,
             boolean openingSource, boolean sort, boolean instantiateTypes, boolean tooltip) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
