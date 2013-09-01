@@ -107,7 +107,7 @@ public class QPushAllPatchesAction extends ContextAction {
                     resolver.resolveFailure();
                     logger.output(output);
                     HgLogMessage parent = HgCommand.getParents(root, null, null).get(0);
-                    Mercurial.getInstance().refreshOpenedFiles(root);
+                    Mercurial.getInstance().historyChanged(root);
                     logger.output(""); // NOI18N
                     HgUtils.logHgLog(parent, logger);
                     logger.outputInRed(NbBundle.getMessage(QPushAllPatchesAction.class, "MSG_PUSH_DONE")); // NOI18N

@@ -395,13 +395,6 @@ public class Mercurial {
     public void refreshAnnotations (Set<File> files) {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, files);
     }
-
-    public void refreshOpenedFiles (File repository) {
-        Set<File> openFiles = HgUtils.getOpenedFiles(repository);
-        if (!openFiles.isEmpty()) {
-            support.firePropertyChange(PROP_HEAD_CHANGED, null, openFiles);
-        }
-    }
     
     public void changesetChanged(File repository) {
         support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
@@ -612,5 +605,15 @@ public class Mercurial {
             historyProvider = new HgHistoryProvider();
         }
         return historyProvider;
+    }
+
+    public void historyChanged (File repository) {
+        Set<File> openFiles = HgUtils.getOpenedFiles(repository);
+        if (!openFiles.isEmpty()) {
+            support.firePropertyChange(PROP_HEAD_CHANGED, null, openFiles);
+            if (historyProvider != null) {
+                historyProvider.fireHistoryChange(openFiles.toArray(new File[openFiles.size()]));
+            }
+        }
     }
 }

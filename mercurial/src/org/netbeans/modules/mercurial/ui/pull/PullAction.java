@@ -599,7 +599,7 @@ public class PullAction extends ContextAction {
                 if (!branchHeads.isEmpty()) {
                     MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
                 }
-                Mercurial.getInstance().refreshOpenedFiles(root);
+                Mercurial.getInstance().historyChanged(root);
                 HgUtils.notifyUpdatedFiles(root, list);
                 HgUtils.forceStatusRefresh(root);
             }

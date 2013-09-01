@@ -693,19 +693,21 @@ public final class GitUtils {
     }
 
     /**
-     * Forces refresh of diff sidebars for open files belonging to the given repository
-     * @param repository 
+     * Forces refresh of diff sidebars and history tabs for open files belonging to the given repositories
+     * @param repositories
      */
-    public static void headChanged (File repository) {
+    public static void headChanged (File... repositories) {
         Set<File> openFiles = Utils.getOpenFiles();
+        Set<File> repositorySet = new HashSet<File>(Arrays.asList(repositories));
         for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
             File file = it.next();
-            if (!repository.equals(Git.getInstance().getRepositoryRoot(file))) {
+            if (!repositorySet.contains(Git.getInstance().getRepositoryRoot(file))) {
                 it.remove();
             }
         }
         if (!openFiles.isEmpty()) {
             Git.getInstance().headChanged(openFiles);
+            Git.getInstance().getHistoryProvider().fireHistoryChange(openFiles.toArray(new File[openFiles.size()]));
         }
     }
 

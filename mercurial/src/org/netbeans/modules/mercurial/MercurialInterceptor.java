@@ -756,7 +756,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
                     // has a newer (higher) ts or the file is deleted
                     if (e.getValue() > other.interestingTimestamps.get(e.getKey())
-                            || e.getValue() == -1 && other.interestingTimestamps.get(e.getKey()) != e.getValue()) {
+                            || e.getValue() == 0 && other.interestingTimestamps.get(e.getKey()) != e.getValue()) {
                         newer = true;
                         break;
                     }
@@ -780,7 +780,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                     File f = new File(hgFolder, e.getKey());
                     long ts = f.lastModified();
                     // file is now either modified (higher ts) or deleted
-                    if (e.getValue() < ts || e.getValue() > ts && ts == -1) {
+                    if (e.getValue() < ts || e.getValue() > ts && ts == 0) {
                         upToDate = false;
                         break;
                     }
@@ -810,6 +810,22 @@ public class MercurialInterceptor extends VCSInterceptor {
                 Set<File> openFiles = Utils.getOpenFiles();
                 for (File file : openFiles) {
                     hg.notifyFileChanged(file);
+                }
+            }
+        });
+        private final Set<File> historyChandegRepositories = new HashSet<File>(5);
+        private RequestProcessor.Task refreshHistoryTabTask = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                List<File> toRefresh;
+                synchronized (historyChandegRepositories) {
+                    toRefresh = new ArrayList<File>(historyChandegRepositories);
+                    historyChandegRepositories.clear();
+                }
+                if (!toRefresh.isEmpty()) {
+                    for (File repo : toRefresh) {
+                        Mercurial.getInstance().historyChanged(repo);
+                    }
                 }
             }
         });
@@ -890,6 +906,8 @@ public class MercurialInterceptor extends VCSInterceptor {
                         reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                         refreshOpenFilesTask.schedule(3000);
                         WorkingCopyInfo.refreshAsync(repository);
+                        // make history tab up to date
+                        refreshHistoryTab(repository);
                     }
                 }
             }
@@ -997,6 +1015,16 @@ public class MercurialInterceptor extends VCSInterceptor {
         private boolean isEnabled (File hgFolder) {
             synchronized (disabledEvents) {
                 return !disabledEvents.contains(hgFolder);
+            }
+        }
+
+        private void refreshHistoryTab (File repository) {
+            boolean refresh;
+            synchronized (historyChandegRepositories) {
+                refresh = historyChandegRepositories.add(repository);
+            }
+            if (refresh) {
+                refreshHistoryTabTask.schedule(3000);
             }
         }
     }
