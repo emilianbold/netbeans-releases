@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.RefactoringModule;
@@ -109,17 +110,22 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         }
         //put initialization code here
         initialized = true;
-        CsmObject resolvedObject = CsmRefactoringUtils.getReferencedElement(this.origObject);
-        final String objKindStr = getObjectKind(resolvedObject);   
-        final String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", objKindStr, oldName); // NOI18N
-        
-        final RenamePanel panel = this;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                panel.setName(title);
-            }            
-        });
+        try {
+            CsmCacheManager.enter();
+            CsmObject resolvedObject = CsmRefactoringUtils.getReferencedElement(this.origObject);
+            final String objKindStr = getObjectKind(resolvedObject);   
+            final String title = NbBundle.getMessage(RenamePanel.class, "LBL_RenamePanelTitle", objKindStr, oldName); // NOI18N
+
+            final RenamePanel panel = this;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    panel.setName(title);
+                }            
+            });
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
     
     private static String getObjectKind(CsmObject obj) {
