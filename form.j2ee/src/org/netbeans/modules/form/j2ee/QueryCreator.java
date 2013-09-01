@@ -132,7 +132,7 @@ class QueryCreator implements CreationDescriptor.Creator {
      * @return creation code that reflects values of the given properties.
      */
     @Override
-    public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
+    public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
         assert (props.length == 4);
         
         String entityManager = null;
