@@ -2653,7 +2653,8 @@ abstract public class CsmCompletionQuery {
 
             if ((result == null || result.getItems().isEmpty()) && lastType != null) {
                 if (last) {
-                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)) {
+                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)
+                            || CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
                         if (instantiations != null && CsmKindUtilities.isTemplateParameter(lastType.getClassifier())) {
                             CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
                             CsmType resolvedType = ip.instantiate((CsmTemplateParameter) lastType.getClassifier(), instantiations.get(0));
