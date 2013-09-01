@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.spi.model.services;
 
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
@@ -51,11 +53,12 @@ import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 public interface CsmTypeResolverImplementation {
     
     /**
-     * Resolves type of expression
+     * Resolves type of expression in a given context 
      * 
      * @param expression - expression to resolve
+     * @param instantiations - context
      * @return type of expression
      */
-    CsmType resolveType(CsmExpression expression);
+    CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations);
     
 }

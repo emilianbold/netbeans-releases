@@ -158,6 +158,7 @@ public class StripAction extends ContextAction {
                                     ConflictResolvedAction.resolved(ctx);
                                 }
                                 HgUtils.forceStatusRefreshProject(ctx);
+                                Mercurial.getInstance().historyChanged(root);
                                 Mercurial.getInstance().changesetChanged(root);
                             }
                             String savingTo = list.get(list.size()-1);
