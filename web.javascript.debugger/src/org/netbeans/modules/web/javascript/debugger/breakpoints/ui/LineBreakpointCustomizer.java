@@ -177,7 +177,7 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
             uri = URI.create(filePath);
         } catch (Exception ex) {
         }
-        if (uri == null) {
+        if (uri == null || !uri.isAbsolute()) {
             File f = new File(filePath);
             uri = f.toURI();
         }

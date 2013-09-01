@@ -55,8 +55,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
@@ -144,7 +146,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         for (Scope scope : frame.getScopes()) {
             RemoteObject obj = scope.getScopeObject();
             if (scope.isLocalScope()) {
-                vars.addAll(getProperties(obj, ViewScope.LOCAL));
+                vars.addAll(getProperties(obj, ViewScope.LOCAL, null));
             } else {
                 vars.add(getScopeVariable(obj, scope));
             }
@@ -180,10 +182,16 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
 
     private Collection<? extends ScopedRemoteObject> getProperties(ScopedRemoteObject var) {
-        return getProperties(var.getRemoteObject(), ViewScope.DEFAULT);
+        String parentNameID = var.parentNameID;
+        if (parentNameID == null) {
+            parentNameID = var.getObjectName();
+        } else {
+            parentNameID = parentNameID + "/" + var.getObjectName();
+        }
+        return getProperties(var.getRemoteObject(), ViewScope.DEFAULT, parentNameID);
     }
 
-    private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope) {
+    private Collection<? extends ScopedRemoteObject> getProperties(RemoteObject prop, ViewScope scope, String parentNameID) {
         List<ScopedRemoteObject> res = variablesCache.get(prop);
         if (res != null) {
             return res;
@@ -192,7 +200,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
-                res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope));
+                res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope, parentNameID));
             }
         }
         return sortVariables(res);
@@ -204,12 +212,12 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             return false;
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
-            if (var.getType() == RemoteObject.Type.OBJECT) {
+            if (var != null && var.getType() == RemoteObject.Type.OBJECT) {
                 if (var.hasFetchedProperties()) {
                     return var.getProperties().isEmpty();
                 } else {
                     updateNodeOnBackground(node, var);
-                    return true;
+                    return false;
                 }
             }
             return true;
@@ -302,6 +310,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return null;
+                }
                 String value = var.getValueAsString();
                 if (value.isEmpty()) {
                     RemoteObject.Type type = var.getType();
@@ -313,6 +324,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 }
                 return toHTML(value);
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return "";
+                }
                 RemoteObject.Type type = var.getType();
                 if (type == RemoteObject.Type.OBJECT) {
                     String clazz = var.getClassName();
@@ -325,6 +339,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                     return toHTML(type.getName());
                 }
             } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
+                if (var == null) {
+                    return null;
+                }
                 return toHTML(var.getValueAsString());
             }
         }
@@ -430,6 +447,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         private RemoteObject var;
         private ViewScope scope;
         private String objectName;
+        private String parentNameID;
 
         public ScopedRemoteObject(RemoteObject var, String name) {
             this(var, name, ViewScope.DEFAULT);
@@ -463,9 +481,14 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
 
         public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope) {
+            this(var, name, scope, null);
+        }
+        
+        public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope, String parentNameID) {
             this.var = var;
             this.scope = scope;
             this.objectName = name;
+            this.parentNameID = parentNameID;
         }
 
         public ViewScope getScope() {
@@ -482,6 +505,68 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         public String getObjectName() {
             return objectName;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ScopedRemoteObject)) {
+                return false;
+            }
+            ScopedRemoteObject sro = (ScopedRemoteObject) obj;
+            
+            if (LOGGER.isLoggable(Level.FINE)) {
+                String parent1 = (parentNameID != null) ? ", parent = '"+parentNameID+"'" : "";
+                String parent2 = (sro.parentNameID != null) ? ", parent = '"+sro.parentNameID+"'" : "";
+                LOGGER.fine("Equals: "+scope+", "+objectName+", "+var+parent1+"\n"+
+                              "        "+sro.scope+", "+sro.objectName+", "+sro.var+parent2+"\n"+
+                              "  => "+(scope == sro.scope &&
+                                       Objects.equals(parentNameID, sro.parentNameID) &&
+                                       Objects.equals(objectName, sro.objectName) &&
+                                       areSameVars(var, sro.var)));
+            }
+            
+            return scope == sro.scope &&
+                   Objects.equals(parentNameID, sro.parentNameID) &&
+                   Objects.equals(objectName, sro.objectName) &&
+                   areSameVars(var, sro.var);
+        }
+
+        @Override
+        public int hashCode() {
+            if (var == null) {
+                return Objects.hash(scope, objectName, parentNameID);
+            } else {
+                return Objects.hash(scope, objectName, var.getType(), var.getClassName(), parentNameID);
+            }
+        }
+
+        private boolean areSameVars(RemoteObject var1, RemoteObject var2) {
+            if (var1 == null && var2 == null) {
+                return true;
+            }
+            if (var1 == null || var2 == null) {
+                return false;
+            }
+            // ObjectId differs on each step. :-(
+            // String objectID1 = var1.getObjectID();
+            // String objectID2 = var2.getObjectID();
+            // return Objects.equals(objectID1, objectID2);
+            RemoteObject.Type type1 = var1.getType();
+            RemoteObject.Type type2 = var2.getType();
+            String className1 = var1.getClassName();
+            String className2 = var2.getClassName();
+            if (type1 == type2 && Objects.equals(className1, className2)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public String toString() {
+            String parent = (parentNameID != null) ? ", parent = '"+parentNameID+"'" : "";  // NOI18N
+            return "ScopedRemoteObject["+scope+", "+objectName+", "+var+parent+"]";         // NOI18N
+        }
+        
     }
 
     public static enum ViewScope {

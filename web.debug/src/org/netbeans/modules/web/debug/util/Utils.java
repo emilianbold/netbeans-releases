@@ -44,7 +44,13 @@
 
 package org.netbeans.modules.web.debug.util;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -72,6 +78,9 @@ public class Utils {
     /** Logger for web.debug module. */
     private static Logger err = Logger.getLogger("org.netbeans.modules.web.debug");   // NOI18N
     private static final boolean LOG = err.isLoggable(Level.FINE);
+    
+    private static final Map<String, Reference<FileObject>> documentBaseByContextPath = new HashMap<String, Reference<FileObject>>();
+    private static final Set<String> relativePathsWithContext = new HashSet<String>();
     
     public static Logger getEM () {
         return err;
@@ -266,9 +275,40 @@ public class Utils {
         }
         WebModule wm = WebModule.getWebModule(wmfo);        
         if (wm != null) {
-            return wm.getContextPath();
+            String conextPath = wm.getContextPath();
+            FileObject documentBase = wm.getDocumentBase();
+            if (documentBase != null) {
+                synchronized (documentBaseByContextPath) {
+                    documentBaseByContextPath.put(conextPath, new WeakReference<FileObject>(documentBase));
+                }
+                String relativePath = FileUtil.getRelativePath(documentBase, wmfo);
+                if (relativePath != null) {
+                    synchronized (relativePathsWithContext) {
+                        relativePathsWithContext.add(relativePath);
+                    }
+                }
+            }
+            return conextPath;
         }
         return null;   
+    }
+    
+    public static boolean hasContext(String relativePath) {
+        synchronized (relativePathsWithContext) {
+            return relativePathsWithContext.contains(relativePath);
+        }
+    }
+    
+    public static FileObject getDocumentBaseForContextPath(String contextPath) {
+        FileObject fo = null;
+        Reference<FileObject> foRef;
+        synchronized (documentBaseByContextPath) {
+            foRef = documentBaseByContextPath.get(contextPath);
+        }
+        if (foRef != null) {
+            fo = foRef.get();
+        }
+        return fo;
     }
         
     public static String getJavaIdentifier(StyledDocument doc, JEditorPane ep, int offset) {        

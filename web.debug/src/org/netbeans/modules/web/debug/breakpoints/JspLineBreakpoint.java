@@ -47,6 +47,7 @@ package org.netbeans.modules.web.debug.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -155,7 +156,18 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb.addJPDABreakpointListener(new JPDABreakpointListener() {
             @Override
             public void breakpointReached(JPDABreakpointEvent event) {
-                DebuggerEngine currentEngine = DebuggerManager.getDebuggerManager().getCurrentEngine();
+                JPDADebugger debugger = event.getDebugger();
+                Session session = null;
+                try {
+                    Method getSessionMethod = debugger.getClass().getMethod("getSession");
+                    session = (Session) getSessionMethod.invoke(debugger);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                if (session == null) {
+                    session = DebuggerManager.getDebuggerManager().getCurrentSession();
+                }
+                DebuggerEngine currentEngine = session.getCurrentEngine();
                 if (currentEngine == null) {
                     return ; // The session has just ended.
                 }
