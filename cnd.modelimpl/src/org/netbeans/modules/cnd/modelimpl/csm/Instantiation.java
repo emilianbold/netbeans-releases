@@ -828,7 +828,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             return "INSTANTIATION OF TYPEALIAS: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }    
-
+      
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
         private CsmClass csmClass = null;
 
@@ -1141,27 +1141,35 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         return new Type(type, instantiation);       
     }
 
-    private static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
+    public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
-            CsmSpecializationParameter instantiatedType = mapping.get(((CsmTemplateParameterType) type).getParameter());
-            int iteration = MAX_INHERITANCE_DEPTH;
-            while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
-                    CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
-                CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
-                if (nextInstantiatedType != null) {
-                    instantiatedType = nextInstantiatedType;
-                } else {
-                    break;
-                }
-                iteration--;
-            }
-            if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
-                return ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+            CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
+            if (resolvedType != null) {
+                return resolvedType;
             }
         }
         return type;
     }
+    
+    public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
+        int iteration = MAX_INHERITANCE_DEPTH;
+        while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
+                CsmKindUtilities.isTemplateParameterType(((CsmTypeBasedSpecializationParameter) instantiatedType).getType()) && iteration != 0) {
+            CsmSpecializationParameter nextInstantiatedType = mapping.get(((CsmTemplateParameterType) ((CsmTypeBasedSpecializationParameter) instantiatedType).getType()).getParameter());
+            if (nextInstantiatedType != null) {
+                instantiatedType = nextInstantiatedType;
+            } else {
+                break;
+            }
+            iteration--;
+        }
+        if (instantiatedType != null && instantiatedType instanceof CsmTypeBasedSpecializationParameter) {
+            return ((CsmTypeBasedSpecializationParameter) instantiatedType).getType();
+        }
+        return null;  
+    }    
    
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation) {
