@@ -88,11 +88,8 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     private final URL root;
-    private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
-            new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
-    private ClasspathInfo owner;
-    private ClassPath userSources;
-    private ClassPath aptSources;
+    private final URL aptRoot;
+    private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated = new HashMap<>();
     private File cachedFile;
     private StringBuilder cachedValue;
     private Set<String> cachedResources;
@@ -102,6 +99,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     
     private ProcessorGenerated(@NullAllowed final URL root) {
         this.root = root;
+        this.aptRoot = root == null ? null : AptCacheForSourceQuery.getAptFolder(root);
     }
     
     public Set<javax.tools.FileObject> getGeneratedSources(final URL forSource) {
@@ -126,27 +124,6 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         return res;
     }
     
-    public void bind(
-         @NonNull final ClasspathInfo  owner,
-         @NonNull final ClassPath userSources,
-         @NullAllowed final ClassPath aptSources) {
-        Parameters.notNull("owner", owner);             //NOI18N
-        Parameters.notNull("userSources", userSources); //NOI18N
-        if (!canWrite()) {
-            return;
-        }
-        if (this.owner != null && !this.owner.equals(owner)) {
-            throw new IllegalStateException(MessageFormat.format(
-                "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
-                this.owner,
-                System.identityHashCode(this.owner),
-                owner,
-                System.identityHashCode(owner)));
-        }
-        this.userSources = userSources;
-        this.aptSources = aptSources;
-        this.owner = owner;
-    }
     
     public void register(
         @NonNull final URL forSource,
@@ -192,7 +169,6 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         }
         try {
             if (!generated.isEmpty()) {
-                assert userSources != null;
                 for (Map.Entry<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> entry : generated.entrySet()) {
                     final URL source = entry.getKey();
                     final Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>> gen = entry.getValue();
@@ -238,9 +214,9 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         @NonNull final Set<javax.tools.FileObject> genResources) {
         try {
             boolean apt = false;
-            URL sourceRootURL = getOwnerRoot(forSource, userSources);
+            URL sourceRootURL = getOwnerRoot(forSource, root);
             if (sourceRootURL == null) {
-                sourceRootURL = aptSources != null ? getOwnerRoot(forSource, aptSources) : null;
+                sourceRootURL = aptRoot != null ? getOwnerRoot(forSource, aptRoot) : null;
                 if (sourceRootURL == null) {
                     return;
                 }
@@ -353,16 +329,15 @@ public final class ProcessorGenerated extends TransactionContext.Service {
             cacheChanged = true;
     }
 
-    private static URL getOwnerRoot (@NonNull final URL source, @NonNull ClassPath cp) throws URISyntaxException {
+    @CheckForNull
+    private static URL getOwnerRoot (@NonNull final URL source, @NonNull final URL root) throws URISyntaxException {
         assert source != null;
-        assert cp != null;
-        for (ClassPath.Entry entry : cp.entries()) {
-            final URL rootURL = entry.getURL();
-            if (FileObjects.isParentOf(rootURL, source)) {
-                return rootURL;
-            }
+        assert root != null;
+        if (FileObjects.isParentOf(root, source)) {
+            return root;
+        } else {
+            return null;
         }
-        return null;
     }
 
     @NonNull

@@ -191,8 +191,7 @@ public final class ClasspathInfo {
             pgTx = ProcessorGenerated.nullWrite();
         }
         assert fmTx != null : "No file manager transaction.";   //NOI18N
-        assert pgTx != null : "No processor generated transaction.";   //NOI18N
-        pgTx.bind(this, this.cachedSrcClassPath, this.cachedAptSrcClassPath);
+        assert pgTx != null : "No processor generated transaction.";   //NOI18N        
     }
 
     @Override
