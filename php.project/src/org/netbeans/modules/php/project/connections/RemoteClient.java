@@ -357,18 +357,7 @@ public final class RemoteClient implements Cancellable {
         try {
             getOperationMonitor().operationStart(Operation.UPLOAD, filesToUpload);
             for (TransferFile file : filesToUpload) {
-                if (cancelled) {
-                    LOGGER.fine("Upload cancelled");
-                    break;
-                }
-
-                getOperationMonitor().operationProcess(Operation.UPLOAD, file);
-                try {
-                    uploadFile(transferInfo, file);
-                } catch (IOException | RemoteException exc) {
-                    LOGGER.log(Level.INFO, null, exc);
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                }
+                uploadFile(transferInfo, file);
             }
         } finally {
             getOperationMonitor().operationFinish(Operation.UPLOAD, filesToUpload);
@@ -380,7 +369,21 @@ public final class RemoteClient implements Cancellable {
         return transferInfo;
     }
 
-    private void uploadFile(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
+    private void uploadFile(TransferInfo transferInfo, TransferFile file) throws RemoteException {
+        if (cancelled) {
+            LOGGER.fine("Upload cancelled");
+            return;
+        }
+        getOperationMonitor().operationProcess(Operation.UPLOAD, file);
+        try {
+            uploadFileInternal(transferInfo, file);
+        } catch (IOException | RemoteException exc) {
+            LOGGER.log(Level.INFO, null, exc);
+            transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
+        }
+    }
+
+    private void uploadFileInternal(TransferInfo transferInfo, TransferFile file) throws IOException, RemoteException {
         // xxx upload cannot check symlinks because project files of /path/<symlink>/my/project would not be uploaded at all!
 //        if (file.isLink()) {
 //            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_Symlink", file.getRemotePath()));
@@ -396,7 +399,11 @@ public final class RemoteClient implements Cancellable {
             transferSucceeded(transferInfo, file);
             if (!file.hasLocalChildrenFetched()) {
                 // upload all children as well
-                for (TransferFile child : file.getLocalChildren()) {
+                List<TransferFile> localChildren = file.getLocalChildren();
+                // update monitor
+                getOperationMonitor().addUnits(localChildren);
+                // upload files
+                for (TransferFile child : localChildren) {
                     uploadFile(transferInfo, child);
                 }
             }
@@ -1439,6 +1446,11 @@ public final class RemoteClient implements Cancellable {
          * @param forFiles collection of files for which the operation finished
          */
         void operationFinish(Operation operation, Collection<TransferFile> forFiles);
+        /**
+         * Called when new files are added to this monitor (lazily listed files).
+         * @param files new files to be added
+         */
+        void addUnits(Collection<TransferFile> files);
     }
 
     private static final class DevNullOperationMonitor implements OperationMonitor {
@@ -1450,6 +1462,9 @@ public final class RemoteClient implements Cancellable {
         }
         @Override
         public void operationFinish(Operation operation, Collection<TransferFile> forFiles) {
+        }
+        @Override
+        public void addUnits(Collection<TransferFile> files) {
         }
     }
 
