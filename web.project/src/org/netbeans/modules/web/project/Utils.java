@@ -79,7 +79,8 @@ import org.openide.util.Parameters;
 public class Utils {
 
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.web.project"); // NOI18N
-    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.project"); // NOI18N
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.web.project"; // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME); // NOI18N
 
     // COPIED FROM TOMCAT
     private static final String JAVA_KEYWORDS[] = {
