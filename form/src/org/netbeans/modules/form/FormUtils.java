@@ -2152,4 +2152,41 @@ public class FormUtils
             return is.skip(n);
         }
     }
+
+    public static Object decodePrimitiveValue(String encoded, Class type) {
+        if (String.class.isAssignableFrom(type)) {
+            return encoded;
+        }
+        if ("null".equals(encoded)) { // NOI18N
+            return null;
+        }
+
+        if (Integer.class.isAssignableFrom(type) || Integer.TYPE.equals(type)) {
+            return Integer.valueOf(encoded);
+        }
+        if (Short.class.isAssignableFrom(type) || Short.TYPE.equals(type)) {
+            return Short.valueOf(encoded);
+        }
+        if (Byte.class.isAssignableFrom(type) || Byte.TYPE.equals(type)) {
+            return Byte.valueOf(encoded);
+        }
+        if (Long.class.isAssignableFrom(type) || Long.TYPE.equals(type)) {
+            return Long.valueOf(encoded);
+        }
+        if (Float.class.isAssignableFrom(type) || Float.TYPE.equals(type)) {
+            return Float.valueOf(encoded);
+        }
+        if (Double.class.isAssignableFrom(type) || Double.TYPE.equals(type)) {
+            return Double.valueOf(encoded);
+        }
+        if (Boolean.class.isAssignableFrom(type) || Boolean.TYPE.equals(type)) {
+            return Boolean.valueOf(encoded);
+        }
+        if (Character.class.isAssignableFrom(type) || Character.TYPE.equals(type)) {
+            return Character.valueOf(encoded.charAt(0));
+        }
+
+        throw new IllegalArgumentException();
+    }
+
 }

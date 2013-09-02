@@ -132,7 +132,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      * @return creation code that reflects values of the given properties.
      */
     @Override
-    public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
+    public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
         assert (props.length == 1) && (props[0].getName().equals(propNames[0]));
         Object unitName = props[0].getJavaInitializationString();
         
