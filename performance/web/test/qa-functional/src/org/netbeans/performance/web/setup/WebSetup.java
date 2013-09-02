@@ -41,16 +41,12 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.web.setup;
 
-import java.io.IOException;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
-import org.openide.util.Exceptions;
 
 public class WebSetup extends PerformanceTestCase2 {
-    
 
     public WebSetup(String testName) {
         super(testName);
@@ -64,28 +60,15 @@ public class WebSetup extends PerformanceTestCase2 {
         CommonUtilities.closeMemoryToolbar();
     }
 
-    public void testAddTomcatServer() {
-        
-        CommonUtilities.addTomcatServer();
+    public void testAddGlassFishServer() {
+        CommonUtilities.addApplicationServer();
     }
 
-    public void testOpenWebProject() {
-
-        try {
-            this.openDataProjects("TestWebProject");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        //CommonUtilities.buildProject("TestWebProject");
+    public void testOpenWebProject() throws Exception {
+        this.openDataProjects("TestWebProject");
     }
-  
-    public void testOpenWebFoldersProject() {
 
-        try {
-            this.openDataProjects("PerformanceTestFolderWebApp");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-       // CommonUtilities.buildProject("PerformanceTestFolderWebApp");
+    public void testOpenWebFoldersProject() throws Exception {
+        this.openDataProjects("PerformanceTestFolderWebApp");
     }
-}        
+}
