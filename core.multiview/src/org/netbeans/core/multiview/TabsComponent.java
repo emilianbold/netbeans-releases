@@ -250,7 +250,6 @@ class TabsComponent extends JPanel {
         MultiViewDescription def = model.getActiveDescription();
         GridBagLayout grid = new GridBagLayout();
         barSplit.setLayout(grid);
-	JToggleButton activeSplit = null;
         int prefHeight = -1;
         int prefWidth = -1;
         for (int i = 0; i < descs.length; i++) {
@@ -262,9 +261,6 @@ class TabsComponent extends JPanel {
 		prefHeight = Math.max(button.getPreferredSize().height, prefHeight);
 		barSplit.add(button, cons);
 		prefWidth = Math.max(button.getPreferredSize().width, prefWidth);
-		if (descs[i].getDisplayName().startsWith(def.getDisplayName())) {
-		    activeSplit = button;
-		}
 	    }
         }
         Enumeration en = model.getButtonGroupSplit().getElements();
@@ -274,9 +270,6 @@ class TabsComponent extends JPanel {
             but.setPreferredSize(new Dimension(prefWidth + 10, prefHeight));
             but.setMinimumSize(new Dimension(prefWidth + 10, prefHeight));
 
-        }
-        if (activeSplit != null) {
-            activeSplit.setSelected(true);
         }
 
         toolbarPanelSplit = getEmptyInnerToolBar();
@@ -327,16 +320,13 @@ class TabsComponent extends JPanel {
 	    MultiViewDescription bottomDescription = topBottomDescriptions[1];
 	    isTopLeft = false;
 	    model.setActiveDescription(bottomDescription);
-	    if (defaultDesc != null && defaultDescClone != null) {// called during deserialization
-		selecteAppropriateButton();
-	    }
+            syncButtonsWithModel();
 
 	    MultiViewDescription topDescription = topBottomDescriptions[0];
 	    isTopLeft = true;
 	    model.setActiveDescription(topDescription);
-	    if (defaultDesc != null && defaultDescClone != null) {// called during deserialization
-		selecteAppropriateButton();
-	    }
+
+            syncButtonsWithModel();
 	} else {
 	    topLeftComponent = (JPanel) splitPane.getTopComponent();
 	    bottomRightComponent = (JPanel) splitPane.getBottomComponent();
@@ -353,15 +343,18 @@ class TabsComponent extends JPanel {
 	bottomRightComponent.setMinimumSize(new Dimension(0, 0));
     }
 
-    private void selecteAppropriateButton() {
+    private void syncButtonsWithModel() {
+        model.setFreezeTabButtons( true );
 	Enumeration en = model.getButtonGroupSplit().getElements();
 	while (en.hasMoreElements()) {
 	    JToggleButton but = (JToggleButton) en.nextElement();
-	    MultiViewDescription buttonsDescription = ((TabsButtonModel) but.getModel()).getButtonsDescription();
-	    if (buttonsDescription == (isTopLeft ? topBottomDescriptions[0] : topBottomDescriptions[1])) {
-		but.setSelected(true);
-	    }
+            TabsButtonModel buttonModel = ( TabsButtonModel ) but.getModel();
+	    MultiViewDescription buttonsDescription = buttonModel.getButtonsDescription();
+            if( buttonsDescription == (isTopLeft ? topBottomDescriptions[0] : topBottomDescriptions[1]) ) {
+                but.setSelected( true );
+            }
 	}
+        model.setFreezeTabButtons( false );
     }
 
     private PropertyChangeListener getSplitterPropertyChangeListener(final int orientation) {
