@@ -273,6 +273,11 @@ class MultiViewModel {
         return "current=" + currentEditor; // NOI18N
     }
 
+    private boolean freezeButtons = false;
+    void setFreezeTabButtons( boolean freeze ) {
+        this.freezeButtons = freeze;
+    }
+
     /**
      * listener for changes in model's selected element.
      */
@@ -299,7 +304,7 @@ class MultiViewModel {
         @Override
         public void setSelected(ButtonModel m, boolean b) {
             super.setSelected(m, b);
-            if (getSelection() instanceof TabsComponent.TabsButtonModel) {
+            if (getSelection() instanceof TabsComponent.TabsButtonModel && !freezeButtons) {
                 TabsComponent.TabsButtonModel mod = (TabsComponent.TabsButtonModel)m;
                 MultiViewDescription desc = mod.getButtonsDescription();
                 setActiveDescription(desc);
