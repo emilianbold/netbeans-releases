@@ -59,6 +59,36 @@ public class NamespacesModuleTest extends CssModuleTestBase {
         checkCC("@name|", arr("@namespace"), Match.EXACT);
     }
     
+    public void testNamespaceKeywordCompletionInContext() throws ParseException  {
+        checkCC("|  .clz {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  .clz {}", arr("@namespace"), Match.CONTAINS);
+
+        checkCC("|  #id {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  #id {}", arr("@namespace"), Match.CONTAINS);
+        
+        checkCC("|  div {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  div {}", arr("@namespace"), Match.CONTAINS);
+
+        checkCC("|  \n.clz {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  \n.clz {}", arr("@namespace"), Match.CONTAINS);
+
+        checkCC("|  \n#id {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  \n#id {}", arr("@namespace"), Match.CONTAINS);
+
+        checkCC("|  \ndiv {}", arr("@namespace"), Match.CONTAINS);
+        checkCC("@|  \ndiv {}", arr("@namespace"), Match.CONTAINS);
+        
+        checkCC("@name|  #id {}", arr("@namespace"), Match.EXACT);
+        checkCC("@name|  \n#id {}", arr("@namespace"), Match.EXACT);
+        
+        checkCC("@name|  .clz {}", arr("@namespace"), Match.EXACT);
+        checkCC("@name|  \n.clz {}", arr("@namespace"), Match.EXACT);
+        
+        checkCC("@name|  div {}", arr("@namespace"), Match.EXACT);
+        checkCC("@name|  \ndiv {}", arr("@namespace"), Match.EXACT);
+        
+    }
+    
     
     public void testNamespacePrefixesCompletion() throws ParseException  {
         String nsdecl = "@namespace foo \"http://foo.org\";\n ";

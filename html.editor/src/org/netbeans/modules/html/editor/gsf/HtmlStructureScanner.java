@@ -220,9 +220,9 @@ public class HtmlStructureScanner implements StructureScanner {
         }
         if (eo > maxLen) {
             eo = maxLen;
-            if (so > eo) {
-                so = eo;
-            }
+        }
+        if (so > eo) {
+            so = eo;
         }
         return new OffsetRange(so, eo);
     }

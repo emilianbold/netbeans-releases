@@ -97,7 +97,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
     private static final String JSLIBS_CACHE_PATH = "html5/jslibs"; // NOI18N
     private static final String CDNJS_ZIP_FILENAME = "cdnjs.zip"; // NOI18N
     private static final String CDNJS_ZIP_TMP_FILENAME = "cdnjs-tmp.zip"; // NOI18N
-    private static final String CDNJS_ZIP_URL = "https://github.com/cdnjs/cdnjs/zipball/master"; // NOI18N
+    private static final String CDNJS_ZIP_URL = "https://github.com/cdnjs/cdnjs/archive/master.zip"; // NOI18N
 
     private static final CDNJSLibrariesProvider INSTANCE = new CDNJSLibrariesProvider();
 

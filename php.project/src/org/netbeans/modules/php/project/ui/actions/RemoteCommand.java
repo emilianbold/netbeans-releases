@@ -414,7 +414,14 @@ public abstract class RemoteCommand extends Command {
             }
         }
 
-        private int getWorkUnits(Set<TransferFile> forFiles) {
+        @Override
+        public void addUnits(Collection<TransferFile> files) {
+            progressHandle.switchToIndeterminate();
+            workUnits += getWorkUnits(files);
+            progressHandle.switchToDeterminate(workUnits);
+        }
+
+        private int getWorkUnits(Collection<TransferFile> forFiles) {
             int size = 0;
             for (TransferFile file : forFiles) {
                 size += file.getSize();
