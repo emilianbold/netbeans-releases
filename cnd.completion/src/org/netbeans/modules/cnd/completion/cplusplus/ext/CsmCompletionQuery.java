@@ -2650,17 +2650,24 @@ abstract public class CsmCompletionQuery {
                     }
                     break;
             }
+            
+            // Handle decltypes
+            if (lastType != null && instantiations != null && lastType.isTemplateBased()) {
+                assert !instantiations.isEmpty() : "Instantiations must not be empty"; //NOI18N
+                CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);  
+                if (CsmKindUtilities.isTemplateParameter(cls)) {
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    CsmType resolvedType = ip.instantiate((CsmTemplateParameter) cls, instantiations.get(0));
+                    if (resolvedType != null) {
+                        lastType = resolvedType;
+                    }
+                }
+            }
 
             if ((result == null || result.getItems().isEmpty()) && lastType != null) {
                 if (last) {
-                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)) {
-                        if (instantiations != null && CsmKindUtilities.isTemplateParameter(lastType.getClassifier())) {
-                            CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
-                            CsmType resolvedType = ip.instantiate((CsmTemplateParameter) lastType.getClassifier(), instantiations.get(0));
-                            if (resolvedType != null) {
-                                lastType = resolvedType;
-                            }
-                        }
+                    if(lastType.isTemplateBased() || CsmFileReferences.isTemplateParameterInvolved(lastType)
+                            || CsmFileReferences.hasTemplateBasedAncestors(lastType)) {
                         Collection<CsmObject> data = new ArrayList<CsmObject>();
                         data.add(new TemplateBasedReferencedObjectImpl(lastType, ""));
                         result = new CsmCompletionResult(component, getBaseDocument(), data, "", item, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N

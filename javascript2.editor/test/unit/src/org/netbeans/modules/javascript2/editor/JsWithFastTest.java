@@ -339,4 +339,19 @@ public class JsWithFastTest extends JsWithBase {
         checkCompletion("testfiles/with/issue234373.js","^play(); //Here", true);
     }
     
+    public void testIssue235227_01() throws Exception {
+        checkOccurrences("testfiles/with/issue235227.js","with (this.mod^al.innerObject) {", true);
+    }
+    
+    public void testIssue235227_02() throws Exception {
+        checkOccurrences("testfiles/with/issue235227.js","with (this.modal.inner^Object) {", true);
+    }
+    
+    public void testIssue235227_03() throws Exception {
+        checkOccurrences("testfiles/with/issue235227.js","sh^ow();", true);
+    }
+    
+    public void testIssue235227_04() throws Exception {
+        checkOccurrences("testfiles/with/issue235227.js","inn^erName = 3;", true);
+    }
 }

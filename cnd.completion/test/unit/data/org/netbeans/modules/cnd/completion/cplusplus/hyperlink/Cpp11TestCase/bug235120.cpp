@@ -71,4 +71,51 @@ namespace bug235120 {
         bar->abc = 11; //Unable to resolve identifier abc.
         return 0;
     } 
+    
+    // === Typedef in decltype ===
+
+    struct SimpleType_235120 {
+        int foo();
+    };
+
+    template <typename T>
+    struct TypesHolder_235120 {
+        typedef T type;
+        typedef decltype(*((type*)0)) declared_type;
+    }; 
+
+    int testTypesHolder_235120() {
+        SimpleType_235120 var;
+        TypesHolder_235120<SimpleType_235120>::declared_type &ref = var;
+        ref.foo();
+    }
+
+    // === Iterators like in range based for statement ===
+
+    struct Item_235120 {
+        int foo();
+    };
+
+    template <typename T>
+    struct Iterator_235120 {
+        T& operator * ();
+        T* operator -> ();
+
+        T& get();
+        void next(); //++
+    };
+
+    template <typename T>
+    struct Collection_235120 {
+        typedef Iterator_235120<T> iterator;
+        iterator begin();
+    };
+
+    template <typename T>
+    auto begin_235120(T param) -> decltype(param.begin());
+
+    void testIterators_235120() {
+        Collection_235120<Item_235120> a;
+        begin_235120<Collection_235120<Item_235120>>(a)->foo();
+    }
 }
