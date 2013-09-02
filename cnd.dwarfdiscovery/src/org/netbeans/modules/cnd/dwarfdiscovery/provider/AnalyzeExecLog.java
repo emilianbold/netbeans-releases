@@ -81,6 +81,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -640,9 +642,30 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         
         private void addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
             List<String> args = new ArrayList<String>();
-            while(iterator.hasNext()) {
-                args.add(iterator.next());
-            }
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                if (next.startsWith("@")) {
+                    final String relPath = next.substring(1);
+                    File file;
+                    if (CndPathUtilities.isPathAbsolute(relPath)) {
+                        file = new File(relPath);
+                    } else {
+                        file = new File(compilePath + "/" + relPath);
+                    }
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    if (fo != null && fo.isValid()) {
+                        List<String> lines;
+                        try {
+                            lines = fo.asLines();
+                            if (lines != null && lines.size() > 0) {
+                                next = lines.get(0).trim();
+                              }
+                        } catch (IOException ex) {
+                        }
+                    }
+                }
+                args.add(next);
+              }
             Artifacts artifacts = new Artifacts();
             List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.iterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
             if (cu != null) {
@@ -662,12 +685,12 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 String sourceName;
                 List<String> userIncludes = new ArrayList<String>(artifacts.userIncludes.size());
                 for(String s : artifacts.userIncludes){
-                    if (s.startsWith("/") && pathMapper != null) { // NOI18N
+                    if (CndPathUtilities.isPathAbsolute(s) && pathMapper != null) { // NOI18N
                         String mapped = pathMapper.getLocalPath(s);
                         if (mapped != null) {
                             s = mapped;
                             if (Utilities.isWindows()) {
-                                s = s.replace('\\', '/');
+                                s = s.replace('\\', '/'); // NOI18N
                             }
                         }
                     }
@@ -681,7 +704,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         userMacros.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
                     }
                 }
-                if (what.startsWith("/")){  //NOI18N
+                if (CndPathUtilities.isPathAbsolute(what)){  //NOI18N
                     if (pathMapper != null) {
                         String mapped = pathMapper.getLocalPath(what);
                         if (mapped != null) {
@@ -869,7 +892,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
                 if (binary != null) {
                     String fullName;
-                    if (binary.startsWith("/")){  //NOI18N
+                    if (CndPathUtilities.isPathAbsolute(binary)){  //NOI18N
                         if (pathMapper != null) {
                             String mapped = pathMapper.getLocalPath(binary);
                             if (mapped != null) {
