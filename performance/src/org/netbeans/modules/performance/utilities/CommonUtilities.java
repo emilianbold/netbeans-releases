@@ -79,6 +79,7 @@ import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jellytools.PluginsOperator;
 import org.netbeans.jellytools.nodes.JavaProjectRootNode;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -922,5 +923,24 @@ public class CommonUtilities {
     
     public static void maximizeWholeNetbeansWindow() {
         MainWindowOperator.getDefault().maximize();
+    }
+    
+    /**
+     * Disables or enables spell checking. By default spell checking is enabled.
+     *
+     * @param enabled true to enable spell checker, false to disable
+     */
+    public static void setSpellcheckerEnabled(boolean enabled) {
+        FileObject root = FileUtil.getConfigFile("Spellcheckers");
+        if (root != null) {
+            FileObject[] children = root.getChildren();
+            for (FileObject fileObject : children) {
+                try {
+                    fileObject.setAttribute("Hidden", !enabled);
+                } catch (IOException ex) {
+                    throw new JemmyException("Error while disabling spellchecker.", ex);
+                }
+            }
+        }
     }
 }
