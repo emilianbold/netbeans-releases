@@ -331,34 +331,59 @@ public final class Model {
     
     private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
         JsObject parent = jsObject.getParent();
+        boolean isThis = false;
         if (expression.get(expression.size() - 2).equals("this")) { //NOI18N
             parent = ModelUtils.findJsObject(this, expRange.getStart());
             if (parent instanceof JsWith) {
                 parent = parent.getParent();
             }
             parent = visitor.resolveThis(parent);
+            isThis = true;
         }
         
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot(), expRange.getEnd());
         if (ts == null) {
             return;
         }
-        ts.move(expRange.getEnd());
-        if(!ts.movePrevious()) {
+        if (isThis) {
+            ts.move(expRange.getStart());
+        } else {
+            ts.move(expRange.getEnd());
+        }
+        if (isThis && !ts.moveNext()) {
+            return;
+        }
+        if(!isThis && !ts.movePrevious()) {
             return;
         }
         Token<? extends JsTokenId> token = ts.token();
-        for (int i = 0; i < expression.size() - 1; i++) {
-            String name = expression.get(i++);
-            while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {
-                token = ts.token();
-            }
-            if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
-                JsObject property = parent.getProperty(name);
-                if (property != null) {
-                    property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
+        if (isThis) {
+            for (int i = expression.size() - 4; i >  - 1; i--) {
+                String name = expression.get(i--);
+                while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() < expRange.getEnd() && ts.moveNext()) {
+                    token = ts.token();
                 }
-                parent = parent.getParent();
+                if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
+                    JsObject property = parent.getProperty(name);
+                    if (property != null) {
+                        property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
+                    }
+                    parent = property;
+                }
+            }
+        } else {
+            for (int i = 0; i < expression.size() - 1; i++) {
+                String name = expression.get(i++);
+                while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {
+                    token = ts.token();
+                }
+                if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
+                    JsObject property = parent.getProperty(name);
+                    if (property != null) {
+                        property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
+                    }
+                    parent = parent.getParent();
+                }
             }
         }
     }

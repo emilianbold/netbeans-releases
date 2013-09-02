@@ -166,7 +166,7 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
                         return var.getProperties().isEmpty();
                     } else {
                         updateNodeOnBackground(node, var);
-                        return true;
+                        return false;
                     }
                 }
             }

@@ -149,17 +149,16 @@ public class HistoryTest extends AbstractGitTestCase {
         
         // back to master
         client.checkoutRevision("master", true, GitUtils.NULL_PROGRESS_MONITOR);
-        
+
+        // history displayed only for the current branch
         VCSHistoryProvider p = VersioningSupport.getOwner(f).getVCSHistoryProvider();
         assertTrue(p instanceof HistoryProvider);
         VCSHistoryProvider.HistoryEntry[] entries = p.getHistory(new File[] { f }, new Date(0));
-        assertEquals(3, entries.length);
-        assertEntry(revBranch, entries[0]);
-        assertEntry(revMaster, entries[1]);
-        assertEntry(revBase, entries[2]);
-        assertNull(entries[2].getParentEntry(f));
-        assertEntry(entries[2], entries[0].getParentEntry(f));
-        assertEntry(entries[2], entries[1].getParentEntry(f));
+        assertEquals(2, entries.length);
+        assertEntry(revMaster, entries[0]);
+        assertEntry(revBase, entries[1]);
+        assertNull(entries[1].getParentEntry(f));
+        assertEntry(entries[1], entries[0].getParentEntry(f));
         
         // let's merge and test the merge
         GitMergeResult mergeResult = client.merge("branch", GitUtils.NULL_PROGRESS_MONITOR);

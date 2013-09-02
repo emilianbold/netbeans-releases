@@ -120,7 +120,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         LOGGER.log(Level.FINE, String.format("CC context: %s", context.toString()));
         
         JsCompletionItem.CompletionRequest request = new JsCompletionItem.CompletionRequest();
-            String pref = ccContext.getPrefix();
+            String pref = ccContext.getPrefix() != null ? ccContext.getPrefix() : "";
             //pref = pref == null ? "" : pref;
 
             request.anchor = caretOffset
