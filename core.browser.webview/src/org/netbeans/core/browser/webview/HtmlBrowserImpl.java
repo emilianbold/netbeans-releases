@@ -279,6 +279,11 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         getBrowser().setURL(str);
     }
 
+    //see org.netbeans.modules.web.browser.ui.HtmlPreviewElement
+    public void setContent( String htmlContent ) {
+        getBrowser().setContent( htmlContent );
+    }
+
     @Override
     public String getStatusMessage() {
         return getBrowser().getStatusMessage();
