@@ -122,10 +122,10 @@ public class CndTextIndexManager {
                     if (validate && !index.isValid()) {
                         return null;
                     }
+                    indexMap.put(location, index);
                 } catch (IOException ex) {
                     Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                indexMap.put(location, index);
             }
             return index;
         }

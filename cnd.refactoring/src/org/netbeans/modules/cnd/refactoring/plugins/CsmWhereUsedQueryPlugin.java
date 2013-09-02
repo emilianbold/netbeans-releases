@@ -118,15 +118,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        if(filtersDescription != null) {
-            //select/unselect DECLARATIONS filter if needed
-            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
-                if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
-                    filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
-                    break;
-                }
-            }
-        }
+        checkSelectDeclarations();
+        
         CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
         CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
         if (referencedObject == null) {
@@ -136,6 +129,18 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         elements.addAll(refactoring, res);
         fireProgressListenerStop();
         return null;
+    }
+    
+    private void checkSelectDeclarations() {
+        if(filtersDescription != null) {
+            //select/unselect DECLARATIONS filter if needed
+            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
+                if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
+                    filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
+                    break;
+                }
+            }
+        }
     }
 
     /*package*/ Collection<RefactoringElementImplementation> doPrepareElements(CsmObject referencedObject, RefactoringElementsBag bagToAdd) {
@@ -244,6 +249,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         if (filtersDescription != null) {
             whereUsedPlugin.addFilters(filtersDescription);
         }
+        whereUsedPlugin.checkSelectDeclarations();
         Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
         if (filtersDescription != null) {
             whereUsedPlugin.enableFilters(filtersDescription);
