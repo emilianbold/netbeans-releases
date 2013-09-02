@@ -163,6 +163,14 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
         Profile pomProfile = getProfileFromPOM(project);
         if (pomProfile != null) {
+            // If might happened in cases when WAR project uses Java EE full stack
+            // Simply return corresponding Web profile until #232478 will be resolved
+            if (Profile.JAVA_EE_6_FULL.equals(pomProfile)) {
+                return Profile.JAVA_EE_6_WEB;
+            }
+            if (Profile.JAVA_EE_7_FULL.equals(pomProfile)) {
+                return Profile.JAVA_EE_7_WEB;
+            }
             return pomProfile;
         }
 
