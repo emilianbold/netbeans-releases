@@ -62,9 +62,13 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdump.CompileLineService;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
@@ -284,10 +288,17 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                 return ApplicableImpl.getNotApplicable(applicable.getErrors());
             }
         } else {
+            ExecutionEnvironment ee = FileSystemProvider.getExecutionEnvironment(fs);
+            if (ee.isRemote() && !ConnectionManager.getInstance().isConnectedTo(ee)) {
+                return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));
+            }
             RemoteJavaExecution processor = new RemoteJavaExecution(fs);
             ElfReader.SharedLibraries libs = processor.getDlls(set);
             if (libs != null) {
-                return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(processor.getCompileLines(set)), null);
+                final List<CompileLineService.SourceFile> compileLines = processor.getCompileLines(set);
+                if (compileLines != null) {
+                    return new ApplicableImpl(true, null, null, 0, false, libs.getDlls(), libs.getPaths(), processor.getSourceRoot(compileLines), null);
+                }
             }
         }
         return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));

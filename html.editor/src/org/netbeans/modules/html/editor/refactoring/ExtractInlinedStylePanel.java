@@ -241,11 +241,11 @@ public class ExtractInlinedStylePanel extends JPanel implements CustomRefactorin
                 break;
             case refactorToExistingExternalSheet:
             case refactorToReferedExternalSheet:
+            case refactorToNewExternalSheet:
                 select = externalSheetRB;
                 break;
             default:
-                select = null;
-                assert false;
+                throw new IllegalStateException();
         }
         select.setSelected(true);
 

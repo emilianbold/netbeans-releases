@@ -10,4 +10,23 @@
         </folder>
 
     </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="html">
+                <folder name="MultiView">
+                    <file name="org-netbeans-modules-web-browser-ui-HtmlPreviewElement.instance">
+                        <!--org.netbeans.modules.web.browser.ui.HtmlPreviewElement-->
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.browser.ui.HtmlPreviewElement.createMultiViewDescription" />
+                        <attr name="instanceClass" stringvalue="org.netbeans.core.multiview.ContextAwareDescription"/>
+                        <attr name="class" stringvalue="org.netbeans.modules.web.browser.ui.HtmlPreviewElement"/>
+                        <attr
+                            bundlevalue="org.netbeans.modules.web.browser.ui.Bundle#CTL_PreviewTabCaption" name="displayName"/>
+                        <attr name="preferredID" stringvalue="HtmlPreviewTab"/>
+                        <attr intvalue="2" name="persistenceType"/>
+                        <attr intvalue="9501" name="position"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

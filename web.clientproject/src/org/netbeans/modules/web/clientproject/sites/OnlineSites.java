@@ -142,7 +142,7 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
                 "SiteAngularJsSeed.description=Site template for AngularJS projects."})
         public SiteAngularJsSeed() {
             super("ANGULAR", Bundle.SiteAngularJsSeed_name(), Bundle.SiteAngularJsSeed_description(), // NOI18N
-                    "https://github.com/angular/angular-seed/zipball/master", // NOI18N
+                    "https://github.com/angular/angular-seed/archive/master.zip", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "angularjs-seed.zip")); // NOI18N
         }
 
@@ -207,7 +207,7 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
                 "SiteHtml5BoilerplateV4.description=Site template from html5boilerplate.com. Version: 4.2.0"})
         public SiteHtml5BoilerplateV4() {
             super("INIT.BOILER4", Bundle.SiteHtml5BoilerplateV4_name(), Bundle.SiteHtml5BoilerplateV4_description(), // NOI18N
-                    "https://github.com/h5bp/html5-boilerplate/zipball/v4.2.0", // NOI18N
+                    "https://github.com/h5bp/html5-boilerplate/archive/v4.2.0.zip", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-420.zip")); // NOI18N
         }
 

@@ -98,6 +98,7 @@ public class NextTabAction extends AbstractAction {
         }
         
         mode.setSelectedTopComponent(select);
+        select.requestActive();
     }
 }
 

@@ -2361,8 +2361,12 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             TreePath path = tree.getPathForRow(row);
             
             if (path != null) {
-                
-                FileNode node = (FileNode) path.getLastPathComponent();
+                final Object lastPathComponent = path.getLastPathComponent();
+                if ( !(lastPathComponent instanceof FileNode)){
+                    //can be Loading node
+                    return;
+                }
+                FileNode node = (FileNode) lastPathComponent;
                 newFolderAction.enable(node.getFile());
     
                 if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {

@@ -100,9 +100,17 @@ public class Utilities {
             }
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
+                try{
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
                 char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
                 parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
+                } catch(StringIndexOutOfBoundsException ex) {
+                    System.err.println("Wrong format of \"Menu name\":"
+                            + "It has to be in following format \"| menuName |\" in GoldenFile.txt");
+                    System.err.println("Format of your \"Menu name\" is: \""
+                            + menuName + "\" Don't forget for whiteSpaces!!!");
+                    System.err.println("It throws exception: " + ex.getLocalizedMessage());
+                }
             } else {
                 System.out.println("Wrong file: missing header - menu name as | menuName |");
                 throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
