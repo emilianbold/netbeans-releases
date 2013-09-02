@@ -100,6 +100,8 @@ public final class ServiceRegistrations {
         }
     )
     public static ClientSideDevelopmentSupport createClientSideSupport(Project project) {
-        return ClientSideDevelopmentSupport.createInstance(project);
+        return ClientSideDevelopmentSupport.createInstance(project, 
+                "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+                "org.netbeans.ui.metrics.maven");
     }
 }

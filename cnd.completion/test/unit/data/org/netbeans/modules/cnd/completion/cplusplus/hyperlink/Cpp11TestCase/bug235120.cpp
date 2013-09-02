@@ -117,5 +117,6 @@ namespace bug235120 {
     void testIterators_235120() {
         Collection_235120<Item_235120> a;
         begin_235120<Collection_235120<Item_235120>>(a)->foo();
+        begin_235120(a)->foo();
     }
 }

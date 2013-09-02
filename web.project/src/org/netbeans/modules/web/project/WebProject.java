@@ -443,7 +443,7 @@ public final class WebProject implements Project {
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
-        easelSupport = ClientSideDevelopmentSupport.createInstance(this);
+        easelSupport = ClientSideDevelopmentSupport.createInstance(this, WebProjectType.TYPE, Utils.USG_LOGGER_NAME);
         cssSupport = new CssPreprocessorsSupport(this);
         lookup = createLookup(aux, cpProvider);
         copyOnSaveSupport = new CopyOnSaveSupport();

@@ -60,14 +60,8 @@ import org.openide.filesystems.FileUtil;
  * @author Nikolay Koldunov
  */
 public class RunCommandTest extends CndBaseTestCase{
-    static MakeConfiguration conf;
-
     public RunCommandTest(String testName) {
         super(testName);
-        
-        File folderBase = getBaseFolder();
-        final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
-        conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
     }
     
     private static File getBaseFolder(){
@@ -91,6 +85,9 @@ public class RunCommandTest extends CndBaseTestCase{
     
     @Test
     public static void testExpandingMacroses() {
+        File folderBase = getBaseFolder();
+        final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
+        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
         String result = ProjectActionEvent.getRunCommandAsString(
                 "\"${OUTPUT_PATH}\" \"arg 1\" \"${OUTPUT_PATH}\" \"arg 2\"", 
                 conf, 

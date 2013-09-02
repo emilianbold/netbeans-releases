@@ -187,7 +187,7 @@ public final class EarProject implements Project, AntProjectListener {
         updateProject = new UpdateProjectImpl(this, this.helper, aux);
         updateHelper = new UpdateHelper(updateProject, helper);
         cpProvider = new ClassPathProviderImpl(helper, evaluator());
-        easelSupport = ClientSideDevelopmentSupport.createInstance(this);
+        easelSupport = ClientSideDevelopmentSupport.createInstance(this, EarProjectType.TYPE, EarProjectUtil.USG_LOGGER_NAME);
         helper.addAntProjectListener(new AntProjectListener() {
 
             @Override
