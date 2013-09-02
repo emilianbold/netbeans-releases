@@ -214,7 +214,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(jLabelRelativeURL, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel")); // NOI18N
 
         jBrowserLabel.setLabelFor(jBrowserCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(jBrowserLabel, "B&rowser:");
+        org.openide.awt.Mnemonics.setLocalizedText(jBrowserLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Browser_Label")); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);

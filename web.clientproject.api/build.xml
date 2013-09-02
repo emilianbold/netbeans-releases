@@ -5,7 +5,7 @@
     
     <target name="get-cdnjs-jar">
         <mkdir dir="build/extsrc"/>
-        <get src="https://github.com/cdnjs/cdnjs/zipball/master" dest="build/cdnjs-temp.zip"/>
+        <get src="https://github.com/cdnjs/cdnjs/archive/master.zip" dest="build/cdnjs-temp.zip"/>
         <javac srcdir="extsrc" destdir="build/extsrc"/>
         <java classname="RemoveContent" fork="yes">
             <arg file="build/cdnjs-temp.zip"/>
