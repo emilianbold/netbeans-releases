@@ -89,7 +89,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     public void prepare() throws IOException {
         assert !EventQueue.isDispatchThread();
         assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v4.1.0", LIB_FILE, null); // NOI18N
+        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/archive/v4.1.0.zip", LIB_FILE, null); // NOI18N
     }
 
     @Override
