@@ -42,49 +42,115 @@
 package org.netbeans.modules.web.browser.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JLayer;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.LayerUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.windows.TopComponent;
 
 /**
  * A quick prototype of a Preview tab in HTML document Multiview window.
  *
- * Note: It is currently disabled. Uncomment the class annotations below to enable again.
+ * Note: It is disabled by default. Use system propery nb.html.preview.enabled=true to turn it on.
  *
  * @author S. Aubrecht
  */
-//@MultiViewElement.Registration(
-//        displayName = "#CTL_PreviewTabCaption", // NOI18N
-//// no icon
-//persistenceType = TopComponent.PERSISTENCE_NEVER,
-//preferredID = "HtmlPreviewTab", // NOI18N
-//mimeType = "text/html", // NOI18N
-//position = 9501)
 public class HtmlPreviewElement implements MultiViewElement {
 
     private final JPanel panel = new JPanel(new BorderLayout());
+    private final JLayer<JPanel> layer;
     private final DeveloperToolbar toolbar = DeveloperToolbar.create();
     private HtmlBrowser.Impl browser = null;
 
-    private URL url;
+    private final EditorCookie.Observable editorCookie;
+    private final DocumentListener documentListener;
+    private final PropertyChangeListener editorListener;
+
+    private final Lookup lookup;
+
+    private Method methodSetBrowserContent;
+
+    private static final Logger LOG = Logger.getLogger( HtmlPreviewElement.class.getName() );
 
     public HtmlPreviewElement( Lookup lkp ) {
-        final FileObject fileObject = lkp.lookup(FileObject.class);
-        if (fileObject != null) {
-            url = fileObject.toURL();
+        editorCookie = lkp.lookup( EditorCookie.Observable.class );
+        layer = new JLayer<JPanel>( panel, new NoLeftClickLayerUI() );
+        layer.setLayerEventMask( MouseEvent.MOUSE_EVENT_MASK );
+        this.lookup = lkp;
+
+        documentListener = new DocumentListener() {
+
+            @Override
+            public void insertUpdate( DocumentEvent e ) {
+                reloadFromDocument();
+            }
+
+            @Override
+            public void removeUpdate( DocumentEvent e ) {
+                reloadFromDocument();
+            }
+
+            @Override
+            public void changedUpdate( DocumentEvent e ) {
+                reloadFromDocument();
+            }
+        };
+
+        editorListener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange( PropertyChangeEvent evt ) {
+                if( EditorCookie.Observable.PROP_OPENED_PANES.equals( evt.getPropertyName() ) ) {
+                    dettach();
+                    attach();
+                } else if( EditorCookie.Observable.PROP_MODIFIED.equals( evt.getPropertyName() ) ) {
+                    if( !editorCookie.isModified() ) {
+                        reloadFromFile();
+                    }
+                }
+            }
+        };
+    }
+
+    static MultiViewDescription createMultiViewDescription(Map map) {
+        if( Boolean.getBoolean( "nb.html.preview.enabled" ) || true) { //NOI18N
+            try {
+                Method m = MultiViewFactory.class.getDeclaredMethod( "createMultiViewDescription", Map.class ); //NOI18N
+                m.setAccessible( true );
+                return ( MultiViewDescription ) m.invoke( null, map );
+            } catch( Exception e ) {
+                LOG.log( Level.INFO, "Cannot create multiview description.", e );
+            }
         }
+        return null;
     }
 
     @Override
@@ -118,42 +184,25 @@ public class HtmlPreviewElement implements MultiViewElement {
 
     @Override
     public void componentOpened() {
-        if( null != browser )
-            return;
-
-        WebBrowser web = WebBrowsers.getInstance().getPreferred();
-        if( null != web && !web.isEmbedded() ) {
-            for( WebBrowser wb : WebBrowsers.getInstance().getAll(false, false, false) ) {
-                if( wb.isEmbedded() ) {
-                    web = wb;
-                    break;
-                }
-            }
-        }
-        panel.removeAll();
-        if( null == web || !web.isEmbedded() ) {
-            panel.add( new JLabel("No embedded browser available"), BorderLayout.CENTER );
-        } else {
-            browser = web.getHtmlBrowserFactory().createHtmlBrowserImpl();
-            toolbar.intialize( browser.getLookup() );
-            if( null != url )
-                browser.setURL( url );
-            panel.add( browser.getComponent(), BorderLayout.CENTER );
-        }
     }
 
     @Override
     public void componentClosed() {
         panel.removeAll();
         browser = null;
+        methodSetBrowserContent = null;
+        dettach();
     }
 
     @Override
     public void componentShowing() {
+        initBrowser();
+        attach();
     }
 
     @Override
     public void componentHidden() {
+        dettach();
     }
 
     @Override
@@ -172,4 +221,116 @@ public class HtmlPreviewElement implements MultiViewElement {
         return UndoRedo.NONE;
     }
 
+    private void initBrowser() {
+        if( null != browser )
+            return;
+
+        WebBrowser web = WebBrowsers.getInstance().getPreferred();
+        if( null != web && !web.isEmbedded() ) {
+            for( WebBrowser wb : WebBrowsers.getInstance().getAll(false, false, false) ) {
+                if( wb.isEmbedded() ) {
+                    web = wb;
+                    break;
+                }
+            }
+        }
+        panel.removeAll();
+        if( null == web || !web.isEmbedded() ) {
+            panel.add( new JLabel("No embedded browser available"), BorderLayout.CENTER );
+        } else {
+            browser = web.getHtmlBrowserFactory().createHtmlBrowserImpl();
+            toolbar.intialize( browser.getLookup() );
+            panel.add( browser.getComponent(), BorderLayout.CENTER );
+            methodSetBrowserContent = null;
+            try {
+                methodSetBrowserContent = browser.getClass().getDeclaredMethod( "setContent", String.class); //NOI18N
+            } catch( Exception e ) {
+                LOG.log( Level.INFO, null, e );
+            }
+        }
+    }
+
+    private void attach() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    attach();
+                }
+            });
+            return;
+        }
+        if( null != editorCookie ) {
+            editorCookie.addPropertyChangeListener( editorListener );
+            JEditorPane[] panes = editorCookie.getOpenedPanes();
+            if( null != panes && panes.length > 0 ) {
+                panes[0].getDocument();
+            }
+            Document doc = editorCookie.getDocument();
+            if( null != doc )
+                doc.addDocumentListener( documentListener );
+        } else {
+            reloadFromDocument();
+        }
+    }
+
+    private void reloadFromDocument() {
+        if( null == editorCookie )
+            return;
+        Document doc = editorCookie.getDocument();
+        refresh( doc );
+    }
+
+    private void reloadFromFile() {
+        if( null == browser )
+            return;
+
+        final FileObject fileObject = lookup.lookup(FileObject.class);
+        if( fileObject != null ) {
+            URL url = fileObject.toURL();
+            browser.setURL( url );
+        }
+    }
+
+    private void dettach() {
+        if( !SwingUtilities.isEventDispatchThread() ) {
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    dettach();
+                }
+            });
+            return;
+        }
+        if( null != editorCookie ) {
+            editorCookie.removePropertyChangeListener( editorListener );
+            Document doc = editorCookie.getDocument();
+            doc.removeDocumentListener( documentListener );
+        }
+    }
+
+    private void refresh( Document doc ) {
+        try {
+            String text = doc.getText( 0, doc.getLength() );
+            if( null != browser && null != methodSetBrowserContent ) {
+                try {
+                    methodSetBrowserContent.invoke( browser, text );
+                } catch( Exception ex ) {
+                    LOG.log( Level.INFO, null, ex );
+                }
+            }
+        } catch( BadLocationException ex ) {
+            Exceptions.printStackTrace( ex );
+        }
+    }
+
+    class NoLeftClickLayerUI extends LayerUI<JPanel> {
+
+        @Override
+        protected void processMouseEvent( MouseEvent e, JLayer<? extends JPanel> panel ) {
+            super.processMouseEvent( e, panel );
+            if( e.getButton() == MouseEvent.BUTTON1 )
+                e.consume();
+        }
+    }
 }
