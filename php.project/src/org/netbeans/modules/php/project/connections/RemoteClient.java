@@ -368,7 +368,6 @@ public final class RemoteClient implements Cancellable {
                 } catch (IOException | RemoteException exc) {
                     LOGGER.log(Level.INFO, null, exc);
                     transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                    continue;
                 }
             }
         } finally {
