@@ -81,7 +81,11 @@ public class NioNotifier extends Notifier<WatchKey> {
 
     @Override
     protected void removeWatch(WatchKey key) throws IOException {
-        key.cancel();
+        try {
+            key.cancel();
+        } catch (ClosedWatchServiceException ex) {
+            throw new IOException(ex);
+        }
     }
 
     @Override
