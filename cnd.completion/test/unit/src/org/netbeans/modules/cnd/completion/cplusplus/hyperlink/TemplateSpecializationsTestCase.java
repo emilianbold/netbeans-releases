@@ -197,6 +197,17 @@ public class TemplateSpecializationsTestCase extends HyperlinkBaseTestCase {
         performTest("bug234973.cpp", 31, 11, "bug234973.cpp", 23, 9);
     }
     
+    public void testBug235399() throws Exception { 
+        // Bug 235399 - No deduction of types from template function calls
+        performTest("bug235399.cpp", 19, 18, "bug235399.cpp", 3, 7);
+        performTest("bug235399.cpp", 20, 23, "bug235399.cpp", 3, 7);
+        performTest("bug235399.cpp", 21, 28, "bug235399.cpp", 3, 7);
+        
+        performTest("bug235399.cpp", 22, 18, "bug235399.cpp", 7, 7);
+        performTest("bug235399.cpp", 23, 23, "bug235399.cpp", 7, 7);
+        performTest("bug235399.cpp", 24, 28, "bug235399.cpp", 7, 7);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
