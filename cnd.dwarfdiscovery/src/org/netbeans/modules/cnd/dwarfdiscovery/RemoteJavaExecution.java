@@ -38,7 +38,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -219,7 +218,7 @@ public class RemoteJavaExecution {
                 return to;
             }
         } catch (Throwable thr) {
-            Exceptions.printStackTrace(thr);
+            logger.log(Level.INFO, thr.getMessage(), thr);
         }
         return null;
     }
