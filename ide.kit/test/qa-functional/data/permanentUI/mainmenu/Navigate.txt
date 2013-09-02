@@ -4,7 +4,7 @@ Go to File...                    F
 Go to Type...                    T
 Go to Symbol...                  y
 Go to Spring Bean...             B
-Go to Test                       G
+Go to Test/Tested class          G
 Go to Grails Domain class
 Go to Grails Controller
 Go to Grails View                e
