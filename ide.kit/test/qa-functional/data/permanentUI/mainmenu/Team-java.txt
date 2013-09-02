@@ -1,5 +1,5 @@
-|Team|                  M (mnemonics)
-========
+| Team |                M
+=========
 Show Changes            W
 Diff            >       D
 Add                     A
@@ -28,6 +28,5 @@ Other VCS       >       V
 ===================
 History         >       T
 Find Tasks...           F
-Report Task...
+Report Task...          K
 Create Build Job...     J
-

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.history;
 
-import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.NbBundle;
@@ -85,9 +84,9 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_TAGS        = "tags"; // NOI18N
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
         
-    private SearchHistoryPanel.DispRevision         revision;
-    private SearchHistoryPanel.ResultsContainer     container;
-    private String                                  path;
+    private final SearchHistoryPanel.DispRevision revision;
+    private SearchHistoryPanel.ResultsContainer container;
+    private final String path;
 
     public RevisionNode(SearchHistoryPanel.ResultsContainer container) {
         super(new RevisionNodeChildren(container), Lookups.singleton(container));
@@ -128,10 +127,12 @@ class RevisionNode extends AbstractNode {
         return container;
     }
 
+    @Override
     public String getShortDescription() {
         return path;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         if (context) return null;
         // TODO: reuse action code from SummaryView
@@ -172,15 +173,17 @@ class RevisionNode extends AbstractNode {
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public String toString() {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Logger.getLogger(RevisionNode.class.getName()).log(Level.INFO, getClass().getName(), e);
                 return e.getLocalizedMessage();
             }
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             try {
                 return new RevisionPropertyEditor((String) getValue());
@@ -196,6 +199,7 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_LOCATION, String.class, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (container != null) {
                 return path;
@@ -211,24 +215,29 @@ class RevisionNode extends AbstractNode {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            String value = null;
             if (revision != null) {
-                return revision.getRevision().getAuthor();
-            } else {
-                return ""; // NOI18N
+                value = revision.getRevision().getAuthor();
             }
+            if (value == null) {
+                value = ""; //NOI18N
+            }
+            return value;
         }
     }
 
     private class DateProperty extends CommitNodeProperty {
         
-        private String dateString;
+        private final String dateString;
 
         public DateProperty() {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
             dateString = (revision == null || revision.getRevision().getDate() == null) ? "" : DateFormat.getDateTimeInstance().format(revision.getRevision().getDate()); // NOI18N
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             return dateString;
         }
@@ -241,10 +250,12 @@ class RevisionNode extends AbstractNode {
             if (revision != null) setValue("tagsRevision", revision);  // NOI18N
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
-            return null; // nobody reads this, the custom editor handles painting, see below
+            return ""; // NOI18N
         }
 
+        @Override
         public PropertyEditor getPropertyEditor() {
             try {
                 return new TagsPropertyEditor(revision);
@@ -261,18 +272,22 @@ class RevisionNode extends AbstractNode {
             if (revision != null && revision.getRevision().getMessage() != null) setValue("messageRevision", revision);  // NOI18N
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
+            String value = null;
             if (revision != null) {
-                return revision.getRevision().getMessage();
-            } else {
-                return ""; // NOI18N
+                value = revision.getRevision().getMessage();
             }
+            if (value == null) {
+                value = ""; //NOI18N
+            }
+            return value;
         }
     }
 
     private class FindCommitAction extends AbstractAction {
 
-        private boolean allProjects;
+        private final boolean allProjects;
 
         public FindCommitAction(boolean allProjects) {
             this.allProjects = allProjects;
@@ -291,6 +306,7 @@ class RevisionNode extends AbstractNode {
             }
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             File file = revision.getRevision().getLogInfoHeader().getFile();
             if (allProjects) {
@@ -317,10 +333,12 @@ class RevisionNode extends AbstractNode {
             putValue(Action.NAME, NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View", revision.getRevision().getNumber()));  // NOI18N
         }
 
+        @Override
         public boolean isEnabled() {
             return !"dead".equals(revision.getRevision().getState());
         }
 
+        @Override
         public void actionPerformed(ActionEvent ex) {
             try {
                 ViewRevisionAction.view(revision.getRevision().getLogInfoHeader().getFile(), revision.getRevision().getNumber(), null);
@@ -336,10 +354,12 @@ class RevisionNode extends AbstractNode {
             putValue(Action.NAME, NbBundle.getMessage(RevisionNode.class, "CTL_Action_RollbackTo", revision.getRevision().getNumber()));  // NOI18N
         }
 
+        @Override
         public boolean isEnabled() {
             return !"dead".equals(revision.getRevision().getState());
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             File file = revision.getRevision().getLogInfoHeader().getFile();
             GetCleanAction.rollback(file, revision.getRevision().getNumber());
@@ -353,6 +373,7 @@ class RevisionNode extends AbstractNode {
             setEnabled(Utils.previousRevision(revision.getRevision().getNumber()) != null);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             SummaryView.rollbackChanges(new LogInformation.Revision [] { revision.getRevision() });
         }
@@ -370,6 +391,7 @@ class RevisionNode extends AbstractNode {
             setValue(value);
         }
 
+        @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
             renderer.setText((String) getValue());
@@ -377,6 +399,7 @@ class RevisionNode extends AbstractNode {
             renderer.paint(gfx);
         }
 
+        @Override
         public boolean isPaintable() {
             return true;
         }
@@ -386,7 +409,7 @@ class RevisionNode extends AbstractNode {
 
         private static final JLabel renderer = new JLabel();
         
-        private SearchHistoryPanel.DispRevision dispRevision;
+        private final SearchHistoryPanel.DispRevision dispRevision;
 
         static {
             renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
@@ -396,10 +419,12 @@ class RevisionNode extends AbstractNode {
             this.dispRevision = revision;
         }
 
+        @Override
         public boolean isPaintable() {
             return true;
         }
 
+        @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
             renderer.setBounds(box);

@@ -126,7 +126,7 @@ public class NewGroupPanel extends JPanel {
         
         if (subprojectsKindRadio.isSelected()) {
             String s = masterProjectField.getText();
-            if (s != null && s.length() > 0 && s.length() < MAX_NAME) {
+            if (s != null && s.length() > 0) {
                 File f = FileUtil.normalizeFile(new File(s));
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo != null && fo.isFolder()) {

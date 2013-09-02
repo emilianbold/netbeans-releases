@@ -277,7 +277,8 @@ public class EditorView extends ViewElement {
                 }
             } );
             setDropTarget( dropTarget );
-            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" ) ) //NOI18N
+            if( UIManager.getBoolean( "NbMainWindow.showCustomBackground" )
+                    || "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
                 setOpaque( false);
         }
         
