@@ -239,7 +239,7 @@ public class BorderDesignSupport implements FormDesignValue
             creationDesc.findBestCreator(properties,
                 CreationDescriptor.CHANGED_ONLY | CreationDescriptor.PLACE_ALL);
 
-        return creator.getJavaCreationCode(properties, Border.class, null);
+        return creator.getJavaCreationCode(properties, null, null, Border.class, null);
     }
 
     void updateBorder() {

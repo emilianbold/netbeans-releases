@@ -135,7 +135,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * @return creation code that reflects values of the given properties.
      */
     @Override
-    public String getJavaCreationCode(FormProperty[] props, Class expressionType, String genericTypes) {
+    public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
         assert (props.length == propNames.length);
         
         String query = null;

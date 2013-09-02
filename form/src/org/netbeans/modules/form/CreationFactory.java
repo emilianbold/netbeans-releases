@@ -222,18 +222,18 @@ public class CreationFactory {
         return instance;
     }
 
-    public static String getJavaCreationCode(Class cls,
-                                             FormProperty[] props,
-                                             int style) {
-        CreationDescriptor cd = getDescriptor(cls);
-        if (cd != null) {
-            CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
-            if (creator != null) {
-               creator.getJavaCreationCode(props, null, null);
-            }
-        }
-        return null;
-    }
+//    public static String getJavaCreationCode(Class cls,
+//                                             FormProperty[] props,
+//                                             int style) {
+//        CreationDescriptor cd = getDescriptor(cls);
+//        if (cd != null) {
+//            CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
+//            if (creator != null) {
+//               creator.getJavaCreationCode(props, null, null, null, null);
+//            }
+//        }
+//        return null;
+//    }
 
     // ------------
     // utility methods
