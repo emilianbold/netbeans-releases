@@ -248,7 +248,18 @@ public class VariablesNodeModel implements ExtendedNodeModel {
         }
         if (o instanceof Operation) {
             Operation op = (Operation) o;
-            boolean isDone = op.getReturnValue() != null;
+            Operation lastOperation = null;
+            {
+                JPDAThread t = debugger.getCurrentThread();
+                if (t != null) {
+                    java.util.List<Operation> lastOperations = t.getLastOperations();
+                    if (lastOperations != null && lastOperations.size() > 0) {
+                        lastOperation = lastOperations.get(lastOperations.size() - 1);
+                    }
+                }
+            }
+            boolean isDone = op == lastOperation;
+            //boolean isDone = op.getReturnValue() != null;
             if (isDone) {
                 return NbBundle.getMessage(VariablesNodeModel.class, "afterOperation_descr", op.getMethodName());
             } else {

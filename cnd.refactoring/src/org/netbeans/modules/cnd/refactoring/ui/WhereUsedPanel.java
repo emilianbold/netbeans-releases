@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -184,6 +185,15 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     @Override
     public void initialize() {
+        try {
+            CsmCacheManager.enter();
+            initializeImpl();
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private void initializeImpl() {
         // method is called to make initialization of components out of AWT
         if (initialized) {
             return;
