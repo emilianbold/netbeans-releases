@@ -97,7 +97,6 @@ public class OpenFilesWithOpenedEditorTest extends OpenFilesTest {
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
         fileName_preopen = "Main.java";
-        menuItem = OPEN;
         doMeasurement();
     }
     
@@ -108,7 +107,6 @@ public class OpenFilesWithOpenedEditorTest extends OpenFilesTest {
         filePackage = "org.netbeans.test.performance";
         fileName = "textfile20kB.txt";
         fileName_preopen = "textfile.txt";
-        menuItem = OPEN;
         doMeasurement();
     }
     
@@ -119,7 +117,6 @@ public class OpenFilesWithOpenedEditorTest extends OpenFilesTest {
         filePackage = "org.netbeans.test.performance";
         fileName = "xmlfile20kB.xml";
         fileName_preopen = "xmlfile.xml";
-        menuItem = EDIT;
         doMeasurement();
     }
     
