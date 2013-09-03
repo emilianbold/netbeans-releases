@@ -88,7 +88,10 @@ public class AnnotateAction extends GitAction {
         if (context.getRootFiles().size() > 0 && activatedEditorCookie(nodes) != null) {
             FileStatusCache cache = Git.getInstance().getFileStatusCache();
             File file = activatedFile(nodes);
-            FileInformation info  = cache.getStatus(file);
+            if (file == null) {
+                return false;
+            }
+            FileInformation info = cache.getStatus(file);
             return info != null && !info.containsStatus(EnumSet.of(FileInformation.Status.NOTVERSIONED_EXCLUDED, 
                     FileInformation.Status.NOTVERSIONED_NOTMANAGED, 
                     FileInformation.Status.NEW_HEAD_WORKING_TREE));
