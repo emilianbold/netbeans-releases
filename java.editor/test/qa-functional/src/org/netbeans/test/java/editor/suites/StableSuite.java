@@ -44,7 +44,7 @@ package org.netbeans.test.java.editor.suites;
 
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.java.editor.semantic.MarkOccurrencesTest;
+import org.netbeans.test.java.editor.occurrences.MarkOccurrencesTest;
 import org.netbeans.test.java.editor.actions.JavaEditActionsTest;
 import org.netbeans.test.java.editor.actions.JavaNavigationActionsTest;
 import org.netbeans.test.java.editor.codegeneration.CreateConstructorTest;
