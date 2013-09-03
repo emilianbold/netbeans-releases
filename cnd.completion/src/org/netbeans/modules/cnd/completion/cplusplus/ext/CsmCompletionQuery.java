@@ -1343,17 +1343,23 @@ abstract public class CsmCompletionQuery {
                 return null;
             }
             for (CsmFunction fun : mtdList) {
-                if (CsmKindUtilities.isTemplate(fun)) {
-                    CsmObject inst = createInstantiation((CsmTemplate) fun, genericNameExp, typeList);
-                    if (CsmKindUtilities.isFunction(inst)) {
-                        fun = (CsmFunction) inst;
+                CsmObject entity = fun;
+
+                if (CsmKindUtilities.isConstructor(entity)) {
+                    entity = ((CsmConstructor) entity).getContainingClass();
+                }
+
+                if (CsmKindUtilities.isTemplate(entity)) {
+                    CsmObject inst = createInstantiation((CsmTemplate) entity, genericNameExp, typeList);                    
+                    if (CsmKindUtilities.isFunction(inst) || CsmKindUtilities.isClassifier(inst)) {
+                        entity = inst;
                     }
                 }
-                if (CsmKindUtilities.isConstructor(fun)) {
-                    CsmClassifier cls = ((CsmConstructor) fun).getContainingClass();
-                    out = CsmCompletion.createType(cls, 0, 0, 0, false);
-                } else {
-                    out = fun.getReturnType();
+                
+                if (CsmKindUtilities.isClassifier(entity)) {
+                    out = CsmCompletion.createType((CsmClassifier) entity, 0, 0, 0, false);
+                } else if (CsmKindUtilities.isFunction(entity)) {
+                    out = ((CsmFunction) entity).getReturnType();
                 }
                 if (out != null) {
                     break;
