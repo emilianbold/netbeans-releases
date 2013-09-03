@@ -74,6 +74,7 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
+import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -1413,5 +1414,32 @@ public class ModelUtils {
             return exp;
         }
         return Collections.<String>emptyList();
+    }
+    
+    public static void moveProperty (JsObject newParent, JsObject property) {
+        JsObject newProperty = newParent.getProperty(property.getName());
+        if (property.getParent() != null) {
+            property.getParent().getProperties().remove(property.getName());
+        }
+        if (newProperty == null) {
+            ((JsObjectImpl)property).setParent(newParent);
+            newParent.addProperty(property.getName(), property);
+        } else {
+            if (property.isDeclared() && !newProperty.isDeclared()) {
+                JsObject tmpProperty = newProperty;
+                newParent.addProperty(property.getName(), property);
+                ((JsObjectImpl)property).setParent(newParent);
+                newProperty = property;
+                property = tmpProperty;
+            }
+            JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) newProperty, property);
+            for (Occurrence occurrence : property.getOccurrences()) {
+                newProperty.addOccurrence(occurrence.getOffsetRange());
+            }
+            List<JsObject>propertiesToMove = new ArrayList(property.getProperties().values());
+            for (JsObject propOfProperty: propertiesToMove) {
+                moveProperty(newProperty, propOfProperty);
+            }
+        }
     }
 }
