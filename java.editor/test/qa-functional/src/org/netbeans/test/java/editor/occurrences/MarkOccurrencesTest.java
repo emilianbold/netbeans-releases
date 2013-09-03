@@ -28,7 +28,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.editor.semantic;
+package org.netbeans.test.java.editor.occurrences;
 
 import java.awt.Color;
 import java.io.File;
@@ -58,6 +58,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
+import org.netbeans.modules.java.editor.semantic.MarkOccurrencesHighlighter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,7 +71,6 @@ import org.openide.util.Exceptions;
  *
  * @author Jiri Prox
  */
-@RandomlyFails
 public class MarkOccurrencesTest extends NbTestCase {
     
     private FileObject fileObject;
@@ -159,11 +159,14 @@ public class MarkOccurrencesTest extends NbTestCase {
     
     private final SimpleMark[] TEST_LABELS1 = new SimpleMark[] {
         new SimpleMark(414,415,null),
+        new SimpleMark(161,166,null),
+        new SimpleMark(282,287,null),
         new SimpleMark(93,98,null)
     };
     
     private final SimpleMark[] TEST_LABELS2 = new SimpleMark[] {
         new SimpleMark(184,189,null),
+        new SimpleMark(331,336,null),
         new SimpleMark(383,384,null)
     };
     
