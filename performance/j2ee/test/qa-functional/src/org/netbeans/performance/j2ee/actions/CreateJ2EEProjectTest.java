@@ -43,14 +43,9 @@
  */
 package org.netbeans.performance.j2ee.actions;
 
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -69,7 +64,6 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
 
     private String category, project, project_name;
     private boolean createSubProjects = false;
-    private Logger TIMER = null;
     public static final String WEB_PROJECT_NAME = "WebApp";
 
     /**
@@ -105,31 +99,13 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
                 ).suite();
     }
 
-    class PhaseHandler extends Handler {
-
-        public boolean published = false;
-
-        public void publish(LogRecord record) {
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) {
-                ActionTracker.getInstance().stopRecording();
-            }
-        }
-
-        public void flush() {
-        }
-
-        public void close() throws SecurityException {
-        }
-
-    }
-
-    PhaseHandler phaseHandler = new PhaseHandler();
-
     public void testCreateWebProject() {
         category = "Java Web";
         project = "Web Application";
         project_name = "WebApp";
+        addEditorPhaseHandler();
         doMeasurement();
+        removeEditorPhaseHandler();
     }
 
     public void testCreateEnterpriseApplicationProject() {
@@ -159,7 +135,9 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
         category = "Java EE";
         project = "Enterprise Application Client";
         project_name = "MyEntAppClient";
+        addEditorPhaseHandler();
         doMeasurement();
+        removeEditorPhaseHandler();
     }
 
     @Override
@@ -167,10 +145,6 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     }
 
     public void prepare() {
-        TIMER = Logger.getLogger("TIMER");
-        TIMER.setLevel(Level.FINE);
-        TIMER.addHandler(phaseHandler);
-
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
@@ -202,6 +176,5 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
 
     @Override
     public void shutdown() {
-        TIMER.removeHandler(phaseHandler);
     }
 }

@@ -53,13 +53,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.web.setup.WebSetup;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 /**
  * Test of opening files.
@@ -117,27 +111,6 @@ public class OpenServletFileTest extends PerformanceTestCase {
         return suite;
     }
 
-        class PhaseHandler extends Handler {
-            
-            public boolean published = false;
-
-            public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               ActionTracker.getInstance().stopRecording();
-
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-            
-        }
-
-    PhaseHandler phaseHandler=new PhaseHandler();
-
     public void testOpeningServletFile(){
         WAIT_AFTER_OPEN = 2000;
         fileProject = "TestWebProject";
@@ -152,13 +125,12 @@ public class OpenServletFileTest extends PerformanceTestCase {
     }
 
     public void shutdown(){
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
+        removeEditorPhaseHandler();
     }
     
     public void prepare(){
-        Logger.getLogger("TIMER").setLevel(Level.FINE);
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
+        addEditorPhaseHandler();
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
         
         if (this.openNode == null) {

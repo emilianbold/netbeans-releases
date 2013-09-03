@@ -57,7 +57,9 @@ import java.net.URL;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
@@ -1208,5 +1210,58 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
             );
         }
 
+    }
+    
+    PhaseHandler phaseHandler = new PhaseHandler();
+
+    /**
+     * Handler based on logic in
+     * org.openide.text.CloneableEditorInitializer.Phase. While document is
+     * opening in Editor it goes through several phases in the following order:
+     * <pre>
+     * FINE [TIMER]: Open Editor, phase DOCUMENT_OPEN, RP [ms]
+     * FINE [TIMER]: Open Editor, phase HANDLE_USER_QUESTION_EXCEPTION, EDT [ms]
+     * FINE [TIMER]: Open Editor, phase ACTION_MAP, EDT [ms]
+     * FINE [TIMER]: Open Editor, phase INIT_KIT, RP [ms]
+     * FINE [TIMER]: Open Editor, phase KIT_AND_DOCUMENT_TO_PANE, EDT [ms]
+     * FINE [TIMER]: Open Editor, phase CUSTOM_EDITOR_AND_DECORATIONS, EDT [ms]
+     * FINE [TIMER]: Open Editor, phase FIRE_PANE_READY, EDT [ms]
+     * FINE [TIMER]: Open Editor, phase ANNOTATIONS, RP [ms]
+     * </pre><br/>
+     * We wait until last phase is finished and then stop recording.
+     */
+    class PhaseHandler extends Handler {
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().startsWith("Open Editor, phase ANNOTATIONS")) {
+                ActionTracker.getInstance().add(ActionTracker.TRACK_COMPONENT_SHOW, "PhaseHandler - Editor opened.");
+                ActionTracker.getInstance().stopRecording();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
+
+    /**
+     * Adds handler to TIMER logger and stop recording when document in editor
+     * is completely opened. It should be called in {@link initialize()} method.
+     */
+    protected void addEditorPhaseHandler() {
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
+    }
+
+    /**
+     * Removes TIMER handler. It should be called in {@link shutdown()} method.
+     */
+    protected void removeEditorPhaseHandler() {
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
     }
 }
