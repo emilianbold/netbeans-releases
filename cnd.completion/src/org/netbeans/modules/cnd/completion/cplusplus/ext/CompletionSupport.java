@@ -378,7 +378,7 @@ public final class CompletionSupport implements DocumentListener {
     public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
         Collection<CsmFunction> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
-        if (result.size() > 1) {
+        if (result.size() != 1) {
             result = filterMethods(result, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, true);
         }
         return result;
@@ -419,9 +419,15 @@ public final class CompletionSupport implements DocumentListener {
                         if (!methodParms[j].isVarArgs() && !equalTypes(t, mpt, ignoreConstAndRef)) {
                             bestMatch = false;
                             if (!isAssignable(t, mpt)) {
-                                accept = false;
-                            // TODO: do not break now, count matches
-                            // break;
+                                if (CsmKindUtilities.isTemplateParameterType(mpt)) {
+                                    if (mpt.getArrayDepth() + mpt.getPointerDepth() <= t.getArrayDepth() + t.getPointerDepth()) {
+                                        matched++;
+                                    } else {
+                                        accept = false;
+                                    }
+                                } else {
+                                    accept = false;
+                                }
                             } else {
                                 matched++;
                             }
