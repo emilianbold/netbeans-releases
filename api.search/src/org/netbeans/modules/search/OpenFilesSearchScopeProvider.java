@@ -54,7 +54,10 @@ import org.netbeans.spi.search.SearchScopeDefinitionProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
@@ -151,7 +154,12 @@ public class OpenFilesSearchScopeProvider extends SearchScopeDefinitionProvider 
             final EditorCookie editor = dobj.getLookup().lookup(
                     EditorCookie.class);
             if (editor != null) {
-                return editor.getOpenedPanes() != null;
+                return Mutex.EVENT.readAccess(new Action<Boolean>() {
+                    @Override
+                    public Boolean run() {
+                        return NbDocument.findRecentEditorPane(editor) != null;
+                    }
+                });
             }
             return false;
         }
