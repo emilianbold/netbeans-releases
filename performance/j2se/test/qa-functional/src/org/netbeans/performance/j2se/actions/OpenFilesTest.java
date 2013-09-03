@@ -56,10 +56,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
 
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
 
 /**
  * Test of opening files.
@@ -76,11 +72,6 @@ public class OpenFilesTest extends PerformanceTestCase {
     public static String filePackage;
     /** Name of file to open */
     public static String fileName;
-    /** Menu item name that opens the editor */
-    public static String menuItem;
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-	private Logger TIMER=null;
 
     /**
      * Creates a new instance of OpenFiles
@@ -108,35 +99,12 @@ public class OpenFilesTest extends PerformanceTestCase {
              .enableModules(".*").clusters(".*")));
         return suite;
     }
-
-        class PhaseHandler extends Handler {
-            
-            public boolean published = false;
-
-            public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               ActionTracker.getInstance().stopRecording();
-
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-            
-        }
-
-    PhaseHandler phaseHandler=new PhaseHandler();
-
     
     public void testOpening20kBJavaFile(){
         WAIT_AFTER_OPEN = 2000;
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "Main20kB.java";
-        menuItem = OPEN;
         doMeasurement();
     }
 
@@ -145,7 +113,6 @@ public class OpenFilesTest extends PerformanceTestCase {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "textfile20kB.txt";
-        menuItem = OPEN;
         doMeasurement();
     }
     
@@ -154,7 +121,6 @@ public class OpenFilesTest extends PerformanceTestCase {
         fileProject = "PerformanceTestData";
         filePackage = "org.netbeans.test.performance";
         fileName = "xmlfile20kB.xml";
-        menuItem = EDIT;
         doMeasurement();
     }
 
@@ -162,18 +128,16 @@ public class OpenFilesTest extends PerformanceTestCase {
     protected void initialize(){
         EditorOperator.closeDiscardAll();
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        addEditorPhaseHandler();
     }
     
     public void prepare(){
-        TIMER=Logger.getLogger("TIMER");
-        TIMER.setLevel(Level.FINE);
-        TIMER.addHandler(phaseHandler);
         openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
     }
     
     public ComponentOperator open(){
         JPopupMenuOperator popup =  openNode.callPopup();
-        popup.pushMenu(menuItem);
+        popup.pushMenu("Open");
         return null;
     }
     
@@ -184,9 +148,8 @@ public class OpenFilesTest extends PerformanceTestCase {
     
     @Override
     protected void shutdown(){
-        TIMER.removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
+        removeEditorPhaseHandler();
     }
- 
 }
