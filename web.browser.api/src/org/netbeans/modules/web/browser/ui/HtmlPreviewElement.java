@@ -141,7 +141,7 @@ public class HtmlPreviewElement implements MultiViewElement {
     }
 
     static MultiViewDescription createMultiViewDescription(Map map) {
-        if( Boolean.getBoolean( "nb.html.preview.enabled" ) || true) { //NOI18N
+        if( Boolean.getBoolean( "nb.html.preview.enabled" ) ) { //NOI18N
             try {
                 Method m = MultiViewFactory.class.getDeclaredMethod( "createMultiViewDescription", Map.class ); //NOI18N
                 m.setAccessible( true );
@@ -305,7 +305,8 @@ public class HtmlPreviewElement implements MultiViewElement {
         if( null != editorCookie ) {
             editorCookie.removePropertyChangeListener( editorListener );
             Document doc = editorCookie.getDocument();
-            doc.removeDocumentListener( documentListener );
+            if( null != doc )
+                doc.removeDocumentListener( documentListener );
         }
     }
 
