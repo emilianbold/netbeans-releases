@@ -313,10 +313,13 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
             EditableProperties props = new EditableProperties(false);
             FileObject fileObject = project.getProjectDirectory().getFileObject("nbproject/plugins.properties");
 
-            if (fileObject != null) {
-                try (InputStream inputStream = fileObject.getInputStream()) {
-                    props.load(inputStream);
-                }
+            if (fileObject == null) {
+                CordovaPerformer.createScript(project, "empty.properties", "nbproject/plugins.properties", false);
+                fileObject = project.getProjectDirectory().getFileObject("nbproject/plugins.properties");
+            }
+
+            try (InputStream inputStream = fileObject.getInputStream()) {
+                props.load(inputStream);
             }
 
 
