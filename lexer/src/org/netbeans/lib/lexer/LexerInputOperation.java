@@ -380,7 +380,11 @@ public abstract class LexerInputOperation<T extends TokenId> {
     public void assignTokenLength(int tokenLength) {
         if (tokenLength > readLength()) {
             throw new IndexOutOfBoundsException("tokenLength=" + tokenLength // NOI18N
-                    + " >" + readLength());
+                    + " > " + readLength() + ". Fix the lexer implementation to use proper token length value."); // NOI18N
+        }
+        if (tokenLength <= 0) {
+            throw new IndexOutOfBoundsException("tokenLength=" + tokenLength +
+                    " <= 0. Fix the lexer implementation to use proper token length value."); // NOI18N
         }
         this.tokenLength = tokenLength;
     }

@@ -977,12 +977,17 @@ public class BinaryAnalyser {
                         final InputStream in = new BufferedInputStream (zipFile.getInputStream( ze ));
                         try {
                             analyse(in);
-                        } catch (InvalidClassFormatException icf) {
+                        } catch (InvalidClassFormatException | RuntimeException icf) {
                             LOGGER.log(
-                                    Level.WARNING, "Invalid class file format: {0}!/{1}",      //NOI18N
+                                    Level.WARNING,
+                                    "Invalid class file format: {0}!/{1}",      //NOI18N
                                     new Object[]{
                                         Utilities.toURI(new File(zipFile.getName())),
                                         ze.getName()});
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "Class File Exception Details",             //NOI18N
+                                    icf);
                         } catch (IOException x) {
                             Exceptions.attachMessage(x, "While scanning: " + ze.getName());    //NOI18N
                             throw x;

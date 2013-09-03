@@ -1647,14 +1647,15 @@ public class CasualDiff {
             copyTo(localPointer, clazzBounds[0]);
             localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
         }
-        if (oldT.args.nonEmpty()) {
-            copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
+        List<JCTree> oldTFilteredArgs = filterHidden(oldT.args);
+        if (!oldTFilteredArgs.isEmpty()) {
+            copyTo(localPointer, localPointer = getOldPos(oldTFilteredArgs.get(0)));
         } else if (!enumConstantPrint) {
             moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
-        localPointer = diffParameterList(oldT.args, newT.args, null, localPointer, Measure.ARGUMENT);
+        localPointer = diffParameterList(oldTFilteredArgs, newT.args, null, localPointer, Measure.ARGUMENT);
         // let diffClassDef() method notified that anonymous class is printed.
         if (oldT.def != newT.def) {
             if (oldT.def != null && newT.def != null) {
@@ -1663,8 +1664,8 @@ public class CasualDiff {
                 localPointer = diffTree(oldT.def, newT.def, getBounds(oldT.def));
                 anonClass = false;
             } else if (newT.def == null) {
-                if (endPos(oldT.args) > localPointer) {
-                    copyTo(localPointer, endPos(oldT.args));
+                if (endPos(oldTFilteredArgs) > localPointer) {
+                    copyTo(localPointer, endPos(oldTFilteredArgs));
                 }
                 printer.print(")");
                 localPointer = endPos(oldT.def);

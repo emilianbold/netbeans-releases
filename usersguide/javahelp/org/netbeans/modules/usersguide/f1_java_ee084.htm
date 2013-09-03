@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="registering_app_server_hk2_domain" name="registering_app_server_hk2_domain"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref672" name="sthref672"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref667" name="sthref667"></a>
 <h1>Add Server Instance Wizard: GlassFish Domain Name/Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>You see this page of the Add Server Instance wizard when you specify details to register an instance of GlassFish 3.x with the IDE. To register a server instance, you specify the properties of a local or remote domain.</p>
@@ -19,65 +19,65 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t77">Element</th>
-<th align="left" valign="bottom" id="r1c2-t77">Description</th>
+<th align="left" valign="bottom" id="r1c1-t79">Element</th>
+<th align="left" valign="bottom" id="r1c2-t79">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t77" headers="r1c1-t77">
+<td align="left" id="r2c1-t79" headers="r1c1-t79">
 <p>Register Local Domain</p>
 </td>
-<td align="left" headers="r2c1-t77 r1c2-t77">
+<td align="left" headers="r2c1-t79 r1c2-t79">
 <p>Choose an existing domain from the dropdown list or create a new domain by typing the domain name in the text field.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t77" headers="r1c1-t77">
+<td align="left" id="r3c1-t79" headers="r1c1-t79">
 <p>Register Remote Domain</p>
 </td>
-<td align="left" headers="r3c1-t77 r1c2-t77">
+<td align="left" headers="r3c1-t79 r1c2-t79">
 <p>Enter the following information for the remote domain:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t77" headers="r1c1-t77">
+<td align="left" id="r4c1-t79" headers="r1c1-t79">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Host Name</p>
 </td>
-<td align="left" headers="r4c1-t77 r1c2-t77">
+<td align="left" headers="r4c1-t79 r1c2-t79">
 <p>Enter the host name or IP address for the remote Glassfish 3 server.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t77" headers="r1c1-t77">
+<td align="left" id="r5c1-t79" headers="r1c1-t79">
 <p>&nbsp;&nbsp;&nbsp;&nbsp;Admin Port</p>
 </td>
-<td align="left" headers="r5c1-t77 r1c2-t77">
+<td align="left" headers="r5c1-t79 r1c2-t79">
 <p>Enter the port number used to communicate with the remote server. The default port is 4848.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t77" headers="r1c1-t77">
+<td align="left" id="r6c1-t79" headers="r1c1-t79">
 <p>Target</p>
 </td>
-<td align="left" headers="r6c1-t77 r1c2-t77">
+<td align="left" headers="r6c1-t79 r1c2-t79">
 <p>Optional) Enter a value that is used to identify a cluster and/or stand-alone instance. This value will be used as the value for the target option when running server administration tasks from the IDE. For example, if you have a cluster identified as cluster1 and enter cluster1 as the Target value, when you deploy an application from the IDE to the server the application will be deployed to every instance in the cluster (asadmin deploy --target cluster1 --name myapp myapp.war).</p>
 <p>When no Target value is specified (default) all commands will be applied to the domain administration server instance.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t77" headers="r1c1-t77">
+<td align="left" id="r7c1-t79" headers="r1c1-t79">
 <p>Username</p>
 </td>
-<td align="left" headers="r7c1-t77 r1c2-t77">
+<td align="left" headers="r7c1-t79 r1c2-t79">
 <p>Type the username for the server instance.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t77" headers="r1c1-t77">
+<td align="left" id="r8c1-t79" headers="r1c1-t79">
 <p>Password</p>
 </td>
-<td align="left" headers="r8c1-t77 r1c2-t77">
+<td align="left" headers="r8c1-t79 r1c2-t79">
 <p>Type the password for the server instance.</p>
 </td>
 </tr>
@@ -88,15 +88,6 @@
 <p>Click Finish to add the instance to the list of servers in the Services window.</p>
 <p><b>Note</b>: When you register an existing domain, the IDE uses the port numbers and other properties specified in the domain configuration.</p>
 <p><b>Note</b>: A username and password are required to work with a remote instance of GlassFish Server 3.1.2. To accept remote admin requests the secure administration feature on the remote instance must be enabled. The secure administration feature cannot be enabled if any admin accounts on the remote instance have an empty password.</p>
-<p>For more details, see the following GlassFish Server documentation: <code>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://docs.oracle.com/cd/E26576_01/doc.312/e24940/administrative-security.htm">
-<param name="text" value="<html><u>Managing Administrative Security</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</code>
-</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

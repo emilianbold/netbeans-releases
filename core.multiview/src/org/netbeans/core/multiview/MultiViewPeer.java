@@ -133,6 +133,8 @@ public final class MultiViewPeer implements PropertyChangeListener {
     private final PropertyChangeListener propListener;
     private DelegateUndoRedo delegateUndoRedo;
     private int splitOrientation = -1;
+    private int initialSplitOrientation = -1;
+    private MultiViewDescription initialSplitDescription;
     
     MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
@@ -198,15 +200,13 @@ public final class MultiViewPeer implements PropertyChangeListener {
             model.removeElementSelectionListener(selListener);
         }
 	// if Design view was active before closing, set default to Source view
-	defaultDesc = defaultDesc.getDisplayName().startsWith("&Design") ? descriptions[0] : defaultDesc; //NOI18N
-	defaultDescSplit = defaultDescSplit.getDisplayName().startsWith("&Design") ? descriptions[1] : defaultDescSplit; //NOI18N
+	if( splitOrientation != -1 )
+            defaultDescSplit = defaultDescSplit.getDisplayName().startsWith("&Design") ? descriptions[1] : defaultDescSplit; //NOI18N
         model = new MultiViewModel(descriptions, defaultDesc, factory, existingElements);
         model.addElementSelectionListener(selListener);
 	tabs.setModel(model);
-	this.splitOrientation = splitOrientation;
-	if(splitOrientation != -1) {
-	    tabs.peerSplitComponent(splitOrientation, this, defaultDesc, defaultDescSplit);
-	}
+	this.initialSplitOrientation = splitOrientation;
+        this.initialSplitDescription = defaultDescSplit;
     }
     
     /**
@@ -347,6 +347,12 @@ public final class MultiViewPeer implements PropertyChangeListener {
         tabs.setToolbarBarVisible(isToolbarVisible());
         if (editorSettingsPreferences != null) {
             editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);
+        }
+        if( initialSplitOrientation != -1 ) {
+            splitOrientation = initialSplitOrientation;
+            tabs.peerSplitComponent(splitOrientation, MultiViewPeer.this, getModel().getActiveDescription(), initialSplitDescription);
+            initialSplitDescription = null;
+            initialSplitOrientation = -1;
         }
     }
     
