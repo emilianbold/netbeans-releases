@@ -49,8 +49,6 @@ import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
 public class FindUsagesSuite {
 
     public static Test suite() {
-//            return NbModuleSuite.create(NbModuleSuite.createConfiguration(FindUsagesMethodTest.class)
-//                    .addTest("testFUFromBaseClass","testFUAllOptions"));
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(FindUsagesClassTest.class).addTest(FindUsagesMethodTest.class));
 

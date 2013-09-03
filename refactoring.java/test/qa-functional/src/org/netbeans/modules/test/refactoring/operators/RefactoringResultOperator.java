@@ -47,12 +47,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTree;
+import javax.swing.*;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jemmy.ComponentChooser;
@@ -154,18 +149,17 @@ public class RefactoringResultOperator extends TopComponentOperator {
     }
 
     public ContainerOperator getToolbar() {
-        ComponentChooser chooser = new ToolbarChooser();
-        return new ContainerOperator((Container)waitComponent((Container)getSource(), chooser));
+		return new OverflowToolbarOperator(this);
     }
 
     private JButtonOperator getToolbarButton(String buttonTooltip) {
-        ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
-        return new JButtonOperator(JButtonOperator.waitJButton((Container)getToolbar().getSource(), chooser));
+		AbstractButton ab = ((OverflowToolbarOperator)getToolbar()).getButton(buttonTooltip);
+		return new JButtonOperator((JButton) ab);
     }
     
     private JToggleButtonOperator getToolbarToogleButton(String buttonTooltip) {
-        ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
-        return new JToggleButtonOperator(JToggleButtonOperator.waitJToggleButton((Container)getToolbar().getSource(), chooser));
+		AbstractButton ab = ((OverflowToolbarOperator)getToolbar()).getButton(buttonTooltip);
+		return new JToggleButtonOperator((JToggleButton) ab);
     }
     
     private JButtonOperator getRefresh() {
@@ -192,7 +186,8 @@ public class RefactoringResultOperator extends TopComponentOperator {
     private JToggleButtonOperator getPhysical() {
         if (_tbtPhysical == null) {
             _tbtPhysical = getToolbarToogleButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_physicalView")); // Show Physical View
-        }
+			
+		}
         return _tbtPhysical;
     }
 
