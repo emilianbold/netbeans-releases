@@ -638,6 +638,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
 
+        JsObject previousUsage = null;
         if (name == null || name.isEmpty()) {
             // function is declared as
             //      function fn () {}
@@ -647,7 +648,9 @@ public class ModelVisitor extends PathNodeVisitor {
             if(end == 0) {
                 end = parserResult.getSnapshot().getText().length();
             }
-            if ((modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName()) != null) {
+            previousUsage = (modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName());
+            if ( previousUsage != null && previousUsage.isDeclared()) {
+                // the function is alredy there
                 return null;
             }
             name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
@@ -697,6 +700,15 @@ public class ModelVisitor extends PathNodeVisitor {
                 scope.addDeclaredScope(fncScope);
                 // push the current function in the model builder stack
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
+            }
+            if (previousUsage != null) {
+                // move all occurrences here
+                for (Occurrence occurrence : previousUsage.getOccurrences()) {
+                    fncScope.addOccurrence(occurrence.getOffsetRange());
+                }
+                for (JsObject property : previousUsage.getProperties().values()) {
+                    ModelUtils.moveProperty(fncScope, property);
+                }
             }
         }
         if (fncScope != null) {
