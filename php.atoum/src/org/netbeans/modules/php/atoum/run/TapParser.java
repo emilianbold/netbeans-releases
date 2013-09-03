@@ -122,8 +122,8 @@ public final class TapParser {
     }
 
     private void processComment(String line) {
-        assert line.startsWith("# ") : line;
-        line = line.substring(2);
+        assert line.startsWith("#") : line;
+        line = line.substring(1).trim();
         switch (state) {
             case OK:
                 setSuiteTest(line);
@@ -160,7 +160,7 @@ public final class TapParser {
                 testCase.setFile(lastLine);
             }
             if (testCase.getStatus() == TestCase.Status.FAILED) {
-                testCase.setStatus(TestCase.Status.ABORTED);
+                testCase.setStatus(TestCase.Status.ERROR);
             }
         }
         // rest
