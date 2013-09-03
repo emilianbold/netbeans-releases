@@ -419,7 +419,9 @@ final class DocumentOpenClose {
     }
     
     private void initLoadTaskLA(boolean synchronousTaskRun) { // Lock acquired mandatory
-        assert (activeOpen == null) : "Open task already inited."; // NOI18N
+        if (activeOpen != null) {
+            throw new IllegalStateException("Open task already inited. State:\n" + this); // NOI18N
+        }
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("initLoadTaskLA(): Schedule open task followed by change firing task.\n"); // NOI18N
         }
@@ -681,7 +683,9 @@ final class DocumentOpenClose {
                     // Attach annotations
                     updateLines(loadDoc, false);
 
-                    documentStatus = DocumentStatus.OPENED; // common for both reload and open
+                    synchronized (lock) {
+                        documentStatus = DocumentStatus.OPENED; // common for both reload and open
+                    }
                     loadSuccess = true;
                 }
 
