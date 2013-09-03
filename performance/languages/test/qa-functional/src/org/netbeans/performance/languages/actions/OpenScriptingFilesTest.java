@@ -43,13 +43,8 @@
  */
 package org.netbeans.performance.languages.actions;
 
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
@@ -81,14 +76,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     protected String fileName;
     private static JPopupMenuOperator popup;
 
-    /**
-     * Menu item name that opens the editor
-     */
-    public static String menuItem;
-
-    protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
-    protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-
     public OpenScriptingFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
@@ -103,30 +90,11 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
         return emptyConfiguration().addTest(ScriptingSetup.class).addTest(OpenScriptingFilesTest.class).suite();
     }
 
-    class PhaseHandler extends Handler {
-
-        public boolean published = false;
-
-        public void publish(LogRecord record) {
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) {
-                ActionTracker.getInstance().stopRecording();
-            }
-        }
-
-        public void flush() {
-        }
-
-        public void close() throws SecurityException {
-        }
-    }
-
-    PhaseHandler phaseHandler = new PhaseHandler();
-
     @Override
     protected void initialize() {
         EditorOperator.closeDiscardAll();
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
-        waitNoEvent(10000);
+        addEditorPhaseHandler();
     }
 
     protected Node getProjectNode(String projectName) {
@@ -138,8 +106,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
 
     @Override
     public void prepare() {
-        Logger.getLogger("TIMER").setLevel(Level.FINE);
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
         String path = nodePath + "|" + fileName;
         fileToBeOpened = new Node(getProjectNode(testProject), path);
         popup = fileToBeOpened.callPopup();
@@ -147,7 +113,7 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
-        popup.pushMenu(menuItem);
+        popup.pushMenu("Open");
         return new EditorOperator(fileName);
     }
 
@@ -158,15 +124,14 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
 
     @Override
     protected void shutdown() {
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
+        removeEditorPhaseHandler();
     }
 
     public void testOpening20kbJSFile() {
         testProject = Projects.SCRIPTING_PROJECT;
         WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";
         doMeasurement();
@@ -175,7 +140,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     public void testOpening20kbPHPFile() {
         testProject = Projects.PHP_PROJECT;
         WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
         fileName = "php20kb.php";
         nodePath = "Source Files";
         doMeasurement();
@@ -184,7 +148,6 @@ public class OpenScriptingFilesTest extends PerformanceTestCase {
     public void testOpening20kbDIFFFile() {
         testProject = Projects.SCRIPTING_PROJECT;
         WAIT_AFTER_OPEN = 2000;
-        menuItem = OPEN;
         nodePath = "Web Pages";
         fileName = "diff20kb.diff";
         doMeasurement();
