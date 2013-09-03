@@ -57,13 +57,13 @@ import org.openide.filesystems.FileUtil;
  * @author Martin Janicek
  */
 public class WebModuleImplTest extends JavaEEMavenTestBase {
-    
+
     private PomBuilder builder;
-    
+
     private WebModuleProviderImpl provider;
     private WebModuleImpl webModule;
-    
-    
+
+
     public WebModuleImplTest(String name) {
         super(name);
         builder = new PomBuilder();
@@ -74,7 +74,7 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         clearWorkDir();
         builder.clear();
     }
-    
+
 
     public void testCreateWebInf() throws IOException {
         setUpDefaultPom();
@@ -82,33 +82,33 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         assertNotNull(webModule.createWebInf());
         assertNotNull(webModule.getWebInf());
     }
-    
+
     public void testGetDocumentBase() throws IOException {
         setUpDefaultPom();
         assertEquals(true, webModule.getDocumentBase().getName().endsWith("webapp")); //NOI18N
     }
-    
+
     public void testGetArchive_noExistingArchive() throws IOException {
         builder.appendDefaultTestValues();
         builder.appendPlugin(new PomPlugin("org.apache.maven.plugins", "maven-war-plugin", "2.1.1")); //NOI18N
         createProject(builder);
-        
+
         assertNull(webModule.getArchive());
     }
-    
+
     public void testGetArchive_archiveExists() throws IOException {
         String artifactID = "projectArtifactID"; //NOI18N
         String archiveType = "war"; //NOI18N
         String version = "12345"; //NOI18N
-        
+
         builder.appendPomContent("4.0.0", "group", artifactID, archiveType, version); //NOI18N
         //builder.appendPlugin(new PomPlugin("org.apache.maven.plugins", "maven-war-plugin", "2.1.1")); //NOI18N
         createProject(builder);
-        
+
         FileObject targetDir = project.getProjectDirectory().createFolder("target"); //NOI18N
         FileObject warFile = FileUtil.createData(targetDir, artifactID + "-" + version + "." + archiveType); //NOI18N
         FileObject archiveFile = webModule.getArchive();
-        
+
         assertNotNull(archiveFile);
         assertEquals(warFile, archiveFile);
         assertEquals(archiveType, archiveFile.getExt());
@@ -120,16 +120,16 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         checkJ2eeProfile(Profile.JAVA_EE_5, "javaee", "javaee-api", "5.0"); //NOI18N
     }
 
-    public void testGetJ2eeProfile_javaEE6FullSpecification() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "javax", "javaee-api", "6.0"); //NOI18N
+    public void testGetJ2eeProfile_warProject_javaEE6FullSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "javax", "javaee-api", "6.0"); //NOI18N
     }
 
     public void testGetJ2eeProfile_javaEE6WebSpecification() throws IOException {
         checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "javax", "javaee-web-api", "6.0"); //NOI18N
     }
 
-    public void testGetJ2eeProfile_javaEE7FullSpecification() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_7_FULL, "javax", "javaee-api", "7.0"); //NOI18N
+    public void testGetJ2eeProfile_warProject_javaEE7FullSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_WEB, "javax", "javaee-api", "7.0"); //NOI18N
     }
 
     public void testGetJ2eeProfile_javaEE7WebSpecification() throws IOException {
@@ -144,16 +144,16 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         checkJ2eeProfile(Profile.JAVA_EE_5, "org.glassfish.main.extras", "glassfish-embedded-web", "2"); //NOI18N
     }
 
-    public void testGetJ2eeProfile_javaEE6Full_glassfish() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.glassfish.main.extras", "glassfish-embedded-all", "3.1.1"); //NOI18N
+    public void testGetJ2eeProfile_warProject_javaEE6Full_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.glassfish.main.extras", "glassfish-embedded-all", "3.1.1"); //NOI18N
     }
 
     public void testGetJ2eeProfile_javaEE6Web_glassfish() throws IOException {
         checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.glassfish.main.extras", "glassfish-embedded-web", "3.1.2.2"); //NOI18N
     }
 
-    public void testGetJ2eeProfile_javaEE7Full_glassfish() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_7_FULL, "org.glassfish.main.extras", "glassfish-embedded-all", "4.0"); //NOI18N
+    public void testGetJ2eeProfile_warProject_javaEE7Full_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_WEB, "org.glassfish.main.extras", "glassfish-embedded-all", "4.0"); //NOI18N
     }
 
     public void testGetJ2eeProfile_javaEE7Web_glassfish() throws IOException {
@@ -164,30 +164,30 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         checkJ2eeProfile(Profile.JAVA_EE_5, "weblogic", "weblogic", "10.3.6"); //NOI18N
     }
 
-    public void testGetJ2eeProfile_javaEE6Full_weblogic() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "weblogic", "weblogic", "12.1.1"); //NOI18N
+    public void testGetJ2eeProfile_warProject_javaEE6Full_weblogic() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "weblogic", "weblogic", "12.1.1"); //NOI18N
     }
-    
+
     public void testGetJ2eeProfile_javaEE5_jboss() throws IOException {
         checkJ2eeProfile(Profile.JAVA_EE_5, "org.jboss.spec", "jboss-javaee-5.0", "1.0.0.GA"); //NOI18N
     }
-    
+
     public void testGetJ2eeProfile_javaEE5Full_jboss() throws IOException {
         checkJ2eeProfile(Profile.JAVA_EE_5, "org.jboss.spec", "jboss-javaee-all-5.0", "	1.0.0.GA"); //NOI18N
     }
-    
-    public void testGetJ2eeProfile_javaEE6_jboss() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.jboss.spec", "jboss-javaee-6.0", "3.0.2.Final"); //NOI18N
+
+    public void testGetJ2eeProfile_warProject_javaEE6_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.jboss.spec", "jboss-javaee-6.0", "3.0.2.Final"); //NOI18N
     }
-    
-    public void testGetJ2eeProfile_javaEE6Full_jboss() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.jboss.spec", "jboss-javaee-all-6.0", "3.0.0.Final"); //NOI18N
+
+    public void testGetJ2eeProfile_warProject_javaEE6Full_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.jboss.spec", "jboss-javaee-all-6.0", "3.0.0.Final"); //NOI18N
     }
-    
+
     public void testGetJ2eeProfile_javaEE6Web_jboss() throws IOException {
         checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.jboss.spec", "jboss-javaee-web-6.0", "2.0.0.Final"); //NOI18N
     }
-    
+
     private void checkJ2eeProfile(Profile profile, String groupID, String artifactID, String version) throws IOException {
         builder.appendPomContent("war"); //NOI18N
         builder.appendDependency(new PomBuilder.PomDependency(groupID, artifactID, version));
@@ -195,7 +195,7 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
 
         assertEquals(profile, webModule.getJ2eeProfile());
     }
-    
+
     /*
     // We need to find a way how to set server properly first
     public void testSetContextPath() throws IOException {
@@ -203,18 +203,18 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         MavenProjectSupport.setServerID(project, "gfv3ee6");
         FileObject webXml = JavaEEMavenTestSupport.createWebXml(project.getProjectDirectory());
         String contextPath = "whatever";
-        
+
         assertEquals(-1, webXml.asText().indexOf(contextPath));
         webModule.setContextPath(contextPath);
         assertEquals(true, webXml.asText().indexOf(contextPath) > 0);
     }
      */
-    
+
     private void setUpDefaultPom() throws IOException {
         builder.appendDefaultTestValues();
         createProject(builder);
     }
-    
+
     private void createProject(PomBuilder builder) throws IOException {
         project = createMavenWebProject(builder.buildPom());
         assertNotNull(project);

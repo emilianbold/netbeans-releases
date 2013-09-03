@@ -55,8 +55,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndexListener;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -291,8 +293,10 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
 
     public void testChangedFiles() throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
+        IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
         assertTrue(awaitRepositoryUpdaterSilence(EVENT_TIMEOUT));
         ClasspathInfo cpi = ClasspathInfo.create(srcFO);
+        ClassIndex classIndex = cpi.getClassIndex();
         final AnnotationModelHelper helper = AnnotationModelHelper.create(cpi);
         final MockChangeListenerExt changeListener = new MockChangeListenerExt();
         helper.runJavaSourceTask(new Runnable() {
@@ -315,14 +319,14 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
             }
         };
-        cpi.getClassIndex().addClassIndexListener(listener);
+        classIndex.addClassIndexListener(listener);
         TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
                 "package foo;" +
                 "public class Department {" +
                 "}");
         addedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesAdded event for Department", departmentAdded.get());
-        cpi.getClassIndex().removeClassIndexListener(listener);
+        classIndex.removeClassIndexListener(listener);
         SourceUtils.waitScanFinished(); // otherwise the PMO will initialize temporarily
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
@@ -344,7 +348,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
             }
         };
-        cpi.getClassIndex().addClassIndexListener(listener);
+        classIndex.addClassIndexListener(listener);
         TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
                 "package foo;" +
                 "@javax.persistence.Entity(name=\"Department\")" +
@@ -352,7 +356,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 "}");
         changedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged.get());
-        cpi.getClassIndex().removeClassIndexListener(listener);
+        classIndex.removeClassIndexListener(listener);
         changeListener.expectEvents(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
@@ -373,14 +377,14 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
                 }
             }
         };
-        cpi.getClassIndex().addClassIndexListener(listener);
+        classIndex.addClassIndexListener(listener);
         TestUtilities.copyStringToFileObject(srcFO, "foo/Department.java",
                 "package foo;" +
                 "public class Department {" +
                 "}");
         changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
-        cpi.getClassIndex().removeClassIndexListener(listener);
+        classIndex.removeClassIndexListener(listener);
         changeListener.expectEvents(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
