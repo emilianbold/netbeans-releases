@@ -131,6 +131,10 @@ public final class NbMavenProjectImpl implements Project {
             problemReporter.clearReports(); //#167741 -this will trigger node refresh?
             MavenProject prj = loadOriginalMavenProject(true);
             synchronized (NbMavenProjectImpl.this) {
+                MavenProject old = project == null ? null : project.get();
+                if (old != null && MavenProjectCache.isFallbackproject(prj)) {
+                    prj.setPackaging(old.getPackaging()); //#229366 preserve packaging for broken projects to avoid changing lookup.
+                }
                 project = new SoftReference<MavenProject>(prj);
                 if (hardReferencingMavenProject) {
                     hardRefProject = prj;
