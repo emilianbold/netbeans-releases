@@ -360,6 +360,7 @@ final class DocumentOpenClose {
     }
 
     void reload() { // Schedule a reload in RP
+        Runnable reloadEDTTask = null;
         synchronized (lock) {
             switch (documentStatus) {
                 case CLOSED: // Closed and loading not started yet -> do nothing
@@ -371,7 +372,9 @@ final class DocumentOpenClose {
                     if (activeClose == null && activeReload == null) { // Only reload when no pending close or reload
                         StyledDocument reloadDoc = docRef.get();
                         if (reloadDoc != null) {
+                            // Init the task but do not start it because "lock" is acquired
                             initReloadTaskLA(reloadDoc);
+                            reloadEDTTask = activeReload;
                         }
                     }
                     break;
@@ -380,6 +383,11 @@ final class DocumentOpenClose {
                     throw invalidStatus();
 
             }
+        }
+
+        if (reloadEDTTask != null) {
+            // Initial part of reload runs in EDT (collects caret positions) but outside "lock"
+            Mutex.EVENT.readAccess(reloadEDTTask);
         }
     }
     
@@ -432,8 +440,6 @@ final class DocumentOpenClose {
             LOG.finer("initLoadTaskLA(): Schedule reload task.\n"); // NOI18N
         }
         activeReload = new DocumentLoad(reloadDoc);
-        // Initial part of reload runs in EDT (collects caret positions)
-        Mutex.EVENT.readAccess(activeReload);
     }
     
     void close() {
