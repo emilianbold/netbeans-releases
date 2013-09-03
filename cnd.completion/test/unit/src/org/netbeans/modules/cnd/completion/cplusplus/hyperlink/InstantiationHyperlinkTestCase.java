@@ -263,6 +263,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug232530.cpp", 9, 39, "bug232530.cpp", 9, 27);
     }
     
+    public void testBug235447() throws Exception {
+        // Bug 235447 - regression in inaccuracy tests ("variadic template" suite)
+        performTest("bug235447.cpp", 9, 28, "bug235447.cpp", 12, 9);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
