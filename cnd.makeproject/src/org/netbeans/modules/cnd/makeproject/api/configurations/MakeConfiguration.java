@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNo
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -1033,6 +1034,9 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public String getVariant() {
         String ret = "";
         if (getCompilerSet().getCompilerSet() == null) {
+            if (CndUtils.isUnitTestMode()) {
+                CndUtils.threadsDump();
+            }
             return ret;
         }
         return getVariant(getCompilerSet().getCompilerSet(), getDevelopmentHost().getBuildPlatform());
