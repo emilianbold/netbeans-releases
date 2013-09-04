@@ -59,7 +59,7 @@ import org.netbeans.swing.plaf.util.UIUtils;
  * Public only to be accessible by ProxyLazyValue, please don't abuse.
  */
 public final class NimbusLFCustoms extends LFCustoms {
-    
+
     @Override
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         int fontsize = 11;
@@ -67,10 +67,12 @@ public final class NimbusLFCustoms extends LFCustoms {
         if (in != null) {
             fontsize = in.intValue();
         }
-        
+
         //XXX fetch the custom font size here instead
         Font controlFont = new Font("Dialog", Font.PLAIN, fontsize); //NOI18N
-        Object[] result = {};
+        Object[] result = {
+            "JXDateTimePicker.arrowIcon", UIUtils.loadImage("org/netbeans/swing/plaf/resources/nimbus_expander.png") //NOI18N
+        };
         /*Object[] result = {
             //The assorted standard NetBeans metal font customizations
             CONTROLFONT, controlFont,
@@ -84,10 +86,10 @@ public final class NimbusLFCustoms extends LFCustoms {
             SUBFONT, new Font ("Dialog", Font.PLAIN, Math.min(fontsize - 1, 6)),
             //Bug in JDK 1.5 thru b59 - pale blue is incorrectly returned for this
             "textInactiveText", Color.GRAY, //NOI18N
-            // #61395        
-            SPINNERFONT, controlFont,        
+            // #61395
+            SPINNERFONT, controlFont,
             EDITOR_ERRORSTRIPE_SCROLLBAR_INSETS, new Insets(16, 0, 16, 0),
-        };*/ 
+        };*/
         return result;
     }
 
@@ -99,12 +101,12 @@ public final class NimbusLFCustoms extends LFCustoms {
         if (!Color.WHITE.equals(unfocusedSelBg.brighter())) { // #57145
             unfocusedSelBg = unfocusedSelBg.brighter();
         }*/
-        
+
         Object[] result = {
             //UI Delegates for the tab control
-            EDITOR_TAB_DISPLAYER_UI, 
+            EDITOR_TAB_DISPLAYER_UI,
                 "org.netbeans.swing.tabcontrol.plaf.NimbusEditorTabDisplayerUI", //NOI18N
-            VIEW_TAB_DISPLAYER_UI, 
+            VIEW_TAB_DISPLAYER_UI,
                 "org.netbeans.swing.tabcontrol.plaf.NimbusViewTabDisplayerUI", //NOI18N
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.NimbusSlidingButtonUI", //NOI18N
@@ -151,21 +153,21 @@ public final class NimbusLFCustoms extends LFCustoms {
             VIEW_TAB_OUTER_BORDER, outerBorder,
 
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlShadow")),
-            
+
             //#48951 invisible unfocused selection background in Metal L&F
             "nb.explorer.unfocusedSelBg", unfocusedSelBg,
-                    
+
             PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_linux_mac.png"),
-                    
+
 
             // progress component related
 //            "nbProgressBar.Foreground", new Color(49, 106, 197),
 //            "nbProgressBar.Background", Color.WHITE,
             "nbProgressBar.popupDynaText.foreground", new Color(115, 115, 115),
-//            "nbProgressBar.popupText.background", new Color(231, 249, 249),        
+//            "nbProgressBar.popupText.background", new Color(231, 249, 249),
             "nbProgressBar.popupText.foreground", UIManager.getColor("TextField.foreground"),
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
-            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
+            "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),
 
         };*/
 
