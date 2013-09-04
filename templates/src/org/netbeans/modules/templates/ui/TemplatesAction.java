@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.favorites.templates;
+package org.netbeans.modules.templates.ui;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.favorites.templates;
+package org.netbeans.modules.templates.ui;
 
 import java.io.File;
 import java.io.IOException;

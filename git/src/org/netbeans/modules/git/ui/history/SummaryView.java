@@ -65,20 +65,28 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.libs.git.GitUser;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.options.AnnotationColorProvider;
+import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
+import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 class SummaryView extends AbstractSummaryView {
 
@@ -358,22 +366,30 @@ class SummaryView extends AbstractSummaryView {
     }
     
     @Override
+    @NbBundle.Messages({
+        "LBL_SummaryView.action.diffRevisions=Diff Selected Revisions",
+        "LBL_SummaryView.action.diffFiles=Open Selected Files in Diff Tab"
+    })
     protected void onPopup (JComponent invoker, Point p, final Object[] selection) {
         JPopupMenu menu = new JPopupMenu();
         
         final RepositoryRevision container;
         final RepositoryRevision.Event[] drev;
 
-        Object revCon = selection[0];
-        boolean revisionSelected;
+        boolean revisionsSelected = false;
         boolean missingFile = false;        
+        final boolean singleSelection = selection.length == 1;
         
-        if (revCon instanceof GitLogEntry && selection.length == 1) {
-            revisionSelected = true;
+        for (Object o : selection) {
+            revisionsSelected = true;
+            if (!(o instanceof GitLogEntry)) {
+                revisionsSelected = false;
+            }
+        }
+        if (revisionsSelected) {
             container = ((GitLogEntry) selection[0]).revision;
             drev = new RepositoryRevision.Event[0];
         } else {
-            revisionSelected = false;
             drev = new RepositoryRevision.Event[selection.length];
 
             for(int i = 0; i < selection.length; i++) {
@@ -388,10 +404,9 @@ class SummaryView extends AbstractSummaryView {
             }                
             container = drev[0].getLogInfoHeader();
         }
-        boolean hasParents = container.getLog().getParents().length > 0;
+        boolean hasParents = singleSelection && container.getLog().getParents().length > 0;
 
-        final boolean singleSelection = selection.length == 1;
-        final boolean viewEnabled = singleSelection && !revisionSelected && drev[0].getFile() != null && drev[0].getAction() != 'D';
+        final boolean viewEnabled = singleSelection && !revisionsSelected && drev[0].getFile() != null && drev[0].getAction() != 'D';
         
         if (hasParents) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
@@ -405,7 +420,7 @@ class SummaryView extends AbstractSummaryView {
             }));
         }
 
-        if (revisionSelected) {
+        if (revisionsSelected) {
             if (singleSelection) {
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName.revision", container.getLog().getRevision().substring(0, 7))) { //NOI18N
                     @Override
@@ -430,6 +445,27 @@ class SummaryView extends AbstractSummaryView {
                         }
                     }));
                 }
+            } else if (selection.length == 2) {
+                menu.add(new JMenuItem(new AbstractAction(Bundle.LBL_SummaryView_action_diffRevisions()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        File[] roots = master.getRoots();
+                        List<Node> nodes = new ArrayList<Node>(roots.length);
+                        for (final File root : roots) {
+                            nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)) {
+                                @Override
+                                public String getDisplayName () {
+                                    return root.getName();
+                                }
+                            });
+                        }
+                        GitRevisionInfo info1 = ((GitLogEntry) selection[0]).getRepositoryRevision().getLog();
+                        GitRevisionInfo info2 = ((GitLogEntry) selection[1]).getRepositoryRevision().getLog();
+                        SystemAction.get(DiffAction.class).diff(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()])),
+                                new Revision(info2.getRevision(), info2.getRevision(), info2.getShortMessage()),
+                                new Revision(info1.getRevision(), info1.getRevision(), info1.getShortMessage()));
+                    }
+                }));
             }
         } else {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
@@ -464,6 +500,14 @@ class SummaryView extends AbstractSummaryView {
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
                 }
             }));
+            if (drev.length == 2 && drev[0].getLogInfoHeader() != drev[1].getLogInfoHeader()) {
+                menu.add(new JMenuItem(new AbstractAction(Bundle.LBL_SummaryView_action_diffFiles()) {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        master.showDiff(drev);
+                    }
+                }));
+            }
         }
         menu.show(invoker, p.x, p.y);
     }

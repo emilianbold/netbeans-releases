@@ -432,11 +432,11 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     /**
      * Selects given revision in the view as if done by the user.
      *
-     * @param revision revision to select
+     * @param revisions revision to select
      */
-    void select(RepositoryRevision.Event revision) {
+    void select (RepositoryRevision.Event... events) {
         treeView.requestFocusInWindow();
-        treeView.setSelection(revision);
+        treeView.setSelection(events);
     }
 
     void select(RepositoryRevision container) {

@@ -59,6 +59,7 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.mercurial.ui.diff.Bundle.*;
 
 /**
  * Diff action for mercurial: 
@@ -68,7 +69,8 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "CTL_MenuItem_Diff=&Diff To Base",
-    "CTL_PopupMenuItem_Diff=Diff To Base"
+    "CTL_PopupMenuItem_Diff=Diff To Base",
+    "# {0} - context name", "CTL_DiffPanel_Title={0} [ Diff ]"
 })
 public class DiffAction extends ContextAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/diff.png"; //NOI18N
@@ -126,7 +128,7 @@ public class DiffAction extends ContextAction {
 
         MultiDiffPanel panel = new MultiDiffPanel(ctx, type, contextName); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); // NOI18N
+        tc.setName(CTL_DiffPanel_Title(contextName));
         tc.open();
         tc.requestActive();
     }
@@ -136,17 +138,17 @@ public class DiffAction extends ContextAction {
                 new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, new FileStatus(file2, file1), false),
                 false); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file2.getName())); // NOI18N
+        tc.setName(CTL_DiffPanel_Title(file2.getName()));
         tc.open();
         tc.requestActive();
     }
 
-    public void diff (File[] roots, HgRevision rev1, HgRevision rev2, String diffViewName,
+    public void diff (File[] roots, HgRevision rev1, HgRevision rev2, String contextName,
             boolean fixedRevisions, boolean displayUnversionedFiles) {
         // spawns background DiffPrepareTask
         MultiDiffPanel panel = new MultiDiffPanel(roots, rev1, rev2, fixedRevisions, displayUnversionedFiles);
         DiffTopComponent tc = new DiffTopComponent(panel);
-        tc.setName(diffViewName);
+        tc.setName(CTL_DiffPanel_Title(contextName));
         tc.open();
         tc.requestActive();
     }

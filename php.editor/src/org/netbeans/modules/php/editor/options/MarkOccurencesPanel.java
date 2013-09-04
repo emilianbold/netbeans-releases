@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.php.editor.options;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JCheckBox;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.openide.util.Exceptions;
 
 /**
@@ -203,9 +203,9 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     }
 
     private void addListeners() {
-        ChangeListener cl = new CheckChangeListener();
+        ItemListener itemListener = new CheckItemListener();
         for (JCheckBox box : boxes) {
-            box.addChangeListener(cl);
+            box.addItemListener(itemListener);
         }
     }
 
@@ -215,10 +215,10 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         }
     }
 
-    private class CheckChangeListener implements ChangeListener {
+    private class CheckItemListener implements ItemListener {
 
         @Override
-        public void stateChanged(ChangeEvent evt) {
+        public void itemStateChanged(ItemEvent evt) {
             if (evt.getSource() == onOffCheckBox) {
                 componentsSetEnabled();
             }

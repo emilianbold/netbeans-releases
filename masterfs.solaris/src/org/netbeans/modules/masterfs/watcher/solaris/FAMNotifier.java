@@ -49,9 +49,11 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.Structure.ByReference;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -188,6 +190,14 @@ public final class FAMNotifier extends Notifier<Integer> {
             public static class Reference extends FAMConnection implements ByReference {}
             public int fd;
             public Pointer client;
+
+            @Override
+            protected List getFieldOrder() {
+                return Arrays.asList( new String[] {
+                    "fd",
+                    "client",
+                } );
+            }
         }
 
         static class FAMRequest extends Structure {
@@ -202,6 +212,13 @@ public final class FAMNotifier extends Notifier<Integer> {
             }
 
             public int reqnum;
+
+            @Override
+            protected List getFieldOrder() {
+                return Arrays.asList( new String[] {
+                    "reqnum",
+                } );
+            }
         };
 
         public static final int PATH_MAX = 1024;
@@ -223,6 +240,18 @@ public final class FAMNotifier extends Notifier<Integer> {
             public byte[] filename = new byte[PATH_MAX];   /* file changed */
             public Pointer userdata;            /* userdata associated with this monitor req. */
             public int code;             /* What happened to file - see above */
+
+            @Override
+            protected List getFieldOrder() {
+                return Arrays.asList( new String[] {
+                    "fc",
+                    "fr",
+                    "hostname",
+                    "filename",
+                    "userdata",
+                    "code",
+                } );
+            }
         }
 
 

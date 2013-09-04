@@ -135,12 +135,17 @@ class DiffTreeTable extends OutlineView {
         }
     }
 
-    void setSelection(RepositoryRevision.Event revision) {
-        RevisionNode node = (RevisionNode) getNode(rootNode, revision);
-        if (node == null) return;
+    void setSelection (RepositoryRevision.Event... events) {
+        List<Node> nodes = new ArrayList<Node>(events.length);
+        for (RepositoryRevision.Event event : events) {
+            RevisionNode node = (RevisionNode) getNode(rootNode, event);
+            if (node != null) {
+                nodes.add(node);
+            }
+        }
         ExplorerManager em = ExplorerManager.find(this);
         try {
-            em.setSelectedNodes(new Node [] { node });
+            em.setSelectedNodes(nodes.toArray(new Node[nodes.size()]));
         } catch (PropertyVetoException e) {
             ErrorManager.getDefault().notify(e);
         }
