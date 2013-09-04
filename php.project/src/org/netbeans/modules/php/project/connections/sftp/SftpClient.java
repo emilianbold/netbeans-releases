@@ -97,7 +97,9 @@ public class SftpClient implements RemoteClient {
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
     private final SftpLogger sftpLogger;
+    // @GuardedBy("this")
     private Session sftpSession;
+    // @GuardedBy("this")
     private ChannelSftp sftpClient;
 
     public SftpClient(SftpConfiguration configuration, InputOutput io) {
@@ -115,6 +117,7 @@ public class SftpClient implements RemoteClient {
 
     @NbBundle.Messages("SftpConfiguration.bug.knownHosts=<html><b>Error in SFTP library detected:</b><br><br>Your Known Hosts file is too big and will not be used.")
     private void init() throws RemoteException {
+        assert Thread.holdsLock(this);
         if (sftpClient != null && sftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "SFTP client already created and connected");
             return;
@@ -187,6 +190,7 @@ public class SftpClient implements RemoteClient {
     }
 
     private void setProxy(String host) {
+        assert Thread.holdsLock(this);
         if (NO_PROXY_PROPERTY) {
             LOGGER.log(Level.FINE, "No proxy will be used (disabled via system property)");
             return;
@@ -218,7 +222,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public void connect() throws RemoteException {
+    public synchronized void connect() throws RemoteException {
         init();
         assert sftpClient.isConnected();
         try {
@@ -233,7 +237,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public void disconnect(boolean force) throws RemoteException {
+    public synchronized void disconnect(boolean force) throws RemoteException {
         if (sftpSession == null) {
             // nothing to do
             LOGGER.log(Level.FINE, "Remote client not created yet => nothing to do");
@@ -271,7 +275,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         if (sftpClient == null) {
             return false;
         }
@@ -279,7 +283,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public String printWorkingDirectory() throws RemoteException {
+    public synchronized String printWorkingDirectory() throws RemoteException {
         try {
             sftpLogger.info("PWD"); // NOI18N
 
@@ -295,7 +299,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean storeFile(String remote, InputStream local) throws RemoteException {
+    public synchronized boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
             sftpLogger.info("STOR " + remote); // NOI18N
 
@@ -320,7 +324,7 @@ public class SftpClient implements RemoteClient {
         return delete(pathname, true);
     }
 
-    private boolean delete(String pathname, boolean directory) throws RemoteException {
+    private synchronized boolean delete(String pathname, boolean directory) throws RemoteException {
         try {
             sftpLogger.info("DELE " + pathname); // NOI18N
 
@@ -340,7 +344,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean rename(String from, String to) throws RemoteException {
+    public synchronized boolean rename(String from, String to) throws RemoteException {
         try {
             sftpLogger.info("RNFR " + from); // NOI18N
             sftpLogger.info("RNTO " + to); // NOI18N
@@ -357,7 +361,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public List<RemoteFile> listFiles() throws RemoteException {
+    public synchronized List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
         String pwd = null;
         try {
@@ -418,7 +422,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
+    public synchronized boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
             sftpLogger.info("RETR " + remote); // NOI18N
 
@@ -434,7 +438,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean changeWorkingDirectory(String pathname) throws RemoteException {
+    public synchronized boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("CWD " + pathname); // NOI18N
 
@@ -450,7 +454,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean makeDirectory(String pathname) throws RemoteException {
+    public synchronized boolean makeDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("MKD " + pathname); // NOI18N
 
@@ -485,7 +489,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean setPermissions(int permissions, String path) throws RemoteException {
+    public synchronized boolean setPermissions(int permissions, String path) throws RemoteException {
         try {
             sftpLogger.info(String.format("chmod %d %s", permissions, path)); // NOI18N
 
@@ -501,7 +505,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean exists(String parent, String name) throws RemoteException {
+    public synchronized boolean exists(String parent, String name) throws RemoteException {
         String fullPath = parent + "/" + name; // NOI18N
         try {
             sftpClient.ls(fullPath);
@@ -512,7 +516,7 @@ public class SftpClient implements RemoteClient {
         return false;
     }
 
-    private ChannelSftp.LsEntry getFile(String path) throws SftpException {
+    private synchronized ChannelSftp.LsEntry getFile(String path) throws SftpException {
         assert path != null && path.trim().length() > 0;
 
         @SuppressWarnings("unchecked")
