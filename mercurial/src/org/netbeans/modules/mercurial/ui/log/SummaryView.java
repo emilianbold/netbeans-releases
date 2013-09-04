@@ -61,6 +61,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.options.AnnotationColorProvider;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
+import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
@@ -68,8 +69,14 @@ import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.WeakListeners;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Maros Sandor
@@ -387,6 +394,10 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     @Override
+    @NbBundle.Messages({
+        "LBL_SummaryView.action.diffRevisions=Diff Selected Revisions",
+        "LBL_SummaryView.action.diffFiles=Open Selected Files in Diff Tab"
+    })
     protected void onPopup (JComponent invoker, Point p, final Object[] selection) {
         JPopupMenu menu = new JPopupMenu();
         
@@ -394,21 +405,22 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         final RepositoryRevision container;
         final RepositoryRevision.Event[] drev;
 
-        Object revCon = selection[0];
-        
-        boolean noExDeletedExistingFiles = true;        
-        boolean revisionSelected;
+        boolean revisionsSelected = false;
         boolean missingFile = false;        
+        final boolean singleSelection = selection.length == 1;
         boolean oneRevisionMultiselected = true;
         
-        if (revCon instanceof HgLogEntry && selection.length == 1) {
-            revisionSelected = true;
+        for (Object o : selection) {
+            revisionsSelected = true;
+            if (!(o instanceof HgLogEntry)) {
+                revisionsSelected = false;
+            }
+        }
+        if (revisionsSelected) {
             container = ((HgLogEntry) selection[0]).revision;
+            oneRevisionMultiselected = false;
             drev = new RepositoryRevision.Event[0];
-            oneRevisionMultiselected = true;
-            noExDeletedExistingFiles = true;
         } else {
-            revisionSelected = false;
             drev = new RepositoryRevision.Event[selection.length];
 
             for(int i = 0; i < selection.length; i++) {
@@ -421,26 +433,22 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     missingFile = true;
                 }
                 if(oneRevisionMultiselected && i > 0 && 
-                   drev[0].getLogInfoHeader().getLog().getRevisionNumber().equals(drev[i].getLogInfoHeader().getLog().getRevisionNumber())) 
+                   !drev[0].getLogInfoHeader().getLog().getRevisionNumber().equals(drev[i].getLogInfoHeader().getLog().getRevisionNumber())) 
                 {
                     oneRevisionMultiselected = false;
                 }                
-                if(drev[i].getFile() != null && drev[i].getFile().exists() && drev[i].getChangedPath().getAction() == 'D') {
-                    noExDeletedExistingFiles = false;
-                }    
             }                
             container = drev[0].getLogInfoHeader();
         }
         long revision = Long.parseLong(container.getLog().getRevisionNumber());
 
-        final boolean revertToEnabled = !missingFile && !revisionSelected && oneRevisionMultiselected;
-        final boolean backoutChangeEnabled = !missingFile && oneRevisionMultiselected && (drev.length == 0); // drev.length == 0 => the whole revision was selected
-        final boolean viewEnabled = selection.length == 1 && !revisionSelected && drev[0].getFile() != null && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
+        final boolean revertToEnabled = !missingFile && !revisionsSelected && oneRevisionMultiselected;
+        final boolean viewEnabled = selection.length == 1 && !revisionsSelected && drev[0].getFile() != null && drev[0].getChangedPath().getAction() != HgLogMessage.HgDelStatus;
         final boolean annotationsEnabled = viewEnabled;
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (master.isIncomingSearch()) {
-            if (revisionSelected) {
+            if (revisionsSelected && singleSelection) {
                 for (Action a : container.getActions()) {
                     menu.add(new JMenuItem(a));
                 }
@@ -448,21 +456,48 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                 return;
             }
         } else {
-            if (revision > 0) {
-                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
-                    {
-                        setEnabled(diffToPrevEnabled);
-                    }
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        diffPrevious(master, selection[0]);
-                    }
-                }));
+            if (singleSelection || !revisionsSelected) {
+                if (revision > 0) {
+                    menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
+                        {
+                            setEnabled(diffToPrevEnabled);
+                        }
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            diffPrevious(master, selection[0]);
+                        }
+                    }));
+                }
             }
 
-            if (revisionSelected) {
-                for (Action a : container.getActions()) {
-                    menu.add(new JMenuItem(a));
+            if (revisionsSelected) {
+                if (singleSelection) {
+                    for (Action a : container.getActions()) {
+                        menu.add(new JMenuItem(a));
+                    }
+                } else if (selection.length == 2) {
+                    menu.add(new JMenuItem(new AbstractAction(Bundle.LBL_SummaryView_action_diffRevisions()) {
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            File[] roots = master.getRoots();
+                            List<Node> nodes = new ArrayList<Node>(roots.length);
+                            for (final File root : roots) {
+                                nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)) {
+                                    @Override
+                                    public String getDisplayName () {
+                                        return root.getName();
+                                    }
+                                });
+                            }
+                            HgLogMessage info1 = ((HgLogEntry) selection[0]).getRepositoryRevision().getLog();
+                            HgLogMessage info2 = ((HgLogEntry) selection[1]).getRepositoryRevision().getLog();
+                            SystemAction.get(DiffAction.class).diff(master.getRoots(),
+                                    info2.getHgRevision(),
+                                    info1.getHgRevision(),
+                                    Utils.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))),
+                                    false, true);
+                        }
+                    }));
                 }
             } else {
                 menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
@@ -512,6 +547,14 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                         exportFileDiff(drev[0]);
                     }
                 }));
+                if (drev.length == 2 && drev[0].getLogInfoHeader() != drev[1].getLogInfoHeader()) {
+                    menu.add(new JMenuItem(new AbstractAction(Bundle.LBL_SummaryView_action_diffFiles()) {
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            master.showDiff(drev);
+                        }
+                    }));
+                }
             }
         }
 
