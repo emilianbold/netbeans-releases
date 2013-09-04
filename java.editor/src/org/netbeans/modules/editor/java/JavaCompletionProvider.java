@@ -4353,7 +4353,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 int ufSize = uninitializedFields.size();
                 int uffSize = uninitializedFinalFields.size();
-                if (cls.getKind() != Tree.Kind.ENUM) {
+                if (cls.getKind() != Tree.Kind.ENUM && te.getSuperclass().getKind() == TypeKind.DECLARED) {
                     DeclaredType superType = (DeclaredType)te.getSuperclass();
                     Scope scope = env.getScope();
                     for (ExecutableElement ctor : ElementFilter.constructorsIn(superType.asElement().getEnclosedElements())) {
