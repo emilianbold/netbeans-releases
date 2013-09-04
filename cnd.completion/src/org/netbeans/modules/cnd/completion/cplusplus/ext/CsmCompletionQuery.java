@@ -2824,25 +2824,28 @@ abstract public class CsmCompletionQuery {
         private RenderedExpression renderExpression(CsmCompletionExpression expr) {
             switch (expr.getExpID()) {
                 case CsmCompletionExpression.SCOPE: {
-                    assert expr.getParameterCount() == expr.getTokenCount() + 1 : "Unexpected number of parameters or tokens"; // NOI18N
+                    CndUtils.assertTrueInConsole(expr.getParameterCount() == expr.getTokenCount() + 1, "Unexpected number of parameters or tokens"); // NOI18N
                     
-                    StringBuilder sb = new StringBuilder();
-                    int startExpOffset = 0;
-                    int endExprOffset = 0;
-                    
-                    int paramCount = expr.getParameterCount();
-                    for (int i = 0; i < paramCount; i++) {
-                        RenderedExpression renderedSubExpression = renderExpression(expr.getParameter(i));
-                        if (i == 0) {
-                            startExpOffset = renderedSubExpression.startOffset;
-                        } else {
-                            sb.append(expr.getTokenText(i - 1));
+                    if (expr.getParameterCount() == expr.getTokenCount() + 1) {
+                        StringBuilder sb = new StringBuilder();
+                        int startExpOffset = 0;
+                        int endExprOffset = 0;
+
+                        int paramCount = expr.getParameterCount();
+                        for (int i = 0; i < paramCount; i++) {
+                            RenderedExpression renderedSubExpression = renderExpression(expr.getParameter(i));
+                            if (i == 0) {
+                                startExpOffset = renderedSubExpression.startOffset;
+                            } else {
+                                sb.append(expr.getTokenText(i - 1));
+                            }
+                            sb.append(renderedSubExpression.text);
+                            endExprOffset = renderedSubExpression.endOffset;
                         }
-                        sb.append(renderedSubExpression.text);
-                        endExprOffset = renderedSubExpression.endOffset;
+                        
+                        return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
                     }
-                    
-                    return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
+                    // fallback to default
                 }
                 default: {
                     return new RenderedExpression(
