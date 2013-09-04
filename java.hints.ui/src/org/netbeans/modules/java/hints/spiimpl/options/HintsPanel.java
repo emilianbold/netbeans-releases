@@ -356,8 +356,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         okButton.setVisible(showOkCancel);
         cancelButton.setVisible(showOkCancel);
         validate();
+        jSplitPane1.setDividerLocation(getDividerLocation());
     }
-    
+
+    private int getDividerLocation() {
+        final int location = (int) ((jSplitPane1.getWidth() - jSplitPane1.getDividerSize()) * 0.4f);
+        return Math.min(320, location);
+    }
     
     /** This method is called from within the constructor to
      * initialize the form.

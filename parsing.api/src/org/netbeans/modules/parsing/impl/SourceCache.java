@@ -199,6 +199,15 @@ public final class SourceCache {
             final Snapshot _snapshot = getSnapshot ();
             final Collection<Snapshot> _tmp = Collections.singleton (_snapshot);
             _parser = parserFactory.createParser (_tmp);
+            if (_parser == null) {
+                LOG.log(
+                    Level.INFO,
+                    "Parser factory: {0} returned null parser for {1}", //NOI18N
+                    new Object[]{
+                        parserFactory,
+                        _snapshot
+                    });
+            }
         }
 
         synchronized (TaskProcessor.INTERNAL_LOCK) {
