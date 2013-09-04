@@ -2747,10 +2747,15 @@ abstract public class CsmCompletionQuery {
                                     if (type != null) {
                                         params.add(ip.createTypeBasedSpecializationParameter(type));
                                     } else {
-                                        params.add(ip.createExpressionBasedSpecializationParameter(paramInst.getTokenText(0),
-                                                contextFile, paramInst.getTokenOffset(0), paramInst.getTokenOffset(0) + paramInst.getTokenLength(0)));
+                                        RenderedExpression renderedExpression = renderExpression(paramInst);
+                                        params.add(ip.createExpressionBasedSpecializationParameter(
+                                                renderedExpression.text,
+                                                contextFile, 
+                                                renderedExpression.startOffset, 
+                                                renderedExpression.endOffset
+                                        ));
                                     }
-                            }
+                                }
                         } else {
                             break;
                         }
@@ -2807,6 +2812,59 @@ abstract public class CsmCompletionQuery {
             }
             
             return map;
+        }
+        
+        private RenderedExpression renderExpression(CsmCompletionExpression expr) {
+            switch (expr.getExpID()) {
+                case CsmCompletionExpression.SCOPE: {
+                    assert expr.getParameterCount() == expr.getTokenCount() + 1 : "Unexpected number of parameters or tokens"; // NOI18N
+                    
+                    StringBuilder sb = new StringBuilder();
+                    int startExpOffset = 0;
+                    int endExprOffset = 0;
+                    
+                    int paramCount = expr.getParameterCount();
+                    for (int i = 0; i < paramCount; i++) {
+                        RenderedExpression renderedSubExpression = renderExpression(expr.getParameter(i));
+                        if (i == 0) {
+                            startExpOffset = renderedSubExpression.startOffset;
+                        } else {
+                            sb.append(expr.getTokenText(i - 1));
+                        }
+                        sb.append(renderedSubExpression.text);
+                        endExprOffset = renderedSubExpression.endOffset;
+                    }
+                    
+                    return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
+                }
+                default: {
+                    return new RenderedExpression(
+                            expr.getTokenText(0), 
+                            expr.getTokenOffset(0), 
+                            expr.getTokenOffset(0) + expr.getTokenLength(0)
+                    );
+                }
+            }            
+        }
+        
+        private class RenderedExpression {
+            
+            public final String text;
+            
+            public final int startOffset;
+            
+            public final int endOffset;
+
+            public RenderedExpression(String text, int startOffset, int endOffset) {
+                this.text = text;
+                this.startOffset = startOffset;
+                this.endOffset = endOffset;
+            }
+
+            @Override
+            public String toString() {
+                return text + "[" + startOffset + "," + endOffset + "]"; // NOI18N
+            }
         }
 
         private CsmType findBuiltInFunctionReturnType(String mtdName, int tokenOffset) {
