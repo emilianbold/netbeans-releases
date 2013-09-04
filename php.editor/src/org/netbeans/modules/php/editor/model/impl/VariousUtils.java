@@ -1636,7 +1636,7 @@ public final class VariousUtils {
      * @return
      */
     public static boolean isStaticClassName(String className) {
-        return STATIC_CLASS_NAMES.contains(className.toLowerCase());
+        return className != null && STATIC_CLASS_NAMES.contains(className.toLowerCase());
     }
 
     public static boolean isSemiType(String typeName) {
