@@ -58,6 +58,8 @@ import static org.netbeans.modules.project.ui.Bundle.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
@@ -81,6 +83,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
     private WizardDescriptor wizard;
     private boolean isFolder;
     private boolean freeFileExtension;
+    private FileSystem fs;
+
     
     @SuppressWarnings("LeakingThisInConstructor")
     SimpleTargetChooserPanel(@NullAllowed Project project, @NonNull SourceGroup[] folders,
@@ -147,8 +151,12 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             targetFolder = gui.getTargetFolder();
         }
         else if (gui.getTargetFolder() != null) {
-            rootFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())));
-            targetFolder = "";
+            //this line will return null for non-existing folders
+            //FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())))
+            //that's suboptimal but makes the handling of the "outside of project" case easier.
+            //ideally we would traverse the file structure up until we find an existing folder and then compute the non-existing part
+            rootFolder =  fs == null ? FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder()))) : fs.getRoot(); // NOI18N
+            targetFolder = fs == null ? "" : gui.getTargetFolder();
         }
         else {
             rootFolder = null;
@@ -207,7 +215,14 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         String targetName = isFolder ? null : Templates.getTargetName( wizard );
         // Init values
         gui.initValues( Templates.getTemplate( wizard ), preselectedTarget, targetName, includesTemplatesWithProject );
-        
+        //only when we don't have a file from local filesystem
+        if (preselectedTarget != null && FileUtil.toFile(preselectedTarget) == null) {
+            try {
+                fs = preselectedTarget.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = null;
+            }
+        }        
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewFileWizard to modify the title
         Object substitute = gui.getClientProperty ("NewFileWizard_Title"); // NOI18N
@@ -261,8 +276,10 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
             folderName = gui.getTargetFolder();
         }
         else if (gui.getTargetFolder() != null) {
-            rootFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())));
-            folderName = "";
+//            rootFolder = FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder())));
+//            folderName = "";
+            rootFolder =  fs == null ? FileUtil.toFileObject(FileUtil.normalizeFile(new File(gui.getTargetFolder()))) : fs.getRoot(); // NOI18N
+            folderName = fs == null ? "" : gui.getTargetFolder();
         }
         else {
             rootFolder = null;

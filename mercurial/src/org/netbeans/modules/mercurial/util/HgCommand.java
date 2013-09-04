@@ -3060,7 +3060,9 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (file != null) command.add(file.getAbsolutePath());
             List<String> list = exec(command);
             if (!list.isEmpty()) {
-                if (isErrorNoRepository(list.get(0))) {
+                if (isErrorNotFoundInManifest(list.get(0))) {
+                    return Collections.<HgLogMessage>emptyList();
+                } else if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), OutputLogger.getLogger(null));
                 } else if (isErrorAbort(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), OutputLogger.getLogger(null));
@@ -4521,6 +4523,10 @@ public abstract class HgCommand<T> implements Callable<T> {
     
     private static boolean isAddingLine (String msg) {
         return msg.toLowerCase().indexOf(HG_ADDING) > -1;
+    }
+
+    private static boolean isErrorNotFoundInManifest (String msg) {
+        return msg.toLowerCase().contains("not found in manifest"); //NOI18N
     }
 
     private static List<String> getFilesWithPerformanceWarning (List<String> list) {

@@ -56,6 +56,8 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.tigris.subversion.svnclientadapter.SVNBaseDir;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -94,6 +96,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
     private File configDir;
     private String username;
     private String password;
+    private File tmpFolder;
 
     protected SvnCommand() {
         arguments = new Arguments();        
@@ -207,7 +210,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
     }
 
     @Override
-    public void commandFinished() {
+    public final void commandFinished() {
+        File f = getTempCommandFolder(false);
+        if (f != null) {
+            FileUtils.deleteRecursively(f);
+        }
         notificationHandler.logCompleted("");        
     }
     
@@ -267,11 +274,11 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return cmd;
     }        
         
-    protected static String createTempCommandFile(String value) throws IOException {
+    protected String createTempCommandFile(String value) throws IOException {
         return createTempCommandFile(new String[] {value});
     }   
     
-    protected static String createTempCommandFile(File[] files) throws IOException {
+    protected String createTempCommandFile(File[] files) throws IOException {
         String[] lines = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             lines[i] = files[i].getAbsolutePath();            
@@ -282,14 +289,8 @@ public abstract class SvnCommand implements CommandNotificationListener {
         return createTempCommandFile(lines);
     }
     
-    protected static String createTempCommandFile(String[] lines) throws IOException {
-        String tmp = System.getProperty("java.io.tmpdir");
-        if(tmp == null || tmp.trim().equals("")) {
-            File f = File.createTempFile("svncommit", null);
-            tmp = f.getParentFile().getAbsolutePath();
-            f.delete();
-        }
-        File targetFile = File.createTempFile("svn_", "", new File(tmp));
+    protected String createTempCommandFile(String[] lines) throws IOException {
+        File targetFile = File.createTempFile("svn_", "", getTempCommandFolder(true));
         targetFile.deleteOnExit();
 
         PrintWriter writer = null; 
@@ -326,6 +327,13 @@ public abstract class SvnCommand implements CommandNotificationListener {
             Subversion.LOG.log(Level.INFO, "Url: " + url, ex);
         }
         return url;
+    }
+
+    private File getTempCommandFolder (boolean forceCreation) {
+        if (tmpFolder == null && forceCreation) {
+            tmpFolder = Utils.getTempFolder(true);
+        }
+        return tmpFolder;
     }
         
     public final class Arguments implements Iterable<String> {
