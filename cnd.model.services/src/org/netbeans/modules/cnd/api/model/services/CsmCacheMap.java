@@ -105,7 +105,7 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
             return values.put(key, null);
         } else {
             if (timeThreshold == 0 || !(value instanceof TimeConsumingValue) || 
-                (((TimeConsumingValue)value).getCalculationTime() > timeThreshold)) {
+                (((TimeConsumingValue)value).getCalculationTime() >= timeThreshold)) {
                 return values.put(key, value);
             }
         }
@@ -131,7 +131,7 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
             }
             if ((hits > 0 && savedTime > 0) || LOGGER.isLoggable(Level.FINE)) {
                 long usedTime = System.currentTimeMillis() - initTime;
-                LOGGER.log(Level.INFO, "{0}: HITS={1}, Used {2}ms, SavedTime={3}ms, Cached {4} Values (NULLs={5}) ({6})\n", new Object[]{name, hits, usedTime, savedTime, values.size(), nullResolved, Thread.currentThread().getName()});
+                LOGGER.log(Level.INFO, "{0}: HITS={1}, Used {2}ms, SavedTime={3}ms, Cached {4} Values (NULLs={5}) ([{6}]{7})\n", new Object[]{name, hits, usedTime, savedTime, values.size(), nullResolved, Thread.currentThread().getId(), Thread.currentThread().getName()});
             }
         }        
         values.clear();
@@ -159,6 +159,33 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         } else {
             return new ValueImpl(cachedResult, resultCalculationTime);
         }
+    }
+    
+    /**
+     * help method to get result from cache
+     * @param cache map-based cache instance or null
+     * @param key key to access value
+     * @param found if non-null is passed, then on return contains true if 
+     *  cache has result for passed key. Can be used if 
+     * @return cached result associated with key or null. Check parameter found
+     * to distinguished between absent cache and cached null object
+     */
+    public static Object getFromCache(CsmCacheMap cache, Object key, boolean[] found) {
+        if (found != null) {
+            found[0] = false;
+        }
+        Object result = null;
+        CsmCacheMap.Value cacheValue = null;
+        if (cache != null) {
+            cacheValue = cache.get(key);
+        }
+        if (cacheValue != null) {
+            if (found != null) {
+                found[0] = true;
+            }
+            result = cacheValue.getResult();
+        }
+        return result;
     }
     
     public interface Value {

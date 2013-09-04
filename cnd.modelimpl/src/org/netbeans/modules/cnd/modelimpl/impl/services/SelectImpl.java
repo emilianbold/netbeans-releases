@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
@@ -388,6 +389,35 @@ public class SelectImpl implements CsmSelectProvider {
             public String toString() {
                 return Arrays.asList(kinds).toString();
             }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                for (Kind kind : kinds) {
+                    hash = 53 * hash + kind.hashCode();
+                }
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final KindFilterImpl other = (KindFilterImpl) obj;
+                if (kinds.length != other.kinds.length) {
+                    return false;
+                }
+                for (int i = 0; i < kinds.length; i++) {
+                    if (!kinds[i].equals(other.kinds[i])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
         }
 
         private static class NameFilterImpl implements Filter {
@@ -419,6 +449,40 @@ public class SelectImpl implements CsmSelectProvider {
             public String toString() {
                 return "pref=" + strPrefix + "; match=" + match + "; cs=" + caseSensitive + "; allowEmpty=" + allowEmptyName; // NOI18N
             }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 73 * hash + (this.allowEmptyName ? 1 : 0);
+                hash = 73 * hash + Objects.hashCode(this.strPrefix);
+                hash = 73 * hash + (this.match ? 1 : 0);
+                hash = 73 * hash + (this.caseSensitive ? 1 : 0);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final NameFilterImpl other = (NameFilterImpl) obj;
+                if (this.allowEmptyName != other.allowEmptyName) {
+                    return false;
+                }
+                if (!Objects.equals(this.strPrefix, other.strPrefix)) {
+                    return false;
+                }
+                if (this.match != other.match) {
+                    return false;
+                }
+                if (this.caseSensitive != other.caseSensitive) {
+                    return false;
+                }
+                return true;
+            }                        
         }
 
         private static class OffsetFilterImpl implements Filter {
@@ -447,6 +511,32 @@ public class SelectImpl implements CsmSelectProvider {
             public String toString() {
                 return "start offset=" + startOffset + "; endOffset=" + endOffset; // NOI18N
             }
+
+            @Override
+            public int hashCode() {
+                int hash = 3;
+                hash = 59 * hash + this.startOffset;
+                hash = 59 * hash + this.endOffset;
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final OffsetFilterImpl other = (OffsetFilterImpl) obj;
+                if (this.startOffset != other.startOffset) {
+                    return false;
+                }
+                if (this.endOffset != other.endOffset) {
+                    return false;
+                }
+                return true;
+            }
         }
 
         private static class InnerOffsetFilterImpl implements Filter {
@@ -473,6 +563,28 @@ public class SelectImpl implements CsmSelectProvider {
             public String toString() {
                 return "inner offset=" + innerOffset; // NOI18N
             }
+
+            @Override
+            public int hashCode() {
+                int hash = 7;
+                hash = 89 * hash + this.innerOffset;
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final InnerOffsetFilterImpl other = (InnerOffsetFilterImpl) obj;
+                if (this.innerOffset != other.innerOffset) {
+                    return false;
+                }
+                return true;
+            }
         }
 
         private static class CompoundFilterImpl implements Filter {
@@ -493,6 +605,27 @@ public class SelectImpl implements CsmSelectProvider {
             public String toString() {
                 return "filter [" + first + "][" + second + "]"; // NOI18N
             }
+
+            @Override
+            public int hashCode() {
+                return this.first.hashCode() ^ this.second.hashCode();
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final CompoundFilterImpl other = (CompoundFilterImpl) obj;
+                if (Objects.equals(this.first, other.first) && Objects.equals(this.second, other.second)) {
+                    return true;
+                }                
+                // it's fine if first and second were swapped
+                return Objects.equals(this.first, other.second) && Objects.equals(this.second, other.first);
+            }
         }
 
         private static class NameAcceptorFilterImpl implements Filter {
@@ -507,6 +640,28 @@ public class SelectImpl implements CsmSelectProvider {
                 CharSequence name = UIDUtilities.getName(uid);
                 return nameAcceptor.accept(name);
             }
+
+            @Override
+            public int hashCode() {
+                int hash = 5;
+                hash = 11 * hash + Objects.hashCode(this.nameAcceptor);
+                return hash;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == null) {
+                    return false;
+                }
+                if (getClass() != obj.getClass()) {
+                    return false;
+                }
+                final NameAcceptorFilterImpl other = (NameAcceptorFilterImpl) obj;
+                if (!Objects.equals(this.nameAcceptor, other.nameAcceptor)) {
+                    return false;
+                }
+                return true;
+            }                        
         }
     }
 
