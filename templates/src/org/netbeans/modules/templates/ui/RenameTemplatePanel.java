@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.favorites.templates;
+package org.netbeans.modules.templates.ui;
 
 import java.util.Set;
 import javax.swing.event.DocumentEvent;
