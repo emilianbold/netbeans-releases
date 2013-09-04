@@ -73,7 +73,7 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
             imo.btGenerate().push();
             String expected = "" +
                     "    public void m() {\n" +
-                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
                     "    }\n";
             waitAndCompare(expected);
         } finally {
@@ -96,25 +96,15 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
             jto.selectRow(5);
             imo.btGenerate().push();            
             String expected = "" +
-                    "    public int getColumnCount() {\n" +
-                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
-                    "    }\n" +
-                    "\n" +
-                    "    public void run() {\n" +
-                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
-                    "    }\n";
-            if(getJDKVersionCode().equals("jdk17")) {
-                expected = "" +
                     "    @Override\n"+
                     "    public int getColumnCount() {\n" +
-                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
                     "    }\n" +
                     "\n" +
                     "    @Override\n"+
                     "    public void run() {\n" +
-                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
-                    "    }\n";
-            }
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                    "    }\n";            
             waitAndCompare(expected);
         } finally {
             editor.close(false);

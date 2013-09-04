@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -107,8 +108,8 @@ import org.netbeans.junit.NbModuleSuite;
         }else{
             editor.setCaretPosition(caretPosToSet);
             txtOper.getCaret().setMagicCaretPosition(null);
-        }
-        txtOper.pushKey(key,mod);
+        }        
+        txtOper.pushKey(key,mod);    
         waitMaxMilisForValue(3500, getResolver(txtOper, etalon), Boolean.TRUE);
         int newCaretOffset = txtOper.getCaretPosition();
         if (checkSelection){
@@ -186,21 +187,21 @@ import org.netbeans.junit.NbModuleSuite;
 
             // checking end of fold
             // check up action
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 78, 70, false);
+            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 84, 70, false);
             
             // check up action, selection
-            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 78, 70, true);
+            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 84, 70, true);
             
             // check down action
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 70, 79, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 70, 83, false);
             
             // check down action, selection
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 70, 79, true);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 70, 83, true);
             
             // check magic position
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 80, 70, false);
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, -1, 80, false);
-            
+            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 83, 70, false);
+            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, -1, 83, false);
+                                                
             
             // ------------------------------------------------------------------------
             
@@ -247,21 +248,12 @@ import org.netbeans.junit.NbModuleSuite;
 
             // checking end of fold
             // check up action
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 467, 454, false);
-            
+            new EventTool().waitNoEvent(2000);
+            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 505, 454, false);
+            new EventTool().waitNoEvent(2000);
             // check up action, selection
-            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 467, 454, true);
-            
-            // check down action
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, 454, 468, false);
-            
-            // check down action, selection
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK, 454, 468, true);
-            
-            // check magic position
-            checkActionByKeyStroke(KeyEvent.VK_UP, 0, 469, 454, false);
-            checkActionByKeyStroke(KeyEvent.VK_DOWN, 0, -1, 469, false);
-            
+            checkActionByKeyStroke(KeyEvent.VK_UP, KeyEvent.SHIFT_DOWN_MASK, 505, 454, true);
+                        
             //----------------------------------------------------------------
             //check multi fold on line
                        
