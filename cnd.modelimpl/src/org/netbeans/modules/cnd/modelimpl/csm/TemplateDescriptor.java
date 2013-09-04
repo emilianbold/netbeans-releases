@@ -47,7 +47,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -64,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -142,6 +145,40 @@ public final class TemplateDescriptor {
     @Override
     public String toString() {
         return getTemplateSuffix().toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + CndCollectionUtils.hashCode(templateParams);
+        hash = 67 * hash + Objects.hashCode(this.templateSuffix);
+        hash = 67 * hash + this.inheritedTemplateParametersNumber;
+        hash = 67 * hash + (this.specialization ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TemplateDescriptor other = (TemplateDescriptor) obj;
+        if (this.inheritedTemplateParametersNumber != other.inheritedTemplateParametersNumber) {
+            return false;
+        }
+        if (this.specialization != other.specialization) {
+            return false;
+        }
+        if (!Objects.equals(this.templateSuffix, other.templateSuffix)) {
+            return false;
+        }
+        return CndCollectionUtils.equals(this.templateParams, other.templateParams);
     }
     
     public static class TemplateDescriptorBuilder extends ScopedDeclarationBuilder {

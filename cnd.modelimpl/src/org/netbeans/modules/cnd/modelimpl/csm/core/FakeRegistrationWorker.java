@@ -48,9 +48,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmStandaloneFileProviderImpl.NativeProjectImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.RequestProcessor;
@@ -71,6 +74,7 @@ public class FakeRegistrationWorker {
     }
 
     void fixFakeRegistration(boolean libsAlreadyParsed){
+        long time = System.currentTimeMillis();
         Collection<CsmUID<CsmFile>> files = project.getAllFilesUID();
         int size = files.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
@@ -97,8 +101,12 @@ public class FakeRegistrationWorker {
         }
         try {
             countDownLatch.await();
+            time = System.currentTimeMillis() - time;
             if (libsAlreadyParsed) {
                 project.cleanAllFakeFunctionAST();
+            }
+            if (TraceFlags.TIMING) {
+                Logger.getLogger(FakeRegistrationWorker.class.getSimpleName()).log(Level.INFO, "FAKE REGISTRATION {0} took {1}ms\n", new Object[] {project.getName(), time});
             }
         } catch (InterruptedException ex) {
         }

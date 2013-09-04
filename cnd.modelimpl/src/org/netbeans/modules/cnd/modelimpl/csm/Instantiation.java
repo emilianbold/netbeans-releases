@@ -53,6 +53,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
@@ -89,7 +91,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
     private static final int MAX_INHERITANCE_DEPTH = 20;
-
+    private static final Logger LOG = Logger.getLogger(Instantiation.class.getSimpleName());
+    
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
 
@@ -112,6 +115,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     // FIX for 146522, we compare toString value until better solution is found
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (!(obj instanceof CsmObject)) {
             return false;
         }
@@ -338,6 +344,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     ////////////// STATIC MEMBERS
     public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
                                     SelectImpl.FilterableMembers {
+        private volatile List<CsmInheritance> inheritances;
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             super(clazz, mapping);
         }
@@ -447,11 +454,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public Collection<CsmInheritance> getBaseClasses() {
-            Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
-            for (CsmInheritance inh : declaration.getBaseClasses()) {
-                res.add(new Inheritance(inh, this));
+            if (inheritances == null) {
+                List<CsmInheritance> res = new ArrayList<>(1);
+                for (CsmInheritance inh : declaration.getBaseClasses()) {
+                    res.add(new Inheritance(inh, this));
+                }
+                inheritances = res.isEmpty() ? Collections.<CsmInheritance>emptyList() : res;
             }
-            return res;
+            return inheritances;
         }
 
         @Override
@@ -1127,6 +1137,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
         }
+        LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
@@ -1143,6 +1154,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
+            LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
             CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
@@ -1153,6 +1165,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     }
     
     public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;
         while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&

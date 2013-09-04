@@ -145,7 +145,7 @@ public final class CsmCacheManager {
      * nothing is put into cache. If cache transaction is active, then returns
      * previous value associated with key if any.
      */
-    public static Object putValue(@NonNull Object key, CsmCacheMap.Value value) {
+    public static CsmCacheMap.Value putValue(@NonNull Object key, CsmCacheMap.Value value) {
         if (key == null) {
             throw new NullPointerException();
         }
@@ -153,7 +153,7 @@ public final class CsmCacheManager {
         if (map == null) {
             return null;
         }
-        Object prev = map.put(key, value);
+        CsmCacheMap.Value prev = map.put(key, value);
         LOGGER.log(Level.FINE, "putValue {1}->{2} (replaced {3})\n", new Object[] {key, value, prev});
         return prev;
     }
@@ -233,7 +233,7 @@ public final class CsmCacheManager {
         }
 
         void enterImpl() {
-            LOGGER.log(Level.FINE, "CsmCacheStorage: Enter {0}:{1}\n", new Object[] {activeReferences, Thread.currentThread().getName()});
+            LOGGER.log(Level.FINE, "CsmCacheStorage: Enter {0}:[{1}]{2}\n", new Object[] {activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
             if (activeReferences == 0) {
                 initTime = System.currentTimeMillis();
                 if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
@@ -244,7 +244,7 @@ public final class CsmCacheManager {
         }
 
         void leaveImpl() {
-            LOGGER.log(Level.FINE, "CsmCacheStorage: Leave {0}:{1}\n", new Object[]{activeReferences, Thread.currentThread().getName()});
+            LOGGER.log(Level.FINE, "CsmCacheStorage: Leave {0}:[{1}]{3}\n", new Object[]{activeReferences, Thread.currentThread().getId(), Thread.currentThread().getName()});
             if (activeReferences == 0) {
                 traceError();
                 return;
@@ -254,7 +254,7 @@ public final class CsmCacheManager {
                 if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
                     releasedStack = new Exception("Released for " + Thread.currentThread().getName()); // NOI18N
                 }
-                LOGGER.log(Level.FINE, "CsmCacheStorage: Used {0}ms; Dispose {1}:{2}\n", new Object[]{initTime, cacheEntries.size(), Thread.currentThread().getName()});
+                LOGGER.log(Level.FINE, "CsmCacheStorage: Used {0}ms; Dispose {1}:[{2}]{3}\n", new Object[]{initTime, cacheEntries.size(), Thread.currentThread().getId(), Thread.currentThread().getName()});
                 // release all entries
                 for (CsmClientCache entry : cacheEntries.values()) {
                     entry.cleanup();
