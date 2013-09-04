@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.*;
+import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.openide.actions.CopyAction;
 import org.openide.actions.SaveAction;
@@ -80,8 +81,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     public static final String ACTION_PREVIOUS_CONFLICT = "previousConflict"; // NOI18N
     public static final String ACTION_NEXT_CONFLICT = "nextConflict"; // NOI18N
     public static final String ACTION_ACCEPT_RIGHT = "acceptRight"; // NOI18N
+    public static final String ACTION_ACCEPT_LEFT_RIGHT = "acceptLeftRight"; // NOI18N
     //public static final String ACTION_ACCEPT_RIGHT_AND_NEXT = "acceptRightAndNext"; // NOI18N
     public static final String ACTION_ACCEPT_LEFT = "acceptLeft"; // NOI18N
+    public static final String ACTION_ACCEPT_RIGHT_LEFT = "acceptRightLeft"; // NOI18N
     //public static final String ACTION_ACCEPT_LEFT_AND_NEXT = "acceptLeftAndNext"; // NOI18N
     
     public static final String PROP_CAN_BE_SAVED = "canBeSaved"; // NOI18N
@@ -116,8 +119,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     private int numConflicts;
     private int numUnresolvedConflicts;
     private int currentConflictPos;
-    private List<Integer> resolvedLeftConflictsLineNumbers = new ArrayList<Integer>();
-    private List<Integer> resolvedRightConflictsLineNumbers = new ArrayList<Integer>();
+    private final List<Integer> resolvedLeftConflictsLineNumbers = new ArrayList<Integer>();
+    private final List<Integer> resolvedRightConflictsLineNumbers = new ArrayList<Integer>();
+    private final List<Integer> resolvedLeftRightConflictsLineNumbers = new ArrayList<Integer>();
+    private final List<Integer> resolvedRightLeftConflictsLineNumbers = new ArrayList<Integer>();
 
     private ArrayList<ActionListener> controlListeners = new ArrayList<ActionListener>();
     
@@ -127,6 +132,7 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
 
     static final long serialVersionUID =3683458237532937983L;
     private static final String PLAIN_TEXT_MIME = "text/plain";
+    private Difference[] conflicts;
 
     /** Creates new DiffComponent from AbstractDiff object*/
     public MergePanel() {
@@ -180,6 +186,13 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
+
+        acceptLeftButton = new javax.swing.JButton();
+        acceptLeftRightButton = new javax.swing.JButton();
+        acceptAndNextLeftButton = new javax.swing.JButton();
+        acceptRightButton = new javax.swing.JButton();
+        acceptRightLeftButton = new javax.swing.JButton();
+        acceptAndNextRightButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -243,25 +256,23 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
 
         filePanel1.setLayout(new java.awt.GridBagLayout());
 
-        leftCommandPanel.setLayout(new java.awt.GridBagLayout());
+        leftCommandPanel.setLayout(new javax.swing.BoxLayout(leftCommandPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         org.openide.awt.Mnemonics.setLocalizedText(acceptLeftButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftButton.text")); // NOI18N
         acceptLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptLeftButton.textA11yDesc")); // NOI18N
         acceptLeftButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
-        leftCommandPanel.add(acceptLeftButton, gridBagConstraints);
+        leftCommandPanel.add(acceptLeftButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(acceptLeftRightButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptLeftRightButton.text")); // NOI18N
+        acceptLeftRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("MergePanel.acceptLeftRightButton.TTtext")); // NOI18N
+        acceptLeftRightButton.setActionCommand(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.declineLeftButton.text")); // NOI18N
+        acceptLeftRightButton.addActionListener(this);
+        leftCommandPanel.add(acceptLeftRightButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(acceptAndNextLeftButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextLeftButton")); // NOI18N
         acceptAndNextLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextLeftButtonA11yDesc")); // NOI18N
         acceptAndNextLeftButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
-        leftCommandPanel.add(acceptAndNextLeftButton, gridBagConstraints);
+        leftCommandPanel.add(acceptAndNextLeftButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
@@ -291,25 +302,23 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
 
         filePanel2.setLayout(new java.awt.GridBagLayout());
 
-        rightCommandPanel.setLayout(new java.awt.GridBagLayout());
+        rightCommandPanel.setLayout(new javax.swing.BoxLayout(rightCommandPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         org.openide.awt.Mnemonics.setLocalizedText(acceptRightButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightButton.text")); // NOI18N
         acceptRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptRightButton.textA11yDesc")); // NOI18N
         acceptRightButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 1);
-        rightCommandPanel.add(acceptRightButton, gridBagConstraints);
+        rightCommandPanel.add(acceptRightButton);
+
+        org.openide.awt.Mnemonics.setLocalizedText(acceptRightLeftButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptRightLeftButton.text")); // NOI18N
+        acceptRightLeftButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("MergePanel.acceptRightLeftButton.TTtext")); // NOI18N
+        acceptRightLeftButton.setActionCommand(org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.declineLeftButton.text")); // NOI18N
+        acceptRightLeftButton.addActionListener(this);
+        rightCommandPanel.add(acceptRightLeftButton);
 
         org.openide.awt.Mnemonics.setLocalizedText(acceptAndNextRightButton, org.openide.util.NbBundle.getMessage(MergePanel.class, "MergePanel.acceptAndNextRightButton")); // NOI18N
         acceptAndNextRightButton.setToolTipText(org.openide.util.NbBundle.getBundle(MergePanel.class).getString("ACS_MergePanel.acceptAndNextRightButtonA11yDesc")); // NOI18N
         acceptAndNextRightButton.addActionListener(this);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 2);
-        rightCommandPanel.add(acceptAndNextRightButton, gridBagConstraints);
+        rightCommandPanel.add(acceptAndNextRightButton);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
@@ -390,11 +399,17 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         else if (evt.getSource() == acceptLeftButton) {
             MergePanel.this.acceptLeftButtonActionPerformed(evt);
         }
+        else if (evt.getSource() == acceptLeftRightButton) {
+            MergePanel.this.acceptLeftRightButtonActionPerformed(evt);
+        }
         else if (evt.getSource() == acceptAndNextLeftButton) {
             MergePanel.this.acceptAndNextLeftButtonActionPerformed(evt);
         }
         else if (evt.getSource() == acceptRightButton) {
             MergePanel.this.acceptRightButtonActionPerformed(evt);
+        }
+        else if (evt.getSource() == acceptRightLeftButton) {
+            MergePanel.this.acceptRightLeftButtonActionPerformed(evt);
         }
         else if (evt.getSource() == acceptAndNextRightButton) {
             MergePanel.this.acceptAndNextRightButtonActionPerformed(evt);
@@ -476,8 +491,9 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
  */
   }//GEN-LAST:event_jEditorPane2CaretUpdate
 
-  public void setNumConflicts(int numConflicts) {
-      this.numConflicts = numConflicts;
+  public void setConflicts (Difference[] diffs) {
+      this.conflicts = diffs;
+      this.numConflicts = diffs.length;
       this.numUnresolvedConflicts = numConflicts;
   }
     
@@ -526,9 +542,13 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
       Integer conflictPos = new Integer(linePos);
       boolean left = resolvedLeftConflictsLineNumbers.contains(conflictPos);
       boolean right = resolvedRightConflictsLineNumbers.contains(conflictPos);
+      boolean leftRight = resolvedLeftRightConflictsLineNumbers.contains(conflictPos);
+      boolean rightLeft = resolvedRightLeftConflictsLineNumbers.contains(conflictPos);
       acceptLeftButton.setEnabled(!left);
+      acceptLeftRightButton.setEnabled(conflicts[currentConflictPos].getType() == Difference.CHANGE && !leftRight);
       acceptAndNextLeftButton.setEnabled(!left);
       acceptRightButton.setEnabled(!right);
+      acceptRightLeftButton.setEnabled(conflicts[currentConflictPos].getType() == Difference.CHANGE && !rightLeft);
       acceptAndNextRightButton.setEnabled(!right);
   }
   
@@ -568,6 +588,14 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         }
  */
     }//GEN-LAST:event_exitForm
+
+    private void acceptLeftRightButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptLeftRightButtonActionPerformed
+        fireControlActionCommand(ACTION_ACCEPT_LEFT_RIGHT);
+    }//GEN-LAST:event_acceptLeftRightButtonActionPerformed
+
+    private void acceptRightLeftButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptRightLeftButtonActionPerformed
+        fireControlActionCommand(ACTION_ACCEPT_RIGHT_LEFT);
+    }//GEN-LAST:event_acceptRightLeftButtonActionPerformed
 
     public void setSystemActions(SystemAction[] actions) {
         this.systemActions = actions;
@@ -1171,6 +1199,10 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         }
         if (resolvedRightConflictsLineNumbers.contains(conflictLine)) {
             resolvedRightConflictsLineNumbers.remove(conflictLine);
+        } else if (resolvedLeftRightConflictsLineNumbers.contains(conflictLine)) {
+            resolvedLeftRightConflictsLineNumbers.remove(conflictLine);
+        } else if (resolvedRightLeftConflictsLineNumbers.contains(conflictLine)) {
+            resolvedRightLeftConflictsLineNumbers.remove(conflictLine);
         } else {
             // We've resolved the conflict.
             numUnresolvedConflicts--;
@@ -1202,12 +1234,55 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         }
         if (resolvedLeftConflictsLineNumbers.contains(conflictLine)) {
             resolvedLeftConflictsLineNumbers.remove(conflictLine);
+        } else if (resolvedLeftRightConflictsLineNumbers.contains(conflictLine)) {
+            resolvedLeftRightConflictsLineNumbers.remove(conflictLine);
+        } else if (resolvedRightLeftConflictsLineNumbers.contains(conflictLine)) {
+            resolvedRightLeftConflictsLineNumbers.remove(conflictLine);
         } else {
             // We've resolved the conflict.
             numUnresolvedConflicts--;
             updateStatusLine();
         }
         resolvedRightConflictsLineNumbers.add(conflictLine);
+        updateAcceptButtons(line1);
+    }
+    
+    public void replaceBothInResult (int line1, int line2,
+            int line3, int line4,
+            int line5, int line6, boolean right) {
+        Integer conflictLine1 = line1 > 0 ? line1 : 1;
+        Integer conflictLine2 = line3 > 0 ? line3 : 1;
+        // If trying to resolve the conflict twice simply return .
+        StyledDocument doc1 = (StyledDocument) jEditorPane1.getDocument();
+        StyledDocument doc2 = (StyledDocument) jEditorPane2.getDocument();
+        StyledDocument target = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            if (right) {
+                replace(doc2, line3, line4, doc1, line1, line2, target, line5, line6);
+            } else {
+                replace(doc1, line1, line2, doc2, line3, line4, target, line5, line6);
+            }
+        } catch (BadLocationException e) {
+            org.openide.ErrorManager.getDefault().notify(e);
+        }
+        if (resolvedLeftConflictsLineNumbers.contains(conflictLine1)) {
+            resolvedLeftConflictsLineNumbers.remove(conflictLine1);
+        } else if (resolvedRightConflictsLineNumbers.contains(conflictLine2)) {
+            resolvedRightConflictsLineNumbers.remove(conflictLine2);
+        } else if (right && resolvedLeftRightConflictsLineNumbers.contains(conflictLine1)) {
+            resolvedLeftRightConflictsLineNumbers.remove(conflictLine1);
+        } else if (!right && resolvedRightLeftConflictsLineNumbers.contains(conflictLine2)) {
+            resolvedRightLeftConflictsLineNumbers.remove(conflictLine2);
+        } else {
+            // We've resolved the conflict.
+            numUnresolvedConflicts--;
+            updateStatusLine();
+        }
+        if (right) {
+            resolvedRightLeftConflictsLineNumbers.add(conflictLine2);
+        } else {
+            resolvedLeftRightConflictsLineNumbers.add(conflictLine1);
+        }
         updateAcceptButtons(line1);
     }
     
@@ -1283,21 +1358,87 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
         }
     }
     
-    /*
-    private void dumpResultLineNumbers() {
-        System.out.print("resultLineNum[] = ");
-        boolean was = false;
-        for (int i = 0; i < resultLineNumbers.length; i++) {
-            if (resultLineNumbers[i] == 0 && was) break;
-            if (resultLineNumbers[i] != 0) was = true;
-            System.out.print(resultLineNumbers[i]+", ");
+    private void replace(StyledDocument doc1, int line1, int line2,
+                         StyledDocument doc2, int line3, int line4,
+                         StyledDocument target, int targetStart, int targetEnd) throws BadLocationException {
+        //dumpResultLineNumbers();
+        //System.out.println("replace("+line1+", "+line2+", "+line3+", "+line4+")");
+        int offset1 = (line1 > 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line1 - 1)
+                                  : 0;
+        int offset2 = (line2 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc1, line2)
+                                   : (doc1.getLength() - 1);
+        int offset3 = (line3 > 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line3 - 1)
+                                  : 0;
+        int offset4 = (line4 >= 0) ? org.openide.text.NbDocument.findLineOffset(doc2, line4)
+                                   : (doc2.getLength() - 1);
+        int offset5 = (targetStart > 0) ? org.openide.text.NbDocument.findLineOffset(target, targetStart - 1)
+                                  : 0;
+        int offset6 = (targetEnd >= 0) ? org.openide.text.NbDocument.findLineOffset(target, targetEnd)
+                                   : (target.getLength() - 1);
+        //System.out.println("replace: offsets = "+offset1+", "+offset2+", "+offset3+", "+offset4);
+        int length = offset4 - offset3;
+        if (line4 < 0) length++;
+        String text = doc2.getText(offset3, length);
+        target.remove(offset5, offset6 - offset5);
+        target.insertString(offset5, text, null);
+        
+        length = offset2 - offset1;
+        if (line2 < 0) length++;
+        text = doc1.getText(offset1, length);
+        target.insertString(offset5, text, null);
+        // Adjust the line numbers
+        assureResultLineNumbersLength(targetEnd);
+        //int lineDiff;
+        int physicalLineDiff = line2 - line1 + line4 - line3 + 1 - (targetEnd - targetStart);
+        if (physicalLineDiff > 0) {
+            System.arraycopy(resultLineNumbers, targetEnd + 1,
+                             resultLineNumbers, targetEnd + physicalLineDiff + 1,
+                             resultLineNumbers.length - targetEnd - physicalLineDiff - 1);
+            //System.out.println("arraycopy("+line4+", "+(line4 + physicalLineDiff)+")");
+            //dumpResultLineNumbers();
         }
-        System.out.println("");
-        try {
-            Thread.currentThread().sleep(1000);
-        } catch (InterruptedException iex) {}
+        int lineDiff = (resultLineNumbers[targetStart] <= resultLineNumbers[targetStart - 1])
+                       ? (line2 - line1 + 1 + line4 - line3 + 1)
+                       : physicalLineDiff;
+        //if (resultLineNumbers[line3] <= resultLineNumbers[line3 - 1]) {
+            // There are no line numbers defined.
+            //lineDiff = line2 - line1 + 1;
+        int n = resultLineNumbers[targetStart - 1];
+        for (int i = targetStart; i <= targetEnd + physicalLineDiff; i++) {
+            resultLineNumbers[i] = ++n;
+        }
+            /*
+            for (int i = line4 + lineDiff + 1; i < resultLineNumbers.length; i++) {
+                if (resultLineNumbers[i] != 0) resultLineNumbers[i] += lineDiff;
+                else break;
+            }
+             */
+        //lineDiff = line2 - line1 + 1;
+        //System.out.println("insertNumbers("+line3+", "+resultLineNumbers[line3]+", "+(line2 - line1 + 1)+")");
+        linesComp3.insertNumbers(targetStart - 1, resultLineNumbers[targetStart], line2 - line1 + 1 + line4 - line3 + 1);
+        linesComp3.changedAll();
+        //dumpResultLineNumbers();
+        //} else {
+        //    lineDiff = line2 - line1 - (line4 - line3);
+        //}
+        if (physicalLineDiff < 0) {
+            System.arraycopy(resultLineNumbers, targetEnd + 1,
+            resultLineNumbers, targetEnd + physicalLineDiff + 1,
+            resultLineNumbers.length - targetEnd - 1);
+            //System.out.println("arraycopy("+line4+", "+(line4 + physicalLineDiff)+")");
+            //dumpResultLineNumbers();
+        }
+        adjustLineNumbers(targetEnd + physicalLineDiff + 1, lineDiff);
+
+        // #65970 workaround, resultLineNumbers content must be primitive only raising
+        int line = -1;
+        for (int i = 0; i< resultLineNumbers.length; i++) {
+            if (resultLineNumbers[i] < line) {
+                resultLineNumbers[i] = line;
+            }
+            line = resultLineNumbers[i];
+        }
     }
-     */
     
     private void adjustLineNumbers(int startLine, int shift) {
         //System.out.println("adjustLineNumbers("+startLine+", "+shift+")");
@@ -1552,10 +1693,12 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
     private javax.swing.JViewport jViewport2;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JButton acceptAndNextLeftButton = new javax.swing.JButton();
-    final javax.swing.JButton acceptAndNextRightButton = new javax.swing.JButton();
-    final javax.swing.JButton acceptLeftButton = new javax.swing.JButton();
-    final javax.swing.JButton acceptRightButton = new javax.swing.JButton();
+    private javax.swing.JButton acceptAndNextLeftButton;
+    private javax.swing.JButton acceptAndNextRightButton;
+    private javax.swing.JButton acceptLeftButton;
+    private javax.swing.JButton acceptLeftRightButton;
+    private javax.swing.JButton acceptRightButton;
+    private javax.swing.JButton acceptRightLeftButton;
     final javax.swing.JPanel commandPanel = new javax.swing.JPanel();
     final javax.swing.JSplitPane diffSplitPane = new javax.swing.JSplitPane();
     final javax.swing.JPanel editorPanel = new javax.swing.JPanel();
