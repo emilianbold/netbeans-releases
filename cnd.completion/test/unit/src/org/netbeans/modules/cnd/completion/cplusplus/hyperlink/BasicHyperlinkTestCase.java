@@ -1012,6 +1012,24 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("parensInFunctionParameters.cpp", 5, 87, "parensInFunctionParameters.cpp", 5, 76);
     }        
     
+    public void testBug235462() throws Exception { 
+        // Bug 235462 - Wrong navigation to overloaded functions
+        performTest("bug235462.cpp", 85, 9, "bug235462.cpp", 15, 5);
+        performTest("bug235462.cpp", 86, 9, "bug235462.cpp", 20, 5);
+        performTest("bug235462.cpp", 87, 9, "bug235462.cpp", 25, 5);
+        performTest("bug235462.cpp", 88, 9, "bug235462.cpp", 30, 5);
+        performTest("bug235462.cpp", 89, 9, "bug235462.cpp", 35, 5);        
+        performTest("bug235462.cpp", 98, 9, "bug235462.cpp", 39, 5);
+        performTest("bug235462.cpp", 99, 9, "bug235462.cpp", 43, 5);
+        performTest("bug235462.cpp", 100, 9, "bug235462.cpp", 47, 5);
+        performTest("bug235462.cpp", 101, 9, "bug235462.cpp", 51, 5);
+        performTest("bug235462.cpp", 103, 9, "bug235462.cpp", 55, 5);
+        performTest("bug235462.cpp", 104, 9, "bug235462.cpp", 59, 5);
+        performTest("bug235462.cpp", 105, 9, "bug235462.cpp", 63, 5);
+        performTest("bug235462.cpp", 106, 9, "bug235462.cpp", 67, 5);
+        performTest("bug235462.cpp", 107, 9, "bug235462.cpp", 72, 5);
+    }      
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
