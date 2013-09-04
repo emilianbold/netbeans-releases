@@ -43,13 +43,8 @@
  */
 package org.netbeans.performance.j2ee.actions;
 
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.j2ee.setup.J2EESetup;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -120,28 +115,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public static Test suite() {
         return emptyConfiguration().addTest(J2EESetup.class).addTest(OpenJ2EEFilesTest.class).suite();
     }
-
-    class PhaseHandler extends Handler {
-
-        public boolean published = false;
-
-        public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) {
-                ActionTracker.getInstance().stopRecording();
-            }
-
-        }
-
-        public void flush() {
-        }
-
-        public void close() throws SecurityException {
-        }
-
-    }
-
-    PhaseHandler phaseHandler = new PhaseHandler();
 
     public void testOpeningJava() {
         WAIT_AFTER_OPEN = 1000;
@@ -223,18 +196,17 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
+        addEditorPhaseHandler();
     }
 
     @Override
     public void shutdown() {
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
+        removeEditorPhaseHandler();
     }
 
     public void prepare() {
-        Logger.getLogger("TIMER").setLevel(Level.FINE);
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         openNode = new Node(new ProjectRootNode(tree, fileProject), filePath);

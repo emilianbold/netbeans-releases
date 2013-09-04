@@ -50,19 +50,15 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.actions.MaximizeWindowAction;
+import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.performance.web.setup.WebSetup;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 /**
  *
@@ -70,7 +66,6 @@ import java.util.logging.LogRecord;
  */
 public class FileSwitchingTest  extends PerformanceTestCase {
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
         String filenameFrom;
         String filenameTo;
     
@@ -95,28 +90,6 @@ public class FileSwitchingTest  extends PerformanceTestCase {
              .enableModules(".*").clusters(".*")));
         return suite;
     }
-
-    class PhaseHandler extends Handler {
-
-            public boolean published = false;
-
-            public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
-               ActionTracker.getInstance().stopRecording();
-
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-
-        }
-
-    PhaseHandler phaseHandler=new PhaseHandler();
-
 
     public void testSwitchJavaToJava(){
         filenameFrom = "Main.java";
@@ -166,16 +139,17 @@ public class FileSwitchingTest  extends PerformanceTestCase {
         Node f = fto.getProjectNode("TestWebProject");
 
         new OpenAction().performAPI(new Node(f, "build.xml"));
-
+        // maximize to eliminate navigator events
+        new MaximizeWindowAction().perform(new EditorOperator("build.xml"));
+        CommonUtilities.setSpellcheckerEnabled(false);
     }
         
     public void prepare() {
-        EditorOperator eo = ewo.selectPage(filenameFrom);
-        Logger.getLogger("TIMER").setLevel(Level.FINE);
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
+        EditorOperator eo = new EditorOperator(filenameFrom);
     }
     
     public ComponentOperator open() {
+        MY_START_EVENT = ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE;
         return new EditorOperator(filenameTo);
     }
     
@@ -185,8 +159,8 @@ public class FileSwitchingTest  extends PerformanceTestCase {
     
     @Override
     protected void shutdown() {
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
+        new RestoreWindowAction().performAPI();
         repaintManager().resetRegionFilters();
+        CommonUtilities.setSpellcheckerEnabled(true);
     }
-
 }
