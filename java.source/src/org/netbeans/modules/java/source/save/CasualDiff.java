@@ -2434,6 +2434,8 @@ public class CasualDiff {
               return matchIndexed((JCArrayAccess)t1, (JCArrayAccess)t2);
           case SELECT:
               return matchSelect((JCFieldAccess) t1, (JCFieldAccess) t2);
+          case REFERENCE:
+              return matchReference((JCMemberReference) t1, (JCMemberReference) t2);
           case IDENT:
               return ((JCIdent)t1).getName().contentEquals(((JCIdent)t2).getName());
           case LITERAL:
@@ -4687,6 +4689,10 @@ public class CasualDiff {
 
     private boolean matchSelect(JCFieldAccess t1, JCFieldAccess t2) {
         return treesMatch(t1.selected, t2.selected) && t1.name == t2.name;
+    }
+    
+    private boolean matchReference(JCMemberReference t1, JCMemberReference t2) {
+        return treesMatch(t1.expr, t2.expr) && t1.name == t2.name;
     }
 
     private boolean matchLiteral(JCLiteral t1, JCLiteral t2) {
