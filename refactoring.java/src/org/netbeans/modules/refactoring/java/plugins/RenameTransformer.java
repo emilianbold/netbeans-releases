@@ -132,6 +132,12 @@ public class RenameTransformer extends RefactoringVisitor {
     }
 
     @Override
+    public Tree visitMemberReference(MemberReferenceTree node, Element p) {
+        renameUsageIfMatch(getCurrentPath(), node,p);
+        return super.visitMemberReference(node, p);
+    }
+
+    @Override
     public Tree visitLabeledStatement(LabeledStatementTree tree, Element p) {
         if(handle.getKind() == Tree.Kind.LABELED_STATEMENT && tree == handle.resolve(workingCopy).getLeaf()) {
             LabeledStatementTree newTree = make.LabeledStatement(newName, tree.getStatement());
