@@ -133,106 +133,102 @@ public class NewRemoteProjectPerformer extends RemoteActionPerformer {
         FileObject fo = FileUtil.getConfigFile( "CND/RemoteProject" ); //NOI18N
         final NewProjectWizard wizard = prepareWizardDescriptor(fo);
         
-        Runnable createWorker = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    
-                    Set newObjects = wizard.instantiate();
-                    // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
-                    Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
-                    String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
-                    prefs.remove(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER);
-                    if (nbPrjDirPath != null) {
-                        File prjDir = new File(nbPrjDirPath);
-                        if (prjDir.exists() && prjDir.isDirectory() && prjDir.listFiles() != null && prjDir.listFiles().length == 0) {
-                            prjDir.delete();
-                        }
-                    }
-                    
-                    //#69618: the non-project cache may contain a project folder listed in newObjects:
-                    ProjectManager.getDefault().clearNonProjectCache();
-                    ProjectUtilities.WaitCursor.show();
-                    CndFileUtils.clearFileExistenceCache();
-                    if ( newObjects != null && !newObjects.isEmpty() ) {
-                        // First. Open all returned projects in the GUI.
-
-                        LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
-                        List<Project> projectsToOpen = new LinkedList<Project>();
-
-                        for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
-                            Object obj = it.next();
-                            FileObject newFo;
-                            DataObject newDo;
-                            if (obj instanceof DataObject) {
-                                newDo = (DataObject) obj;
-                                newFo = newDo.getPrimaryFile();
-                            } else if (obj instanceof FileObject) {
-                                newFo = (FileObject) obj;
-                                try {
-                                    newDo = DataObject.find(newFo);
-                                } catch (DataObjectNotFoundException e) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                                    continue;
-                                }
-                            } else {
-                                ErrorManager.getDefault().log(ErrorManager.WARNING, "Found unrecognized object " + obj + " in result set from instantiate()"); //NOI18N
-                                continue;
-                            }
-                            // check if it's a project directory
-                            if (newFo.isFolder()) {
-                                try {
-                                    Project p = ProjectManager.getDefault().findProject(newFo);
-                                    if (p != null) {
-                                        // It is a project, so schedule it to open:
-                                        projectsToOpen.add(p);
-                                    } else {
-                                        // Just a folder to expand
-                                        filesToOpen.add(newDo);
-                                    }
-                                } catch (IOException e) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                                    continue;
-                                }
-                            } else {
-                                filesToOpen.add(newDo);
-                            }
-                        }
-                        
-                        Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
-                        
-                        Project mainProject = null;
-                        if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
-                            mainProject = lastProject;
-                        }
-                        
-                        OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[projectsToOpen.size()]), false, true, mainProject);
-                        //OpenProjects.getDefault().open(new Project[]{mainProject}, true);
-                        
-                        // Show the project tab to show the user we did something
-                        ProjectUtilities.makeProjectTabVisible();
-                        
-                        if (lastProject != null) {
-                            // Just select and expand the project node
-                            ProjectUtilities.selectAndExpandProject(lastProject);
-                        }
-                        // Second open the files
-                        for (DataObject d : filesToOpen) { // Open the files
-                            ProjectUtilities.openAndSelectNewObject(d);
-                        }
-                        
-                    }
-                    ProjectUtilities.WaitCursor.hide();
-                } catch ( IOException e ) {
-                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e );
-                }
-            }
-        };
-        
         // always connect first
         try {
             ConnectionManager.getInstance().connectTo(env);
-            SwingUtilities.invokeLater(createWorker);
+            final Set newObjects = wizard.instantiate();
+            if (newObjects != null) {
+                Runnable createWorker = new Runnable() {
+                    @Override
+                    public void run() {
+                        // #75960 - test if any folder was created during the wizard and if yes and it's empty delete it
+                        Preferences prefs = NbPreferences.forModule(OpenProjectListSettings.class);
+                        String nbPrjDirPath = prefs.get(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER, null);
+                        prefs.remove(OpenProjectListSettings.PROP_CREATED_PROJECTS_FOLDER);
+                        if (nbPrjDirPath != null) {
+                            File prjDir = new File(nbPrjDirPath);
+                            if (prjDir.exists() && prjDir.isDirectory() && prjDir.listFiles() != null && prjDir.listFiles().length == 0) {
+                                prjDir.delete();
+                            }
+                        }
+
+                        //#69618: the non-project cache may contain a project folder listed in newObjects:
+                        ProjectManager.getDefault().clearNonProjectCache();
+                        ProjectUtilities.WaitCursor.show();
+                        CndFileUtils.clearFileExistenceCache();
+                        if ( newObjects != null && !newObjects.isEmpty() ) {
+                            // First. Open all returned projects in the GUI.
+
+                            LinkedList<DataObject> filesToOpen = new LinkedList<DataObject>();
+                            List<Project> projectsToOpen = new LinkedList<Project>();
+
+                            for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
+                                Object obj = it.next();
+                                FileObject newFo;
+                                DataObject newDo;
+                                if (obj instanceof DataObject) {
+                                    newDo = (DataObject) obj;
+                                    newFo = newDo.getPrimaryFile();
+                                } else if (obj instanceof FileObject) {
+                                    newFo = (FileObject) obj;
+                                    try {
+                                        newDo = DataObject.find(newFo);
+                                    } catch (DataObjectNotFoundException e) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                        continue;
+                                    }
+                                } else {
+                                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Found unrecognized object " + obj + " in result set from instantiate()"); //NOI18N
+                                    continue;
+                                }
+                                // check if it's a project directory
+                                if (newFo.isFolder()) {
+                                    try {
+                                        Project p = ProjectManager.getDefault().findProject(newFo);
+                                        if (p != null) {
+                                            // It is a project, so schedule it to open:
+                                            projectsToOpen.add(p);
+                                        } else {
+                                            // Just a folder to expand
+                                            filesToOpen.add(newDo);
+                                        }
+                                    } catch (IOException e) {
+                                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                        continue;
+                                    }
+                                } else {
+                                    filesToOpen.add(newDo);
+                                }
+                            }
+
+                            Project lastProject = projectsToOpen.size() > 0 ? projectsToOpen.get(0) : null;
+
+                            Project mainProject = null;
+                            if (Templates.getDefinesMainProject(wizard) && lastProject != null) {
+                                mainProject = lastProject;
+                            }
+
+                            OpenProjectList.getDefault().open(projectsToOpen.toArray(new Project[projectsToOpen.size()]), false, true, mainProject);
+                            //OpenProjects.getDefault().open(new Project[]{mainProject}, true);
+
+                            // Show the project tab to show the user we did something
+                            ProjectUtilities.makeProjectTabVisible();
+
+                            if (lastProject != null) {
+                                // Just select and expand the project node
+                                ProjectUtilities.selectAndExpandProject(lastProject);
+                            }
+                            // Second open the files
+                            for (DataObject d : filesToOpen) { // Open the files
+                                ProjectUtilities.openAndSelectNewObject(d);
+                            }
+
+                        }
+                        ProjectUtilities.WaitCursor.hide();
+                    }
+                };
+                SwingUtilities.invokeLater(createWorker);
+            }
         } catch (final IOException ex) {
             //LOGGER.log(Level.INFO, "Error connecting " + env, ex);
             SwingUtilities.invokeLater(new Runnable() {

@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -101,9 +102,11 @@ public final class FileReferencesImpl extends CsmFileReferences  {
     public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
         FileReferencesContext fileReferencesContext = new FileReferencesContext(csmScope);
         try {
+            CsmCacheManager.enter();
             _accept(csmScope, visitor, kinds, fileReferencesContext);
         } finally {
             fileReferencesContext.clean();
+            CsmCacheManager.leave();
         }
     }
 
@@ -163,6 +166,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
     public void visit(Collection<CsmReference> refs, ReferenceVisitor visitor) {
         FileReferencesContext fileReferencesContext = null;
         try {
+            CsmCacheManager.enter();
             for(CsmReference ref : refs) {
                 if (fileReferencesContext == null){
                     fileReferencesContext = new FileReferencesContext(ref.getContainingFile());
@@ -176,6 +180,7 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             if (fileReferencesContext != null) {
                 fileReferencesContext.clean();
             }
+            CsmCacheManager.leave();
         }
     }
 

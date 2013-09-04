@@ -2346,6 +2346,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
                         break;
 
+                    case NULLPTR:
+                        // TODO: set pointer type here
+                        // fall through
                     case INT_LITERAL:
                     case UNSIGNED_LITERAL:
 //                    case HEX_LITERAL:

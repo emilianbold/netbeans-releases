@@ -59,7 +59,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,8 +82,8 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     private ColorModel          colorModel = null;
     private boolean             listen = false;
     private String              currentProfile;
-    /** cache Map (String (profile name) > Vector (AttributeSet)). */
-    private Map<String, Vector<AttributeSet>> profileToCategories = new HashMap<String, Vector<AttributeSet>>();
+    /** cache Map (String (profile name) > List (AttributeSet)). */
+    private Map<String, List<AttributeSet>> profileToCategories = new HashMap<String, List<AttributeSet>>();
     /** Set (String (profile name)) of changed profile names. */
     private Set<String>         toBeSaved = new HashSet<String>();
     private boolean             changed = false;
@@ -272,14 +271,14 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
     
     public void cancel () {
         toBeSaved = new HashSet<String>();
-        profileToCategories = new HashMap<String, Vector<AttributeSet>>();        
+        profileToCategories = new HashMap<String, List<AttributeSet>>();        
         changed = false;
     }
     
     public void applyChanges() {
         if (colorModel == null) return;
         for(String profile : toBeSaved) {
-            Vector<AttributeSet> cat = null;
+            List<AttributeSet> cat = null;
             // Fix of #191686: don't ask just deleted profile for its
             // categories - it caused recreation of the profile
             if (profileToCategories.containsKey(profile)) {
@@ -288,7 +287,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             colorModel.setHighlightings(profile, cat);
         }
         toBeSaved = new HashSet<String>();
-        profileToCategories = new HashMap<String, Vector<AttributeSet>>();
+        profileToCategories = new HashMap<String, List<AttributeSet>>();
     }
     
     public boolean isChanged () {
@@ -302,12 +301,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             !profileToCategories.containsKey (currentProfile)
         ) {
             // clone profile
-            Vector<AttributeSet> categories = getCategories (oldScheme);
-            profileToCategories.put (currentProfile, new Vector<AttributeSet>(categories));
+            List<AttributeSet> categories = getCategories (oldScheme);
+            profileToCategories.put (currentProfile, new ArrayList<AttributeSet>(categories));
             toBeSaved.add (currentProfile);
         }
         
-        lCategories.setListData (getCategories (currentProfile));
+        lCategories.setListData (getCategories (currentProfile).toArray(new AttributeSet[]{}));
         lCategories.repaint();
         lCategories.setSelectedIndex (0);         
         refreshUI ();
@@ -318,7 +317,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             profileToCategories.remove (profile);
         else {
             profileToCategories.put (profile, getDefaults (profile));
-            lCategories.setListData (getCategories (profile));
+            lCategories.setListData (getCategories (profile).toArray(new AttributeSet[]{}));
             lCategories.repaint();
             lCategories.setSelectedIndex (0);   
             refreshUI ();
@@ -353,7 +352,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         int index = lCategories.getSelectedIndex();
         if (index < 0) return;
         
-        Vector<AttributeSet> categories = getCategories(currentProfile);
+        List<AttributeSet> categories = getCategories(currentProfile);
         AttributeSet category = categories.get(lCategories.getSelectedIndex());
         SimpleAttributeSet c = new SimpleAttributeSet(category);
         
@@ -413,7 +412,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         cbForeground.setEnabled (true);
         cbBackground.setEnabled (true);
         
-        Vector<AttributeSet> categories = getCategories (currentProfile);
+        List<AttributeSet> categories = getCategories (currentProfile);
 	AttributeSet category = categories.get (index);
         
         listen = false;
@@ -468,7 +467,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         return null;
     }
     
-    private Vector<AttributeSet> getCategories(String profile) {
+    private List<AttributeSet> getCategories(String profile) {
         if (colorModel == null) return null;
         if (!profileToCategories.containsKey(profile)) {
             Collection<AttributeSet> c = colorModel.getHighlightings(profile);
@@ -477,24 +476,22 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             }
             List<AttributeSet> l = new ArrayList<AttributeSet>(c);
             Collections.sort(l, new CategoryComparator());
-            profileToCategories.put(profile, new Vector<AttributeSet>(l));
+            profileToCategories.put(profile, new ArrayList<AttributeSet>(l));
         }
         return profileToCategories.get(profile);
     }
 
-    /** cache Map (String (profile name) > Vector (AttributeSet)). */
-    private Map<String, Vector<AttributeSet>> profileToDefaults = new HashMap<String, Vector<AttributeSet>>();
+    /** cache Map (String (profile name) > List (AttributeSet)). */
+    private Map<String, List<AttributeSet>> profileToDefaults = new HashMap<String, List<AttributeSet>>();
     
-    private Vector<AttributeSet> getDefaults(String profile) {
+    private List<AttributeSet> getDefaults(String profile) {
         if (!profileToDefaults.containsKey(profile)) {
             Collection<AttributeSet> c = colorModel.getHighlightingDefaults(profile);
             List<AttributeSet> l = new ArrayList<AttributeSet>(c);
             Collections.sort(l, new CategoryComparator());
-            profileToDefaults.put(profile, new Vector<AttributeSet>(l));
+            profileToDefaults.put(profile, l);
         }
-        Vector<AttributeSet> defaultprofile = profileToDefaults.get(profile);
-        Vector<AttributeSet> nprofile = new Vector<AttributeSet>();
-        nprofile.addAll(defaultprofile);
-        return nprofile;
+        List<AttributeSet> defaultprofile = profileToDefaults.get(profile);
+        return new ArrayList<AttributeSet>(defaultprofile);
     }
 }

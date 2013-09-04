@@ -56,6 +56,13 @@ import org.openide.nodes.Node.Property;
  * @author Tomas Stupka
  */
 public class ODCSIssueNode extends IssueNode<ODCSIssue> {
+    private static final AbstractReferenceValue DUMMY_ODCS_VALUE;
+    static {
+        DUMMY_ODCS_VALUE = new AbstractReferenceValue();
+        DUMMY_ODCS_VALUE.setValue(""); //NOI18N
+        DUMMY_ODCS_VALUE.setSortkey(Short.MAX_VALUE);
+    }
+    
     public ODCSIssueNode(ODCSIssue issue) {
         super(ODCSUtil.getRepository(issue.getRepository()), issue, ODCS.getInstance().getChangesProvider());
     }
@@ -112,7 +119,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.SEVERITY);
         }
         @Override
-        public AbstractReferenceValue getValue() {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getSeverity();
         }
     }
@@ -122,7 +129,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.PRIORITY); 
         }
         @Override
-        public AbstractReferenceValue getValue() {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getPriority();
         }
     }
@@ -132,7 +139,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.RESOLUTION); 
         }
         @Override
-        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getResolution();
         }
     }
@@ -142,7 +149,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.STATUS); 
         }
         @Override
-        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getTaskStatus();
         }
     }
@@ -152,7 +159,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.ITERATION); 
         }
         @Override
-        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getIteration();
         }
     }
@@ -162,7 +169,7 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
             super(IssueField.MILESTONE); 
         }
         @Override
-        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+        public AbstractReferenceValue getODCSValue () {
             return getODCSIssue().getMilestone();
         }
     }
@@ -202,6 +209,17 @@ public class ODCSIssueNode extends IssueNode<ODCSIssue> {
                   f.getDescription()); 
         }
 
+        @Override
+        public final AbstractReferenceValue getValue () {
+            AbstractReferenceValue value = getODCSValue();
+            if (value == null) {
+                value = DUMMY_ODCS_VALUE;
+            }
+            return value;
+        }
+
+        protected abstract AbstractReferenceValue getODCSValue ();
+    
         @Override
         public int compareTo(IssueProperty<AbstractReferenceValue> p) {
             if(p == null) {

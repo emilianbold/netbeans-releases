@@ -156,37 +156,37 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
 
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
-        if (DEFAULT_PROFILE.equals(pf.getPreferences("").parent().get(USED_PROFILE, DEFAULT_PROFILE))) { //NOI18N
-            // no per-project formatting settings
-            Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
-            try {
-                removeAllKidsAndKeys(p);
-            } catch (BackingStoreException bse) {
-                LOG.log(Level.WARNING, null, bse);
-            }
-        } else {
-            pf.applyChanges();
-
-            // Find mimeTypes that do not have a customizer
-            Set<String> mimeTypes = new HashSet<String>(EditorSettings.getDefault().getAllMimeTypes());
-            mimeTypes.removeAll(selector.getMimeTypes());
-
-            // and make sure that they do NOT override basic settings from All Languages
-            Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
-            for(String mimeType : mimeTypes) {
-                try {
-                    p.node(mimeType).removeNode();
-                } catch (BackingStoreException bse) {
-                    LOG.log(Level.WARNING, null, bse);
-                }
-            }
-        }
-
-        // XXX: just use whatever value, it's ignored anyway, this is here in order
-        // to fire property change events on documents, which are then intercepted by
-        // the new view hierarchy (DocumentView)
         SwingUtilities.invokeLater(new Runnable() {
             public @Override void run() {
+                if (DEFAULT_PROFILE.equals(pf.getPreferences("").parent().get(USED_PROFILE, DEFAULT_PROFILE))) { //NOI18N
+                    // no per-project formatting settings
+                    Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
+                    try {
+                        removeAllKidsAndKeys(p);
+                    } catch (BackingStoreException bse) {
+                        LOG.log(Level.WARNING, null, bse);
+                    }
+                } else {
+                    pf.applyChanges();
+
+                    // Find mimeTypes that do not have a customizer
+                    Set<String> mimeTypes = new HashSet<String>(EditorSettings.getDefault().getAllMimeTypes());
+                    mimeTypes.removeAll(selector.getMimeTypes());
+
+                    // and make sure that they do NOT override basic settings from All Languages
+                    Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
+                    for(String mimeType : mimeTypes) {
+                        try {
+                            p.node(mimeType).removeNode();
+                        } catch (BackingStoreException bse) {
+                            LOG.log(Level.WARNING, null, bse);
+                        }
+                    }
+                }
+
+                // XXX: just use whatever value, it's ignored anyway, this is here in order
+                // to fire property change events on documents, which are then intercepted by
+                // the new view hierarchy (DocumentView)
                 JTextComponent lastFocused = EditorRegistry.lastFocusedComponent();
                 if (lastFocused != null) {
                     lastFocused.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N

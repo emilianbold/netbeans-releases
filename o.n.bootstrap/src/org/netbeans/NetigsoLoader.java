@@ -64,6 +64,16 @@ final class NetigsoLoader extends ClassLoader {
     }
 
     @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        ClassLoader d = getDelegate();
+        if (d instanceof ProxyClassLoader) {
+            return ((ProxyClassLoader)d).loadClass(name, resolve);
+        } else {
+            return d.loadClass(name);
+        }
+    }
+
+    @Override
     public Enumeration<URL> getResources(String string) throws IOException {
         return getDelegate().getResources(string);
     }

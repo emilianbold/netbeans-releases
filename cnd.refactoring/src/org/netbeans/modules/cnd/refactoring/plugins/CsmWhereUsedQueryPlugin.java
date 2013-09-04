@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -117,15 +118,8 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        if(filtersDescription != null) {
-            //select/unselect DECLARATIONS filter if needed
-            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
-                if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
-                    filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
-                    break;
-                }
-            }
-        }
+        checkSelectDeclarations();
+        
         CsmUID referencedObjectUID = refactoring.getRefactoringSource().lookup(CsmUID.class);
         CsmObject referencedObject = referencedObjectUID == null ? null : (CsmObject) referencedObjectUID.getObject();
         if (referencedObject == null) {
@@ -136,8 +130,29 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         fireProgressListenerStop();
         return null;
     }
+    
+    private void checkSelectDeclarations() {
+        if(filtersDescription != null) {
+            //select/unselect DECLARATIONS filter if needed
+            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
+                if (CsmWhereUsedFilters.DECLARATIONS.getKey().equals(filtersDescription.getKey(i))) {
+                    filtersDescription.setSelected(i, isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses());
+                    break;
+                }
+            }
+        }
+    }
 
     /*package*/ Collection<RefactoringElementImplementation> doPrepareElements(CsmObject referencedObject, RefactoringElementsBag bagToAdd) {
+        try {
+            CsmCacheManager.enter();
+            return doPrepareElementsImpl(referencedObject, bagToAdd);
+        } finally {
+            CsmCacheManager.leave();
+        }
+    }
+    
+    private Collection<RefactoringElementImplementation> doPrepareElementsImpl(CsmObject referencedObject, RefactoringElementsBag bagToAdd) {
         Collection<RefactoringElementImplementation> res = null;
         referencedObject = CsmRefactoringUtils.convertToCsmObjectIfNeeded(referencedObject);
         if (referencedObject == null) {
@@ -234,6 +249,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         if (filtersDescription != null) {
             whereUsedPlugin.addFilters(filtersDescription);
         }
+        whereUsedPlugin.checkSelectDeclarations();
         Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
         if (filtersDescription != null) {
             whereUsedPlugin.enableFilters(filtersDescription);
@@ -319,6 +335,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                             String oldName = Thread.currentThread().getName();
                             try {
                                 Thread.currentThread().setName("FindUsagesQuery: Analyzing " + curObj); //NOI18N
+                                CsmCacheManager.enter();
                                 Collection<CsmReference> refs = xRef.getReferences(curObj, (CsmProject)null, kinds, interrupter);
                                 for (CsmReference csmReference : refs) {
                                     boolean accept = true;
@@ -330,6 +347,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                                     }
                                 }
                             } finally {
+                                CsmCacheManager.leave();
                                 Thread.currentThread().setName(oldName);
                             }
                             synchronized (CsmWhereUsedQueryPlugin.this) {
@@ -491,6 +509,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                     String oldName = Thread.currentThread().getName();
                     try {
                         Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                        CsmCacheManager.enter();
                         // get find usages
                         Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
                         
@@ -511,6 +530,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                             }
                         }
                     } finally {
+                        CsmCacheManager.leave();
                         Thread.currentThread().setName(oldName);
                     }
                     synchronized (CsmWhereUsedQueryPlugin.this) {

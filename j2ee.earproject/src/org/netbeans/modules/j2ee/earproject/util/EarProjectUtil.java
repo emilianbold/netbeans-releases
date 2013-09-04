@@ -62,7 +62,8 @@ import org.openide.util.Parameters;
 public final class EarProjectUtil {
     
     private static final Logger UI_LOGGER = Logger.getLogger("org.netbeans.ui.j2ee.earproject"); // NOI18N
-    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.j2ee.earproject"); // NOI18N    
+    public static final String USG_LOGGER_NAME = "org.netbeans.ui.metrics.j2ee.earproject"; // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger(USG_LOGGER_NAME); // NOI18N
 
     private EarProjectUtil() {}
 

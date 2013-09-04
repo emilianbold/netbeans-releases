@@ -84,7 +84,7 @@ public final class EmbedderFactory {
     private static final Logger LOG = Logger.getLogger(EmbedderFactory.class.getName());
 
     private static MavenEmbedder project;
-    private static AtomicBoolean projectLoaded = new AtomicBoolean(false);
+    private static final AtomicBoolean projectLoaded = new AtomicBoolean(false);
     private static final Object PROJECT_LOCK = new Object();
     private static MavenEmbedder online;
     private static final Object ONLINE_LOCK = new Object();
@@ -177,7 +177,7 @@ public final class EmbedderFactory {
     
     /**
      * @since 2.39
-     * @param grPref
+     * @param grp
      * @return 
      */
     public static @NonNull File getEffectiveMavenHome(ProjectGroup grp) {
@@ -463,6 +463,8 @@ public final class EmbedderFactory {
 
     /**
      * Maven assumes the env vars are included in execution properties with the "env." prefix.
+     * @param properties
+     * @return 
      * @see EnvironmentUtils#addEnvVars
      */
     public static Properties fillEnvVars(Properties properties) {

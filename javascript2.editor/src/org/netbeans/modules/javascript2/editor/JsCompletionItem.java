@@ -231,6 +231,7 @@ public class JsCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.setMaxLength(120);
             formatter.emphasis(true);
             formatName(formatter);
             formatter.emphasis(false);

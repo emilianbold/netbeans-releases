@@ -1519,6 +1519,23 @@ public final class JFXProjectUtils {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
             changed = true;
         }
+        // Remove JavaFX endorsed.classpath entries if they are present (#235380, see also #214386)
+        final String endorsedCp = ep.get(ProjectProperties.ENDORSED_CLASSPATH);
+        if (endorsedCp != null && !endorsedCp.isEmpty()) {
+            String[] cpElements = PropertyUtils.tokenizePath(endorsedCp);
+            List<String> updatedEndorsedCpList = new ArrayList<String>();
+            for (String element : cpElements) {
+                if (!element.startsWith("${javafx.runtime}/")) { //NOI18N
+                    updatedEndorsedCpList.add(element);
+                }
+            }
+            String[] updatedEndorsedCp = updatedEndorsedCpList.toArray(new String[0]);
+            for (int i = 0; i < updatedEndorsedCp.length - 1; i++) {
+                updatedEndorsedCp[i] += ":"; //NOI18N
+            }
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, updatedEndorsedCp);
+            changed = true;
+        }
         return changed;
     }
 
@@ -1552,8 +1569,6 @@ public final class JFXProjectUtils {
                 readFromFile(projDir, privatePath) : new EditableProperties(true);
         assert privateCfgProps != null;
         if(privateCfgProps.isEmpty() || setBrowserProps) {
-            privateCfgProps.setProperty("$label", configName); // NOI18N
-            privateCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             privateCfgProps.setProperty(JFXProjectProperties.RUN_AS, runAs.getString());
             privateCfgProps.setComment(JFXProjectProperties.RUN_AS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             if(setBrowserProps) {

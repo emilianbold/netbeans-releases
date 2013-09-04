@@ -57,8 +57,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -80,6 +82,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -92,6 +96,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     private Map<String, ProviderProperty> myProperties = new LinkedHashMap<String, ProviderProperty>();
     public static final String EXEC_LOG_KEY = "exec-log-file"; // NOI18N
     public static final String EXEC_LOG_PROVIDER_ID = "exec-log"; // NOI18N
+    private static final String CYG_DRIVE = "/cygdrive/"; // NOI18N
 
     public AnalyzeExecLog() {
         clean();
@@ -343,6 +348,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         private final Set<String> CPP_NAMES;
         private final Set<String> FORTRAN_NAMES;
         private final Set<String> LIBREARIES_NAMES;
+        private int logType = 0; // 0 - not inited, 1 - exec log, 2 - json file
 
         private ExecLogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
             this.fileName = fileName;
@@ -399,7 +405,24 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         //        -o
         //        findme.o
         //
-
+        // json format
+        //[
+        //{
+        //  "directory": "/export/home/alsimon/projects/cmake-2.6.4/Example/Hello",
+        //  "command": "/usr/bin/g++    -g3 -gdwarf-2   -o CMakeFiles/Hello.dir/hello.o -c /export/home/alsimon/projects/cmake-2.6.4/Example/Hello/hello.cxx",
+        //  "file": "/export/home/alsimon/projects/cmake-2.6.4/Example/Hello/hello.cxx"
+        //},
+        //{
+        //  "directory": "/export/home/alsimon/projects/cmake-2.6.4/Example/Demo",
+        //  "command": "/usr/bin/g++    -g3 -gdwarf-2 -I/export/home/alsimon/projects/cmake-2.6.4/Example/Hello    -o CMakeFiles/helloDemo.dir/demo.o -c /export/home/alsimon/projects/cmake-2.6.4/Example/Demo/demo.cxx",
+        //  "file": "/export/home/alsimon/projects/cmake-2.6.4/Example/Demo/demo.cxx"
+        //},
+        //{
+        //  "directory": "/export/home/alsimon/projects/cmake-2.6.4/Example/Demo",
+        //  "command": "/usr/bin/g++    -g3 -gdwarf-2 -I/export/home/alsimon/projects/cmake-2.6.4/Example/Hello    -o CMakeFiles/helloDemo.dir/demo_b.o -c /export/home/alsimon/projects/cmake-2.6.4/Example/Demo/demo_b.cxx",
+        //  "file": "/export/home/alsimon/projects/cmake-2.6.4/Example/Demo/demo_b.cxx"
+        //}
+        //]
         private void run(Progress progress, Interrupter isStoped, CompileLineStorage storage) {
             result = new ArrayList<SourceFileProperties>();
             buildArtifacts = new ArrayList<String>();
@@ -419,6 +442,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     try {
                         String tool = null;
                         List<String> params = new ArrayList<String>();
+                        String directory = null;
+                        String command = null;
+                        String cu = null;
                         while (true) {
                             if (isStoped.cancelled()) {
                                 break;
@@ -427,6 +453,13 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             if (line == null) {
                                 break;
                             }
+                            if (logType == 0) {
+                                if (line.startsWith("called:")) { //NOI18N
+                                    logType = 1;
+                                } else if (line.trim().startsWith("[")) {  //NOI18N
+                                    logType = 2;
+                                }
+                            }
                             read += line.length() + 1;
                             if (read * 100 / length > done && done < 100) {
                                 done++;
@@ -434,28 +467,65 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                                     progress.increment(null);
                                 }
                             }
-                            if (line.startsWith("called:")) { //NOI18N
-                                tool = line.substring(7).trim();
-                                continue;
-                            }
-                            if (line.startsWith("\t")) { //NOI18N
-                                params.add(line.substring(1).trim());
-                                continue;
-                            }
-                            if (line.length()==0) {
-                                // create new result entry
-                                try {
-                                    addSources(tool, params, storage);
-                                } catch (Throwable ex) {
-                                    // ExecSource constructor can throw IllegalArgumentException for non source exec
-                                    DwarfSource.LOG.log(Level.INFO, "Tool:"+tool, ex);
-                                    for(String p : params) {
-                                        DwarfSource.LOG.log(Level.INFO, "\t{0}", p); //NOI18N
-                                    }
+                            if (logType == 1) {
+                                if (line.startsWith("called:")) { //NOI18N
+                                    tool = line.substring(7).trim();
+                                    continue;
                                 }
-                                tool = null;
-                                params = new ArrayList<String>();
-                                continue;
+                                if (line.startsWith("\t")) { //NOI18N
+                                    params.add(line.substring(1).trim());
+                                    continue;
+                                }
+                                if (line.length()==0) {
+                                    // create new result entry
+                                    try {
+                                        addSources(tool, params, storage);
+                                    } catch (Throwable ex) {
+                                        // ExecSource constructor can throw IllegalArgumentException for non source exec
+                                        DwarfSource.LOG.log(Level.INFO, "Tool:"+tool, ex);
+                                        for(String p : params) {
+                                            DwarfSource.LOG.log(Level.INFO, "\t{0}", p); //NOI18N
+                                        }
+                                    }
+                                    tool = null;
+                                    params = new ArrayList<String>();
+                                    continue;
+                                }
+                            } else if (logType == 2) {
+                                line = line.trim();
+                                if (line.startsWith("[") || line.startsWith("]")) { // NOI18N
+                                    continue;
+                                }
+                                if (line.startsWith("{")) { // NOI18N
+                                    continue;
+                                }
+                                if (line.startsWith("}")) { // NOI18N
+                                    if (directory != null && command != null && cu != null) {
+                                        // create new result entry
+                                        try {
+                                            addSources(directory, command, cu, storage);
+                                        } catch (Throwable ex) {
+                                            // ExecSource constructor can throw IllegalArgumentException for non source exec
+                                            DwarfSource.LOG.log(Level.INFO, "directory:"+directory+"\ncommand:"+command+"\nfile:"+file, ex); // NOI18N
+                                        }
+                                    }
+                                    directory = null;
+                                    command = null;
+                                    cu = null;
+                                    continue;
+                                }
+                                String pattern = "\"directory\":"; // NOI18N
+                                if (line.startsWith(pattern)) {
+                                    directory = line.substring(pattern.length()+1).trim();
+                                }
+                                pattern = "\"command\":"; // NOI18N
+                                if (line.startsWith(pattern)) {
+                                    command = line.substring(pattern.length()+1).trim();
+                                }
+                                pattern = "\"file\":"; // NOI18N
+                                if (line.startsWith(pattern)) {
+                                    cu = line.substring(pattern.length()+1).trim();
+                                }
                             }
                         }
                     } finally {
@@ -465,7 +535,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     in.close();
                 } catch (IOException ex) {
-                    DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex);
+                    DwarfSource.LOG.log(Level.INFO, "Cannot read file "+fileName, ex); // NOI18N
                 }
             }
         }
@@ -482,6 +552,47 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 run(progress, isStoped, storage);
             }
             return buildArtifacts;
+        }
+        
+        private String removeQuotes(String s) {
+            if (s.endsWith(",")) { // NOI18N
+                s = s.substring(0, s.length()-1);
+            }
+            return DiscoveryUtils.removeQuotes(s);
+            
+        }
+        
+        private void addSources(String directory, String command, String cu, CompileLineStorage storage) {
+            directory = removeQuotes(directory);
+            command = removeQuotes(command);
+            List<String> parseArgs = ImportUtils.parseArgs(command);
+            if (parseArgs.isEmpty()) {
+                throw new IllegalArgumentException("Wrong entry"); //NOI18N
+            }
+            Iterator<String> iterator = parseArgs.iterator();
+            String tool = iterator.next();
+            tool = tool.replace('\\', '/'); //NOI18N
+            String compiler;
+            ItemProperties.LanguageKind language;
+            if (tool.lastIndexOf('/') > 0) { //NOI18N
+                compiler = tool.substring(tool.lastIndexOf('/')+1); //NOI18N
+            } else {
+                compiler = tool;
+            }
+            if (compiler.endsWith(".exe")) { // NOI18N
+                compiler = compiler.substring(0, compiler.lastIndexOf('.')); //NOI18N
+            }
+            if (C_NAMES.contains(compiler)) {
+                language = LanguageKind.C;
+            } else if (CPP_NAMES.contains(compiler)) {
+                language = LanguageKind.CPP;
+            } else if (FORTRAN_NAMES.contains(compiler)) {
+                language = LanguageKind.Fortran;
+            } else {
+                language = LanguageKind.Unknown;
+            }
+            cu = removeQuotes(cu);
+            addSource(compiler, language, iterator, directory, storage, cu);
         }
         
         private void addSources(String tool, List<String> args, CompileLineStorage storage) {
@@ -528,8 +639,52 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 // skip tool
                 iterator.next();
             }
+            addSource(compiler, language, iterator, compilePath, storage, null);
+        }
+        
+        private String convertCygwinPath(String path) {
+            if (Utilities.isWindows()) {
+                if (path.startsWith(CYG_DRIVE) && path.length() >= CYG_DRIVE.length()+2 && path.charAt(CYG_DRIVE.length()+1) == '/') {
+                    path = path.substring(CYG_DRIVE.length());
+                    path = "" + Character.toUpperCase(path.charAt(0)) + ':' + path.substring(1); // NOI18N
+                }
+            }
+            return path;
+        }
+        
+        private void addSource(String compiler, ItemProperties.LanguageKind language, Iterator<String> iterator, String compilePath, CompileLineStorage storage, String cu) {
+            compilePath = convertCygwinPath(compilePath);
+            List<String> args = new ArrayList<String>();
+            while (iterator.hasNext()) {
+                String next = iterator.next();
+                if (next.startsWith("@")) {  //NOI18N
+                    final String relPath = next.substring(1);
+                    File file;
+                    if (CndPathUtilities.isPathAbsolute(relPath)) {
+                        file = new File(relPath);
+                    } else {
+                        file = new File(compilePath + "/" + relPath);  //NOI18N
+                    }
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                    if (fo != null && fo.isValid()) {
+                        List<String> lines;
+                        try {
+                            lines = fo.asLines();
+                            if (lines != null && lines.size() > 0) {
+                                next = lines.get(0).trim();
+                              }
+                        } catch (IOException ex) {
+                        }
+                    }
+                }
+                args.add(next);
+              }
             Artifacts artifacts = new Artifacts();
-            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(iterator, DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            List<String> sourcesList = DiscoveryUtils.gatherCompilerLine(args.iterator(), DiscoveryUtils.LogOrigin.ExecLog, artifacts, compilerSettings.getProjectBridge(), language == LanguageKind.CPP);
+            if (cu != null) {
+                sourcesList.clear();
+                sourcesList.add(cu);
+            }
             for (String what : sourcesList) {
                 if (what == null) {
                     continue;
@@ -543,15 +698,16 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 String sourceName;
                 List<String> userIncludes = new ArrayList<String>(artifacts.userIncludes.size());
                 for(String s : artifacts.userIncludes){
-                    if (s.startsWith("/") && pathMapper != null) { // NOI18N
+                    if (CndPathUtilities.isPathAbsolute(s) && pathMapper != null) { // NOI18N
                         String mapped = pathMapper.getLocalPath(s);
                         if (mapped != null) {
                             s = mapped;
                             if (Utilities.isWindows()) {
-                                s = s.replace('\\', '/');
+                                s = s.replace('\\', '/'); // NOI18N
                             }
                         }
                     }
+                    s = convertCygwinPath(s);
                     userIncludes.add(PathCache.getString(s));
                 }
                 Map<String, String> userMacros = new HashMap<String, String>(artifacts.userMacros.size());
@@ -562,7 +718,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         userMacros.put(PathCache.getString(e.getKey()), PathCache.getString(e.getValue()));
                     }
                 }
-                if (what.startsWith("/")){  //NOI18N
+                if (CndPathUtilities.isPathAbsolute(what)){  //NOI18N
                     if (pathMapper != null) {
                         String mapped = pathMapper.getLocalPath(what);
                         if (mapped != null) {
@@ -572,6 +728,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                             }
                         }
                     }
+                    what = convertCygwinPath(what);
                     fullName = what;
                     sourceName = DiscoveryUtils.getRelativePath(compilePath, what);
                 } else {
@@ -626,11 +783,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     }
                     if (storage != null) {
                         StringBuilder buf = new StringBuilder();
-                        for (int i = 2; i < args.size(); i++) {
+                        for (String s : args) {
                             if (buf.length() > 0) {
                                 buf.append(' ');
                             }
-                            String s = args.get(i);
                             String s2 = CndPathUtilities.quoteIfNecessary(s);
                             if (s.equals(s2)) {
                                 if (s.indexOf('"') > 0) {// NOI18N
@@ -751,7 +907,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
                 if (binary != null) {
                     String fullName;
-                    if (binary.startsWith("/")){  //NOI18N
+                    if (CndPathUtilities.isPathAbsolute(binary)){  //NOI18N
                         if (pathMapper != null) {
                             String mapped = pathMapper.getLocalPath(binary);
                             if (mapped != null) {
@@ -782,6 +938,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                 }
             }
         }
+
     }
     
     private static class ExecSource extends RelocatableImpl implements SourceFileProperties {

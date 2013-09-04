@@ -70,11 +70,8 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase1 = testCases1.get(0);
         assertEquals("testVoid", testCase1.getName());
         assertEquals(TestCase.Status.PENDING, testCase1.getStatus());
-        // XXX should be null
-        assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase1.getMessage());
-        // XXX should be the line above
-        assertNull(testCase1.getFile());
-        // XXX should be some number != -1
+        assertNull(testCase1.getMessage());
+        assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase1.getFile());
         assertEquals(-1, testCase1.getLine());
         assertEquals(100L, testCase1.getTime());
 
@@ -148,7 +145,7 @@ public class TapParserTest extends NbTestCase {
 
         TestCaseVo testCase9 = testCases2.get(2);
         assertEquals("testIncomplete", testCase9.getName());
-        assertEquals(TestCase.Status.ABORTED, testCase9.getStatus());
+        assertEquals(TestCase.Status.ERROR, testCase9.getStatus());
         assertEquals("I died", testCase9.getMessage());
         assertNull(testCase9.getFile());
         assertEquals(-1, testCase9.getLine());
@@ -188,6 +185,59 @@ public class TapParserTest extends NbTestCase {
         assertEquals(100L, testCase.getTime());
     }
 
+    public void testParseIssue235280_1() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-235280-1.log"), 100L);
+        assertEquals(1, suites.size());
+        TestCaseVo testCase1 = suites.get(0).getTestCases().get(0);
+        assertEquals("testDivide", testCase1.getName());
+        assertEquals(TestCase.Status.ERROR, testCase1.getStatus());
+        assertEquals("Fatal error : Call to undefined method netbeans\\sample\\Calculator::divide()", testCase1.getMessage());
+        assertNull(testCase1.getDiff());
+        assertEquals("/Users/jubianchi/NetBeansProjects/nb-atoum-blog/tests/units/netbeans/sample/Calculator.php", testCase1.getFile());
+        assertEquals(-1, testCase1.getLine());
+        TestCaseVo testCase2 = suites.get(0).getTestCases().get(1);
+        assertEquals("testAdd", testCase2.getName());
+        assertEquals(TestCase.Status.ERROR, testCase2.getStatus());
+        assertEquals("Fatal error : Call to undefined method netbeans\\sample\\Calculator::add()", testCase2.getMessage());
+        assertNull(testCase2.getDiff());
+        assertEquals("/Users/jubianchi/NetBeansProjects/nb-atoum-blog/tests/units/netbeans/sample/Calculator.php", testCase2.getFile());
+        assertEquals(-1, testCase2.getLine());
+    }
+
+    public void testParseIssue235280_2() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-235280-2.log"), 100L);
+        assertEquals(1, suites.size());
+        TestCaseVo testCase1 = suites.get(0).getTestCases().get(0);
+        assertEquals("testDivide", testCase1.getName());
+        assertEquals(TestCase.Status.ERROR, testCase1.getStatus());
+        assertEquals("", testCase1.getMessage());
+        assertNull(testCase1.getDiff());
+        assertEquals("/Users/jubianchi/NetBeansProjects/nb-atoum-blog/tests/units/netbeans/sample/Calculator.php", testCase1.getFile());
+        assertEquals(-1, testCase1.getLine());
+        TestCaseVo testCase2 = suites.get(0).getTestCases().get(1);
+        assertEquals("testAdd", testCase2.getName());
+        assertEquals(TestCase.Status.PASSED, testCase2.getStatus());
+        assertNull(testCase2.getMessage());
+        assertNull(testCase2.getDiff());
+        assertNull(testCase2.getFile());
+        assertEquals(-1, testCase2.getLine());
+    }
+
+    public void testParseIssue235280_3() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-235280-3.log"), 100L);
+        assertEquals(1, suites.size());
+        assertEquals(1, suites.get(0).getTestCases().size());
+        TestCaseVo testCase1 = suites.get(0).getTestCases().get(0);
+        assertEquals("testAdd", testCase1.getName());
+        assertEquals(TestCase.Status.ERROR, testCase1.getStatus());
+        assertEquals("E_USER_ERROR : Tested class 'netbeans\\sample\\Calculator' does not exist for test class 'tests\\units\\netbeans\\sample\\Calculator'", testCase1.getMessage());
+        assertNull(testCase1.getDiff());
+        assertEquals("/home/gapon/NetBeansProjects/atoum-issue/tests/units/netbeans/sample/Calculator.php", testCase1.getFile());
+        assertEquals(-1, testCase1.getLine());
+    }
 
     private String getFileContent(String filePath) throws IOException {
         File file = new File(getDataDir(), filePath);

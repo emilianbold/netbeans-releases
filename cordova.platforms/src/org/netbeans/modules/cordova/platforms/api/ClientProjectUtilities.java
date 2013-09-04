@@ -66,7 +66,9 @@ public final class ClientProjectUtilities {
     public static FileObject getSiteRoot(Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
-        assert sourceGroups.length == 1;
+        if (sourceGroups.length == 0 ) {
+            return project.getProjectDirectory().getFileObject("www");
+        }
         return sourceGroups[0].getRootFolder();
     }
 

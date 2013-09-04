@@ -193,6 +193,7 @@ public final class ConfigureUtils {
             appendIfNeed("-DCMAKE_CXX_COMPILER=", flags, buf, cppCompiler); // NOI18N
             appendIfNeed("-DCMAKE_C_FLAGS_DEBUG=", flags, buf, cCompilerFlags); // NOI18N
             appendIfNeed("-DCMAKE_CXX_FLAGS_DEBUG=", flags, buf, cppCompilerFlags); // NOI18N
+            appendIfNeed("-DCMAKE_EXPORT_COMPILE_COMMANDS=", flags, buf, "ON"); // NOI18N
         } else if (configure.endsWith(".pro")){ // NOI18N
             int platform = getPlatform(ee);
             if (isSunStudio(def) && (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC)) { // NOI18N

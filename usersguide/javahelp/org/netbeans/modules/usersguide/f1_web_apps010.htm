@@ -8,11 +8,18 @@
 
 <body>
 <p><a id="dd_multiview_references_envEntriesNode" name="dd_multiview_references_envEntriesNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref493" name="sthref493"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref496" name="sthref496"></a>
 <h1>web.xml Visual Editor: Environment Entries</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Environment Entries section to add, remove, and view the web application's environment variables. Application environment entries are initialization variables that are available throughout a web application. You can use them, for example, to validate the object's type.</p>
-<p>You access application environment variables in the <code>java:comp/env</code> context through a JNDI lookup, unlike context parameters, which you access via a <code>ServletContext</code> object. So, you would extract the value of an application environment variable as shown in <a href="#CHDFAHIH">Example: Extracting the value of an application environment variable</a></p>
+<p>Use the Environment Entries section to add, remove, and view the web application's environment variables. Application environment entries are initialization variables that are available throughout a web application. You can use them, for example, to validate the object's type. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You access application environment variables in the <code>java:comp/env</code> context through a JNDI lookup, unlike context parameters, which you access via a <code>ServletContext</code> object. So, you would extract the value of an application environment variable as shown in <a href="#CHDFAHIH">Example: Extracting the value of an application environment variable</a>.</p>
 <a id="CHDFAHIH" name="CHDFAHIH"></a>
 <p>Extracting the value of an application environment variable</p>
 <pre xml:space="preserve">
@@ -22,7 +29,7 @@ String header = (String) context.lookup("java:comp/env/headerPage");
 <!-- -->
 <p>The JNDI lookup method expects the type specified by the <code>env-entry-type</code> element and throws an exception if the returned value is not of that type.</p>
 <p>To declare an application environment variable, you must register it in the web.xml file. When you do this, you provide information needed by the server to use the parameter. You tell the server which value should be returned when an environment entry is referred to in the web application.</p>
-<p>You open the <code>web.xml</code> Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the <code>web.xml</code> file. Click References at the top of the editor to open the References section, then click the Environment Entries header to open the Environment Entries section. 
+<p>In the Visual Editor, click <b>References</b> at the top of the editor to open the References section, then click the Environment Entries header to open the Environment Entries section. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
 <param name="text" value="<html><u>How?</u></html>">
@@ -79,22 +86,22 @@ String header = (String) context.lookup("java:comp/env/headerPage");
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, "
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
-<param name="text" value="<html><u>About Deployment Descriptors</u></html>">
+<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
-<p><i>Developing Applications with NetBeans IDE</i>, "Configuring a Web Application
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
-<param name="text" value="<html><u></u></html>">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-"</p>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

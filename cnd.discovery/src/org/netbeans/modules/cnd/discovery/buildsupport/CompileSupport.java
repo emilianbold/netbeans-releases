@@ -173,6 +173,10 @@ public class CompileSupport extends CompileOptionsProvider {
             try {
                 in = new BufferedReader(new InputStreamReader(properties.getInputStream(), "UTF-8")); // NOI18N
                 String line = null;
+                String normItemPath = null;
+                if (itemPath.indexOf('\\') >=0 ) { // NOI18N
+                    normItemPath = itemPath.replace('\\', '/'); // NOI18N
+                }
                 while (true) {
                     line = in.readLine();
                     if (line == null) {
@@ -182,10 +186,14 @@ public class CompileSupport extends CompileOptionsProvider {
                         if (line.startsWith(itemPath+"=")) { // NOI18N
                             break;
                         }
+                    } else if (normItemPath != null && line.startsWith(normItemPath)) {
+                        if (line.startsWith(normItemPath+"=")) { // NOI18N
+                            break;
+                        }
                     }
                 }
                 if (line != null) {
-                    final String resLine = line.substring(line.indexOf('=')+1);
+                    final String resLine = line.substring(line.indexOf('=')+1); // NOI18N
                     return new AllOptionsProvider() {
 
                         @Override

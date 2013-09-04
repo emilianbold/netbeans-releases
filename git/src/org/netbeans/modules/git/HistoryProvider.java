@@ -104,11 +104,6 @@ public class HistoryProvider implements VCSHistoryProvider {
         Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
         Map<String, GitRevisionInfo> rev2LMMap = new LinkedHashMap<String, GitRevisionInfo>();
             
-        Date toDate = null;
-        if (fromDate != null) {
-            toDate = new Date(System.currentTimeMillis());
-        }
-
         File repositoryRoot = repositories.iterator().next();
         for (File file : files) {
             FileInformation info = Git.getInstance().getFileStatusCache().getStatus(file);
@@ -117,7 +112,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             }
             GitRevisionInfo[] history;
             try {
-                history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromDate, toDate, GitUtils.NULL_PROGRESS_MONITOR);
+                history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromDate, null, GitUtils.NULL_PROGRESS_MONITOR);
                 for (GitRevisionInfo h : history) {
                     String r = h.getRevision();
                     rev2LMMap.put(r, h);

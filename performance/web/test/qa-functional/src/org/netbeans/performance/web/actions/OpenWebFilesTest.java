@@ -51,16 +51,8 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.web.setup.WebSetup;
-
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-
 
 /**
  * Test of opening files.
@@ -118,27 +110,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         return suite;
     }
 
-        class PhaseHandler extends Handler {
-            
-            public boolean published = false;
-
-            public void publish(LogRecord record) {
-
-            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]")) 
-               ActionTracker.getInstance().stopRecording();
-
-            }
-
-            public void flush() {
-            }
-
-            public void close() throws SecurityException {
-            }
-            
-        }
-
-    PhaseHandler phaseHandler=new PhaseHandler();
-    
     public void testOpeningWebXmlFile(){
         WAIT_AFTER_OPEN = 2000;
         setXMLEditorCaretFilteringOn();
@@ -148,16 +119,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         menuItem = EDIT;
         doMeasurement();
     }
-
-    public void testOpeningContextXmlFile(){
-        WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
-        fileProject = "TestWebProject";
-        fileFolder = "META-INF"; 
-        fileName = "context.xml";
-        menuItem = EDIT;
-        doMeasurement();
-    }    
 
     public void testOpeningJSPFile(){
         WAIT_AFTER_OPEN = 2000;
@@ -211,18 +172,18 @@ public class OpenWebFilesTest extends PerformanceTestCase {
     
     public void initialize(){
         EditorOperator.closeDiscardAll();
+        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        addEditorPhaseHandler();
     }
 
     public void shutdown(){
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
+        removeEditorPhaseHandler();
         
     }
     
     public void prepare(){
-        Logger.getLogger("TIMER").setLevel(Level.FINE);
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
         System.out.println("PREPARE: "+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         
@@ -239,7 +200,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         }
         log("------------------------- after popup invocation ------------");
         try {
-            repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
@@ -252,13 +212,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
     }
     
     public void close(){
-        EditorOperator editor = new EditorOperator(this.fileName);
-        if (editor == null) {
-            editor.closeDiscard();
-        }
-
-        repaintManager().resetRegionFilters();
-        
+        new EditorOperator(fileName).closeDiscard();
     }
-    
 }

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.completion.cplusplus;
 
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -55,9 +57,9 @@ import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation
 public final class CsmTypeResolverImpl implements CsmTypeResolverImplementation {
 
     @Override
-    public CsmType resolveType(CsmExpression expression) {
+    public CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
         CsmCompletionQuery query = getCompletionQuery(expression);
-        CsmType type = query.queryType(expression);
+        CsmType type = query.queryType(expression, instantiations);
         return type;
     }    
     

@@ -3464,36 +3464,73 @@ public class Reformatter implements ReformatTask {
 
         private int wrapTree(CodeStyle.WrapStyle wrapStyle, int alignIndent, int spacesCnt, Tree tree) {
             int ret = -1;
-            switch (wrapStyle) {
-                case WRAP_ALWAYS:
-                    int old = indent;
-                    int oldLast = lastIndent;
-                    boolean oldContinuationIndent = continuationIndent;
-                    try {
-                        if (alignIndent >= 0) {
-                            indent = alignIndent;
-                            continuationIndent = false;
+            int oldLast = lastIndent;
+            try {
+                switch (wrapStyle) {
+                    case WRAP_ALWAYS:
+                        int old = indent;
+                        boolean oldContinuationIndent = continuationIndent;
+                        try {
+                            if (alignIndent >= 0) {
+                                indent = alignIndent;
+                                continuationIndent = false;
+                            }
+                            newline();
+                        } finally {
+                            indent = old;
+                            continuationIndent = oldContinuationIndent;
                         }
-                        newline();
-                    } finally {
-                        indent = old;
-                        lastIndent = oldLast;
-                        continuationIndent = oldContinuationIndent;
-                    }
-                    ret = col;
-                    scan(tree, null);
-                    break;
-                case WRAP_IF_LONG:
-                    int index = tokens.index();
-                    int c = col;
-                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    old = indent;
-                    oldLast = lastIndent;
-                    oldContinuationIndent = continuationIndent;
-                    WrapAbort oldCheckWrap = checkWrap;
-                    int o = tokens.offset();
-                    checkWrap = new WrapAbort(tokens.offset());
-                    try {
+                        ret = col;
+                        scan(tree, null);
+                        break;
+                    case WRAP_IF_LONG:
+                        int index = tokens.index();
+                        int c = col;
+                        Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                        old = indent;
+                        oldContinuationIndent = continuationIndent;
+                        WrapAbort oldCheckWrap = checkWrap;
+                        int o = tokens.offset();
+                        checkWrap = new WrapAbort(tokens.offset());
+                        try {
+                            try {
+                                if (alignIndent >= 0) {
+                                    indent = alignIndent;
+                                    continuationIndent = false;
+                                }
+                                spaces(spacesCnt, true);
+                            } finally {
+                                indent = old;
+                                continuationIndent = oldContinuationIndent;
+                            }
+                            ret = col;
+                            scan(tree, null);
+                        } catch (WrapAbort wa) {
+                        } finally {
+                            checkWrap = oldCheckWrap;
+                        }
+                        if (col > rightMargin && o >= lastNewLineOffset) {
+                            rollback(index, c, d);
+                            try {
+                                if (alignIndent >= 0) {
+                                    indent = alignIndent;
+                                    continuationIndent = false;
+                                } else {
+                                    indent = old;
+                                    continuationIndent = oldContinuationIndent;
+                                }
+                                newline();
+                            } finally {
+                                indent = old;
+                                continuationIndent = oldContinuationIndent;
+                            }
+                            ret = col;
+                            scan(tree, null);
+                        }
+                        break;
+                    case WRAP_NEVER:
+                        old = indent;
+                        oldContinuationIndent = continuationIndent;
                         try {
                             if (alignIndent >= 0) {
                                 indent = alignIndent;
@@ -3502,54 +3539,14 @@ public class Reformatter implements ReformatTask {
                             spaces(spacesCnt, true);
                         } finally {
                             indent = old;
-                            lastIndent = oldLast;
                             continuationIndent = oldContinuationIndent;
                         }
                         ret = col;
                         scan(tree, null);
-                    } catch (WrapAbort wa) {
-                    } finally {
-                        checkWrap = oldCheckWrap;
-                    }
-                    if (col > rightMargin && o >= lastNewLineOffset) {
-                        rollback(index, c, d);
-                        try {
-                            if (alignIndent >= 0) {
-                                indent = alignIndent;
-                                continuationIndent = false;
-                            } else {
-                                indent = old;
-                                lastIndent = oldLast;
-                                continuationIndent = oldContinuationIndent;
-                            }
-                            newline();
-                        } finally {
-                            indent = old;
-                            lastIndent = oldLast;
-                            continuationIndent = oldContinuationIndent;
-                        }
-                        ret = col;
-                        scan(tree, null);
-                    }
-                    break;
-                case WRAP_NEVER:
-                    old = indent;
-                    oldLast = lastIndent;
-                    oldContinuationIndent = continuationIndent;
-                    try {
-                        if (alignIndent >= 0) {
-                            indent = alignIndent;
-                            continuationIndent = false;
-                        }
-                        spaces(spacesCnt, true);
-                    } finally {
-                        indent = old;
-                        lastIndent = oldLast;
-                        continuationIndent = oldContinuationIndent;
-                    }
-                    ret = col;
-                    scan(tree, null);
-                    break;
+                        break;
+                }
+            } finally {
+                lastIndent = oldLast;
             }
             return ret;
         }

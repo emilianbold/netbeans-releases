@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.css.model.api.Model;
@@ -436,6 +438,9 @@ public class CSSUtils {
         return false;
     }
 
+    /** Pattern for the source mapping URL in CSS files. */
+    private static final Pattern SOURCE_MAPPING_PATTERN = Pattern.compile("/\\*[#@]\\s+sourceMappingURL=(.*)\\s+\\*/"); // NOI18N
+
     /**
      * Returns the path to the source map.
      * 
@@ -446,14 +451,9 @@ public class CSSUtils {
     public static String sourceMapPath(String cssText) {
         String result = null;
         if (cssText != null) {
-            String sourceMapPrefix = "/*# sourceMappingURL="; // NOI18N
-            int index = cssText.lastIndexOf(sourceMapPrefix);
-            if (index != -1) {
-                cssText = cssText.substring(index+sourceMapPrefix.length());
-                index = cssText.indexOf("*/"); // NOI18N
-                if (index != -1) {
-                    result = cssText.substring(0, index).trim();
-                }
+            Matcher matcher = SOURCE_MAPPING_PATTERN.matcher(cssText);
+            if (matcher.find()) {
+                result = matcher.group(1);
             }
         }
         return result;

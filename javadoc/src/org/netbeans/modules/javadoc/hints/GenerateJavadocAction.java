@@ -192,7 +192,7 @@ public final class GenerateJavadocAction extends TextAction {
                     return;
                 }
                 
-                if (kind != Kind.COMPILATION_UNIT && !JavadocUtilities.hasErrors(leaf) && Access.PRIVATE.isAccessible(javac, tp, true)) {
+                if (kind != Kind.COMPILATION_UNIT && !JavadocUtilities.hasErrors(leaf) /*&& Access.PRIVATE.isAccessible(javac, tp, true)*/) {
                     Element el = javac.getTrees().getElement(tp);
                     if (el != null) {
                         desc.javadoc = gen.generateComment(el, javac);

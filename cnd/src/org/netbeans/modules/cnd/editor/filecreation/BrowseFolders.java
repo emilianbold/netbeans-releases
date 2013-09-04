@@ -303,11 +303,15 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         @Override
         protected Node[] createNodes(SourceGroup g) {
-            FileObject folder = g.getRootFolder();
-            FilterNode fn = new FilterNode(
-                    new PhysicalView.GroupNode(project, g, folder.equals(project.getProjectDirectory()), DataFolder.findFolder(folder)),
-                    new SourceGroupChildren(folder, g));
-            return new Node[] { fn };
+            try{ 
+                FileObject folder = g.getRootFolder();
+                FilterNode fn = new FilterNode(
+                        new PhysicalView.GroupNode(project, g, folder.equals(project.getProjectDirectory()), DataFolder.findFolder(folder)),
+                        new SourceGroupChildren(folder, g));
+                return new Node[] { fn };
+            }catch (Exception ex){
+                return null;
+            }
         }
 
     }

@@ -90,7 +90,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
     }
 
     @Override
-    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException {
+    public HostInfo getHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException {
         if (hostinfoScript == null) {
             return null;
         }
@@ -182,7 +182,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         return hostInfo;
     }
 
-    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException {
+    private Properties getRemoteHostInfo(ExecutionEnvironment execEnv) throws IOException, InterruptedException {
         Properties hostInfo = new Properties();
         ChannelStreams sh_channels = null;
 
@@ -230,8 +230,6 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             hostInfo.put("LOCALTIME", Long.valueOf((localStartTime + localEndTime) / 2)); // NOI18N
         } catch (JSchException ex) {
             throw new IOException("Exception while receiving HostInfo for " + execEnv.toString() + ": " + ex); // NOI18N
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
         } finally {
             if (sh_channels != null) {
                 if (sh_channels.channel != null) {
@@ -261,7 +259,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         }
     }
 
-    private void getRemoteUserEnvironment(ExecutionEnvironment execEnv, HostInfo hostInfo, Map<String, String> environmentToFill) {
+    private void getRemoteUserEnvironment(ExecutionEnvironment execEnv, HostInfo hostInfo, Map<String, String> environmentToFill) throws InterruptedException {
         // If NbStartUtility is available for target host will invoke it for
         // dumping environment to a file ...
         // 
@@ -295,6 +293,12 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             EnvReader reader = new EnvReader(login_shell_channels.out, true);
             environmentToFill.putAll(reader.call());
         } catch (Exception ex) {
+            if (ex instanceof InterruptedException) {
+                throw (InterruptedException) ex;
+            }
+            if (ex.getCause() instanceof InterruptedException) {
+                throw (InterruptedException) ex.getCause();
+            }
             log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
             if (activityID != null) {

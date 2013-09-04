@@ -304,9 +304,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         private final CssPreprocessorType type;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-        // @GuardedBy("EDT")
-        private OptionsPanel panel;
-
+        private volatile OptionsPanel panel;
         private volatile WizardDescriptor settings = null;
 
 
@@ -325,8 +323,8 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
         @Override
         public OptionsPanel getComponent() {
-            assert EventQueue.isDispatchThread();
             if (panel == null) {
+                assert EventQueue.isDispatchThread();
                 CssPreprocessorPreferences preferences = type.getPreferences();
                 panel = new OptionsPanel(type, preferences.isEnabled(project),
                         preferences.getMappings(project), preferences.getCompilerOptions(project));

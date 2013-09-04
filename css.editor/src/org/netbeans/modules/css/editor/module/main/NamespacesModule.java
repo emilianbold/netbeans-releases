@@ -86,9 +86,19 @@ public class NamespacesModule extends CssEditorModule {
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<>();
         Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
-            activeNode = activeNode.parent();
+        //switch to first non error node
+        boolean isError = false;
+        loop:
+        for (;;) {
+            switch (activeNode.type()) {
+                case error:
+                case recovery:
+                    activeNode = activeNode.parent();
+                    isError = true;
+                    break;
+                default:
+                    break loop;
+            }
         }
 
         switch (activeNode.type()) {
@@ -104,20 +114,21 @@ public class NamespacesModule extends CssEditorModule {
                 //in body after namespace declaration(s), no prefix 
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
-                
+
             case root:
             case styleSheet:
             case body:
                 //in body, no prefix 
                 proposals.addAll(getNamespaceCompletionProposals(context));
             case bodyItem:
-                if(context.getActiveTokenId()  == null  //so the completion in empty file works
+                if (context.getActiveTokenId() == null //so the completion in empty file works
+                        || context.getActiveTokenId() == CssTokenId.WS
                         || context.getActiveTokenId() == CssTokenId.AT_IDENT
                         || context.getActiveTokenId() == CssTokenId.ERROR && context.getPrefix().startsWith("@")) { //NOI18N
-                    CompletionProposal nsKeywordProposal =
-                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
-                    proposals.add(nsKeywordProposal);
-                }
+                CompletionProposal nsKeywordProposal
+                        = CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
+                proposals.add(nsKeywordProposal);
+            }
                 break;
 
             case media:
@@ -129,40 +140,46 @@ public class NamespacesModule extends CssEditorModule {
 
             case elementSubsequent: //after element selector
             case typeSelector: //after class or id selector
-                CssTokenId tokenNodeTokenId = context.getActiveTokenNode().type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(context.getActiveTokenNode()) : null;
-                if (tokenNodeTokenId == CssTokenId.WS) {
+                switch (context.getActiveTokenId()) {
+                case WS:
+                case NL:
                     proposals.addAll(getNamespaceCompletionProposals(context));
+                case AT_SIGN:
+                    if (isError) {
+                    proposals.add(CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false));
                 }
+            }
+
                 break;
 
             case generic_at_rule:
                 proposals.add(CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false));
                 break;
-                
+
             case namespace:
                 CssTokenId tokenId = context.getTokenSequence().token().id();
                 if (tokenId == CssTokenId.NAMESPACE_SYM) {
-                    CompletionProposal nsKeywordProposal =
-                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
+                    CompletionProposal nsKeywordProposal
+                            = CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                     proposals.add(nsKeywordProposal);
                 }
 
             case simpleSelectorSequence:
                 if (isError) {
-                    Token<CssTokenId> token = context.getTokenSequence().token();
-                    switch (token.id()) {
-                        case IDENT:
-                            if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
-                                proposals.addAll(getNamespaceCompletionProposals(context));
-                            }
-                            break;
-                        case LBRACKET:
-                        case WS:
-                            proposals.addAll(getNamespaceCompletionProposals(context));
-                            break;
-
+                Token<CssTokenId> token = context.getTokenSequence().token();
+                switch (token.id()) {
+                    case IDENT:
+                        if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
+                        proposals.addAll(getNamespaceCompletionProposals(context));
                     }
+                        break;
+                    case LBRACKET:
+                    case WS:
+                        proposals.addAll(getNamespaceCompletionProposals(context));
+                        break;
+
                 }
+            }
                 break;
 
             case slAttribute:
@@ -183,8 +200,8 @@ public class NamespacesModule extends CssEditorModule {
             @Override
             public void run(StyleSheet styleSheet) {
                 Namespaces namespaces = styleSheet.getNamespaces();
-                if(namespaces == null) {
-                    return ;
+                if (namespaces == null) {
+                    return;
                 }
                 for (Namespace ns : namespaces.getNamespaces()) {
                     proposals.add(
@@ -222,9 +239,9 @@ public class NamespacesModule extends CssEditorModule {
         final List<StructureItem> items = new ArrayList<>();
 
         return new NodeVisitor<T>() {
-            
+
             private void addItem(StructureItem si) {
-                if(items.isEmpty()) {
+                if (items.isEmpty()) {
                     result.add(new TopLevelStructureItem.Namespaces(items));
                 }
                 items.add(si);

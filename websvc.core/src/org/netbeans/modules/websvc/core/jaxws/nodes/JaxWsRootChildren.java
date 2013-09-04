@@ -56,14 +56,16 @@ import java.beans.PropertyChangeListener;
 import org.openide.util.RequestProcessor;
 
 public class JaxWsRootChildren extends Children.Keys<Service> {
+    
+    private static final RequestProcessor JAX_WS_ROOT_RP =
+            new RequestProcessor(JaxWsRootChildren.class); //NOI18N
+    
     JaxWsModel jaxWsModel;
     Service[] services;
     JaxWsListener listener;
     FileObject[] srcRoots;
 
-    private RequestProcessor.Task updateNodeTask = 
-        new RequestProcessor("JaxWS-Request-Processor").create(new Runnable()   //NOI18N 
-    {
+    private final RequestProcessor.Task updateNodeTask = JAX_WS_ROOT_RP.create(new Runnable() {
         public void run() {
             updateKeys();
         }

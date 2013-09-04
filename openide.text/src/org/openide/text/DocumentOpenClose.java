@@ -360,6 +360,7 @@ final class DocumentOpenClose {
     }
 
     void reload() { // Schedule a reload in RP
+        Runnable reloadEDTTask = null;
         synchronized (lock) {
             switch (documentStatus) {
                 case CLOSED: // Closed and loading not started yet -> do nothing
@@ -371,7 +372,9 @@ final class DocumentOpenClose {
                     if (activeClose == null && activeReload == null) { // Only reload when no pending close or reload
                         StyledDocument reloadDoc = docRef.get();
                         if (reloadDoc != null) {
+                            // Init the task but do not start it because "lock" is acquired
                             initReloadTaskLA(reloadDoc);
+                            reloadEDTTask = activeReload;
                         }
                     }
                     break;
@@ -380,6 +383,11 @@ final class DocumentOpenClose {
                     throw invalidStatus();
 
             }
+        }
+
+        if (reloadEDTTask != null) {
+            // Initial part of reload runs in EDT (collects caret positions) but outside "lock"
+            Mutex.EVENT.readAccess(reloadEDTTask);
         }
     }
     
@@ -411,7 +419,9 @@ final class DocumentOpenClose {
     }
     
     private void initLoadTaskLA(boolean synchronousTaskRun) { // Lock acquired mandatory
-        assert (activeOpen == null) : "Open task already inited."; // NOI18N
+        if (activeOpen != null) {
+            throw new IllegalStateException("Open task already inited. State:\n" + this); // NOI18N
+        }
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("initLoadTaskLA(): Schedule open task followed by change firing task.\n"); // NOI18N
         }
@@ -432,8 +442,6 @@ final class DocumentOpenClose {
             LOG.finer("initLoadTaskLA(): Schedule reload task.\n"); // NOI18N
         }
         activeReload = new DocumentLoad(reloadDoc);
-        // Initial part of reload runs in EDT (collects caret positions)
-        Mutex.EVENT.readAccess(activeReload);
     }
     
     void close() {
@@ -675,7 +683,9 @@ final class DocumentOpenClose {
                     // Attach annotations
                     updateLines(loadDoc, false);
 
-                    documentStatus = DocumentStatus.OPENED; // common for both reload and open
+                    synchronized (lock) {
+                        documentStatus = DocumentStatus.OPENED; // common for both reload and open
+                    }
                     loadSuccess = true;
                 }
 
@@ -781,20 +791,28 @@ final class DocumentOpenClose {
 
                 if (reload) {
                     if (reloadCaretOffsets != null) {
+                        int docLen = loadDoc.getLength();
                         // Remember caret positions and set them later in EDT
                         final Position[] caretPositions = new Position[reloadCaretOffsets.length];
                         for (int i = 0; i < reloadCaretOffsets.length; i++) {
                             try {
-                                caretPositions[i] = loadDoc.createPosition(reloadCaretOffsets[i]);
+                                int offset = reloadCaretOffsets[i];
+                                offset = Math.max(Math.min(offset, docLen), 0);
+                                caretPositions[i] = loadDoc.createPosition(offset);
                             } catch (BadLocationException ex) {
-                                caretPositions[i] = loadDoc.getEndPosition();
+                                // Cannot use loadDoc.getEndPosition() since pane.setCaretPosition() does not accept doc.getLength()+1 offset
+                                caretPositions[i] = null;
                             }
                         }
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 for (int i = 0; i < reloadOpenPanes.length; i++) {
-                                    reloadOpenPanes[i].setCaretPosition(caretPositions[i].getOffset());
+                                    JEditorPane pane = reloadOpenPanes[i];
+                                    // Ensure that the doc is the reloaded one and position valid
+                                    if (pane.getDocument() == loadDoc && caretPositions[i] != null) {
+                                        reloadOpenPanes[i].setCaretPosition(caretPositions[i].getOffset());
+                                    }
                                 }
                             }
                         });

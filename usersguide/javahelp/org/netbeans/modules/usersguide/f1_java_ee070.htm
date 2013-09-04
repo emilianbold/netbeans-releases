@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="AS_Wiz_ConnPool_props" name="AS_Wiz_ConnPool_props"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref648" name="sthref648"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref649" name="sthref649"></a>
 <h1>New JDBC Connection Pool: Add Connection Pool Properties</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>You see this page of the New File wizard when you are defining a connection pool and you have already named the connection pool and selected the database connection.</p>
@@ -24,79 +24,71 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t65">Element</th>
-<th align="left" valign="bottom" id="r1c2-t65">Description</th>
+<th align="left" valign="bottom" id="r1c1-t67">Element</th>
+<th align="left" valign="bottom" id="r1c2-t67">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t65" headers="r1c1-t65">
+<td align="left" id="r2c1-t67" headers="r1c1-t67">
 <p>Datasource classname</p>
 </td>
-<td align="left" headers="r2c1-t65 r1c2-t65">
+<td align="left" headers="r2c1-t67 r1c2-t67">
 <p>The datasource class name is the JDBC driver that implements the APIs for the datasource. This name is provided according to the database connection selected in the previous screen. If you selected Other as the connection in the previous screen, you may need to add the datasource classname manually.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t65" headers="r1c1-t65">
+<td align="left" id="r3c1-t67" headers="r1c1-t67">
 <p>Resource type</p>
 </td>
-<td align="left" headers="r3c1-t65 r1c2-t65">
+<td align="left" headers="r3c1-t67 r1c2-t67">
 <p>The resource type reflects whether the connection pool enables XA global transactions or is restricted to local transactions. Return to the previous screen to change the resource type.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t65" headers="r1c1-t65">
+<td align="left" id="r4c1-t67" headers="r1c1-t67">
 <p>Description</p>
 </td>
-<td align="left" headers="r4c1-t65 r1c2-t65">
+<td align="left" headers="r4c1-t67 r1c2-t67">
 <p>You can enter a description of this connection pool.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t65" headers="r1c1-t65">
+<td align="left" id="r5c1-t67" headers="r1c1-t67">
 <p>Properties</p>
 </td>
-<td align="left" headers="r5c1-t65 r1c2-t65">
+<td align="left" headers="r5c1-t67 r1c2-t67">
 <p>Connection pool properties may vary according to the database vendor. Common properties include the datasource URL, user name, and password, but other properties may be suggested or required depending on the database connection. If you selected an existing source in the previous screen, some of the property values may already be provided.</p>
 <p>Properties may be changed or removed and additional properties may be added, but each property in the Properties area must have a value entered before you can proceed to the next screen or finish the connection pool configuration.</p>
-<p><b>Note</b>: To complete the wizard you may need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password.</p>
+<ul>
+<li>To change a property, click a box in the Properties Name column, select a new property from the dropdown list and add a value for that property.</li>
+<li>To add a new property, click the Add button. A new row appears in the properties box. In the new row, click the box in the Properties Name column and select a property from the dropdown list, and add a value for that property.</li>
+<li>To remove a property click the row containing the propertyanc click the Remove button.</li>
+</ul>
+<p><b>Note</b>: To complete the wizard you might need to supply the password for your database if the property field is empty. Use the character sequence open-parenthesis close-parenthesis, "()", to denote an empty string or blank password.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref649" name="sthref649"></a>
-<p><b>To change a property:</b></p>
-<ol>
-<li>Click a box in the Properties Name column and select a new property from the dropdown list.</li>
-<li>Add a value for that property.</li>
-</ol>
-<a id="sthref650" name="sthref650"></a>
-<p><b>To add a new property:</b></p>
-<ol>
-<li>Click the Add button. A new row appears in the properties box.</li>
-<li>In the new row, click the box in the Properties Name column and select a property from the dropdown list.</li>
-<li>Add a value for that property.</li>
-</ol>
-<a id="sthref651" name="sthref651"></a>
-<p><b>To remove a property:</b></p>
-<ol>
-<li>Click the row containing the property to delete.</li>
-<li>Click the Remove button.</li>
-</ol>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, <code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1651">
-<param name="text" value="<html><u>About Working with Web Application Servers</u></html>">
+<param name="text" value="<html><u>&quot;About Working with Web Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
-<p><i>Developing Applications with NetBeans IDE</i>, Working with Glassfish Application Servers</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
+<param name="text" value="<html><u>&quot;Working with Glassfish Application Servers&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

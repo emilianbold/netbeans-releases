@@ -93,10 +93,6 @@ public class OpenWebFilesWithOpenedEditorTest extends OpenWebFilesTest {
         super.testOpeningWebXmlFile();
     }
 
-    public void testOpeningContextXmlFile(){
-        super.testOpeningContextXmlFile();
-    }    
-
     public void testOpeningJSPFile(){
         super.testOpeningJSPFile();
     }

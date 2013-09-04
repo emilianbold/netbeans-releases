@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -63,6 +64,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.awt.HtmlBrowser;
@@ -89,15 +91,18 @@ public final class ClientSideDevelopmentSupport implements
     private boolean browserSupportInitialized = false;
     // @GuardedBy("this")
     private boolean initialized = false;
-
+    private final UsageLogger browserUsageLogger;
+    private final String projectType;
     
-    public static ClientSideDevelopmentSupport createInstance(Project project) {
-        return new ClientSideDevelopmentSupport(project);
+    public static ClientSideDevelopmentSupport createInstance(Project project, String projectType, String usageLoggerName) {
+        return new ClientSideDevelopmentSupport(project, projectType, usageLoggerName);
     }
     
-    private ClientSideDevelopmentSupport(Project project) {
+    private ClientSideDevelopmentSupport(Project project, String projectType, String usageLoggerName) {
         this.project = project;
         this.webProject = project;
+        this.browserUsageLogger = UsageLogger.projectBrowserUsageLogger(usageLoggerName);
+        this.projectType = projectType;
     }
 
     /**
@@ -127,6 +132,10 @@ public final class ClientSideDevelopmentSupport implements
         WebBrowser browser = getWebBrowser();
         if (browser != null) {
             urlToOpenInBrowser = browser.toBrowserURL(getWebProject(), context, urlToOpenInBrowser);
+            browserUsageLogger.log(projectType, browser.getId(), browser.getBrowserFamily().name());
+        } else {
+            WebBrowser wb = BrowserUISupport.getDefaultBrowserChoice(true);
+            browserUsageLogger.log(projectType, wb.getId(), wb.getBrowserFamily().name());
         }
         BrowserSupport bs = getBrowserSupport();
         if (bs != null) {
@@ -258,6 +267,7 @@ public final class ClientSideDevelopmentSupport implements
         }
         browserSupport = null;
         browserSupportInitialized = false;
+        browserUsageLogger.reset();
     }
 
     @CheckForNull private synchronized BrowserSupport getBrowserSupport() {

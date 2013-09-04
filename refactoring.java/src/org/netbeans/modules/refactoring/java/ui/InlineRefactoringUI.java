@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  * Refactoring UI object for the inline refactoring.
  * @author Ralph Ruijs
  */
-public class InlineRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
+public class InlineRefactoringUI implements RefactoringUI {
 
     private InlineRefactoring refactoring;
     private String type;
@@ -71,49 +71,10 @@ public class InlineRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
     /** Creates a new instance of InlineRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public InlineRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
-        Element element = selectedElement.resolveElement(info);
-        if (element == null) {
-            switch (selectedElement.getKind()) {
-                case BOOLEAN_LITERAL:
-                case CHAR_LITERAL:
-                case DOUBLE_LITERAL:
-                case FLOAT_LITERAL:
-                case INT_LITERAL:
-                case LONG_LITERAL:
-                case NULL_LITERAL:
-                case STRING_LITERAL:
-                    TreePath tp = selectedElement.resolve(info);
-                    TreePath parent = tp.getParentPath();
-                    Element parentElement = info.getTrees().getElement(parent);
-                    if (parentElement.getKind() == ElementKind.LOCAL_VARIABLE) {
-                        element = (VariableElement) parentElement;
-                        selectedElement = TreePathHandle.create(parent, info);
-                    }
-                    break;
-            }
-        }
-        InlineRefactoring.Type refactoringType;
-        switch (element.getKind()) {
-            case FIELD:
-                type = "Constant";
-                refactoringType = InlineRefactoring.Type.CONSTANT;
-                break;
-            case LOCAL_VARIABLE:
-                type = "Temp";
-                refactoringType = InlineRefactoring.Type.TEMP;
-                break;
-            case METHOD:
-                type = "Method";
-                refactoringType = InlineRefactoring.Type.METHOD;
-                break;
-            default:
-                type = "Not Supported";
-                refactoringType = InlineRefactoring.Type.UNSUPPORTED;
-                break;
-        }
+    public InlineRefactoringUI(TreePathHandle selectedElement, InlineRefactoring.Type refactoringType, String elementName, String type) {
         refactoring = new InlineRefactoring(selectedElement, refactoringType);
-        elementName = element.getSimpleName().toString();
+        this.elementName = elementName;
+        this.type = type;
     }
 
     private InlineRefactoringUI() {
@@ -165,12 +126,53 @@ public class InlineRefactoringUI implements RefactoringUI, JavaRefactoringUIFact
     }
     
     public static JavaRefactoringUIFactory factory() {
-        return new InlineRefactoringUI();
-    }
+        return new JavaRefactoringUIFactory() {
 
-    @Override
-    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        assert handles.length == 1;
-        return new InlineRefactoringUI(handles[0], info);
+            @Override
+            public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+                assert handles.length == 1;
+                TreePathHandle selectedElement = handles[0];
+                switch (selectedElement.getKind()) {
+                    case BOOLEAN_LITERAL:
+                    case CHAR_LITERAL:
+                    case DOUBLE_LITERAL:
+                    case FLOAT_LITERAL:
+                    case INT_LITERAL:
+                    case LONG_LITERAL:
+                    case NULL_LITERAL:
+                    case STRING_LITERAL:
+                        TreePath tp = selectedElement.resolve(info);
+                        TreePath parent = tp.getParentPath();
+                        Element parentElement = info.getTrees().getElement(parent);
+                        if (parentElement.getKind() == ElementKind.LOCAL_VARIABLE) {
+                            selectedElement = TreePathHandle.create(parent, info);
+                        }
+                        break;
+                }
+                Element element = selectedElement.resolveElement(info);
+                if(element == null) {
+                    return null;
+                }
+                InlineRefactoring.Type refactoringType;
+                String type;
+                switch (element.getKind()) {
+                    case FIELD:
+                        type = "Constant";
+                        refactoringType = InlineRefactoring.Type.CONSTANT;
+                        break;
+                    case LOCAL_VARIABLE:
+                        type = "Temp";
+                        refactoringType = InlineRefactoring.Type.TEMP;
+                        break;
+                    case METHOD:
+                        type = "Method";
+                        refactoringType = InlineRefactoring.Type.METHOD;
+                        break;
+                    default:
+                        return null;
+                }
+                return new InlineRefactoringUI(selectedElement, refactoringType, element.getSimpleName().toString(), type);
+            }
+        };
     }
 }

@@ -106,10 +106,13 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version"; // NOI18N
     public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile"; // NOI18N
     public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name"; // NOI18N
+    public static final String WWW_NB_TEMP = "www_nb_temp";
+    public static final String WWW = "www";
+
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 36;
+    private final int BUILD_SCRIPT_VERSION = 37;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -143,7 +146,7 @@ public class CordovaPerformer implements BuildPerformer {
             return null;
         }
         
-        if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
+        if (((target.startsWith("build") || target.startsWith("sim") || target.startsWith("rebuild")) // NOI18N
                 && !CordovaPlatform.isCordovaProject(project))) { // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor(
                     Bundle.ERR_NOT_Cordova(),
@@ -178,16 +181,33 @@ public class CordovaPerformer implements BuildPerformer {
             public void run() {
                 try {
                     FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
-                    DataObject.find(siteRoot).rename("www");
-                } catch (IOException iOException) {
-                    Exceptions.printStackTrace(iOException);
-                }
-               generateBuildScripts(project);
-                FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
-                try {
-                    runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                    final DataObject siteRootDOB = DataObject.find(siteRoot);
+                    final boolean rename = target.startsWith("build") || target.startsWith("sim") || target.startsWith("rebuild") || target.startsWith("upgrade");
+                    if (rename) {
+                        if (!CordovaPlatform.isCordovaProject(project)) {
+                            siteRootDOB.rename(WWW_NB_TEMP);
+                        } else {
+                            siteRootDOB.rename(WWW);
+                        }
+                    }
+                    generateBuildScripts(project);
+                    FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
+                    
+                    final Properties properties = properties(project);
+                    runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties);
+                    final int result = runTarget[0].result();
+
+                    project.getProjectDirectory().refresh();
+                    if (rename && !WWW.equals(siteRootDOB.getName())) {
+                        FileObject www = project.getProjectDirectory().getFileObject(WWW);
+                        if (www !=null) {
+                            DataObject.find(www).delete();
+                        }
+                        siteRootDOB.rename(WWW);
+                    }
+
                     if (target.equals(BuildPerformer.RUN_IOS)) {
-                        if (runTarget[0].result() == 0) {
+                        if (result == 0) {
                             ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
                             if (provider != null) {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
@@ -238,8 +258,12 @@ public class CordovaPerformer implements BuildPerformer {
 //        props.put(PROP_CORDOVA_HOME, cordovaPlatform.getSdkLocation());//NOI18N
         props.put(PROP_CORDOVA_VERSION, cordovaPlatform.getVersion().toString());//NOI18N
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
-        final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
-        props.put(PROP_SITE_ROOT, siteRootRelative);
+        if (siteRoot != null) {
+            final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
+            props.put(PROP_SITE_ROOT, siteRootRelative);
+        } else {
+            props.put(PROP_SITE_ROOT, WWW_NB_TEMP);
+        }
         final FileObject startFile = ClientProjectUtilities.getStartFile(p);
         if (startFile!=null) {
             final String startFileRelative = FileUtil.getRelativePath(siteRoot, startFile);
@@ -328,7 +352,8 @@ public class CordovaPerformer implements BuildPerformer {
     }
     
     private static String getConfigPath(Project project) {
-        return ClientProjectUtilities.getSiteRoot(project).getNameExt() + "/" + NAME_CONFIG_XML; // NOI18N
+        final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+        return (siteRoot==null?WWW_NB_TEMP:siteRoot.getNameExt()) + "/" + NAME_CONFIG_XML; // NOI18N
     }
     
     public static SourceConfig getConfig(Project project)  {

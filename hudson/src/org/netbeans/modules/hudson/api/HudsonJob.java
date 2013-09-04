@@ -86,7 +86,9 @@ public interface HudsonJob extends Comparable<HudsonJob> {
         secured("secured"); // fake color
         public static @NonNull Color find(@NonNull String name) {
             try {
-                return valueOf(name);
+                // Convert green to blue, see bug 235415.
+                String legacyName = name.replace("green", "blue");      //NOI18N
+                return valueOf(legacyName);
             } catch (IllegalArgumentException x) {
                 Logger.getLogger(HudsonJob.class.getName()).log(Level.WARNING, "#126166/#203886: no known job color {0}", name);
                 return grey;

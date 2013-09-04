@@ -238,4 +238,20 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug235229.cpp", 2, 40, "bug235229.cpp", 2, 36);
         performTest("bug235229.cpp", 2, 50, "bug235229.cpp", 2, 36);
     }
+    
+    public void bug235120() throws Exception {
+        // Bug 235120 - SFINAE type deduction failure.
+        performTest("bug235120.cpp", 31, 20, "bug235120.cpp", 3, 9);
+        performTest("bug235120.cpp", 32, 20, "bug235120.cpp", 7, 9);
+        performTest("bug235120.cpp", 33, 20, "bug235120.cpp", 3, 9);
+        performTest("bug235120.cpp", 34, 20, "bug235120.cpp", 7, 9);
+        performTest("bug235120.cpp", 38, 51, "bug235120.cpp", 3, 9);
+        
+        performTest("bug235120.cpp", 69, 15, "bug235120.cpp", 45, 9);
+        performTest("bug235120.cpp", 71, 15, "bug235120.cpp", 50, 9);
+        
+        performTest("bug235120.cpp", 90, 14, "bug235120.cpp", 78, 9);
+        performTest("bug235120.cpp", 119, 59, "bug235120.cpp", 96, 9);        
+        performTest("bug235120.cpp", 120, 27, "bug235120.cpp", 96, 9);
+    }
 }

@@ -54,6 +54,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -137,7 +139,8 @@ public class ImportZIP extends JPanel {
         "# {0} - ZIP file", "MSG_unpacking=Unpacking {0}",
         "# {0} - ZIP entry name", "MSG_creating=Creating {0}",
         "# {0} - folder", "MSG_checking=Checking for project: {0}", 
-        "# {0} - folder", "WRN_folder_already_exists=Folder {0} already exists.",
+        "# {0} - entry", "WRN_entry_already_exists=Entry {0} already exists.",
+        "WRN_no_project_added=No NetBeans projects added.",
         "LBL_replace=Replace",
         "TITLE_change_target_folder=Change target folder",
         "LBL_change_import_folder=Change import folder"
@@ -168,8 +171,8 @@ public class ImportZIP extends JPanel {
                     if(/*!override && */f.exists()) {
                         JButton replace = new JButton(LBL_replace());
                         JButton changeImportFolder = new JButton(LBL_change_import_folder());
-                        NotifyDescriptor folderExistsWRN = new NotifyDescriptor(WRN_folder_already_exists(f), TITLE_import(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE, new Object[] {replace, /*rename,*/ changeImportFolder, NotifyDescriptor.CANCEL_OPTION}, null);
-                        Object returnValue = DialogDisplayer.getDefault().notify(folderExistsWRN);
+                        NotifyDescriptor entryExistsWRN = new NotifyDescriptor(WRN_entry_already_exists(f), TITLE_import(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE, new Object[] {replace, /*rename,*/ changeImportFolder, NotifyDescriptor.CANCEL_OPTION}, null);
+                        Object returnValue = DialogDisplayer.getDefault().notify(entryExistsWRN);
                         if (returnValue == NotifyDescriptor.CANCEL_OPTION) {
                             return;
                         } else if (returnValue == changeImportFolder){
@@ -193,13 +196,20 @@ public class ImportZIP extends JPanel {
                         } else if (returnValue == replace){
                             //override = true;
                             FileObject fo = FileUtil.toFileObject(f);
-                            Project prj =  ProjectManager.getDefault().findProject(fo);
-                            if(prj!=null) {
-                                //LifecycleManager.getDefault().saveAll();
-                                //in case the project is open
-                                OpenProjects.getDefault().close(new Project[] {prj});
-                            } 
-                            fo.delete();
+                            if (fo != null) {
+                                if(fo.isFolder()) { //#225109 make sure it's a folder
+                                    Project prj =  ProjectManager.getDefault().findProject(fo);
+                                    if(prj!=null) {
+                                        //LifecycleManager.getDefault().saveAll();
+                                        //in case the project is open
+                                        List<Project> openProjects = Arrays.asList(OpenProjects.getDefault().getOpenProjects());
+                                        if(openProjects.contains(prj)) {
+                                            OpenProjects.getDefault().close(new Project[] {prj});
+                                        }
+                                    }
+                                }
+                                fo.delete();
+                            }
                         }
                     }
                     if ("Thumbs.db".equals(f.getName())) {
@@ -254,6 +264,9 @@ public class ImportZIP extends JPanel {
                         projects.add(p);
                     }
                 }
+            }
+            if(projects.isEmpty()) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor(WRN_no_project_added(), TITLE_import(), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, null));
             }
         } finally {
             handle.finish();

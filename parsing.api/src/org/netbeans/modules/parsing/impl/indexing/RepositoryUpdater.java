@@ -133,6 +133,7 @@ import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
+import org.openide.util.Union2;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -2434,15 +2435,30 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             } finally {
                 try {
                     boolean indexOk = true;
+                    Union2<IOException,RuntimeException> exception = null;
                     for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                        indexOk &= storeChanges(
-                                entry.first().getIndexerName(),
-                                entry.second(),
-                                isSteady(),
-                                usedIterables.get(),
-                                finished);
+                        try {
+                            indexOk &= storeChanges(
+                                    entry.first().getIndexerName(),
+                                    entry.second(),
+                                    isSteady(),
+                                    usedIterables.get(),
+                                    finished);
+                        } catch (IOException e) {
+                            exception = Union2.createFirst(e);
+                        } catch (RuntimeException e) {
+                            exception = Union2.createSecond(e);
+                        }
                     }
-                    if (!indexOk) {
+                    if (exception != null) {
+                        //Do not reschedule scan, the excepion comes from clear()
+                        //rescheduling scan will cause infinite scan.
+                        if (exception.hasFirst()) {
+                            throw exception.first();
+                        } else {
+                            throw exception.second();
+                        }
+                    } else if (!indexOk) {
                         final Context ctx = ctxToFinish.iterator().next().second();
                         RepositoryUpdater.getDefault().addIndexingJob(
                             ctx.getRootURI(),
@@ -2809,10 +2825,25 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
             } finally {
                 boolean indexOk = true;
+                Union2<IOException,RuntimeException> exception = null;
                 for(Context ctx : contexts.values()) {
-                    indexOk &= storeChanges(null, ctx, isSteady(), null, finished);
+                    try {
+                        indexOk &= storeChanges(null, ctx, isSteady(), null, finished);
+                    } catch (IOException e) {
+                        exception = Union2.createFirst(e);
+                    } catch (RuntimeException e) {
+                        exception = Union2.createSecond(e);
+                    }
                 }
-                if (!indexOk) {
+                if (exception != null) {
+                    //Do not reschedule scan, the excepion comes from clear()
+                    //rescheduling scan will cause infinite scan.
+                    if (exception.hasFirst()) {
+                        throw exception.first();
+                    } else {
+                        throw exception.second();
+                    }
+                } else if (!indexOk) {
                     RepositoryUpdater.getDefault().addBinaryJob(
                         contexts.values().iterator().next().getRootURI(),
                         LogContext.create(
@@ -3358,41 +3389,42 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final boolean optimize,
                 @NullAllowed final Iterable<? extends Indexable> indexables,
                 final boolean finished) throws IOException {
-
-            final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
-            if (index != null) {
-                TEST_LOGGER.log(
-                    Level.FINEST,
-                    "indexCommit:{0}:{1}",      //NOI18N
-                    new Object[] {
-                        indexerName,
-                        ctx.getRootURI()
-                    });
-                try {
-                    if (finished) {
-                        storeChanges(index, optimize, indexables);
-                    } else {
-                        rollBackChanges(index);
-                    }
-                } catch (IOException ioe ) {
-                    //Broken index, reschedule idexing.
-                    LOGGER.log(
-                        Level.WARNING,
-                        "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+            try {
+                final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+                if (index != null) {
+                    TEST_LOGGER.log(
+                        Level.FINEST,
+                        "indexCommit:{0}:{1}",      //NOI18N
                         new Object[] {
-                            ctx.getRootURI(),
-                            ioe.getMessage()
+                            indexerName,
+                            ctx.getRootURI()
                         });
-                    index.clear();
-                    return false;
-                } finally {
-                    final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
-                    if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
-                        ((ClusteredIndexables.AttachableDocumentIndexCache)cache).detach();
+                    try {
+                        if (finished) {
+                            storeChanges(index, optimize, indexables);
+                        } else {
+                            rollBackChanges(index);
+                        }
+                    } catch (IOException ioe ) {
+                        //Broken index, reschedule idexing.
+                        LOGGER.log(
+                            Level.WARNING,
+                            "Broken index for root: {0} reason: {1}, recovering.",  //NOI18N
+                            new Object[] {
+                                ctx.getRootURI(),
+                                ioe.getMessage()
+                            });
+                        index.clear();
+                        return false;
                     }
                 }
+                return true;
+            } finally {
+                final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
+                if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
+                    ((ClusteredIndexables.AttachableDocumentIndexCache)cache).detach();
+                }
             }
-            return true;
         }
 
        private void storeChanges(
@@ -4134,7 +4166,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Pair<FileObject, Boolean> fileObject = null;
 
                         if (fileOrFileObject.first() instanceof File) {
-                            FileObject f = FileUtil.toFileObject((File) fileOrFileObject.first());
+                            FileObject f;
+                            try {
+                                f = FileUtil.toFileObject((File) fileOrFileObject.first());
+                            } catch (IllegalArgumentException e) {
+                                throw new IllegalArgumentException(
+                                    "Non-normalized file among files to rescan.",   //NOI18N
+                                    e) {
+                                    {
+                                        final LogContext logCtx = getLogContext();
+                                        if (logCtx != null) {
+                                            setStackTrace(logCtx.getCaller());
+                                        }
+                                    }
+                                };
+                            }
                             if (f != null) {
                                 fileObject = Pair.<FileObject, Boolean>of(f, fileOrFileObject.second());
                             }

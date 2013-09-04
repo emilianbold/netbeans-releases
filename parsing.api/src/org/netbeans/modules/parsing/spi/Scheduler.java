@@ -171,7 +171,11 @@ public abstract class Scheduler {
         }
         task = null;
         if (requestProcessor == null) {
-            requestProcessor = new RequestProcessor ();
+            requestProcessor = new RequestProcessor (
+                    Scheduler.class.getName(),
+                    1,
+                    false,
+                    false);
         }        
         if (this.source != source) {
             if (this.source != null) {

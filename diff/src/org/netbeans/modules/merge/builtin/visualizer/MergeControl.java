@@ -52,8 +52,8 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.openide.util.NbBundle;
 
@@ -78,11 +78,19 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     /** The current diff */
     private int currentDiffLine = 0;
     private int[] resultDiffLocations;
-    private Set<Difference> resolvedConflicts = new HashSet<Difference>();
+    private final Map<Difference, AcceptKind> resolvedConflicts = new HashMap<Difference, AcceptKind>();
     private StreamSource resultSource;
     
     private boolean firstNewlineIsFake;
     private boolean secondNewlineIsFake;
+    
+    static enum AcceptKind {
+        LEFT,
+        RIGHT,
+        LEFT_RIGHT,
+        RIGHT_LEFT,
+        NONE
+    }
 
     /** Creates a new instance of MergeControl */
     public MergeControl(MergePanel panel) {
@@ -112,6 +120,9 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         this.diffs = diffs;
         this.diffShifts = new int[diffs.length][2];
         this.resultDiffLocations = new int[diffs.length];
+        for (Difference diff : diffs) {
+            resolvedConflicts.put(diff, AcceptKind.NONE);
+        }
         panel.setMimeType1(source1.getMIMEType());
         panel.setMimeType2(source2.getMIMEType());
         panel.setMimeType3(result.getMIMEType());
@@ -132,7 +143,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         insertEmptyLines(true);
         setDiffHighlight(true);
         copyToResult();
-        panel.setNumConflicts(diffs.length);
+        panel.setConflicts(diffs);
         panel.addControlActionListener(this);
         showCurrentLine();
         this.resultSource = result;
@@ -278,11 +289,22 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             line4 = diff.getSecondEnd() + shifts[1];
         }
         //System.out.println("  diff lines = "+line1+", "+line2+", "+line3+", "+line4);
-        int rlength; // The length of the area before the conflict is resolved
-        if (resolvedConflicts.contains(diff)) {
-            rlength = (right) ? (line2 - line1) : (line4 - line3);
-        } else {
-            rlength = Math.max(line2 - line1, line4 - line3);
+        int rlength = 0; // The length of the area before the conflict is resolved
+        AcceptKind acceptedAs = resolvedConflicts.get(diff);
+        switch (acceptedAs) {
+            case NONE:
+                rlength = Math.max(line2 - line1, line4 - line3);
+                break;
+            case LEFT:
+                rlength = line2 - line1;
+                break;
+            case RIGHT:
+                rlength = line4 - line3;
+                break;
+            case LEFT_RIGHT:
+            case RIGHT_LEFT:
+                rlength = line2 - line1 + line4 - line3 + 1;
+                break;
         }
         int shift;
         if (right) {
@@ -311,7 +333,61 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         for (int i = conflNum + 1; i < diffs.length; i++) {
             resultDiffLocations[i] -= shift;
         }
-        resolvedConflicts.add(diff);
+        resolvedConflicts.put(diff, right ? AcceptKind.RIGHT : AcceptKind.LEFT);
+        panel.setNeedsSaveState(true);
+    }
+    
+    private void doAcceptBoth (boolean right, int conflNum) {
+        Difference diff = diffs[conflNum];
+        int[] shifts = diffShifts[conflNum];
+        int line1, line2, line3, line4;
+        if (diff.getType() == Difference.ADD) {
+            line1 = diff.getFirstStart() + shifts[0] + 1;
+            line2 = line1 - 1;
+        } else {
+            line1 = diff.getFirstStart() + shifts[0];
+            line2 = diff.getFirstEnd() + shifts[0];
+        }
+        if (diff.getType() == Difference.DELETE) {
+            line3 = diff.getSecondStart() + shifts[1] + 1;
+            line4 = line3 - 1;
+        } else {
+            line3 = diff.getSecondStart() + shifts[1];
+            line4 = diff.getSecondEnd() + shifts[1];
+        }
+        //System.out.println("  diff lines = "+line1+", "+line2+", "+line3+", "+line4);
+        int rlength = 0; // The length of the area before the conflict is resolved
+        AcceptKind acceptedAs = resolvedConflicts.get(diff);
+        switch (acceptedAs) {
+            case NONE:
+                rlength = Math.max(line2 - line1, line4 - line3);
+                break;
+            case LEFT:
+                rlength = line2 - line1;
+                break;
+            case RIGHT:
+                rlength = line4 - line3;
+                break;
+            case LEFT_RIGHT:
+            case RIGHT_LEFT:
+                rlength = line2 - line1 + line4 - line3 + 1;
+                break;
+        }
+        int shift;
+        panel.replaceBothInResult(line1, Math.max(line2, 0), line3, Math.max(line4, 0), // Correction for possibly negative value
+                resultDiffLocations[conflNum],
+                resultDiffLocations[conflNum] + rlength,
+                right);
+        shift = rlength - (line2 - line1 + line4 - line3 + 1);
+        panel.highlightRegion1(line1, Math.max(line2, 0), colorResolvedConflict);
+        panel.highlightRegion2(line3, Math.max(line4, 0), colorResolvedConflict);
+        panel.highlightRegion3(resultDiffLocations[conflNum],
+                resultDiffLocations[conflNum] + rlength - shift,
+                colorResolvedConflict);
+        for (int i = conflNum + 1; i < diffs.length; i++) {
+            resultDiffLocations[i] -= shift;
+        }
+        resolvedConflicts.put(diff, right ? AcceptKind.RIGHT_LEFT : AcceptKind.LEFT_RIGHT);
         panel.setNeedsSaveState(true);
     }
     
@@ -335,6 +411,10 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
             doResolveConflict(true, currentDiffLine);
         } else if (MergePanel.ACTION_ACCEPT_LEFT.equals(actionCommand)) {
             doResolveConflict(false, currentDiffLine);
+        } else if (MergePanel.ACTION_ACCEPT_RIGHT_LEFT.equals(actionCommand)) {
+            doAcceptBoth(true, currentDiffLine);
+        } else if (MergePanel.ACTION_ACCEPT_LEFT_RIGHT.equals(actionCommand)) {
+            doAcceptBoth(false, currentDiffLine);
         }
     }
     
@@ -345,7 +425,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 ArrayList<Difference> unresolvedConflicts = new ArrayList<Difference>();//java.util.Arrays.asList(diffs));
                 int diffLocationShift = 0;
                 for (int i = 0; i < diffs.length; i++) {
-                    if (!resolvedConflicts.contains(diffs[i])) {
+                    if (resolvedConflicts.get(diffs[i]) == AcceptKind.NONE) {
                         int diffLocation = resultDiffLocations[i] - diffLocationShift;
                         Difference conflict = new Difference(diffs[i].getType(),
                                                              diffLocation,

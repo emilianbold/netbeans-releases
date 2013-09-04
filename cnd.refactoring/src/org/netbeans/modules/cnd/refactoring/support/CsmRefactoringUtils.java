@@ -549,30 +549,34 @@ public final class CsmRefactoringUtils {
         return containingFile;
     } 
     
-    public static Collection<CsmReference> getComments(final CsmFile file, String text) {
-        Collection<CsmReference> comments = new ArrayList<>();
-        Document doc = CsmUtilities.getDocument(file);
+    public static Collection<CsmReference> getComments(final CsmFile file, final String text) {
+        final Collection<CsmReference> comments = new ArrayList<>();
+        final Document doc = CsmUtilities.getDocument(file);
         if (doc != null) {
-            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-            TokenSequence<?> ts = hi.tokenSequence();
-            while (ts.moveNext()) {
-                Token<?> token = ts.token();
-                if (CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
-                    TokenSequence<?> te = ts.embedded();
-                    if (te != null) {
-                        while (te.moveNext()) {
-                            Token<?> commentToken = te.token();
-                            if (commentToken.id() == DoxygenTokenId.IDENT) {
-                                if (text.contentEquals(commentToken.text())) {
-                                    int offset = commentToken.offset(hi);
-                                    comments.add(new CsmCommentReferenceImpl(text, offset, offset + commentToken.length(), file));
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                    TokenSequence<?> ts = hi.tokenSequence();
+                    while (ts.moveNext()) {
+                        Token<?> token = ts.token();
+                        if (CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
+                            TokenSequence<?> te = ts.embedded();
+                            if (te != null) {
+                                while (te.moveNext()) {
+                                    Token<?> commentToken = te.token();
+                                    if (commentToken.id() == DoxygenTokenId.IDENT) {
+                                        if (text.contentEquals(commentToken.text())) {
+                                            int offset = commentToken.offset(hi);
+                                            comments.add(new CsmCommentReferenceImpl(text, offset, offset + commentToken.length(), file));
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-
+            });
         }
         return comments;
     }

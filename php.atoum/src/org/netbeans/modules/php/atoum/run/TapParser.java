@@ -122,8 +122,8 @@ public final class TapParser {
     }
 
     private void processComment(String line) {
-        assert line.startsWith("# ") : line;
-        line = line.substring(2);
+        assert line.startsWith("#") : line;
+        line = line.substring(1).trim();
         switch (state) {
             case OK:
                 setSuiteTest(line);
@@ -152,10 +152,15 @@ public final class TapParser {
         if (setFileLine(lastLine)) {
             commentLines.remove(lastIndex);
         } else {
-            // aborted test
             // XXX
+            // aborted test
+            if (lastLine.toLowerCase().endsWith(".php")) { // NOI18N
+                // php file
+                commentLines.remove(lastIndex);
+                testCase.setFile(lastLine);
+            }
             if (testCase.getStatus() == TestCase.Status.FAILED) {
-                testCase.setStatus(TestCase.Status.ABORTED);
+                testCase.setStatus(TestCase.Status.ERROR);
             }
         }
         // rest

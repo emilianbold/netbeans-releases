@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.cordova.options;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,31 +66,17 @@ import org.openide.util.Utilities;
 final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     private final MobilePlatformsOptionsPanelController controller;
-    private final DocumentListener documentL;
+    private DocumentListener documentL;
+    private String codeSignIdentity;
+    private Collection<? extends ProvisioningProfile> provisioningProfiles;
+    private String provisioningProfilePath;
+    private boolean inited = false;
 
+    @NbBundle.Messages("LBL_PleaseWait=Please Wait...")
     MobilePlatformsPanel(MobilePlatformsOptionsPanelController controller) {
         this.controller = controller;
-        initComponents();
-        documentL = new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                MobilePlatformsPanel.this.controller.changed();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                MobilePlatformsPanel.this.controller.changed();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                MobilePlatformsPanel.this.controller.changed();
-            }
-        };
-        
-        identityTextField.setEnabled(Utilities.isMac());
-        provisioningCombo.setEnabled(Utilities.isMac());
+        setLayout(new BorderLayout());
+        add(new JLabel(Bundle.LBL_PleaseWait(), JLabel.CENTER), BorderLayout.CENTER);
     }
 
     /**
@@ -233,23 +223,63 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_androidSdkDownloadMouseClicked
 
     void load() {
+        final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
+        codeSignIdentity = iosPlatform.getCodeSignIdentity();
+        provisioningProfiles = iosPlatform.getProvisioningProfiles();
+        provisioningProfilePath = iosPlatform.getProvisioningProfilePath();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setupComponenets();
+            }
+        });
+        CordovaPlatform.getDefault().isReady();
+    }
+    
+    void setupComponenets() {
+        if (!inited) {
+            removeAll();
+            initComponents();
+            documentL = new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    MobilePlatformsPanel.this.controller.changed();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    MobilePlatformsPanel.this.controller.changed();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    MobilePlatformsPanel.this.controller.changed();
+                }
+            };
+
+            identityTextField.setEnabled(Utilities.isMac());
+            provisioningCombo.setEnabled(Utilities.isMac());
+            inited = true;
+        }
+        
         if (documentL != null) {
             androidSdkField.getDocument().removeDocumentListener(documentL);
         }
         androidSdkField.setText(PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
 //        cordovaSdkField.setText(CordovaPlatform.getDefault().getSdkLocation());
-        final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         
-        identityTextField.setText(iosPlatform.getCodeSignIdentity());
-        provisioningCombo.setModel(new DefaultComboBoxModel(iosPlatform.getProvisioningProfiles().toArray()));
+        identityTextField.setText(codeSignIdentity);
+        provisioningCombo.setModel(new DefaultComboBoxModel(provisioningProfiles.toArray()));
         
-        for (ProvisioningProfile prof:iosPlatform.getProvisioningProfiles()) {
-            if (prof.getPath().equals(iosPlatform.getProvisioningProfilePath())) {
+        for (ProvisioningProfile prof:provisioningProfiles) {
+            if (prof.getPath().equals(provisioningProfilePath)) {
                 provisioningCombo.setSelectedItem(prof);
             }
         }
 
         androidSdkField.getDocument().addDocumentListener(documentL);
+        validate();
    }
 
     void store() {

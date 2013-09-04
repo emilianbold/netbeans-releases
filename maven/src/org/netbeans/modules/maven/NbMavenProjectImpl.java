@@ -131,6 +131,10 @@ public final class NbMavenProjectImpl implements Project {
             problemReporter.clearReports(); //#167741 -this will trigger node refresh?
             MavenProject prj = loadOriginalMavenProject(true);
             synchronized (NbMavenProjectImpl.this) {
+                MavenProject old = project == null ? null : project.get();
+                if (old != null && MavenProjectCache.isFallbackproject(prj)) {
+                    prj.setPackaging(old.getPackaging()); //#229366 preserve packaging for broken projects to avoid changing lookup.
+                }
                 project = new SoftReference<MavenProject>(prj);
                 if (hardReferencingMavenProject) {
                     hardRefProject = prj;
@@ -146,8 +150,7 @@ public final class NbMavenProjectImpl implements Project {
     private final Lookup basicLookup;
     private final Lookup completeLookup;
     private final Lookup lookup;
-    private final Updater projectFolderUpdater;
-    private final Updater userFolderUpdater;
+    private final Updater openedProjectUpdater;
     
     private Reference<MavenProject> project;
     private boolean hardReferencingMavenProject = false; //only should be true when project is open.
@@ -223,8 +226,8 @@ public final class NbMavenProjectImpl implements Project {
             }
         });
         watcher = ACCESSOR.createWatcher(this);
-        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
-        userFolderUpdater = new Updater("settings.xml");//NOI18N
+        File homeFile = FileUtil.normalizeFile(MavenCli.userMavenConfigurationHome);
+        openedProjectUpdater = new Updater(new File(projectFile.getParentFile(), "nb-configuration.xml"), projectFile, new File(homeFile, "settings.xml")); //NOI18N
         problemReporter = new ProblemReporterImpl(this);
         M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, true);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
@@ -462,12 +465,10 @@ public final class NbMavenProjectImpl implements Project {
 
     /** Begin listening to pom.xml changes. */
     void attachUpdater() {
-        projectFolderUpdater.attachAll(getProjectDirectory());
-        userFolderUpdater.attachAll(getHomeDirectory());
+        openedProjectUpdater.attachAll();
     }
    void detachUpdater() {
-        projectFolderUpdater.detachAll();
-        userFolderUpdater.detachAll();
+        openedProjectUpdater.detachAll();
     }
 
     /**
@@ -476,23 +477,6 @@ public final class NbMavenProjectImpl implements Project {
     @Override
     public FileObject getProjectDirectory() {
         return folderFileObject;
-    }
-
-    public FileObject getHomeDirectory() {
-        File homeFile = MavenCli.userMavenConfigurationHome;
-
-        FileObject home = null;
-        try {
-            home = FileUtil.createFolder(homeFile);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (home == null) {
-            //TODO this is a problem, probably UNC path on windows - MEVENIDE-380
-            // some functionality won't work
-            LOG.log(Level.WARNING, "Cannot convert home dir to FileObject, some functionality won''t work. It''s usually the case on Windows and UNC paths. The path is {0}", homeFile);
-        }
-        return home;
     }
 
     public @CheckForNull String getArtifactRelativeRepositoryPath() {
@@ -810,13 +794,11 @@ public final class NbMavenProjectImpl implements Project {
 
     private class Updater implements FileChangeListener {
 
-        private String[] filesToWatch;
+        private final File[] filesToWatch;
         private long lastTime = 0;
-        private FileObject folder;
-        private final FileChangeListener listener = FileUtil.weakFileChangeListener(this, null);
 
         /** Relative file paths to watch. */
-        Updater(String... toWatch) {
+        Updater(File... toWatch) {
             Arrays.sort(toWatch);
             filesToWatch = toWatch;
         }
@@ -827,37 +809,26 @@ public final class NbMavenProjectImpl implements Project {
 
         @Override
         public void fileChanged(FileEvent fileEvent) {
-            if (!fileEvent.getFile().isFolder()) {
-                String nameExt = fileEvent.getFile().getNameExt();
-                if (Arrays.binarySearch(filesToWatch, nameExt) != -1 && lastTime < fileEvent.getTime()) {
+                if (lastTime < fileEvent.getTime()) {
                     lastTime = System.currentTimeMillis();
 //                    System.out.println("fired based on " + fileEvent.getFile() + fileEvent.getTime());
                     NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
                 }
-            }
         }
 
         @Override
         public void fileDataCreated(FileEvent fileEvent) {
-            //TODO shall also include the parent of the pom if available..
-            if (fileEvent.getFile().isFolder()) {
-                String nameExt = fileEvent.getFile().getNameExt();
-                if (Arrays.binarySearch(filesToWatch, nameExt) != -1 && lastTime < fileEvent.getTime()) {
+                if (lastTime < fileEvent.getTime()) {
                     lastTime = System.currentTimeMillis();
 //                    System.out.println("fired based on " + fileEvent.getFile() + fileEvent.getTime());
-                    fileEvent.getFile().addFileChangeListener(this);
                     NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
                 }
-            }
         }
 
         @Override
         public void fileDeleted(FileEvent fileEvent) {
-            if (!fileEvent.getFile().isFolder()) {
                 lastTime = System.currentTimeMillis();
-                fileEvent.getFile().removeFileChangeListener(this);
                 NbMavenProject.fireMavenProjectReload(NbMavenProjectImpl.this);
-            }
         }
 
         @Override
@@ -870,29 +841,15 @@ public final class NbMavenProjectImpl implements Project {
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
         }
 
-        void attachAll(FileObject fo) {
-            if (fo != null) {
-                folder = fo;
-                fo.addFileChangeListener(listener);
-                for (String file : filesToWatch) {
-                    FileObject fobj = fo.getFileObject(file);
-                    if (fobj != null) {
-                        fobj.addFileChangeListener(listener);
-                    }
-                }
+        void attachAll() {
+            for (File file : filesToWatch) {
+                FileUtil.addFileChangeListener(this, file);
             }
         }
 
         void detachAll() {
-            if (folder != null) {
-                folder.removeFileChangeListener(listener);
-                for (String file : filesToWatch) {
-                    FileObject fobj = folder.getFileObject(file);
-                    if (fobj != null) {
-                        fobj.removeFileChangeListener(listener);
-                    }
-                }
-                folder = null;
+            for (File file : filesToWatch) {
+                FileUtil.removeFileChangeListener(this, file);
             }
         }
     }

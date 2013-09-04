@@ -45,10 +45,12 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 @OptionsPanelController.SubRegistration(
         id = "MobilePlatforms", // NOI18N
@@ -66,10 +68,16 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final ChangeSupport cs = new ChangeSupport(this);
     private boolean changed;
+    private static final RequestProcessor RP = new RequestProcessor(MobilePlatformsOptionsPanelController.class);
 
     @Override
     public void update() {
-        getPanel().load();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                getPanel().load();
+            }
+        });
         changed = false;
     }
 
