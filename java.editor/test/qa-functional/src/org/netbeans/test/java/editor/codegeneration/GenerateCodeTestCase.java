@@ -50,17 +50,13 @@ public class GenerateCodeTestCase extends EditorTestCase {
 
     public static String getJDKVersionCode() {
         String specVersion = System.getProperty("java.version");
-
-        if (specVersion.startsWith("1.4")) {
-            return "jdk14";
+               
+        if (specVersion.startsWith("1.7")) {
+            return "jdk17";
         }
-
-        if (specVersion.startsWith("1.5")) {
-            return "jdk15";
-        }
-
-        if (specVersion.startsWith("1.6")) {
-            return "jdk16";
+        
+        if (specVersion.startsWith("1.8")) {
+            return "jdk18";
         }
 
         throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
