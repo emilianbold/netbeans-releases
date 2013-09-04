@@ -555,17 +555,8 @@ public class FileChooserBuilder {
         }
 
         @Override
-        public int showOpenDialog(Component parent) throws HeadlessException {
-            int result = super.showOpenDialog(parent);
-            if (result == APPROVE_OPTION) {
-                saveCurrentDir();
-            }
-            return result;
-        }
-
-        @Override
-        public int showSaveDialog(Component parent) throws HeadlessException {
-            int result = super.showSaveDialog(parent);
+        public int showDialog(Component parent, String approveButtonText) throws HeadlessException {
+            int result = super.showDialog(parent, approveButtonText);
             if (result == APPROVE_OPTION) {
                 saveCurrentDir();
             }

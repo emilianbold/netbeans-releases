@@ -29,7 +29,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.favorites.templates;
+package org.netbeans.modules.templates;
 
 import java.io.IOException;
 import java.io.InputStream;

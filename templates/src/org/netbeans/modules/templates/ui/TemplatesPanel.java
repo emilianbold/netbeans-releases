@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.favorites.templates;
+package org.netbeans.modules.templates.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -77,7 +77,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.DefaultEditorKit;
-import static org.netbeans.modules.favorites.templates.Bundle.*;
+import static org.netbeans.modules.templates.ui.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
