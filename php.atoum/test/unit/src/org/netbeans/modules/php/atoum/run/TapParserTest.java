@@ -239,6 +239,37 @@ public class TapParserTest extends NbTestCase {
         assertEquals(-1, testCase1.getLine());
     }
 
+    public void testParseIssue235482() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-235482.log"), 100L);
+        assertEquals(1, suites.size());
+        assertEquals(3, suites.get(0).getTestCases().size());
+
+        TestCaseVo testCase1 = suites.get(0).getTestCases().get(0);
+        assertEquals("testAdd", testCase1.getName());
+        assertEquals(TestCase.Status.PENDING, testCase1.getStatus());
+        assertNull(testCase1.getMessage());
+        assertNull(testCase1.getDiff());
+        assertEquals("/var/www/Atom2/tests/unit/netbeans/sample/Calculator.php", testCase1.getFile());
+        assertEquals(-1, testCase1.getLine());
+
+        TestCaseVo testCase2 = suites.get(0).getTestCases().get(1);
+        assertEquals("testAddDie2", testCase2.getName());
+        assertEquals(TestCase.Status.ERROR, testCase2.getStatus());
+        assertEquals("", testCase2.getMessage());
+        assertNull(testCase2.getDiff());
+        assertEquals("/var/www/Atom2/tests/unit/netbeans/sample/Calculator.php", testCase2.getFile());
+        assertEquals(-1, testCase2.getLine());
+
+        TestCaseVo testCase3 = suites.get(0).getTestCases().get(2);
+        assertEquals("testAddDie", testCase3.getName());
+        assertEquals(TestCase.Status.FAILED, testCase3.getStatus());
+        assertEquals("E_USER_ERROR : Argument of mageekguy\\atoum\\asserters\\integer::isEqualTo() must be an integer", testCase3.getMessage());
+        assertNull(testCase3.getDiff());
+        assertEquals("/var/www/Atom2/tests/unit/netbeans/sample/Calculator.php", testCase3.getFile());
+        assertEquals(25, testCase3.getLine());
+    }
+
     private String getFileContent(String filePath) throws IOException {
         File file = new File(getDataDir(), filePath);
         assertTrue(file.getAbsolutePath(), file.isFile());

@@ -416,10 +416,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         search();
     }
 
-    void showDiff(RepositoryRevision.Event revision) {
+    void showDiff (RepositoryRevision.Event... events) {
         tbDiff.setSelected(true);
         refreshComponents(true);
-        diffView.select(revision);
+        diffView.select(events);
     }
 
     public void showDiff(RepositoryRevision container) {

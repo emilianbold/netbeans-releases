@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Proxy;
@@ -54,6 +55,10 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
+import com.jcraft.jsch.agentproxy.AgentProxy;
+import com.jcraft.jsch.agentproxy.Buffer;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.Identity;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -64,8 +69,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.jsch.agentproxy.ConnectorFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
@@ -97,7 +104,9 @@ public class SftpClient implements RemoteClient {
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
     private final SftpLogger sftpLogger;
+    // @GuardedBy("this")
     private Session sftpSession;
+    // @GuardedBy("this")
     private ChannelSftp sftpClient;
 
     public SftpClient(SftpConfiguration configuration, InputOutput io) {
@@ -115,6 +124,7 @@ public class SftpClient implements RemoteClient {
 
     @NbBundle.Messages("SftpConfiguration.bug.knownHosts=<html><b>Error in SFTP library detected:</b><br><br>Your Known Hosts file is too big and will not be used.")
     private void init() throws RemoteException {
+        assert Thread.holdsLock(this);
         if (sftpClient != null && sftpClient.isConnected()) {
             LOGGER.log(Level.FINE, "SFTP client already created and connected");
             return;
@@ -139,10 +149,9 @@ public class SftpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Login as {0}", username);
         }
 
-        JSch jsch = null;
-        Channel channel = null;
-        jsch = new JSch();
+        boolean agentUsed = false;
         try {
+            JSch jsch = new JSch();
             JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
             if (StringUtils.hasText(knownHostsFile)) {
@@ -153,9 +162,6 @@ public class SftpClient implements RemoteClient {
                     LOGGER.log(Level.INFO, "Error in JSCH library", ex);
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.SftpConfiguration_bug_knownHosts(), NotifyDescriptor.ERROR_MESSAGE));
                 }
-            }
-            if (StringUtils.hasText(identityFile)) {
-                jsch.addIdentity(identityFile);
             }
             if (StringUtils.hasText(password)) {
                 sftpSession.setPassword(password);
@@ -168,12 +174,24 @@ public class SftpClient implements RemoteClient {
             if (keepAliveInterval > 0) {
                 sftpSession.setServerAliveInterval(keepAliveInterval);
             }
-            sftpSession.connect(timeout);
-
-            channel = sftpSession.openChannel("sftp"); // NOI18N
-            channel.connect();
-            sftpClient = (ChannelSftp) channel;
-
+            try {
+                // first try agent
+                LOGGER.fine("Trying to set ssh-agent");
+                agentUsed = setAgent(jsch, identityFile, true);
+                LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, true});
+                connectSftpClient(timeout);
+            } catch (Exception exc) {
+                // catch rather all exceptions. In case jsch-agent-proxy is broken again we should
+                // at least fall back on key/pasphrase
+                if (agentUsed) {
+                    LOGGER.log(exc instanceof JSchException ? Level.FINE : Level.INFO, null, exc);
+                    setAgent(jsch, identityFile, false);
+                    LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, false});
+                    connectSftpClient(timeout);
+                } else {
+                    throw exc;
+                }
+            }
         } catch (JSchException exc) {
             // remove password from a memory storage
             PASSWORDS.remove(configuration.hashCode());
@@ -183,10 +201,39 @@ public class SftpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
         }
+    }
 
+    private void connectSftpClient(int timeout) throws JSchException {
+        assert Thread.holdsLock(this);
+        assert sftpSession != null;
+        sftpSession.connect(timeout);
+        Channel channel = sftpSession.openChannel("sftp"); // NOI18N
+        channel.connect();
+        sftpClient = (ChannelSftp) channel;
+    }
+
+    private boolean setAgent(JSch jsch, String identityFile, boolean preferAgent) throws JSchException {
+        boolean agentUsed = false;
+        if (preferAgent) {
+            Connector con = ConnectorFactory.getInstance().createConnector(ConnectorFactory.ConnectorKind.ANY);
+            if (con != null) {
+                IdentityRepository irepo = new IdentityRepositoryImpl(con);
+                jsch.setIdentityRepository(irepo);
+                agentUsed = true;
+            }
+        }
+        if (!agentUsed) {
+            jsch.setIdentityRepository(null);
+            // remove all identity files
+            jsch.removeAllIdentity();
+            // and add the one specified by CredentialsProvider
+            jsch.addIdentity(identityFile);
+        }
+        return agentUsed;
     }
 
     private void setProxy(String host) {
+        assert Thread.holdsLock(this);
         if (NO_PROXY_PROPERTY) {
             LOGGER.log(Level.FINE, "No proxy will be used (disabled via system property)");
             return;
@@ -218,7 +265,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public void connect() throws RemoteException {
+    public synchronized void connect() throws RemoteException {
         init();
         assert sftpClient.isConnected();
         try {
@@ -233,7 +280,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public void disconnect(boolean force) throws RemoteException {
+    public synchronized void disconnect(boolean force) throws RemoteException {
         if (sftpSession == null) {
             // nothing to do
             LOGGER.log(Level.FINE, "Remote client not created yet => nothing to do");
@@ -271,7 +318,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean isConnected() {
+    public synchronized boolean isConnected() {
         if (sftpClient == null) {
             return false;
         }
@@ -279,7 +326,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public String printWorkingDirectory() throws RemoteException {
+    public synchronized String printWorkingDirectory() throws RemoteException {
         try {
             sftpLogger.info("PWD"); // NOI18N
 
@@ -295,7 +342,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean storeFile(String remote, InputStream local) throws RemoteException {
+    public synchronized boolean storeFile(String remote, InputStream local) throws RemoteException {
         try {
             sftpLogger.info("STOR " + remote); // NOI18N
 
@@ -320,7 +367,7 @@ public class SftpClient implements RemoteClient {
         return delete(pathname, true);
     }
 
-    private boolean delete(String pathname, boolean directory) throws RemoteException {
+    private synchronized boolean delete(String pathname, boolean directory) throws RemoteException {
         try {
             sftpLogger.info("DELE " + pathname); // NOI18N
 
@@ -340,7 +387,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean rename(String from, String to) throws RemoteException {
+    public synchronized boolean rename(String from, String to) throws RemoteException {
         try {
             sftpLogger.info("RNFR " + from); // NOI18N
             sftpLogger.info("RNTO " + to); // NOI18N
@@ -357,7 +404,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public List<RemoteFile> listFiles() throws RemoteException {
+    public synchronized List<RemoteFile> listFiles() throws RemoteException {
         List<RemoteFile> result = null;
         String pwd = null;
         try {
@@ -418,7 +465,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
+    public synchronized boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
         try {
             sftpLogger.info("RETR " + remote); // NOI18N
 
@@ -434,7 +481,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean changeWorkingDirectory(String pathname) throws RemoteException {
+    public synchronized boolean changeWorkingDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("CWD " + pathname); // NOI18N
 
@@ -450,7 +497,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean makeDirectory(String pathname) throws RemoteException {
+    public synchronized boolean makeDirectory(String pathname) throws RemoteException {
         try {
             sftpLogger.info("MKD " + pathname); // NOI18N
 
@@ -485,7 +532,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean setPermissions(int permissions, String path) throws RemoteException {
+    public synchronized boolean setPermissions(int permissions, String path) throws RemoteException {
         try {
             sftpLogger.info(String.format("chmod %d %s", permissions, path)); // NOI18N
 
@@ -501,7 +548,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public boolean exists(String parent, String name) throws RemoteException {
+    public synchronized boolean exists(String parent, String name) throws RemoteException {
         String fullPath = parent + "/" + name; // NOI18N
         try {
             sftpClient.ls(fullPath);
@@ -512,7 +559,7 @@ public class SftpClient implements RemoteClient {
         return false;
     }
 
-    private ChannelSftp.LsEntry getFile(String path) throws SftpException {
+    private synchronized ChannelSftp.LsEntry getFile(String path) throws SftpException {
         assert path != null && path.trim().length() > 0;
 
         @SuppressWarnings("unchecked")
@@ -776,4 +823,100 @@ public class SftpClient implements RemoteClient {
             return null;
         }
     }
+
+    private static final class IdentityRepositoryImpl implements IdentityRepository {
+
+        private final Connector connector;
+        private final AgentProxy proxy;
+
+
+        public IdentityRepositoryImpl(Connector connector) {
+            this.connector = connector;
+            this.proxy = new AgentProxy(connector);
+        }
+
+        @Override
+        public String getName() {
+            return connector.getName();
+        }
+
+        @Override
+        public int getStatus() {
+            return connector.isAvailable() ? IdentityRepository.RUNNING : IdentityRepository.UNAVAILABLE;
+        }
+
+        @Override
+        public Vector getIdentities() {
+            Identity[] identities = proxy.getIdentities();
+            Vector<com.jcraft.jsch.Identity> result = new Vector<>(identities.length);
+            for (final Identity identity : identities) {
+                result.add(new com.jcraft.jsch.Identity() {
+                    private byte[] publicKey;
+
+                    @Override
+                    public boolean setPassphrase(byte[] passphrase) throws JSchException {
+                        return true;
+                    }
+
+                    @Override
+                    public byte[] getPublicKeyBlob() {
+                        if (publicKey == null) {
+                            publicKey = identity.getBlob();
+                        }
+                        return identity.getBlob();
+                    }
+
+                    @Override
+                    public byte[] getSignature(byte[] data) {
+                        return proxy.sign(getPublicKeyBlob(), data);
+                    }
+
+                    @Override
+                    public boolean decrypt() {
+                        return true;
+                    }
+
+                    @Override
+                    public String getAlgName() {
+                        return new String((new Buffer(getPublicKeyBlob())).getString());
+                    }
+
+                    @Override
+                    public String getName() {
+                        return new String(identity.getComment());
+                    }
+
+                    @Override
+                    public boolean isEncrypted() {
+                        return false;
+                    }
+
+                    @Override
+                    public void clear() {
+
+                    }
+                });
+            }
+            return result;
+        }
+
+        @Override
+        public boolean add(byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public boolean remove(byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public void removeAll() {
+            // not supported now
+        }
+
+    }
+
 }

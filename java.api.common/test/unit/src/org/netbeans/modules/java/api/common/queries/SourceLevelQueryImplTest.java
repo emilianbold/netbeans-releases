@@ -105,6 +105,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
 
     private static final String JDK_8 = "8";    //NOI18N
     private static final String JDK_8_ALIAS = "1.8";    //NOI18N
+    private static final String JDK_7_ALIAS = "1.7";    //NOI18N
     private static final String JAVAC_SOURCE = "1.2";
     private static final String DEFAULT_JAVAC_SOURCE = "17.2";
 
@@ -143,11 +144,12 @@ public class SourceLevelQueryImplTest extends NbTestCase {
 
     private void prepareProject(
             @NonNull final String platformName) throws IOException {
-        prepareProject(platformName, null, null);
+        prepareProject(platformName, null, null, null);
     }
     private void prepareProject(
             @NonNull final String platformName,
             @NullAllowed final String sourceLevel,
+            @NullAllowed final String targetLevel,
             @NullAllowed final String profile) throws IOException {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
@@ -157,6 +159,10 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertNotNull(prj);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         props.setProperty("javac.source", "${def}");
+        props.setProperty("javac.target",
+            targetLevel == null ?
+            "${def}" :
+            targetLevel);
         props.setProperty("platform.active", platformName);
         props.setProperty("def",
                 sourceLevel != null ?
@@ -226,7 +232,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     public void testProfilesJDK8ProfileGiven() throws IOException {
-        this.prepareProject(TEST_PLATFORM, JDK_8, SourceLevelQuery.Profile.COMPACT2.getName());
+        this.prepareProject(TEST_PLATFORM, JDK_8, null, SourceLevelQuery.Profile.COMPACT2.getName());
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
@@ -235,7 +241,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     public void testProfilesJDK8AliasProfileGiven() throws IOException {
-        this.prepareProject(TEST_PLATFORM, JDK_8_ALIAS, SourceLevelQuery.Profile.COMPACT2.getName());
+        this.prepareProject(TEST_PLATFORM, JDK_8_ALIAS, null, SourceLevelQuery.Profile.COMPACT2.getName());
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
@@ -244,7 +250,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     public void testProfilesJDK8AliasProfileNotGiven() throws IOException {
-        this.prepareProject(TEST_PLATFORM, JDK_8, null);
+        this.prepareProject(TEST_PLATFORM, JDK_8, null, null);
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
@@ -253,7 +259,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     public void testProfilesOldJDKAliasProfileGiven() throws IOException {
-        this.prepareProject(TEST_PLATFORM, JAVAC_SOURCE, SourceLevelQuery.Profile.COMPACT2.getName());
+        this.prepareProject(TEST_PLATFORM, JAVAC_SOURCE, null, SourceLevelQuery.Profile.COMPACT2.getName());
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
@@ -261,8 +267,17 @@ public class SourceLevelQueryImplTest extends NbTestCase {
         assertEquals(SourceLevelQuery.Profile.DEFAULT, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
     }
 
+    public void testProfilesSourceJDK7AliasTargetJDK8ProfileGiven() throws IOException {
+        this.prepareProject(TEST_PLATFORM, JDK_7_ALIAS, JDK_8_ALIAS, SourceLevelQuery.Profile.COMPACT2.getName());
+        final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
+        final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
+        final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
+        assertTrue(result instanceof SourceLevelQueryImplementation2.Result2);
+        assertEquals(SourceLevelQuery.Profile.COMPACT2, ((SourceLevelQueryImplementation2.Result2)result).getProfile());
+    }
+
     public void testProfileChanges() throws Exception {
-        prepareProject(TEST_PLATFORM, JDK_8, SourceLevelQuery.Profile.COMPACT1.getName());
+        prepareProject(TEST_PLATFORM, JDK_8, null, SourceLevelQuery.Profile.COMPACT1.getName());
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);
@@ -285,7 +300,7 @@ public class SourceLevelQueryImplTest extends NbTestCase {
     }
 
     public void testProfileListening() throws Exception {
-        prepareProject(TEST_PLATFORM, JDK_8, SourceLevelQuery.Profile.COMPACT1.getName());
+        prepareProject(TEST_PLATFORM, JDK_8, null, SourceLevelQuery.Profile.COMPACT1.getName());
         final FileObject dummy = projdir.createData("Dummy.java");  //NOI18N
         final SourceLevelQueryImplementation2 sourceLevelQuery = QuerySupport.createSourceLevelQuery2(eval);
         final SourceLevelQueryImplementation2.Result result = sourceLevelQuery.getSourceLevel(dummy);

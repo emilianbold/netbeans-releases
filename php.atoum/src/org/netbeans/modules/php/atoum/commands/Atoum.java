@@ -60,6 +60,7 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpOptions;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
@@ -456,6 +457,7 @@ public final class Atoum {
             testCase.setLocation(new Locations.Line(fileObject, kase.getLine()));
         }
 
+        @NbBundle.Messages("ParsingProcessor.message.no=<no message>")
         private void mapFailureInfo(TestCaseVo kase, TestCase testCase) {
             if (isPass(kase.getStatus())) {
                 assert kase.getMessage() == null : kase.getMessage();
@@ -463,7 +465,10 @@ public final class Atoum {
                 return;
             }
             String message = kase.getMessage();
-            assert message != null : kase;
+            // #235482
+            if (!StringUtils.hasText(message)) {
+                message = Bundle.ParsingProcessor_message_no();
+            }
             List<String> stackTrace = kase.getStackTrace();
             if (stackTrace == null) {
                 stackTrace = Collections.emptyList();

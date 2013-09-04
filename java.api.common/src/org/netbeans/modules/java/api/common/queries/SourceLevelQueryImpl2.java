@@ -46,7 +46,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation2;
@@ -65,7 +67,9 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     
     private static final String PLATFORM_ACTIVE = "platform.active";    //NOI18N
     private static final String JAVAC_SOURCE = "javac.source";  //NOI18N
+    private static final String JAVAC_TARGET = "javac.target";  //NOI18N
     private static final String DEFAULT_SOURCE_LEVEL = "default.javac.source";  //NOI18N
+    private static final String DEFAULT_TARGET_LEVEL = "default.javac.target";  //NOI18N
     private static final String JAVAC_PROFILE = "javac.profile";    //NOI18N
     private static final Pattern SUPPORTS_PROFILES = Pattern.compile("(1\\.)?8");    //NOI18N
 
@@ -83,19 +87,34 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
         return this.result;
     }
 
+    @CheckForNull
     static String findSourceLevel (
             @NonNull final PropertyEvaluator eval) {
+        return findValue(eval, JAVAC_SOURCE, DEFAULT_SOURCE_LEVEL);
+    }
+
+    @CheckForNull
+    private static String findTargetLevel(
+            @NonNull final PropertyEvaluator eval) {
+        return findValue(eval, JAVAC_TARGET, DEFAULT_TARGET_LEVEL);
+    }
+
+    @CheckForNull
+    private static String findValue(
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String prop,
+            @NonNull final String fallBack) {
         final String activePlatform = eval.getProperty(PLATFORM_ACTIVE);
         if (CommonProjectUtils.getActivePlatform(activePlatform) != null) {
-            String sl = eval.getProperty(JAVAC_SOURCE);
-            if (sl != null && sl.length() > 0) {
+            String sl = eval.getProperty(prop);
+            if (sl != null && !sl.isEmpty()) {
                 return sl;
             }
             return null;
         }
         final EditableProperties props = PropertyUtils.getGlobalProperties();
-        String sl = props.get(DEFAULT_SOURCE_LEVEL);
-        if (sl != null && sl.length() > 0) {
+        String sl = props.get(fallBack);
+        if (sl != null && !sl.isEmpty()) {
             return sl;
         }
         return null;
@@ -104,7 +123,7 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     private static SourceLevelQuery.Profile findProfile(
             @NonNull final PropertyEvaluator eval) {
         SourceLevelQuery.Profile res;
-        if (supportsProfiles(findSourceLevel(eval))) {
+        if (supportsProfiles(findTargetLevel(eval))) {
             final String profile = eval.getProperty(JAVAC_PROFILE);
             res = SourceLevelQuery.Profile.forName(profile);
             if (res != null) {
@@ -116,7 +135,7 @@ class SourceLevelQueryImpl2 implements SourceLevelQueryImplementation2 {
     }
 
     private static boolean supportsProfiles(
-            @NonNull final String sl) {
+            @NullAllowed final String sl) {
         return sl != null &&
             SUPPORTS_PROFILES.matcher(sl).matches();
     }
