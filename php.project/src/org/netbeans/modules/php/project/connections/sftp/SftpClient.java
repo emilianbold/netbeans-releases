@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.IdentityRepository;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Proxy;
@@ -54,6 +55,10 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
+import com.jcraft.jsch.agentproxy.AgentProxy;
+import com.jcraft.jsch.agentproxy.Buffer;
+import com.jcraft.jsch.agentproxy.Connector;
+import com.jcraft.jsch.agentproxy.Identity;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -64,8 +69,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.jsch.agentproxy.ConnectorFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
@@ -142,10 +149,9 @@ public class SftpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Login as {0}", username);
         }
 
-        JSch jsch = null;
-        Channel channel = null;
-        jsch = new JSch();
+        boolean agentUsed = false;
         try {
+            JSch jsch = new JSch();
             JSch.setLogger(sftpLogger);
             sftpSession = jsch.getSession(username, host, port);
             if (StringUtils.hasText(knownHostsFile)) {
@@ -156,9 +162,6 @@ public class SftpClient implements RemoteClient {
                     LOGGER.log(Level.INFO, "Error in JSCH library", ex);
                     DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.SftpConfiguration_bug_knownHosts(), NotifyDescriptor.ERROR_MESSAGE));
                 }
-            }
-            if (StringUtils.hasText(identityFile)) {
-                jsch.addIdentity(identityFile);
             }
             if (StringUtils.hasText(password)) {
                 sftpSession.setPassword(password);
@@ -171,12 +174,24 @@ public class SftpClient implements RemoteClient {
             if (keepAliveInterval > 0) {
                 sftpSession.setServerAliveInterval(keepAliveInterval);
             }
-            sftpSession.connect(timeout);
-
-            channel = sftpSession.openChannel("sftp"); // NOI18N
-            channel.connect();
-            sftpClient = (ChannelSftp) channel;
-
+            try {
+                // first try agent
+                LOGGER.fine("Trying to set ssh-agent");
+                agentUsed = setAgent(jsch, identityFile, true);
+                LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, true});
+                connectSftpClient(timeout);
+            } catch (Exception exc) {
+                // catch rather all exceptions. In case jsch-agent-proxy is broken again we should
+                // at least fall back on key/pasphrase
+                if (agentUsed) {
+                    LOGGER.log(exc instanceof JSchException ? Level.FINE : Level.INFO, null, exc);
+                    setAgent(jsch, identityFile, false);
+                    LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, false});
+                    connectSftpClient(timeout);
+                } else {
+                    throw exc;
+                }
+            }
         } catch (JSchException exc) {
             // remove password from a memory storage
             PASSWORDS.remove(configuration.hashCode());
@@ -186,7 +201,35 @@ public class SftpClient implements RemoteClient {
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
         }
+    }
 
+    private void connectSftpClient(int timeout) throws JSchException {
+        assert Thread.holdsLock(this);
+        assert sftpSession != null;
+        sftpSession.connect(timeout);
+        Channel channel = sftpSession.openChannel("sftp"); // NOI18N
+        channel.connect();
+        sftpClient = (ChannelSftp) channel;
+    }
+
+    private boolean setAgent(JSch jsch, String identityFile, boolean preferAgent) throws JSchException {
+        boolean agentUsed = false;
+        if (preferAgent) {
+            Connector con = ConnectorFactory.getInstance().createConnector(ConnectorFactory.ConnectorKind.ANY);
+            if (con != null) {
+                IdentityRepository irepo = new IdentityRepositoryImpl(con);
+                jsch.setIdentityRepository(irepo);
+                agentUsed = true;
+            }
+        }
+        if (!agentUsed) {
+            jsch.setIdentityRepository(null);
+            // remove all identity files
+            jsch.removeAllIdentity();
+            // and add the one specified by CredentialsProvider
+            jsch.addIdentity(identityFile);
+        }
+        return agentUsed;
     }
 
     private void setProxy(String host) {
@@ -780,4 +823,100 @@ public class SftpClient implements RemoteClient {
             return null;
         }
     }
+
+    private static final class IdentityRepositoryImpl implements IdentityRepository {
+
+        private final Connector connector;
+        private final AgentProxy proxy;
+
+
+        public IdentityRepositoryImpl(Connector connector) {
+            this.connector = connector;
+            this.proxy = new AgentProxy(connector);
+        }
+
+        @Override
+        public String getName() {
+            return connector.getName();
+        }
+
+        @Override
+        public int getStatus() {
+            return connector.isAvailable() ? IdentityRepository.RUNNING : IdentityRepository.UNAVAILABLE;
+        }
+
+        @Override
+        public Vector getIdentities() {
+            Identity[] identities = proxy.getIdentities();
+            Vector<com.jcraft.jsch.Identity> result = new Vector<>(identities.length);
+            for (final Identity identity : identities) {
+                result.add(new com.jcraft.jsch.Identity() {
+                    private byte[] publicKey;
+
+                    @Override
+                    public boolean setPassphrase(byte[] passphrase) throws JSchException {
+                        return true;
+                    }
+
+                    @Override
+                    public byte[] getPublicKeyBlob() {
+                        if (publicKey == null) {
+                            publicKey = identity.getBlob();
+                        }
+                        return identity.getBlob();
+                    }
+
+                    @Override
+                    public byte[] getSignature(byte[] data) {
+                        return proxy.sign(getPublicKeyBlob(), data);
+                    }
+
+                    @Override
+                    public boolean decrypt() {
+                        return true;
+                    }
+
+                    @Override
+                    public String getAlgName() {
+                        return new String((new Buffer(getPublicKeyBlob())).getString());
+                    }
+
+                    @Override
+                    public String getName() {
+                        return new String(identity.getComment());
+                    }
+
+                    @Override
+                    public boolean isEncrypted() {
+                        return false;
+                    }
+
+                    @Override
+                    public void clear() {
+
+                    }
+                });
+            }
+            return result;
+        }
+
+        @Override
+        public boolean add(byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public boolean remove(byte[] bytes) {
+            // not supported now
+            return false;
+        }
+
+        @Override
+        public void removeAll() {
+            // not supported now
+        }
+
+    }
+
 }
