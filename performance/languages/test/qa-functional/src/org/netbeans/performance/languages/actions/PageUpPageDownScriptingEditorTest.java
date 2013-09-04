@@ -57,6 +57,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 /**
@@ -72,17 +73,23 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     protected String testProject;
     protected String fileName;
     protected String nodePath;
+    /**
+     * After jump in editor QuietEditorPane is refreshed by events from
+     * breadcrumbs, annotations, code folding and editor status panel. For
+     * editors without such effects is expected time set individually.
+     */
+    private static final long EXPECTED_TIME = 800;
 
     public PageUpPageDownScriptingEditorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 1000;
     }
 
     public PageUpPageDownScriptingEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 1000;
     }
 
     public static Test suite() {
@@ -96,6 +103,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
+        new EventTool().waitNoEvent(1000);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
@@ -117,10 +125,11 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
 
     @Override
     public ComponentOperator open() {
+        // use Ctrl+Home or Ctrl+End to minimalize effects of tooltips in the middle of source code
         if (pgup) {
-            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0)).perform(editorOperator);
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK)).perform(editorOperator);
         } else {
-            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)).perform(editorOperator);
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
         }
         return null;
     }
@@ -141,6 +150,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         nodePath = "Source Files";
         pgup = true;
+        expectedTime = 100;
         doMeasurement();
     }
 
@@ -149,6 +159,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         fileName = "php20kb.php";
         nodePath = "Source Files";
         pgup = false;
+        expectedTime = 100;
         doMeasurement();
     }
 
@@ -197,6 +208,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = true;
+        expectedTime = 100;
         doMeasurement();
     }
 
@@ -205,6 +217,7 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         fileName = "json20kb.json";
         pgup = false;
+        expectedTime = 100;
         doMeasurement();
     }
 
