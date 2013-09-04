@@ -188,6 +188,33 @@ public final class CsmCacheMap implements CsmCacheManager.CsmClientCache {
         return result;
     }
     
+    /**
+     * help method to get result from cache
+     * @param cache map-based cache instance or null
+     * @param key key to access value
+     * @param found if non-null is passed, then on return contains true if 
+     *  cache has result for passed key. Can be used if 
+     * @return cached result associated with key or null. Check parameter found
+     * to distinguished between absent cache and cached null object
+     */
+    public static Object getFromCache(CsmCacheMap cache, Object key, boolean[] found) {
+        if (found != null) {
+            found[0] = false;
+        }
+        Object result = null;
+        CsmCacheMap.Value cacheValue = null;
+        if (cache != null) {
+            cacheValue = cache.get(key);
+        }
+        if (cacheValue != null) {
+            if (found != null) {
+                found[0] = true;
+            }
+            result = cacheValue.getResult();
+        }
+        return result;
+    }
+    
     public interface Value {
         Object getResult();
     }

@@ -180,6 +180,40 @@ public final class TemplateDescriptor {
         }
         return CndCollectionUtils.equals(this.templateParams, other.templateParams);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + CndCollectionUtils.hashCode(templateParams);
+        hash = 67 * hash + Objects.hashCode(this.templateSuffix);
+        hash = 67 * hash + this.inheritedTemplateParametersNumber;
+        hash = 67 * hash + (this.specialization ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TemplateDescriptor other = (TemplateDescriptor) obj;
+        if (this.inheritedTemplateParametersNumber != other.inheritedTemplateParametersNumber) {
+            return false;
+        }
+        if (this.specialization != other.specialization) {
+            return false;
+        }
+        if (!Objects.equals(this.templateSuffix, other.templateSuffix)) {
+            return false;
+        }
+        return CndCollectionUtils.equals(this.templateParams, other.templateParams);
+    }
     
     public static class TemplateDescriptorBuilder extends ScopedDeclarationBuilder {
 

@@ -544,4 +544,55 @@ public final class CsmInheritanceUtilities {
             return this.parent.equals(other.parent);
         }            
     }
+
+    private static CharSequence getPosition(CsmClass obj) {
+        CsmFile file = obj.getContainingFile();
+        String position = file.getAbsolutePath().toString();
+        int[] lineColumn = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, obj.getStartOffset());
+        if (lineColumn != null) {
+            position = "line=" + lineColumn[0] + ":" + lineColumn[1] + " " + position; // NOI18N
+        }
+        return position;
+    }
+    
+    private static final Callable<CsmCacheMap> INHERITANCE_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("INHERITANCE Cache", 1); // NOI18N
+        }
+    };     
+
+    private static final class InheritanceChainKey {
+        private final CsmClass child;
+        private final CsmClass parent;
+
+        public InheritanceChainKey(CsmClass child, CsmClass parent) {
+            this.child = child;
+            this.parent = parent;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 61 * hash + this.child.hashCode();
+            hash = 61 * hash + this.parent.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final InheritanceChainKey other = (InheritanceChainKey) obj;
+            if (!this.child.equals(other.child)) {
+                return false;
+            }
+            return this.parent.equals(other.parent);
+        }            
+    }
 }

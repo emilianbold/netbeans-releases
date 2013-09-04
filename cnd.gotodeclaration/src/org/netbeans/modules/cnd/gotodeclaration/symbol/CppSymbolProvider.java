@@ -428,4 +428,37 @@ public class CppSymbolProvider implements SymbolProvider {
         }
     }
 
+    private static final class NameAcceptorImpl implements NameAcceptor {
+
+        private final NameMatcher nameMatcher;
+
+        public NameAcceptorImpl(NameMatcher nameMatcher) {
+            this.nameMatcher = nameMatcher;
+        }
+
+        @Override
+        public boolean accept(CharSequence name) {
+            return nameMatcher.accept(name.toString());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 17 * hash + this.nameMatcher.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameAcceptorImpl other = (NameAcceptorImpl) obj;
+            return this.nameMatcher.equals(other.nameMatcher);
+        }
+    }
+
 }
