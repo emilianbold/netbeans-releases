@@ -847,8 +847,8 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             int count = cm.getColumnCount();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < count; i++) {
-                sb.append(tableModel.getColumnId(i));
                 if(!tableModel.getColumnId(i).equals(IssueNode.LABEL_NAME_SEEN)) {
+                    sb.append(tableModel.getColumnId(i));
                     sb.append(CONFIG_DELIMITER);
                     sb.append(cm.getColumn(i).getWidth());
                     if(i < count - 1) {
