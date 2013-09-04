@@ -2792,9 +2792,13 @@ abstract public class CsmCompletionQuery {
                 int paramIndex = 0;                
                 for (CsmParameter param : function.getParameters()) {
                     CsmType paramType = param.getType();
-                    CsmClassifier cls = paramType.getClassifier();
-                    if (cls.getQualifiedName().toString().equals(templateParam.getQualifiedName().toString())) {
-                        map.put(templateParam, typeList.get(paramIndex));
+                    if (paramType != null) {
+                        CsmClassifier cls = paramType.getClassifier();
+                        if (cls != null) {
+                            if (cls.getQualifiedName().toString().equals(templateParam.getQualifiedName().toString())) {
+                                map.put(templateParam, typeList.get(paramIndex));
+                            }
+                        }
                     }
                     paramIndex++;
                 }
