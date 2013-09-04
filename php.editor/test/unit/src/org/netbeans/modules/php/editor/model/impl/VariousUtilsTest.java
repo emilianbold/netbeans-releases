@@ -280,4 +280,8 @@ public class VariousUtilsTest extends ModelTestBase{
         assertTrue(VariousUtils.isSpecialClassName("parent"));
     }
 
+    public void testIssue235393() throws Exception {
+        assertFalse(VariousUtils.isStaticClassName(null));
+    }
+
 }
