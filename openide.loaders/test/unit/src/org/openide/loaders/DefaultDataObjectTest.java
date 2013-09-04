@@ -179,7 +179,6 @@ public class DefaultDataObjectTest extends NbTestCase {
         assertNotNull("Document can be created", listener.doc);
     }
 
-    @RandomlyFails // #181230
     public void testRenameOpenComponent() throws Exception {
         doRenameOpen(false);
     }
