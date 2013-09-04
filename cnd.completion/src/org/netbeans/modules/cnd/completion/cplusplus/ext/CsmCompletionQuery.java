@@ -2791,6 +2791,9 @@ abstract public class CsmCompletionQuery {
             for (CsmTemplateParameter templateParam : template.getTemplateParameters()) {
                 int paramIndex = 0;                
                 for (CsmParameter param : function.getParameters()) {
+                    if (paramIndex >= typeList.size()) {
+                        break;
+                    }
                     CsmType paramType = param.getType();
                     if (paramType != null) {
                         CsmClassifier cls = paramType.getClassifier();
