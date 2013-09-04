@@ -522,7 +522,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
             checkRecursion = 0;
-            isFunction = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
+            boolean addFunctionProp = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
+            isFunction = isFunction || addFunctionProp;
         }
         for (JsObject resolved : lastResolvedObjects) {
             if(!isFunction && resolved.getJSKind().isFunction()) {

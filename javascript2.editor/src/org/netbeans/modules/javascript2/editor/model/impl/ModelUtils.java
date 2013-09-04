@@ -329,12 +329,30 @@ public class ModelUtils {
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);
 
-    private static TypeUsage tryResolveWindowProperty(JsIndex jsIndex, String name) {
+    private static Collection<TypeUsage> tryResolveWindowProperty(Model model, JsIndex jsIndex, String name) {
         // since issue #215863
+        String fqn = null;
         for (IndexedElement indexedElement : jsIndex.getProperties("window")) { //NOI18N
             if (indexedElement.getName().equals(name)) {
-                return new TypeUsageImpl("window." + indexedElement.getName(), -1, true); //NOI18N
+                fqn = "window." + name;
+                break;
             }
+        }
+        if (fqn == null) {
+            for (IndexedElement indexedElement : jsIndex.getProperties("Window.prototype")) { //NOI18N
+                if (indexedElement.getName().equals(name)) {
+                    fqn = "Window.prototype." + name; //NOI18N
+                    break;
+                }
+            }
+        }
+        if (fqn != null) {
+            List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
+            resolveAssignments(model, jsIndex, fqn, fromAssignment);
+            if (fromAssignment.isEmpty()) {
+                fromAssignment.add(new TypeUsageImpl(fqn));
+            } 
+            return fromAssignment;
         }
         return null;
     }
@@ -726,9 +744,9 @@ public class ModelUtils {
                             }
                         }
                         if (jsIndex != null) {
-                            TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
-                            if (windowProperty != null) {
-                                lastResolvedTypes.add(windowProperty);
+                            Collection<TypeUsage> windowProperty = tryResolveWindowProperty(model, jsIndex, name);
+                            if (windowProperty != null && !windowProperty.isEmpty()) {
+                                lastResolvedTypes.addAll(windowProperty);
                             }
                         }
                     }
