@@ -276,6 +276,9 @@ final class DocumentOpenClose {
                 existingDocTask.run();
                 return existingDocTask;
             }
+            if (activeOpenTask != null) {
+                return activeOpenTask;
+            }
             switch (documentStatus) {
                 case OPENED:
                     // Doc was null (retainDocLA() failed) but automatic close()
