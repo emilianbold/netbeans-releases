@@ -44,6 +44,7 @@
 package org.netbeans.modules.html.editor.embedding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -82,6 +83,10 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
+        if(th == null) {
+            //no lexer language for the snapshot's mimetype???
+            return Collections.emptyList();
+        }
         TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
         HashMap<String, Object> state = new HashMap<>(6);
         List<Embedding> embeddings = new ArrayList<>();
