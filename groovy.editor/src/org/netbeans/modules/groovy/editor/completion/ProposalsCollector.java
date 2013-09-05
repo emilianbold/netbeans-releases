@@ -68,6 +68,7 @@ public class ProposalsCollector {
     private BaseCompletion packageCompletion;
     private BaseCompletion localVarCompletion;
     private BaseCompletion camelCaseCompletion;
+    private BaseCompletion namedParamCompletion;
 
 
     public ProposalsCollector(CompletionContext context) {
@@ -82,6 +83,7 @@ public class ProposalsCollector {
         packageCompletion = new PackageCompletion();
         localVarCompletion = new LocalVarCompletion();
         camelCaseCompletion = new ConstructorGenerationCompletion();
+        namedParamCompletion = new NamedParamsCompletion();
     }
 
     public void completeKeywords(CompletionContext completionRequest) {
@@ -114,6 +116,10 @@ public class ProposalsCollector {
 
     public void completeNewVars(CompletionContext request) {
         newVarCompletion.complete(proposals, request, context.getAnchor());
+    }
+
+    public void completeNamedParams(CompletionContext request) {
+        namedParamCompletion.complete(proposals, request, context.getAnchor());
     }
 
     public List<CompletionProposal> getCollectedProposals() {

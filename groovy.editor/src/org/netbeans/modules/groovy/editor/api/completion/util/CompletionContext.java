@@ -53,8 +53,10 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.api.lexer.Token;
@@ -67,6 +69,8 @@ import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.completion.inference.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import static org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId.LITERAL_new;
+import static org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId.LPAREN;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.AccessLevel;
 import org.openide.filesystems.FileObject;
@@ -382,6 +386,42 @@ public final class CompletionContext {
                 return CaretLocation.OUTSIDE_CLASSES;
             } else if (current instanceof Parameter) {
                 return CaretLocation.INSIDE_PARAMETERS;
+            } else if (current instanceof ConstructorCallExpression || current instanceof NamedArgumentListExpression) {
+                ts.move(position);
+
+                boolean afterLeftParen = false;
+
+                WHILE_CYCLE:
+                while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+                    Token<GroovyTokenId> t = ts.token();
+                    switch (t.id()) {
+                        case LPAREN:
+                            afterLeftParen = true;
+                            break WHILE_CYCLE;
+                        case LITERAL_new:
+                            break WHILE_CYCLE;
+                    }
+                }
+
+                ts.move(position);
+                boolean beforeRightParen = false;
+
+                WHILE_CYCLE_2:
+                while (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
+                    Token<GroovyTokenId> t = ts.token();
+                    switch (t.id()) {
+                        case RPAREN:
+                            beforeRightParen = true;
+                            break WHILE_CYCLE_2;
+                        case SEMI:
+                            break WHILE_CYCLE_2;
+                    }
+                }
+
+                // We are almost certainly inside of constructor call
+                if (afterLeftParen && beforeRightParen) {
+                    return CaretLocation.INSIDE_CONSTRUCTOR_CALL;
+                }
             }
         }
         return CaretLocation.UNDEFINED;
