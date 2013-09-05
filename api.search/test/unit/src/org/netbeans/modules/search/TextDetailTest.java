@@ -137,6 +137,23 @@ public class TextDetailTest extends NbTestCase {
         assertTrue(htmlName.contains("</b>" + ELLIPSIS + "<b>"));
     }
 
+    public void testTrimLeadingWhitespace() {
+        String htmlName = createHtmlDisplayName("   public", "public");
+        assertEquals("<b>public</b>", htmlName);
+    }
+
+    public void testTrimLeadingWhitespace2() {
+        String line = createLongString(' ', "inner", ' ', 500, 0);
+        String htmlName = createHtmlDisplayName(line, "inner");
+        assertEquals("<b>inner</b>", htmlName);
+    }
+
+    public void testTrimLeadingWhitespace3() {
+        String line = "    " + createLongString('X', "inner", ' ', 500, 0);
+        String htmlName = createHtmlDisplayName(line, "inner");
+        assertTrue(htmlName.startsWith("...X"));
+    }
+
     public void testMatchOfHtmlContent() {
         String htmlName = createHtmlDisplayName("a<b>BOLD</b>c", "<b>BOLD</b>");
         assertEquals("a<b>&lt;b>BOLD&lt;/b></b>c", htmlName);

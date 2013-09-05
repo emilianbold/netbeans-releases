@@ -557,7 +557,7 @@ public final class TextDetail implements Selectable {
                 boolean used = false;
                 for (SurroundingLine l : txtDetail.surroundingLines) {
                     if (txtDetail.getLine() == l.getNumber() - 1) {
-                        appendMarkedText(sb);
+                        appendMarkedText(sb, false);
                         sb.append("<br/>");                             //NOI18N
                         used = true;
                     }
@@ -565,7 +565,7 @@ public final class TextDetail implements Selectable {
                     sb.append("<br/>");                                 //NOI18N
                 }
                 if (!used) {
-                    appendMarkedText(sb);
+                    appendMarkedText(sb, false);
                 }
             } catch (CharConversionException e) {
                 return null;
@@ -620,7 +620,7 @@ public final class TextDetail implements Selectable {
                 text.append(": ");                                      //NOI18N
                 text.append("</font>");                                 //NOI18N
                 if(canBeMarked()) {
-                    appendMarkedText(text);
+                    appendMarkedText(text, true);
                 }
                 else {
                     text.append(escape(cutLongLine(txtDetail.getLineText())));
@@ -658,7 +658,7 @@ public final class TextDetail implements Selectable {
                    col0 < txtDetail.getLineTextLength(); // #177891
         }
 
-        private void appendMarkedText(StringBuilder sb)
+        private void appendMarkedText(StringBuilder sb, boolean trim)
                 throws CharConversionException {
             final int lineLen = txtDetail.getLineTextLength();
             int matchStart = txtDetail.getColumn0();  // base 0
@@ -685,7 +685,7 @@ public final class TextDetail implements Selectable {
                 prefixStart = 0;
                 suffixEnd = lineLen;
             }
-            appendMarkedTextPrefix(sb, prefixStart, matchStart);
+            appendMarkedTextPrefix(sb, prefixStart, matchStart, trim);
             appendMarkedTextMatch(sb, matchStart, matchEnd, lineLen, detailLen);
             appendMarkedTextSuffix(sb, matchEnd, suffixEnd, lineLen);
         }
@@ -696,14 +696,22 @@ public final class TextDetail implements Selectable {
          * @param text Buffer to append to.
          * @param prefixStart Line index of the first character to be displayed.
          * @param matchStart Line index of the matched text.
+         * @param trim Skip leading whitespace characters.
          */
         private void appendMarkedTextPrefix(StringBuilder text, int prefixStart,
-                int matchStart) throws CharConversionException {
-            if (prefixStart > 0) {
+                int matchStart, boolean trim) throws CharConversionException {
+            int first = 0; // index of first non-whitespace character
+            if (trim) {
+                String lineText = txtDetail.getLineText();
+                while (first < matchStart && lineText.charAt(first) <= '\u0020') {
+                    first++;
+                }
+            }
+            if (prefixStart > 0 && first < prefixStart) {
                 text.append(ELLIPSIS);
             }
-            text.append(escape(txtDetail.getLineTextPart(prefixStart,
-                    matchStart)));
+            text.append(escape(txtDetail.getLineTextPart(
+                    Math.max(prefixStart, first), matchStart)));
         }
 
         /**
