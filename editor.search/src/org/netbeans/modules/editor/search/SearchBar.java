@@ -118,6 +118,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private final JToggleButton wrapAround;
     private final JButton closeButton;
     private final JLabel matches;
+    private int numOfMatches = -1;
     private SearchProperties searchProps = SearchPropertiesSupport.getSearchProperties();
     private boolean popupMenuWasCanceled = false;
     private Rectangle actualViewPort;
@@ -454,8 +455,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void caretUpdate(CaretEvent e) {
-                int num = SearchBar.getInstance().showNumberOfMatches(null, -1);
-                SearchBar.getInstance().showNumberOfMatches(null, num);
+                if (SearchBar.getInstance().isVisible()) {
+                    int num = SearchBar.getInstance().getNumOfMatches();
+                    SearchBar.getInstance().showNumberOfMatches(null, num);
+                }
             }
         };
     }
@@ -910,23 +913,27 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         find(false);
     }
 
+    public int getNumOfMatches() {
+        return numOfMatches;
+    }
+
     /**
      * @param findSupport if null EditorFindSupport.getInstance() is used
-     * @param numOfMatches if numOfMatches < 0, calculate numOfMatches and position, else show numOfMatches.
+     * @param numMatches if numOfMatches < 0, calculate numOfMatches and position, else show numOfMatches.
      * @return 
      */
-    public int showNumberOfMatches(EditorFindSupport findSupport, int numOfMatches) {
+    public int showNumberOfMatches(EditorFindSupport findSupport, int numMatches) {
         if (findSupport == null) {
             findSupport = EditorFindSupport.getInstance();
         }
         int pos = 0;
-        if (numOfMatches < 0) {
+        if (numMatches < 0) {
             int currentpos = getActualTextComponent().getSelectionStart();
             try {
                 int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
                 for (int i : blocks) {
                     if (i > 0) {
-                        numOfMatches++;
+                        numMatches++;
                         if (i < currentpos) {
                             pos++;
                         }
@@ -935,24 +942,25 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            numOfMatches = numOfMatches == 0 ? 0 : (numOfMatches + 1) / 2;
+            numMatches = numMatches == 0 ? 0 : (numMatches + 1) / 2;
             pos = (pos == 0 ? 0 : (pos + 1) / 2) + 1;
             
         }
         if (incSearchTextField.getText().isEmpty()) {
             Mnemonics.setLocalizedText(matches, ""); //NOI18N
-        } else if (numOfMatches == 0) {
+        } else if (numMatches == 0) {
             Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "0_matches")); //NOI18N
-        } else if (numOfMatches == 1) {
+        } else if (numMatches == 1) {
             Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "1_matches")); //NOI18N
         } else {
             if (pos == 0) {
-                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "n_matches", numOfMatches)); //NOI18N
+                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "n_matches", numMatches)); //NOI18N
             } else {
-                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "i_n_matches", pos, numOfMatches)); //NOI18N
+                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "i_n_matches", pos, numMatches)); //NOI18N
             }
         }
-        return numOfMatches;
+        this.numOfMatches  = numMatches;
+        return numMatches;
     }
 
     private void find(boolean next) {
