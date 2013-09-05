@@ -1069,6 +1069,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             getActualTextComponent().removeFocusListener(focusAdapterForComponent);
             getActualTextComponent().removePropertyChangeListener(propertyChangeListenerForComponent);
             getActualTextComponent().removeKeyListener(keyListenerForComponent);
+            getActualTextComponent().removeCaretListener(caretListenerForComponent);
         }
         if (focusAdapterForComponent == null) {
             focusAdapterForComponent = createFocusAdapterForComponent();
