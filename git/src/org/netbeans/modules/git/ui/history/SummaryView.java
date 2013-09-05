@@ -422,28 +422,8 @@ class SummaryView extends AbstractSummaryView {
 
         if (revisionsSelected) {
             if (singleSelection) {
-                menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName.revision", container.getLog().getRevision().substring(0, 7))) { //NOI18N
-                    @Override
-                    public void actionPerformed (ActionEvent e) {
-                        CreateTagAction action = SystemAction.get(CreateTagAction.class);
-                        action.createTag(master.getRepository(), container.getLog().getRevision());
-                    }
-                }));
-                if (container.getLog().getParents().length < 2) {
-                    menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(ExportCommitAction.class, "LBL_ExportCommitAction_PopupName")) { //NOI18N
-                        @Override
-                        public void actionPerformed (ActionEvent e) {
-                            ExportCommitAction action = SystemAction.get(ExportCommitAction.class);
-                            action.exportCommit(master.getRepository(), container.getLog().getRevision());
-                        }
-                    }));
-                    menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(RevertCommitAction.class, "LBL_RevertCommitAction_PopupName")) { //NOI18N
-                        @Override
-                        public void actionPerformed (ActionEvent e) {
-                            RevertCommitAction action = SystemAction.get(RevertCommitAction.class);
-                            action.revert(master.getRepository(), master.getRoots(), container.getLog().getRevision());
-                        }
-                    }));
+                for (Action a : container.getActions()) {
+                    menu.add(new JMenuItem(a));
                 }
             } else if (selection.length == 2) {
                 menu.add(new JMenuItem(new AbstractAction(Bundle.LBL_SummaryView_action_diffRevisions()) {

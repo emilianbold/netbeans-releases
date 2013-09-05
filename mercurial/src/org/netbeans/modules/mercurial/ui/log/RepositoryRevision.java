@@ -62,11 +62,13 @@ import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
 import org.netbeans.modules.mercurial.ui.rollback.BackoutAction;
+import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Describes log information for a file. This is the result of doing a
@@ -178,6 +180,7 @@ public class RepositoryRevision {
     @NbBundle.Messages({
         "CTL_SearchHistory.action.push=Push to default",
         "# {0} - revision id", "MSG_SearchHistory.pushing=Pushing {0}",
+        "# {0} - revision id", "CTL_SearchHistory.action.update=Update to {0}",
         "CTL_SearchHistory.action.pull=Pull from default",
         "# {0} - revision id", "MSG_SearchHistory.pulling=Pulling {0}",
         "CTL_SearchHistory.action.fetch=Fetch from default",
@@ -190,6 +193,12 @@ public class RepositoryRevision {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     backout();
+                }
+            });
+            actions.add(new AbstractAction(Bundle.CTL_SearchHistory_action_update(getLog().getCSetShortID())) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SystemAction.get(UpdateAction.class).update(repositoryRoot, getLog());
                 }
             });
         }
