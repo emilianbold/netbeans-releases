@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,10 +48,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.LineNumberReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
@@ -66,14 +69,14 @@ import org.apache.tools.ant.types.ZipFileSet;
 import org.apache.tools.ant.types.selectors.SelectorUtils;
 
 /**
- * This task was created to create L10N kits.
- * The xml to call this task might look like:
- * <l10nTask nbmsdir="nbms" tmpdir="tmp" patternsFile="l10n.patterns" 
- *           kitFile="build/l10n.zip"/>
+ * This task was created to create L10N kits. The xml to call this task might
+ * look like:
+ * <l10nTask nbmsdir="nbms" tmpdir="tmp" patternsFile="l10n.patterns"
+ * kitFile="build/l10n.zip"/>
  *
  *
- * Resulting kitFile will contain the files according the patterns 
- * from patternsFile
+ * Resulting kitFile will contain the files according the patterns from
+ * patternsFile
  *
  * @author Michal Zlamal
  */
@@ -83,7 +86,10 @@ public class L10nTask extends Task {
     File tmpDir = null;
     File patternsFile = null;
     File kitFile = null;
+    String locales = "";
+    private static String LOCALES_TOKEN = "${locales}";
 
+    @Override
     public void execute() throws BuildException {
         LineNumberReader lnr = null;
         try {
@@ -102,9 +108,9 @@ public class L10nTask extends Task {
             if (kitFile == null) {
                 throw new BuildException("Required variable not set.  Set 'kitFile' in the calling build script file");
             }
-            
+
             lnr = new LineNumberReader(new FileReader(patternsFile));
-            String line = null;
+            String line;
             Map<String, Set<String>> includes = new HashMap<String, Set<String>>();
             Map<String, Set<String>> excludes = new HashMap<String, Set<String>>();
             Set<String> excludeFiles = new HashSet<String>();
@@ -114,7 +120,9 @@ public class L10nTask extends Task {
                 if (line.trim().length() == 0) {
                     continue;
                 }
-                if (line.startsWith("#")) continue;
+                if (line.startsWith("#")) {
+                    continue;
+                }
                 if (!line.startsWith("exclude ")) {  //Include pattern
 
                     String[] p = line.split(":");
@@ -134,23 +142,36 @@ public class L10nTask extends Task {
                     files.add(p[1]);
                 } else {        //Exlude pattern
 
-                    line = line.substring("exclude ".length());
-                    String[] p = line.split(":");
-                    if (p.length != 2) {
-                        if (line.endsWith(":")) {
-                            excludes.put(line.substring(0, line.length() - 1), null);
-                            excludeFiles.add(line.substring(0, line.length() - 1));
-                            continue;
-                        } else {
-                            throw new BuildException("Wrong pattern '" + line + "' found in pattern file: " + patternsFile.getAbsolutePath());
+                    List<String> lines = new ArrayList<String> ();
+                    String lineRaw = line.substring("exclude ".length());
+                    if (lineRaw.contains(LOCALES_TOKEN)) {
+                        for (String locale : getLocales(locales)) {
+                            if (! locale.isEmpty()) {
+                                lines.add(lineRaw.replace(LOCALES_TOKEN, locale));
+                            }
+                        }
+                        if (lines.isEmpty()) {
+                            lines.add(lineRaw.replace(LOCALES_TOKEN, "*")); // NOI18N
                         }
                     }
-                    Set<String> files = excludes.get(p[0]);
-                    if (files == null) {
-                        files = new HashSet<String>();
-                        excludes.put(p[0], files);
+                    for (String oneLine : lines) {
+                        String[] p = oneLine.split(":");
+                        if (p.length != 2) {
+                            if (oneLine.endsWith(":")) {
+                                excludes.put(oneLine.substring(0, oneLine.length() - 1), null);
+                                excludeFiles.add(oneLine.substring(0, oneLine.length() - 1));
+                                continue;
+                            } else {
+                                throw new BuildException("Wrong pattern '" + oneLine + "' found in pattern file: " + patternsFile.getAbsolutePath());
+                            }
+                        }
+                        Set<String> files = excludes.get(p[0]);
+                        if (files == null) {
+                            files = new HashSet<String>();
+                            excludes.put(p[0], files);
+                        }
+                        files.add(p[1]);
                     }
-                    files.add(p[1]);
                 }
             }
             lnr.close();
@@ -175,7 +196,7 @@ public class L10nTask extends Task {
                 packGzDs.setBasedir(nbmDir);
                 packGzDs.setIncludes(new String[]{"**/*" + suffix});
                 packGzDs.scan();
-                for(String packedJar : packGzDs.getIncludedFiles()) {
+                for (String packedJar : packGzDs.getIncludedFiles()) {
                     File packedJarFile = new File(nbmDir, packedJar);
                     File unpackedJarFile = new File(nbmDir, packedJar.substring(0, packedJar.length() - suffix.length()) + ".jar");
                     log("Unpacking " + packedJar + " to " + unpackedJarFile, Project.MSG_VERBOSE);
@@ -192,14 +213,14 @@ public class L10nTask extends Task {
             if (excludeFiles.size() > 0) {
                 ds.setExcludes(excludeFiles.toArray(new String[]{""}));
             }
-            
+
             //Go though all the found files maching the first part of the pattern
             ds.scan();
-            
+
             if (kitFile.exists()) {
                 kitFile.delete();
             }
-            
+
             Zip zip = (Zip) getProject().createTask("zip");
             zip.setDestFile(kitFile);
             for (String filePath : ds.getIncludedFiles()) {
@@ -229,7 +250,7 @@ public class L10nTask extends Task {
                             }
                         }
                     }
-                    
+
                     File oneFile = new File(tmpDir, file);
                     zipFileSet.setSrc(oneFile);
                     file = file.replaceAll("org-netbeans-modules-", "");
@@ -250,7 +271,7 @@ public class L10nTask extends Task {
             Logger.getLogger(L10nTask.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (lnr!=null) {
+                if (lnr != null) {
                     lnr.close();
                 }
             } catch (IOException ex) {
@@ -270,7 +291,22 @@ public class L10nTask extends Task {
     public void setPatternsFile(File patternsFile) {
         this.patternsFile = patternsFile;
     }
+
     public void setKitFile(File kitFile) {
         this.kitFile = kitFile;
-    }    
+    }
+
+    public void setLocales(String locales) {
+        this.locales = locales;
+    }
+    
+    private static String[] getLocales(String locales) {
+        StringTokenizer en = new StringTokenizer(locales, ","); // NOI18N
+        String[] res = new String[en.countTokens()];
+        int i = 0;
+        while (en.hasMoreTokens()) {
+            res[i++] = en.nextToken();
+        }
+        return res;
+    }
 }
