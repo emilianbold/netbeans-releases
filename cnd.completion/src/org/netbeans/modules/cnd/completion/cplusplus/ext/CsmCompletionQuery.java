@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -2822,31 +2823,84 @@ abstract public class CsmCompletionQuery {
         }
         
         private RenderedExpression renderExpression(CsmCompletionExpression expr) {
+            if (expr == null) {
+                return null;
+            }            
             switch (expr.getExpID()) {
                 case CsmCompletionExpression.SCOPE: {
-                    CndUtils.assertTrueInConsole(expr.getParameterCount() == expr.getTokenCount() + 1, "Unexpected number of parameters or tokens"); // NOI18N
-                    
-                    if (expr.getParameterCount() == expr.getTokenCount() + 1) {
-                        StringBuilder sb = new StringBuilder();
-                        int startExpOffset = 0;
-                        int endExprOffset = 0;
+                    StringBuilder sb = new StringBuilder();
+                    int startExpOffset = -1;
+                    int endExprOffset = -1;
 
-                        int paramCount = expr.getParameterCount();
-                        for (int i = 0; i < paramCount; i++) {
-                            RenderedExpression renderedSubExpression = renderExpression(expr.getParameter(i));
-                            if (i == 0) {
-                                startExpOffset = renderedSubExpression.startOffset;
-                            } else {
-                                sb.append(expr.getTokenText(i - 1));
-                            }
-                            sb.append(renderedSubExpression.text);
-                            endExprOffset = renderedSubExpression.endOffset;
+                    int paramCount = expr.getParameterCount();
+                    int tokenCount = expr.getTokenCount();
+                    int paramIndex = 0;
+                    int tokenIndex = 0;
+                    
+                    RenderedExpression renderedParam = null;
+                    RenderedExpression renderedToken = null;                    
+                    boolean lastWasParam = false;
+                    boolean lastWasToken = false;
+                    
+                    boolean entityChanged = true;
+                    
+                    while (entityChanged) {
+                        entityChanged = false;
+                                                
+                        if (renderedParam == null && paramIndex < paramCount) {
+                            renderedParam = renderExpression(expr.getParameter(paramIndex));
+                            paramIndex++;
                         }
                         
-                        return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
+                        if (renderedToken == null && tokenIndex < tokenCount) {
+                            renderedToken = new RenderedExpression(
+                                expr.getTokenText(tokenIndex).toString(), 
+                                expr.getTokenOffset(tokenIndex), 
+                                expr.getTokenOffset(tokenIndex) + expr.getTokenLength(tokenIndex)
+                            );
+                            tokenIndex++;
+                        }
+                        
+                        RenderedExpression chosenExpression;
+                        
+                        if (renderedParam != null && renderedToken != null) {
+                            if (renderedParam.startOffset < renderedToken.startOffset) {
+                                chosenExpression = renderedParam;
+                            } else {
+                                chosenExpression = renderedToken;
+                            }
+                        } else if (renderedToken == null) {
+                            chosenExpression = renderedParam;
+                        } else {
+                            chosenExpression = renderedToken;
+                        }
+                        
+                        if (chosenExpression != null) {
+                            if (chosenExpression == renderedParam) {
+                                renderedParam = null;
+                                entityChanged = !lastWasParam;
+                                lastWasParam = true;
+                                lastWasToken = false;
+                            } else {
+                                renderedToken = null;
+                                entityChanged = !lastWasToken;
+                                lastWasToken = true;
+                                lastWasParam = false;
+                            }
+                            
+                            if (entityChanged) {
+                                sb.append(chosenExpression.text);
+                                if (startExpOffset == -1) {
+                                    startExpOffset = chosenExpression.startOffset;
+                                }
+                                endExprOffset = chosenExpression.endOffset;
+                            }
+                        }
                     }
-                    // fallback to default
+                    
+                    return new RenderedExpression(sb.toString(), startExpOffset, endExprOffset);
                 }
+                
                 default: {
                     return new RenderedExpression(
                             expr.getTokenText(0), 
@@ -2854,7 +2908,7 @@ abstract public class CsmCompletionQuery {
                             expr.getTokenOffset(0) + expr.getTokenLength(0)
                     );
                 }
-            }            
+            }
         }
         
         private class RenderedExpression {
