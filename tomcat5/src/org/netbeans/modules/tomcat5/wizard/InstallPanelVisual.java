@@ -376,6 +376,9 @@ class InstallPanelVisual extends javax.swing.JPanel {
     public String getUrl() {
         String url;
         switch (getTomcatVersion()) {
+            case TOMCAT_80:
+                url = TomcatFactory.TOMCAT_URI_PREFIX_80;
+                break;
             case TOMCAT_70:
                 url = TomcatFactory.TOMCAT_URI_PREFIX_70;
                 break;
@@ -479,10 +482,10 @@ class InstallPanelVisual extends javax.swing.JPanel {
         }
 
         // check the lib directory
-        File libDir = TomcatVersion.TOMCAT_60.equals(getTomcatVersion())
-                || TomcatVersion.TOMCAT_70.equals(getTomcatVersion())
-            ? new File(homeDir, "lib") // NOI18N
-            : new File(homeDir, "common" + File.separator + "lib"); // NOI18N
+        File libDir = TomcatVersion.TOMCAT_50.equals(getTomcatVersion())
+                || TomcatVersion.TOMCAT_55.equals(getTomcatVersion())
+            ? new File(homeDir, "common" + File.separator + "lib") // NOI18N
+            : new File(homeDir, "lib"); // NOI18N
         if (!(libDir.exists() && libDir.isDirectory())) {
             errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_InvalidHomeDir");
             return false;
@@ -600,7 +603,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
                     infoMessage = true;
                 } else if (!TomcatUsers.hasManagerRole(getTomcatVersion(), tomcatUsersXml, jTextFieldUsername.getText())) {
                     errorMessage = NbBundle.getMessage(InstallPanelVisual.class, "MSG_UserHasNotManagerRole",
-                            TomcatVersion.TOMCAT_70.equals(getTomcatVersion())
+                            TomcatVersion.TOMCAT_70.equals(getTomcatVersion()) || TomcatVersion.TOMCAT_80.equals(getTomcatVersion())
                                 ? "manager-script"
                                 : "manager");
                     infoMessage = true;
