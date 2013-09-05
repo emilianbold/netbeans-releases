@@ -596,7 +596,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 specialization = (CsmClassifier) obj ;
             }
         }
-        LOG.log(Level.INFO, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
+        LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
 
         return specialization != null ? specialization : classifier;
     }
