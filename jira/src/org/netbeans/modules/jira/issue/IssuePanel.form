@@ -198,12 +198,20 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                  <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="environmentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="addCommentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Component id="originalEstimateNewWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" alignment="1" attributes="0">
+                                      <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="originalEstimateLabelNew" alignment="0" max="32767" attributes="1"/>
                                   <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -226,7 +234,7 @@
                           <Component id="addCommentScrollPane" alignment="0" max="32767" attributes="0"/>
                           <Component id="dummyAttachmentPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="dummySubtaskPanel" alignment="0" max="32767" attributes="0"/>
-                          <Component id="originalEstimateHint" alignment="0" max="32767" attributes="1"/>
+                          <Component id="originalEstimateHint" alignment="0" pref="0" max="32767" attributes="1"/>
                           <Component id="dummyIssueLinksPanel" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -358,8 +366,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="attachmentLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummyAttachmentPanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="subtaskLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="dummySubtaskPanel" min="-2" max="-2" attributes="0"/>
@@ -1086,6 +1095,8 @@
     <Component class="javax.swing.JLabel" name="originalEstimateNewWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="workLogWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="attachmentsWarning">
     </Component>
   </SubComponents>
 </Form>

@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,6 +84,7 @@ public class IssueField {
     public static final IssueField COMMENT = new IssueField(TaskAttribute.COMMENT_NEW, null, null, true);
     public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, null, false);
     public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, null, false);
+    public static final IssueField NB_NEW_ATTACHMENTS = new IssueField(AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID, "CTL_Issue_NewAttachments_Title", null, false); //NOI18N
 
     private final String attribute;
     private final String displayNameKey;

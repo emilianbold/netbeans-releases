@@ -113,6 +113,8 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -623,10 +625,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         oldCommentCount = newCommentCount;
         oldCommentCount = newCommentCount;
         List<Attachment> attachments = issue.getAttachments();
+        List<AttachmentsPanel.AttachmentInfo> unsubmitted = issue.getUnsubmittedAttachments();
         if (!isNew) {
             commentsPanel.setIssue(issue, attachments);
         }
-        attachmentsPanel.setAttachments(attachments);
+        attachmentsPanel.setAttachments(attachments, unsubmitted, null);
         UIUtils.keepFocusedComponentVisible(commentsPanel, this);
         UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
         if (isNew) {
@@ -871,6 +874,38 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
     }
+    
+    @NbBundle.Messages({
+        "# {0} - icon path",
+        "IssuePanel.attachmentsToSubmit=<p><img src=\"{0}\">&nbsp;Unsubmitted Attachments</p>"
+            + "<p>New attachments were added but not yet submitted</p>",
+        "IssuePanel.attachmentsAddedLocally=Attachments were added but not yet submitted"
+    })
+    private void updateAttachmentsStatus () {
+        boolean change = false;
+        if (!issue.isNew()) {
+            boolean valueModifiedByUser = !issue.getUnsubmittedAttachments().isEmpty();
+            removeTooltips(attachmentsWarning, IssueField.NB_NEW_ATTACHMENTS);
+            if (attachmentsLabel.getFont().isBold()) {
+                attachmentsLabel.setFont(attachmentsLabel.getFont().deriveFont(attachmentsLabel.getFont().getStyle() & ~Font.BOLD));
+            }
+            if (valueModifiedByUser) {
+                String message = Bundle.IssuePanel_attachmentsAddedLocally();
+                tooltipsLocal.addTooltip(attachmentsWarning, IssueField.NB_NEW_ATTACHMENTS,
+                        Bundle.IssuePanel_attachmentsToSubmit(ICON_UNSUBMITTED_PATH));
+                change = !message.equals(fieldsLocal.put(IssueField.NB_NEW_ATTACHMENTS, message));
+            } else {
+                change = fieldsLocal.remove(IssueField.NB_NEW_ATTACHMENTS) != null;
+            }
+            updateIcon(attachmentsWarning);
+            if (unsavedFields.contains(IssueField.NB_NEW_ATTACHMENTS)) {
+                attachmentsLabel.setFont(attachmentsLabel.getFont().deriveFont(attachmentsLabel.getFont().getStyle() | Font.BOLD));
+            }
+        }
+        if (change && !reloading) {
+            updateMessagePanel();
+        }
+    }
 
     private String mergeValues (List<String> values) {
         String newValue;
@@ -1095,6 +1130,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //        for (CustomFieldInfo field : customFields) {
 //            updateFieldStatus(field.field, field.label);
 //        }
+        updateAttachmentsStatus();
         repaint();
     }
 
@@ -1366,6 +1402,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 if (!reloading && duplicateField.isVisible() && duplicateField.isEditable()) {
                     storeFieldValue(IssueField.DUPLICATE, duplicateField); //NOI18N
                     updateDecorations();
+                }
+            }
+        });
+        attachmentsPanel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged (ChangeEvent e) {
+                if (!reloading && attachmentsPanel.isVisible()) {
+                    if (issue.setUnsubmittedAttachments(attachmentsPanel.getNewAttachments())) {
+                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS);
+                        updateAttachmentsStatus();
+                    }
                 }
             }
         });
@@ -1844,6 +1891,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         descriptionWarning = new javax.swing.JLabel();
         addCommentWarning = new javax.swing.JLabel();
         duplicateLabel = new javax.swing.JLabel();
+        attachmentsWarning = new javax.swing.JLabel();
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -2208,21 +2256,26 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(externalWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(keywordsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(foundInWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dueDateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ownerWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(ccWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(descriptionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(5, 5, 5)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(addCommentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(externalWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(keywordsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(foundInWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(dueDateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ownerWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(ccWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(descriptionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(5, 5, 5))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(addCommentLabel)
                             .addComponent(descriptionLabel)
@@ -2290,7 +2343,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(duplicateButton)))
-                        .addGap(0, 31, Short.MAX_VALUE))
+                        .addGap(0, 30, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -2445,7 +2498,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(attachmentsLabel))
+                    .addComponent(attachmentsLabel)
+                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(summaryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2672,7 +2726,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         findIssue(subtaskField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.odcs.subtaskChooser", true); // NOI18N
     }//GEN-LAST:event_subtaskButtonActionPerformed
 
-    @NbBundle.Messages({"# {0} - the file to be attached", "LBL_AttachedPrefix=Attached file {0}"})
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         final boolean isNew = issue.isNew();
         String submitMessage;
@@ -2693,14 +2746,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 boolean ret = false;
                 try {
                     ret = issue.submitAndRefresh();
-                    for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                        if (attachment.getFile().exists() && attachment.getFile().isFile()) {
-                            issue.addAttachment(attachment.getFile(), Bundle.LBL_AttachedPrefix(attachment.getFile().getName()), attachment.getDescription(),
-                                    attachment.getContentType(), attachment.isPatch());
-                        } else {
-                            // PENDING notify user
-                        }
-                    }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -2858,6 +2903,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel addCommentLabel;
     private javax.swing.JLabel addCommentWarning;
     private javax.swing.JLabel attachmentsLabel;
+    private javax.swing.JLabel attachmentsWarning;
     final javax.swing.JButton btnDeleteTask = new javax.swing.JButton();
     final javax.swing.JButton btnSaveChanges = new javax.swing.JButton();
     final javax.swing.JButton cancelButton = new javax.swing.JButton();

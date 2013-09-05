@@ -56,7 +56,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -108,6 +107,8 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -142,7 +143,6 @@ import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.Places;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -487,11 +487,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean isNetbeans = NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl());
         if(isNew && isNetbeans) {
             attachLogCheckBox.setVisible(true);
-            viewLogButton.setVisible(true);
-            attachLogCheckBox.setSelected(BugzillaConfig.getInstance().getAttachLogFile());
+            String attachLogValue = issue.getFieldValue(IssueField.NB_ATTACH_IDE_LOG);
+            if (attachLogValue.isEmpty()) {
+                attachLogCheckBox.setSelected(BugzillaConfig.getInstance().getAttachLogFile());
+            } else {
+                reloadField(attachLogCheckBox, IssueField.NB_ATTACH_IDE_LOG);
+            }
         } else {
             attachLogCheckBox.setVisible(false);
-            viewLogButton.setVisible(false);
         }
         switchViewLog();
         headerField.setVisible(!isNew);
@@ -677,6 +680,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         oldCommentCount = newCommentCount;
         List<Attachment> attachments = issue.getAttachments();
+        List<AttachmentsPanel.AttachmentInfo> unsubmitted = issue.getUnsubmittedAttachments();
         if (!isNew) {
             commentsPanel.setIssue(issue, attachments);
         }
@@ -693,16 +697,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }
                     @Override
                     public String getLogFileDescription() {
-                        return NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC");
+                        return Bundle.MSG_LOG_FILE_DESC();
                     }
                     @Override
                     public void showLogFile() {
                         IssuePanel.showLogFile(null);
                     }
                 };
-            attachmentsPanel.setAttachments(attachments, callback);
+            attachmentsPanel.setAttachments(attachments, unsubmitted, callback);
         } else {
-            attachmentsPanel.setAttachments(attachments);
+            attachmentsPanel.setAttachments(attachments, unsubmitted, null);
         }
         UIUtils.keepFocusedComponentVisible(commentsPanel, this);
         UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
@@ -890,6 +894,38 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (change && !reloading) {
                 updateMessagePanel();
             }
+        }
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - icon path",
+        "IssuePanel.attachmentsToSubmit=<p><img src=\"{0}\">&nbsp;Unsubmitted Attachments</p>"
+            + "<p>New attachments were added but not yet submitted</p>",
+        "IssuePanel.attachmentsAddedLocally=Attachments were added but not yet submitted"
+    })
+    private void updateAttachmentsStatus () {
+        boolean change = false;
+        if (!issue.isNew()) {
+            boolean valueModifiedByUser = !issue.getUnsubmittedAttachments().isEmpty();
+            removeTooltips(attachmentsWarning, IssueField.NB_NEW_ATTACHMENTS);
+            if (attachmentsLabel.getFont().isBold()) {
+                attachmentsLabel.setFont(attachmentsLabel.getFont().deriveFont(attachmentsLabel.getFont().getStyle() & ~Font.BOLD));
+            }
+            if (valueModifiedByUser) {
+                String message = Bundle.IssuePanel_attachmentsAddedLocally();
+                tooltipsLocal.addTooltip(attachmentsWarning, IssueField.NB_NEW_ATTACHMENTS,
+                        Bundle.IssuePanel_attachmentsToSubmit(ICON_UNSUBMITTED_PATH));
+                change = !message.equals(fieldsLocal.put(IssueField.NB_NEW_ATTACHMENTS, message));
+            } else {
+                change = fieldsLocal.remove(IssueField.NB_NEW_ATTACHMENTS) != null;
+            }
+            updateIcon(attachmentsWarning);
+            if (unsavedFields.contains(IssueField.NB_NEW_ATTACHMENTS)) {
+                attachmentsLabel.setFont(attachmentsLabel.getFont().deriveFont(attachmentsLabel.getFont().getStyle() | Font.BOLD));
+            }
+        }
+        if (change && !reloading) {
+            updateMessagePanel();
         }
     }
 
@@ -1145,6 +1181,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         updateFieldStatus(addCommentLabel);
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, addCommentLabel);
         updateCustomFieldStatuses();
+        updateAttachmentsStatus();
         repaint();
     }
 
@@ -1741,6 +1778,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         timetrackingWarning = new javax.swing.JLabel();
         commentWarning = new javax.swing.JLabel();
         duplicateWarning = new javax.swing.JLabel();
+        attachmentsWarning = new javax.swing.JLabel();
 
         FormListener formListener = new FormListener();
 
@@ -2110,22 +2148,27 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                     .addComponent(productWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(timetrackingWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(commentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(5, 5, 5)
+                                    .addComponent(commentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(keywordsLabel)
-                                    .addComponent(statusWhiteboardLabel)
-                                    .addComponent(timetrackingLabel)
-                                    .addComponent(attachmentsLabel)
-                                    .addComponent(summaryLabel)
-                                    .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(issueTypeLabel)
-                                    .addComponent(versionLabel)
-                                    .addComponent(componentLabel)
-                                    .addComponent(productLabel)
-                                    .addComponent(addCommentLabel)
-                                    .addComponent(targetMilestoneLabel)
-                                    .addComponent(dummyLabel2, javax.swing.GroupLayout.Alignment.TRAILING)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(5, 5, 5)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(keywordsLabel)
+                                            .addComponent(statusWhiteboardLabel)
+                                            .addComponent(timetrackingLabel)
+                                            .addComponent(summaryLabel)
+                                            .addComponent(urlLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(issueTypeLabel)
+                                            .addComponent(versionLabel)
+                                            .addComponent(componentLabel)
+                                            .addComponent(productLabel)
+                                            .addComponent(addCommentLabel)
+                                            .addComponent(targetMilestoneLabel)
+                                            .addComponent(dummyLabel2, javax.swing.GroupLayout.Alignment.TRAILING)))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(attachmentsLabel))))
                             .addComponent(customFieldsPanelLeft, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(platformWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2139,7 +2182,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(dummyTimetrackingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(scrollPane1)
+                            .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                             .addComponent(customFieldsPanelRight, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
@@ -2360,10 +2403,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(dummyTimetrackingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
+                        .addComponent(attachmentsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
                         .addComponent(dummyLabel3))
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(attachmentsLabel)
+                        .addComponent(attachmentsLabel, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -2692,27 +2736,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 boolean submitOK = false;
                 try {
                     submitOK = issue.submitAndRefresh();
-                    if(submitOK) {
-                        for (AttachmentsPanel.AttachmentInfo attachment : attachmentsPanel.getNewAttachments()) {
-                            if (attachment.getFile().exists() && attachment.getFile().isFile()) {
-                                if (attachment.getDescription().trim().length() == 0) {
-                                    attachment.setDescription(NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachment.noDescription")); // NOI18N
-                                }
-                                issue.addAttachment(attachment.getFile(), null, attachment.getDescription(), attachment.getContentType(), attachment.isPatch()); // NOI18N
-                            } else {
-                                // PENDING notify user
-                            }
-                        }
-                        if(attachLogCheckBox.isVisible() && attachLogCheckBox.isSelected()) {
-                            File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH); 
-                            if(f.exists()) {
-                                issue.addAttachment(f, "", NbBundle.getMessage(IssuePanel.class, "MSG_LOG_FILE_DESC"), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false); // NOI18N
-                            }
-                            BugzillaConfig.getInstance().putAttachLogFile(true);
-                        } else {
-                            BugzillaConfig.getInstance().putAttachLogFile(false);
-                        }
-                    }
                 } finally {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -3155,6 +3178,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel assignedToWarning;
     private javax.swing.JCheckBox attachLogCheckBox;
     private javax.swing.JLabel attachmentsLabel;
+    private javax.swing.JLabel attachmentsWarning;
     private javax.swing.JButton blocksButton;
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
@@ -3547,6 +3571,27 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             @Override
             public boolean isEnabled () {
                 return super.isEnabled() && !deadlineField.getText().trim().equals(YYYY_MM_DD);
+            }
+        });
+        attachLogCheckBox.addActionListener(new FieldChangeListener(attachLogCheckBox, IssueField.NB_ATTACH_IDE_LOG) {
+            @Override
+            void fieldModified () {
+                if (!reloading && isEnabled() && issue.isNew()) {
+                    boolean selected = ((JCheckBox) attachLogCheckBox).isSelected();
+                    storeFieldValue(IssueField.NB_ATTACH_IDE_LOG, selected ? "1" : "");
+                    BugzillaConfig.getInstance().putAttachLogFile(selected);
+                }
+            }
+        });
+        attachmentsPanel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged (ChangeEvent e) {
+                if (!reloading && attachmentsPanel.isVisible()) {
+                    if (issue.setUnsubmittedAttachments(attachmentsPanel.getNewAttachments())) {
+                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS);
+                        updateAttachmentsStatus();
+                    }
+                }
             }
         });
     }
