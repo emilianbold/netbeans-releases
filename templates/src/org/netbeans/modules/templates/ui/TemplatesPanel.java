@@ -111,8 +111,10 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
@@ -218,6 +220,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 deleteButton.setEnabled (nodes != null && nodes.length > 0);
                 renameButton.setEnabled (nodes != null && nodes.length == 1);
                 addButton.setEnabled (nodes != null && nodes.length == 1);
+                revertButton.setEnabled(canRevert(nodes));
                 duplicateButton.setEnabled (isDuplicateEnabled(nodes));
                 SwingUtilities.invokeLater (new Runnable () {
                     @Override public void run() {
@@ -227,6 +230,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 });
             }
         }
+    }
+    
+    private static boolean canRevert(Node[] nodes) {
+        if (nodes == null) {
+            return false;
+        }
+        boolean can = false;
+        for (Node node : nodes) {
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            if (fo != null && fo.canRevert()) {
+                can = true;
+            } else {
+                return false;
+            }
+        }
+        return can;
     }
     
     private static boolean isDuplicateEnabled(Node[] nodes) {
@@ -248,6 +267,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         getExplorerManager ().addPropertyChangeListener (new SelectionListener ());
         deleteButton.setEnabled (false);
         renameButton.setEnabled (false);
+        revertButton.setEnabled(false);
         duplicateButton.setEnabled (false);
         moveUpButton.setEnabled (false);
         moveDownButton.setEnabled (false);
@@ -421,10 +441,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         jSeparator1 = new javax.swing.JSeparator();
         duplicateButton = new javax.swing.JButton();
         renameButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
+        jSeparator3 = new javax.swing.JSeparator();
         moveUpButton = new javax.swing.JButton();
         moveDownButton = new javax.swing.JButton();
-        jSeparator3 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        revertButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         jSeparator4 = new javax.swing.JSeparator();
         settingsButton = new javax.swing.JButton();
@@ -515,9 +536,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        buttonsPanel.add(jSeparator2, gridBagConstraints);
+        buttonsPanel.add(jSeparator3, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, org.openide.util.NbBundle.getBundle(TemplatesPanel.class).getString("BTN_TemplatesPanel_MoveUp")); // NOI18N
         moveUpButton.addActionListener(new java.awt.event.ActionListener() {
@@ -549,9 +570,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        buttonsPanel.add(jSeparator3, gridBagConstraints);
+        buttonsPanel.add(jSeparator2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(revertButton, org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "BTN_TemplatesPanel_Revert")); // NOI18N
+        revertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                revertButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 3, 0);
+        buttonsPanel.add(revertButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getBundle(TemplatesPanel.class).getString("BTN_TemplatesPanel_Delete")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
@@ -561,7 +595,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 3, 0);
         buttonsPanel.add(deleteButton, gridBagConstraints);
@@ -569,7 +603,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
         buttonsPanel.add(jSeparator4, gridBagConstraints);
 
@@ -581,7 +615,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 3, 0);
         buttonsPanel.add(settingsButton, gridBagConstraints);
@@ -701,7 +735,44 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             }
         }
     }//GEN-LAST:event_settingsButtonActionPerformed
+
+    private void revertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_revertButtonActionPerformed
+        final Node [] nodes = manager.getSelectedNodes ();
+        if (nodes != null && confirmRevert(nodes)) {
+            // Are you sure DLG
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    for (Node node : nodes) {
+                        FileObject fo = node.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            try {
+                                fo.revert();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            });
+            revertButton.setEnabled(false);
+        }
+    }//GEN-LAST:event_revertButtonActionPerformed
     
+    private boolean confirmRevert(Node[] nodes) {
+        String title, message;
+        if (nodes.length == 1) {
+            message = NbBundle.getMessage(TemplatesPanel.class, "MSG_ConfirmRevertFile", nodes[0].getDisplayName());
+            title = NbBundle.getMessage(TemplatesPanel.class, "MSG_ConfirmRevertFileTitle");
+        } else {
+            message = NbBundle.getMessage(TemplatesPanel.class, "MSG_ConfirmRevertFiles", Integer.valueOf(nodes.length));
+            title = NbBundle.getMessage(TemplatesPanel.class, "MSG_ConfirmRevertFilesTitle");
+        }
+
+        NotifyDescriptor desc = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+
+        return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
@@ -716,6 +787,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private javax.swing.JButton moveUpButton;
     private javax.swing.JButton newFolderButton;
     private javax.swing.JButton renameButton;
+    private javax.swing.JButton revertButton;
     private javax.swing.JButton settingsButton;
     private javax.swing.JLabel templatesLabel;
     private javax.swing.JPanel treePanel;
