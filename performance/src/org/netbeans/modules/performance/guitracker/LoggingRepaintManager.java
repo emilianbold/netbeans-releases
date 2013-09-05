@@ -276,24 +276,25 @@ public class LoggingRepaintManager extends RepaintManager {
      */
     public static final RegionFilter IGNORE_STATUS_LINE_FILTER = new RegionFilter() {
 
+        private JLabel statusLabel;
+        private JComponent statusPanel;
+        private JComponent statusLayeredPane;
+
         @Override
         public boolean accept(JComponent c) {
-            Container cont = c;
-            do {
-                String cn = cont.getClass().getName();
-                if ("StatusLine".equalsIgnoreCase(cn)) {
-                    return false;
-                }
-                cont = cont.getParent();
-            } while (cont != null);
-            return true;
+            if (statusLabel == null && c instanceof JLabel && "AutoHideStatusTextLabel".equals(c.getName())) {
+                // ignore Label, parent JPanel and parent JLayeredPane (see org.netbeans.core.windows.view.ui.AutoHideStatusText)
+                statusLabel = (JLabel) c;
+                statusPanel = (JComponent) c.getParent();
+                statusLayeredPane = (JComponent) statusPanel.getParent();
+            }
+            return c != statusLabel && c != statusPanel && c != statusLayeredPane && !"org.netbeans.core.windows.view.ui.StatusLine".equals(c.getClass().getName());
         }
 
         @Override
         public String getFilterName() {
             return "Ignores StatusLine content";
         }
-
     };
 
     /**
