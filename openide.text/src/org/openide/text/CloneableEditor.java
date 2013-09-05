@@ -85,10 +85,12 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Asociated editor support  */
     private CloneableEditorSupport support;
 
-    /** Flag to detect if component is opened or closed to control return value
+    /**
+     * Flag to detect if component is opened or closed to control return value
      * of getEditorPane. If component creation starts this flag is set to true and
-     * getEditorPane waits till initialization finishes */
-    private boolean isComponentOpened = false;
+     * getEditorPane() waits till initialization finishes.
+     */
+    private boolean componentCreated = false;
     
     /** Position of cursor. Used to keep the value between deserialization
      * and initialization time. */
@@ -101,8 +103,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @see NbDocument.CustomEditor#createEditor */
     private Component customComponent;
 
-    private JToolBar customToolbar;
-    
     private CloneableEditorInitializer initializer;
     
     static final Logger LOG = Logger.getLogger("org.openide.text.CloneableEditor"); // NOI18N
@@ -197,7 +197,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         initialize();
     }
 
-    /** Performs needed initialization  */
+    /**
+     * Performs needed initialization.
+     * The method should only be invoked from EDT.
+     */
     private void initialize() {
         // Only called form EDT
         if (pane != null || discard()) {
@@ -217,30 +220,33 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         tmp.putClientProperty("usedByCloneableEditor", true);
 
         this.pane = tmp;
-        this.isComponentOpened = true;
         
-        
-        synchronized (CloneableEditorInitializer.edtRequests) {
+        synchronized (getInitializerLock()) {
+            this.componentCreated = true;
             initializer = new CloneableEditorInitializer(this, support, pane);
         }
-        initializer.start();
+        initializer.start(); // Initializer variable will be cleared by the initializer task itself later.
+    }
+    
+    private Object getInitializerLock() {
+        return CloneableEditorInitializer.edtRequests;
     }
     
     boolean isInitializationRunning() {
-        synchronized (CloneableEditorInitializer.edtRequests) {
+        synchronized (getInitializerLock()) {
             boolean running = (initializer != null);
             return running;
         }
     }
     
     boolean isProvideUnfinishedPane() {
-        synchronized (CloneableEditorInitializer.edtRequests) {
+        synchronized (getInitializerLock()) {
             return (initializer != null) && initializer.isProvideUnfinishedPane();
         }
     }
     
     void markInitializationFinished(boolean success) {
-        synchronized (CloneableEditorInitializer.edtRequests) {
+        synchronized (getInitializerLock()) {
             initializer = null;
             if (!success) {
                 pane = null;
@@ -262,19 +268,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         cloneableEditorSupport().initializeCloneableEditor(this);
     }
     
-    private void releasePane() {
-        if (pane != null) {
-            pane.putClientProperty("usedByCloneableEditor", false);
-        }
-        pane = null;
-    }
-
     void setCustomComponent(Component customComponent) {
         this.customComponent = customComponent;
-    }
-
-    void setCustomToolbar(JToolBar customToolbar) {
-        this.customToolbar = customToolbar;
     }
 
     int getCursorPosition() {
@@ -328,12 +323,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
             // calling it with null does not impact performance, because the pane
             // will not create new document and typically nobody listens on "editorKit" prop change
             pane.setEditorKit(null);
+            pane.putClientProperty("usedByCloneableEditor", false);
         }
 
-        customComponent = null;
-        customToolbar = null;
-        releasePane();
-        isComponentOpened = false;
+        synchronized (getInitializerLock()) {
+            customComponent = null;
+            pane = null;
+            componentCreated = false;
+        }
         
         super.componentClosed();
 
@@ -606,7 +603,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
 
         updateName();
-        isComponentOpened = true;
+        componentCreated = true;
         if (in.available() > 0) {
             boolean associate = in.readBoolean();
             if (associate && support != null) {
@@ -688,7 +685,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     public JEditorPane getEditorPane() {
         assert SwingUtilities.isEventDispatchThread();
         //User selected not to load document
-        if (!isComponentOpened) {
+        if (!componentCreated) {
             return null;
         }
         //#175528: This case should not happen as modal dialog handling UQE should
