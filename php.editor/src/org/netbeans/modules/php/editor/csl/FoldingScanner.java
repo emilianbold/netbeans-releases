@@ -166,10 +166,16 @@ public final class FoldingScanner {
     private void processComments(Map<String, List<OffsetRange>> folds, List<Comment> comments) {
         for (Comment comment : comments) {
             if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
-                getRanges(folds, TYPE_PHPDOC).add(createOffsetRange(comment, -3));
+                OffsetRange offsetRange = createOffsetRange(comment, -3);
+                if (offsetRange != null && offsetRange.getLength() > 1) {
+                    getRanges(folds, TYPE_PHPDOC).add(offsetRange);
+                }
             } else {
                 if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
-                    getRanges(folds, TYPE_COMMENT).add(createOffsetRange(comment));
+                    OffsetRange offsetRange = createOffsetRange(comment);
+                    if (offsetRange != null && offsetRange.getLength() > 1) {
+                        getRanges(folds, TYPE_COMMENT).add(offsetRange);
+                    }
                 }
             }
         }
@@ -178,7 +184,7 @@ public final class FoldingScanner {
     private void processScopes(Map<String, List<OffsetRange>> folds, List<Scope> scopes) {
         for (Scope scope : scopes) {
             OffsetRange offsetRange = scope.getBlockRange();
-            if (offsetRange == null) {
+            if (offsetRange == null || offsetRange.getLength() <= 1) {
                 continue;
             }
             if (scope instanceof TypeScope) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
+ * Tests related to code completion of named parameters.
+ * <p>
+ * See issue 234297.
+ * </p>
  *
- * @author schmidtm
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
-public enum CaretLocation {
-    
-    ABOVE_PACKAGE("ABOVE_PACKAGE"),         // above the "package" statement (if any).
-    ABOVE_FIRST_CLASS("ABOVE_FIRST_CLASS"), // Outside any classs and above the first class or interface stmt.
-    OUTSIDE_CLASSES("OUTSIDE_CLASSES"),     // Outside any class but behind some class or interface stmt.
-    INSIDE_CLASS("INSIDE_CLASS"),           // inside a class definition but not in a method.
-    INSIDE_METHOD("INSIDE_METHOD"),         // in a method definition.
-    INSIDE_CLOSURE("INSIDE_CLOSURE"),       // inside a closure definition.
-    INSIDE_CONSTRUCTOR_CALL(""),            // inside constructor call
-    INSIDE_PARAMETERS("INSIDE_PARAMETERS"), // inside a parameter-list definition (signature) of a method.
-    INSIDE_COMMENT("INSIDE_COMMENT"),       // inside a line or block comment
-    INSIDE_STRING("INSIDE_STRING"),         // inside string literal
-    UNDEFINED("UNDEFINED");
-    
-    private String id;
+public class NamedParamCCTest extends GroovyCCTestBase {
 
-    CaretLocation(String id) {
-        this.id = id;
+    public NamedParamCCTest(String testName) {
+        super(testName);
     }
-    
+
+    @Override
+    protected String getTestType() {
+        return "namedparams";
+    }
+
+    public void testEmptyConstructor() throws Exception {
+        checkCompletion(BASE + "EmptyConstructor.groovy", "Bar bar = new Bar(^)", false);
+    }
+
+    public void testFewParamsConstructor_AfterComma() throws Exception {
+        checkCompletion(BASE + "FewParamsConstructor.groovy", "Bar baar = new Bar(aaa: 0, bbb: 1, ^)", false);
+    }
+
+    public void testFewParamsConstructor_AfterLeftParenthesis() throws Exception {
+        checkCompletion(BASE + "FewParamsConstructor.groovy", "Bar baar = new Bar(^aaa: 0, bbb: 1, )", false);
+    }
+
+    public void testFewParamsConstructor_InsideNamedParameter1() throws Exception {
+        checkCompletion(BASE + "FewParamsConstructor.groovy", "Bar baar = new Bar(a^aa: 0, bbb: 1, )", false);
+    }
+
+    public void testFewParamsConstructor_InsideNamedParameter2() throws Exception {
+        checkCompletion(BASE + "FewParamsConstructor.groovy", "Bar baar = new Bar(aaa:^ 0, bbb: 1, )", false);
+    }
+
+    public void testFewParamsConstructor_InsideNamedParameter3() throws Exception {
+        checkCompletion(BASE + "FewParamsConstructor.groovy", "Bar baar = new Bar(aaa: 0^, bbb: 1, )", false);
+    }
 }

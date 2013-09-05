@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.html.editor.typinghooks;
 
+import java.awt.EventQueue;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.text.html.HTMLEditorKit;
+import junit.framework.AssertionFailedError;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.test.TestBase;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -367,4 +371,42 @@ public class HtmlTypingHooksTest extends TestBase {
         }
     }
     
+     public void testIndentLineInOpenTag() {
+        try {
+            final Typing t = typing("<div>\n<div|\n</div>");
+            t.typeChar('>');
+            
+            //the reindent is done asynchronously in EDT
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    t.assertDocumentTextEquals("<div>\n    <div>\n</div>");
+                }
+            });
+        } catch (InterruptedException ex) {
+            //no-op
+        } catch (InvocationTargetException ex) {
+            throw (AssertionFailedError)ex.getCause();
+        }
+    }
+    
+      public void testIndentLineInCloseTag() {
+        try {
+            final Typing t = typing("<div>\n    <div>\n        text\n        </div|\n</div>");
+            t.typeChar('>');
+            
+            //the reindent is done asynchronously in EDT
+            EventQueue.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    t.assertDocumentTextEquals("<div>\n    <div>\n        text\n    </div>\n</div>");
+                }
+            });
+        } catch (InterruptedException ex) {
+            //no-op
+        } catch (InvocationTargetException ex) {
+            throw (AssertionFailedError)ex.getCause();
+        }
+    }
+     
 }

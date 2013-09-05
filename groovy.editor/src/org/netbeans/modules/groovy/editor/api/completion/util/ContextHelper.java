@@ -205,6 +205,38 @@ public final class ContextHelper {
     }
 
     /**
+     * Finds out if the given {@link CompletionContext} is after {@link GroovyTokenId#COMMA}.
+     *
+     * @param request completion request
+     * @return {@code true} if we are after comma, {@code false} otherwise
+     */
+    public static boolean isAfterComma(CompletionContext request) {
+        if (request.context.before2.id() == GroovyTokenId.COMMA || // This is in situation like ...(aa: 0, bb^
+            request.context.before1.id() == GroovyTokenId.COMMA ||
+            request.context.active.id() == GroovyTokenId.COMMA) {
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Finds out if the given {@link CompletionContext} is after {@link GroovyTokenId#LPAREN}.
+     *
+     * @param request completion request
+     * @return {@code true} if we are after left parenthesis, {@code false} otherwise
+     */
+    public static boolean isAfterLeftParenthesis(CompletionContext request) {
+        if (request.context.before2.id() == GroovyTokenId.LPAREN || // This is in situation like ...(aa^
+            request.context.before1.id() == GroovyTokenId.LPAREN ||
+            request.context.active.id() == GroovyTokenId.LPAREN) {
+
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Here we test, whether the provided {@link CompletionContext} is likely to become
      * a variable definition. At this point in time we can not check whether we
      * live in a "DeclarationExpression" since this is not yet created.
