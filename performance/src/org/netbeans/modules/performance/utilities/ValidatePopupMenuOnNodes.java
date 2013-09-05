@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.utilities;
 
 import org.netbeans.modules.performance.guitracker.ActionTracker;
@@ -50,66 +49,82 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
- * Common test case for test of context menu invocation on various nodes in the tree views.
+ * Common test case for test of context menu invocation on various nodes in the
+ * tree views.
+ *
  * @author mmirilovic@netbeans.org
  */
 public abstract class ValidatePopupMenuOnNodes extends PerformanceTestCase {
 
     protected Node dataObjectNode;
 
-
-    /** Creates a new instance of ValidatePopupMenuOnNodes */
+    /**
+     * Creates a new instance of ValidatePopupMenuOnNodes
+     *
+     * @param testName test name
+     */
     public ValidatePopupMenuOnNodes(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 300;
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
-    
-    /** Creates a new instance of ValidatePopupMenuOnNodes */
+
+    /**
+     * Creates a new instance of ValidatePopupMenuOnNodes
+     *
+     * @param testName test name
+     * @param performanceDataName perf name
+     */
     public ValidatePopupMenuOnNodes(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
         WAIT_AFTER_OPEN = 300;
         track_mouse_event = ActionTracker.TRACK_MOUSE_PRESS;
     }
-    
+
     /**
      * Selects node whose popup menu will be tested.
      */
+    @Override
     public void prepare() {
         dataObjectNode.select();
     }
-    
+
     /**
-     * Directly sends mouse events causing popup menu displaying to the selected node.
-     * <p>Using Jemmy/Jelly to call popup can cause reselecting of node and more events
-     * than is desirable for this case.
+     * Directly sends mouse events causing popup menu displaying to the selected
+     * node.
+     * <p>
+     * Using Jemmy/Jelly to call popup can cause reselecting of node and more
+     * events than is desirable for this case.
+     *
+     * @return JPopupMenuOperator instance
      */
-    public ComponentOperator open(){
+    @Override
+    public ComponentOperator open() {
         /* it stopped to work after a while, see issue 58790
-        java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
-        return new JPopupMenuOperator(menu);
+         java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+         JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
+         return new JPopupMenuOperator(menu);
          */
-        
+
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
+        int button = JTreeOperator.getPopupMouseButton();
         dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
         return new JPopupMenuOperator();
     }
-    
+
     /**
      * Closes the popup by sending ESC key event.
      */
     @Override
-    public void close(){
+    public void close() {
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.
         // This pushes Escape on underlying JTree which should be always visible
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
 }

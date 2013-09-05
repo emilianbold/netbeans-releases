@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.utilities;
 
 import java.io.BufferedReader;
@@ -57,132 +56,156 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
 
-
 /**
- * Measure startup time by org.netbeans.core.perftool.StartLog.
- * Number of starts with new userdir is defined by property
+ * Measure startup time by org.netbeans.core.perftool.StartLog. Number of starts
+ * with new userdir is defined by property
  * <br> <code> org.netbeans.performance.repeat.with.new.userdir </code>
  * <br> and number of starts with old userdir is defined by property
- * <br> <code> org.netbeans.performance.repeat </code>
- * Run measurement defined number times, but forget first measured value,
- * it's a attempt to have still the same testing conditions with
- * loaded and cached files.
+ * <br> <code> org.netbeans.performance.repeat </code> Run measurement defined
+ * number times, but forget first measured value, it's a attempt to have still
+ * the same testing conditions with loaded and cached files.
  *
- * @author Martin.Brehovsky@sun.com, Antonin.Nebuzelsky@sun.com, Marian.Mirilovic@sun.com
+ * @author Martin.Brehovsky@sun.com, Antonin.Nebuzelsky@sun.com,
+ * Marian.Mirilovic@sun.com
  */
 public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformanceTestCase {
-    
-    /** String used for unix platform. */
+
+    /**
+     * String used for unix platform.
+     */
     protected static final String UNIX = "unix";
-    
-    /** String used for windows platform. */
+
+    /**
+     * String used for windows platform.
+     */
     protected static final String WINDOWS = "windows";
-    
-    /** String used for mac platform. */
+
+    /**
+     * String used for mac platform.
+     */
     protected static final String MAC = "mac";
-    
-    /** String used for unknown platform. */
+
+    /**
+     * String used for unknown platform.
+     */
     protected static final String UNKNOWN = "unknown";
-    
-    /** Number of repeated runs on the same userdir (for first run is used new userdir). */
+
+    /**
+     * Number of repeated runs on the same userdir (for first run is used new
+     * userdir).
+     */
     protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
-    
-    /** Number of repeated runs on new userdir. */
+
+    /**
+     * Number of repeated runs on new userdir.
+     */
     protected static int repeatNewUserdir = Integer.getInteger("org.netbeans.performance.repeat.with.new.userdir", 1).intValue();
-    
-    /** Number used for unknow time. */
+
+    /**
+     * Number used for unknow time.
+     */
     protected final static long UNKNOWN_TIME = -1;
-    
-    /** Table of the supported platforms. */
-    protected static final String [][] SUPPORTED_PLATFORMS = {
-        {"Linux,i386",UNIX},
-        {"Linux,amd64",UNIX},
-        {"SunOS,sparc",UNIX},
-        {"SunOS,x86",UNIX},
-        {"Windows_NT,x86",WINDOWS},
-        {"Windows_NT,amd64",WINDOWS},
-        {"Windows_2000,x86",WINDOWS},
-        {"Windows_2000,amd64",WINDOWS},
-        {"Windows_XP,x86",WINDOWS},
-        {"Windows_XP,amd64",WINDOWS},
-        {"Windows_95,x86",WINDOWS},
-        {"Windows_95,amd64",WINDOWS},
-        {"Windows_98,x86",WINDOWS},
-        {"Windows_98,amd64",WINDOWS},
-        {"Windows_Me,x86",WINDOWS},
-        {"Windows_Me,amd64",WINDOWS},
-        {"Windows_Vista,x86",WINDOWS},
-        {"Windows_Vista,amd64",WINDOWS},
-        {"Windows_7,x86",WINDOWS},
-        {"Windows_7,amd64",WINDOWS},
-        {"Windows_8,x86",WINDOWS},
-        {"Windows_8,amd64",WINDOWS},
-        {"Mac_OS_X,ppc",MAC}
+
+    /**
+     * Table of the supported platforms.
+     */
+    protected static final String[][] SUPPORTED_PLATFORMS = {
+        {"Linux,i386", UNIX},
+        {"Linux,amd64", UNIX},
+        {"SunOS,sparc", UNIX},
+        {"SunOS,x86", UNIX},
+        {"Windows_NT,x86", WINDOWS},
+        {"Windows_NT,amd64", WINDOWS},
+        {"Windows_2000,x86", WINDOWS},
+        {"Windows_2000,amd64", WINDOWS},
+        {"Windows_XP,x86", WINDOWS},
+        {"Windows_XP,amd64", WINDOWS},
+        {"Windows_95,x86", WINDOWS},
+        {"Windows_95,amd64", WINDOWS},
+        {"Windows_98,x86", WINDOWS},
+        {"Windows_98,amd64", WINDOWS},
+        {"Windows_Me,x86", WINDOWS},
+        {"Windows_Me,amd64", WINDOWS},
+        {"Windows_Vista,x86", WINDOWS},
+        {"Windows_Vista,amd64", WINDOWS},
+        {"Windows_7,x86", WINDOWS},
+        {"Windows_7,amd64", WINDOWS},
+        {"Windows_8,x86", WINDOWS},
+        {"Windows_8,amd64", WINDOWS},
+        {"Mac_OS_X,ppc", MAC}
     };
-    
-    /** Table of data we'll measure */
+
+    /**
+     * Table of data we'll measure
+     */
     protected static final String[][] STARTUP_DATA = {
-        {"ModuleSystem.readList finished", "ModuleSystem.readList finished, took ","ms"},
-        {"Preparation finished", "Preparation finished, took ","ms"},
+        {"ModuleSystem.readList finished", "ModuleSystem.readList finished, took ", "ms"},
+        {"Preparation finished", "Preparation finished, took ", "ms"},
         {"Window system loaded", "Window system loaded dT=", ""},
-        {"Window system shown" , "Window system shown dT=",""},
+        {"Window system shown", "Window system shown dT=", ""},
         {"Start", "IDE starts t = ", ""},
         {"End", "IDE is running t=", ""},
         {"Lookups set", "Lookups set dT=", ""}
     };
-    public static final String separator= System.getProperty("file.separator");
-    
-    /** Define testcase
+    public static final String separator = System.getProperty("file.separator");
+
+    /**
+     * Define testcase
+     *
      * @param testName name of the testcase
      */
     public MeasureStartupTimeTestCase(String testName) {
         super(testName);
     }
-    
-    /** Testing start of IDE with measurement of the startup time.
+
+    /**
+     * Testing start of IDE with measurement of the startup time.
+     *
      * @param performanceDataName name of the performance data
      * @throws IOException
      */
     protected void measureComplexStartupTime(String performanceDataName) throws IOException {
         // fail if prepare of the IDE failed
-        if(new StatusFile().exists()){
+        if (new StatusFile().exists()) {
             fail("Prepare failed, so do the measurement of [" + performanceDataName + "]");
         }
-        
-        for (int i=1; i <= repeat; i++) {
+
+        for (int i = 1; i <= repeat; i++) {
             long measuredTime = runIDEandMeasureStartup(performanceDataName, getMeasureFile(i), getUserdirFile(), 30000);
             reportPerformance(performanceDataName, measuredTime, "ms", 2);
         }
     }
-    
-    /** Run IDE and read measured time from file
+
+    /**
+     * Run IDE and read measured time from file
      *
      * @param performanceDataName name of the performance data
-     * @param measureFile file where the time of window system painting is stored
+     * @param measureFile file where the time of window system painting is
+     * stored
      * @param userdir userdir location
-     * @param timeout wait after startup 
+     * @param timeout wait after startup
      * @throws java.io.IOException
      * @return startup time
      */
     protected long runIDEandMeasureStartup(String performanceDataName, File measureFile, File userdir, long timeout) throws IOException {
-        
+
         try {
             long startTime = runIDE(getIdeHome(), userdir, measureFile, timeout);
             Hashtable measuredValues = parseMeasuredValues(measureFile);
 
             Object tempValue = measuredValues.get("IDE starts t = ");
-            long runTime=0;
-            long endTime=0;
-            if (!(tempValue==null)) {
+            long runTime = 0;
+            long endTime = 0;
+            if (!(tempValue == null)) {
                 runTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
                 measuredValues.remove("IDE starts t = "); // remove from measured values, the rest we will log as performance data
             }
             tempValue = measuredValues.get("IDE is running t=");
-            if (!(tempValue==null)) {
+            if (!(tempValue == null)) {
                 endTime = ((Long) tempValue).longValue(); // from STARTUP_DATA
                 measuredValues.remove("IDE is running t="); // remove from measured values, the rest we will log as performance data
             }
-                   
+
             long startupTime = endTime - startTime;
 
             System.out.println("\t" + startTime + " -> run from command line (start) ");
@@ -211,70 +234,75 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             throw new AssertionError(ex);
         }
     }
-    
-    
-    /** Get platform on which the code is executed
+
+    /**
+     * Get platform on which the code is executed
+     *
      * @return current platform name
      */
     protected static String getPlatform() {
-        String platformString=(System.getProperty("os.name","")+","+ System.getProperty("os.arch","")).replace(' ','_');
-        for(String[] platform:SUPPORTED_PLATFORMS){
+        String platformString = (System.getProperty("os.name", "") + "," + System.getProperty("os.arch", "")).replace(' ', '_');
+        for (String[] platform : SUPPORTED_PLATFORMS) {
             if (platformString.equalsIgnoreCase(platform[0])) {
                 return platform[1];
             }
         }
         return UNKNOWN;
     }
-    
-    /** Creates and executes the command line for running IDE.
+
+    /**
+     * Creates and executes the command line for running IDE.
+     *
      * @param ideHome IDE home directory
      * @param userdir User directory
      * @param measureFile file where measured time is stored
-     * @param timeout wait after startup 
+     * @param timeout wait after startup
      * @return measured time
      * @throws IOException
      */
     protected static long runIDE(File ideHome, File userdir, File measureFile, long timeout) throws IOException {
         return runIDE(ideHome, userdir, measureFile, timeout, null);
     }
-        
+
     static long runIDE(File ideHome, File userdir, File measureFile, long timeout, File[] clusters) throws IOException {
         //check <userdir>/lock file
-        if(new File(userdir, "lock").exists())
+        if (new File(userdir, "lock").exists()) {
             fail("Original Userdir is locked!");
-        
+        }
+
         //add guitracker on classpath
         String classpath = System.getProperty("performance.testutilities.dist.jar");
         if (classpath == null) {
-            classpath = ideHome.getAbsolutePath()+separator+"extra"+separator+"modules"+separator+"org-netbeans-modules-performance.jar";
+            classpath = ideHome.getAbsolutePath() + separator + "extra" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
         }
-        
+
         //add property on command line
         String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
-        
+
         // create jdkhome switch
         String jdkhome = System.getProperty("java.home");
-        if(jdkhome.endsWith("jre"))
-            jdkhome = jdkhome.substring(0, jdkhome.length()-4);
-        
-        File ideBinDir = new File(ideHome,"bin");
-        
+        if (jdkhome.endsWith("jre")) {
+            jdkhome = jdkhome.substring(0, jdkhome.length() - 4);
+        }
+
+        File ideBinDir = new File(ideHome, "bin");
+
         String executor;
-        
+
         if (getPlatform().equals(WINDOWS)) {
             executor = "netbeans.exe";
         } else {
             executor = "netbeans";
         }
-        
+
         // construct command line
         StringBuffer cmd = new StringBuffer();
         String execDir = System.getProperty("netbeans.performance.exec.dir");
-        if (execDir==null) {
-            execDir= (new File(ideBinDir,executor)).getAbsolutePath();
-        } 
+        if (execDir == null) {
+            execDir = (new File(ideBinDir, executor)).getAbsolutePath();
+        }
         cmd.append(execDir);
-        
+
         // add other argumens
         // guiltracker lib
         cmd.append(" --cp:a ").append(classpath);
@@ -285,12 +313,12 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             cmd.append(" --userdir \"").append(userdirPath).append('\"');
         } else {
             cmd.append(" --userdir ").append(userdirPath);
-        }        
+        }
         // get jdkhome path
         // TODO: Check if this is really necessary to not quote paths without spaces
         if (jdkhome.indexOf(' ') >= 0) {
             cmd.append(" --jdkhome \"").append(jdkhome).append('\"');
-        } else {    
+        } else {
             cmd.append(" --jdkhome ").append(jdkhome);
         }
         // netbeans full hack
@@ -317,19 +345,20 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // disable status line displayer - issue 90542
         cmd.append(" -J-Dorg.openide.awt.StatusDisplayer.DISPLAY_TIME=0");
         // test command line suffix
-        if(test_cmd_suffix!=null && !test_cmd_suffix.equalsIgnoreCase("${xtest.perf.commandline.suffix}"))
-            cmd.append(' ').append(test_cmd_suffix.replace('\'',' ').trim());
-        
+        if (test_cmd_suffix != null && !test_cmd_suffix.equalsIgnoreCase("${xtest.perf.commandline.suffix}")) {
+            cmd.append(' ').append(test_cmd_suffix.replace('\'', ' ').trim());
+        }
+
         System.out.println("-----------------------------------------------");
-        System.out.println("Running: "+cmd);
-        
+        System.out.println("Running: " + cmd);
+
         Runtime runtime = Runtime.getRuntime();
-        
-        long startTime=System.nanoTime()/1000000;
-        
+
+        long startTime = System.nanoTime() / 1000000;
+
         // need to create out and err handlers
-        Process ideProcess = runtime.exec(cmd.toString(),null,ideBinDir);
-        
+        Process ideProcess = runtime.exec(cmd.toString(), null, ideBinDir);
+
         // track out and errs from ide - the last parameter is PrintStream where the
         // streams are copied - currently set to null, so it does not hit performance much        
         // TODO: Remove System.out which is used to catch errors from the running IDE
@@ -339,15 +368,17 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {
             ie.printStackTrace(System.err);
-            IOException ioe = new IOException("Caught InterruptedException :"+ie.getMessage());
+            IOException ioe = new IOException("Caught InterruptedException :" + ie.getMessage());
             ioe.initCause(ie);
             throw ioe;
         }
-        
+
         return startTime;
     }
-    
-    /** Get IDE home directory.
+
+    /**
+     * Get IDE home directory.
+     *
      * @throws IOException
      * @return IDE home directory
      */
@@ -360,7 +391,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             ideHome = findPlatform().getParentFile();
         }
         if (!ideHome.isDirectory()) {
-            throw new IOException("Cannot found netbeans.dest.dir - supplied value is "+nbHome);
+            throw new IOException("Cannot found netbeans.dest.dir - supplied value is " + nbHome);
         }
         return ideHome;
     }
@@ -392,63 +423,55 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         }
     }
 
-    /** Get User directory
+    /**
+     * Get User directory
+     *
      * @param n number of the userdir
      * @throws IOException
      * @return User directory
      */
     protected File getUserdirFile(int n) throws IOException {
-        return new File(getWorkDir(),"ideuserdir_"+n);
+        return new File(getWorkDir(), "ideuserdir_" + n);
     }
-    
-    /** Get User directory.
-     * User directory is prepared and defined by property
+
+    /**
+     * Get User directory. User directory is prepared and defined by property
      * <br> <code> userdir.prepared </code> + "/sys/ide"
+     *
      * @throws IOException
      * @return User directory
      */
     protected File getUserdirFile() throws IOException {
-        String usdPrep=System.getProperty("userdir.prepared");
-        if (!(usdPrep==null)) {
-            return new File(new File(usdPrep,"sys"),"ide");
+        String usdPrep = System.getProperty("userdir.prepared");
+        if (!(usdPrep == null)) {
+            return new File(new File(usdPrep, "sys"), "ide");
         }
-        return new File(new File(getWorkDir().getAbsolutePath(),"sys"),"ide");
+        return new File(new File(getWorkDir().getAbsolutePath(), "sys"), "ide");
     }
-    
-    /** Get Sketchpad directory.
-     * @throws IOException
-     * @return Sketchpad directory
-     */
-    private static File getSketchpad() throws IOException {
-        String xtestSketchpad = System.getProperty("xtest.sketchpad");
-        if (xtestSketchpad == null) {
-            throw new IOException("Cannot find xtest.sketchpad");
-        } else {
-            return new File(xtestSketchpad);
-        }
-    }
-    
-    
-    /** Get file where measured time will be stored.
+
+    /**
+     * Get file where measured time will be stored.
+     *
      * @param i number of the new userdir used
      * @param j number of the run with the same userdir
      * @throws IOException
      * @return file where the measured time will be stored
      */
     protected File getMeasureFile(int i, int j) throws IOException {
-        return new File(getWorkDir(),"measured_startup_"+i+"_"+j+".txt");
+        return new File(getWorkDir(), "measured_startup_" + i + "_" + j + ".txt");
     }
-    
-    
-    /** Get file where measured time will be stored.
+
+    /**
+     * Get file where measured time will be stored.
+     *
      * @param i number of the run with the same userdir
      * @throws IOException
      * @return file where the measured time will be stored
      */
     protected File getMeasureFile(int i) throws IOException {
-        return new File(getWorkDir(),"measured_startup_"+i+".txt");
+        return new File(getWorkDir(), "measured_startup_" + i + ".txt");
     }
-    
+
     protected static class CantParseMeasuredValuesException extends Exception {
 
         public CantParseMeasuredValuesException(Throwable cause) {
@@ -456,41 +479,45 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         }
 
     }
-    
-    /** Parse logged startup time from the file.
+
+    /**
+     * Parse logged startup time from the file.
+     *
      * @param measuredFile file where the startup time is stored
      * @return measured startup time
      */
     protected static Hashtable parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
         Hashtable<String, Long> measuredValues = new Hashtable<String, Long>();
-        
+
         Hashtable<String, String> startup_data = new Hashtable<String, String>(STARTUP_DATA.length);
         for (String[] data : STARTUP_DATA) {
             startup_data.put(data[1], data[2]);
         }
-        
+
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(measuredFile));
             String readLine, value;
             int begin, end;
-            while((readLine = br.readLine())!=null && !startup_data.isEmpty()){
+            while ((readLine = br.readLine()) != null && !startup_data.isEmpty()) {
                 try {
                     for (String str : startup_data.keySet()) {
                         begin = readLine.indexOf(str);
-                        if(begin!=-1){
+                        if (begin != -1) {
                             end = readLine.indexOf(startup_data.get(str));
-                            
-                            if(end<=begin) end=readLine.length();
-                            
-                            value = readLine.substring(begin+str.length(), end);
+
+                            if (end <= begin) {
+                                end = readLine.length();
+                            }
+
+                            value = readLine.substring(begin + str.length(), end);
                             measuredValues.put(str, new Long(value));
                             startup_data.remove(str);
                             break;
                         }
-                        
+
                     }
-                    
+
                 } catch (NumberFormatException nfe) {
                     throw new CantParseMeasuredValuesException(nfe);
                 }
@@ -508,30 +535,31 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             }
         }
     }
-    
+
     /**
-     * Create status file 
-     * @throws java.io.IOException 
+     * Create status file
+     *
+     * @throws java.io.IOException
      */
     public static void createStatusFile() throws IOException {
         new StatusFile().createNewFile();
     }
-    
-    
+
     public static class ThreadReader implements Runnable {
-        
+
         private Thread thread;
         private BufferedReader br;
         private PrintStream out;
         private String s;
-        
+
         public ThreadReader(InputStream in, PrintStream out) {
             br = new BufferedReader(new InputStreamReader(in));
             this.out = out;
             thread = new Thread(this);
             thread.start();
         }
-        
+
+        @Override
         public void run() {
             Thread myThread = Thread.currentThread();
             while (thread == myThread) {
@@ -548,26 +576,28 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                 } catch (IOException ioe) {
                     ioe.printStackTrace(System.err);
                     if (out != null) {
-                        out.println("Caught IOE when reading IDE's out or err streams:"+ioe);
+                        out.println("Caught IOE when reading IDE's out or err streams:" + ioe);
                     }
                     stop();
                 }
             }
         }
-        
+
         public void stop() {
             thread = null;
         }
     }
-    
-    private static class StatusFile extends File{
-        
-        /** Creates a new instance of StatusFile
+
+    private static class StatusFile extends File {
+
+        /**
+         * Creates a new instance of StatusFile
+         *
          * @throws java.io.IOException
          */
         private StatusFile() throws IOException {
             super(CommonUtilities.getTempDir(), "prepare_failed.tmp");
         }
-        
+
     }
 }

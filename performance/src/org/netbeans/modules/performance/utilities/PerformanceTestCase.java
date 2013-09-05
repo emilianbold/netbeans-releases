@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.utilities;
 
 import java.awt.Component;
@@ -61,10 +60,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
-
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -78,99 +75,128 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
 /**
- * Test case with implemented Performance Tests Validation support stuff.
- * This class provide methods for QA Performance measurement.
- * Implemented methods:
+ * Test case with implemented Performance Tests Validation support stuff. This
+ * class provide methods for QA Performance measurement. Implemented methods:
  * <pre>
  * doMeasurement();
  * measureTime();
  * measureMemoryUsage();
- *</pre>
+ * </pre>
  *
  *
  * Number of repeatedly measured time can be set by system property
- * <b> org.netbeans.performance.repeat </b>. If property isn't set time is measured only once.
+ * <b> org.netbeans.performance.repeat </b>. If property isn't set time is
+ * measured only once.
  *
- * @author  mmirilovic@netbeans.org, rkubacki@netbeans.org, anebuzelsky@netbeans.org, mrkam@netbeans.org
+ * @author mmirilovic@netbeans.org, rkubacki@netbeans.org,
+ * anebuzelsky@netbeans.org, mrkam@netbeans.org
  */
-public abstract class PerformanceTestCase extends PerformanceTestCase2 implements NbPerformanceTest{
+public abstract class PerformanceTestCase extends PerformanceTestCase2 implements NbPerformanceTest {
+
     public static final String OPEN_AFTER = "OPEN - after";
     public static final String OPEN_BEFORE = "OPEN - before";
-    
 
     private static final boolean logMemory = Boolean.getBoolean("org.netbeans.performance.memory.usage.log");
 
     /**
-     * Constant defining maximum time delay for "ui-response" of actions that needs to react
-     * quickly to keep the user's flow to stay uninterrupted. This is set to 1000ms.
+     * Constant defining maximum time delay for "ui-response" of actions that
+     * needs to react quickly to keep the user's flow to stay uninterrupted.
+     * This is set to 1000ms.
      */
     protected static final long WINDOW_OPEN = 1000;
 
     /**
-     * Constant defining maximum time delay for "ui-response" of actions that needs to react
-     * instantaneously. This is set to 100ms.
+     * Constant defining maximum time delay for "ui-response" of actions that
+     * needs to react instantaneously. This is set to 100ms.
      */
     protected static final long UI_RESPONSE = 100;
 
     /**
-     * Expected time in which the measured action should be completed.
-     * Usualy should be set to WINDOW_OPEN or UI_RESPONSE.
-     * <br><b>default</b> = UI_RESPONSE */
+     * Expected time in which the measured action should be completed. Usualy
+     * should be set to WINDOW_OPEN or UI_RESPONSE.
+     * <br><b>default</b> = UI_RESPONSE
+     */
     public long expectedTime = UI_RESPONSE;
 
-    public int iteration=1;
+    public int iteration = 1;
 
     /**
-     * Maximum number of iterations to wait for last paint on component/container.
-     * <br><b>default</b> = 10 iterations */
+     * Maximum number of iterations to wait for last paint on
+     * component/container.
+     * <br><b>default</b> = 10 iterations
+     */
     public int MAX_ITERATION = 10;
 
     /**
      * Defines delay between checks if the component/container is painted.
-     * <br><b>default</b> = 1000 ms */
+     * <br><b>default</b> = 1000 ms
+     */
     public int WAIT_PAINT = 1000;
 
-    /** Wait No Event in the Event Queue after call method <code>open()</code>.
-     * <br><b>default</b> = 1000 ms */
+    /**
+     * Wait No Event in the Event Queue after call method <code>open()</code>.
+     * <br><b>default</b> = 1000 ms
+     */
     public int WAIT_AFTER_OPEN = 1000;
 
-    /** Wait No Event in the Event Queue after call method <code>prepare()</code>.
-     * <br><b>default</b> = 1000 ms */
+    /**
+     * Wait No Event in the Event Queue after call method
+     * <code>prepare()</code>.
+     * <br><b>default</b> = 1000 ms
+     */
     public int WAIT_AFTER_PREPARE = 1000;
 
-    /** Wait No Event in the Event Queue after call method {@link close}.
-     * <br><b>default</b> = 1000 ms */
+    /**
+     * Wait No Event in the Event Queue after call method {@link close}.
+     * <br><b>default</b> = 1000 ms
+     */
     public int WAIT_AFTER_CLOSE = 1000;
 
-    /** Factor for wait_after_open_heuristic timeout, negative HEURISTIC_FACTOR
-     * disables heuristic */
+    /**
+     * Factor for wait_after_open_heuristic timeout, negative HEURISTIC_FACTOR
+     * disables heuristic
+     */
     public double HEURISTIC_FACTOR = 1.25;
 
-    /** Count of repeats */
+    /**
+     * Count of repeats
+     */
     protected static int repeat = Integer.getInteger("org.netbeans.performance.repeat", 4).intValue();
 
-    /** Count of repeats for measure memory usage */
+    /**
+     * Count of repeats for measure memory usage
+     */
     protected static int repeat_memory = Integer.getInteger("org.netbeans.performance.memory.repeat", -1).intValue();
 
-    /** Performance data. */
+    /**
+     * Performance data.
+     */
     private static java.util.ArrayList<NbPerformanceTest.PerformanceData> data = new java.util.ArrayList<NbPerformanceTest.PerformanceData>();
 
-    /** Warmup finished flag. */
-    private static boolean warmupFinished = false;
-
-    /** Measure from last MOUSE event, you can define your own , by default it's MOUSE_RELEASE */
+    /**
+     * Measure from last MOUSE event, you can define your own , by default it's
+     * MOUSE_RELEASE
+     */
     protected int track_mouse_event = ActionTracker.TRACK_MOUSE_RELEASE;
-    
-    /** Define start event - measured time will start by this event */
+
+    /**
+     * Define start event - measured time will start by this event
+     */
     protected int MY_START_EVENT = MY_EVENT_NOT_AVAILABLE;
-    
-    /** Define end event - measured time will end by this event */
+
+    /**
+     * Define end event - measured time will end by this event
+     */
     protected int MY_END_EVENT = MY_EVENT_NOT_AVAILABLE;
-    
-    /** Not set event - default for START/END events */
+
+    /**
+     * Not set event - default for START/END events
+     */
     protected static final int MY_EVENT_NOT_AVAILABLE = -10;
 
-    /** tracker for UI activities */
+    /**
+     * tracker for UI activities
+     */
     private static ActionTracker tr;
 
     private static LoggingRepaintManager rm;
@@ -178,7 +204,6 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     private static final Logger LOG = Logger.getLogger(PerformanceTestCase.class.getName());
 
     //private static LoggingEventQueue leq;
-
     static {
         if (repeat_memory == -1) {
             tr = ActionTracker.getInstance();
@@ -191,7 +216,7 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         try {
             // disable Mercurial if running from NetBeans source tree
             if ("jar".equals(u.getProtocol())) { // NOI18N
-                u = ((JarURLConnection)u.openConnection()).getJarFileURL();
+                u = ((JarURLConnection) u.openConnection()).getJarFileURL();
             }
             File f = new File(u.toURI());
             while (f != null) {
@@ -208,27 +233,37 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         }
     }
 
-    /** Tested component operator. */
+    /**
+     * Tested component operator.
+     */
     protected ComponentOperator testedComponentOperator;
 
-    /** Name of test case should be changed. */
+    /**
+     * Name of test case should be changed.
+     */
     protected HashMap<String, String> renamedTestCaseName;
 
-    /** Use order just for indentify first and next run, not specific run order */
+    /**
+     * Use order just for indentify first and next run, not specific run order
+     */
     public boolean useTwoOrderTypes = true;
-    
-    /** Group identification for traced refs that do not have special category. */
-    private Object DEFAULT_REFS_GROUP = new Object();
-    
-    /** Set of references to traced object that ought to be GCed after tests runs
+
+    /**
+     * Group identification for traced refs that do not have special category.
+     */
+    private final Object DEFAULT_REFS_GROUP = new Object();
+
+    /**
+     * Set of references to traced object that ought to be GCed after tests runs
      * and their informational messages.
      */
-    private static Map<Object, Map<Reference<Object>, String>> tracedRefs = 
-            new HashMap<Object, Map<Reference<Object>, String>>();
+    private static Map<Object, Map<Reference<Object>, String>> tracedRefs
+            = new HashMap<Object, Map<Reference<Object>, String>>();
     private Profile profile;
 
     /**
      * Creates a new instance of PerformanceTestCase
+     *
      * @param testName name of the test
      */
     public PerformanceTestCase(String testName) {
@@ -238,8 +273,10 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
     /**
      * Creates a new instance of PerformanceTestCase
+     *
      * @param testName name of the test
-     * @param performanceDataName name for measured performance data, measured values are stored to results under this name
+     * @param performanceDataName name for measured performance data, measured
+     * values are stored to results under this name
      */
     public PerformanceTestCase(String testName, String performanceDataName) {
         this(testName);
@@ -256,6 +293,7 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
     /**
      * Getter for LoggingRepaintManager.
+     *
      * @return LoggingRepaintManager
      */
     protected LoggingRepaintManager repaintManager() {
@@ -263,7 +301,9 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * TearDown test cases: call method <code>call()</code> and closing all modal dialogs.
+     * TearDown test cases: call method <code>call()</code> and closing all
+     * modal dialogs.
+     *
      * @see close
      */
     @Override
@@ -274,65 +314,71 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Switch to measured methods.
-     * Now all test can be used for measure UI responsiveness or look for memory leaks.
+     * Switch to measured methods. Now all test can be used for measure UI
+     * responsiveness or look for memory leaks.
      */
-    public void doMeasurement(){
-        if(repeat_memory==-1)
+    public void doMeasurement() {
+        if (repeat_memory == -1) {
             measureTime();
-        else
+        } else {
             measureMemoryUsage();
+        }
     }
 
     /**
-     * Test that measures time betwen generated AWT event and last paint event that
-     * finishes painting of component/container.
-     * It uses <code>ROBOT_MODEL_MASK</code> as an event dispatching model when user's
+     * Test that measures time betwen generated AWT event and last paint event
+     * that finishes painting of component/container. It uses
+     * <code>ROBOT_MODEL_MASK</code> as an event dispatching model when user's
      * activity is simulated.</p>
-     * <p>To initialize the test {@link prepare()} method is invoked at the begining
-     * and processing is delayed until there is a period of time at least
-     * <code>WAIT_AFTER_PREPARE</code>ms long.</p>
-     * <p>The {@link open()} method is called then to perform the measured action,
-     * tests waits for no event in <code>WAIT_AFTER_OPEN</code>ms and
-     * until component/container is fully painted. Meaure time and report measured time.
+     * <p>
+     * To initialize the test {@link prepare()} method is invoked at the
+     * begining and processing is delayed until there is a period of time at
+     * least <code>WAIT_AFTER_PREPARE</code>ms long.</p>
+     * <p>
+     * The {@link open()} method is called then to perform the measured action,
+     * tests waits for no event in <code>WAIT_AFTER_OPEN</code>ms and until
+     * component/container is fully painted. Meaure time and report measured
+     * time.
      * <br>
-     * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
+     * <br>If during measurement exception arise - test fails and no value is
+     * reported as Performance Data.
      * <br>If measuredTime as longer than expectedTime test fails.</p>
-     * <p>Each test should reset the state in {@link close()} method. Again there is a waiting
-     * for quiet period of time after this call.</p>
+     * <p>
+     * Each test should reset the state in {@link close()} method. Again there
+     * is a waiting for quiet period of time after this call.</p>
      */
     public void measureTime() {
         Exception exceptionDuringMeasurement = null;
 
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
-        long[] measuredTime = new long[repeat+1];
+        long[] measuredTime = new long[repeat + 1];
 
         // issue 56091 and applied workarround on the next line
         // JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel()|JemmyProperties.ROBOT_MODEL_MASK);
+        JemmyProperties.setCurrentDispatchingModel(JemmyProperties.getCurrentDispatchingModel() | JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
-        log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
+        log("----------------------- DISPATCHING MODEL = " + JemmyProperties.getCurrentDispatchingModel());
 
         String performanceDataName = setPerformanceName();
 
         tr.startNewEventList(performanceDataName);
-        tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time="+expectedTime+
-                ", Repeat="+repeat+
-                ", Wait_after_prepare="+WAIT_AFTER_PREPARE+
-                ", Wait_after_open="+WAIT_AFTER_OPEN+
-                ", Wait_after_close="+WAIT_AFTER_CLOSE+
-                ", Wait_paint="+WAIT_PAINT+
-                ", Max_iteration="+MAX_ITERATION+
-                ", logMemory="+logMemory);
+        tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Expected_time=" + expectedTime
+                + ", Repeat=" + repeat
+                + ", Wait_after_prepare=" + WAIT_AFTER_PREPARE
+                + ", Wait_after_open=" + WAIT_AFTER_OPEN
+                + ", Wait_after_close=" + WAIT_AFTER_CLOSE
+                + ", Wait_paint=" + WAIT_PAINT
+                + ", Max_iteration=" + MAX_ITERATION
+                + ", logMemory=" + logMemory);
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
         try {
             initialize();
 
-            for(int i=1; i<=repeat && exceptionDuringMeasurement==null; i++){
+            for (int i = 1; i <= repeat && exceptionDuringMeasurement == null; i++) {
                 try {
-                    iteration=i;
+                    iteration = i;
                     testedComponentOperator = null;
                     tr.startNewEventList("Iteration no." + i);
                     tr.connectToAWT(true);
@@ -341,23 +387,22 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
                     // Uncomment if you want to run with analyzer tool
                     // com.sun.forte.st.collector.CollectorAPI.resume ();
-
                     // to be sure EventQueue is empty
                     new QueueTool().waitEmpty();
 
                     logMemoryUsage();
 
                     //initializeProfiling();
-                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_BEFORE);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE, OPEN_BEFORE);
                     testedComponentOperator = open();
-                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE,OPEN_AFTER);
+                    tr.add(ActionTracker.TRACK_TRACE_MESSAGE, OPEN_AFTER);
                     //finishProfiling(i);
 
                     // this is to optimize delays
-                    long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
-                    tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic="+wait_time);
+                    long wait_time = (wait_after_open_heuristic > WAIT_AFTER_OPEN) ? WAIT_AFTER_OPEN : wait_after_open_heuristic;
+                    tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "Wait_after_open_heuristic=" + wait_time);
                     Thread.sleep(wait_time);
-                    waitNoEvent(wait_time/4);
+                    waitNoEvent(wait_time / 4);
                     logMemoryUsage();
 
                     // we were waiting for painting the component, but after
@@ -366,32 +411,31 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                     new QueueTool().waitEmpty();
 
                     measuredTime[i] = getMeasuredTime();
-                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Measured Time="+measuredTime[i], true);
+                    tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Measured Time=" + measuredTime[i], true);
                     // negative HEURISTIC_FACTOR disables heuristic
                     if (HEURISTIC_FACTOR > 0) {
                         wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
                     }
 
-                    log("Measured Time ["+performanceDataName+" | "+i+"] = " +measuredTime[i]);
+                    log("Measured Time [" + performanceDataName + " | " + i + "] = " + measuredTime[i]);
 
                     // the measured time could be 0 (on Windows averything under 7-8 ms is logged as 0), but it shouldn't be under 0
-                    if(measuredTime[i] < 0) {
+                    if (measuredTime[i] < 0) {
                         System.out.println("@@@ Measured Time is less than 0"); // NOI18N
-                        measuredTime[i]=0;
-                    }                        
-                        //throw new Exception("Measured value ["+measuredTime[i]+"] < 0 !!!");
+                        measuredTime[i] = 0;
+                    }
+                    //throw new Exception("Measured value ["+measuredTime[i]+"] < 0 !!!");
                     reportPerformance(performanceDataName, measuredTime[i], "ms", i, expectedTime);
 
                     //getScreenshotOfMeasuredIDEInTimeOfMeasurement(i);
-
-                }catch(Exception exc){ // catch for prepare(), open()
+                } catch (Exception exc) { // catch for prepare(), open()
                     log("------- [ " + i + " ] ---------------- Exception rises while measuring performance: " + exc);
                     exc.printStackTrace(getLog());
                     getScreenshot("exception_during_open");
                     exceptionDuringMeasurement = exc;
                     // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
-                }finally{ // finally for prepare(), open()
-                    try{
+                } finally { // finally for prepare(), open()
+                    try {
                         // Uncomment if you want to run with analyzer tool
                         // com.sun.forte.st.collector.CollectorAPI.pause ();
 
@@ -401,13 +445,13 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                         closeAllModal();
                         waitNoEvent(WAIT_AFTER_CLOSE);
 
-                    }catch(Exception e){ // catch for close()
+                    } catch (Exception e) { // catch for close()
                         log("------- [ " + i + " ] ---------------- Exception rises while closing tested component: " + e);
                         e.printStackTrace(getLog());
                         getScreenshot("exception_during_close");
                         exceptionDuringMeasurement = e;
                         //throw new JemmyException("Exception arises while closing tested component :"+e.getMessage());
-                    }finally{ // finally for close()
+                    } finally { // finally for close()
                         tr.connectToAWT(false);
                     }
                 }
@@ -417,40 +461,38 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
             shutdown();
             closeAllDialogs();
             tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "AFTER SHUTDOWN");
-        }catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
+        } catch (Exception e) { // catch for initialize(), shutdown(), closeAllDialogs()
             log("----------------------- Exception rises while shuting down / initializing: " + e);
             e.printStackTrace(getLog());
             getScreenshot("exception_during_init_or_shutdown");
             // throw new JemmyException("Exception rises while shuting down :"+e.getMessage());
             exceptionDuringMeasurement = e;
-        }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
+        } finally { // finally for initialize(), shutdown(), closeAllDialogs()
             repaintManager().resetRegionFilters();
         }
 
         dumpLog();
-        if(exceptionDuringMeasurement!=null) {
-            try {
-                throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
-            } finally {
-                exceptionDuringMeasurement = null;
-            }
+        if (exceptionDuringMeasurement != null) {
+            throw new RuntimeException("Exception {" + exceptionDuringMeasurement + "} rises during measurement.", exceptionDuringMeasurement);
         }
-
-       compare(performanceDataName, measuredTime);
-
+        compare(performanceDataName, measuredTime);
     }
 
-
     /**
-     * Test that measures memory consumption after each invocation of measured aciotn.
-     * Tet finds the lowest value of measured memory consumption and compute all deltas against this value.
-     * This method contains the same pattern as previously used method for measuring UI responsiveness
-     * {@link measureTime()} . Memory consumption is computed as difference between
-     * used and allocated memory (heap). Garbage Collection {@link runGC()} is called then to each measurement of action {@link open()}.
+     * Test that measures memory consumption after each invocation of measured
+     * aciotn. Tet finds the lowest value of measured memory consumption and
+     * compute all deltas against this value. This method contains the same
+     * pattern as previously used method for measuring UI responsiveness
+     * {@link measureTime()} . Memory consumption is computed as difference
+     * between used and allocated memory (heap). Garbage Collection
+     * {@link runGC()} is called then to each measurement of action
+     * {@link open()}.
      * <br>
-     * <br>If during measurement exception arise - test fails and no value is reported as Performance Data.
-     * <p>Each test should reset the state in {@link close()} method. Again there is a waiting
-     * for quiet period of time after this call.</p>
+     * <br>If during measurement exception arise - test fails and no value is
+     * reported as Performance Data.
+     * <p>
+     * Each test should reset the state in {@link close()} method. Again there
+     * is a waiting for quiet period of time after this call.</p>
      */
     public void measureMemoryUsage() {
 
@@ -458,13 +500,13 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         long wait_after_open_heuristic = WAIT_AFTER_OPEN;
 
         long memoryUsageMinimum = 0;
-        long[] memoryUsage = new long[repeat_memory+1];
+        long[] memoryUsage = new long[repeat_memory + 1];
 
         useTwoOrderTypes = false;
 
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
         JemmyProperties.setCurrentTimeout("EventDispatcher.RobotAutoDelay", 1);
-        log("----------------------- DISPATCHING MODEL = "+JemmyProperties.getCurrentDispatchingModel());
+        log("----------------------- DISPATCHING MODEL = " + JemmyProperties.getCurrentDispatchingModel());
 
         checkScanFinished(); // just to be sure, that during measurement we will not wait for scanning dialog
 
@@ -472,34 +514,33 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
         initialize();
 
-        for(int i=1; i<=repeat_memory && exceptionDuringMeasurement==null; i++){
+        for (int i = 1; i <= repeat_memory && exceptionDuringMeasurement == null; i++) {
             try {
                 testedComponentOperator = null;
-                
+
                 prepare();
 
                 waitNoEvent(WAIT_AFTER_PREPARE);
 
                 // Uncomment if you want to run with analyzer tool
                 // com.sun.forte.st.collector.CollectorAPI.resume ();
-
                 // to be sure EventQueue is empty
                 new QueueTool().waitEmpty();
 
                 testedComponentOperator = open();
 
-                long wait_time = (wait_after_open_heuristic>WAIT_AFTER_OPEN)?WAIT_AFTER_OPEN:wait_after_open_heuristic;
+                long wait_time = (wait_after_open_heuristic > WAIT_AFTER_OPEN) ? WAIT_AFTER_OPEN : wait_after_open_heuristic;
                 waitNoEvent(wait_time);
 
                 new QueueTool().waitEmpty();
 
-            }catch(Exception exc){ // catch for prepare(), open()
+            } catch (Exception exc) { // catch for prepare(), open()
                 exc.printStackTrace(getLog());
                 exceptionDuringMeasurement = exc;
                 getScreenshot("exception_during_open");
                 // throw new JemmyException("Exception arises during measurement:"+exc.getMessage());
-            }finally{
-                try{
+            } finally {
+                try {
                     // Uncomment if you want to run with analyzer tool
                     // com.sun.forte.st.collector.CollectorAPI.pause ();
 
@@ -508,11 +549,11 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                     closeAllModal();
                     waitNoEvent(WAIT_AFTER_CLOSE);
 
-                }catch(Exception e){
+                } catch (Exception e) {
                     e.printStackTrace(getLog());
                     getScreenshot("exception_during_close");
                     exceptionDuringMeasurement = e;
-                }finally{ // finally for initialize(), shutdown(), closeAllDialogs()
+                } finally { // finally for initialize(), shutdown(), closeAllDialogs()
                     // XXX export results?
                 }
             }
@@ -521,20 +562,21 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
             Runtime runtime = Runtime.getRuntime();
             memoryUsage[i] = runtime.totalMemory() - runtime.freeMemory();
-            log("Used Memory ["+i+"] = " +memoryUsage[i]);
+            log("Used Memory [" + i + "] = " + memoryUsage[i]);
 
-            if(memoryUsageMinimum == 0 || memoryUsageMinimum > memoryUsage[i])
+            if (memoryUsageMinimum == 0 || memoryUsageMinimum > memoryUsage[i]) {
                 memoryUsageMinimum = memoryUsage[i];
+            }
 
         }
 
         // set Performance Data Name
         String performanceDataName = setPerformanceName();
-            
+
         // report deltas against minimum of measured values
-        for(int i=1; i<=repeat_memory; i++){
+        for (int i = 1; i <= repeat_memory; i++) {
             //String performanceDataName = setPerformanceName(i);
-            log("Used Memory ["+performanceDataName+" | "+i+"] = " +memoryUsage[i]);
+            log("Used Memory [" + performanceDataName + " | " + i + "] = " + memoryUsage[i]);
 
             reportPerformance(performanceDataName, memoryUsage[i] - memoryUsageMinimum, "bytes", i);
         }
@@ -542,54 +584,55 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         try {
             shutdown();
             closeAllDialogs();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace(getLog());
             //getScreenshot("shutdown");
             exceptionDuringMeasurement = e;
-        }finally{
+        } finally {
         }
 
-        if(exceptionDuringMeasurement!=null)
+        if (exceptionDuringMeasurement != null) {
             throw new RuntimeException("Exception rises during measurement, look at appropriate log file for stack trace(s).");
+        }
 
     }
 
     /**
      * Initialize callback that is called once before the repeated sequence of
-     * testet operation is perfromed.
-     * Default implementation is empty.
+     * testet operation is perfromed. Default implementation is empty.
      */
     protected void initialize() {
     }
 
     /**
-     * Prepare method is called before at the begining of each measurement
-     * The system should be ready to perform measured action when work requested by
-     * this method is completed.
-     * Default implementation is empty.
+     * Prepare method is called before at the begining of each measurement The
+     * system should be ready to perform measured action when work requested by
+     * this method is completed. Default implementation is empty.
      */
     public abstract void prepare();
 
     /**
-     * This method should be overriden in subclasses to triger the measured action.
-     * Only last action before UI changing must be specified here
-     * (push button, select menuitem, expand tree, ...).
-     * Whole method uses for dispatching ROBOT_MODEL_MASK in testing measurement.
-     * Default implementation is empty.
-     * @return tested component operator that will be later passed to close method
+     * This method should be overriden in subclasses to triger the measured
+     * action. Only last action before UI changing must be specified here (push
+     * button, select menuitem, expand tree, ...). Whole method uses for
+     * dispatching ROBOT_MODEL_MASK in testing measurement. Default
+     * implementation is empty.
+     *
+     * @return tested component operator that will be later passed to close
+     * method
      */
     public abstract ComponentOperator open();
 
     /**
-     * Close opened window, or invoked popup menu.
-     * If tested component controled by testedCompponentOperator is Window it will
-     * be closed, if it is component ESC key is pressed.
+     * Close opened window, or invoked popup menu. If tested component controled
+     * by testedCompponentOperator is Window it will be closed, if it is
+     * component ESC key is pressed.
      */
-    public void close(){
-        if(testedComponentOperator!=null && testedComponentOperator.isShowing()){
-            if (testedComponentOperator instanceof WindowOperator)
-                ((WindowOperator)testedComponentOperator).close();
-            else if(testedComponentOperator instanceof ComponentOperator){
+    public void close() {
+        if (testedComponentOperator != null && testedComponentOperator.isShowing()) {
+            if (testedComponentOperator instanceof WindowOperator) {
+                ((WindowOperator) testedComponentOperator).requestClose();
+            } else if (testedComponentOperator instanceof ComponentOperator) {
                 testedComponentOperator.pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
                 //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
                 //testedComponentOperator.releaseKey(java.awt.event.KeyEvent.VK_ESCAPE);
@@ -598,14 +641,15 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Shutdown method resets the state of system when all test invocation are done.
-     * Default implementation is empty.
+     * Shutdown method resets the state of system when all test invocation are
+     * done. Default implementation is empty.
      */
     protected void shutdown() {
     }
 
     /**
      * Method for storing and reporting measured performance value
+     *
      * @param name measured value name
      * @param value measured perofrmance value
      * @param unit unit name of measured value
@@ -614,16 +658,17 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
      */
     public void reportPerformance(String name, long value, String unit, int runOrder, long threshold) {
         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-        d.name = name==null? getName() : name;
+        d.name = name == null ? getName() : name;
         d.value = value;
         d.unit = unit;
-        d.runOrder = (useTwoOrderTypes && runOrder>1)?2:runOrder;
+        d.runOrder = (useTwoOrderTypes && runOrder > 1) ? 2 : runOrder;
         d.threshold = threshold;
         data.add(d);
     }
 
     /**
      * Method for storing and reporting measured performance value
+     *
      * @param name measured value name
      * @param value measured perofrmance value
      * @param unit unit name of measured value
@@ -631,43 +676,49 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
      */
     public void reportPerformance(String name, long value, String unit, int runOrder) {
         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
-        d.name = name==null? getName() : name;
+        d.name = name == null ? getName() : name;
         d.value = value;
         d.unit = unit;
-        d.runOrder = (useTwoOrderTypes && runOrder>1)?2:runOrder;
+        d.runOrder = (useTwoOrderTypes && runOrder > 1) ? 2 : runOrder;
         data.add(d);
     }
 
-    /** Registers an object to be tracked and later verified in 
+    /**
+     * Registers an object to be tracked and later verified in
      * @link #testGC
+     *
      * @param message informantion message associated with object
      * @param object traced object
-     * @param group mark grouping more refrenced together to test them at once or <CODE>null</CODE>
+     * @param group mark grouping more refrenced together to test them at once
+     * or <CODE>null</CODE>
      */
-    protected void reportReference( String message, Object object, Object group ) {
-        Object g = group == null? DEFAULT_REFS_GROUP: group;
+    protected void reportReference(String message, Object object, Object group) {
+        Object g = group == null ? DEFAULT_REFS_GROUP : group;
         if (!tracedRefs.containsKey(g)) {
             tracedRefs.put(g, new HashMap<Reference<Object>, String>());
         }
         tracedRefs.get(g).put(new WeakReference<Object>(object), message);
     }
-    
-    /** Generic test case checking if all objects registered with 
+
+    /**
+     * Generic test case checking if all objects registered with
      * @link #reportReference can be garbage collected.
-     * 
+     *
      * Set of traced objects is cleared after this test.
      * It is supposed that this method will be added to a suite
      * typically at the end.
+     *
+     * @param group group
+     * @throws Exception
      */
     protected void runTestGC(Object group) throws Exception {
-        Object g = group == null? DEFAULT_REFS_GROUP: group;
+        Object g = group == null ? DEFAULT_REFS_GROUP : group;
         try {
             AssertionFailedError afe = null;
-            for (Map.Entry<Reference<Object>, String> entry: tracedRefs.get(g).entrySet()) {
+            for (Map.Entry<Reference<Object>, String> entry : tracedRefs.get(g).entrySet()) {
                 try {
                     assertGC(entry.getValue(), entry.getKey());
-                }
-                catch (AssertionFailedError e) {
+                } catch (AssertionFailedError e) {
                     if (afe != null) {
                         Throwable t = e;
                         while (t.getCause() != null) {
@@ -681,82 +732,87 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
             if (afe != null) {
                 throw afe;
             }
-        }
-        finally {
+        } finally {
             tracedRefs.get(g).clear();
         }
     }
-    
+
     /**
-     * Turn's off blinking of the caret in the editor.
-     * A method generally useful for any UI Responsiveness tests which measure actions
-     * in the Java editor. This method should be called from a test's initialize() method.
-     * @param kitClass class of the editor for which you want turn off caret blinking
+     * Turn's off blinking of the caret in the editor. A method generally useful
+     * for any UI Responsiveness tests which measure actions in the Java editor.
+     * This method should be called from a test's initialize() method.
+     *
+     * @param kitClass class of the editor for which you want turn off caret
+     * blinking
      */
-    protected void setEditorCaretFilteringOn(Class kitClass) {
+    protected void setEditorCaretFilteringOn(Class<?> kitClass) {
 //        org.netbeans.modules.editor.options.BaseOptions options = org.netbeans.modules.editor.options.BaseOptions.getOptions(kitClass);
 //        options.setCaretBlinkRate(0);
     }
 
     /**
-     * Turn's off blinking of the caret in the Java editor.
-     * A method generally useful for any UI Responsiveness tests which measure actions
-     * in the Java editor. This method should be called from a test's initialize() method.
+     * Turn's off blinking of the caret in the Java editor. A method generally
+     * useful for any UI Responsiveness tests which measure actions in the Java
+     * editor. This method should be called from a test's initialize() method.
      */
     protected void setJavaEditorCaretFilteringOn() {
 //        setEditorCaretFilteringOn(org.netbeans.modules.editor.java.JavaKit.class);
     }
 
     /**
-     * Turn's off blinking of the caret in the plain text editor.
-     * A method generally useful for any UI Responsiveness tests which measure actions
-     * in the plain text editor. This method should be called from a test's initialize() method.
+     * Turn's off blinking of the caret in the plain text editor. A method
+     * generally useful for any UI Responsiveness tests which measure actions in
+     * the plain text editor. This method should be called from a test's
+     * initialize() method.
      */
     protected void setPlainTextEditorCaretFilteringOn() {
- //       setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);
+        //       setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);
     }
 
     /**
-     * Turn's off blinking of the caret in the XML editor.
-     * A method generally useful for any UI Responsiveness tests which measure actions
-     * in the XML editor. This method should be called from a test's initialize() method.
+     * Turn's off blinking of the caret in the XML editor. A method generally
+     * useful for any UI Responsiveness tests which measure actions in the XML
+     * editor. This method should be called from a test's initialize() method.
      */
     protected void setXMLEditorCaretFilteringOn() {
 //        setEditorCaretFilteringOn(org.netbeans.modules.xml.text.syntax.XMLKit.class);
     }
 
     /**
-     * Turn's off blinking of the caret in the JSP editor.
-     * A method generally useful for any UI Responsiveness tests which measure actions
-     * in the JSP editor. This method should be called from a test's initialize() method.
+     * Turn's off blinking of the caret in the JSP editor. A method generally
+     * useful for any UI Responsiveness tests which measure actions in the JSP
+     * editor. This method should be called from a test's initialize() method.
      */
     protected void setJSPEditorCaretFilteringOn() {
 //        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
     }
 
     /**
-     * Log used memory size. It can help with evaluation what happend during measurement.
-     * If the size of the memory before and after open differs :
+     * Log used memory size. It can help with evaluation what happend during
+     * measurement. If the size of the memory before and after open differs :
      * <li>if increases- there could be memory leak</li>
-     * <li>if decreases- there was an garbage collection during measurement - it prolongs the action time</li>
+     * <li>if decreases- there was an garbage collection during measurement - it
+     * prolongs the action time</li>
      */
-    protected void logMemoryUsage(){
+    protected void logMemoryUsage() {
         // log memory usage after each test case
         if (logMemory) {
             Runtime runtime = Runtime.getRuntime();
             long totalMemory = runtime.totalMemory();
             long freeMemory = runtime.freeMemory();
-            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Memory used="+ (totalMemory-freeMemory) +" total="+totalMemory);
+            tr.add(ActionTracker.TRACK_APPLICATION_MESSAGE, "Memory used=" + (totalMemory - freeMemory) + " total=" + totalMemory);
         }
     }
 
     /**
-     * Run Garbage Collection 3 times * number defined as a parameter for this method
+     * Run Garbage Collection 3 times * number defined as a parameter for this
+     * method
+     *
      * @param i number of repeat (GC runs i*3 times)
      */
-    public void runGC(int i){
-        while(i>0) {
-            try{
+    public void runGC(int i) {
+        while (i > 0) {
+            try {
                 System.runFinalization();
                 System.gc();
                 Thread.sleep(500);
@@ -764,7 +820,7 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                 Thread.sleep(500);
                 System.gc();
                 Thread.sleep(500);
-            }catch(Exception exc){
+            } catch (Exception exc) {
                 exc.printStackTrace(System.err);
             }
             i--;
@@ -772,125 +828,97 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Set name for performance data. Measured value is stored to database under this name.
+     * Set name for performance data. Measured value is stored to database under
+     * this name.
+     *
      * @return performance data name
      */
-    public String setPerformanceName(){
+    public String setPerformanceName() {
         String performanceDataName = getPerformanceName();
 
-        if(performanceDataName.equalsIgnoreCase("measureTime"))
+        if (performanceDataName.equalsIgnoreCase("measureTime")) {
             performanceDataName = this.getClass().getName();
+        }
 
         return performanceDataName;
     }
 
     /**
-     * Compare each measured value with expected value.
-     *  Test fails if more than one of the measured value is bigger than expected one.
+     * Compare each measured value with expected value. Test fails if more than
+     * one of the measured value is bigger than expected one.
+     *
+     * @param performanceDataName perf name
      * @param measuredValues array of measured values
      */
-    public void compare(String performanceDataName, long[] measuredValues){
+    public void compare(String performanceDataName, long[] measuredValues) {
         boolean firstTimeUsageFail = false;
         int numberOfFails = 0;
         final int NUMBER_OF_FAILS_THRESHOLD = 1;
         String measuredValuesString = "";
 
-        for(int i=1; i<measuredValues.length; i++){
+        for (int i = 1; i < measuredValues.length; i++) {
             measuredValuesString = measuredValuesString + " " + measuredValues[i];
 
-            if( (i>1  && measuredValues[i] > expectedTime) ||
-                    (i==1 && measuredValues.length==1 && measuredValues[i] > expectedTime) ) {
+            if ((i > 1 && measuredValues[i] > expectedTime)
+                    || (i == 1 && measuredValues.length == 1 && measuredValues[i] > expectedTime)) {
                 // fail if it's subsequent usage and it's over expected time or it's first usage without any other usages and it's over expected time
                 numberOfFails++;
-            } else if(i==1 && measuredValues.length > 1 && measuredValues[i] > 2*expectedTime) {
+            } else if (i == 1 && measuredValues.length > 1 && measuredValues[i] > 2 * expectedTime) {
                 // fail if it's first usage and it isn't the last one and it's over 2-times expected time
                 numberOfFails++;
                 firstTimeUsageFail = true;
             }
         }
 
-        String suite_fqn="org.netbeans.performance.unknown";
-        suite_fqn=System.getProperty("suitename");
-        String suiteName="Unknown Test Suite";
-        suiteName=System.getProperty("suite");
-
+        String suite_fqn = System.getProperty("suitename", "org.netbeans.performance.unknown");
+        String suiteName = System.getProperty("suite", "Unknown Test Suite");
 
         if (numberOfFails > NUMBER_OF_FAILS_THRESHOLD || firstTimeUsageFail) {
-            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "failed", expectedTime ,measuredValues, repeat);
+            CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "failed", expectedTime, measuredValues, repeat);
             captureScreen = false;
-            fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString 
-                    + " ] > expectedTime[" + expectedTime 
+            fail(numberOfFails + " of the measuredTime(s) [" + measuredValuesString
+                    + " ] > expectedTime[" + expectedTime
                     + "] - performance issue (it's ok if the first usage is in boundary of 0 to 2*expectedTime) .");
-        } 
-        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName,this.getClass().getCanonicalName(), suite_fqn, "ms", "passed", expectedTime ,measuredValues, repeat);
+        }
+        CommonUtilities.xmlTestResults(this.getWorkDirPath(), suiteName, performanceDataName, this.getClass().getCanonicalName(), suite_fqn, "ms", "passed", expectedTime, measuredValues, repeat);
     }
 
     /**
-     * Ensures that all warm up tasks are already executed so the tests may begin.
-     */
-    private void checkWarmup() {
-        
-              //return;
-        
-/*        try {
-            Class cls = Class.forName("org.netbeans.core.WarmUpSupport"); // NOI18N
-            java.lang.reflect.Field fld = cls.getDeclaredField("finished"); // NOI18N
-            fld.setAccessible(true);
-            
-            // assume that warmup should not last more than 20sec
-            for (int i=20; i>0; i--) {
-                warmupFinished = fld.getBoolean(null);
-                if (warmupFinished) {
-                    return;
-                }
-                try {
-                    log("checkWarmup - waiting");
-                    Thread.sleep(1000);
-                } catch (InterruptedException ie) {
-                    ie.printStackTrace(System.err);
-                }
-            }
-            fail("checkWarmup - waiting for warmup completion failed");
-        } catch (Exception e) {
-            fail(e);
-        }*/
-    }
-
-    /**
-     * If scanning of classpath started wait till the scan finished
-     * (just to be sure check it twice after short delay)
+     * If scanning of classpath started wait till the scan finished (just to be
+     * sure check it twice after short delay)
      */
     public void checkScanFinished() {
-      CommonUtilities.waitScanFinished();
+        CommonUtilities.waitScanFinished();
     }
 
-
     /**
-     * This method returns meaasured time, it goes through all data logged 
-     * by guitracker (LoggingEventQueue and LoggingRepaintManager).
-     * The measured time is the difference between :
+     * This method returns meaasured time, it goes through all data logged by
+     * guitracker (LoggingEventQueue and LoggingRepaintManager). The measured
+     * time is the difference between :
      * <ul>
-     *     <li> last START or
-     *     <li> last MOUSE_PRESS (if the measure_mouse_press property is true)
-     *     <li> last MOUSE_RELEASE - by default (if the measure_mouse_press property is false)
-     *     <li> last KEY_PRESS
+     * <li> last START or
+     * <li> last MOUSE_PRESS (if the measure_mouse_press property is true)
+     * <li> last MOUSE_RELEASE - by default (if the measure_mouse_press property
+     * is false)
+     * <li> last KEY_PRESS
      * </ul>
      * and
      * <ul>
-     *     <li> last or expected paint
-     *     <li> last FRAME_SHOW
-     *     <li> last DIALOG_SHOW
-     *     <li> last COMPONENT_SHOW
+     * <li> last or expected paint
+     * <li> last FRAME_SHOW
+     * <li> last DIALOG_SHOW
+     * <li> last COMPONENT_SHOW
      * </ul>
+     *
      * @return measured time
      */
     public long getMeasuredTime() {
-        for (int attempt = 0; ; attempt++) {
-            
+        for (int attempt = 0;; attempt++) {
+
             ActionTracker.Tuple start = tr.getCurrentEvents().getFirst();
             ActionTracker.Tuple end = tr.getCurrentEvents().getFirst();
-            
-            try {                
+
+            try {
                 for (ActionTracker.Tuple tuple : tr.getCurrentEvents()) {
                     if (tuple == null) {
                         // TODO: Investigate how can this happen?
@@ -904,25 +932,23 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                             || (MY_START_EVENT == ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE
                             && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_AFTER))) {
                         start = tuple;
-                    } else if (MY_START_EVENT == MY_EVENT_NOT_AVAILABLE && 
-                            ( code == ActionTracker.TRACK_START
-                            || code == track_mouse_event  // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
-                            || code == ActionTracker.TRACK_KEY_PRESS
-                            )) {
+                    } else if (MY_START_EVENT == MY_EVENT_NOT_AVAILABLE
+                            && (code == ActionTracker.TRACK_START
+                            || code == track_mouse_event // it could be ActionTracker.TRACK_MOUSE_RELEASE (by default) or ActionTracker.TRACK_MOUSE_PRESS or ActionTracker.TRACK_MOUSE_MOVE
+                            || code == ActionTracker.TRACK_KEY_PRESS)) {
                         start = tuple;
 
-                    //end 
+                        //end 
                     } else if (code == MY_END_EVENT || (MY_END_EVENT == ActionTracker.TRACK_OPEN_BEFORE_TRACE_MESSAGE
                             && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_BEFORE))
                             || (MY_END_EVENT == ActionTracker.TRACK_OPEN_AFTER_TRACE_MESSAGE
                             && code == ActionTracker.TRACK_TRACE_MESSAGE && tuple.getName().equals(OPEN_AFTER))) {
                         end = tuple;
-                    } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE && 
-                            ( code == ActionTracker.TRACK_PAINT
+                    } else if (MY_END_EVENT == MY_EVENT_NOT_AVAILABLE
+                            && (code == ActionTracker.TRACK_PAINT
                             || code == ActionTracker.TRACK_FRAME_SHOW
                             || code == ActionTracker.TRACK_DIALOG_SHOW
-                            || code == ActionTracker.TRACK_COMPONENT_SHOW
-                            )) {
+                            || code == ActionTracker.TRACK_COMPONENT_SHOW)) {
                         end = tuple;
                     }
                 }
@@ -933,32 +959,32 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
                 }
                 continue;
             }
-            
+
             start.setMeasured(true);
             end.setMeasured(true);
 
             long result = end.getTimeMillis() - start.getTimeMillis();
-            System.out.println("@@@@ Start tuple:"+start);
-            System.out.println("@@@@ End tuple:"+end);
+            System.out.println("@@@@ Start tuple:" + start);
+            System.out.println("@@@@ End tuple:" + end);
             if (result < 0 || start.getTimeMillis() == 0) {
-                System.out.println("!!!!! Measuring failed, because start ["+start.getTimeMillis()+"] > end ["+end.getTimeMillis()+"] or start=0. Threads in which the measurements were taken:"+start.getMeasurementThreadName()+"   "+end.getMeasurementThreadName()+" !!!!!");
+                System.out.println("!!!!! Measuring failed, because start [" + start.getTimeMillis() + "] > end [" + end.getTimeMillis() + "] or start=0. Threads in which the measurements were taken:" + start.getMeasurementThreadName() + "   " + end.getMeasurementThreadName() + " !!!!!");
                 System.out.println("!*!*!Full tuples list for disgnostic purposes");
                 ActionTracker.EventList el = tr.getCurrentEvents();
                 for (ActionTracker.Tuple tuple : el) {
                     System.out.println(tuple);
                 }
-                result=0;
+                result = 0;
             }
             return result;
         }
     }
 
     /**
-     * Data are logged to the file, it helps with evaluation of the failure
-     * as well as it shows what exactly is meaured (user can find the start event
+     * Data are logged to the file, it helps with evaluation of the failure as
+     * well as it shows what exactly is meaured (user can find the start event
      * and stop paint/show) .
      */
-    public void dumpLog(){
+    public void dumpLog() {
         tr.stopRecording();
         try {
             tr.setXslLocation(getWorkDirPath());
@@ -971,76 +997,88 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Waits for a period of time during which no event is processed by event queue.
+     * Waits for a period of time during which no event is processed by event
+     * queue.
+     *
      * @param time time to wait for after last event in EventQueue.
      */
     protected void waitNoEvent(long time) {
-        if(repeat_memory!=-1){
+        if (repeat_memory != -1) {
             try {
                 synchronized (Thread.currentThread()) {
                     Thread.currentThread().wait(time);
                 }
-            } catch(Exception exc){
+            } catch (Exception exc) {
                 log("Exception rises during waiting " + time + " ms");
                 exc.printStackTrace(getLog());
             }
-        }else{
+        } else {
             // XXX need to reimplement
             rm.waitNoPaintEvent(time);
         }
     }
 
-
     /**
      * Getter for all measured performance data from current test
+     *
      * @return PerformanceData[] performance data
      */
+    @Override
     public NbPerformanceTest.PerformanceData[] getPerformanceData() {
-        if(data != null)
+        if (data != null) {
             return data.toArray(new NbPerformanceTest.PerformanceData[0]);
-        else
+        } else {
             return null;
+        }
     }
 
     /**
-     * Setter for test case name. It is possible to set name of test case, it is useful if you have
-     *  test suite where called test methods (with the same name) are from different classes, which is
-     *  true if your tests extend PerformanceTestCase.
+     * Setter for test case name. It is possible to set name of test case, it is
+     * useful if you have test suite where called test methods (with the same
+     * name) are from different classes, which is true if your tests extend
+     * PerformanceTestCase.
+     *
      * @param oldName old TestCase name
      * @param newName new TestCase name
      */
-    public void setTestCaseName(String oldName, String newName){
-        renamedTestCaseName.put(oldName,newName);
+    public void setTestCaseName(String oldName, String newName) {
+        renamedTestCaseName.put(oldName, newName);
     }
 
     /**
-     * Getter for test case name. It overwrites method getName() from superclass. It is necessary to diversify
-     * method names if the test methods (with the same name) are runned from different classes, which is
-     * done if your tests extend PerformanceTestCase.
-     * @return testCaseName (all '|' are replaced by '#' if it was changed if not call super.getName() !
+     * Getter for test case name. It overwrites method getName() from
+     * superclass. It is necessary to diversify method names if the test methods
+     * (with the same name) are runned from different classes, which is done if
+     * your tests extend PerformanceTestCase.
+     *
+     * @return testCaseName (all '|' are replaced by '#' if it was changed if
+     * not call super.getName() !
      */
     @Override
-    public String getName(){
+    public String getName() {
         String originalTestCaseName = super.getName();
 
-        if(renamedTestCaseName.containsKey(originalTestCaseName))
-            return (renamedTestCaseName.get(originalTestCaseName)).replace('|','-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
-        else {
+        if (renamedTestCaseName.containsKey(originalTestCaseName)) {
+            return (renamedTestCaseName.get(originalTestCaseName)).replace('|', '-'); // workarround for problem on Win, there isn't possible cretae directories with '|'
+        } else {
             return this.getClass().getSimpleName() + "." + originalTestCaseName;
         }
     }
 
     /**
      * Returns performance data name
-     * @return performance data name if it was changed if not call super.getName() !
+     *
+     * @return performance data name if it was changed if not call
+     * super.getName() !
      */
-    public String getPerformanceName(){
+    public String getPerformanceName() {
         String originalTestCaseName = super.getName();
 
-        if(renamedTestCaseName.containsKey(originalTestCaseName))
+        if (renamedTestCaseName.containsKey(originalTestCaseName)) {
             return renamedTestCaseName.get(originalTestCaseName);
-        else
+        } else {
             return originalTestCaseName;
+        }
     }
 
     /**
@@ -1049,65 +1087,73 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     public static void closeAllDialogs() {
         javax.swing.JDialog dialog;
         org.netbeans.jemmy.ComponentChooser chooser = new org.netbeans.jemmy.ComponentChooser() {
+            @Override
             public boolean checkComponent(Component comp) {
-                return(comp instanceof javax.swing.JDialog && comp.isShowing());
+                return (comp instanceof javax.swing.JDialog && comp.isShowing());
             }
+
+            @Override
             public String getDescription() {
-                return("Dialog");
+                return ("Dialog");
             }
         };
-        while((dialog = (javax.swing.JDialog)org.netbeans.jemmy.DialogWaiter.getDialog(chooser)) != null) {
+        while ((dialog = (javax.swing.JDialog) org.netbeans.jemmy.DialogWaiter.getDialog(chooser)) != null) {
             closeDialogs(findBottomDialog(dialog, chooser), chooser);
         }
     }
 
     /**
      * Find Bottom dialogs.
+     *
      * @param dialog find all dialogs of owner for this dialog
      * @param chooser chooser used for looking for dialogs
      * @return return bottm dialog
      */
     private static javax.swing.JDialog findBottomDialog(javax.swing.JDialog dialog, org.netbeans.jemmy.ComponentChooser chooser) {
         java.awt.Window owner = dialog.getOwner();
-        if(chooser.checkComponent(owner)) {
-            return(findBottomDialog((javax.swing.JDialog)owner, chooser));
+        if (chooser.checkComponent(owner)) {
+            return (findBottomDialog((javax.swing.JDialog) owner, chooser));
         }
-        return(dialog);
+        return (dialog);
     }
 
     /**
      * Close dialogs
+     *
      * @param dialog find all dialogs of owner for this dialog
      * @param chooser chooser used for looking for dialogs
      */
     private static void closeDialogs(javax.swing.JDialog dialog, org.netbeans.jemmy.ComponentChooser chooser) {
         for (Window window : dialog.getOwnedWindows()) {
-            if(chooser.checkComponent(window)) {
-                closeDialogs((javax.swing.JDialog)window, chooser);
+            if (chooser.checkComponent(window)) {
+                closeDialogs((javax.swing.JDialog) window, chooser);
             }
         }
-        new org.netbeans.jemmy.operators.JDialogOperator(dialog).close();
+        new org.netbeans.jemmy.operators.JDialogOperator(dialog).requestClose();
     }
 
     /**
-     * Get screenshot - if testedComponentOperator=null - then grap whole screen Black&White,
-     * if isn't grap area with testedComponent (-100,-100, width+200, height+200)
+     * Get screenshot - if testedComponentOperator=null - then grab whole screen
+     * Black&White, if isn't grab area with testedComponent (-100,-100,
+     * width+200, height+200)
+     *
      * @param i order of measurement in one test case
      */
-    protected void getScreenshotOfMeasuredIDEInTimeOfMeasurement(int i){
+    protected void getScreenshotOfMeasuredIDEInTimeOfMeasurement(int i) {
         try {
-            if(testedComponentOperator==null){
-                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
-            }else{
+            if (testedComponentOperator == null) {
+                PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + java.io.File.separator + "screen_" + i + ".png", PNGEncoder.GREYSCALE_MODE);
+            } else {
                 java.awt.Point locationOnScreen = testedComponentOperator.getLocationOnScreen();
                 java.awt.Rectangle bounds = testedComponentOperator.getBounds();
-                java.awt.Rectangle bounds_new = new java.awt.Rectangle(locationOnScreen.x-100, locationOnScreen.y-100, bounds.width+200, bounds.height+200);
+                java.awt.Rectangle bounds_new = new java.awt.Rectangle(locationOnScreen.x - 100, locationOnScreen.y - 100, bounds.width + 200, bounds.height + 200);
                 java.awt.Rectangle screen_size = new java.awt.Rectangle(java.awt.Toolkit.getDefaultToolkit().getScreenSize());
 
-                if(bounds_new.height > screen_size.height/2 || bounds_new.width > screen_size.width/2)
-                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
-                else
-                    PNGEncoder.captureScreen(bounds_new,getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
+                if (bounds_new.height > screen_size.height / 2 || bounds_new.width > screen_size.width / 2) {
+                    PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + java.io.File.separator + "screen_" + i + ".png", PNGEncoder.GREYSCALE_MODE);
+                } else {
+                    PNGEncoder.captureScreen(bounds_new, getWorkDir().getAbsolutePath() + java.io.File.separator + "screen_" + i + ".png", PNGEncoder.GREYSCALE_MODE);
+                }
                 //System.err.println("XX "+rm.getRepaintedArea());
                 //                PNGEncoder.captureScreen(rm.getRepaintedArea(),getWorkDir().getAbsolutePath()+java.io.File.separator+"screen_"+i+".png",PNGEncoder.GREYSCALE_MODE);
             }
@@ -1118,13 +1164,14 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Get screenshot of whole screen if exception rised during initialize()
+     * Get screenshot of whole screen if exception rise during initialize()
+     *
      * @param title title is part of the screenshot file name
      */
-    protected void getScreenshot(String title){
-        try{
-            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath()+java.io.File.separator+"error_screenshot_" + title + ".png");
-        }catch(Exception exc){
+    protected void getScreenshot(String title) {
+        try {
+            PNGEncoder.captureScreen(getWorkDir().getAbsolutePath() + java.io.File.separator + "error_screenshot_" + title + ".png");
+        } catch (Exception exc) {
             log(" Exception rises during capturing screenshot ");
             exc.printStackTrace(getLog());
         }
@@ -1132,8 +1179,8 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Workaround for issue 145119. Disables NetBeans status bar effects
-     * Invoke this from suite() method
+     * Workaround for issue 145119. Disables NetBeans status bar effects Invoke
+     * this from suite() method
      */
     public static void disableStatusBarEffects() {
         System.setProperty("org.openide.awt.StatusDisplayer.DISPLAY_TIME", "0");
@@ -1141,15 +1188,14 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
 
     /**
      * Workaround for issue 148463. Disables PHP from opening readme html when
-     * PHP Sample Project is created
-     * Invoke this from suite() method
+     * PHP Sample Project is created Invoke this from suite() method
      */
     public static void disablePHPReadmeHTML() {
         System.setProperty("org.netbeans.modules.php.samples.donotopenreadmehtml", "true");
     }
 
     /**
-     * This method should be called from suite() method to initialize 
+     * This method should be called from suite() method to initialize
      * environment before performance tests are executed
      */
     public static void prepareForMeasurements() {
@@ -1162,7 +1208,7 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         if (fo == null) {
             return;
         }
-        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
+        Action a = (Action) fo.getAttribute("delegate"); // NOI18N
         if (a == null) {
             return;
         }
@@ -1176,25 +1222,30 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     private class Profile implements Runnable {
+
         Object profiler;
         boolean profiling;
 
         public Profile(Object profiler) {
             this.profiler = profiler;
-            if (iteration==1) RequestProcessor.getDefault().post(this, (int)expectedTime*2);
-                else RequestProcessor.getDefault().post(this, (int)expectedTime);
+            if (iteration == 1) {
+                RequestProcessor.getDefault().post(this, (int) expectedTime * 2);
+            } else {
+                RequestProcessor.getDefault().post(this, (int) expectedTime);
+            }
         }
 
+        @Override
         public synchronized void run() {
             profiling = true;
             if (profiler instanceof Runnable) {
-                Runnable r = (Runnable)profiler;
+                Runnable r = (Runnable) profiler;
                 r.run();
             }
         }
 
         private synchronized void stop(int round) throws Exception {
-            ActionListener ss = (ActionListener)profiler;
+            ActionListener ss = (ActionListener) profiler;
             profiler = null;
             if (!profiling) {
                 return;
@@ -1206,12 +1257,12 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
             ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
             dos.close();
             LOG.log(
-                Level.WARNING, "Profiling snapshot taken into {0}", snapshot.getPath()
+                    Level.WARNING, "Profiling snapshot taken into {0}", snapshot.getPath()
             );
         }
 
     }
-    
+
     PhaseHandler phaseHandler = new PhaseHandler();
 
     /**

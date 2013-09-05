@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.guitracker;
 
 import java.awt.Component;
@@ -53,29 +52,32 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.RepaintManager;
 
-/** A repaint manager which will logs information about interesting events.
+/**
+ * A repaint manager which will logs information about interesting events.
  *
- * @author  Tim Boudreau, rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author Tim Boudreau, rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
 public class LoggingRepaintManager extends RepaintManager {
-    
-    private static final long MAX_TIMEOUT = 60*1000L;
+
+    private static final long MAX_TIMEOUT = 60 * 1000L;
 
     private static final boolean DEBUG_MODE = false;
-    
+
     private static final String OS_NAME = System.getProperty("os.name", "");
-    
-    private ActionTracker tr;
-    
+
+    private final ActionTracker tr;
+
     private RepaintManager orig = null;
-    
+
     private long lastPaint = 0L;
-    
+
     private boolean hasDirtyMatches = false;
-    
-    private LinkedList<RegionFilter> regionFilters;
-    
-    /** Creates a new instance of LoggingRepaintManager
+
+    private final LinkedList<RegionFilter> regionFilters;
+
+    /**
+     * Creates a new instance of LoggingRepaintManager
+     *
      * @param tr
      */
     public LoggingRepaintManager(ActionTracker tr) {
@@ -84,9 +86,10 @@ public class LoggingRepaintManager extends RepaintManager {
         resetRegionFilters();  // filter default button on Vista and Windows 7 - see issue 100961
         // lastPaint = System.nanoTime();
     }
-    
+
     /**
      * Enable / disable our Repaint Manager
+     *
      * @param val true - enable, false - disable
      */
     public void setEnabled(boolean val) {
@@ -98,15 +101,16 @@ public class LoggingRepaintManager extends RepaintManager {
             }
         }
     }
-    
+
     /**
      * Get an answer on question "Is Repaint Manager enabled?"
+     *
      * @return true - repaint manager is enabled, false - it's disabled
      */
     public boolean isEnabled() {
         return orig != null;
     }
-    
+
     /**
      * Enable Repaint Manager
      */
@@ -114,7 +118,7 @@ public class LoggingRepaintManager extends RepaintManager {
         orig = currentManager(new JLabel()); //could be null for standard impl
         setCurrentManager(this);
     }
-    
+
     /**
      * Disable Repaint Manager
      */
@@ -122,7 +126,7 @@ public class LoggingRepaintManager extends RepaintManager {
         setCurrentManager(orig);
         orig = null;
     }
-    
+
     /**
      * Log the action when region is add to dirty regions.
      *
@@ -165,7 +169,7 @@ public class LoggingRepaintManager extends RepaintManager {
     }
 
     public static String getContainersChain(Container container) {
-        StringBuffer ret = new StringBuffer();
+        StringBuilder ret = new StringBuilder();
         do {
             container = container.getParent();
             if (container == null) {
@@ -175,44 +179,51 @@ public class LoggingRepaintManager extends RepaintManager {
         } while (true);
         return ret.toString();
     }
-    
+
     /**
      * Check all region filters
+     *
      * @param c component to be checked
      * @return true - it's accepted, false it isn't accepted
      */
-    public synchronized boolean acceptedByRegionFilters(JComponent c){
+    public synchronized boolean acceptedByRegionFilters(JComponent c) {
         for (RegionFilter filter : regionFilters) {
-            if(!filter.accept(c)) // if not accepted it has to be IGNORED
+            if (!filter.accept(c)) // if not accepted it has to be IGNORED
+            {
                 return false;
+            }
         }
         return true;
     }
-    
+
     /**
      * Set region filter
+     *
      * @param filter
      */
-    public void  addRegionFilter(RegionFilter filter) {
-        if(filter != null){
+    public void addRegionFilter(RegionFilter filter) {
+        if (filter != null) {
             tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: " + filter.getFilterName());
             regionFilters.add(filter);
         }
     }
+
     /**
      * Remove region filter
+     *
      * @param filter
      */
     public void removeRegionFilter(RegionFilter filter) {
-        if(filter != null){
+        if (filter != null) {
             tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "REMOVE FILTER: " + filter.getFilterName());
             regionFilters.remove(filter);
         }
     }
+
     /**
      * Reset region filters
      */
-    public void  resetRegionFilters() {
+    public void resetRegionFilters() {
         tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
         regionFilters.clear();
         // filter default button on Vista and Windows 7 - see issue 100961
@@ -220,149 +231,157 @@ public class LoggingRepaintManager extends RepaintManager {
             addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
         }
     }
-    
+
     /**
      * Region filter - define paints those will be accepted
      */
     public interface RegionFilter {
+
         /**
          * Accept paints from component
+         *
          * @param c component
          * @return true - paint is accepted, false it isn't
          */
         public boolean accept(JComponent c);
-        
+
         /**
          * Get filter name
+         *
          * @return name of the filter
          */
         public String getFilterName();
     }
-    
+
     /**
-     * Accept paints from Windows Vista :
-     *  - component is not default button (JButton)
-     * This button is repainted periodically on Window Vista with Aero L&F,
-     * so we need to ignore these paints
+     * Accept paints from Windows Vista : - component is not default button
+     * (JButton) This button is repainted periodically on Window Vista with Aero
+     * L&F, so we need to ignore these paints
      */
-    public static final RegionFilter VISTA_FILTER =
-            new RegionFilter() {
-        
-        public boolean accept(JComponent c) {
-            return !(c instanceof JButton && ((JButton)c).isDefaultButton());
-        }
-        
-        public String getFilterName() {
-            return "Don't accept paints from Default JButton";
-        }
-    };
-    
+    public static final RegionFilter VISTA_FILTER
+            = new RegionFilter() {
+
+                @Override
+                public boolean accept(JComponent c) {
+                    return !(c instanceof JButton && ((JButton) c).isDefaultButton());
+                }
+
+                @Override
+                public String getFilterName() {
+                    return "Don't accept paints from Default JButton";
+                }
+            };
+
     /**
      * Ignores paints from Status Line
      */
-    public static final RegionFilter IGNORE_STATUS_LINE_FILTER =
-            new RegionFilter() {
+    public static final RegionFilter IGNORE_STATUS_LINE_FILTER
+            = new RegionFilter() {
 
-        public boolean accept(JComponent c) {
-            String cn = c.getClass().getName();
-            Container cont = c;
-            do {
-                cn = cont.getName();
-                if ("StatusLine".equalsIgnoreCase(cn)) {
-                    return false;
+                @Override
+                public boolean accept(JComponent c) {
+                    Container cont = c;
+                    do {
+                        String cn = cont.getClass().getName();
+                        if ("StatusLine".equalsIgnoreCase(cn)) {
+                            return false;
+                        }
+                        cont = cont.getParent();
+                    } while (cont != null);
+                    return true;
                 }
-                cont = cont.getParent();
-            } while (cont != null);
-            return true;
-        }
 
-        public String getFilterName() {
-            return "Ignores StatusLine content";
-        }
-        
-    };
+                @Override
+                public String getFilterName() {
+                    return "Ignores StatusLine content";
+                }
+
+            };
 
     /**
      * Ignores paints from ExplorerTree
      */
-    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER =
-            new RegionFilter() {
+    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER
+            = new RegionFilter() {
 
-        public boolean accept(JComponent c) {
-            String cn = c.getClass().getName();
-            if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
+                @Override
+                public boolean accept(JComponent c) {
+                    String cn = c.getClass().getName();
+                    if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
 
-        public String getFilterName() {
-            return "Ignores TreeView$ExplorerTree";
-        }
+                @Override
+                public String getFilterName() {
+                    return "Ignores TreeView$ExplorerTree";
+                }
 
-    };
+            };
 
     /**
      * Ignores paints from DiffSidebar
      */
-    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER =
-            new RegionFilter() {
+    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER
+            = new RegionFilter() {
 
-        public boolean accept(JComponent c) {
-            String cn = c.getClass().getName();
-            if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        public String getFilterName() {
-            return "Ignores versioning.diff.DiffSidebar";
-        }
-
-    };
-
-    /**
-     * Accept paints only from Explorer :
-     *  - org.openide.explorer.view
-     */
-    public static final RegionFilter EXPLORER_FILTER =
-            new RegionFilter() {
-        
-        public boolean accept(JComponent c) {
-            Class clz = null;
-            
-            for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
-                if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
-                    return true;
+                @Override
+                public boolean accept(JComponent c) {
+                    String cn = c.getClass().getName();
+                    if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
-            }
-            return false;
-        }
-        
-        public String getFilterName() {
-            return "Accept paints from package: org.openide.explorer.view";
-        }
-    };
-    
-    
+
+                @Override
+                public String getFilterName() {
+                    return "Ignores versioning.diff.DiffSidebar";
+                }
+
+            };
+
     /**
-     * Accept paints only from Editor :
-     *  - org.openide.text.QuietEditorPane
+     * Accept paints only from Explorer : - org.openide.explorer.view
      */
-    public static final RegionFilter EDITOR_FILTER =
-            new RegionFilter() {
-        
-        public boolean accept(JComponent c) {
-            return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-        }
-        
-        public String getFilterName() {
-            return "Accept paints from org.openide.text.QuietEditorPane";
-        }
-    };
+    public static final RegionFilter EXPLORER_FILTER
+            = new RegionFilter() {
+
+                @Override
+                public boolean accept(JComponent c) {
+                    for (Class clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
+                        if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+
+                @Override
+                public String getFilterName() {
+                    return "Accept paints from package: org.openide.explorer.view";
+                }
+            };
+
+    /**
+     * Accept paints only from Editor : - org.openide.text.QuietEditorPane
+     */
+    public static final RegionFilter EDITOR_FILTER
+            = new RegionFilter() {
+
+                @Override
+                public boolean accept(JComponent c) {
+                    return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+                }
+
+                @Override
+                public String getFilterName() {
+                    return "Accept paints from org.openide.text.QuietEditorPane";
+                }
+            };
 
     /**
      * Log the action when dirty regions are painted.
@@ -378,8 +397,9 @@ public class LoggingRepaintManager extends RepaintManager {
             hasDirtyMatches = false;
         }
     }
-    
-    /** waits and returns when there is at least timeout millies without any
+
+    /**
+     * waits and returns when there is at least timeout milliseconds without any
      * painting processing
      *
      * @param timeout
@@ -388,12 +408,13 @@ public class LoggingRepaintManager extends RepaintManager {
     public long waitNoPaintEvent(long timeout) {
         return waitNoPaintEvent(timeout, false);
     }
-    
-    /** waits and returns when there is at least timeout millies without any
+
+    /**
+     * waits and returns when there is at least timeout milliseconds without any
      * painting processing.
      *
-     * @param afterPaint when set to true then this method checks if there was any paint
-     *        and measures quiet period from this time
+     * @param afterPaint when set to true then this method checks if there was
+     * any paint and measures quiet period from this time
      *
      * @return time of last painting
      */
@@ -407,15 +428,17 @@ public class LoggingRepaintManager extends RepaintManager {
                 e.printStackTrace(System.err);
             }
             current = System.nanoTime();
-            if (ActionTracker.nanoToMili(current - first) > MAX_TIMEOUT)
+            if (ActionTracker.nanoToMili(current - first) > MAX_TIMEOUT) {
                 return ActionTracker.nanoToMili(lastPaint);
+            }
         }
         return ActionTracker.nanoToMili(lastPaint);
     }
-    
-    /** Utility method used from NetBeans to measure startup time.
-     * Initializes RepaintManager and associated ActionTracker and than
-     * waits until paint happens and there is 5 seconds of inactivity.
+
+    /**
+     * Utility method used from NetBeans to measure startup time. Initializes
+     * RepaintManager and associated ActionTracker and than waits until paint
+     * happens and there is 5 seconds of inactivity.
      *
      * @return time of last paint
      */
@@ -424,25 +447,24 @@ public class LoggingRepaintManager extends RepaintManager {
         ActionTracker tr = ActionTracker.getInstance();
         LoggingRepaintManager rm = new LoggingRepaintManager(tr);
         rm.setEnabled(true);
-        
+
         tr.startNewEventList("Startup time measurement");
-        
+
         long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 10000).longValue();
         long time = rm.waitNoPaintEvent(waitAfterStartup, true);
-        
-        String fileName = System.getProperty( "org.netbeans.log.startup.logfile" );
-        java.io.File logFile = new java.io.File(fileName.substring(0,fileName.lastIndexOf('.')) + ".xml");
-        
+
+        String fileName = System.getProperty("org.netbeans.log.startup.logfile");
+        java.io.File logFile = new java.io.File(fileName.substring(0, fileName.lastIndexOf('.')) + ".xml");
+
         tr.stopRecording();
         try {
             tr.exportAsXML(new java.io.PrintStream(logFile));
-        }catch(Exception exc){
+        } catch (Exception exc) {
             System.err.println("Exception rises during writing log from painting of the main window :");
             exc.printStackTrace(System.err);
         }
-        
+
         rm.setEnabled(false);
         return time;
     }
-    
 }
