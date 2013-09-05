@@ -146,7 +146,7 @@ public class CompletionHandler implements CodeCompletionHandler {
         try {
             CompletionContext context = new CompletionContext(parserResult, prefix, anchor, lexOffset, astOffset, doc);
             context.init();
-            
+
             // if we are above a package statement or inside a comment there's no completion at all.
             if (context.location == CaretLocation.ABOVE_PACKAGE || context.location == CaretLocation.INSIDE_COMMENT) {
                 return new DefaultCompletionResult(Collections.EMPTY_LIST, false);
@@ -170,6 +170,12 @@ public class CompletionHandler implements CodeCompletionHandler {
 
                     proposalsCollector.completeFields(context);
                     proposalsCollector.completeLocalVars(context);
+                }
+
+                if (context.location == CaretLocation.INSIDE_CONSTRUCTOR_CALL) {
+                    if (ContextHelper.isAfterComma(context) || ContextHelper.isAfterLeftParenthesis(context)) {
+                        proposalsCollector.completeNamedParams(context);
+                    }
                 }
             }
             proposalsCollector.completeCamelCase(context);

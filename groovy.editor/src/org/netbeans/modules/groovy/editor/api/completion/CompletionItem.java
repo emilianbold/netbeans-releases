@@ -45,6 +45,7 @@ package org.netbeans.modules.groovy.editor.api.completion;
 import groovy.lang.MetaMethod;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -864,6 +865,75 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             hash = 61 * hash + (this.paramListString != null ? this.paramListString.hashCode() : 0);
             hash = 61 * hash + (this.parameters != null ? this.parameters.hashCode() : 0);
             return hash;
+        }
+    }
+
+    public static class NamedParameter extends CompletionItem {
+
+        private final String typeName;
+        private final String name;
+
+
+        public NamedParameter(String typeName, String name, int anchorOffset) {
+            super(null, anchorOffset);
+            this.typeName = typeName;
+            this.name = name;
+        }
+
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            return name + ": " + typeName; // NOI18N
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return name + ": " + typeName;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.PARAMETER;
+        }
+
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + Objects.hashCode(this.typeName);
+            hash = 89 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedParameter other = (NamedParameter) obj;
+            if (!Objects.equals(this.typeName, other.typeName)) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
         }
     }
 
