@@ -51,6 +51,7 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.ConcurrentModificationException;
@@ -60,6 +61,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import junit.framework.AssertionFailedError;
 import org.netbeans.jemmy.QueueTool;
@@ -72,6 +74,7 @@ import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -202,8 +205,13 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     private static LoggingRepaintManager rm;
 
     private static final Logger LOG = Logger.getLogger(PerformanceTestCase.class.getName());
+    /**
+     * Constants for managing caret blink rate.
+     */
+    private int defaultCaretBlinkRate;
+    private boolean caretBlinkingDisabled = false;
+    private static final String CARET_BLINK_RATE_KEY = "caret-blink-rate";
 
-    //private static LoggingEventQueue leq;
     static {
         if (repeat_memory == -1) {
             tr = ActionTracker.getInstance();
@@ -323,6 +331,7 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
         } else {
             measureMemoryUsage();
         }
+        restoreEditorCaretBlinking();
     }
 
     /**
@@ -738,53 +747,41 @@ public abstract class PerformanceTestCase extends PerformanceTestCase2 implement
     }
 
     /**
-     * Turn's off blinking of the caret in the editor. A method generally useful
-     * for any UI Responsiveness tests which measure actions in the Java editor.
-     * This method should be called from a test's initialize() method.
+     * Turns off blinking of the caret in the editor. It is restored at the end
+     * of test case in {@link #doMeasurement} method
+     */
+    protected void disableEditorCaretBlinking() {
+        Preferences prefs = getMimeLookupPreferences();
+        defaultCaretBlinkRate = prefs.getInt(CARET_BLINK_RATE_KEY, 0);
+        prefs.putInt(CARET_BLINK_RATE_KEY, 0);
+        caretBlinkingDisabled = true;
+    }
+
+    /**
+     * Restores blinking of the caret in the editor.
+     */
+    protected void restoreEditorCaretBlinking() {
+        if (caretBlinkingDisabled && defaultCaretBlinkRate != 0) {
+            getMimeLookupPreferences().putInt(CARET_BLINK_RATE_KEY, defaultCaretBlinkRate);
+            caretBlinkingDisabled = false;
+        }
+    }
+
+    /**
+     * Returns Preferences instance which enables to set editor defaults.
      *
-     * @param kitClass class of the editor for which you want turn off caret
-     * blinking
+     * @return MimeLookup.getLookup("").lookup(Preferences.class);
      */
-    protected void setEditorCaretFilteringOn(Class<?> kitClass) {
-//        org.netbeans.modules.editor.options.BaseOptions options = org.netbeans.modules.editor.options.BaseOptions.getOptions(kitClass);
-//        options.setCaretBlinkRate(0);
-    }
-
-    /**
-     * Turn's off blinking of the caret in the Java editor. A method generally
-     * useful for any UI Responsiveness tests which measure actions in the Java
-     * editor. This method should be called from a test's initialize() method.
-     */
-    protected void setJavaEditorCaretFilteringOn() {
-//        setEditorCaretFilteringOn(org.netbeans.modules.editor.java.JavaKit.class);
-    }
-
-    /**
-     * Turn's off blinking of the caret in the plain text editor. A method
-     * generally useful for any UI Responsiveness tests which measure actions in
-     * the plain text editor. This method should be called from a test's
-     * initialize() method.
-     */
-    protected void setPlainTextEditorCaretFilteringOn() {
-        //       setEditorCaretFilteringOn(org.netbeans.modules.editor.plain.PlainKit.class);
-    }
-
-    /**
-     * Turn's off blinking of the caret in the XML editor. A method generally
-     * useful for any UI Responsiveness tests which measure actions in the XML
-     * editor. This method should be called from a test's initialize() method.
-     */
-    protected void setXMLEditorCaretFilteringOn() {
-//        setEditorCaretFilteringOn(org.netbeans.modules.xml.text.syntax.XMLKit.class);
-    }
-
-    /**
-     * Turn's off blinking of the caret in the JSP editor. A method generally
-     * useful for any UI Responsiveness tests which measure actions in the JSP
-     * editor. This method should be called from a test's initialize() method.
-     */
-    protected void setJSPEditorCaretFilteringOn() {
-//        setEditorCaretFilteringOn(org.netbeans.modules.web.core.syntax.JSPKit.class);
+    private static Preferences getMimeLookupPreferences() {
+        try {
+            // Lookup lookup = MimeLookup.getLookup("");
+            Class<?> mimeLookupClass = Class.forName("org.netbeans.api.editor.mimelookup.MimeLookup", true, Thread.currentThread().getContextClassLoader());
+            Method getLookupMethod = mimeLookupClass.getDeclaredMethod("getLookup", String.class);
+            Lookup lookup = (Lookup) getLookupMethod.invoke(null, "");
+            return lookup.lookup(Preferences.class);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
