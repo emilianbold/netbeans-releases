@@ -258,130 +258,124 @@ public class LoggingRepaintManager extends RepaintManager {
      * (JButton) This button is repainted periodically on Window Vista with Aero
      * L&F, so we need to ignore these paints
      */
-    public static final RegionFilter VISTA_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter VISTA_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    return !(c instanceof JButton && ((JButton) c).isDefaultButton());
-                }
+        @Override
+        public boolean accept(JComponent c) {
+            return !(c instanceof JButton && ((JButton) c).isDefaultButton());
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Don't accept paints from Default JButton";
-                }
-            };
+        @Override
+        public String getFilterName() {
+            return "Don't accept paints from Default JButton";
+        }
+    };
 
     /**
      * Ignores paints from Status Line
      */
-    public static final RegionFilter IGNORE_STATUS_LINE_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter IGNORE_STATUS_LINE_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    Container cont = c;
-                    do {
-                        String cn = cont.getClass().getName();
-                        if ("StatusLine".equalsIgnoreCase(cn)) {
-                            return false;
-                        }
-                        cont = cont.getParent();
-                    } while (cont != null);
-                    return true;
+        @Override
+        public boolean accept(JComponent c) {
+            Container cont = c;
+            do {
+                String cn = cont.getClass().getName();
+                if ("StatusLine".equalsIgnoreCase(cn)) {
+                    return false;
                 }
+                cont = cont.getParent();
+            } while (cont != null);
+            return true;
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Ignores StatusLine content";
-                }
+        @Override
+        public String getFilterName() {
+            return "Ignores StatusLine content";
+        }
 
-            };
+    };
 
     /**
      * Ignores paints from ExplorerTree
      */
-    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    String cn = c.getClass().getName();
-                    if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
+        @Override
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Ignores TreeView$ExplorerTree";
-                }
+        @Override
+        public String getFilterName() {
+            return "Ignores TreeView$ExplorerTree";
+        }
 
-            };
+    };
 
     /**
      * Ignores paints from DiffSidebar
      */
-    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    String cn = c.getClass().getName();
-                    if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
+        @Override
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Ignores versioning.diff.DiffSidebar";
-                }
+        @Override
+        public String getFilterName() {
+            return "Ignores versioning.diff.DiffSidebar";
+        }
 
-            };
+    };
 
     /**
      * Accept paints only from Explorer : - org.openide.explorer.view
      */
-    public static final RegionFilter EXPLORER_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter EXPLORER_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    for (Class clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
-                        if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
-                            return true;
-                        }
-                    }
-                    return false;
+        @Override
+        public boolean accept(JComponent c) {
+            for (Class clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
+                if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
+                    return true;
                 }
+            }
+            return false;
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Accept paints from package: org.openide.explorer.view";
-                }
-            };
+        @Override
+        public String getFilterName() {
+            return "Accept paints from package: org.openide.explorer.view";
+        }
+    };
 
     /**
      * Accept paints only from Editor : - org.openide.text.QuietEditorPane
      */
-    public static final RegionFilter EDITOR_FILTER
-            = new RegionFilter() {
+    public static final RegionFilter EDITOR_FILTER = new RegionFilter() {
 
-                @Override
-                public boolean accept(JComponent c) {
-                    return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
-                }
+        @Override
+        public boolean accept(JComponent c) {
+            return c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+        }
 
-                @Override
-                public String getFilterName() {
-                    return "Accept paints from org.openide.text.QuietEditorPane";
-                }
-            };
+        @Override
+        public String getFilterName() {
+            return "Accept paints from org.openide.text.QuietEditorPane";
+        }
+    };
 
     /**
      * Log the action when dirty regions are painted.
