@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.mobility.project.bridge
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/project/bridge/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.19
+OpenIDE-Module-Specification-Version: 1.19.1
 AutoUpdate-Show-In-Client: false
 
 

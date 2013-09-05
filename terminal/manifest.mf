@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.terminal
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/terminal/Bundle.properties
 OpenIDE-Module-Provides: org.openide.windows.IOProvider
 OpenIDE-Module-Layer: org/netbeans/modules/terminal/layer.xml
-OpenIDE-Module-Specification-Version: 1.16
+OpenIDE-Module-Specification-Version: 1.16.1
 
