@@ -170,7 +170,7 @@ import org.netbeans.junit.NbModuleSuite;
         target = (JTextComponent)text.getSource();
         
         // wait max. 6 second for code folding initialization
-        waitForFolding(target, 6000);
+        waitForFolding(target, 3000);
 
         //00 compare fold hierarchy dump against golden file
         compareFoldHierarchyDump();

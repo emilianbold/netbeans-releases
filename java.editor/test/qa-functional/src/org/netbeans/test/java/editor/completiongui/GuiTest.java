@@ -76,11 +76,11 @@ public class GuiTest extends EditorTestCase {
     private String getJDKVersionCode() {
         String specVersion = System.getProperty("java.version");
         
-        if (specVersion.startsWith("1.4"))
-            return "jdk14";
+        if (specVersion.startsWith("1.8"))
+            return "jdk18";
         
-        if (specVersion.startsWith("1.5"))
-            return "jdk15";
+        if (specVersion.startsWith("1.7"))
+            return "jdk17";
         
         if (specVersion.startsWith("1.6"))
             return "jdk16";
@@ -104,7 +104,7 @@ public class GuiTest extends EditorTestCase {
         int delay;
         openSourceFile(defaultSamplePackage, testFile);
         if(firstRun) {
-            new EventTool().waitNoEvent(10000);
+            new EventTool().waitNoEvent(5000);
             firstRun = false;
         }
         EditorOperator editor = new EditorOperator(testFile);
@@ -117,7 +117,7 @@ public class GuiTest extends EditorTestCase {
                     editor.typeKey(c);
                 }
             }
-            new EventTool().waitNoEvent(1000);
+            new EventTool().waitNoEvent(250);
             if(allsymbols) {
                 editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);                
                 delay = 3000;
@@ -156,11 +156,7 @@ public class GuiTest extends EditorTestCase {
     
     public void testOverrideMethod() {
         String pattern  = "";
-        if(version.equals("1.6")) {
-            pattern = ".*@Override.*protected void finalize\\(\\) throws Throwable \\{.*super.finalize\\(\\);.*\\}.*";
-        } else {
-            pattern = ".*protected void finalize\\(\\) throws Throwable \\{.*super.finalize\\(\\);.*\\}.*";
-        }
+        pattern = ".*@Override.*protected void finalize\\(\\) throws Throwable \\{.*super.finalize\\(\\);.*\\}.*";
         performCodeCompletion("TestSimpleCase", null, 12, 3, pattern, false);
     }
     
@@ -191,7 +187,7 @@ public class GuiTest extends EditorTestCase {
     
     public void testAddClassWithImport() {
         String pattern  = ".*import java.io.IOException;.*IOException.*";
-        performCodeCompletion("TestSimpleCase","IOE", 10, 2, pattern, true);
+        performCodeCompletion("TestSimpleCase","IOExce", 10, 1, pattern, true);
     }
     
     public void testAddSuperClass() {
@@ -201,12 +197,12 @@ public class GuiTest extends EditorTestCase {
     
     public void testAddInterface() {
         String pattern  = ".*implements Comparable.*";
-        performCodeCompletion("ContextAware","implements ", 11, 4, pattern, false);
+        performCodeCompletion("ContextAware","implements Compara", 11, 1, pattern, false);
     }
     
     public void testAddInterface2() {
         String pattern  = ".*implements Comparable, Cloneable.*";
-        performCodeCompletion("ContextAware","implements Comparable, ", 11, 3, pattern, false);
+        performCodeCompletion("ContextAware","implements Comparable, Clone", 11, 1, pattern, false);
     }
     
     public void testAddThrows() {

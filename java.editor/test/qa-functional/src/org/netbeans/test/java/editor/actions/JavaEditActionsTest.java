@@ -51,6 +51,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.openide.util.Exceptions;
 
@@ -760,22 +761,17 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
     }
 
     public void testSyntaxSelection() {
-        int[] begins = {602, 591, 587, 570, 548, 489, 471, 459, 422, 401, 367, 328, 176};
-        int[] ends = {608, 609, 611, 612, 630, 630, 644, 644, 655, 655, 661, 663, 663};
+        int[] begins = {602, 591, 587, 570, 550, 548, 489, 473, 471, 459, 447, 422, 401, 393, 367, 363, 328, 297, 176,   0};
+        int[] ends =   {608, 609, 611, 612, 613, 630, 630, 631, 644, 644, 645, 655, 655, 656, 661, 662, 663, 663, 663, 663};
         try {
             initTests();
-            try { // just a small timeout to make the output visible (for the purpose of the screenshots, i.e.)
-                Thread.sleep(1000);
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            new EventTool().waitNoEvent(250);
             editor.setCaretPosition(27, 56);
             int x = 0;
             while (x < begins.length) {
                 txtOper.pushKey(KeyEvent.VK_PERIOD, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int start = txtOper.getSelectionStart();
                 int end = txtOper.getSelectionEnd();
-                //System.out.println(start+" "+end);
                 if (start != begins[x] || end != ends[x]) {
                     fail("Wrong selection expected <" + begins[x] + "," + ends[x] + "> but got <" + start + "," + end + ">");
                 }
@@ -786,8 +782,7 @@ public class JavaEditActionsTest extends JavaEditorActionsTestCase {
                 x--;
                 txtOper.pushKey(KeyEvent.VK_COMMA, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                 int start = txtOper.getSelectionStart();
-                int end = txtOper.getSelectionEnd();
-                //System.out.println(start+" "+end);
+                int end = txtOper.getSelectionEnd();                
                 if (start != begins[x] || end != ends[x]) {
                     fail("Wrong selection expected <" + begins[x] + "," + ends[x] + "> but got <" + start + "," + end + ">");
                 }

@@ -83,12 +83,12 @@ public class CreateEqualsHashcodeTest extends GenerateCodeTestCase {
                     "            return false;\n" +
                     "        }\n" +
                     "        final testEqualsHashcode other = (testEqualsHashcode) obj;\n" +
-                    "        if ((this.a == null) ? (other.a != null) : !this.a.equals(other.a)) {\n"+
+                    "        if (!Objects.equals(this.a, other.a)) {\n"+
                     "            return false;\n"+
-                    "        }\n" +
-                    "        if (this.c != other.c && (this.c == null || !this.c.equals(other.c))) {\n" +
-                    "            return false;\n" +
-                    "        }\n" +
+                    "        }\n"+
+                    "        if (!Objects.equals(this.c, other.c)) {\n"+
+                    "            return false;\n"+
+                    "        }\n"+                    
                     "        return true;\n" +
                     "    }\n" +
                     "\n";

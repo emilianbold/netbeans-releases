@@ -81,7 +81,7 @@ public class FindUsagesMethodTest extends FindUsagesTestCase {
     public void testFUMethod() {
         findUsages("fumethod", "Test", 47, 19, FIND_USAGES | NOT_SEARCH_IN_COMMENTS);
     }
-
+	
     public void testFUMethodInComment() {
         findUsages("fumethod", "Test", 47, 19, FIND_USAGES | SEARCH_IN_COMMENTS);
     }
