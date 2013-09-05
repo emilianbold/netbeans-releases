@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2009 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
 <head>
@@ -21,32 +21,45 @@ right-click a class, method, or field in the Source Editor,
 and choose Find Usages.
 </p>
 <p>The Find Usages dialog box displays the following option for all
-types of identifiers:
+types of identifiers:</p>
 <ul>
 <li><b>Search in Comments.</b> If you select this option, occurrences of 
 the identifier that appear in code comments are also displayed in
 the Usages window.
 </li>
 </ul>
-</p>
 <p>For classes, the Find Usages dialog box displays the following 
-additional options:
+additional options:</p>
 <ul>
-<li><b>Find Usages.</b> If you select this option, all usages of the 
+<li><b>Find Usages.</b> If selected, all usages of the 
 class are displayed.
 </li>
-<li><b>Find All Subtypes.</b> If you select this option, usages of 
+<li><b>Find All Subtypes.</b> If selected, usages of 
 all subtypes, including subtypes of subtypes, are displayed. Usages 
 of the class itself are not displayed.
 </li>
-<li><b>Find Direct Subtypes Only.</b> If you select this option, 
+<li><b>Find Direct Subtypes Only.</b> If selected, 
 only usages of direct subtypes are displayed. Subtypes of those 
 subtypes are ignored.
 </li>
 </ul>
-</p>
-<p>By default, the scope of the search is all of your open projects. 
-You can limit the search to the current project by selecting it from 
+<p>For methods, the Find Usages dialog box displays the following additional
+options:</p>
+<ul>
+<li><b>Find Usages.</b> If selected, all usages of the 
+method are displayed.
+</li>
+<li><b>Find Overriding Methods.</b> If selected, the Usages window shows 
+    every usage of a method that overrides this method in your project.
+</li>
+<li><b>Search from Base Class [<i>classname</i>].</b> 
+    This option is only relevant if the method for which you are finding usages 
+    overrides another method. If selected, the Usages window shows every usage of 
+    that base method.
+</li>
+</ul>
+<p>By default, the scope of the search is the current project. You can expand
+the search to all of your open projects by selecting Open Projects from 
 the Scope drop-down list.
 </p>
 <table summary="related topics">

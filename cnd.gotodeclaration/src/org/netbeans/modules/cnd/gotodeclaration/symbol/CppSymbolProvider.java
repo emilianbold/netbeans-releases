@@ -124,12 +124,7 @@ public class CppSymbolProvider implements SymbolProvider {
 
     public static CsmSelect.NameAcceptor createNameAcceptor(final String text, final SearchType searchType) {
         final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(text, searchType);
-        return new CsmSelect.NameAcceptor() {
-            @Override
-            public boolean accept(CharSequence name) {
-                return nameMatcher.accept(name.toString());
-            }
-        };
+        return new NameAcceptorImpl(nameMatcher);
     }
 
     // synchronized is just in case here - it shouldn't be called async
@@ -397,6 +392,39 @@ public class CppSymbolProvider implements SymbolProvider {
         if (TRACE) {
             format = String.format("%s @%x %s\n", getClass().getSimpleName(), hashCode(), format); //NOI18N
             System.err.printf(format, args);
+        }
+    }
+
+    private static final class NameAcceptorImpl implements NameAcceptor {
+
+        private final NameMatcher nameMatcher;
+
+        public NameAcceptorImpl(NameMatcher nameMatcher) {
+            this.nameMatcher = nameMatcher;
+        }
+
+        @Override
+        public boolean accept(CharSequence name) {
+            return nameMatcher.accept(name.toString());
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 17 * hash + this.nameMatcher.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameAcceptorImpl other = (NameAcceptorImpl) obj;
+            return this.nameMatcher.equals(other.nameMatcher);
         }
     }
 

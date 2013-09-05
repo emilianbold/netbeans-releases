@@ -714,6 +714,14 @@ public final class CompletionSupport implements DocumentListener {
 
         @Override
         public int compareTo(OverloadingCandidate o) {
+            if (conversions.isEmpty() && o.conversions.isEmpty())  {
+                return 0;
+            } else if (o.conversions.isEmpty()) {
+                return -1;
+            } else if (conversions.isEmpty()) {
+                return 1;
+            }
+            
             // 1. Compare by conversions ranks
             int ourWorst = 0;
             int theirWorst = 0;

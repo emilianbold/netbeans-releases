@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 
 /**
  *
@@ -94,7 +96,35 @@ public class VariadicSpecializationParameterImpl extends OffsetableBase implemen
         }
         return sb;
     }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        for (CsmSpecializationParameter a : args) {
+            hash = 29 * hash + Objects.hashCode(a);
+        }
+        hash = 29 * hash + Objects.hashCode(super.hashCode());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final VariadicSpecializationParameterImpl other = (VariadicSpecializationParameterImpl) obj;
+        if (!super.equals(obj)) {
+            return false;
+        }
+        return CndCollectionUtils.equals(args, other.args);
+    }
+        
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

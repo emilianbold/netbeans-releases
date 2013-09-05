@@ -56,6 +56,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
@@ -98,9 +99,35 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
 
     @Override
     public String toString() {
-        return expression.toString();
+        return expression.toString() + super.getOffsetString();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.expression);
+        hash = 53 * hash + Objects.hashCode(super.hashCode());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ExpressionBasedSpecializationParameterImpl other = (ExpressionBasedSpecializationParameterImpl) obj;
+        if (!Objects.equals(this.expression, other.expression)) {
+            return false;
+        }
+        return super.equals(obj);
+    }
+    
     public static class ExpressionBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
 
         ExpressionBuilder expression;
