@@ -41,7 +41,15 @@
  */
 package org.netbeans.modules.php.editor.typinghooks;
 
+import java.util.Map;
+import java.util.prefs.Preferences;
+import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
  *
@@ -54,8 +62,51 @@ public abstract  class PhpTypinghooksTestBase extends PHPTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        try {
+            TestLanguageProvider.register(HTMLTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
+        }
+        try {
+            TestLanguageProvider.register(PHPTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Ignore -- we've already registered this either via layers or other means
+        }
+    }
+
+    @Override
     protected boolean runInEQ() {
         return true;
+    }
+
+    protected static String wrapAsPhp(String s) {
+        // XXX: remove \n
+        return "<?php\n" + s + "\n?>";
+    }
+
+    protected void setOptionsForDocument(Document doc, Map<String, Object> options) throws Exception {
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer)value).intValue());
+            }
+            else if (value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+            else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean)value).toString());
+            }
+            else if (value instanceof CodeStyle.BracePlacement) {
+                prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+            }
+            else if (value instanceof CodeStyle.WrapStyle) {
+                prefs.put(option, ((CodeStyle.WrapStyle)value).name());
+            }
+        }
     }
 
 }
