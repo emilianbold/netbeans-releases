@@ -364,7 +364,15 @@ final class CloneableEditorInitializer implements Runnable {
                     new Object[]{who, howLong});
         }
 
-        nextPhase();
+        success = false;
+        try {
+            nextPhase();
+            success = true;
+        } finally {
+            if (!success) {
+                cancelInitialization();
+            }
+        }
         // Note: finishInitialization() called as part of CUSTOM_EDITOR_AND_DECORATIONS phase
     }
 
@@ -527,7 +535,6 @@ final class CloneableEditorInitializer implements Runnable {
                         + " implementing NbDocument.CustomToolbar may not" // NOI18N
                         + " return null toolbar"); // NOI18N
             }
-            editor.setCustomToolbar(customToolbar);
             Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
             customToolbar.setBorder(b);
             editor.add(customToolbar, BorderLayout.NORTH);
