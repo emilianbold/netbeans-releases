@@ -83,16 +83,25 @@ public class PhpDeletedTextInterceptor implements DeletedTextInterceptor {
                 }
                 break;
             case '{':
+                if (TypingHooksUtils.isInsertMatchingEnabled()) {
+                    char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+                    if (tokenAtDot == '}' && LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0) {
+                        doc.remove(dotPos, 1);
+                    }
+                }
+                break;
             case '(':
+                if (TypingHooksUtils.isInsertMatchingEnabled()) {
+                    char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+                    if (tokenAtDot == ')' && LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0) {
+                        doc.remove(dotPos, 1);
+                    }
+                }
+                break;
             case '[':
                 if (TypingHooksUtils.isInsertMatchingEnabled()) {
                     char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
-                    if (((tokenAtDot == ']')
-                            && (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0))
-                            || ((tokenAtDot == ')')
-                            && (LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0))
-                            || ((tokenAtDot == '}')
-                            && (LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0))) {
+                    if (tokenAtDot == ']' && LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0) {
                         doc.remove(dotPos, 1);
                     }
                 }
