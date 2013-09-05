@@ -55,11 +55,13 @@ class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.Variab
     private static final String TYPE_FLOAT = "TYPE_Float";     // NOI18N
     private static final String TYPE_INT = "TYPE_Int";       // NOI18N
     private static final String TYPE_BOOLEAN = "TYPE_Boolean";   // NOI18N
+    private static final String TYPE_STRING = "TYPE_String";   // NOI18N
     public static final String BOOLEAN = "boolean";        // NOI18N
     public static final String BOOL = "bool";           // NOI18N
     public static final String INTEGER = "integer";        // NOI18N
     public static final String INT = "int";            // NOI18N
     public static final String FLOAT = "float";          // NOI18N
+    public static final String STRING = "string";          // NOI18N
 
     ScalarTypeVariableNode(Property property, AbstractModelNode parent) {
         super(property, parent);
@@ -83,6 +85,9 @@ class ScalarTypeVariableNode extends org.netbeans.modules.php.dbgp.models.Variab
                 break;
             case FLOAT:
                 bundleKey = TYPE_FLOAT;
+                break;
+            case STRING:
+                bundleKey = TYPE_STRING;
                 break;
             default:
                 assert false : type;

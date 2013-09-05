@@ -189,8 +189,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        if (doc == null) {
+            return OffsetRange.NONE;
+        }
         final OffsetRange[] value = new OffsetRange[1];
-
+        
         doc.render(new Runnable() {
 
             @Override

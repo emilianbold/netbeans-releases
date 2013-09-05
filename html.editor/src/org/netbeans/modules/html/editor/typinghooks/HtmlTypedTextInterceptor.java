@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.typinghooks;
 
+import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
@@ -157,7 +158,7 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
             return; //no token
         }
 
-        if (null != LexerUtils.followsToken(ts, HTMLTokenId.TAG_OPEN, true, false,
+        if (null != LexerUtils.followsToken(ts, EnumSet.of(HTMLTokenId.TAG_OPEN, HTMLTokenId.TAG_CLOSE), true, false,
                 HTMLTokenId.ARGUMENT,
                 HTMLTokenId.VALUE,
                 HTMLTokenId.VALUE_CSS,
@@ -168,7 +169,7 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
                 HTMLTokenId.EL_CONTENT,
                 HTMLTokenId.EL_OPEN_DELIMITER)) {
             try {
-                //we are in open tag
+                //we are in open or close tag
 
                 //ok, the user just type tag closing symbol, lets reindent the line
                 //since the code runs under document atomic lock, we cannot lock the

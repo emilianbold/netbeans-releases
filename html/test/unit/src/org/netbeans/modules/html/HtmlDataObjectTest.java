@@ -43,13 +43,12 @@
  */
 package org.netbeans.modules.html;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.Semaphore;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import static junit.framework.Assert.assertTrue;
-import junit.framework.TestCase;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.csl.api.test.CslTestBase;
@@ -59,7 +58,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -72,8 +70,6 @@ import org.openide.util.RequestProcessor;
  * @author Jaroslav Tulach
  */
 public class HtmlDataObjectTest extends CslTestBase {
-
-    private static final RequestProcessor RP = new RequestProcessor(HtmlDataObjectTest.class);
 
     @SuppressWarnings("deprecation")
     private static void init() {
@@ -163,7 +159,7 @@ public class HtmlDataObjectTest extends CslTestBase {
 
         });
 
-        RP.post(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
 
             @Override
             public void run() {
