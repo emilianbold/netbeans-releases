@@ -78,6 +78,7 @@ import java.util.LinkedList;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.logging.Level;
+import org.openide.util.actions.SystemAction;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots.
@@ -361,7 +362,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         if(context == null || context.getRootFiles().size() == 0) {
             return;
         }
-        UpdateAction.update(context, null);
+        SystemAction.get(UpdateAction.class).update(context, null);
         parentTopComponent.contentRefreshed();
     }
     

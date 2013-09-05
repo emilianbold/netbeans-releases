@@ -49,14 +49,12 @@ import javax.xml.transform.*;
 import org.w3c.dom.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import java.io.*;
 import java.net.*;
 import java.util.zip.*;
 import java.util.Date;
 import java.util.Locale;
 import java.text.SimpleDateFormat;
-
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -107,7 +105,6 @@ public class CommonUtilities {
     public static final String TEST_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
     private static PerformanceTestCase test = null;
     
-    private static int size=0;
     private static DocumentBuilderFactory dbf=null;
     private static DocumentBuilder db=null;
     private static Document allPerfDoc=null;

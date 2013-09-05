@@ -49,26 +49,24 @@ import org.netbeans.jellytools.JellyTestCase;
  *
  * @author petr cyhelsky
  */
-public class PerformanceTestCase2 extends JellyTestCase{
-    
+public class PerformanceTestCase2 extends JellyTestCase {
 
     public PerformanceTestCase2(String testName) {
         super(testName);
     }
-    
-    
+
     @Override
     public void openDataProjects(String... projects) throws IOException {
         String[] fullPaths = new String[projects.length];
         String altPath = System.getProperty("nb_perf_alt_path");
         for (int i = 0; i < projects.length; i++) {
-            if (altPath!=null) {
-                fullPaths[i] = mergePaths(altPath,getDataDir().getAbsolutePath()) + File.separator + projects[i];
+            if (altPath != null) {
+                fullPaths[i] = mergePaths(altPath, getDataDir().getAbsolutePath()) + File.separator + projects[i];
             } else {
                 fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];
             }
         }
-        
+
         openProjects(fullPaths);
     }
 
@@ -79,12 +77,12 @@ public class PerformanceTestCase2 extends JellyTestCase{
         final String PERF = "performance"; //NOI18N
         StringBuilder sb;
         if (absolutePath.contains(PERF)) {
-            sb  = new StringBuilder(absolutePath);
-            sb.replace(0,absolutePath.indexOf(PERF)+11, altPath);
+            sb = new StringBuilder(absolutePath);
+            sb.replace(0, absolutePath.indexOf(PERF) + 11, altPath);
         } else {
-            sb = new StringBuilder(altPath);            
-        }        
+            sb = new StringBuilder(altPath);
+        }
         return sb.toString();
     }
-    
+
 }

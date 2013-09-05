@@ -67,6 +67,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
@@ -96,6 +97,7 @@ public class RepositoryRevision {
     public static final String PROP_EVENTS_CHANGED = "eventsChanged"; //NOI18N
     private final File repositoryRoot;
     private final File[] selectionRoots;
+    private String preferredRevision;
 
     RepositoryRevision (GitRevisionInfo message, File repositoryRoot, File[] selectionRoots, Set<GitTag> tags, Set<GitBranch> branches, File dummyFile, String dummyFileRelativePath) {
         this.message = message;
@@ -192,8 +194,20 @@ public class RepositoryRevision {
         return repositoryRoot;
     }
     
+    @NbBundle.Messages({
+        "# {0} - revision", "LBL_Action.CheckoutRevision=Checkout {0}",
+        "# {0} - revision", "MSG_CheckoutRevision.progress=Checking out {0}"
+    })
     Action[] getActions () {
         List<Action> actions = new ArrayList<Action>();
+        final String revision = getPreferredRevision();
+        actions.add(new AbstractAction(Bundle.LBL_Action_CheckoutRevision(revision)) {
+            @Override
+            public void actionPerformed (ActionEvent e) {
+                CheckoutRevisionAction action = SystemAction.get(CheckoutRevisionAction.class);
+                action.checkoutRevision(repositoryRoot, revision, null, Bundle.MSG_CheckoutRevision_progress(revision));
+            }
+        });
         actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_TagCommit")) { //NOI18N
             @Override
             public void actionPerformed (ActionEvent e) {
@@ -218,6 +232,32 @@ public class RepositoryRevision {
             });
         }
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    private String getPreferredRevision () {
+        if (preferredRevision == null) {
+            for (GitBranch branch : getBranches()) {
+                if (branch.getName() != GitBranch.NO_BRANCH) {
+                    if (!branch.isRemote()) {
+                        preferredRevision = branch.getName();
+                        break;
+                    } else if (preferredRevision == null) {
+                        preferredRevision = branch.getName();
+                    }
+                }
+            }
+        }
+        if (preferredRevision == null) {
+            for (GitTag tag : getTags()) {
+                preferredRevision = tag.getTagName();
+                break;
+            }
+        }
+        if (preferredRevision == null) {
+            preferredRevision = getLog().getRevision();
+            preferredRevision = preferredRevision.length() > 7 ? preferredRevision.substring(0, 7) : preferredRevision;
+        }
+        return preferredRevision;
     }
     
     public class Event implements Comparable<Event> {

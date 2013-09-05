@@ -92,6 +92,7 @@ import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
@@ -102,7 +103,9 @@ import org.netbeans.modules.mylyn.util.NbTaskDataState;
 import org.netbeans.modules.mylyn.util.commands.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.awt.StatusDisplayer;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.bugzilla.issue.Bundle.*;
 
 /**
  *
@@ -934,7 +937,10 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     @NbBundle.Messages({
-        "# {0} - task id and summary", "MSG_BugzillaIssue.statusBar.submitted=Task {0} submitted."
+        "# {0} - task id and summary",
+        "MSG_BugzillaIssue.statusBar.submitted=Task {0} submitted.",
+        "MSG_LOG_FILE_DESC=IDE log",
+        "BugzillaIssue.attachment.noDescription=<no description>"
     })
     public boolean submitAndRefresh() {
         final boolean[] result = new boolean[1];
@@ -945,6 +951,12 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
                 prepareSubmit();
+                boolean addIDELog = fixAttachLog();
+                List<AttachmentsPanel.AttachmentInfo> newAttachments = getNewAttachments();
+                if (!newAttachments.isEmpty()) {
+                    // clear before submit, we do not know how connectors deal with internal attributes
+                    setNewAttachments(Collections.<AttachmentsPanel.AttachmentInfo>emptyList());
+                }
                 final boolean wasNew = isNew();
 
                 SubmitTaskCommand submitCmd;
@@ -994,13 +1006,50 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
                 if(submitCmd.hasFailed()) {
                     result[0] = false;
+                    boolean needSave = false;
+                    if (addIDELog) {
+                        setFieldValue(IssueField.NB_ATTACH_IDE_LOG, "1"); //NOI18N
+                        needSave = true;
+                    }
+                    if (!newAttachments.isEmpty()) {
+                        setNewAttachments(newAttachments);
+                        needSave = true;
+                    }
+                    if (needSave) {
+                        saveChanges();
+                    }
                     return;
+                } else {
+                    if (addIDELog) {
+                        File f = new File(Places.getUserDirectory(), NbBugzillaConstants.NB_LOG_FILE_PATH);
+                        if (f.isFile()) {
+                            addAttachment(f, "", MSG_LOG_FILE_DESC(), NbBugzillaConstants.NB_LOG_FILE_ATT_CONT_TYPE, false);
+                        }
+                    }
+                    if (!newAttachments.isEmpty()) {
+                        for (AttachmentsPanel.AttachmentInfo attachment : newAttachments) {
+                            if (attachment.getFile().isFile()) {
+                                if (attachment.getDescription().trim().length() == 0) {
+                                    attachment.setDescription(Bundle.BugzillaIssue_attachment_noDescription());
+                                }
+                                addAttachment(attachment.getFile(), null, attachment.getDescription(), attachment.getContentType(), attachment.isPatch()); // NOI18N
+                            } else {
+                                // PENDING notify user
+                            }
+                        }
+                    }
                 }
                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_BugzillaIssue_statusBar_submitted(
                         getDisplayName()));
 
                 setUpToDate(true, false);
                 result[0] = true;
+            }
+
+            private boolean fixAttachLog () {
+                String val = getFieldValue(IssueField.NB_ATTACH_IDE_LOG);
+                getModel().getLocalTaskData().getRoot().removeAttribute(IssueField.NB_ATTACH_IDE_LOG.getKey());
+                return "1".equals(val);
             }
             
         });
@@ -1321,6 +1370,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             ta.setValue(value);
         }
         model.attributeChanged(ta);
+    }
+
+    boolean setUnsubmittedAttachments (List<AttachmentsPanel.AttachmentInfo> newAttachments) {
+        return super.setNewAttachments(newAttachments);
+    }
+
+    List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
+        return getNewAttachments();
     }
 
     class Comment {

@@ -45,7 +45,6 @@ import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Priority;
-import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
@@ -604,7 +603,9 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     @NbBundle.Messages({
-        "# {0} - task id and summary", "MSG_ODCSIssue.statusBar.submitted=Task {0} submitted."
+        "# {0} - task id and summary", "MSG_ODCSIssue.statusBar.submitted=Task {0} submitted.",
+        "ODCSIssue.attachment.noDescription=<no description>",
+        "# {0} - the file to be attached", "LBL_AttachedPrefix=Attached file {0}"
     })
     public boolean submitAndRefresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
@@ -615,6 +616,11 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             @Override
             public void run () {
                 assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+                List<AttachmentsPanel.AttachmentInfo> newAttachments = getNewAttachments();
+                if (!newAttachments.isEmpty()) {
+                    // clear before submit, we do not know how connectors deal with internal attributes
+                    setNewAttachments(Collections.<AttachmentsPanel.AttachmentInfo>emptyList());
+                }
 
                 final boolean wasNew = isNew();
 
@@ -663,7 +669,25 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
                 if(submitCmd.hasFailed()) {
                     result[0] = false;
+                    if (!newAttachments.isEmpty()) {
+                        setNewAttachments(newAttachments);
+                        saveChanges();
+                    }
                     return;
+                } else {
+                    if (!newAttachments.isEmpty()) {
+                        for (AttachmentsPanel.AttachmentInfo attachment : newAttachments) {
+                            if (attachment.getFile().isFile()) {
+                                if (attachment.getDescription().trim().length() == 0) {
+                                    attachment.setDescription(Bundle.ODCSIssue_attachment_noDescription());
+                                }
+                                addAttachment(attachment.getFile(), Bundle.LBL_AttachedPrefix(attachment.getFile().getName()),
+                                        attachment.getDescription(), attachment.getContentType(), attachment.isPatch()); // NOI18N
+                            } else {
+                                // PENDING notify user
+                            }
+                        }
+                    }
                 }
                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_ODCSIssue_statusBar_submitted(
                         getDisplayName()));
@@ -1145,8 +1169,12 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         model.attributeChanged(ta);
     }
 
-    private RepositoryConfiguration getConfiguration () {
-        return repository.getRepositoryConfiguration(false);
+    boolean setUnsubmittedAttachments (List<AttachmentsPanel.AttachmentInfo> newAttachments) {
+        return super.setNewAttachments(newAttachments);
+    }
+
+    List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
+        return getNewAttachments();
     }
 
     class Comment {

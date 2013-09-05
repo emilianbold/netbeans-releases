@@ -41,12 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.guitracker;
 
-/** An entry point to start an application that initializes
- * event logging and passes logic to original main class 
- * that is specified as first parameter
+/**
+ * An entry point to start an application that initializes event logging and
+ * passes logic to original main class that is specified as first parameter
  *
  * @author Radim Kubacki
  */
@@ -55,18 +54,18 @@ public class Main {
     public Main() {
     }
 
-    public static void main(String [] args) {
+    public static void main(String[] args) {
         String clzName = System.getProperty("guitracker.mainclass");
         if (clzName == null) {
             throw new IllegalStateException("No main class defined. Use -Dguitracker.mainclass=<classname>");
         }
         // init tracker and EQ now
         ActionTracker tr;
-        
+
         LoggingRepaintManager rm;
-        
+
         LoggingEventQueue leq;
-        
+
         // load our EQ and repaint manager
         tr = ActionTracker.getInstance();
         rm = new LoggingRepaintManager(tr);
@@ -77,12 +76,12 @@ public class Main {
         tr.connectToAWT(true);
         tr.startNewEventList("ad hoc");
         tr.startRecording();
-        
+
         try {
             Class<?> clz = Class.forName(clzName);
-            clz.getMethod("main", String[].class).invoke(null, (Object)args);
-        } catch(Exception ex) {
-            throw new IllegalStateException("Cannot pass control to "+clzName, ex);
+            clz.getMethod("main", String[].class).invoke(null, (Object) args);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot pass control to " + clzName, ex);
         }
     }
 }

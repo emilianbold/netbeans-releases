@@ -70,9 +70,13 @@ import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -86,6 +90,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -103,9 +108,12 @@ public class AttachmentsPanel extends JPanel {
     private JLabel dummyLabel = new JLabel();
     private boolean hadNoAttachments;
     private IssuePanel issuePanel;
+    private final ChangeSupport supp;
+    private DocumentListener docListener;
 
     public AttachmentsPanel(IssuePanel issuePanel) {
         this.issuePanel = issuePanel;
+        this.supp = new ChangeSupport(this);
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
@@ -219,6 +227,18 @@ public class AttachmentsPanel extends JPanel {
         layout.setVerticalGroup(verticalGroup);
         ((CreateNewAction)createNewButton.getAction()).setLayoutGroups(horizontalGroup, newVerticalGroup);
         setLayout(layout);
+        
+        for (AttachmentInfo newAttachment : issue.getUnsubmittedAttachments()) {
+            ((CreateNewAction)createNewButton.getAction()).createAttachment(newAttachment);
+        }
+    }
+
+    public void addChangeListener (ChangeListener changeListener) {
+        supp.addChangeListener(changeListener);
+    }
+
+    public void removeChangeListener (ChangeListener changeListener) {
+        supp.removeChangeListener(changeListener);
     }
 
     private JPopupMenu menuFor(NbJiraIssue.Attachment attachment) {
@@ -259,6 +279,7 @@ public class AttachmentsPanel extends JPanel {
                     JComponent browseButton = (JComponent)comp.getClientProperty(BROWSE_CP);
                     browseButton.setVisible(false);
                     newAttachments.remove(nameField);
+                    supp.fireChange();
                     if (hadNoAttachments && newAttachments.isEmpty()) {
                         // The last attachment deleted
                         noneLabel.setVisible(true);
@@ -313,12 +334,14 @@ public class AttachmentsPanel extends JPanel {
         return file;
     }
 
-    public List<File> getNewAttachments() {
-        List<File> files = new ArrayList<File>(newAttachments.size());
+    public List<AttachmentInfo> getNewAttachments() {
+        List<AttachmentInfo> attachments = new ArrayList<>(newAttachments.size());
         for (JTextField field : newAttachments) {
-            files.add(new File(field.getText()));
+            AttachmentInfo attachment = new AttachmentInfo();
+            attachment.setFile(new File(field.getText()));
+            attachments.add(attachment);
         }
-        return files;
+        return attachments;
     }
 
     class CreateNewAction extends AbstractAction {
@@ -333,6 +356,10 @@ public class AttachmentsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            createAttachment(null);
+        }
+        
+        private void createAttachment (AttachmentInfo newAttachment) {
             JTextField nameField = new JTextField();
             nameField.setColumns(30);
             JButton browseButton = new JButton(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentsPanel.browseButton.text")); // NOI18N
@@ -362,11 +389,36 @@ public class AttachmentsPanel extends JPanel {
                 updateCreateNewButton(false);
             }
             newAttachments.add(nameField);
+            if (newAttachment != null) {
+                nameField.setText(newAttachment.getFile().getAbsolutePath());
+            }
+            nameField.getDocument().addDocumentListener(getDocumentListener());
             UIUtils.keepFocusedComponentVisible(nameField, issuePanel);
             UIUtils.keepFocusedComponentVisible(browseButton, issuePanel);
             UIUtils.keepFocusedComponentVisible(deleteButton, issuePanel);
             revalidate();
         }
+    }
+
+    private DocumentListener getDocumentListener () {
+        if (docListener == null) {
+            docListener = new DocumentListener() {
+
+                @Override
+                public void insertUpdate (DocumentEvent e) {
+                    supp.fireChange();
+                }
+
+                @Override
+                public void removeUpdate (DocumentEvent e) {
+                    supp.fireChange();
+                }
+
+                @Override
+                public void changedUpdate (DocumentEvent e) { }
+            };
+        }
+        return docListener;
     }
 
     static class DefaultAttachmentAction extends AbstractAction {
