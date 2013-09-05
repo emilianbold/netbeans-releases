@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
  */
 public class TomcatManager implements DeploymentManager {
     
-    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70};
+    public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80};
     
     public static final String KEY_UUID = "NB_EXEC_TOMCAT_START_PROCESS_UUID"; //NOI18N
     
@@ -229,6 +229,8 @@ public class TomcatManager implements DeploymentManager {
      */
     public String getUri () {
         switch (tomcatVersion) {
+            case TOMCAT_80:
+                return TomcatFactory.TOMCAT_URI_PREFIX_80 + uri;
             case TOMCAT_70:
                 return TomcatFactory.TOMCAT_URI_PREFIX_70 + uri;
             case TOMCAT_60: 
@@ -245,7 +247,7 @@ public class TomcatManager implements DeploymentManager {
      * @return URI without home and base specification
      */
     public String getPlainUri () {
-        if (isTomcat70()) {
+        if (isTomcat70() || isTomcat80()) {
             return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/text/"; //NOI18N
         }
         return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
@@ -396,6 +398,10 @@ public class TomcatManager implements DeploymentManager {
         return false;
     }
 
+    public boolean isTomcat80() {
+        return tomcatVersion == TomcatVersion.TOMCAT_80;
+    }
+
     public boolean isTomcat70() {
         return tomcatVersion == TomcatVersion.TOMCAT_70;
     }
@@ -415,7 +421,7 @@ public class TomcatManager implements DeploymentManager {
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
     public String libFolder() {
         // Tomcat 5.x and 6.0 uses different lib folder
-        return isTomcat60() || isTomcat70() ?  "lib" : "common/lib"; // NOI18N
+        return isTomcat50() || isTomcat55() ? "common/lib" : "lib"; // NOI18N
     }
     
     public TomcatVersion getTomcatVersion() {
@@ -821,7 +827,7 @@ public class TomcatManager implements DeploymentManager {
             
             String usersString = null;
             if (passwd != null) {
-                if (isTomcat70()) {
+                if (isTomcat70() || isTomcat80()) {
                     usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager-script,admin\"/>\n</tomcat-users>";
                 } else {
                     usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>";
