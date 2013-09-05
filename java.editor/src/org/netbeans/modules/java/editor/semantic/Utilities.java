@@ -52,6 +52,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ParameterizedTypeTree;
@@ -204,6 +205,37 @@ public class Utilities {
         return null;
     }
     
+    private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, MemberReferenceTree tree, CompilationUnitTree cu, SourcePositions positions) {
+        int start = (int)positions.getStartPosition(cu, tree);
+        int endPosition = (int)positions.getEndPosition(cu, tree);
+        
+        if (start == (-1) || endPosition == (-1))
+            return null;
+
+        String member = tree.getName().toString();
+
+        TokenHierarchy<?> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+
+        if (ts.move(endPosition) == Integer.MAX_VALUE) {
+            return null;
+        }
+
+        if (ts.moveNext()) {
+            while (ts.offset() >= start) {
+                Token<JavaTokenId> t = ts.token();
+
+                if (t.id() == JavaTokenId.IDENTIFIER && member.equals(info.getTreeUtilities().decodeIdentifier(t.text()).toString())) {
+                    return t;
+                }
+
+                if (!ts.movePrevious())
+                    break;
+            }
+        }
+        return null;
+    }
+    
     private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, IdentifierTree tree, CompilationUnitTree cu, SourcePositions positions) {
         int start = (int)positions.getStartPosition(cu, tree);
         int endPosition = (int)positions.getEndPosition(cu, tree);
@@ -273,6 +305,9 @@ public class Utilities {
         }
         if (class2Kind.get(MemberSelectTree.class).contains(leaf.getKind())) {
             return findIdentifierSpanImpl(info, (MemberSelectTree) leaf, info.getCompilationUnit(), info.getTrees().getSourcePositions());
+        }
+        if (class2Kind.get(MemberReferenceTree.class).contains(leaf.getKind())) {
+            return findIdentifierSpanImpl(info, (MemberReferenceTree) leaf, info.getCompilationUnit(), info.getTrees().getSourcePositions());
         }
         if (class2Kind.get(ClassTree.class).contains(leaf.getKind())) {
             String name = ((ClassTree) leaf).getSimpleName().toString();
@@ -493,7 +528,7 @@ public class Utilities {
         
         //XXX: do not use instanceof:
         if (leaf instanceof MethodTree || leaf instanceof VariableTree || leaf instanceof ClassTree
-                || leaf instanceof MemberSelectTree || leaf instanceof AnnotatedTypeTree) {
+                || leaf instanceof MemberSelectTree || leaf instanceof AnnotatedTypeTree || leaf instanceof MemberReferenceTree) {
             return findIdentifierSpan(info, doc, tree);
         }
         

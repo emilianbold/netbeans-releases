@@ -320,6 +320,15 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
     }
 
     @Override
+    public Tree visitMemberReference(MemberReferenceTree node, Element p) {
+        if(isCancelled.get()) {
+            return null;
+        }
+        addIfMatch(getCurrentPath(), node, p);
+        return super.visitMemberReference(node, p);
+    }
+
+    @Override
     public Tree visitIdentifier(IdentifierTree node, Element p) {
         if(isCancelled.get()) {
             return null;

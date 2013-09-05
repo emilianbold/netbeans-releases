@@ -79,6 +79,7 @@ import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.view.PrintUtils;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -277,8 +278,12 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.CustomToolbar, NbDocum
                     assert value != null;
                     
                     if (origValue == null) {
-                        // XXX: workaround for #137528, touches project settings
-                        IndentUtils.indentLevelSize(NbEditorDocument.this);
+                        // XXX: workaround for #137528, touches project settings                        
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public void run() {
+                                IndentUtils.indentLevelSize(NbEditorDocument.this);
+                            }
+                        });
                     } else {
                         // this property should only ever be set once. even if it
                         // is set more times it must never be set to a different value

@@ -46,6 +46,7 @@ package org.netbeans.modules.java.editor.semantic;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -117,6 +118,13 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     public Void visitIdentifier(IdentifierTree tree, Stack<Tree> d) {
         handlePotentialVariable(getCurrentPath());
         super.visitIdentifier(tree, d);
+        return null;
+    }
+
+    @Override
+    public Void visitMemberReference(MemberReferenceTree node, Stack<Tree> p) {
+        handlePotentialVariable(getCurrentPath());
+        super.visitMemberReference(node, p);
         return null;
     }
     

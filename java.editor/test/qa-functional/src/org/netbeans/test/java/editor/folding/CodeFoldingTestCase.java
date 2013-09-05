@@ -190,6 +190,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     }
     
     protected void collapseFoldAtCaretPosition(EditorOperator editor, int line, int column){
+        System.out.println("Collapsing");
         // 1. move to adequate place 
         editor.setCaretPosition(line, column);
 

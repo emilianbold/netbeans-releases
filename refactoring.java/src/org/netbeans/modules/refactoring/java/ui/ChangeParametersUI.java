@@ -115,11 +115,11 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
 
         TreePath path = handles[0].resolve(info);
         Kind kind;
-        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION && kind != Kind.NEW_CLASS) {
+        while (path != null && (kind = path.getLeaf().getKind()) != Kind.METHOD && kind != Kind.METHOD_INVOCATION && kind != Kind.NEW_CLASS && kind != Kind.MEMBER_REFERENCE) {
             path = path.getParentPath();
         }
         
-        if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS)) {
+        if(path != null && ((kind = path.getLeaf().getKind()) == Kind.METHOD_INVOCATION || kind == Kind.NEW_CLASS || kind == Kind.MEMBER_REFERENCE)) {
             Element element = info.getTrees().getElement(path);
             if(element.asType().getKind() == TypeKind.ERROR) {
                 return null;
