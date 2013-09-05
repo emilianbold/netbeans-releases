@@ -74,6 +74,8 @@ import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
@@ -349,32 +351,11 @@ public class RepositoryRevision {
             return originalPath;
         }
         
-        Action[] getActions () {
+        Action[] getActions (boolean forNodes) {
             List<Action> actions = new ArrayList<Action>();
-            boolean viewEnabled = getFile() != null && getAction() != 'D';
-            if (viewEnabled) {
-                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new GitProgressSupport() {
-                            @Override
-                            protected void perform () {
-                                openFile(false, getProgressMonitor());
-                            }
-                        }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
-                    }
-                });
-                actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new GitProgressSupport() {
-                            @Override
-                            protected void perform () {
-                                openFile(true, getProgressMonitor());
-                            }
-                        }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
-                    }
-                });
+            if (isViewEnabled()) {
+                actions.add(getViewAction(forNodes ? null : this));
+                actions.add(getAnnotateAction(forNodes ? null : this));
             }
             return actions.toArray(new Action[actions.size()]);
         }
@@ -386,6 +367,128 @@ public class RepositoryRevision {
             } catch (IOException ex) {
                 Logger.getLogger(RepositoryRevision.class.getName()).log(Level.FINE, null, ex);
             }
+        }
+
+        private Action getViewAction (Event event) {
+            if (event == null) {
+                return viewAction;
+            } else {
+                return new ViewAction(repositoryRoot, event);
+            }
+        }
+
+        private Action getAnnotateAction (Event event) {
+            if (event == null) {
+                return annotateAction;
+            } else {
+                return new AnnotateAction(repositoryRoot, event);
+            }
+        }
+
+        private boolean isViewEnabled () {
+            return getFile() != null && getAction() != 'D';
+        }
+    }
+
+    private static abstract class HistoryEventAction extends AbstractAction implements ContextAwareAction {
+
+        public HistoryEventAction (String name) {
+            super(name);
+        }
+
+        @Override
+        public Action createContextAwareInstance (Lookup actionContext) {
+            return createAction(actionContext.lookupAll(RevisionNode.class));
+        }
+
+        private Action createAction (Collection<? extends RevisionNode> nodes) {
+            List<Event> events = new ArrayList<Event>(nodes.size());
+            File root = null;
+            for (RevisionNode n : nodes) {
+                root = n.getEvent().getLogInfoHeader().getRepositoryRoot();
+                if (n.getEvent().isViewEnabled()) {
+                    events.add(n.getEvent());
+                }
+            }
+            return createAction(root, events.toArray(new Event[events.size()]));
+        }
+
+        protected abstract Action createAction (File repositoryRoot, Event... events);
+    }
+
+    private static ViewAction viewAction = new ViewAction();
+    private static AnnotateAction annotateAction = new AnnotateAction();
+    
+    private static class ViewAction extends HistoryEventAction {
+
+        Event[] events;
+        private File repositoryRoot;
+        
+        private ViewAction () {
+            super(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")); //NOI18N
+        }
+
+        private ViewAction (File repositoryRoot, Event... events) {
+            this();
+            this.events = events;
+            this.repositoryRoot = repositoryRoot;
+        }
+
+        @Override
+        public boolean isEnabled () {
+            return events.length > 0;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            new GitProgressSupport() {
+                @Override
+                protected void perform () {
+                    for (Event ev : events) {
+                        if (ev.isViewEnabled()) {
+                            ev.openFile(false, getProgressMonitor());
+                        }
+                    }
+                }
+            }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+        }
+
+        @Override
+        protected Action createAction (File repositoryRoot, Event... events) {
+            return new ViewAction(repositoryRoot, events);
+        }
+    }
+    
+    private static class AnnotateAction extends HistoryEventAction {
+
+        Event[] events;
+        private File repositoryRoot;
+        
+        private AnnotateAction () {
+            super(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")); //NOI18N
+        }
+
+        private AnnotateAction (File repositoryRoot, Event... events) {
+            this();
+            this.events = events;
+            this.repositoryRoot = repositoryRoot;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            new GitProgressSupport() {
+                @Override
+                protected void perform () {
+                    for (Event ev : events) {
+                        ev.openFile(true, getProgressMonitor());
+                    }
+                }
+            }.start(Git.getInstance().getRequestProcessor(), repositoryRoot, NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+        }
+
+        @Override
+        protected Action createAction (File repositoryRoot, Event... events) {
+            return new AnnotateAction(repositoryRoot, events);
         }
     }
     

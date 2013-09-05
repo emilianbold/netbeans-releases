@@ -72,10 +72,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.options.AnnotationColorProvider;
 import org.netbeans.modules.git.ui.diff.DiffAction;
-import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.repository.Revision;
-import org.netbeans.modules.git.ui.revert.RevertCommitAction;
-import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
@@ -302,7 +299,7 @@ class SummaryView extends AbstractSummaryView {
                     }
                 });
             }
-            actions.addAll(Arrays.asList(event.getActions()));
+            actions.addAll(Arrays.asList(event.getActions(false)));
             return actions.toArray(new Action[actions.size()]);
         }
 
@@ -377,7 +374,8 @@ class SummaryView extends AbstractSummaryView {
         final RepositoryRevision.Event[] drev;
 
         boolean revisionsSelected = false;
-        boolean missingFile = false;        
+        boolean missingFile = false;   
+        boolean viewEnabled = false;
         final boolean singleSelection = selection.length == 1;
         
         for (Object o : selection) {
@@ -401,12 +399,17 @@ class SummaryView extends AbstractSummaryView {
                 if(!missingFile && drev[i].getFile() == null) {
                     missingFile = true;
                 }
+                if (drev[i].getFile() != null && drev[i].getAction() != 'D') {
+                    // we have something to view
+                    viewEnabled = true;
+                }
             }                
             container = drev[0].getLogInfoHeader();
         }
         boolean hasParents = singleSelection && container.getLog().getParents().length > 0;
 
-        final boolean viewEnabled = singleSelection && !revisionsSelected && drev[0].getFile() != null && drev[0].getAction() != 'D';
+        final boolean canView = viewEnabled;
+        final boolean canAnnotate = viewEnabled;
         
         if (hasParents) {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
@@ -450,7 +453,7 @@ class SummaryView extends AbstractSummaryView {
         } else {
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_View")) { // NOI18N
                 {
-                    setEnabled(viewEnabled);
+                    setEnabled(canView);
                 }
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -458,7 +461,12 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                evt.openFile(false, getProgressMonitor());
+                                if (evt.getFile() != null && evt.getAction() != 'D') {
+                                    evt.openFile(false, getProgressMonitor());
+                                    if (getProgressMonitor().isCanceled()) {
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
@@ -466,7 +474,7 @@ class SummaryView extends AbstractSummaryView {
             }));
             menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_ShowAnnotations")) { // NOI18N
                 {
-                    setEnabled(viewEnabled);
+                    setEnabled(canAnnotate);
                 }
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -474,7 +482,12 @@ class SummaryView extends AbstractSummaryView {
                         @Override
                         protected void perform () {
                             for (RepositoryRevision.Event evt : drev) {
-                                evt.openFile(true, getProgressMonitor());
+                                if (evt.getFile() != null && evt.getAction() != 'D') {
+                                    evt.openFile(true, getProgressMonitor());
+                                    if (getProgressMonitor().isCanceled()) {
+                                        return;
+                                    }
+                                }
                             }
                         }
                     }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
