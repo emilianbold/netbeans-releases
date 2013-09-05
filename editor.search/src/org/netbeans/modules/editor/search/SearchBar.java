@@ -56,6 +56,8 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -100,6 +102,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<>();
     private FocusAdapter focusAdapterForComponent;
     private KeyListener keyListenerForComponent;
+    private CaretListener caretListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
     private final JLabel findLabel;
     private final JComboBox<String> incSearchComboBox;
@@ -442,6 +445,17 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
             @Override
             public void keyReleased(KeyEvent e) {
+            }
+        };
+    }
+    
+    private CaretListener createCaretListenerForComponent() {
+        return new CaretListener() {
+
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                int num = SearchBar.getInstance().showNumberOfMatches(null, -1);
+                SearchBar.getInstance().showNumberOfMatches(null, num);
             }
         };
     }
@@ -857,20 +871,20 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 // valid regexp
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
-                changeHighlightCheckboxName(getCountFindMatches(findSupport));
+                showNumberOfMatches(findSupport, -1);
             } else {
                 // invalid regexp
                 incSearchTextField.setForeground(INVALID_REGEXP);
                 org.netbeans.editor.Utilities.setStatusBoldText(getActualTextComponent(), NbBundle.getMessage(
                         SearchBar.class, "incremental-search-invalid-regexp", patternErrorMsg)); //NOI18N
-                changeHighlightCheckboxName(0);
+                showNumberOfMatches(findSupport, 0);
             }
         } else {
             if (findSupport.incSearch(searchProps.getProperties(), caretPosition) || empty) {
                 // text found - reset incremental search text field's foreground
                 incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), "", StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND);
-                changeHighlightCheckboxName(getCountFindMatches(findSupport));
+                showNumberOfMatches(findSupport, -1);
                 lastIncrementalSearchWasSuccessful = true;
             } else {
                 // text not found - indicate error in incremental search
@@ -883,7 +897,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                     Toolkit.getDefaultToolkit().beep();
                     lastIncrementalSearchWasSuccessful = false;
                 }
-                changeHighlightCheckboxName(0);
+                showNumberOfMatches(findSupport, 0);
             }
         }
     }
@@ -896,32 +910,49 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         find(false);
     }
 
-
-    private int getCountFindMatches(EditorFindSupport findSupport) {
-            int num = 0;
+    /**
+     * @param findSupport if null EditorFindSupport.getInstance() is used
+     * @param numOfMatches if numOfMatches < 0, calculate numOfMatches and position, else show numOfMatches.
+     * @return 
+     */
+    public int showNumberOfMatches(EditorFindSupport findSupport, int numOfMatches) {
+        if (findSupport == null) {
+            findSupport = EditorFindSupport.getInstance();
+        }
+        int pos = 0;
+        if (numOfMatches < 0) {
+            int currentpos = getActualTextComponent().getSelectionStart();
             try {
-                int[] blocks = findSupport.getBlocks(new int [] {-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
+                int[] blocks = findSupport.getBlocks(new int[]{-1, -1}, getActualTextComponent().getDocument(), 0, getActualTextComponent().getDocument().getLength());
                 for (int i : blocks) {
                     if (i > 0) {
-                        num++;
+                        numOfMatches++;
+                        if (i < currentpos) {
+                            pos++;
+                        }
                     }
                 }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            return num == 0 ? 0 : (num + 1) / 2;
-    }
-
-    private void changeHighlightCheckboxName(int num) {
+            numOfMatches = numOfMatches == 0 ? 0 : (numOfMatches + 1) / 2;
+            pos = (pos == 0 ? 0 : (pos + 1) / 2) + 1;
+            
+        }
         if (incSearchTextField.getText().isEmpty()) {
             Mnemonics.setLocalizedText(matches, ""); //NOI18N
-        } else if (num == 0) {
+        } else if (numOfMatches == 0) {
             Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "0_matches")); //NOI18N
-        } else if (num == 1) {
+        } else if (numOfMatches == 1) {
             Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "1_matches")); //NOI18N
         } else {
-            Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "n_matches", num)); //NOI18N
+            if (pos == 0) {
+                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "n_matches", numOfMatches)); //NOI18N
+            } else {
+                Mnemonics.setLocalizedText(matches, NbBundle.getMessage(SearchBar.class, "i_n_matches", pos, numOfMatches)); //NOI18N
+            }
         }
+        return numOfMatches;
     }
 
     private void find(boolean next) {
@@ -937,11 +968,11 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         if (findSupport.find(actualfindProps, !next) || empty) {
             // text found - reset incremental search text field's foreground
             incSearchTextField.setForeground(DEFAULT_FG_COLOR); //NOI18N
-            changeHighlightCheckboxName(getCountFindMatches(findSupport));
+            showNumberOfMatches(findSupport, -1);
         } else {
             // text not found - indicate error in incremental search text field with red foreground
             incSearchTextField.setForeground(NOT_FOUND);
-            changeHighlightCheckboxName(0);
+            showNumberOfMatches(findSupport, 0);
             Toolkit.getDefaultToolkit().beep();
         }
     }
@@ -1008,7 +1039,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
 
             EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
-            changeHighlightCheckboxName(getCountFindMatches(EditorFindSupport.getInstance()));
+            showNumberOfMatches(null, -1);
         }
     }
 
@@ -1048,6 +1079,10 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         if (keyListenerForComponent == null) {
             keyListenerForComponent = createKeyListenerForComponent();
         }
+        if (caretListenerForComponent == null) {
+            caretListenerForComponent = createCaretListenerForComponent();
+        }
+        component.addCaretListener(caretListenerForComponent);
         component.addFocusListener(focusAdapterForComponent);
         component.addPropertyChangeListener(propertyChangeListenerForComponent);
         component.addKeyListener(keyListenerForComponent);
