@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.java.j2seembedded.platform;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -62,6 +61,8 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.KeyStroke;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
 import org.netbeans.api.progress.ProgressUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -115,7 +116,7 @@ final class RemotePlatformNode extends AbstractNode {
             }
         };
         setConnection.put(property);
-
+        
         property = new PropertySupport.ReadWrite<String>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_Host"), //NOI18N
                 String.class,
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_Host"), //NOI18N
@@ -258,6 +259,22 @@ final class RemotePlatformNode extends AbstractNode {
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
                 return getPlatform().getInstallFolder().getPath();
+            }
+        };
+        setPlatform.put(property);
+
+        property = new PropertySupport.ReadOnly<String>(
+                "profile",  //NOI18N
+                String.class,
+                NbBundle.getMessage(RemotePlatformNode.class, "LBL_Profile"),
+                NbBundle.getMessage(RemotePlatformNode.class, "DESC_Profile")) {
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                SourceLevelQuery.Profile profile = Profile.forName(getPlatform().getProperties().get(RemotePlatform.PROP_PROFILE));
+                if (profile == null) {
+                    profile = SourceLevelQuery.Profile.DEFAULT;
+                }
+                return profile.getDisplayName();
             }
         };
         setPlatform.put(property);

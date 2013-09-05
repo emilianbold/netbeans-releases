@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -55,10 +56,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatform;
+import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProbe;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -161,8 +164,13 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         }
         String jrePath = (String) wizard.getProperty(PROP_JREPATH);
         String workingDir = wizard.getProperty(PROP_WORKINGDIR) != null && ((String) wizard.getProperty(PROP_WORKINGDIR)).length() > 0
-                ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N        
-        final RemotePlatform prototype = RemotePlatform.create(displayName, getSystemProperties(wizard));
+                ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N
+        final Pair<Map<String,String>,Map<String,String>> p = RemotePlatformProbe.getSystemProperties(
+                (Properties) wizard.getProperty(PROP_SYS_PROPERTIES));
+        final RemotePlatform prototype = RemotePlatform.prototype(
+                displayName,
+                p.first(),
+                p.second());
         try {
             prototype.setInstallFolder(new URI(jrePath));
             prototype.setWorkFolder(new URI(workingDir));
@@ -176,13 +184,6 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
-    }
-
-    @NonNull
-    private static Map<String,String> getSystemProperties(@NonNull final WizardDescriptor wizard) {
-        @SuppressWarnings("unchecked")
-        final Map<String,String> sysProps = (Map<String,String>) wizard.getProperty(PROP_SYS_PROPERTIES);
-        return sysProps;
     }
     
 

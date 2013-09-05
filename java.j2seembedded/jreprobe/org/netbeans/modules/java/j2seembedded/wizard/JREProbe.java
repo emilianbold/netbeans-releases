@@ -53,8 +53,22 @@ import java.util.Properties;
  * @author Tomas Zezula
  */
 public class JREProbe {
+    
+    private static final String NB_PROP_PROFILE = "netbeans.java.profile";  //NOI18N
+    private static final String COMPACT_1 = "compact1";    //NOI18N
+    private static final String COMPACT_2 = "compact2";    //NOI18N
+    private static final String COMPACT_3 = "compact3";    //NOI18N
+    private static final String COMPACT_2_CLASS = "java.rmi.Remote";    //NOI18N
+    private static final String COMPACT_3_CLASS = "java.lang.instrument.Instrumentation";    //NOI18N
+    private static final String DEFAULT_CLASS = "java.awt.Toolkit";    //NOI18N
+
     public static void main(String[] args) {
-        Properties p = System.getProperties();
+        final Properties p = new Properties();
+        p.putAll(System.getProperties());
+        final String profile = getProfile();
+        if (profile != null) {
+            p.setProperty(NB_PROP_PROFILE, profile);
+        }
 
         File f = new File(args[0]);
         try {
@@ -65,5 +79,27 @@ public class JREProbe {
             //PENDING
             exc.printStackTrace();
         }
+    }
+
+    private static String getProfile() {
+        String profile = COMPACT_1;
+        try {
+            Class.forName(COMPACT_2_CLASS);
+        } catch (ClassNotFoundException e) {
+            return profile;
+        }
+        profile = COMPACT_2;
+        try {
+            Class.forName(COMPACT_3_CLASS);
+        } catch (ClassNotFoundException e) {
+            return profile;
+        }
+        profile = COMPACT_3;
+        try {
+            Class.forName(DEFAULT_CLASS);
+        } catch (ClassNotFoundException e) {
+            return profile;
+        }        
+        return null;
     }
 }

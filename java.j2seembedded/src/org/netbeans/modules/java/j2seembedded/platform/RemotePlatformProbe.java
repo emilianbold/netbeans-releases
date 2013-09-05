@@ -48,9 +48,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.WizardValidationException;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -58,12 +61,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
  * @author Tomas Zezula
  */
 public final class RemotePlatformProbe {
+
+    private static final String NB_PROP_PREFIX = "netbeans.";   //NOI18N
 
     private RemotePlatformProbe() {
         throw new IllegalStateException();
@@ -143,4 +149,19 @@ public final class RemotePlatformProbe {
             }
     }
 
+    @NonNull
+    public static Pair<Map<String,String>,Map<String,String>> getSystemProperties(@NonNull final Properties p) {
+        final Map<String,String> sysProps = new HashMap<>();
+        final Map<String,String> properties = new HashMap<>();
+        for (Map.Entry<Object,Object> e : p.entrySet()) {
+            String key = (String) e.getKey();
+            String value = (String) e.getValue();
+            if (key.startsWith(NB_PROP_PREFIX)) {
+                properties.put(key, value);
+            } else {
+                sysProps.put(key, value);
+            }
+        }
+        return Pair.<Map<String,String>,Map<String,String>>of(properties,sysProps);
+    }
 }

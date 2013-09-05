@@ -73,6 +73,7 @@ public final class RemotePlatform extends JavaPlatform {
     public static final String SPEC_NAME = "j2se-remote";  //NOI18N
     public static final String PROP_PROPERTIES="properties";                            //NOI18N
     public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N
+    public static final String PROP_PROFILE = "netbeans.java.profile";                 //NOI18N
     private final static String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
     private final static String PLAT_PROP_WORK_FOLDER = "platform.work.folder";   //NOI18N
     
@@ -109,10 +110,13 @@ public final class RemotePlatform extends JavaPlatform {
             prototype.getSystemProperties());
     }
 
-    public static RemotePlatform create(
+    @NonNull
+    public static RemotePlatform prototype(
         @NonNull final String displayName,
+        @NonNull final Map<String,String> additionalProperties,
         @NonNull final Map<String,String> sysProps ) {
         Parameters.notNull("displayName", displayName); //NOI18N
+        Parameters.notNull("additionalProperties", additionalProperties);       //NOI18N
         Parameters.notNull("sysProps", sysProps);       //NOI18N
         String currentDisplayName = displayName;
         String antName;
@@ -126,8 +130,13 @@ public final class RemotePlatform extends JavaPlatform {
                 displayName,
                 i);
         }
-        final Map<String,String> props = Collections.<String,String>singletonMap(PLAT_PROP_ANT_NAME, antName);
-        return create(displayName, props, sysProps);
+        final Map<String,String> props = new HashMap<>();
+        props.putAll(additionalProperties);
+        props.put(PLAT_PROP_ANT_NAME, antName);
+        return create(
+            displayName,
+            props,
+            sysProps);
     }
 
     @NonNull
