@@ -67,6 +67,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -337,6 +338,9 @@ public class RepositoryRevision {
             return underRoots;
         }
 
+        @NbBundle.Messages({
+            "CTL_Action.ViewCurrent.name=View Current"
+        })
         Action[] getActions () {
             List<Action> actions = new ArrayList<Action>();
             boolean viewEnabled = getFile() != null && getChangedPath().getAction() != HgLogMessage.HgDelStatus;
@@ -370,7 +374,18 @@ public class RepositoryRevision {
                             }
                         });
                     }
-                    });
+                });
+                actions.add(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Utils.openFile(FileUtil.normalizeFile(getFile()));
+                            }
+                        });
+                    }
+                });
                 actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_ExportFileDiff")) { // NOI18N
                     @Override
                     public void actionPerformed(ActionEvent e) {

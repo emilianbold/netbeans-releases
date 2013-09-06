@@ -74,6 +74,7 @@ import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -356,6 +357,7 @@ public class RepositoryRevision {
             if (isViewEnabled()) {
                 actions.add(getViewAction(forNodes ? null : this));
                 actions.add(getAnnotateAction(forNodes ? null : this));
+                actions.add(getViewCurrentAction(forNodes ? null : this));
             }
             return actions.toArray(new Action[actions.size()]);
         }
@@ -374,6 +376,14 @@ public class RepositoryRevision {
                 return viewAction;
             } else {
                 return new ViewAction(repositoryRoot, event);
+            }
+        }
+
+        private Action getViewCurrentAction (Event event) {
+            if (event == null) {
+                return viewCurrentAction;
+            } else {
+                return new ViewCurrentAction(event.getFile());
             }
         }
 
@@ -417,6 +427,7 @@ public class RepositoryRevision {
     }
 
     private static ViewAction viewAction = new ViewAction();
+    private static ViewCurrentAction viewCurrentAction = new ViewCurrentAction();
     private static AnnotateAction annotateAction = new AnnotateAction();
     
     private static class ViewAction extends HistoryEventAction {
@@ -456,6 +467,51 @@ public class RepositoryRevision {
         @Override
         protected Action createAction (File repositoryRoot, Event... events) {
             return new ViewAction(repositoryRoot, events);
+        }
+    }
+    
+    @NbBundle.Messages({
+        "CTL_Action.ViewCurrent.name=View Current"
+    })
+    private static class ViewCurrentAction extends HistoryEventAction {
+
+        File[] files;
+        
+        private ViewCurrentAction () {
+            super(Bundle.CTL_Action_ViewCurrent_name());
+        }
+
+        private ViewCurrentAction (File... files) {
+            this();
+            this.files = files;
+        }
+
+        @Override
+        public boolean isEnabled () {
+            return files.length > 0;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            Utils.post(new Runnable() {
+                @Override
+                public void run () {
+                    for (File f : files) {
+                        Utils.openFile(FileUtil.normalizeFile(f));
+                    }
+                }
+            });
+        }
+
+        @Override
+        protected Action createAction (File repositoryRoot, Event... events) {
+            Set<File> fileSet = new HashSet<File>(events.length);
+            for (Event e : events) {
+                if (e.isViewEnabled()) {
+                    fileSet.add(e.getFile());
+                }
+            }
+            return new ViewCurrentAction(fileSet.toArray(new File[fileSet.size()]));
         }
     }
     
