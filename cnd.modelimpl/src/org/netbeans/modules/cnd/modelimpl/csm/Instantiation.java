@@ -488,6 +488,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Collection<CsmInheritance> getBaseClasses() {
+            List<CsmInheritance> inheritances = null;
             if (inheritances == null) {
                 List<CsmInheritance> res = new ArrayList<>(1);
                 for (CsmInheritance inh : declaration.getBaseClasses()) {
@@ -545,6 +546,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         public Inheritance(CsmInheritance inheritance, Instantiation instantiation) {
             this.inheritance = inheritance;
             this.type = createType(inheritance.getAncestorType(), instantiation);
+            LOG.log(Level.FINE, "Inheritance for\n{0}\n=>INHERITANCE TYPE=>\n{1}", new Object[] {this, type});
         }
 
         @Override
@@ -624,6 +626,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             out.append("\n");// NOI18N
             indent(out, indent).append("WITH TYPE:\n"); // NOI18N
             ((Type)type).toString(out, indent + 2);
+            out.append("\n");// NOI18N
             indent(out, indent).append("END OF ").append(instName);// NOI18N
             return out.toString();
         }
