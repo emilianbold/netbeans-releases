@@ -71,10 +71,12 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
     
     private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
     
+    @Override
     protected boolean accept(FileObject orig) {
         return engine(orig) != null;
     }
 
+    @Override
     protected FileObject createFromTemplate(FileObject template, FileObject f,
                                             String name,
                                             Map<String, Object> values) throws IOException {
@@ -124,8 +126,7 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
             is = new InputStreamReader(template.getInputStream(), sourceEnc);
             eng.eval(is);
         }catch (ScriptException ex) {
-            IOException io = new IOException(ex.getMessage());
-            io.initCause(ex);
+            IOException io = new IOException(ex.getMessage(), ex);
             throw io;
         } finally {
             if (w != null) w.close();

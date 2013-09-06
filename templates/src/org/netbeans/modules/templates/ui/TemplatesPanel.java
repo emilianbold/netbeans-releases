@@ -331,8 +331,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     private static final class TemplateFilter implements ChangeableDataFilter, DataFilter.FileBased, FileChangeListener {
         
-        private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        private final Set<FileObject> filesWeListenOn = new HashSet<FileObject>();
+        private final List<ChangeListener> listeners = new ArrayList<>();
+        private final Set<FileObject> filesWeListenOn = new HashSet<>();
         
         @Override
         public boolean acceptDataObject (DataObject obj) {
@@ -1068,7 +1068,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         DataObject dobj = getDOFromNode (templateNode);
                         Object o = dobj.getPrimaryFile ().getAttribute (TEMPLATE_CATEGORY_ATTRIBUTE);
                         if (o != null) {
-                            List<String> list = new ArrayList<String> ();
+                            List<String> list = new ArrayList<> ();
                             StringTokenizer tokenizer = new StringTokenizer (o.toString (), ","); // NOI18N
                             while (tokenizer.hasMoreTokens ()) {
                                 String token = tokenizer.nextToken ();
@@ -1170,7 +1170,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
         private void sortNodes () {
             Node [] originalNodes = original.getChildren ().getNodes ();
-            Collection<Node> sortedNodes = new TreeSet<Node> (new TemplateCategotyComparator ());
+            Collection<Node> sortedNodes = new TreeSet<> (new TemplateCategotyComparator ());
             sortedNodes.addAll(Arrays.asList(originalNodes));
             setKeys (sortedNodes.toArray (new Node[0]));
         }
@@ -1545,7 +1545,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static Set<String> getOtherFileNames(FileObject fo) {
         FileObject parent = fo.getParent();
         FileObject[] children = parent.getChildren();
-        Set<String> siblings = new HashSet<String>(children.length);
+        Set<String> siblings = new HashSet<>(children.length);
         for (FileObject ch : children) {
             if (ch != fo) {
                 siblings.add(ch.getNameExt());
@@ -1557,7 +1557,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static Set<String> getOtherFileNames(TemplateNode n) {
         Node parent = n.getParentNode();
         Node[] children = parent.getChildren().getNodes();
-        Set<String> siblings = new HashSet<String>(children.length);
+        Set<String> siblings = new HashSet<>(children.length);
         for (Node ch : children) {
             if (ch != n) {
                 siblings.add(((TemplateNode) ch).getFileName());
@@ -1653,7 +1653,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                     if (!initialized) {
                         T instance = instanceGetter.getInstance();
                         if (instance != null) {
-                            addPair(new SimpleItem<T>(instance));
+                            addPair(new SimpleItem<>(instance));
                         }
                         initialized = true;
                     }

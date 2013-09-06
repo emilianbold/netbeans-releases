@@ -83,8 +83,8 @@ import org.openide.nodes.Node;
 public class TemplatesAction extends AbstractAction { // XXX could be ActionListener if not using SHORT_DESCRIPTION, or maybe alwaysEnabled should support that as an option?
 
     /** Weak reference to the dialog showing singleton Template Manager. */
-    private Reference<Dialog> dialogWRef = new WeakReference<Dialog> (null);
-    private Reference<TemplatesPanel> templatesPanelRef = new WeakReference<TemplatesPanel> (null);
+    private Reference<Dialog> dialogWRef = new WeakReference<> (null);
+    private Reference<TemplatesPanel> templatesPanelRef = new WeakReference<> (null);
     
     public TemplatesAction() {
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TemplatesAction.class, "HINT_TemplatesAction")); // NOI18N
@@ -121,8 +121,8 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
             
             dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
-            dialogWRef = new WeakReference<Dialog> (dialog);
-            templatesPanelRef = new WeakReference<TemplatesPanel>(tp);
+            dialogWRef = new WeakReference<> (dialog);
+            templatesPanelRef = new WeakReference<>(tp);
             
         } else {
             if (pathToSelect != null) {
@@ -198,7 +198,7 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
     }
     
     static private Set<Node> getNodes2Open (Node [] nodes) {
-        Set<Node> nodes2open = new HashSet<Node> (nodes.length);
+        Set<Node> nodes2open = new HashSet<> (nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             if (nodes [i].isLeaf ()) {
                 nodes2open.add (nodes [i]);
