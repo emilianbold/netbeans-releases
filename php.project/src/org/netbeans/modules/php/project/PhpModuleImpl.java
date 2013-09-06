@@ -105,8 +105,10 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public Lookup getLookup() {
+        Lookup projectLookup = phpProject.getLookup();
         return Lookups.fixed(
-                phpProject.getLookup().lookup(CustomizerProvider2.class)
+                projectLookup.lookup(CustomizerProvider2.class),
+                projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class)
         );
     }
 
