@@ -158,9 +158,9 @@ public class TraceFlags {
     
     // experimental expression evaluator for template instantiations
     public static final boolean EXPRESSION_EVALUATOR = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator", true); // NOI18N
-    public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", false); // NOI18N
-    public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", false); // NOI18N
-    public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", false); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_DEEP_VARIABLE_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.deep.variable.provider", true); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_RECURSIVE_CALC = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.recursive.calc", true); // NOI18N
+    public static final boolean EXPRESSION_EVALUATOR_EXTRA_SPEC_PARAMS_MATCHING = DebugUtils.getBoolean("cnd.modelimpl.expression.evaluator.extra.spec.params.matching", true); // NOI18N
 
     /** 
      * swithces off parsing function bodies
