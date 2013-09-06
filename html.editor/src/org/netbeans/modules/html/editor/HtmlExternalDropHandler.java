@@ -1,0 +1,277 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.html.editor;
+
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.InvalidDnDOperationException;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.ExternalDropHandler;
+
+/**
+ *
+ * @author marek
+ */
+@ServiceProvider(service = ExternalDropHandler.class, position = 500)
+public class HtmlExternalDropHandler extends ExternalDropHandler {
+
+    private static final Logger LOG = Logger.getLogger(HtmlExternalDropHandler.class.getName());
+    
+    private static DataFlavor uriListDataFlavor;
+    
+    @Override
+    public boolean canDrop(DropTargetDragEvent e) {
+        //check if the JEditorPane contains html document
+        JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
+        if(pane == null) {
+            return false;
+        }
+        if(!(pane.getEditorKit() instanceof HtmlKit)) { //bit hacky, but fast
+            return false;
+        }
+        
+        //check if the dropped target is supported
+        boolean canDrop = canDrop( e.getCurrentDataFlavors() );
+        if(canDrop) {
+            //update the caret as the user drags the object
+            //needs to be done explicitly here as QuietEditorPane doesn't call
+            //the original Swings DropTarget which does this
+            Point location = e.getLocation();
+            pane.requestFocusInWindow(); //pity we need to call this all the time when dragging, but  ExternalDropHandler don't handle dragEnter event
+            int offset = pane.getUI().viewToModel(pane, location);
+            pane.setCaretPosition(offset);
+        }
+        return canDrop;
+    }
+    
+    @Override
+    public boolean canDrop(DropTargetDropEvent e) {
+        //check if the JEditorPane contains html document
+        JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
+        if(pane == null) {
+            return false;
+        }
+        if(!(pane.getEditorKit() instanceof HtmlKit)) { //bit hacky, but fast
+            return false;
+        }
+        
+        //check if the dropped target is supported
+        return canDrop( e.getCurrentDataFlavors() );
+    }
+
+    private boolean canDrop( DataFlavor[] flavors ) {
+        for( int i=0; null != flavors && i<flavors.length; i++ ) {
+            if( DataFlavor.javaFileListFlavor.equals( flavors[i] )
+                || getUriListDataFlavor().equals( flavors[i] ) ) {
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean handleDrop(DropTargetDropEvent e) {
+        Transferable t = e.getTransferable();
+        if( null == t )
+            return false;
+        List<File> fileList = getFileList( t );
+        if ((fileList == null) || fileList.isEmpty()) {
+            return false;
+        }
+        
+        //handle just the first file
+        File file = fileList.get(0);
+        FileObject target = FileUtil.toFileObject(file);
+        if(file.isDirectory()) {
+            return true; //as we previously claimed we canDrop() it so we need to say we've handled it even if did nothing.
+        }
+        
+        JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
+        if(pane == null) {
+            return false;
+        }
+        
+        final BaseDocument document = (BaseDocument)pane.getDocument();
+        FileObject current = DataLoadersBridge.getDefault().getFileObject(document);
+        String relativePath = WebUtils.getRelativePath(current, target);
+        
+        final StringBuilder sb = new StringBuilder();
+        
+        //hardcoded support for common file types
+        String mimeType = target.getMIMEType();
+        switch(mimeType) { //NOI18N -- whole switch content
+            case "text/html": 
+            case "text/xhtml":
+                sb.append("<a href=\"").append(relativePath).append("\"></a>");
+                break;
+            case "text/css":
+                sb.append("<link href=\"").append(relativePath).append("\" rel=\"stylesheet\" type=\"text/css\"/>");
+                break;
+            case "image/png":
+            case "image/jpeg":
+            case "image/gif": //TODO possibly just check for "image/" prefix?
+                sb.append("<img src=\"").append(relativePath).append("\" alt=\"\"/>");
+                break;
+            case "text/javascript":
+                sb.append("<script src=\"").append(relativePath).append("\" type=\"text/javascript\"></script>");
+                break;
+            default:
+                Logger.getAnonymousLogger().log(Level.INFO, "Dropping of files with mimetype {0} is not supported - what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
+                break;
+        }
+        
+        Point location = e.getLocation();
+        final int offset = pane.getUI().viewToModel(pane, location);
+        
+        document.runAtomic(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    document.insertString(offset, sb.toString(), null);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            
+        });
+        
+        return true;
+    }
+    
+    private JEditorPane findPane(Component component) {
+        while(component != null) {
+            if(component instanceof JEditorPane) {
+                return (JEditorPane)component;
+            }
+            component = component.getParent();
+        }
+        return null;
+    }
+
+    //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
+    private List<File> getFileList( Transferable t ) {
+        try {
+            if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
+                //windows & mac
+                try {
+                    return (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+                } catch (InvalidDnDOperationException ex) { // #212390
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+            if (t.isDataFlavorSupported(getUriListDataFlavor())) {
+                //linux
+                String uriList = (String)t.getTransferData( getUriListDataFlavor() );
+                return textURIListToFileList( uriList );
+            }
+        } catch( UnsupportedFlavorException ex ) {
+            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
+        } catch( IOException ex ) {
+            // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
+            LOG.log(Level.FINE, null, ex);
+        }
+        return null;
+    }
+
+    //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
+    private DataFlavor getUriListDataFlavor() {
+        if( null == uriListDataFlavor ) {
+            try {
+                uriListDataFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
+            } catch( ClassNotFoundException cnfE ) {
+                //cannot happen
+                throw new AssertionError(cnfE);
+            }
+        }
+        return uriListDataFlavor;
+    }
+
+    //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
+    private List<File> textURIListToFileList( String data ) {
+        List<File> list = new ArrayList<>(1);
+        for( StringTokenizer st = new StringTokenizer(data, "\r\n\u0000");
+            st.hasMoreTokens();) {
+            String s = st.nextToken();
+            if( s.startsWith("#") ) {
+                // the line is a comment (as per the RFC 2483)
+                continue;
+            }
+            try {
+                URI uri = new URI(s);
+                File file = Utilities.toFile(uri);
+                list.add( file );
+            } catch(URISyntaxException | IllegalArgumentException e ) {
+                // malformed URI
+            }
+        }
+        return list;
+    }
+    
+
+}
