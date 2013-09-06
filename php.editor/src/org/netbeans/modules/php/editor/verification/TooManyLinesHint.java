@@ -450,7 +450,6 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
                 int endLinePosition = Utilities.getLineOffset(
                         baseDocument,
                         Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));
-                assert endLinePosition >= startLinePosition;
                 result = endLinePosition - startLinePosition;
             } catch (BadLocationException ex) {
                 // see issue 227687 and #172881
