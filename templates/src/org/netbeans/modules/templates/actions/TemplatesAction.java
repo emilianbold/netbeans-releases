@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.templates.ui;
+package org.netbeans.modules.templates.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -57,6 +57,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.netbeans.modules.templates.ui.TemplatesPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -76,7 +77,7 @@ import org.openide.nodes.Node;
  *
  * @author Jiri Rechtacek
  */
-@ActionID(id = "org.netbeans.modules.favorites.templates.TemplatesAction", category = "System")
+@ActionID(id = "org.netbeans.modules.templates.actions.TemplatesAction", category = "System")
 @ActionRegistration(displayName = "#LBL_TemplatesAction_Name", iconInMenu=false, asynchronous=true)
 @ActionReference(position = 1000, path = "Menu/Tools")
 public class TemplatesAction extends AbstractAction { // XXX could be ActionListener if not using SHORT_DESCRIPTION, or maybe alwaysEnabled should support that as an option?
@@ -92,8 +93,8 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
     public @Override void actionPerformed(ActionEvent evt) {
         
         Dialog dialog = dialogWRef.get ();
-        String pathToSelect = System.getProperty("org.netbeans.modules.favorites.templates.TemplatesAction.preselect");
-        System.clearProperty("org.netbeans.modules.favorites.templates.TemplatesAction.preselect");
+        String pathToSelect = System.getProperty("org.netbeans.modules.templates.actions.TemplatesAction.preselect");
+        System.clearProperty("org.netbeans.modules.templates.actions.TemplatesAction.preselect");
 
         if (dialog == null || ! dialog.isShowing ()) {
 

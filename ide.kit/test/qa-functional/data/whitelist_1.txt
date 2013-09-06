@@ -3239,7 +3239,6 @@ org.netbeans.modules.favorites.Actions$Add
 org.netbeans.modules.favorites.Actions$Select
 org.netbeans.modules.favorites.Actions$View
 org.netbeans.modules.favorites.Tab
-org.netbeans.modules.favorites.templates.TemplatesAction
 org.netbeans.modules.form.ComponentContainer
 org.netbeans.modules.form.CreationDescriptor
 org.netbeans.modules.form.CreationDescriptor$ConstructorCreator
@@ -4170,6 +4169,7 @@ org.netbeans.modules.swingapp.ActionRescanJavaSourceTaskFactoryImpl
 org.netbeans.modules.swingapp.actions.ShowGlobalActionTableAction
 org.netbeans.modules.tasklist.ui.TaskListAction
 org.netbeans.modules.tasklist.ui.TaskListTopComponent
+org.netbeans.modules.templates.actions.TemplatesAction
 org.netbeans.modules.timers.Install
 org.netbeans.modules.timers.Install$ActivatedDocumentListener
 org.netbeans.modules.timers.Install$TimerHandler

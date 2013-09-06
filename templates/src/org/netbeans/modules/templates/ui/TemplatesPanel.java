@@ -304,7 +304,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         });
     }
     
-    void select(String path) {
+    public void select(String path) {
         Node nodeToSelect = getTemplateNode(path);
         if (nodeToSelect != null) {
             try {
@@ -948,7 +948,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("org.netbeans.modules.favorites.templates.TemplatesPanel$RenameTemplateAction");
+            return new HelpCtx("org.netbeans.modules.templates.ui.TemplatesPanel$RenameTemplateAction");
         }
 
         @Override
