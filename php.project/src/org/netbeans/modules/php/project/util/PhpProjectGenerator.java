@@ -284,6 +284,7 @@ public final class PhpProjectGenerator {
         }
         privateProperties.put(PhpProjectProperties.COPY_SRC_FILES, String.valueOf(projectProperties.isCopySources()));
         privateProperties.put(PhpProjectProperties.COPY_SRC_TARGET, copyTargetString);
+        privateProperties.put(PhpProjectProperties.COPY_SRC_ON_OPEN, String.valueOf(projectProperties.isCopySourcesOnOpen()));
     }
 
     private static void configureIndexFile(ProjectProperties projectProperties, EditableProperties sharedProperties, EditableProperties privateProperties) {
@@ -395,6 +396,7 @@ public final class PhpProjectGenerator {
         private WizardDescriptor descriptor;
         private Boolean copySources;
         private File copySourcesTarget;
+        private Boolean copySourcesOnOpen;
         private RemoteConfiguration remoteConfiguration;
         private String remoteDirectory;
         private PhpProjectProperties.UploadFiles uploadFiles;
@@ -418,6 +420,7 @@ public final class PhpProjectGenerator {
             descriptor = properties.descriptor;
             copySources = properties.copySources;
             copySourcesTarget = properties.copySourcesTarget;
+            copySourcesOnOpen = properties.copySourcesOnOpen;
             remoteConfiguration = properties.remoteConfiguration;
             remoteDirectory = properties.remoteDirectory;
             uploadFiles = properties.uploadFiles;
@@ -540,6 +543,18 @@ public final class PhpProjectGenerator {
                 copySourcesTarget = FileUtil.normalizeFile(copySourcesTarget);
             }
             this.copySourcesTarget = copySourcesTarget;
+            return this;
+        }
+
+        public Boolean isCopySourcesOnOpen() {
+            return copySourcesOnOpen;
+        }
+
+        /**
+         * @param copySourcesOnOpen <code>true</code> if copying sources is enabled on project open, can be <code>null</code>
+         */
+        public ProjectProperties setCopySourcesOnOpen(Boolean copySourcesOnOpen) {
+            this.copySourcesOnOpen = copySourcesOnOpen;
             return this;
         }
 

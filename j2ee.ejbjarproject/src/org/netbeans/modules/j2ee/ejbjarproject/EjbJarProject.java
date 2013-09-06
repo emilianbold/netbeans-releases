@@ -129,6 +129,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
@@ -157,6 +159,7 @@ import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
@@ -455,7 +458,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                 classPathModifier,
                 new EjbJarProjectOperations(this),
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
-                new EjbJarEMGenStrategyResolver(),
+                new PersistenceProviderSupplierImpl(this),
+                new EMGenStrategyResolverImpl(this),
                 new EjbJarJPASupport(this),
                 Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
@@ -656,12 +660,9 @@ public class EjbJarProject implements Project, FileChangeListener {
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                                 String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(EjbJarProject.this);
@@ -849,8 +850,8 @@ public class EjbJarProject implements Project, FileChangeListener {
                 catch (InstanceRemovedException ier) {
                     // ignore
                 }
-
-                Utils.logUsage(EjbJarProject.class, "USG_PROJECT_OPEN_EJB", new Object[] { serverName }); // NOI18N
+                Profile profile = EjbJarProject.this.getEjbModule().getJ2eeProfile();
+                Utils.logUsage(EjbJarProject.class, "USG_PROJECT_OPEN_EJB", new Object[] { serverName, profile }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
@@ -1441,6 +1442,7 @@ public class EjbJarProject implements Project, FileChangeListener {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_1_full",   // NOI18N
         "web-services",         // NOI18N
         "web-service-clients",  // NOI18N
         "wsdl",                 // NOI18N
@@ -1467,6 +1469,7 @@ public class EjbJarProject implements Project, FileChangeListener {
 
     private static final String[] PRIVILEGED_NAMES = new String[] {
         "Templates/J2EE/Session", // NOI18N
+        "Templates/J2EE/TimerSession", // NOI18N
         "Templates/J2EE/Entity",  // NOI18N
         "Templates/J2EE/RelatedCMP", // NOI18N                    
         "Templates/J2EE/Message", //NOI18N
@@ -1487,7 +1490,9 @@ public class EjbJarProject implements Project, FileChangeListener {
         "Templates/WebServices/WebServiceClient"   // NOI18N      
     };
 
-    private static final String[] PRIVILEGED_NAMES_EE6 = PRIVILEGED_NAMES_EE5;
+    private static final String[] PRIVILEGED_NAMES_EE6 = new String[] {
+        "Templates/J2EE/TimerSession" // NOI18N
+    };
     
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
         "Templates/J2EE/ejbJarXml", // NOI18N
@@ -1495,7 +1500,7 @@ public class EjbJarProject implements Project, FileChangeListener {
 
     private final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
         transient private boolean isEE5 = false;
-        transient private boolean isEE6 = false;//if project support ee6 full version
+        transient private boolean isEE6Plus = false;//if project support ee6 full version or above
         transient private boolean checked = false;
         transient private boolean isArchive = false;
         transient private UpdateHelper helper = null;
@@ -1504,6 +1509,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             this.helper = helper;
         }
 
+        @Override
         public String[] getRecommendedTypes() {
             checkEnvironment();
             String[] retVal = null;
@@ -1511,7 +1517,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 retVal = ARCHIVE_TYPES; 
             } else if (isEE5) {
                 retVal = JAVAEE5_TYPES;
-            } else if (isEE6) {
+            } else if (isEE6Plus) {
                 retVal = JAVAEE6_TYPES;
             } else {
                 retVal = TYPES;
@@ -1519,26 +1525,28 @@ public class EjbJarProject implements Project, FileChangeListener {
             return retVal;
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             checkEnvironment();
-            String[] retVal = null;
+            List<String> privileged = new ArrayList<String>();
             if (isArchive) {
-                retVal = PRIVILEGED_NAMES_ARCHIVE;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_ARCHIVE));
             } else if (isEE5) {
-                retVal = PRIVILEGED_NAMES_EE5;
-            } else if(isEE6) {
-                retVal = PRIVILEGED_NAMES_EE6;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+            } else if (isEE6Plus) {
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE5));
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES_EE6));
             } else {
-                retVal = PRIVILEGED_NAMES;
+                privileged.addAll(Arrays.asList(PRIVILEGED_NAMES));
             } 
-            return retVal;
+            return privileged.toArray(new String[privileged.size()]);
         }
         
         private void checkEnvironment(){
             if (!checked){
                 Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
                 isEE5 = Profile.JAVA_EE_5==version;
-                isEE6 = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
+                isEE6Plus = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {

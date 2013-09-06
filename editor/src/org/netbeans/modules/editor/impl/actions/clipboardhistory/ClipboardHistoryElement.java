@@ -41,11 +41,21 @@
  */
 package org.netbeans.modules.editor.impl.actions.clipboardhistory;
 
-public class ClipboardHistoryElement {
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.Transferable;
+
+public class ClipboardHistoryElement implements ClipboardOwner{
 
     private final String content;
+    private Transferable transferable = null;
     private static final int MAXSIZE = 30;
     private static final String ENDING = "..."; // NOI18N
+
+    public ClipboardHistoryElement(Transferable transferable, String text) {
+        this(text);
+        this.transferable = transferable;
+    }
 
     ClipboardHistoryElement(String text) {
         this.content = text;
@@ -62,6 +72,10 @@ public class ClipboardHistoryElement {
         }
         return output;
         
+    }
+
+    public Transferable getTransferable() {
+        return transferable;
     }
 
     public String getFullText() {
@@ -89,6 +103,10 @@ public class ClipboardHistoryElement {
         int hash = 5;
         hash = 23 * hash + (this.content != null ? this.content.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
     }
     
     

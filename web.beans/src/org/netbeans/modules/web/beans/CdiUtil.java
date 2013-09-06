@@ -52,16 +52,23 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -118,8 +125,12 @@ public class CdiUtil {
         return isCdiEnabled(project);
     }
     
-    public boolean isCdiEnabled(Project project){
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(false);
+    public static boolean isCdiEnabled(Project project){
+        // #229078 - since CDI 1.1 beans.xml is optional in case of 'implicit bean archive'
+        if (isCdi11(project)) {
+            return true;
+        }
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
                 return true;
@@ -127,7 +138,28 @@ public class CdiUtil {
         }
         return false;
     }
-    
+
+    private static boolean isCdi11(Project p) {
+        return hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class");
+    }
+
+    private static boolean hasResource(Project project, String resource) {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        if (classPath == null) {
+            return false;
+        }
+        FileObject resourceFile = classPath.findResource(resource);
+        if (resourceFile != null) {
+            return true;
+        }
+        return false;
+    }
+
     public Collection<FileObject> getBeansTargetFolder(boolean create) 
     {
         Project project = getProject();
@@ -141,14 +173,32 @@ public class CdiUtil {
         return myProject.get();
     }
     
-    public static boolean hasBeansXml(Project project){
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project,false);
-        for (FileObject fileObject : beansTargetFolder) {
-            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
-                return true;
+    /**
+     * Enables CDI in the project and returns reference to the created beans.xml file if any.
+     * @return reference to beans.xml if was created, {@code null} otherwise
+     * @since 2.3
+     */
+    @CheckForNull
+    public FileObject enableCdi() {
+        Collection<FileObject> infs = getBeansTargetFolder(true);
+        for (FileObject inf : infs) {
+            if (inf != null) {
+                FileObject beansXml = inf.getFileObject(CdiUtil.BEANS_XML);
+                if (beansXml != null) {
+                    return null;
+                }
+                try {
+                    EjbJar ejbJar = EjbJar.getEjbJar(myProject.get().getProjectDirectory());
+                    Profile profile = ejbJar != null ? ejbJar.getJ2eeProfile() : Profile.JAVA_EE_6_WEB;
+                    LOG.log(Level.INFO, "Creating beans.xml file for project: {0}", myProject.get().getProjectDirectory());
+                    return DDHelper.createBeansXml(profile, inf, CdiUtil.BEANS);
+                } catch (IOException exception) {
+                    Exceptions.printStackTrace(exception);
+                }
+                return null;
             }
         }
-        return false;
+        return null;
     }
     
     public static Collection<FileObject> getBeansTargetFolder(Project project, 

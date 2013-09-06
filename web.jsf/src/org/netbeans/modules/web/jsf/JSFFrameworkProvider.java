@@ -98,6 +98,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ViewHandler;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
@@ -126,8 +127,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     private static String WELCOME_JSF = "welcomeJSF.jsp";   //NOI18N
     private static String WELCOME_XHTML = "index.xhtml"; //NOI18N
     private static String WELCOME_XHTML_TEMPLATE = "/Templates/JSP_Servlet/JSP.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
     private static String CSS_FOLDER = "css"; //NOI18N
     private static String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static String DEFAULT_CSS = "default.css"; //NOI18N
@@ -442,7 +441,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             //faces servlet mapping
             String facesMapping =  panel == null ? DEFAULT_MAPPING : panel.getURLPattern();;//"/*";
 
-            boolean isJSF20, isJSF21;
             Library jsfLibrary = null;
             if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.USED) {
                 jsfLibrary = panel.getLibrary();
@@ -450,20 +448,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 jsfLibrary = LibraryManager.getDefault().getLibrary(panel.getNewLibraryName());
             }
 
+            JSFVersion jsfVersion;
             if (jsfLibrary != null) {
                 List<URL> content = jsfLibrary.getContent("classpath"); //NOI18N
-                isJSF20 = Util.containsClass(content, JSFUtils.JSF_2_0__API_SPECIFIC_CLASS);
-                isJSF21 = Util.containsClass(content, JSFUtils.JSF_2_1__API_SPECIFIC_CLASS);
+                jsfVersion = JSFVersion.forClasspath(content);
             } else {
                 if (panel.getLibraryType() == JSFConfigurationPanel.LibraryType.SERVER && panel.getServerLibrary() != null) {
-                    isJSF20 = Version.fromJsr277NotationWithFallback("2.0").isBelowOrEqual(
-                            panel.getServerLibrary().getSpecificationVersion());
-                    isJSF21 = Version.fromJsr277NotationWithFallback("2.1").isAboveOrEqual(
-                            panel.getServerLibrary().getSpecificationVersion());
+                    jsfVersion = JSFVersion.forServerLibrary(panel.getServerLibrary());
                 } else {
-                    ClassPath classpath = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-                    isJSF20 = classpath.findResource(JSFUtils.JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
-                    isJSF21 = classpath.findResource(JSFUtils.JSF_2_1__API_SPECIFIC_CLASS.replace('.', '/')+".class")!=null; //NOI18N
+                    jsfVersion = JSFVersion.forWebModule(webModule);
                 }
             }
 
@@ -498,7 +491,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                     boolean faceletsEnabled = panel.isEnableFacelets();
 
-                    if (isJSF20 || isJSF21) {
+                    if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
                         InitParam contextParam = (InitParam) ddRoot.createBean("InitParam");    //NOI18N
                         contextParam.setParamName(JSFUtils.FACES_PROJECT_STAGE);
                         contextParam.setParamValue("Development"); //NOI18N
@@ -591,18 +584,22 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                 // Fix Issue#105180, new project wizard lets me select both jsf and visual jsf.
                 // The new faces-config.xml template contains no elements;
                 // it's better the framework don't replace user's original one if exist.
-                String facesConfigTemplate = "faces-config.xml"; //NOI18N
+                String facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_DEFAULT;
                 if (ddRoot != null) {
                     Profile profile = webModule.getJ2eeProfile();
-                    if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-                        if (isJSF21)
-                            facesConfigTemplate = "faces-config_2_1.xml"; //NOI18N
-                        else if (isJSF20)
-                            facesConfigTemplate = "faces-config_2_0.xml"; //NOI18N
-                        else
-                            facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
+                    if (Util.isAtLeastJavaEE5(profile) && jsfVersion != null) {
+                        if (jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                            facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_2_2;
+                        } else if (jsfVersion.isAtLeast(JSFVersion.JSF_2_1)) {
+                            facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_2_1;
+                        } else if (jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
+                            facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_2_0;
+                        } else {
+                            facesConfigTemplate = JSFCatalog.RES_FACES_CONFIG_1_2;
+                        }
                     }
-                    if (!profile.equals(Profile.JAVA_EE_6_FULL) && !profile.equals(Profile.JAVA_EE_6_WEB) && !isJSF20) {
+                    if (!Util.isAtLeastJavaEE6Web(profile)
+                            && (jsfVersion == null || !jsfVersion.isAtLeast(JSFVersion.JSF_2_0))) {
                         createFacesConfig = true;
                     }
                 }
@@ -648,7 +645,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 jsfConfig.addApplication(application);
                             }
                             //In JSF2.0 no need to add HANDLER need to change version of faces-config instead
-                            if (!isJSF20 && !isMyFaces) {
+                            if (jsfVersion != null && !jsfVersion.isAtLeast(JSFVersion.JSF_2_0) && !isMyFaces) {
                                 ViewHandler viewHandler = model.getFactory().createViewHandler();
                                 viewHandler.setFullyQualifiedClassType(HANDLER);
                                 application.addViewHandler(viewHandler);                                
@@ -699,45 +696,23 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
 
             }
 
+            // generate the faces-config from template
             if (panel.isEnableFacelets() && panel.isCreateExamples()) {
-                InputStream is;
-                String content;
-                FileObject target;
-                Charset encoding = FileEncodingQuery.getDefaultEncoding();
-
-//                if (webModule.getDocumentBase().getFileObject(TEMPLATE_XHTML) == null){
-//                    if (isJSF20Plus) {
-//                        is= JSFFrameworkProvider.class.getClassLoader()
-//                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML2);
-//                    } else {
-//                        is= JSFFrameworkProvider.class.getClassLoader()
-//                            .getResourceAsStream(FL_RESOURCE_FOLDER + TEMPLATE_XHTML);
-//                    }
-//                    content = readResource(is, encoding.name());
-//                    target = FileUtil.createData(webModule.getDocumentBase(), TEMPLATE_XHTML);
-//                    createFile(target, content, encoding.name());
-//                }
-                if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null){
-                    target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
+                if (webModule.getDocumentBase().getFileObject(WELCOME_XHTML) == null) {
+                    FileObject target = FileUtil.createData(webModule.getDocumentBase(), WELCOME_XHTML);
                     FileObject template = FileUtil.getConfigRoot().getFileObject(WELCOME_XHTML_TEMPLATE);
                     HashMap<String, Object> params = new HashMap<String, Object>();
-                    if (isJSF20 || isJSF21) {
-                        params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                    if (jsfVersion != null) {
+                        if (jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                            params.put("isJSF22", Boolean.TRUE);    //NOI18N
+                        } else {
+                            params.put("isJSF20", Boolean.TRUE);    //NOI18N
+                        }
                     }
                     JSFPaletteUtilities.expandJSFTemplate(template, params, target);
                 }
-//                String defaultCSSFolder = CSS_FOLDER;
-//                if (isJSF20Plus) {
-//                    defaultCSSFolder = CSS_FOLDER2;
-//                }
-//                if (webModule.getDocumentBase().getFileObject(defaultCSSFolder+"/"+DEFAULT_CSS) == null){   //NOI18N
-//                    is = JSFFrameworkProvider.class.getClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + DEFAULT_CSS);
-//                    content = readResource(is, encoding.name());
-//                    //File.separator replaced by "/" because it is used in createData method
-//                    target = FileUtil.createData(webModule.getDocumentBase(), defaultCSSFolder + "/"+ DEFAULT_CSS);  //NOI18N
-//                    createFile(target, content, encoding.name());
-//                }
             }
+
             //copy Welcome.jsp
             if (!panel.isEnableFacelets() && createWelcome && canCreateNewFile(webModule.getDocumentBase(), WELCOME_JSF)) {
                 String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF), "UTF-8"); //NOI18N

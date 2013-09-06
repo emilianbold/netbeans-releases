@@ -102,7 +102,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     public ServerWizardIterator(ServerDetails[] possibleValues, ServerDetails[] downloadableValues) {
         this.acceptedValues = possibleValues;
         this.downloadableValues = downloadableValues;
-        this.gip = GlassfishInstanceProvider.getEe6();
+        this.gip = GlassfishInstanceProvider.getProvider();
         this.hostName = "localhost"; // NOI18N
     }
     
@@ -257,6 +257,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
     private String glassfishRoot;
     private String hostName;
     private boolean useDefaultPorts;
+    private boolean defaultJavaSESupported;
 
     public boolean isUseDefaultPorts() {
         return useDefaultPorts;
@@ -264,6 +265,14 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
 
     public void setUseDefaultPorts(boolean useDefaultPorts) {
         this.useDefaultPorts = useDefaultPorts;
+    }
+
+    public void serDefaultJavaSESupported(boolean defaultJavaSESupported) {
+        this.defaultJavaSESupported = defaultJavaSESupported;
+    }
+
+    public boolean isDefaultJavaSESupported() {
+        return defaultJavaSESupported;
     }
 
     public String formatUri(String host, int port, String target,

@@ -55,6 +55,8 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.maven.jaxws._RetoucheUtil;
 import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -77,15 +79,24 @@ public class AddOperationAction extends NodeAction  {
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
-        return implClassFo != null && !isFromWsdl(implClassFo);
+        return implClassFo != null;
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
+        if (isFromWsdl(implClassFo)) {
+            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(
+                    NbBundle.getMessage(AddOperationAction.class, "LBL_CannotRunOnWsdl")));
+            return;
+        }
         AddOperationCookie addOperationCookie = new JaxWsAddOperation(implClassFo);
         addOperationCookie.addOperation();
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return true;
     }
 
     private boolean isFromWsdl(FileObject inplClass) {

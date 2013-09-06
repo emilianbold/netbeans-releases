@@ -115,6 +115,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
         copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
+        copyFilesVisual.setCopyOnOpen(properties.getCopySrcOnOpen());
         copyFilesVisual.setState(false);
         copyFilesPanel.add(BorderLayout.CENTER, copyFilesVisual);
 
@@ -350,6 +351,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         // everything ok
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
+        properties.setCopySrcOnOpen(copyFilesVisual.isCopyOnOpen());
         // tests - relativize path
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
 

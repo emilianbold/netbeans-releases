@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.awt.Dialog;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,6 +66,8 @@ import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import org.netbeans.modules.glassfish.common.ui.JavaSEPlatformPanel;
+import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
@@ -88,11 +91,12 @@ public class StartTask extends BasicTask<OperationState> {
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
     private final CommonServerSupport support;
     private List<Recognizer> recognizers;
-    private FileObject jdkHome = null;
     private List<String> jvmArgs = null;
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     private final VMIntrospector vmi;
     private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
+    /** internal Java SE platform home cache. */
+    private FileObject jdkHome;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -129,7 +133,7 @@ public class StartTask extends BasicTask<OperationState> {
     public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
             VMIntrospector vmi,
             OperationStateListener... stateListener) {
-        this(support, recognizers, vmi, null, null, stateListener);
+        this(support, recognizers, vmi, null, stateListener);
     }
 
     /**
@@ -141,9 +145,9 @@ public class StartTask extends BasicTask<OperationState> {
      * @param jvmArgs used for starting in profile mode
      * @param stateListener state monitor to track start progress
      */
-    public StartTask(final CommonServerSupport support, List<Recognizer> recognizers,
-            VMIntrospector vmi,
-            FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
+    public StartTask(final CommonServerSupport support,
+            List<Recognizer> recognizers, VMIntrospector vmi, String[] jvmArgs,
+            OperationStateListener... stateListener) {
         super(support.getInstance(), stateListener);
         List<OperationStateListener> listeners = new ArrayList<OperationStateListener>();
         listeners.addAll(Arrays.asList(stateListener));
@@ -153,16 +157,17 @@ public class StartTask extends BasicTask<OperationState> {
             public void operationStateChanged(OperationState newState, String message) {
                 if (OperationState.COMPLETED.equals(newState)) {
                     // attempt to sync the comet support
-                    RequestProcessor.getDefault().post(new EnableComet(support));
+                    RequestProcessor.getDefault().post(
+                            new EnableComet(support.getInstance()));
                 }
             }
         });
         this.stateListener = listeners.toArray(new OperationStateListener[listeners.size()]);
         this.support = support;
         this.recognizers = recognizers;
-        this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(removeEscapes(jvmArgs)) : null;
         this.vmi = vmi;
+        this.jdkHome = null;
         Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}", vmi);
     }
 
@@ -308,12 +313,28 @@ public class StartTask extends BasicTask<OperationState> {
 
     @SuppressWarnings("SleepWhileInLoop")
     private OperationState startDASAndClusterOrInstance(String adminHost, int adminPort) {
-        long start = System.currentTimeMillis();
         Process serverProcess;
         try {
             if (null == jdkHome) {
-                jdkHome = getJavaPlatformRoot(support);
+                jdkHome = getJavaPlatformRoot();
+                File jdkHomeFile = FileUtil.toFile(jdkHome);
+                if (!JavaUtils.isJavaPlatformSupported(instance, jdkHomeFile)) {
+                    jdkHome = JavaSEPlatformPanel.selectServerSEPlatform(
+                            instance, jdkHomeFile);
+                }
             }
+            if (jdkHome == null) {
+                return fireOperationStateChanged(
+                        OperationState.FAILED, null, instanceName);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
+            return fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_PASS_THROUGH", ex.getLocalizedMessage());
+        }
+        // Time must be measured after Java SE platform selection is done.
+        long start = System.currentTimeMillis();
+        try {
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db = Lookup.getDefault().lookup(RegisteredDerbyServer.class);
             if (null != db && "true".equals(instance.getProperty(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
@@ -350,17 +371,15 @@ public class StartTask extends BasicTask<OperationState> {
             }
             serverProcess = createProcess();
         } catch (NumberFormatException nfe) {
-            Logger.getLogger("glassfish").log(Level.INFO, instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
+            Logger.getLogger("glassfish").log(Level.INFO,
+                    instance.getProperty(GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
             return fireOperationStateChanged(OperationState.FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
-        } catch (IOException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
-                    ex.getLocalizedMessage());
         } catch (ProcessCreationException ex) {
-            Logger.getLogger("glassfish").log(Level.INFO, null, ex); // NOI18N
-            return fireOperationStateChanged(OperationState.FAILED, "MSG_PASS_THROUGH",
-                    ex.getLocalizedMessage());
+            Logger.getLogger("glassfish").log(Level.INFO,
+                    "Could not start process for " + instanceName, ex);
+            return fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_PASS_THROUGH", ex.getLocalizedMessage());
         }
 
         fireOperationStateChanged(OperationState.RUNNING,
@@ -522,34 +541,45 @@ public class StartTask extends BasicTask<OperationState> {
 
     }
 
-    private FileObject getJavaPlatformRoot(CommonServerSupport support) throws IOException {
+    /**
+     * Search for Java SE platform to be used for running GlassFish server.
+     * <p/>
+     * GlassFish instance Java SE platform property is checked first
+     * and Java SE platform used to run NetBeans as a fallback option.
+     * <p/>
+     * @return Java SE platform to be used for running GlassFish server.
+     * @throws IOException when GlassFish instance Java SE platform property
+     *         does not point to existing directory.
+     */
+    private FileObject getJavaPlatformRoot() throws IOException {
         FileObject retVal;
-        String javaInstall = support.getInstanceProperties().get(GlassfishModule.JAVA_PLATFORM_ATTR);
-        if (null == javaInstall || javaInstall.trim().length() < 1) {
+        String javaHome = instance.getJavaHome();
+        if (null == javaHome || javaHome.trim().length() < 1) {
             File dir = new File(getJdkHome());
             retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
         } else {
-            File f = new File(javaInstall);
+            File f = new File(javaHome);
             if (f.exists()) {
-                //              bin             home
-                File dir = f.getParentFile().getParentFile();
-                retVal = FileUtil.createFolder(FileUtil.normalizeFile(dir));
+                retVal = FileUtil.createFolder(FileUtil.normalizeFile(f));
             } else {
-                throw new FileNotFoundException(NbBundle.getMessage(StartTask.class, "MSG_INVALID_JAVA", instanceName, javaInstall)); // NOI18N
+                throw new FileNotFoundException(
+                        NbBundle.getMessage(StartTask.class,
+                        "MSG_INVALID_JAVA", instanceName, javaHome));
             }
         }
         return retVal;
     }
 
+    /**
+     * Get Java SE platform used to run NetBeans.
+     * <p/>
+     * @return Java SE platform used to run NetBeans.
+     */
     private String getJdkHome() {
         String result;
-        if (null != jdkHome) {
-            result = FileUtil.toFile(jdkHome).getAbsolutePath();
-        } else {
-            result = System.getProperty("java.home");      // NOI18N
-            if (result.endsWith(File.separatorChar + "jre")) {    // NOI18N
-                result = result.substring(0, result.length() - 4);
-            }
+        result = System.getProperty("java.home");
+        if (result.endsWith(File.separatorChar + "jre")) {
+            result = result.substring(0, result.length() - 4);
         }
         return result;
     }

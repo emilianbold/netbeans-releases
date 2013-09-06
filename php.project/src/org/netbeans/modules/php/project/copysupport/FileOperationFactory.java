@@ -84,6 +84,14 @@ abstract class FileOperationFactory {
         return createInitHandlerInternal(source);
     }
 
+    final Callable<Boolean> createReinitHandler(FileObject source) {
+        if (isInvalid()) {
+            getLogger().log(Level.FINE, "No REINIT handler, File Operation Factory invalid for project {0}", project.getName());
+            return null;
+        }
+        return createReinitHandlerInternal(source);
+    }
+
     final Callable<Boolean> createCopyHandler(FileObject source, FileEvent fileEvent) {
         if (isInvalid()) {
             getLogger().log(Level.FINE, "No CREATE handler, File Operation Factory invalid for project {0}", project.getName());
@@ -124,6 +132,7 @@ abstract class FileOperationFactory {
     protected abstract boolean isEnabled();
     protected abstract boolean isValid(FileEvent fileEvent);
     protected abstract Callable<Boolean> createInitHandlerInternal(FileObject source);
+    protected abstract Callable<Boolean> createReinitHandlerInternal(FileObject source);
     protected abstract Callable<Boolean> createCopyHandlerInternal(FileObject source, FileEvent fileEvent);
     protected abstract Callable<Boolean> createRenameHandlerInternal(FileObject source, String oldName, FileRenameEvent fileRenameEvent);
     protected abstract Callable<Boolean> createDeleteHandlerInternal(FileObject source, FileEvent fileEvent);

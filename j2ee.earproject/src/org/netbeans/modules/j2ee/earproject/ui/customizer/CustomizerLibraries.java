@@ -310,7 +310,7 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
 
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
-            boolean result = makeSharable(uiProperties, new String[1]);
+            boolean result = makeSharable(uiProperties);
             if (result) {
                 isSharable = true;
                 sharedLibrariesLabel.setEnabled(true);
@@ -333,45 +333,14 @@ public final class CustomizerLibraries extends JPanel implements HelpCtx.Provide
         }
     }//GEN-LAST:event_librariesBrowseActionPerformed
 
-    static boolean makeSharable(final EarProjectProperties uiProperties, final String returnServerLibrary[]) {
+    static boolean makeSharable(final EarProjectProperties uiProperties) {
         List<String> libs = new ArrayList<String>();
         List<String> jars = new ArrayList<String>();
         collectLibs(uiProperties.DEBUG_CLASSPATH_MODEL, libs, jars);
         collectLibs(uiProperties.EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel(), libs, jars);
         collectLibs(uiProperties.ENDORSED_CLASSPATH_MODEL, libs, jars);
         libs.add("CopyLibs"); // NOI18N
-        boolean res = SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
-        /* Disabled because of 190387 - make removal and cleanup in 7.1
-        if (res) {
-            // more or less just for consistency I'm adding server library question here.
-            // server library IMO never made any sense in EAR as it never compiles anything
-            // against server jars
-            if (DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary"),
-                    NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizeLibraries_ServerLibrary_Title"),
-                    NotifyDescriptor.YES_NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
-                ProjectManager.mutex().writeAccess(new Runnable() {
-                    public void run()  {
-                        File loc = PropertyUtils.resolveFile(FileUtil.toFile(uiProperties.getProject().getProjectDirectory()), uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
-                        String serverID = uiProperties.getProject().evaluator().getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
-                        try {
-                            Library serverLibrary = SharabilityUtility.findOrCreateLibrary(loc, serverID);
-                            assert returnServerLibrary.length == 1;
-                            returnServerLibrary[0] = serverLibrary.getName();
-//                            EditableProperties ep = uiProperties.getProject().getAntProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                            EarProjectGenerator.setServerProperties(ep, serverLibrary.getName());
-//                            ProjectManager.getDefault().saveProject(uiProperties.getProject());
-//                            ClassPathUiSupport.addLibraries(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel(),
-//                                    null, new Library[]{serverLibrary}, new HashSet<Library>(), null);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                            return;
-                        }
-                    }
-                });
-            }
-        } */
-        return res;
+        return SharableLibrariesUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), uiProperties.getProject().getReferenceHelper(), libs, jars);
     }
 
     private static void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {

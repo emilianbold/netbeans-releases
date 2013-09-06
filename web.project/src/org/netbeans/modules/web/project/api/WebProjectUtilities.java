@@ -216,11 +216,8 @@ public class WebProjectUtilities {
         final boolean createBluePrintsStruct = SRC_STRUCT_BLUEPRINTS.equals(sourceStructure);
         final boolean createJakartaStructure = SRC_STRUCT_JAKARTA.equals(sourceStructure);
 
-        final String serverLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
-                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
-
         final AntProjectHelper h = setupProject(projectDir, name, serverInstanceID,
-                j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName, createData.skipTests());
+                j2eeProfile, createData.getLibrariesDefinition(), createData.skipTests());
         
         FileObject srcFO = projectDir.createFolder(DEFAULT_SRC_FOLDER);
         FileObject confFolderFO = null;
@@ -345,12 +342,16 @@ public class WebProjectUtilities {
     }
 
     public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd) throws IOException {
+        return ensureWelcomePage(webRoot, dd, null);
+    }
+
+    public static Set<FileObject> ensureWelcomePage(FileObject webRoot, FileObject dd, Profile profile) throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
 
         if (dd == null) {
-            FileObject indexJsp = createIndexJSP(webRoot);
-            if (indexJsp != null) {
-                resultSet.add(indexJsp);
+            FileObject indexFile = createWelcomeFile(webRoot, profile);
+            if (indexFile != null) {
+                resultSet.add(indexFile);
             }
             return resultSet;
         }
@@ -363,12 +364,12 @@ public class WebProjectUtilities {
                 ddRoot.setWelcomeFileList(welcomeFiles);
             }
             if (welcomeFiles.sizeWelcomeFile() == 0) {
-                //create default index.jsp
-                FileObject indexJSPFo = createIndexJSP(webRoot);
-                if (indexJSPFo != null) {
-                    // Returning FileObject of index.jsp, will be called its preferred action
-                    resultSet.add(indexJSPFo);
-                    welcomeFiles.addWelcomeFile("index.jsp"); //NOI18N
+                //create default welcome file
+                FileObject indexFo = createWelcomeFile(webRoot, profile);
+                if (indexFo != null) {
+                    // Returning FileObject of welcome file, will be called its preferred action
+                    resultSet.add(indexFo);
+                    welcomeFiles.addWelcomeFile(indexFo.getNameExt()); //NOI18N
                     ddRoot.write(dd);
                 }
             }
@@ -378,14 +379,16 @@ public class WebProjectUtilities {
         return resultSet;
     }
     
-    private static FileObject createIndexJSP(FileObject webFolder) throws IOException {
-        FileObject jspTemplate = FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
+    private static FileObject createWelcomeFile(FileObject webFolder, Profile profile) throws IOException {
+        FileObject template = profile != null && Util.isAtLeastJavaEE7Web(profile) ?
+                FileUtil.getConfigFile( "Templates/JSP_Servlet/Html.html" ) :
+                FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         
-        if (jspTemplate == null) {
+        if (template == null) {
             return null; // Don't know the template
         }
         
-        DataObject mt = DataObject.find(jspTemplate);
+        DataObject mt = DataObject.find(template);
         DataFolder webDf = DataFolder.findFolder(webFolder);
         return mt.createFromTemplate(webDf, "index").getPrimaryFile(); // NOI18N
     }
@@ -485,11 +488,8 @@ public class WebProjectUtilities {
         assert serverInstanceID != null: "Server instance ID can't be null"; //NOI18N
         assert j2eeProfile != null: "Java EE version can't be null"; //NOI18N
         
-        final String serverLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
-                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
-        
         final AntProjectHelper antProjectHelper = setupProject(projectDir, name,
-                serverInstanceID, j2eeProfile, createData.getLibrariesDefinition(), serverLibraryName, createData.skipTests());
+                serverInstanceID, j2eeProfile, createData.getLibrariesDefinition(), createData.skipTests());
         
         final WebProject p = (WebProject) ProjectManager.getDefault().findProject(antProjectHelper.getProjectDirectory());
         final ReferenceHelper referenceHelper = p.getReferenceHelper();
@@ -679,27 +679,6 @@ public class WebProjectUtilities {
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
 
-    private static String configureServerLibrary(final String librariesDefinition,
-            final String serverInstanceId, final FileObject projectDir, final boolean serverLibrary) {
-
-        String serverLibraryName = null;
-        if (librariesDefinition != null && serverLibrary) {
-            try {
-                serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
-                    @Override
-                    public String run() throws Exception {
-                        return SharabilityUtility.findOrCreateLibrary(
-                                PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
-                                serverInstanceId).getName();
-                    }
-                });
-            } catch (MutexException ex) {
-                Exceptions.printStackTrace(ex.getException());
-            }
-        }
-        return serverLibraryName;
-    }
-
     private static String createFileReference(ReferenceHelper refHelper, FileObject projectFO, FileObject sourceprojectFO, FileObject referencedFO) {
         if (FileUtil.isParentOf(projectFO, referencedFO)) {
             return relativePath(projectFO, referencedFO);
@@ -723,10 +702,10 @@ public class WebProjectUtilities {
     
     private static AntProjectHelper setupProject(FileObject dirFO, String name, 
             String serverInstanceID, Profile j2eeProfile, String librariesDefinition, 
-            String serverLibraryName, boolean skipTests) throws IOException {
+            boolean skipTests) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(WebProjectUtilities.class), "UI_WEB_PROJECT_CREATE_SHARABILITY", // NOI18N
-                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.FALSE});
 
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, WebProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
@@ -758,14 +737,8 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.DIST_WAR, "${"+WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_NAME + "}"); // NOI18N
         ep.setProperty(WebProjectProperties.DIST_WAR_EAR, "${" + WebProjectProperties.DIST_DIR+"}/${" + WebProjectProperties.WAR_EAR_NAME + "}"); //NOI18N
         
-        if (h.isSharableProject() && serverLibraryName != null) {
-            // TODO constants
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-        } else {
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
-        }
-        J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.WAR);
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
+        J2EEProjectProperties.setServerProperties(ep, epPriv, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.WAR);
         
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${javac.classpath}"}); // NOI18N
         ep.setProperty("javac.test.processorpath", new String[] {"${javac.test.classpath}"}); // NOI18N

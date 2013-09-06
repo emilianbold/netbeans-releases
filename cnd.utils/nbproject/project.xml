@@ -113,6 +113,7 @@
                 <friend>com.oracle.tools.ide.launchers</friend>
                 <friend>com.oracle.tools.ide.projectless.debug.impl</friend>
                 <friend>com.oracle.tools.ide.projectless.impl</friend>
+                <friend>com.oracle.tools.usagecounting</friend>
                 <friend>com.sun.tools.analytics.codemodel.bridge</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -138,6 +139,7 @@
                 <friend>com.sun.tools.ide.remote.projectui</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.sendto</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.tuxedo.codemodel.bridge</friend>
                 <friend>com.sun.tools.tuxedo.completion</friend>
                 <friend>com.sun.tools.tuxedo.componentproject</friend>
@@ -191,6 +193,7 @@
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.perfan</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>

@@ -5,14 +5,10 @@ com.oracle.deviceaccess.counter
 com.oracle.deviceaccess.dac
 com.oracle.deviceaccess.generic
 com.oracle.deviceaccess.gpio
-com.oracle.deviceaccess.gpio.read
-com.oracle.deviceaccess.gpio.write
 com.oracle.deviceaccess.gpio.GPIOPin.setDirection
 com.oracle.deviceaccess.gpio.GPIOPort.setDirection
 com.oracle.deviceaccess.i2c
 com.oracle.deviceaccess.mmio
-com.oracle.deviceaccess.mmio.read
-com.oracle.deviceaccess.mmio.write
 com.oracle.deviceaccess.modem
 com.oracle.deviceaccess.power
 com.oracle.deviceaccess.spi

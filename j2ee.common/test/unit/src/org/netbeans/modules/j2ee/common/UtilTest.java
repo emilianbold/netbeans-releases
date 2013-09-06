@@ -49,11 +49,14 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.junit.Manager;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.openide.filesystems.FileUtil;
 
@@ -67,7 +70,28 @@ public class UtilTest extends NbTestCase {
     public UtilTest(String testName) {
         super(testName);
     }
-    
+
+    public void testIsHigherJavaEEVersionJavaEE5() {
+        assertFalse(Util.isAtLeastJavaEE5(Profile.J2EE_13));
+        assertFalse(Util.isAtLeastJavaEE5(Profile.J2EE_14));
+
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_5));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_6_FULL));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_6_WEB));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_7_FULL));
+        assertTrue(Util.isAtLeastJavaEE5(Profile.JAVA_EE_7_WEB));
+    }
+
+    public void testIsHigherJavaEEVersionJavaEE6full() {
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.J2EE_13));
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.J2EE_14));
+        assertFalse(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_5));
+
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_6_WEB));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_6_FULL));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_7_WEB));
+        assertTrue(Util.isAtLeastJavaEE6Web(Profile.JAVA_EE_7_FULL));
+    }
     
     public void testContainsClass() throws IOException {
         File dataDir = getDataDir();
@@ -102,7 +126,67 @@ public class UtilTest extends NbTestCase {
         // the driver is among the classes
         assertTrue(Util.containsClass(Arrays.asList(classpath2), "org.netbeans.test.db.driver.TestDriver"));
         assertTrue(Util.containsClass(urlClasspath2, "org.netbeans.test.db.driver.TestDriver"));
-    } 
+    }
+
+    public void testContainsClasses() throws IOException {
+        File dataDir = getDataDir();
+        File[] classpath1 = new File[] {
+            new File(dataDir, "testcp/libs/org.netbeans.nondriver.jar"),
+            new File(dataDir, "testcp/libs/org.netbeans.test.dbdriver.jar")
+        };
+        File[] classpath2 = new File[] {
+            new File(dataDir, "testcp/libs/org.netbeans.nondriver.jar"),
+            new File(dataDir, "testcp/classes") ,
+            new File(dataDir, "testcp/shared/classes"),
+        };
+
+        List<URL> urlClasspath1 = new LinkedList<URL>();
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURL()));
+
+        List<URL> urlClasspath2 = new LinkedList<URL>();
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURL()));
+
+
+        assertNull(Util.containsClass(Arrays.asList(classpath1), Collections.singletonMap(true, "com.mysql.Driver")));
+        assertNull(Util.containsClass(Arrays.asList(classpath2), Collections.singletonMap(true, "com.mysql.Driver")));
+        assertNull(Util.containsClass(urlClasspath1, Collections.singletonMap(true, "com.mysql.Driver")));
+        assertNull(Util.containsClass(urlClasspath2, Collections.singletonMap(true, "com.mysql.Driver")));
+
+        // the driver is in the jar file
+        assertTrue(Util.containsClass(Arrays.asList(classpath1), Collections.singletonMap(true, "org.netbeans.test.db.driver.TestDriver")));
+        assertTrue(Util.containsClass(urlClasspath1, Collections.singletonMap(true, "org.netbeans.test.db.driver.TestDriver")));
+        // the driver is among the classes
+        assertTrue(Util.containsClass(Arrays.asList(classpath2), Collections.singletonMap(true, "org.netbeans.test.db.driver.TestDriver")));
+        assertTrue(Util.containsClass(urlClasspath2, Collections.singletonMap(true, "org.netbeans.test.db.driver.TestDriver")));
+
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        map.put("org.netbeans.test.db.driver.TestDriver", "org.netbeans.test.db.driver.TestDriver");
+        map.put("org.netbeans.test.db.driver.B", "org.netbeans.test.db.driver.B");
+
+        // found test driver not B
+        assertEquals("org.netbeans.test.db.driver.TestDriver", Util.containsClass(Arrays.asList(classpath1), map));
+        assertEquals("org.netbeans.test.db.driver.TestDriver", Util.containsClass(urlClasspath1, map));
+
+        map.clear();
+        map.put("org.netbeans.test.db.driver.B", "org.netbeans.test.db.driver.B");
+        map.put("org.netbeans.test.db.driver.TestDriver", "org.netbeans.test.db.driver.TestDriver");
+
+        // found B not test driver
+        assertEquals("org.netbeans.test.db.driver.B", Util.containsClass(Arrays.asList(classpath1), map));
+        assertEquals("org.netbeans.test.db.driver.B", Util.containsClass(urlClasspath1, map));
+
+        map.clear();
+        map.put("org.netbeans.test.db.driver.C", "org.netbeans.test.db.driver.C");
+        map.put("org.netbeans.test.db.driver.B", "org.netbeans.test.db.driver.B");
+        map.put("org.netbeans.test.db.driver.TestDriver", "org.netbeans.test.db.driver.TestDriver");
+
+        // found B
+        assertEquals("org.netbeans.test.db.driver.B", Util.containsClass(Arrays.asList(classpath1), map));
+        assertEquals("org.netbeans.test.db.driver.B", Util.containsClass(urlClasspath1, map));
+    }
     
     public void testGetJ2eeSpecificationLabel() {
         assertNotNull(Util.getJ2eeSpecificationLabel(J2eeModule.J2EE_13));

@@ -62,11 +62,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
+import org.glassfish.tools.ide.admin.ResultMap;
+import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
-import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
@@ -222,7 +225,7 @@ public class ResourceRegistrationHelper {
             }
             String localValue = (String) localData.get(key);
             if (localValue != null) {
-                if ((remoteValue == null) || ((remoteValue != null) && (!localValue.equals(remoteValue)))) {
+                if (remoteValue == null || !localValue.equals(remoteValue)) {
                     changedData.put(remoteDataKey, localValue);
                 }
             } else {
@@ -303,20 +306,19 @@ public class ResourceRegistrationHelper {
 
     public static Map<String, String> getResourceData(String query, Hk2DeploymentManager dm) {
         try {
-            GetPropertyCommand cmd = new ServerCommand.GetPropertyCommand(query); 
-            Future<OperationState> task = dm.getCommonServerSupport().execute(cmd);
-            OperationState state = task.get();
-            if (state == OperationState.COMPLETED) {
-                Map<String,String> retVal = cmd.getData();
-                if (retVal.isEmpty())
-                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null, new IllegalStateException(query+" has no data"));  // NOI18N
-                return retVal;
+            ResultMap<String, String> result = CommandGetProperty.getProperties(
+                    dm.getCommonServerSupport().getInstance(), query);
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String,String> values = result.getValue();
+                if (values.isEmpty())
+                    Logger.getLogger("glassfish-javaee").log(Level.INFO, null,
+                            new IllegalStateException(query+" has no data"));
+                return values;
+                
             }
-
-        } catch (InterruptedException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-        } catch (ExecutionException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (GlassFishIdeException gfie) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
         }
         return new HashMap<String,String>();
     }
@@ -328,13 +330,11 @@ public class ResourceRegistrationHelper {
             String value = data.get(k);
             try {
                 GlassfishModule support = dm.getCommonServerSupport();
-                SetPropertyCommand spc = support.getCommandFactory().getSetPropertyCommand(name, value);
-                Future<OperationState> task = support.execute(spc);
-                OperationState state = task.get();
-            } catch (InterruptedException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
-            } catch (ExecutionException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+                CommandSetProperty command = support.getCommandFactory()
+                        .getSetPropertyCommand(name, value);
+                CommandSetProperty.setProperty(support.getInstance(), command);
+            } catch (GlassFishIdeException gfie) {
+                Logger.getLogger("glassfish-javaee").log(Level.INFO, gfie.getMessage(), gfie);  // NOI18N
             }
         }
     }

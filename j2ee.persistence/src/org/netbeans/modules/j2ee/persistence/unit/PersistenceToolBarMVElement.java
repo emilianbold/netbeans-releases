@@ -415,13 +415,14 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 PersistenceUnit punit;
                 boolean useModelgen = false;
                 String modelGenLib = null;
-                if(Persistence.VERSION_2_0.equals(version))
+                if(Persistence.VERSION_2_1.equals(version))
                 {
                     useModelgen = true;
+                    punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_1.PersistenceUnit();
+                } else if(Persistence.VERSION_2_0.equals(version)) {
+                    useModelgen = true;
                     punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_2_0.PersistenceUnit();
-                }
-                else//currently default 1.0
-                {
+                } else {//currently default 1.0
                     punit = new org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit();
                 }
                 
@@ -536,7 +537,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         @Override
         public boolean isEnabled() {
             //according to jpa 2.0 there should be at least one persistence unit
-            boolean disable=puDataObject.getPersistence().sizePersistenceUnit()<=1 && puDataObject.getPersistence().getVersion().equals(Persistence.VERSION_2_0);
+            boolean disable=puDataObject.getPersistence().sizePersistenceUnit()<=1 && (Double.parseDouble(puDataObject.getPersistence().getVersion())>=Double.parseDouble(Persistence.VERSION_2_0));
             return !disable;
         }
     }

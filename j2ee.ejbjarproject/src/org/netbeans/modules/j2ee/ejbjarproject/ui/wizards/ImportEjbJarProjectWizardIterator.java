@@ -138,7 +138,6 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
         
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
-        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
 
         EjbJarProjectCreateData createData = new EjbJarProjectCreateData();
         createData.setProjectDir(dirF);
@@ -150,7 +149,6 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Progr
         createData.setServerInstanceID(serverInstanceID);
         createData.setJavaEEProfile(j2eeProfile);
         createData.setLibrariesDefinition(librariesDefinition);
-        createData.setServerLibraryName(serverLibraryName);
 
         AntProjectHelper h = EjbJarProjectGenerator.importProject(createData);
         

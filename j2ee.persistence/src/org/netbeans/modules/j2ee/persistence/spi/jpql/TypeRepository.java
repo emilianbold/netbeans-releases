@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
-import org.eclipse.persistence.jpa.jpql.TypeHelper;
-import org.eclipse.persistence.jpa.jpql.spi.IType;
-import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
+import org.eclipse.persistence.jpa.jpql.tools.TypeHelper;
+import org.eclipse.persistence.jpa.jpql.tools.spi.IType;
+import org.eclipse.persistence.jpa.jpql.tools.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
 
 /**
@@ -150,6 +150,11 @@ public class TypeRepository implements ITypeRepository {
                 }
             }
             ret = types.get(fqn);
+        }
+        if((ret == null || ret[0]==null) && isValid()){
+            //it's still null/unresoved, create "null" type for unresoved fqn
+            ret = new Type[] {new Type(this, (String)null)};
+            types.put(fqn, ret);
         }
         return ret!=null ? ret[0] : null;
     }

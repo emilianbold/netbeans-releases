@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee.utils;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -51,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -59,13 +61,15 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
-import org.netbeans.modules.maven.j2ee.Wrapper;
+import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -111,6 +115,10 @@ public class MavenProjectSupport {
         // We know server instance which should be assigned to the project
         if (instanceID != null && serverID == null) {
             assignServer(project, instanceID, initContextPath);
+
+        // We know both server name and server ID, just do the same as above
+        } else if (instanceID != null && serverID != null) {
+            assignServer(project, instanceID, initContextPath);
             
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
@@ -152,8 +160,9 @@ public class MavenProjectSupport {
     
     private static void setServer(Project project, J2eeModuleProvider moduleProvider, String serverID) {
         if (moduleProvider != null) {
-            if (J2eeModule.Type.WAR.equals(moduleProvider.getJ2eeModule().getType())) {
-                MavenProjectSupport.createDDIfRequired(project, serverID);
+            J2eeModule.Type type = moduleProvider.getJ2eeModule().getType();
+            if (J2eeModule.Type.WAR.equals(type)) {
+                createWebXMLIfRequired(project, serverID);
             }
             
             moduleProvider.setServerInstanceID(serverID);
@@ -235,18 +244,12 @@ public class MavenProjectSupport {
         if (sc != null && sc.getServerInstanceId() != null) {
             return new String[] {sc.getServerInstanceId(), null};
         }
+
         AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-        // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
-        String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-        if (val != null) {
-            return new String[] {val, null};
-        }
-        String server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
-        if (server == null) {
-            //try checking for old values..
-            server = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
-        }
-        return new String[]{null, server};
+        String serverID = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+        String serverType = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
+        
+        return new String[]{serverID, serverType};
     }
     
     /**
@@ -264,7 +267,7 @@ public class MavenProjectSupport {
                 try {
                     return si.getDisplayName();
                 } catch (InstanceRemovedException ex) {
-                    Logger.getLogger(Wrapper.class.getName()).log(Level.FINE, "", ex);
+                    Logger.getLogger(MavenProjectSupport.class.getName()).log(Level.FINE, "", ex);
                 }
             }
         }
@@ -323,8 +326,8 @@ public class MavenProjectSupport {
         }
     }
     
-    public static void createDDIfRequired(Project project) {
-        createDDIfRequired(project, null);
+    public static void createWebXMLIfRequired(Project project) {
+        createWebXMLIfRequired(project, null);
     }
     
     /**
@@ -334,17 +337,17 @@ public class MavenProjectSupport {
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
-    public static void createDDIfRequired(Project project, String serverID) {
+    public static void createWebXMLIfRequired(Project project, String serverID) {
         if (serverID == null) {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
         if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createDD(project);
+            createWebXML(project);
         }
     }
     
-    private static void createDD(Project project) {
+    private static void createWebXML(Project project) {
         WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
         
         if (webModule != null) {
@@ -360,16 +363,53 @@ public class MavenProjectSupport {
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
-                    AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-                    String j2eeVersion = props.get(MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+                    String j2eeVersion = readJ2eeVersion(project);
                     webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
-                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version" + j2eeVersion + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
+                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
                 }
 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    /**
+     * Creates application.xml deployment descriptor if it's required for given project (see #228191)
+     * 
+     * @param project project for which should DD be generated
+     * @param serverID server ID of given project
+     */
+    public static void createApplicationXMLIfRequired(
+            Project project,
+            Set<Project> childProjects,
+            String serverID,
+            String javaeeVersion) {
+        
+        if (serverID == null) {
+            serverID = readServerID(project);
+        }
+        // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
+        if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
+            createApplicationXML(project, childProjects, javaeeVersion);
+        }
+    }
+    
+    private static void createApplicationXML(Project project, Set<Project> childProjects, String javaeeVersion) {
+        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
+        
+        if (earProvider != null) {
+            EarImplementation2 earImpl = earProvider.getEarImplementation();
+            
+            FileObject applicationXML = earImpl.getDeploymentDescriptor();
+            FileObject metaInf = earImpl.getMetaInf();
+
+            if (applicationXML == null) {
+                Profile profile = Profile.fromPropertiesString(javaeeVersion);
+                EarDDHelper.setupDD(profile, metaInf, project, childProjects, true);
             }
         }
     }
@@ -401,7 +441,7 @@ public class MavenProjectSupport {
      * @return J2EE version
      */
     public static String readJ2eeVersion(Project project)  {
-        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, false);
+        return readSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
     }
     
     private static String readSettings(Project project, String propertyName, boolean shared) {
@@ -411,15 +451,11 @@ public class MavenProjectSupport {
     
     
     public static void setJ2eeVersion(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, false);
+        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
     
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
-    }
-    
-    public static void setOldServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, value, true);
     }
     
     public static void setServerInstanceID(Project project, String value) {

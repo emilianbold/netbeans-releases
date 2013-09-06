@@ -83,7 +83,7 @@ public class J2eeProjectSupport {
     public static final int WEB_PROJECT = 1;
     public static final int EJB_PROJECT = 2;
     public static final int J2EE_PROJECT = 3;
-    public static final String DEFAULT_J2EE_LEVEL = Profile.JAVA_EE_6_FULL.toPropertiesString();
+    public static final String DEFAULT_J2EE_LEVEL = Profile.JAVA_EE_7_FULL.toPropertiesString();
     public static final String DEFAULT_SRC_STRUCTURE = WebProjectUtilities.SRC_STRUCT_BLUEPRINTS;
     public static final int WAIT_APPSRV_INSTALL = 30000;
 
@@ -221,7 +221,7 @@ public class J2eeProjectSupport {
                     if (params == null) {
                         params = new String[]{DEFAULT_J2EE_LEVEL, getGlassFishServerInstanceID(), null};
                     }
-                    EarProjectGenerator.createProject(projectDir, name, Profile.J2EE_14, params[1], params[2], null, null);
+                    EarProjectGenerator.createProject(projectDir, name, Profile.J2EE_14, params[1], params[2], null);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid project type.");
@@ -257,6 +257,19 @@ public class J2eeProjectSupport {
         }
         // project not found
         return false;
+    }
+
+    /**
+     * Closes all opened projects.
+     */
+    public static void closeAllProjects() {
+        // posting the to AWT event thread
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                OpenProjectList.getDefault().close(OpenProjectList.getDefault().getOpenProjects(), true);
+            }
+        });
     }
 
     /** Waits until metadata scanning is finished. */

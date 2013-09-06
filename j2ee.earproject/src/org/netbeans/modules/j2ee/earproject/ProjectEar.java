@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ResourceChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
@@ -97,7 +98,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -255,11 +255,11 @@ public final class ProjectEar extends J2eeApplicationProvider
     public Application getApplication() {
         try {
             // does application.xml exist?
-            if (EarProjectUtil.isDDCompulsory(project)
+            if (DDHelper.isApplicationXMLCompulsory(project)
                     || EarProjectUtil.isDDWritable(project)) {
                 // for JAVA EE 5 application.xml doesn't have to exist but can be generated on demand
                 //   - so free resources if this is the case
-                if (!EarProjectUtil.isDDCompulsory(project)) {
+                if (!DDHelper.isApplicationXMLCompulsory(project)) {
                     synchronized (this) {
                         if (application != null) {
                             application = null;
@@ -297,24 +297,19 @@ public final class ProjectEar extends J2eeApplicationProvider
         if (application != null) {
             return application;
         }
-        
-        // create model
-        FileObject template = FileUtil.getConfigFile(
-                "org-netbeans-modules-j2ee-earproject/ear-6.xml"); // NOI18N
-        assert template != null;
-        
+
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        FileObject dd = FileUtil.copyFile(template, root, "application"); // NOI18N
+        FileObject dd = DDHelper.createApplicationXml(getJ2eeProfile(), root, true);
 
         application = DDProvider.getDefault().getDDRoot(dd);
         application.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
         for (ClassPathSupport.Item item : EarProjectProperties.getJarContentAdditional(project)) {
             EarProjectProperties.addItemToAppDD(project, application, item);
         }
-        
+
         return application;
     }
-    
+
     public EjbChangeDescriptor getEjbChanges (long timestamp) {
         return this;
     }

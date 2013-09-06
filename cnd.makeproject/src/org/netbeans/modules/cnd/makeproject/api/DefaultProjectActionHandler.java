@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
@@ -81,6 +82,8 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
+import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -157,6 +160,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
         if (actionType != ProjectActionEvent.PredefinedType.RUN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD
+                && actionType != ProjectActionEvent.PredefinedType.COMPILE_SINGLE
                 && actionType != ProjectActionEvent.PredefinedType.CLEAN
                 && actionType != ProjectActionEvent.PredefinedType.BUILD_TESTS
                 && actionType != ProjectActionEvent.PredefinedType.TEST) {
@@ -236,7 +240,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
 
             commandLine = pae.getRunCommandAsString();
-        } else { // Build or Clean
+        } else { // Build or Clean or compile
             // Build or Clean
             cs = conf.getCompilerSet().getCompilerSet();
             String csdirs = cs.getDirectory();
@@ -259,11 +263,23 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 args = pae.getArguments();
                 args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
             }
+            if (conf.isMakefileConfiguration() && !CompileConfiguration.AUTO_COMPILE.equals(conf.getCompileConfiguration().getCompileCommand().getValue())) {
+                commandLine = pae.getRunCommandAsString();
+            }
+
+            // See bug #228730
+            if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
+                    && cs.getCompilerFlavor().isMinGWCompiler()
+                    && pae.getExecutable().contains("make")) { // NOI18N
+                env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
+            }
         }
 
         LineConvertor converter = null;
 
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.COMPILE_SINGLE ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
                     pae.getProject(), conf.getCompilerSet().getCompilerSet(),
                     execEnv, RemoteFileUtil.getFileObject(runDirectory, pae.getProject()));
@@ -292,7 +308,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 unbufferOutput(unbuffer).setStatusEx(statusEx).
                 addNativeProcessListener(processChangeListener);
 
+        StringBuilder buf = new StringBuilder();
         if (commandLine != null) {
+            buf.append(commandLine);
             npb.setCommandLine(commandLine);
         } else {
             String exe = pae.getExecutable();
@@ -300,9 +318,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 args = pae.getArguments();
             }
             npb.setExecutable(exe).setArguments(args.toArray(new String[args.size()]));
+            buf.append(exe);
+            for(String a : args) {
+                buf.append(' ');
+                buf.append(a);
+            }
         }
         
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD ||
+            actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             npb.redirectError();
         }
 
@@ -331,7 +356,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 || actionType == PredefinedType.DEBUG_TEST
                 || actionType == PredefinedType.DEBUG_STEPINTO_TEST
                 || actionType == PredefinedType.CUSTOM_ACTION);
-
+        
         NativeExecutionDescriptor descr =
                 new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
@@ -346,7 +371,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 outConvertorFactory(processChangeListener).
                 keepInputOutputOnFinish();
 
-        if (actionType == PredefinedType.BUILD || actionType == PredefinedType.CLEAN) {
+        if (actionType == PredefinedType.BUILD ||
+            actionType == PredefinedType.COMPILE_SINGLE ||
+            actionType == PredefinedType.CLEAN) {
             descr.noReset(true);
             if (cs != null) {
                 descr.charset(cs.getEncoding());
@@ -357,6 +384,10 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             if (cs != null) {
                 descr.charset(cs.getEncoding());
             }
+        }
+        
+        if (actionType == PredefinedType.COMPILE_SINGLE) {
+            io.getOut().println(buf.toString());
         }
 
         NativeExecutionService es =

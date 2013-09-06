@@ -42,12 +42,20 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.AstBracketSuffix;
+import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -59,7 +67,13 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.*;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -79,7 +93,7 @@ public final class ResourceBundles {
      * Caches the bundles to avoid reading them again. Holds the bundles for
      * one FileObject at time.
      */
-    private static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<FileObject, ResourceBundles>(1);
+    protected static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<FileObject, ResourceBundles>(1);
 
     private final WebModule webModule;
     private final Project project;
@@ -102,6 +116,10 @@ public final class ResourceBundles {
     private ResourceBundles(WebModule webModule, Project project) {
         this.webModule = webModule;
         this.project = project;
+    }
+
+    public static ResourceBundles create(WebModule webModule, Project project) {
+        return new ResourceBundles(webModule, project);
     }
 
     public static ResourceBundles get(FileObject fileObject) {
@@ -150,7 +168,7 @@ public final class ResourceBundles {
      * {@code key}; {@code false} otherwise.
      */
     public boolean isValidKey(String bundle, String key) {
-        ResourceBundleInfo rbInfo = getBundlesMap().get(bundle);
+        ResourceBundleInfo rbInfo = getBundleForIdentifier(bundle);
         if (rbInfo == null) {
             // no matching bundle file
             return true;
@@ -158,7 +176,79 @@ public final class ResourceBundles {
         return rbInfo.getResourceBundle().containsKey(key);
     }
 
-    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root) {
+    /**
+     * Gets bundle info for given identifier.
+     * @param ident identifier to examine
+     * @return resource bundle info if any found, {@code null} otherwise
+     */
+    private ResourceBundleInfo getBundleForIdentifier(String ident) {
+        // XXX - do it more efficiently
+        for (Map.Entry<String, ResourceBundleInfo> entry : getBundlesMap().entrySet()) {
+            if (ident.equals(entry.getValue().getVarName())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets all locations for given bundle identifier.
+     * @param ident identifier of the bundle
+     * @return locations corresponding to given bundle name, never {@code null}
+     */
+    public List<Location> getLocationsForBundleIdent(String ident) {
+        ResourceBundleInfo rbi = getBundleForIdentifier(ident);
+        if (rbi == null) {
+            return Collections.<Location>emptyList();
+        }
+
+        List<Location> locations = new ArrayList<Location>(rbi.getFiles().size());
+        for (FileObject fileObject : rbi.getFiles()) {
+            locations.add(new Location(0, fileObject));
+        }
+        return locations;
+    }
+
+    /**
+     * Gets all locations for given bundle identifier and key.
+     * @param ident identifier of the bundle
+     * @param key key to search
+     * @return locations (including the offset) of the searched key, never {@code null}
+     */
+    public List<Location> getLocationsForBundleKey(String ident, String key) {
+        List<Location> locations = new ArrayList<Location>();
+        for (Location location : getLocationsForBundleIdent(ident)) {
+            try {
+                DataObject dobj = DataObject.find(location.getFile());
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                try {
+                    ec.openDocument();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                LineCookie lc = dobj.getLookup().lookup(LineCookie.class);
+                if (lc != null) {
+                    Line.Set ls = lc.getLineSet();
+                    for (Line line : ls.getLines()) {
+                        if (line.getText().contains(key + "=") || line.getText().contains(key + " =")) { //NOI18N
+                            try {
+                                StyledDocument document = ec.getDocument();
+                                int offset = document.getText(0, document.getLength()).indexOf(line.getText());
+                                locations.add(new Location(offset, location.getFile()));
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return locations;
+    }
+
+    public List<Pair<AstIdentifier, Node>> collectKeys(final Node root) {
         return collectKeys(root, new ResolverContext());
     }
 
@@ -166,8 +256,8 @@ public final class ResourceBundles {
      * Collects references to resource bundle keys in the given {@code root}.
      * @return List of identifier/string pairs. Identifier = resource bundle base name - string = res bundle key.
      */
-    public List<Pair<AstIdentifier, AstString>> collectKeys(final Node root, ResolverContext context) {
-        final List<Pair<AstIdentifier, AstString>> result = new ArrayList<Pair<AstIdentifier, AstString>>();
+    public List<Pair<AstIdentifier, Node>> collectKeys(final Node root, ResolverContext context) {
+        final List<Pair<AstIdentifier, Node>> result = new ArrayList<Pair<AstIdentifier, Node>>();
         List<Node> path = new AstPath(root).rootToLeaf();
         for (int i = 0; i < path.size(); i++) {
             Node node = path.get(i);
@@ -176,9 +266,13 @@ public final class ResourceBundles {
                 if (i + 2 < path.size()) {
                     Node brackets = path.get(i + 1);
                     Node string = path.get(i + 2);
-                    if (brackets instanceof AstBracketSuffix
-                            && string instanceof AstString) {
-                        result.add(Pair.of((AstIdentifier) node, (AstString) string));
+                    if (brackets instanceof AstBracketSuffix && string instanceof AstString) {
+                        result.add(Pair.of((AstIdentifier) node, string));
+                    }
+                } else if (i + 1 < path.size()) {
+                    // check for bundle.key => AST for that is: identifier, dotSuffix
+                    if (path.get(i + 1) instanceof AstDotSuffix) {
+                        result.add(Pair.of((AstIdentifier) node, path.get(i + 1)));
                     }
                 }
             }
@@ -296,10 +390,9 @@ public final class ResourceBundles {
             return ;
         }
         for(ResourceBundleInfo info : bundlesMap.values()) {
-            FileObject fo = info.getFile();
-            if(fo != null) {
-                fo.removeFileChangeListener(FILE_CHANGE_LISTENER);
-                LOGGER.finer(String.format("Removed FileChangeListener from file %s", fo)); //NOI18N
+            for (FileObject fileObject : info.getFiles()) {
+                fileObject.removeFileChangeListener(FILE_CHANGE_LISTENER);
+                LOGGER.finer(String.format("Removed FileChangeListener from file %s", fileObject)); //NOI18N
             }
         }
         bundlesMap = null;
@@ -342,6 +435,7 @@ public final class ResourceBundles {
                     }
                     ClassLoader classLoader = classPath.getClassLoader(false);
                     try {
+                        // TODO - rewrite listening on all (localized) files
                         FileObject fileObject = null;
                         String resourceFileName = new StringBuilder()
                                 .append(bundleFile.replace(".", "/"))
@@ -364,7 +458,7 @@ public final class ResourceBundles {
                         }
                         
                         java.util.ResourceBundle found = java.util.ResourceBundle.getBundle(bundleFile, Locale.getDefault(), classLoader);
-                        result.put(bundleFile, new ResourceBundleInfo(fileObject, found));
+                        result.put(bundleFile, new ResourceBundleInfo(bundle.getFiles(), found, bundle.getVar()));
                         break; // found the bundle in source cp, skip searching compile cp
                     } catch (MissingResourceException exception) {
                         continue;
@@ -375,23 +469,47 @@ public final class ResourceBundles {
         }
         return result;
     }
-    
-    private static final class ResourceBundleInfo {
-        private FileObject file;
-        private java.util.ResourceBundle resourceBundle;
 
-        public ResourceBundleInfo(FileObject file, java.util.ResourceBundle resourceBundle) {
-            this.file = file;
+    private static final class ResourceBundleInfo {
+        private final List<FileObject> files;
+        private final java.util.ResourceBundle resourceBundle;
+        private final String varName;
+
+        public ResourceBundleInfo(List<FileObject> files, java.util.ResourceBundle resourceBundle, String varName) {
+            this.files = files;
             this.resourceBundle = resourceBundle;
+            this.varName = varName;
         }
 
-        public FileObject getFile() {
-            return file;
+        public List<FileObject> getFiles() {
+            return files;
         }
 
         public java.util.ResourceBundle getResourceBundle() {
             return resourceBundle;
         }
-        
+
+        public String getVarName() {
+            return varName;
+        }
+    }
+
+    public static class Location {
+
+        private final int offset;
+        private final FileObject file;
+
+        public Location(int offset, FileObject file) {
+            this.offset = offset;
+            this.file = file;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public FileObject getFile() {
+            return file;
+        }
     }
 }

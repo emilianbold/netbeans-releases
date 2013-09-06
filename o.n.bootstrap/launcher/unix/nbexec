@@ -364,6 +364,44 @@ detect_system_proxy () {
 }
 
 detect_gnome_proxy () {
+    gsettings=/usr/bin/gsettings   
+    if [ -x $gsettings ] ; then 
+        translate=/usr/bin/tr
+               
+        proxy_mode=`$gsettings get org.gnome.system.proxy mode 2>/dev/null`
+        if [ "$proxy_mode" = "'manual'" ] ; then
+            http_proxy_host=`$gsettings get org.gnome.system.proxy.http host 2>/dev/null | $translate -d "'"`
+            http_proxy_port=`$gsettings get org.gnome.system.proxy.http port 2>/dev/null`
+            http_proxy_tmp=$http_proxy_host:$http_proxy_port
+            http_non_proxy_hosts=`$gsettings get org.gnome.system.proxy ignore-hosts 2>/dev/null`
+            if [ $? ] ; then
+                http_non_proxy_hosts=`echo $http_non_proxy_hosts | $translate -d "[]' "`
+            fi
+            socks_proxy_host=`$gsettings get org.gnome.system.proxy.socks host 2>/dev/null | $translate -d "'"`
+            socks_proxy_port=`$gsettings get org.gnome.system.proxy.socks port 2>/dev/null`
+            socks_proxy_tmp=$socks_proxy_host:$socks_proxy_port
+
+            return 0
+        else
+            if [ "$proxy_mode" = "'none'" ] ; then
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
+                return 0
+            else
+                if [ "$proxy_mode" = "'auto'" ] ; then
+                    detect_system_proxy
+                    pac_file=`$gsettings get org.gnome.system.proxy autoconfig-url 2>/dev/null | $translate -d "'"`
+                    if [ ! -z "$pac_file" ]; then
+                        http_proxy_tmp="PAC "$pac_file
+                    fi
+                    return 0
+                fi
+            fi
+        fi
+    fi
+
     gconftool=/usr/bin/gconftool-2
     if [ -x  $gconftool ] ; then
         proxy_mode=`$gconftool --get /system/proxy/mode 2>/dev/null`

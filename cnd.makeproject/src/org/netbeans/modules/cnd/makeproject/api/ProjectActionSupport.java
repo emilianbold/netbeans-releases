@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.runprofiles.ui.RerunArguments;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -326,6 +327,7 @@ public class ProjectActionSupport {
         private final AtomicReference<ProjectActionHandler> activeHandlerRef = new AtomicReference<ProjectActionHandler>(null);
         private final StopAction stopAction = new StopAction(activeHandlerRef);
         private final RerunAction rerunAction = new RerunAction(this);
+        private final RerunModAction rerunModAction = new RerunModAction(this);
         private final TermAction ta = new TermAction(this);
         private List<BuildAction> additional;
         private final ProjectActionHandler customHandler;
@@ -342,6 +344,11 @@ public class ProjectActionSupport {
             List<Action> list = new ArrayList<Action>();
             list.add(stopAction);
             list.add(rerunAction);
+            if (paes.length == 1 && 
+                (paes[0].getType() == PredefinedType.COMPILE_SINGLE || 
+                 paes[0].getType() == PredefinedType.RUN)) {
+                list.add(rerunModAction);
+            }
             list.add(ta);
             if (additional == null) {
                 additional = BuildActionsProvider.getDefault().getActions(name, paes);
@@ -401,6 +408,7 @@ public class ProjectActionSupport {
             tabs.lockAndReset();
             LifecycleManager.getDefault().saveAll();
             rerunAction.setEnabled(false);
+            rerunModAction.setEnabled(false);
             stopAction.setEnabled(false);
 
             final AtomicInteger currentEventIndex = new AtomicInteger(-1);
@@ -564,6 +572,7 @@ public class ProjectActionSupport {
             } finally {
                 tabs.unlockAndCloseOutput();
                 rerunAction.setEnabled(true);
+                rerunModAction.setEnabled(true);
                 stopAction.setEnabled(false);
                 fon.finishAll();
             }
@@ -825,6 +834,27 @@ public class ProjectActionSupport {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
             submitTask(eventsProcessor);
+        }
+    }
+
+    private static final class RerunModAction extends AbstractAction {
+
+        private final EventsProcessor eventsProcessor;
+
+        public RerunModAction(final EventsProcessor eventsProcessor) {
+            this.eventsProcessor = eventsProcessor;
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/rerun-mod.png", false)); // NOI18N
+            putValue(Action.SHORT_DESCRIPTION, getString("TargetExecutor.RerunAction.rerun-mod")); // NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setEnabled(false);
+            if (new RerunArguments(eventsProcessor.paes).showMe()) {
+                submitTask(eventsProcessor);
+            } else {
+                setEnabled(true);
+            }
         }
     }
 

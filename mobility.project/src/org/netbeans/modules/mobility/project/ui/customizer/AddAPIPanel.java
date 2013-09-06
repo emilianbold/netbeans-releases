@@ -75,7 +75,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.apdu.aid", //NOI18N
         "javax.microedition.apdu.sat", //NOI18N
         "javax.microedition.content.ContentHandler", //NOI18N
-	"javax.microedition.io.Connector.bluetooth.client", //NOI18N
+        "javax.microedition.io.Connector.bluetooth.client", //NOI18N
         "javax.microedition.io.Connector.bluetooth.server", //NOI18N
         "javax.microedition.io.Connector.cbs", //NOI18N
         "javax.microedition.io.Connector.comm", //NOI18N
@@ -126,6 +126,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.io.Connector.sensor", // NOI18N
         // Fix for IZ#216134 - Add new IMP-NG Permissions to Application Descriptor>API Permissions tab (overridden by the fix below)
         // Fix for IZ#226702 -  Support new Device Access API permissions in ME SDK 3.3 in addition to those in ME SDK 3.2
+        // Fix for IZ#227170 -  For NB7.3.1 remove entries from surfaced ME SDK Data Access API to support ME SDK 3.3 only 
         "com.oracle.deviceaccess.adc", // NOI18N
         "com.oracle.deviceaccess.atcmd", // NOI18N
         "com.oracle.deviceaccess.atcmd.ATDevice.openDataConnection", // NOI18N
@@ -133,14 +134,10 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "com.oracle.deviceaccess.dac", // NOI18N
         "com.oracle.deviceaccess.generic", // NOI18N
         "com.oracle.deviceaccess.gpio", // NOI18N
-        "com.oracle.deviceaccess.gpio.read", // NOI18N
-        "com.oracle.deviceaccess.gpio.write", // NOI18N
         "com.oracle.deviceaccess.gpio.GPIOPin.setDirection", // NOI18N
         "com.oracle.deviceaccess.gpio.GPIOPort.setDirection", // NOI18N
         "com.oracle.deviceaccess.i2c", // NOI18N
         "com.oracle.deviceaccess.mmio", // NOI18N
-        "com.oracle.deviceaccess.mmio.read", // NOI18N
-        "com.oracle.deviceaccess.mmio.write", // NOI18N
         "com.oracle.deviceaccess.modem", // NOI18N
         "com.oracle.deviceaccess.power", // NOI18N
         "com.oracle.deviceaccess.spi", // NOI18N

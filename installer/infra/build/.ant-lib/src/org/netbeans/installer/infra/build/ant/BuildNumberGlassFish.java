@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -108,16 +107,18 @@ public class BuildNumberGlassFish extends Task {
             in.close();
             
             Matcher matcher = PATTERN.matcher(contents);
-            DateFormat dateFormatIn = FORMAT_IN;
-            if (!matcher.find()) {
-                matcher = PATTERN_V3.matcher(contents);
-                dateFormatIn = FORMAT_IN_V3;
-            }
-            if (!matcher.find()) {
-                matcher = PATTERN_V3_P02.matcher(contents);
-                dateFormatIn = FORMAT_IN_V3;
-            }
+            boolean found = false;
             if (matcher.find()) {
+                found = true;
+            } else {
+                matcher = PATTERN_V3.matcher(contents);
+            }
+            if (found || matcher.find()) {
+                found = true;
+            } else {
+                matcher = PATTERN_V3_P02.matcher(contents);
+            }
+            if (found || matcher.find()) {
                 String buildType = "";
                 String releaseNumber = "";
                 int counter = 1;
@@ -126,20 +127,12 @@ public class BuildNumberGlassFish extends Task {
                 } else { // V3.X
                     releaseNumber = matcher.group(counter++);                       // NOMAGI
                 }
-                final String milestoneNumberReal = 
-                        matcher.group(counter++);                                   // NOMAGI
-                final String milestoneNumber = 
-                        matcher.group(counter++);                                   // NOMAGI
+                // no milestones in GF 4
+                final String milestoneNumberReal = "0";
+                final String milestoneNumber = "0";
 
-                String buildNumber = "0"; 
-
-                if(matcher.groupCount() > 3) { 
-                   buildNumber = FORMAT_OUT.format(dateFormatIn.parse(matcher.group(counter++))) ; // NOMAGI
-                } else if(!milestoneNumberReal.equals(milestoneNumber)){
-                   buildNumber = "" + (milestoneNumberReal.substring(milestoneNumber.length()).codePointAt(0) - 'a' + 1);
-                }
-
-
+                String buildNumber = matcher.group(counter++);                      // NOMAGI
+                
                 getProject().setProperty(
                         prefix + BUILD_TYPE_SUFFIX, 
                         buildType.toLowerCase());
@@ -160,8 +153,6 @@ public class BuildNumberGlassFish extends Task {
                         "Cannot parse the input file " + file); // NOI18N
             }
         } catch (IOException e) {
-            throw new BuildException(e);
-        } catch (ParseException e) {
             throw new BuildException(e);
         }
     }

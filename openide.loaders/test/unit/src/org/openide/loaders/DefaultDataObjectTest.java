@@ -47,22 +47,27 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
@@ -336,6 +341,53 @@ Group system
         mine.rename(".htaccess");
         assertEquals("Primary file remains", fo, mine.getPrimaryFile());
         assertEquals(".htaccess", fo.getNameExt());
+    }
+
+    /**
+     * Test that text files are not recognized as binary files. See bug 228700.
+     */
+    public void testFixCookieSetRecognizesBinaryFiles() throws IOException {
+
+        byte[] allowedTextBytes = new byte[]{
+            '\n', '\r', '\t', '\f'
+        };
+        for (byte b : allowedTextBytes) {
+            assertNotNull("File that contains an allowed byte " + b
+                    + " shouldn't be recognized as binary file",
+                    createDataObjectWithContent(b)
+                    .getLookup().lookup(EditCookie.class));
+        }
+        for (byte b = 0; b <= 31; b++) {
+            if (createDataObjectWithContent(b)
+                    .getLookup().lookup(EditCookie.class) != null) {
+                boolean isAllowed = false;
+                for (int j = 0; j < allowedTextBytes.length; j++) {
+                    if (b == allowedTextBytes[j]) {
+                        isAllowed = true;
+                        break;
+                    }
+                }
+                assertTrue("File containing byte " + b + " should not be "
+                        + "recognized as text file.", isAllowed);
+            }
+        }
+    }
+
+    private DataObject createDataObjectWithContent(byte singleByteContent)
+            throws IOException {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fob = fs.getRoot().createData("test.txt");
+        OutputStream os = fob.getOutputStream();
+        try {
+            os.write(new byte[]{singleByteContent});
+        } finally {
+            os.close();
+        }
+        DataObject dob = DataObject.find(fob);
+        if (!(dob instanceof DefaultDataObject)) {
+            fail("Expected an instance of DefaultDataObject");
+        }
+        return dob;
     }
 
     private void waitEQ() throws Exception {

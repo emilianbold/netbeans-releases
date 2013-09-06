@@ -195,9 +195,7 @@ public class TestResourceUriAction extends NodeAction  {
         String applicationPath = "resources"; //NOI18N
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
-            try {
-                applicationPath = restSupport.getApplicationPath();
-            } catch (IOException ex) {}
+            applicationPath = restSupport.getApplicationPath();
         }
         StringBuilder builder = new StringBuilder("http://");   // NOI18N
         builder.append(hostName);

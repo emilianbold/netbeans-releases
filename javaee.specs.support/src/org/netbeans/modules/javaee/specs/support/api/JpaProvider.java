@@ -74,6 +74,10 @@ public final class JpaProvider {
         return impl.isJpa2Supported();
     }
 
+    public boolean isJpa21Supported() {
+        return impl.isJpa21Supported();
+    }
+
     public boolean isDefault() {
         return impl.isDefault();
     }

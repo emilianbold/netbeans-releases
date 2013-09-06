@@ -91,14 +91,29 @@ public final class AstPath {
     }
 
     public List<Node> rootToNode(Node target) {
+        return rootToNode(target, false);
+    }
+
+    public List<Node> rootToNode(Node target, boolean inclusive) {
         List<Node> result = new ArrayList<Node>();
         for (Node each : nodes) {
-            if (each.equals(target)) {
+            if (equalsNodes(each, target)) {
+                if (inclusive) {
+                    result.add(each);
+                }
                 break;
             }
             result.add(each);
         }
         return result;
+    }
+
+    private static boolean equalsNodes(Node src, Node target) {
+        if (src.equals(target)) {
+            // #228091 SimpleNode equal method doesn't check images in some cases
+            return src.getImage() == null || src.getImage().equals(target.getImage());
+        }
+        return false;
     }
 
 }

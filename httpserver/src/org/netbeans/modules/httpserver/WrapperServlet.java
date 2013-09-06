@@ -96,8 +96,15 @@ public class WrapperServlet extends NbBaseServlet {
             }
             URL internal = URLMapper.findURL(files[0], URLMapper.INTERNAL);
             URLConnection conn = internal.openConnection();
-            
-            response.setContentType(conn.getContentType ());   // NOI18N
+
+            String type = conn.getContentType();
+            if (type == null || "content/unknown".equals(type)) { // NOI18N
+                type = files[0].getMIMEType();
+            }
+            if ((type == null || "content/unknown".equals(type)) && files[0].getExt().equals("css")) { // NOI18N
+                type = "text/css";
+            }
+            response.setContentType(type);
             // PENDING: copy all info - headers, length, encoding, ...
             
             InputStream in = conn.getInputStream ();

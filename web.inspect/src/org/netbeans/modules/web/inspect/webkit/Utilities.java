@@ -72,6 +72,7 @@ import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetOrigin;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  * WebKit-related utility methods that don't fit well anywhere else.
@@ -111,6 +112,17 @@ public class Utilities {
         int sourceLine = rule.getSourceLine();
         SourceRange range = rule.getSelectorRange();
         int startOffset = (range == null) ? Short.MIN_VALUE : range.getStart();
+        if (startOffset == -1) {
+            int line = range.getStartLine();
+            if (line != -1) {
+                try {
+                    startOffset = LexerUtils.getLineBeginningOffset(sourceModel.getModelSource(), line);
+                    startOffset += range.getStartColumn();
+                } catch (BadLocationException blex) {
+                    Exceptions.printStackTrace(blex);
+                }
+            }
+        }
         org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(
                 sourceModel, styleSheet, selector, mediaQuery, properties,
                 sourceLine, startOffset);
@@ -129,7 +141,21 @@ public class Utilities {
             if (parentStyleSheet != null && range != null) {
                 String styleSheetText = parentStyleSheet.getText();
                 if (styleSheetText != null) {
-                    selector = styleSheetText.substring(range.getStart(), range.getEnd());
+                    int start = range.getStart();
+                    int end = range.getEnd();
+                    int startLine = range.getStartLine();
+                    if (start == -1 && startLine != -1) {
+                        try {
+                            styleSheetText = styleSheetText.replaceAll("\r", ""); // NOI18N
+                            start = LexerUtils.getLineBeginningOffset(sourceModel.getModelSource(), startLine);
+                            start += range.getStartColumn();
+                            end = LexerUtils.getLineBeginningOffset(sourceModel.getModelSource(), range.getEndLine());
+                            end += range.getEndColumn();
+                        } catch (BadLocationException blex) {
+                            Exceptions.printStackTrace(blex);
+                        }
+                    }
+                    selector = styleSheetText.substring(start, end);
                     selector = CSSUtils.normalizeSelector(selector);
                     result = findRuleInStyleSheet0(sourceModel, styleSheet,
                             selector, mediaQuery, properties, sourceLine, startOffset);

@@ -228,6 +228,11 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 public List<String> getDependencies() {
                     return null;
                 }
+
+                @Override
+                public List<String> getBuildArtifacts() {
+                    return null;
+                }
                 
                 @Override
                 public List<SourceFileProperties> getSourcesConfiguration() {
@@ -241,7 +246,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                                 progress.start(set.size());
                             }
                             if (set.size() > 0) {
-                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, project, null, new CompileLineStorage());
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, project, null, null, new CompileLineStorage());
                             } else {
                                 myFileProperties = new ArrayList<SourceFileProperties>();
                             }

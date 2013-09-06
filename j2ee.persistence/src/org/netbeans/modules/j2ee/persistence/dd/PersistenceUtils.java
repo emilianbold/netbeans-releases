@@ -224,12 +224,11 @@ public class PersistenceUtils {
         SourceGroup firstGroup=groups[0];
         FileObject fo=firstGroup.getRootFolder();
         ClassPath compile=ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        if(compile.findResource("javax/persistence/criteria/JoinType.class")!=null)
-        {
+        if(compile.findResource("javax/persistence/criteria/CriteriaUpdate.class")!=null) {
+            version=Persistence.VERSION_2_1;
+        } else if(compile.findResource("javax/persistence/criteria/JoinType.class")!=null) {
             version=Persistence.VERSION_2_0;
-        }
-        else if(compile.findResource("javax/persistence/Entity.class")!=null)
-        {
+        } else if(compile.findResource("javax/persistence/Entity.class")!=null) {
             version=Persistence.VERSION_1_0;
         }
         return version;
@@ -239,12 +238,11 @@ public class PersistenceUtils {
         List<URL> roots=lib.getContent("classpath");
         ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
         String version=null;
-        if(cp.findResource("javax/persistence/criteria/JoinType.class")!=null)
-        {
+        if(cp.findResource("javax/persistence/criteria/CriteriaUpdate.class")!=null) {
+            version=Persistence.VERSION_2_1;
+        } else if(cp.findResource("javax/persistence/criteria/JoinType.class")!=null) {
             version=Persistence.VERSION_2_0;
-        }
-        else if(cp.findResource("javax/persistence/Entity.class")!=null)
-        {
+        } else if(cp.findResource("javax/persistence/Entity.class")!=null) {
             version=Persistence.VERSION_1_0;
         }
         return version;

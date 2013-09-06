@@ -43,17 +43,21 @@ package org.netbeans.modules.web.jsfapi.api;
 
 public enum DefaultLibraryInfo implements LibraryInfo {
 
-    HTML("http://java.sun.com/jsf/html", "Html Basic", "h"), //NOI18N
-    JSF_CORE("http://java.sun.com/jsf/core", "Jsf Core", "f"), //NOI18N
-    JSTL_CORE("http://java.sun.com/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
-    JSTL_CORE_FUNCTIONS("http://java.sun.com/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
-    FACELETS("http://java.sun.com/jsf/facelets", "Facelets", "ui"), //NOI18N
-    COMPOSITE("http://java.sun.com/jsf/composite", "Composite Components", "cc"), //NOI18N
-    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"); //NOI18N
-    
+    HTML("http://xmlns.jcp.org/jsf/html", "Html Basic", "h"), //NOI18N
+    JSF_CORE("http://xmlns.jcp.org/jsf/core", "Jsf Core", "f"), //NOI18N
+    JSTL_CORE("http://xmlns.jcp.org/jsp/jstl/core", "Jstl Core", "c"), //NOI18N
+    JSTL_CORE_FUNCTIONS("http://xmlns.jcp.org/jsp/jstl/functions", "Jstl Core Functions", "fn"), //NOI18N
+    FACELETS("http://xmlns.jcp.org/jsf/facelets", "Facelets", "ui"), //NOI18N
+    COMPOSITE("http://xmlns.jcp.org/jsf/composite", "Composite Components", "cc"), //NOI18N
+    PRIMEFACES("http://primefaces.org/ui", "PrimeFaces", "p"), //NOI18N
+//    FLOW("http://java.sun.com/jsf/flow", "Faces Flow", "j"), //NOI18N
+    JSF("http://xmlns.jcp.org/jsf", "Jsf", "jsf"), //NOI18N
+    PASSTHROUGH("http://xmlns.jcp.org/jsf/passthrough", "Passthrough", "p"); //NOI18N
+
     private String namespace;
     private String displayName;
     private String defaultPrefix;
+
 
     private DefaultLibraryInfo(String namespace, String displayName, String defaultPrefix) {
         this.namespace = namespace;
@@ -64,6 +68,15 @@ public enum DefaultLibraryInfo implements LibraryInfo {
     @Override
     public String getNamespace() {
         return namespace;
+    }
+
+    /**
+     * Second supported namespace by the library.
+     * @return legacy namespace if any or {@code null}
+     */
+    @Override
+    public String getLegacyNamespace() {
+        return NamespaceUtils.NS_MAPPING.get(namespace);
     }
 
     @Override
@@ -77,9 +90,11 @@ public enum DefaultLibraryInfo implements LibraryInfo {
     }
 
     public static LibraryInfo forNamespace(String namespace) {
-        for(int i = 0; i < values().length; i++) {
-            if(values()[i].getNamespace().equals(namespace)) {
-                return values()[i];
+        for (int i = 0; i < values().length; i++) {
+            LibraryInfo li = values()[i];
+            if (li.getNamespace().equals(namespace)
+                    || (li.getLegacyNamespace() != null && li.getLegacyNamespace().equals(namespace))) {
+                return li;
             }
         }
         return null;

@@ -139,7 +139,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
     public void testPropertiesWithoutDDJ2EE() throws Exception { // see #73751
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", Profile.J2EE_14, TestUtil.SERVER_URL, "1.4", null, null);
+                "test-project", Profile.J2EE_14, TestUtil.SERVER_URL, "1.4", null);
         FileObject prjDirFO = aph.getProjectDirectory();
         // simulateing #73751
         prjDirFO.getFileObject("src/conf/application.xml").delete();
@@ -152,7 +152,7 @@ public class EarProjectPropertiesTest extends NbTestCase {
     public void testPropertiesWithoutDDJavaEE() throws Exception {
         File proj = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(proj,
-                "test-project", Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null, null);
+                "test-project", Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null);
         FileObject prjDirFO = aph.getProjectDirectory();
         assertNull("application should not exist", prjDirFO.getFileObject("src/conf/application.xml"));
         EarProject p = (EarProject)ProjectManager.getDefault().findProject(prjDirFO);

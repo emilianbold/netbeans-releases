@@ -53,20 +53,25 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.jsf.JSFCatalog;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.wizards.Utilities;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -173,22 +178,34 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     }
 
     private static String findFacesConfigTemplate(WebModule wm) {
-        final Profile profile = wm.getJ2eeProfile();
-        if (profile.equals(Profile.JAVA_EE_5) || profile.equals(Profile.JAVA_EE_6_FULL) || profile.equals(Profile.JAVA_EE_6_WEB)) {
-            Library jsf20lib = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_2_0_NAME);
-            Library jsf12lib = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
-
-            if (JSFUtils.isJSF21Plus(wm)) {
-                return "faces-config_2_1.xml"; //NOI18N
+        JSFVersion jsfVersion = JSFVersion.get(wm, false);
+        // not found on project classpath (case of Maven project with JSF in deps)
+        if (jsfVersion == null) {
+            // XXX - rewrite using javaee.spec.support module
+            Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(wm));
+            J2eePlatform j2eePlatform = Util.getPlatform(project);
+            Set<Profile> serverProfiles = j2eePlatform.getSupportedProfiles();
+            if (serverProfiles.contains(Profile.JAVA_EE_7_WEB) || serverProfiles.contains(Profile.JAVA_EE_7_FULL)) {
+                return JSFCatalog.RES_FACES_CONFIG_2_2;
+            } else if (serverProfiles.contains(Profile.JAVA_EE_5) || serverProfiles.contains(Profile.JAVA_EE_6_WEB) || serverProfiles.contains(Profile.JAVA_EE_6_FULL)) {
+                return JSFCatalog.RES_FACES_CONFIG_2_1;
             }
-            if (JSFUtils.isJSF20Plus(wm) || jsf20lib != null) {
-                return "faces-config_2_0.xml"; //NOI18N
-            }
-            if (JSFUtils.isJSF12Plus(wm) || jsf12lib != null) {
-                return "faces-config_1_2.xml"; //NOI18N
-            }
+            return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
         }
-        return "faces-config.xml"; //NOI18N
+        switch (jsfVersion) {
+            case JSF_2_2:
+                return JSFCatalog.RES_FACES_CONFIG_2_2;
+            case JSF_2_1:
+                return JSFCatalog.RES_FACES_CONFIG_2_1;
+            case JSF_2_0:
+                return JSFCatalog.RES_FACES_CONFIG_2_0;
+            case JSF_1_2:
+                return JSFCatalog.RES_FACES_CONFIG_1_2;
+            case JSF_1_1:
+            case JSF_1_0:
+                return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
+        }
+        return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
     }
 
     public void initialize(TemplateWizard wizard) {

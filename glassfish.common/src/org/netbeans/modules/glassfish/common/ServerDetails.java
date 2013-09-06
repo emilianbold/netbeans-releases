@@ -136,7 +136,7 @@ public enum ServerDetails {
         new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0"}, // NOI18N
         new String[0],
         400,
-        "http://download.java.net/glassfish/4.0/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
+        "http://download.java.net/glassfish/4.0/release/glassfish-4.0-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
     );
 
@@ -157,8 +157,8 @@ public enum ServerDetails {
                     GLASSFISH_SERVER_3,
                     GLASSFISH_SERVER_3_1,},
                 new ServerDetails[]{
-                    GLASSFISH_SERVER_3_1_2_2,
-                    GLASSFISH_SERVER_3_0_1,});
+                    GLASSFISH_SERVER_4_0,
+                    GLASSFISH_SERVER_3_1_2_2});
     }
 
     /**

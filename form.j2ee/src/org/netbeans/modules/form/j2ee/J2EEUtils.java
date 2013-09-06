@@ -192,7 +192,7 @@ public class J2EEUtils {
         // TopLink(Eclipselink may too, TODO: verify)/Derby combination doesn't like empty username and password,
         // but we can use dummy (app/app) values in this case, see issue 121427.
         if ((nullOrEmpty(connection.getUser()) || nullOrEmpty(connection.getPassword()))
-                && (ProviderUtil.TOPLINK_PROVIDER1_0.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider))
+                && (ProviderUtil.TOPLINK_PROVIDER1_0.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER2_0.equals(provider))
                 && connection.getDriverClass().startsWith("org.apache.derby.jdbc.")) { // NOI18N
             String userPropName = provider.getJdbcUsername();
             String passwdPropName = provider.getJdbcPassword();
@@ -524,7 +524,7 @@ public class J2EEUtils {
     public static void updateProjectForUnit(FileObject fileInProject, PersistenceUnit unit, JDBCDriver driver) {
         // Make sure that TopLink/EclipseLink JAR files are on the classpath
         Provider provider = ProviderUtil.getProvider(unit);
-        if (ProviderUtil.ECLIPSELINK_PROVIDER.equals(provider) || ProviderUtil.ECLIPSELINK_PROVIDER1_0.equals(provider)) {
+        if (provider!=null && ProviderUtil.ECLIPSELINK_PROVIDER.getProviderClass().equals(provider.getProviderClass())) {
             updateProjectForEclipseLink(fileInProject);
         } else if (ProviderUtil.TOPLINK_PROVIDER1_0.equals(provider)) {
             updateProjectForTopLink(fileInProject);

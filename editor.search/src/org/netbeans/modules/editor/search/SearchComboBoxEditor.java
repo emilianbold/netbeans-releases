@@ -190,6 +190,11 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                     }
                 });
         editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
+        if (isCurrentLF("GTK")) {
+            editorPane.setBackground((Color) UIManager.get("text"));
+        } else {
+            editorPane.setBackground(referenceTextField.getBackground());
+        }
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N

@@ -70,16 +70,16 @@ import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
-import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
-import org.netbeans.modules.web.jsf.editor.index.JsfPageModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -154,8 +154,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return;
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
-
+        Map<String, Library> libs = jsfs.getLibraries();
         Map<String, String> nss = result.getNamespaces();
 
         //1. resolve which declared libraries are available on classpath
@@ -164,10 +163,9 @@ public class JsfHtmlExtension extends HtmlExtension {
         // add hint for missing library
 
         for (String namespace : nss.keySet()) {
-
             Node root = result.root(namespace);
             if (root != null) {
-                final AbstractFaceletsLibrary tldl = libs.get(namespace);
+                final Library tldl = NamespaceUtils.getForNs(libs, namespace);
                 ElementUtils.visitChildren(root, new ElementVisitor() {
                     @Override
                     public void visit(Element element) {
@@ -221,8 +219,8 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
-        Set<AbstractFaceletsLibrary> librariesSet = new HashSet<AbstractFaceletsLibrary>(libs.values());
+        Map<String, Library> libs = jsfs.getLibraries();
+        Set<Library> librariesSet = new HashSet<Library>(libs.values());
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -232,15 +230,15 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (colonIndex == -1) {
             //editing namespace or tag w/o ns
             //offer all tags
-            for (AbstractFaceletsLibrary lib : librariesSet) {
-                String declaredPrefix = declaredNS.get(lib.getNamespace());
+            for (Library lib : librariesSet) {
+                String declaredPrefix = NamespaceUtils.getForNs(declaredNS, lib.getNamespace());
                 if (declaredPrefix == null) {
                     //undeclared prefix, try to match with default library prefix
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().startsWith(context.getPrefix())) {
-                        items.addAll(queryLibrary(context, lib, lib.getDefaultPrefix(), true));
+                        items.addAll(queryLibrary(context, lib, lib.getDefaultPrefix(), true, jsfs.isJsf22Plus()));
                     }
                 } else {
-                    items.addAll(queryLibrary(context, lib, declaredPrefix, false));
+                    items.addAll(queryLibrary(context, lib, declaredPrefix, false, jsfs.isJsf22Plus()));
                 }
             }
         } else {
@@ -250,22 +248,22 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (namespace == null) {
                 //undeclared prefix, check if a taglib contains it as
                 //default prefix. If so, offer it in the cc w/ tag autoimport function
-                for (AbstractFaceletsLibrary lib : librariesSet) {
+                for (Library lib : librariesSet) {
                     if (lib.getDefaultPrefix() != null && lib.getDefaultPrefix().equals(tagNamePrefix)) {
                         //match
-                        items.addAll(queryLibrary(context, lib, tagNamePrefix, true));
+                        items.addAll(queryLibrary(context, lib, tagNamePrefix, true, jsfs.isJsf22Plus()));
                     }
                 }
 
             } else {
                 //query only associated lib
-                AbstractFaceletsLibrary lib = libs.get(namespace);
+                Library lib = NamespaceUtils.getForNs(libs, namespace);
                 if (lib == null) {
                     //no such lib, exit
                     return Collections.emptyList();
                 } else {
                     //query the library
-                    items.addAll(queryLibrary(context, lib, tagNamePrefix, false));
+                    items.addAll(queryLibrary(context, lib, tagNamePrefix, false, jsfs.isJsf22Plus()));
                 }
             }
         }
@@ -291,10 +289,10 @@ public class JsfHtmlExtension extends HtmlExtension {
         return null;
     }
 
-    private Collection<CompletionItem> queryLibrary(CompletionContext context, AbstractFaceletsLibrary lib, String nsPrefix, boolean undeclared) {
+    private Collection<CompletionItem> queryLibrary(CompletionContext context, Library lib, String nsPrefix, boolean undeclared, boolean isJsf22Plus) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
-        for (AbstractFaceletsLibrary.NamedComponent component : lib.getComponents()) {
-            items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared));
+        for (LibraryComponent component : lib.getComponents()) {
+            items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared, isJsf22Plus));
         }
 
         return items;
@@ -308,7 +306,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (jsfs == null) {
             return Collections.emptyList();
         }
-        Map<String, AbstractFaceletsLibrary> libs = jsfs.getLibraries();
+        Map<String, Library> libs = jsfs.getLibraries();
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
@@ -327,7 +325,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         String tagName = ot.unqualifiedName().toString();
 
         String namespace = getUriForPrefix(nsPrefix.toString(), declaredNS);
-        AbstractFaceletsLibrary flib = libs.get(namespace);
+        Library flib = NamespaceUtils.getForNs(libs, namespace);
         if (flib == null) {
             //The facelets library not found. This happens if one declares
             //a namespace which is not matched to any existing library
@@ -417,7 +415,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     //</cc:implementation>
     //offsers facet declarations only from within this document
     private void completeFacetsInCCImpl(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns)) {
+        if ("http://java.sun.com/jsf/composite".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/composite".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("renderFacet".equalsIgnoreCase(tagName) || "insertFacet".equalsIgnoreCase(tagName)) { //NOI18N
                 if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
@@ -436,7 +434,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     //2.<f:facet name="|">
     //offsers all facetes
     private void completeFacets(CompletionContext context, List<CompletionItem> items, String ns, OpenTag openTag, JsfSupportImpl jsfs) {
-        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns)) {
+        if ("http://java.sun.com/jsf/core".equalsIgnoreCase(ns) || "http://xmlns.jcp.org/jsf/core".equalsIgnoreCase(ns)) {
             String tagName = openTag.unqualifiedName().toString();
             if ("facet".equalsIgnoreCase(tagName)) { //NOI18N
                 if ("name".equalsIgnoreCase(context.getAttributeName())) { //NOI18N
@@ -493,7 +491,8 @@ public class JsfHtmlExtension extends HtmlExtension {
     private void completeXMLNSAttribute(CompletionContext context, List<CompletionItem> items, JsfSupportImpl jsfs) {
         if (context.getAttributeName().toLowerCase(Locale.ENGLISH).startsWith("xmlns")) { //NOI18N
             //xml namespace completion for facelets namespaces
-            Collection<String> nss = new ArrayList<String>(jsfs.getLibraries().keySet());
+            Set<String> nss = NamespaceUtils.getAvailableNss(jsfs.getLibraries(), jsfs.isJsf22Plus());
+
             //add also xhtml ns to the completion
             nss.add(LibraryUtils.XHTML_NS);
             for (String namespace : nss) {
@@ -563,7 +562,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             return DeclarationLocation.NONE;
         }
 
-        AbstractFaceletsLibrary lib = jsfs.getLibraries().get(ns);
+        Library lib = jsfs.getLibrary(ns);
         if (lib == null) {
             return DeclarationLocation.NONE;
         }

@@ -48,13 +48,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -64,20 +57,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
-import org.netbeans.modules.j2ee.persistence.provider.Provider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
@@ -86,11 +72,8 @@ import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeFactory;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeImplementation;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.PersistenceScopesProvider;
-import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataModelHelper;
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
-import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
-import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -107,7 +90,7 @@ import org.openide.util.RequestProcessor;
  * @author Andrei Badea
  */
 public class EjbJarPersistenceProvider implements PersistenceLocationProvider, PersistenceScopeProvider,
-        PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener, PersistenceProviderSupplier {
+        PersistenceScopesProvider, EntityClassScopeProvider, PropertyChangeListener {
     
     private final EjbJarProject project;
     private final PropertyEvaluator evaluator;
@@ -227,62 +210,6 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
         }
     }
     
-    public List<Provider> getSupportedProviders() {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        J2eePlatform platform  = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-        
-        if (platform == null){
-            return Collections.<Provider>emptyList();
-        }
-        List<Provider> result = new ArrayList<Provider>();
-        
-        Set<Provider> candidates = new HashSet<Provider>();
-        // TODO why we are selecting only some of them  ?
-        // can't we just use ProviderUtil.getAllProviders() ?
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER);
-        candidates.add(ProviderUtil.HIBERNATE_PROVIDER2_0);
-        candidates.add(ProviderUtil.TOPLINK_PROVIDER1_0);
-        candidates.add(ProviderUtil.KODO_PROVIDER);
-        // XXX data nucleus ?
-        candidates.add(ProviderUtil.OPENJPA_PROVIDER);
-        candidates.add(ProviderUtil.OPENJPA_PROVIDER1_0);
-        candidates.add(ProviderUtil.ECLIPSELINK_PROVIDER);
-        addPersistenceProviders(candidates, platform, result);
-        
-        return result;
-    }
-    
-    private void addPersistenceProviders(Set<Provider> providers, J2eePlatform platform, List<Provider> result){
-        JpaSupport jpaSupport = JpaSupport.getInstance(platform);
-        Map<String, JpaProvider> map = new HashMap<String, JpaProvider>();
-        for (JpaProvider provider : jpaSupport.getProviders()) {
-            map.put(provider.getClassName(), provider);
-        }
-        for (Provider provider : providers) {
-            JpaProvider jpa = map.get(provider.getProviderClass());
-            if (jpa != null) {
-                String version = ProviderUtil.getVersion(provider);
-                if (version == null
-                        || ((version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
-                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()))) {
-
-                    if (jpa.isDefault()) {
-                        result.add(0, provider);
-                    } else {
-                        result.add(provider);
-                    }
-                }
-            }
-        }
-        return;
-    }
-    
-    @Override
-    public boolean supportsDefaultProvider() {
-        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
-        return capabilities != null && capabilities.hasDefaultPersistenceProvider();
-    }
-
     /**
      * Implementation of PersistenceScopeImplementation and EntityClassScopeImplementation.
      */

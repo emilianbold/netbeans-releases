@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -66,6 +67,7 @@ import org.openide.loaders.DataObject;
  */
 public class EqualsHashCodeGeneratorTest extends NbTestCase {
     FileObject fo;
+    private String sourceLevel;
     
     public EqualsHashCodeGeneratorTest(String testName) {
         super(testName);
@@ -76,7 +78,11 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         super.setUp();
         fo = SourceUtilsTestUtil.makeScratchDir(this);
         System.setProperty("netbeans.user", getWorkDirPath());
-        SourceUtilsTestUtil.setLookup(new Object[] { new DD() }, getClass().getClassLoader());
+        SourceUtilsTestUtil.setLookup(new Object[] { new DD(), new SourceLevelQueryImplementation() {
+            @Override public String getSourceLevel(FileObject javaFile) {
+                return sourceLevel != null ? sourceLevel : "1.5";
+            }
+        } }, getClass().getClassLoader());
     }
     
     
@@ -579,6 +585,81 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         assertEquals(golden, result);
     }
 
+    public void test227171() throws Exception {
+        sourceLevel = "1.7";
+        
+        EqualsHashCodeGenerator.randomNumber = 1;
+        
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {\n" +
+                             "  private final E e;\n" +
+                             "  enum E {A}\n";
+        String what2 =
+            "}\n";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+
+        class TaskImpl implements Task<WorkingCopy> {
+            @Override public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+                ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
+                TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
+                List<VariableElement> vars = new LinkedList<VariableElement>();
+
+                for (Tree m : clazzTree.getMembers()) {
+                    if (m.getKind() == Kind.VARIABLE) {
+                        vars.add((VariableElement) copy.getTrees().getElement(new TreePath(clazz, m)));
+                    }
+                }
+
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+            }
+        }
+
+        TaskImpl t = new TaskImpl();
+
+        js.runModificationTask(t).commit();
+
+        DataObject dObj = DataObject.find(java);
+        EditorCookie ec = dObj != null ? dObj.getLookup().lookup(org.openide.cookies.EditorCookie.class) : null;
+        Document doc = ec != null ? ec.getDocument() : null;
+        
+        String result = doc != null ? doc.getText(0, doc.getLength()) : TestUtilities.copyFileToString(FileUtil.toFile(java));
+        String golden = "\nimport java.util.Objects;\n" +
+                        "class X {\n" +
+                        "  private final E e;\n" +
+                        "    @Override\n" +
+                        "    public int hashCode() {\n" +
+                        "        int hash = 1;\n" +
+                        "        hash = 1 * hash + Objects.hashCode(this.e);\n" +
+                        "        return hash;\n" +
+                        "    }\n" +
+                        "    @Override\n" +
+                        "    public boolean equals(Object obj) {\n" +
+                        "        if (obj == null) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        if (getClass() != obj.getClass()) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        final X other = (X) obj;\n" +
+                        "        if (this.e != other.e) {\n" +
+                        "            return false;\n" +
+                        "        }\n" +
+                        "        return true;\n" +
+                        "    }\n" +
+                        "  enum E {A}\n" +
+                        "}\n";
+
+        result = result.replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
+        
+        assertEquals(golden, result);
+    }
+    
     private static final class DD extends DialogDisplayer {
 
         public Object notify(NotifyDescriptor descriptor) {

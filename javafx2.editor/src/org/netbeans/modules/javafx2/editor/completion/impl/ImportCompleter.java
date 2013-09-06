@@ -47,10 +47,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
@@ -120,9 +123,24 @@ public class ImportCompleter implements Completer, Completer.Factory {
         
         Set<String> packages = ctx.getClasspathInfo().getClassIndex().getPackageNames(ctx.getPrefix(), true, 
                 EnumSet.of(ClassIndex.SearchScope.SOURCE, ClassIndex.SearchScope.DEPENDENCIES));
-        
+
+        if (!"".equals(ctx.getPrefix())) {
+            if (ctx.getPrefix().endsWith("*")) {
+                return null;
+            }
+            if (ctx.getPrefix().endsWith(".")) {
+                PackageElement pel = ctx.getCompilationInfo().getElements().getPackageElement(ctx.getPrefix().substring(0, ctx.getPrefix().length() - 1));
+                if (pel != null) {
+                    List<?> els = pel.getEnclosedElements();
+                    if (!els.isEmpty()) {
+                        results.add(new PackageItem(ctx, ctx.getPrefix() + "*"));
+                    }
+                }
+            }
+        }
         for (String s : packages) {
-            results.add(JavaCompletionItem.createPackageItem(s, ctx.getCaretOffset(), false));
+//            results.add(JavaCompletionItem.createPackageItem(s, ctx.getStartOffset(), true));
+            results.add(new PackageItem(ctx, s));
         }
         
         return results;

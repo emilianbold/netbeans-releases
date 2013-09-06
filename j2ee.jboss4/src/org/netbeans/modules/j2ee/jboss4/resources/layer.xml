@@ -44,7 +44,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <filesystem>
     <folder name="J2EE">
         <folder name="DeploymentPlugins">
@@ -54,7 +53,7 @@ made subject to such option by the copyright holder.
                 <file name="Factory.instance">
                     <attr name="urlPattern" stringvalue="^jboss-deployer:.*$"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
-                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.create"/>
+                    <attr name="delegate" methodvalue="org.netbeans.modules.j2ee.jboss4.JBDeploymentFactory.getInstance"/>
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>

@@ -64,7 +64,7 @@ import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
-import org.netbeans.modules.maven.j2ee.customizer.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;

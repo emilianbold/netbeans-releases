@@ -108,6 +108,20 @@ is the proper place.
 
 <!-- ACTUAL CHANGES BEGIN HERE: -->
   <changes>
+    <change id="method.factory">
+        <api name="settings_api"/>
+        <summary>Instances may have factory methods</summary>
+        <version major="1" minor="38" subminor="2"/>
+        <date day="15" month="3" year="2013"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="yes" semantic="compatible" source="compatible"/>
+        <description>
+            No need for the instances to have default constructor anymore.
+            One can tell the system to use different factory method.
+        </description>
+        <class package="org.netbeans.api.settings" name="FactoryMethod"/>
+        <issue number="227050"/>
+    </change>
     <change id="private.factories">
         <api name="settings_spi"/>
         <summary>Factory methods can be private</summary>

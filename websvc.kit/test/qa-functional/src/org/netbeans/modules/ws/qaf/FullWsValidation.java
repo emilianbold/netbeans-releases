@@ -51,7 +51,7 @@ import org.netbeans.junit.NbModuleSuite;
  *
  *  Duration of this test suite: aprox. 20min
  *
- * @author lukas.jungmann@sun.com
+ * @author Lukas Jungmann
  */
 public class FullWsValidation extends J2eeTestCase {
 
@@ -61,9 +61,7 @@ public class FullWsValidation extends J2eeTestCase {
 
     public static Test suite() {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
-        return NbModuleSuite.create(
-                addServerTests(Server.GLASSFISH,
-                addServerTests(Server.GLASSFISH,
+        return  addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
@@ -109,12 +107,6 @@ public class FullWsValidation extends J2eeTestCase {
                     "testWsClientHandlers",
                     "testRefreshClient",
                     "testRunWsClientProject"
-                    ), JavaSEWsValidation.class,
-                    "testCreateWsClient",
-                    "testCallWsOperationInJavaMainClass",
-                    "testWsClientHandlers",
-                    "testRefreshClientAndReplaceWSDL",
-                    "testRunWsClientProject"
                     ), WsValidation.class,
                     "testUndeployProjects"
                     ), EjbWsValidation.class,
@@ -123,7 +115,6 @@ public class FullWsValidation extends J2eeTestCase {
                     "testUndeployClientProject"
                     ), WsValidation.class,
                     "testStopServer"
-                    ).enableModules(".*").clusters(".*")
-                );
+                    ).enableModules(".*").clusters(".*").suite();
     }
 }

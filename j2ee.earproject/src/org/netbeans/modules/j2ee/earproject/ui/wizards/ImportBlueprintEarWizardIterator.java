@@ -134,9 +134,8 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
                 wiz.getProperty(WizardProperties.USER_MODULES);
         String librariesDefinition =
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES));
-        String serverLibraryName = (String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY);
         return testableInstantiate(platformName, sourceLevel, j2eeProfile, dirF,
-                srcF, serverInstanceID, name, userModules, handle, librariesDefinition, serverLibraryName);
+                srcF, serverInstanceID, name, userModules, handle, librariesDefinition);
     }
     
     /** <strong>Package private for unit test only</strong>. */
@@ -144,11 +143,11 @@ public class ImportBlueprintEarWizardIterator implements WizardDescriptor.Progre
             final String sourceLevel, final Profile j2eeProfile, final File dirF,
             final File srcF, final String serverInstanceID, final String name,
             final Map<FileObject, ModuleType> userModules, ProgressHandle handle,
-            String librariesDefinition, String serverLibraryName) throws IOException {
+            String librariesDefinition) throws IOException {
         
         EarProjectGenerator.importProject(dirF, srcF, name, j2eeProfile,
                 serverInstanceID, platformName, sourceLevel, userModules, 
-                librariesDefinition, serverLibraryName);
+                librariesDefinition);
         if (handle != null) {
             handle.progress(2);
         }

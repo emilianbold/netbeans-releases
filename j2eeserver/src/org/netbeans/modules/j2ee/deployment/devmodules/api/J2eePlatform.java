@@ -101,6 +101,7 @@ public final class J2eePlatform implements Lookup.Provider {
      * 
      * @since 1.40
      */
+    @Deprecated
     public static final String LIBRARY_TYPE = ServerLibraryTypeProvider.LIBRARY_TYPE;
 
     /** Display name property */
@@ -656,6 +657,7 @@ public final class J2eePlatform implements Lookup.Provider {
      * @throws java.io.IOException if the library can't be created for some reason
      * @since 1.40
      */
+    @Deprecated
     public Library createLibrary(File location, String libraryName) throws IOException {
         Parameters.notNull("location", location); // NOI18N
 

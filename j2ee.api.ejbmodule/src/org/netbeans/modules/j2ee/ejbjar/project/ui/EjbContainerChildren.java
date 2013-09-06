@@ -66,6 +66,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -91,27 +92,12 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     private Task updateTask = null;
     private static final RequestProcessor rp = new RequestProcessor();
+    private AtomicBoolean listenerInitialized = new AtomicBoolean();
 
     public EjbContainerChildren(org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule, EjbNodesFactory nodeFactory, Project project) {
         this.ejbModule = ejbModule;
         this.nodeFactory = nodeFactory;
         this.project = project;
-        try {
-            ejbModule.getMetadataModel().runReadActionWhenReady(new MetadataModelAction<EjbJarMetadata, Void>() {
-                public Void run(EjbJarMetadata metadata) {
-                    org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbJar = metadata.getRoot();
-                    if (ejbJar != null) {
-                        EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-                        if (enterpriseBeans != null) {
-                            enterpriseBeans.addPropertyChangeListener(WeakListeners.propertyChange(EjbContainerChildren.this, enterpriseBeans));
-                        }
-                    }
-                    return null;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
     }
 
     @Override
@@ -134,6 +120,9 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
                         public List<Key> run(EjbJarMetadata metadata) throws Exception {
                             EnterpriseBeans beans = metadata.getRoot().getEnterpriseBeans();
                             if (beans != null) {
+                                if (listenerInitialized.compareAndSet(false, true)) {
+                                    beans.addPropertyChangeListener(WeakListeners.propertyChange(EjbContainerChildren.this, beans));
+                                }
                                 Key[] sessionBeans = Key.createArray(beans.getSession());
                                 Key[] entityBeans = Key.createArray(beans.getEntity());
                                 Key[] messageBeans = Key.createArray(beans.getMessageDriven());
@@ -194,7 +183,6 @@ public class EjbContainerChildren extends Children.Keys<EjbContainerChildren.Key
 
     @Override
     protected void removeNotify() {
-        setKeys(Collections.<Key>emptyList());
         nodesHash.clear();
         super.removeNotify();
     }

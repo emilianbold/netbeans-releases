@@ -42,9 +42,12 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.web.jsf.editor.facelets.mojarra;
 
+import com.sun.faces.config.ConfigurationException;
 import org.netbeans.modules.web.jsf.editor.facelets.*;
 import com.sun.faces.config.DocumentInfo;
 import com.sun.faces.config.processor.AbstractConfigProcessor;
+import com.sun.faces.facelets.tag.TagLibraryImpl;
+import com.sun.faces.facelets.tag.jsf.CompositeComponentTagLibrary;
 import com.sun.faces.util.FacesLogger;
 import com.sun.faces.facelets.util.ReflectionUtil;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport.Compiler;
@@ -60,6 +63,8 @@ import java.net.MalformedURLException;
 import java.lang.reflect.Method;
 
 import javax.faces.FacesException;
+import javax.servlet.ServletContext;
+import org.w3c.dom.Document;
 
 /**
  * <p>
@@ -161,6 +166,12 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     private static final String BEHAVIOR_ID = "behavior-id";
     /**
      * <p>
+     * /facelet-taglib/tag/resource-id
+     * </p>
+     */
+    private static final String RESOURCE_ID = "resource-id";
+    /**
+     * <p>
      *  /facelet-taglib/tag/component/component-type
      * </p>
      */
@@ -207,9 +218,11 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     }
 
     @Override
-    protected Class<?> loadClass(String className, Object fallback, Class<?> expectedType) {
+    protected Class<?> loadClass(ServletContext sc, String className, Object fallback, Class<?> expectedType) {
         try {
-            return super.loadClass(className, fallback, expectedType);
+            // when the class is not found it throws internally FacesException since JSF2.2
+            Class.forName(className, true, Thread.currentThread().getContextClassLoader());
+            return super.loadClass(sc, className, fallback, expectedType);
         } catch (ClassNotFoundException ignore) {
         } catch (NoClassDefFoundError ignore) {
         }
@@ -221,43 +234,48 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
     // -------------------------------------------- Methods from ConfigProcessor
 
     @Override
-    public void process(javax.servlet.ServletContext context, DocumentInfo[] documents) {
-        for (int i = 0, length = documents.length; i < length; i++) {
+    public void process(ServletContext sc, DocumentInfo[] documentInfos) {
+        for (int i = 0, length = documentInfos.length; i < length; i++) {
             if (LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.log(Level.FINE,
-                        MessageFormat.format(
-                        "Processing facelet-taglibrary document: ''{0}''",
-                        documents[i].getDocument().getDocumentURI()));
+                           MessageFormat.format(
+                                 "Processing facelet-taglibrary document: ''{0}''",
+                                 documentInfos[i].getSourceURI()));
             }
-            String namespace =
-                    documents[i].getDocument().getDocumentElement().getNamespaceURI();
-            Element documentElement = documents[i].getDocument().getDocumentElement();
-            NodeList libraryClass =
-                    documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);
+            Document document = documentInfos[i].getDocument();
+            String namespace = document.getDocumentElement().getNamespaceURI();
+            Element documentElement = document.getDocumentElement();
+            NodeList libraryClass = documentElement.getElementsByTagNameNS(namespace, LIBRARY_CLASS);
             if (libraryClass != null && libraryClass.getLength() > 0) {
-                processTaglibraryClass(libraryClass, compiler);
+                processTaglibraryClass(sc, libraryClass, compiler);
             } else {
-                processTagLibrary(documents[i], documentElement, namespace, compiler);
+                processTagLibrary(sc, documentInfos[i], documentElement, namespace, compiler);
             }
-
         }
+
+//        try {
+//            invokeNext(sc, documentInfos);
+//        } catch (Exception e) {
+//            //ignore
+//        }
     }
 
     // --------------------------------------------------------- Private Methods
-    private void processTaglibraryClass(NodeList libraryClass,
-            Compiler compiler) {
+
+
+    private void processTaglibraryClass(ServletContext sc, NodeList libraryClass,
+                                        Compiler compiler) {
 
 //        Node n = libraryClass.item(0);
 //        String className = getNodeText(n);
-//        TagLibrary taglib = (TagLibrary) createInstance(className, n);
+//        TagLibrary taglib = (TagLibrary) createInstance(sc, className, n);
 //        compiler.addTagLibrary(taglib);
 
         //PENDING: enable this
 
     }
 
-    private void processTagLibrary(DocumentInfo info,
-            Element documentElement,
+    private void processTagLibrary(ServletContext sc, DocumentInfo info, Element documentElement,
             String namespace,
             Compiler compiler) {
 
@@ -282,21 +300,21 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 return;
             }
 
-            NodeList tags =
-                    documentElement.getElementsByTagNameNS(namespace, TAG);
-            
-            FaceletsLibrary taglibrary = compositeLibraryName != null 
+            NodeList tags = documentElement.getElementsByTagNameNS(namespace, TAG);
+            NodeList functions = documentElement.getElementsByTagNameNS(namespace, FUNCTION);
+            FaceletsLibrary taglibrary = compositeLibraryName != null
                     ? new CompositeComponentLibrary(support, compositeLibraryName, taglibNamespace, sourceUrl)
                     : new FaceletsLibrary(support, taglibNamespace, sourceUrl);
-            
-            processTags(documentElement, tags, taglibrary);
+
+            processTags(sc, documentElement, tags, taglibrary);
+            processFunctions(sc, functions, taglibrary);
             compiler.addTagLibrary(taglibrary);
         }
     }
 
-    private void processTags(Element documentElement,
-            NodeList tags,
-            FaceletsLibrary taglibrary) {
+    private void processTags(ServletContext sc, Element documentElement,
+                             NodeList tags,
+                             TagLibraryImpl taglibrary) {
 
         if (tags != null && tags.getLength() > 0) {
             for (int i = 0, ilen = tags.getLength(); i < ilen; i++) {
@@ -327,28 +345,28 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                         source = n;
                     } else if (HANDLER_CLASS.equals(n.getLocalName())) {
                         handlerClass = n;
-                }
+                    }
                 }
                 if (component != null) {
-                    processComponent(component, taglibrary, tagName);
+                    processComponent(sc, documentElement, component, taglibrary, tagName);
                 } else if (converter != null) {
-                    processConverter(converter, taglibrary, tagName);
+                    processConverter(sc, converter, taglibrary, tagName);
                 } else if (validator != null) {
-                    processValidator(validator, taglibrary, tagName);
+                    processValidator(sc, validator, taglibrary, tagName);
                 } else if (behavior != null) {
-                    processBehavior(behavior, taglibrary, tagName);
+                    processBehavior(sc, behavior, taglibrary, tagName);
                 } else if (source != null) {
                     processSource(documentElement, source, taglibrary, tagName);
                 } else if (handlerClass != null) {
-                    processHandlerClass(handlerClass, taglibrary, tagName);
+                    processHandlerClass(sc, handlerClass, taglibrary, tagName);
                 }
             }
         }
 
     }
 
-    private void processBehavior(NodeList behavior, FaceletsLibrary taglibrary,
-            String tagName) {
+    private void processBehavior(ServletContext sc, NodeList behavior, TagLibraryImpl taglibrary,
+			String tagName) {
         if (behavior != null && behavior.getLength() > 0) {
             String behaviorId = null;
             String handlerClass = null;
@@ -362,9 +380,8 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
             }
             if (handlerClass != null) {
-                Class<?> clazz = loadClass(handlerClass, this, null);
+                Class<?> clazz = loadClass(sc, handlerClass, this, null);
                 taglibrary.putBehavior(tagName, behaviorId, clazz);
-
             } else {
                 taglibrary.putBehavior(tagName, behaviorId);
             }
@@ -372,24 +389,33 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processHandlerClass(Node handlerClass,
-            FaceletsLibrary taglibrary,
-            String name) {
+
+    private void processHandlerClass(ServletContext sc, Node handlerClass,
+                                     TagLibraryImpl taglibrary,
+                                     String name) {
 
         String className = getNodeText(handlerClass);
         //mfukala: (issue #184097) fix possible NPE from the code below if <handler-class> element is empty and the getNodeText() returns null
         if(className == null) {
+            // fix for incomplete TAGs
+            LOGGER.log(Level.FINE, "HandlerClass name not specified for tag={0}", name);
+            taglibrary.putTagHandler(name, loadClass(sc, "com.sun.faces.facelets.tag.TagHandlerImpl", this, null)); //NOI18N
             return ; //just ignre that entry
         }
-        Class<?> clazz = loadClass(className, this, null);
-        taglibrary.putTagHandler(name, clazz);
-
+        Class<?> clazz = loadClass(sc, className, this, null);
+        if (clazz != null) {
+            taglibrary.putTagHandler(name, clazz);
+        } else {
+            // fix for missing HandlerClass
+            LOGGER.log(Level.FINE, "HandlerClass {0} not found for tag={1}", new Object[]{className, name});
+            taglibrary.putTagHandler(name, loadClass(sc, "com.sun.faces.facelets.tag.TagHandlerImpl", this, null)); //NOI18N
+        }
     }
 
     private void processSource(Element documentElement,
-            Node source,
-            FaceletsLibrary taglibrary,
-            String name) {
+                               Node source,
+                               TagLibraryImpl taglibrary,
+                               String name) {
 
         String docURI = documentElement.getOwnerDocument().getDocumentURI();
         String s = getNodeText(source);
@@ -403,12 +429,21 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
         } catch (MalformedURLException e) {
             throw new FacesException(e);
         }
+    }
+
+    private void processResourceId(Element documentElement,
+                               Node compositeSource,
+                               TagLibraryImpl taglibrary,
+                               String name) {
+
+        String resourceId = getNodeText(compositeSource);
+        taglibrary.putCompositeComponentTag(name, resourceId);
 
     }
 
-    private void processValidator(NodeList validator,
-            FaceletsLibrary taglibrary,
-            String name) {
+    private void processValidator(ServletContext sc, NodeList validator,
+                                  TagLibraryImpl taglibrary,
+                                  String name) {
 
         if (validator != null && validator.getLength() > 0) {
             String validatorId = null;
@@ -423,8 +458,8 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
             }
             if (handlerClass != null) {
-                Class<?> clazz = loadClass(handlerClass, this, null);
-                taglibrary.putValidator(name, validatorId, clazz);
+                    Class<?> clazz = loadClass(sc, handlerClass, this, null);
+                    taglibrary.putValidator(name, validatorId, clazz);
 
             } else {
                 taglibrary.putValidator(name, validatorId);
@@ -433,9 +468,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processConverter(NodeList converter,
-            FaceletsLibrary taglibrary,
-            String name) {
+
+    private void processConverter(ServletContext sc, NodeList converter,
+                                  TagLibraryImpl taglibrary,
+                                  String name) {
 
         if (converter != null && converter.getLength() > 0) {
             String converterId = null;
@@ -451,8 +487,8 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
             }
             if (handlerClass != null) {
-                Class<?> clazz = loadClass(handlerClass, this, null);
-                taglibrary.putConverter(name, converterId, clazz);
+                    Class<?> clazz = loadClass(sc, handlerClass, this, null);
+                    taglibrary.putConverter(name, converterId, clazz);
 
             } else {
                 taglibrary.putConverter(name, converterId);
@@ -461,14 +497,16 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private void processComponent(NodeList component,
-            FaceletsLibrary taglibrary,
-            String name) {
+
+    private void processComponent(ServletContext sc, Element documentElement, NodeList component,
+                                  TagLibraryImpl taglibrary,
+                                  String name) {
 
         if (component != null && component.getLength() > 0) {
             String componentType = null;
             String rendererType = null;
             String handlerClass = null;
+            Node resourceId = null;
             for (int i = 0, ilen = component.getLength(); i < ilen; i++) {
                 Node n = component.item(i);
                 if (COMPONENT_TYPE.equals(n.getLocalName())) {
@@ -477,23 +515,28 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                     rendererType = getNodeText(n);
                 } else if (HANDLER_CLASS.equals(n.getLocalName())) {
                     handlerClass = getNodeText(n);
+                }  else if (RESOURCE_ID.equals(n.getLocalName())) {
+                    resourceId = n;
                 }
             }
             if (handlerClass != null) {
-                Class<?> clazz = loadClass(handlerClass, this, null);
-                taglibrary.putComponent(name,
-                        componentType,
-                        rendererType,
-                        clazz);
+                Class<?> clazz = loadClass(sc, handlerClass, this, null);
+                    taglibrary.putComponent(name,
+                                            componentType,
+                                            rendererType,
+                                            clazz);
+            } else if (resourceId != null) {
+                processResourceId(documentElement, resourceId, taglibrary, name);
             } else {
                 taglibrary.putComponent(name, componentType, rendererType);
             }
+
         }
 
     }
 
-    private void processFunctions(NodeList functions, FaceletsLibrary taglibrary) {
 
+    private void processFunctions(ServletContext sc, NodeList functions, TagLibraryImpl taglibrary) {
         if (functions != null && functions.getLength() > 0) {
             for (int i = 0, ilen = functions.getLength(); i < ilen; i++) {
                 NodeList children = functions.item(i).getChildNodes();
@@ -513,7 +556,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 }
                 Method m = null;
                 try {
-                    Class<?> clazz = loadClass(functionClass, this, null);
+                    Class<?> clazz = loadClass(sc, functionClass, this, null);
                     m = createMethod(clazz, functionSignature);
                 } catch (Exception e) {
 //                    throw new ConfigurationException(e);
@@ -527,8 +570,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
 
     }
 
-    private static Method createMethod(Class type, String signature) throws Exception {
 
+    private static Method createMethod(Class type, String signatureParam) throws Exception {
+        // formatted XML might cause \n\t characters - make sure we only have space characters left
+        String signature = signatureParam.replaceAll("\\s+", " ");
         int pos = signature.indexOf(' ');
         if (pos == -1) {
             throw new Exception("Must Provide Return Type: " + signature);
@@ -536,12 +581,14 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
             int pos2 = signature.indexOf('(', pos + 1);
             if (pos2 == -1) {
                 throw new Exception(
-                        "Must provide a method name, followed by '(': " + signature);
+                      "Must provide a method name, followed by '(': "
+                      + signature);
             } else {
                 String mn = signature.substring(pos + 1, pos2).trim();
                 pos = signature.indexOf(')', pos2 + 1);
                 if (pos == -1) {
-                    throw new Exception("Must close parentheses, ')' missing: " + signature);
+                    throw new Exception("Must close parentheses, ')' missing: "
+                                        + signature);
                 } else {
                     String[] ps = signature.substring(pos2 + 1, pos).trim().split(",");
                     Class[] pc;
@@ -556,7 +603,10 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                     try {
                         return type.getMethod(mn, pc);
                     } catch (NoSuchMethodException e) {
-                        throw new Exception("No Function Found on type: " + type.getName() + " with signature: " + signature);
+                        throw new Exception("No Function Found on type: "
+                                            + type.getName()
+                                            + " with signature: "
+                                            + signature);
                     }
 
                 }

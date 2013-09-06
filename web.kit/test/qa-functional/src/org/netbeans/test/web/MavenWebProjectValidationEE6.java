@@ -45,16 +45,17 @@ import junit.framework.Test;
  */
 public class MavenWebProjectValidationEE6 extends MavenWebProjectValidation {
 
+    @SuppressWarnings("hiding")
     public static final String[] TESTS = {
         "testNewMavenWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
-        "testRunServlet", "testCreateTLD", "testCreateTagHandler",
-        "testRunTag", "testNewHTML", "testRunHTML",
+        "testCreateTLD", "testCreateTagHandler", "testNewHTML",
         "testNewSegment", "testNewDocument",
+        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
+        "testViewServlet", "testRunServlet", "testRunTag", "testRunHTML",
         "testFinish"
     };
-
+    
     public MavenWebProjectValidationEE6(String name) {
         super(name);
         PROJECT_NAME = "WebMavenProjectEE6";

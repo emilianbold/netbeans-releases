@@ -174,6 +174,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxUnrestrictedAcc = new javax.swing.JCheckBox();
         labelSigning = new javax.swing.JLabel();
         labelSigningMessage = new javax.swing.JLabel();
+        warningSigning = new javax.swing.JLabel();
         buttonSigning = new javax.swing.JButton();
         labelCustomJS = new javax.swing.JLabel();
         labelCustomJSMessage = new javax.swing.JLabel();
@@ -384,7 +385,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 37, 20, 10);
+        gridBagConstraints.insets = new java.awt.Insets(0, 37, 15, 10);
         panelBottom.add(labelSigning, gridBagConstraints);
         labelSigning.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.labelSigning.text")); // NOI18N
         labelSigning.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelSigning.text")); // NOI18N
@@ -397,6 +398,21 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         panelBottom.add(labelSigningMessage, gridBagConstraints);
+
+        warningSigning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javafx2/project/ui/resources/info.png"))); // NOI18N
+        warningSigning.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.warningSigning.text")); // NOI18N
+        warningSigning.setPreferredSize(new java.awt.Dimension(526, 30));
+        warningSigning.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 36, 20, 0);
+        panelBottom.add(warningSigning, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.buttonSigning.text")); // NOI18N
         buttonSigning.addActionListener(new java.awt.event.ActionListener() {
@@ -417,7 +433,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelCustomJS, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelCustomJS.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 15, 10);
         panelBottom.add(labelCustomJS, gridBagConstraints);
@@ -428,7 +444,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelCustomJSMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         panelBottom.add(labelCustomJSMessage, gridBagConstraints);
@@ -441,7 +457,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
         panelBottom.add(buttonCustomJSMessage, gridBagConstraints);
@@ -452,7 +468,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelDownloadMode, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelDownloadMode.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 10);
         panelBottom.add(labelDownloadMode, gridBagConstraints);
@@ -463,7 +479,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelDownloadModeMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelBottom.add(labelDownloadModeMessage, gridBagConstraints);
 
@@ -475,7 +491,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
         panelBottom.add(buttonDownloadMode, gridBagConstraints);
@@ -554,12 +570,16 @@ private void buttonIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void buttonSigningActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonSigningActionPerformed
     JFXSigningPanel panel = new JFXSigningPanel(jfxProps);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JFXSigningPanel.class, "TITLE_JFXSigningPanel"), true, null); // NOI18N
+    panel.registerListeners();
+    panel.setDialogDescriptor(dialogDesc);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
         panel.store();
         refreshSigningLabel();
     }
+    panel.unregisterListeners();
+    dialog.dispose();
 }//GEN-LAST:event_buttonSigningActionPerformed
 
 private void checkBoxUnrestrictedAccActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxUnrestrictedAccActionPerformed
@@ -655,11 +675,14 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private void refreshSigningLabel() {
         if(!jfxProps.getSigningEnabled() || jfxProps.getSigningType() == JFXProjectProperties.SigningType.NOSIGN) {
             labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningUnsigned")); // NOI18N
+            //warningSigning.setVisible(true);
         } else {
             if(jfxProps.getSigningType() == JFXProjectProperties.SigningType.KEY) {
                 labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningKey", jfxProps.getSigningKeyAlias())); // NOI18N
+                //warningSigning.setVisible(false);
             } else {
                 labelSigningMessage.setText(NbBundle.getMessage(JFXDeploymentPanel.class, "MSG_SigningGenerated")); // NOI18N
+                //warningSigning.setVisible(true);
             }
         }
     }
@@ -711,6 +734,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     private javax.swing.JPanel panelBottom;
     private javax.swing.JPanel panelTop;
     private javax.swing.JTextField textFieldIcon;
+    private javax.swing.JLabel warningSigning;
     // End of variables declaration//GEN-END:variables
 
     @Override

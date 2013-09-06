@@ -149,7 +149,6 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         
         createData.setLibrariesDefinition(
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
-        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
         createData.setWebXmlRequired(checkFrameworksForWebXml());
         createData.setCDIEnabled((Boolean)wiz.getProperty(ProjectServerWizardPanel.CDI));
         
@@ -201,7 +200,7 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileObject webRoot = h.getProjectDirectory().getFileObject("web");//NOI18N
         if (apiWebModule != null) {
             FileObject dd = apiWebModule.getDeploymentDescriptor();
-            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd));
+            resultSet.addAll(WebProjectUtilities.ensureWelcomePage(webRoot, dd, createData.getJavaEEProfile()));
         }
         
         handle.progress(NbBundle.getMessage(NewWebProjectWizardIterator.class, "LBL_NewWebProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);

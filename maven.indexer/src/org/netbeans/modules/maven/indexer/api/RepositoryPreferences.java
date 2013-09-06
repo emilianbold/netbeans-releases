@@ -376,6 +376,10 @@ public final class RepositoryPreferences {
      * @since 2.11
      */
     public void addTransientRepository(Object key, String id, String displayName, String url, RepositoryInfo.MirrorStrategy strategy) throws URISyntaxException {
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("file:")) {
+            //only register repositories we can safely handle.. #227322
+            return;
+        }        
         synchronized (infoCache) {
             List<RepositoryInfo> infos = transients.get(key);
             if (infos == null) {

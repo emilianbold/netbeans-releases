@@ -57,23 +57,24 @@ from the Java Web category.</p>
     </ul>
   </li>
   <li><b>Source Package Folders.</b></li>
- <li> <b>Test Package Folders.</b> Specifies each of the project's source package folders (containing 
+  <li><b>Test Package Folders.</b> Specifies each of the project's source package folders (containing 
   source packages) and test package folders (containing JUnit tests). You can 
   have multiple source roots in a standard project, with the following exceptions: 
-</li>
-<ul>
+  <ul>
     <li>The source root cannot already exist in another IDE project. </li>
-  <li>The source root cannot already be added to another compilation unit of the 
+    <li>The source root cannot already be added to another compilation unit of the 
     same project. For example, a source root that is registered under Test Packages 
     cannot be added to the list of Source Packages.</li>
     <li>All of the source roots are packaged into the same WAR file and share the 
     same classpath.</li>
-</ul>
+  </ul>
+  
 <ul class="note">
   <li>If you have a source root that needs to be used by several projects, you 
     should create a separate project for the source root and <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">set 
     up compilation dependencies</a> between the projects.</li>
-
+</ul>
+  </li>
 </ul>
 <p>When you click Finish, the folder specified as the Location property
    is used to determine where the web pages, Java sources and libraries are found. The

@@ -371,6 +371,7 @@ public final class SelectConfigurationPanel extends JPanel {
         wizardDescriptor.setIncludedFiles(includedFiles);
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         Set<String> dep = new HashSet<String>();
+        Set<String> buildArtifacts = new HashSet<String>();
         for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
             Configuration conf = it.next();
             includedFiles.addAll(conf.getIncludedFiles());
@@ -394,9 +395,13 @@ public final class SelectConfigurationPanel extends JPanel {
             if (conf.getDependencies() != null) {
                 dep.addAll(conf.getDependencies());
             }
+            if (conf.getBuildArtifacts() != null) {
+                buildArtifacts.addAll(conf.getBuildArtifacts());
+            }
         }
         wizardDescriptor.setInvokeProvider(false);
         wizardDescriptor.setDependencies(new ArrayList<String>(dep));
+        wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
         wizardDescriptor.setConfigurations(projectConfigurations);
         int max = 0;
         String top = "";

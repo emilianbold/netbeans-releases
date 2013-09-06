@@ -50,11 +50,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -104,12 +102,9 @@ class RestConfigHint extends BaseRestConfigurationFix  {
     @Override
     public ChangeInfo implement() throws Exception {
         if ( isJersey ){
-            getSupport().enableRestSupport(RestConfig.DD);
-            getSupport().ensureRestDevelopmentReady();
-        }
-        else {
-            getSupport().enableRestSupport(RestConfig.IDE);
-            getSupport().ensureRestDevelopmentReady();
+            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.DD);
+        } else {
+            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
             // XXX : package and Application class is subject to configure via UI
             SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);

@@ -84,6 +84,7 @@ public class TestBase extends NbTestCase {
     protected static final String EJB_2_1 = "2.1"; // NOI18N
     protected static final String EJB_3_0 = "3.0"; // NOI18N
     protected static final String EJB_3_1 = "3.1"; // NOI18N
+    protected static final String EJB_3_2 = "3.2"; // NOI18N
     
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
@@ -121,6 +122,14 @@ public class TestBase extends NbTestCase {
      */
     public TestModule createEjb31Module(TestModule... modulesOnClasspath) throws IOException {
         return createTestModule("EJBModule_6_0", EJB_3_1, modulesOnClasspath);
+    }
+
+    /**
+     * Creates copy of EJB 3.1 project in test's working directory
+     * and returns TestModule wrapper for that
+     */
+    public TestModule createEjb32Module(TestModule... modulesOnClasspath) throws IOException {
+        return createTestModule("EJBModule_7_0", EJB_3_2, modulesOnClasspath);
     }
 
     /**

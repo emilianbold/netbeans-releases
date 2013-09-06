@@ -723,6 +723,12 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                 sb.append(tll).append('\n');
             }
         }
+        String errors = checkConsistency();
+        if (errors != null) {
+            sb.append("!!! CONSISTENCY ERRORS FOUND in TOKEN HIERARCHY:\n");
+            sb.append(errors);
+            sb.append('\n');
+        }
         return sb.toString();
     }
 
@@ -768,7 +774,14 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         }
         return error;
     }
-    
+
+    public void ensureConsistency() {
+        String errors = checkConsistency();
+        if (errors != null) {
+            throw new IllegalStateException("!!! CONSISTENCY ERRORS FOUND in TOKEN HIERARCHY:\n" + errors);
+        }
+    }
+
 //    private final class SnapshotRef extends WeakReference<TokenHierarchyOperation<I,T>> implements Runnable {
 //        
 //        SnapshotRef(TokenHierarchyOperation<I,T> snapshot) {

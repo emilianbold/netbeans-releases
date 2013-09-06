@@ -211,7 +211,7 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
     InputStream getTemplate(){
         String path = RESOURCES_FOLDER+"template-";  //NOI18N
         path = path + bgLayout.getSelection().getActionCommand() + "-"; //NOI18N
-        path = path + bgTemplates.getSelection().getActionCommand() + ".xhtml";          //NOI18N
+        path = path + bgTemplates.getSelection().getActionCommand() + ".template";          //NOI18N
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(path);
         return is;
     }

@@ -122,6 +122,7 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
         return "DefT"; // NOI18N "TextToken" or "FlyToken"
     }
     
+    private static boolean textFailureLogged;
     /**
      * Get text represented by this token.
      */
@@ -139,7 +140,17 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
                 CharSequenceUtilities.checkIndexesValid(inputSourceText, start, end);
                 text = new InputSourceSubsequence(this, inputSourceText, start, end);
             } else {
-                return inputSourceText.subSequence(start, end);
+                // Temporary fix for issue #225394
+                try {
+                    return inputSourceText.subSequence(start, end);
+                } catch (IndexOutOfBoundsException ex) {
+                    // Log that the IOOBE occurred.
+                    if (!textFailureLogged) {
+                        textFailureLogged = true;
+                        LOG.log(Level.INFO, "Obtaining of token text failed.", ex);
+                    }
+                    return "";
+                }
             }
 
         } else { // Token is removed

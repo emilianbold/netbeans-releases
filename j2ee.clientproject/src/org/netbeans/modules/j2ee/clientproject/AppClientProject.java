@@ -474,12 +474,9 @@ public final class AppClientProject implements Project, FileChangeListener {
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                                    AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
                                 Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                                 String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(AppClientProject.this);
@@ -648,11 +645,11 @@ public final class AppClientProject implements Project, FileChangeListener {
                     if (servInstID != null) {
                         serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
                     }
-                }
-                catch (InstanceRemovedException ier) {
+                } catch (InstanceRemovedException ier) {
                     // ignore
                 }
-                Utils.logUsage(AppClientProject.class, "USG_PROJECT_OPEN_APPCLIENT", new Object[] { serverName }); // NOI18N
+                Profile profile = AppClientProject.this.getAPICar().getJ2eeProfile();
+                Utils.logUsage(AppClientProject.class, "USG_PROJECT_OPEN_APPCLIENT", new Object[] { serverName, profile }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }

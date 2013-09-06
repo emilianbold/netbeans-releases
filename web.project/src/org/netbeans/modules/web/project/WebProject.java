@@ -55,6 +55,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -117,6 +118,8 @@ import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
+import org.netbeans.modules.j2ee.common.project.EMGenStrategyResolverImpl;
+import org.netbeans.modules.j2ee.common.project.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
@@ -588,8 +591,8 @@ public final class WebProject implements Project {
             cpMod.getClassPathModifier(),
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
-            new WebPersistenceProviderSupplier(this),
-            new WebEMGenStrategyResolver(),
+            new PersistenceProviderSupplierImpl(this),
+            new EMGenStrategyResolverImpl(this),
             new WebJPADataSourceSupport(this), 
             Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
@@ -744,8 +747,6 @@ public final class WebProject implements Project {
                 EditableProperties projectProps = helper.getProperties(
                         AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
-                        WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                     Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
                             Util.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
@@ -761,7 +762,6 @@ public final class WebProject implements Project {
                     } catch (IOException e) {
                         Exceptions.printStackTrace(e);
                     }
-                }
                 return null;
             }
         });
@@ -968,7 +968,8 @@ public final class WebProject implements Project {
                     catch (InstanceRemovedException ire) {
                         // do nothing
                     }
-                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName }); // NOI18N
+                    Profile profile = WebProject.this.getWebModule().getJ2eeProfile();
+                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName, profile }); // NOI18N
                 }
                 
             } catch (IOException e) {
@@ -1312,18 +1313,27 @@ public final class WebProject implements Project {
         "simple-files"          // NOI18N
     };
 
-    private static final String[] TYPES_EJB = new String[] {
+    private static final String[] TYPES_EJB31 = new String[] {
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_0",        // NOI18N
-        "ejb-types_3_1",         // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_1_full",   // NOI18N
         "ejb-deployment-descriptor", // NOI18N
     };
 
-    private static final String[] TYPES_EJB_LITE = new String[] {
+    private static final String[] TYPES_EJB31_LITE = new String[] {
         "ejb-types",            // NOI18N
         "ejb-types_3_0",        // NOI18N
         "ejb-types_3_1",        // NOI18N
+        "ejb-deployment-descriptor", // NOI18N
+    };
+
+    private static final String[] TYPES_EJB32_LITE = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_2",        // NOI18N
         "ejb-deployment-descriptor", // NOI18N
     };
 
@@ -1362,11 +1372,17 @@ public final class WebProject implements Project {
 
     private static final String[] PRIVILEGED_NAMES_EE6_FULL = new String[] {
         "Templates/J2EE/Session", // NOI18N
-        "Templates/J2EE/Message"  // NOI18N
+        "Templates/J2EE/Message", // NOI18N
+        "Templates/J2EE/TimerSession"   // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES_EE6_WEB = new String[] {
         "Templates/J2EE/Session"  // NOI18N
+    };
+
+    private static final String[] PRIVILEGED_NAMES_EE7_WEB = new String[] {
+        "Templates/J2EE/Session",       // NOI18N
+        "Templates/J2EE/TimerSession"   // NOI18N
     };
 
     private static final String[] PRIVILEGED_NAMES_ARCHIVE = new String[] {
@@ -1432,23 +1448,27 @@ public final class WebProject implements Project {
         private boolean isEE5 = false;
         private boolean serverSupportsEJB31 = false;
 
+        @Override
         public String[] getRecommendedTypes() {
             checkEnvironment();
             if (isArchive) {
                 return TYPES_ARCHIVE;
-            } else if (projectCap.isEjb31LiteSupported()){
+            } else if (projectCap.isEjb31LiteSupported()) {
                 List<String> list = new ArrayList(Arrays.asList(TYPES));
-                if (projectCap.isEjb31Supported() || serverSupportsEJB31){
-                    list.addAll(Arrays.asList(TYPES_EJB));
+                if (projectCap.isEjb31Supported() || serverSupportsEJB31) {
+                    list.addAll(Arrays.asList(TYPES_EJB31));
+                } else if (projectCap.isEjb32LiteSupported()) {
+                    list.addAll(Arrays.asList(TYPES_EJB32_LITE));
                 } else {
-                    list.addAll(Arrays.asList(TYPES_EJB_LITE));
+                    list.addAll(Arrays.asList(TYPES_EJB31_LITE));
                 }
                 return list.toArray(new String[list.size()]);
-            }else{
+            } else {
                 return TYPES;
             }
         }
         
+        @Override
         public String[] getPrivilegedTemplates() {
             checkEnvironment();
             if (isArchive) {
@@ -1459,6 +1479,8 @@ public final class WebProject implements Project {
                     list = getPrivilegedTemplatesEE5();
                     if (projectCap.isEjb31Supported() || serverSupportsEJB31){
                         list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_FULL));
+                    } else if (projectCap.isEjb32LiteSupported()) {
+                        list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE7_WEB));
                     } else {
                         list.addAll(13, Arrays.asList(PRIVILEGED_NAMES_EE6_WEB));
                     }

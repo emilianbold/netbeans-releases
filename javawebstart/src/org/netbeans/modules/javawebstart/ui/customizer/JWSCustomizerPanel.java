@@ -134,10 +134,16 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
     private void refreshSigningLabel() {
         if (JWSProjectProperties.SIGNING_GENERATED.equals(jwsProps.signing)) {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Generated"));
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated"));
+            signingWarning.setVisible(true);
         } else if (JWSProjectProperties.SIGNING_KEY.equals(jwsProps.signing)) {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias));
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDeprecated")); //NOI18N
+            signingWarning.setVisible(true);
         } else {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned"));
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated"));
+            signingWarning.setVisible(true);
         }
     }
 
@@ -169,6 +175,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         jLabel1 = new javax.swing.JLabel();
         signingInfolabel = new javax.swing.JLabel();
         signingCustomizeButton = new javax.swing.JButton();
+        signingWarning = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         applicationDescRadioButton = new javax.swing.JRadioButton();
         appletClassLabel = new javax.swing.JLabel();
@@ -229,6 +236,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.weightx = 1.0;
@@ -244,7 +252,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -260,6 +268,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 1.0;
@@ -282,6 +291,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 1.0;
@@ -304,7 +314,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(panelDescLabel, gridBagConstraints);
@@ -335,6 +345,17 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(signingCustomizeButton, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(signingWarning, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signingWarning.text")); // NOI18N
+        signingWarning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        signingWarning.setPreferredSize(new java.awt.Dimension(400, 50));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        add(signingWarning, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -421,8 +442,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -497,15 +518,15 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         add(jPanel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(jSeparator2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(jSeparator3, gridBagConstraints);
@@ -593,12 +614,16 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
 private void signingCustomizeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_signingCustomizeButtonActionPerformed
     SigningPanel panel = new SigningPanel(jwsProps);
     DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(SigningPanel.class, "TITLE_SigningPanel"), true, null);
+    panel.registerListeners();
+    panel.setDialogDescriptor(dialogDesc);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
         panel.store();
         refreshSigningLabel();
     }
+    panel.unregisterListeners();
+    dialog.dispose();
 }//GEN-LAST:event_signingCustomizeButtonActionPerformed
 
 private void manageResources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageResources
@@ -693,6 +718,7 @@ private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         jLabel1.setEnabled(b);
         signingInfolabel.setEnabled(b);
         signingCustomizeButton.setEnabled(b);
+        signingWarning.setEnabled(b);
         extResButton.setEnabled(b);
         applicationDescRadioButton.setEnabled(b);
         appletDescRadioButton.setEnabled(b);
@@ -747,6 +773,7 @@ private void resolveOldBuildScript(java.awt.event.ActionEvent evt) {//GEN-FIRST:
     private javax.swing.JPanel resolvePanel;
     private javax.swing.JButton signingCustomizeButton;
     private javax.swing.JLabel signingInfolabel;
+    private javax.swing.JLabel signingWarning;
     private javax.swing.JTextArea warningArea;
     // End of variables declaration//GEN-END:variables
 

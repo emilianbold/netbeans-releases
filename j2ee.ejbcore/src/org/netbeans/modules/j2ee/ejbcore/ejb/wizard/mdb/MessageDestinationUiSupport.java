@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,11 +61,20 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport;
 import org.netbeans.modules.j2ee.core.api.support.progress.ProgressSupport.Context;
-import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.javaee.resources.api.JmsDestination;
+import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModel;
+import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModelSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -79,7 +89,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public abstract class MessageDestinationUiSupport {
-    
+
     /**
      * Get module and server message destinations.
      * <p>
@@ -87,7 +97,7 @@ public abstract class MessageDestinationUiSupport {
      * @param j2eeModuleProvider 
      * @return holder with both module and server message destinations.
      */
-    public static DestinationsHolder getDestinations(final J2eeModuleProvider j2eeModuleProvider) {
+    public static DestinationsHolder getDestinations(final Project project, final J2eeModuleProvider j2eeModuleProvider) {
         assert j2eeModuleProvider != null;
         final DestinationsHolder holder = new DestinationsHolder();
         
@@ -99,7 +109,7 @@ public abstract class MessageDestinationUiSupport {
                     String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_RetrievingDestinations");
                     actionContext.progress(msg);
                     try {
-                        holder.setModuleDestinations(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+                        holder.setModuleDestinations(getProjectMessageDestinations(project, j2eeModuleProvider));
                         holder.setServerDestinations(j2eeModuleProvider.getConfigSupport().getServerMessageDestinations());
                     } catch (ConfigurationException ex) {
                         Exceptions.printStackTrace(ex);
@@ -149,13 +159,17 @@ public abstract class MessageDestinationUiSupport {
     }
     
     /**
-     * Open the dialog for adding message destination. Create and get created message destination.
+     * Open the dialog for adding message destination. If the javaEE platform is EJB3.2+ it will return instance
+     * of the (@link JmsDestinationDefinition} with flag for generation. Such destination has to be created as an
+     * annotation inside the source file. Otherwise (for EJB3.1-) it will create static resource using the
+     * {@link J2eeModuleProvider.ConfigSupport#createMessageDestination}.
+     * @param project project where we are generating
      * @param j2eeModuleProvider Java EE module provider.
      * @param moduleDestinations module message destinations.
      * @param serverDestinations server message destinations.
      * @return created message destination or <code>null</code> if no message destination is created.
      */
-    public static MessageDestination createMessageDestination(final J2eeModuleProvider j2eeModuleProvider,
+    public static MessageDestination prepareMessageDestination(final Project project, final J2eeModuleProvider j2eeModuleProvider,
             final Set<MessageDestination> moduleDestinations, final Set<MessageDestination> serverDestinations) {
         assert j2eeModuleProvider != null;
         assert moduleDestinations != null;
@@ -199,10 +213,18 @@ public abstract class MessageDestinationUiSupport {
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         MessageDestination md = null;
         if (option == DialogDescriptor.OK_OPTION) {
-            md = createMessageDestination(
-                    j2eeModuleProvider,
-                    messageDestination.getDestinationName(),
-                    messageDestination.getDestinationType());
+            J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+            if (capabilities.isEjb32Supported()) {
+                md = new JmsDestinationDefinition(
+                        messageDestination.getDestinationName(),
+                        messageDestination.getDestinationType(),
+                        true);
+            } else {
+                md = createMessageDestination(
+                        j2eeModuleProvider,
+                        messageDestination.getDestinationName(),
+                        messageDestination.getDestinationType());
+            }
         }
         
         return md;
@@ -212,25 +234,57 @@ public abstract class MessageDestinationUiSupport {
     private static MessageDestination createMessageDestination(final J2eeModuleProvider j2eeModuleProvider,
             final String destinationName, final MessageDestination.Type destinationType) {
         final MessageDestination[] messageDestinations = new MessageDestination[1];
-        
+
         ProgressSupport.Action action = new ProgressSupport.BackgroundAction() {
+            @Override
             public void run(Context actionContext) {
                 String msg = NbBundle.getMessage(MessageDestinationUiSupport.class, "MSG_CreatingDestination");
                 actionContext.progress(msg);
                 try {
-                    messageDestinations[0] = 
-                            j2eeModuleProvider.getConfigSupport().createMessageDestination(destinationName, destinationType);
+                    messageDestinations[0] = j2eeModuleProvider.getConfigSupport().createMessageDestination(destinationName, destinationType);
                 } catch (ConfigurationException ce) {
                     Exceptions.printStackTrace(ce);
                 }
             }
         };
-        
+
         Collection<ProgressSupport.Action> asyncActions = Collections.singleton(action);
         ProgressSupport.invoke(asyncActions);
-        
+
         return messageDestinations[0];
     }
+
+    public static Set<MessageDestination> getProjectMessageDestinations(Project p, J2eeModuleProvider j2eeModuleProvider) {
+        final Set<MessageDestination> allDestinations = new HashSet<MessageDestination>();
+
+        try {
+            // server specific, deployable destinations
+            allDestinations.addAll(j2eeModuleProvider.getConfigSupport().getMessageDestinations());
+        } catch (ConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        // by project defined JNDI destinations
+        try {
+            JndiResourcesModelSupport.getModel(p).runReadAction(new MetadataModelAction<JndiResourcesModel, Void>() {
+                @Override
+                public Void run(JndiResourcesModel metadata) throws Exception {
+                    for (final JmsDestination jmsDestination : metadata.getJmsDestinations()) {
+                        Type type = "javax.ejb.Topic".equals(jmsDestination.getClassName()) ? Type.TOPIC : Type.QUEUE; //NOI18N
+                        allDestinations.add(new JmsDestinationDefinition(jmsDestination.getName(), type, false));
+                    }
+                    return null;
+                }
+            });
+        } catch (MetadataModelException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return allDestinations;
+    }
+
     
     /**
      * Holder for message destinations (module- and server-).
@@ -288,7 +342,7 @@ public abstract class MessageDestinationUiSupport {
             return destName2 == null ? 1 : destName1.compareToIgnoreCase(destName2);
         }
     }
-    
+
     // optional - create factory method for this class
     private static class MessageDestinationListCellRenderer extends DefaultListCellRenderer {
 

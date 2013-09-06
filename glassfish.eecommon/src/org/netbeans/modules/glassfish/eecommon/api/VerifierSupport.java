@@ -57,7 +57,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.EventObject;
+import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -79,7 +82,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.glassfish.spi.ExecSupport;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.utils.JavaUtils;
+import org.glassfish.tools.ide.utils.OsUtils;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Appclient;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Application;
 import org.netbeans.modules.j2ee.sun.dd.impl.verifier.Connector;
@@ -103,7 +109,12 @@ import org.openide.windows.WindowManager;
  * Main TopComponent to display the output of the Sun J2EE Verifier Tool from an archive file.
  * @author ludo
  */
-public class VerifierSupport extends TopComponent{
+public class VerifierSupport extends TopComponent {
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = Logger.getLogger("glassfish-eecommon");
+
     String _archiveName;
     
     final static int FAIL = 0;
@@ -152,78 +163,115 @@ public class VerifierSupport extends TopComponent{
     private Vector defaultResults = new Vector();
     
     /**
-     *
+     * Prepare Java VM environment for verifier execution.
+     * <p/>
+     * @param env      Process builder environment <code>Map</code>.
+     * @param javaHome Java SE to run verifier.
+     */
+    private static void setJavaEnvironment(Map<String,String> env,
+            final String javaHome) {
+        // Java VM home stored in environment variable JAVA_HOME
+        env.put(JavaUtils.JAVA_HOME_ENV, javaHome);
+    }
+
+    /**
+     * Run GlassFish verifier tool.
+     * <p/>
      * @param fileName
      * @param outs
-     * @param irf
+     * @param server GlassFish server instance.
+     * @param javaHome Java SE to run verifier.
      */
-    public static  void launchVerifier(final String fileName, OutputStream outs, File irf){
-        final File f = new File(fileName);
-        final File dir = f.getParentFile();
-        final VerifierSupport verifierSupport=new VerifierSupport(fileName);
+    public static  void launchVerifier(final String fileName,
+            final OutputStream outs, final GlassFishServer server,
+            final String javaHome) {
         
-        //File irf = org.netbeans.modules.j2ee.sun.api.ServerLocationManager.getLatestPlatformLocation();
-        if (null == irf || !irf.exists()) {
-            //org.netbeans.modules.j2ee.sun.ide.j2ee.ui.Util.showWarning(NbBundle.getMessage(VerifierSupport.class, "ERR_CannotFind"));// NOI18N
-            return;
-        }
-        String installRoot = irf.getAbsolutePath();
-        
-        try{
-            String cmd = installRoot+File.separator+"bin"+File.separator+"verifier";//NOI18N
-            if (File.separatorChar != '/') {
-                cmd =cmd + ".bat";      // NOI18N
-            }
-            File verifierFile = new File(cmd);
-            if (!verifierFile.exists()) {
+        final String embeddedStaticShellJar
+                = ServerUtils.getEmbeddedStaticShellJar(server.getServerHome());
+        final String verifierJar
+                = ServerUtils.getVerifierJar(server.getServerHome());
+        final String javaHelpJar
+                = ServerUtils.getJavaHelpJar(server.getServerHome());
+        final String javaVmExe = JavaUtils.javaVmExecutableFullPath(javaHome);
+        final File embeddedStaticShellJarFile = new File(embeddedStaticShellJar);
+        final File verifierJarFile = new File(verifierJar);
+        final File javaHelpJarFile = new File(javaHelpJar);
+        final File file = new File(fileName);
+        final File dir = file.getParentFile();
+
+        File javaVmFile = new File(javaVmExe);
+        // JAR files to execute verifier must exist.
+        if (!embeddedStaticShellJarFile.exists() || !verifierJarFile.exists()
+                || !javaHelpJarFile.exists() || !javaVmFile.exists()) {
+            if (!verifierJarFile.exists()) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(VerifierSupport.class, "MSG_INSTALL_VERIFIER")); // NOI18N
                 DialogDisplayer.getDefault().notify(nd);
-                return;
-            } else {
-                SwingUtilities.invokeLater( new Runnable(){
-                    @Override
-                    public void run() {
-                        verifierSupport.initUI();
-                        verifierSupport.showInMode();
-                    }
-                });
-                Runtime rt = Runtime.getRuntime();
-                String arr[] = {cmd, "-ra", "-d" , dir.getAbsolutePath(), fileName};//NOI18N
+            }
+            return;
+        }
+        
+        // Build verifier execution arguments.
+        String verifierArgs[] = {"-ra", "-d" , dir.getAbsolutePath(), fileName};
+        StringBuilder sb = new StringBuilder();
+        sb.append(JavaUtils.VM_CLASSPATH_OPTION).append(' ');
+        sb.append(embeddedStaticShellJar).append(File.pathSeparatorChar);
+        sb.append(verifierJar).append(File.pathSeparatorChar);
+        sb.append(javaHelpJar);
+        sb.append(' ');
+        sb.append(ServerUtils.VERIFIER_MAIN_CLASS);
+        for (String arg : verifierArgs) {
+            sb.append(' ');
+            sb.append(arg);
+        }
+        String[] args = OsUtils.parseParameters(javaVmExe, sb.toString());
 
-                String cmdName="";      // NOI18N
-                for (int j=0;j<arr.length;j++){
-                    cmdName= cmdName+arr[j]+" ";        // NOI18N
+        final VerifierSupport verifierSupport = new VerifierSupport(fileName);
+        
+//        String installRoot = irf.getAbsolutePath();
+        
+        try {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    verifierSupport.initUI();
+                    verifierSupport.showInMode();
                 }
-                System.out.println(NbBundle.getMessage(VerifierSupport.class,"running_", cmdName));     // NOI18N
-                final Process child = rt.exec(arr);
+            });
+            ProcessBuilder pb = new ProcessBuilder(args);
+            Process process;
+            setJavaEnvironment(pb.environment(), javaHome);
+            LOGGER.log(Level.INFO, "Running {0} {1}",
+                    new Object[] {javaVmExe, sb.toString()});
+            process = pb.start();            
 
-                //
-                // Attach to the process's stdout, and ignore what comes back.
-                //
-                final Thread[] copyMakers = new Thread[2];
-                OutputStreamWriter oss=null;
-                if (outs!=null) {
-                    oss=new OutputStreamWriter(outs);
-                }
-                (copyMakers[0] = new ExecSupport.OutputCopier(new InputStreamReader(child.getInputStream()), oss, true)).start();
-                (copyMakers[1] = new ExecSupport.OutputCopier(new InputStreamReader(child.getErrorStream()), oss, true)).start();
+            System.out.println(NbBundle.getMessage(VerifierSupport.class,
+                    "running_", javaVmExe, sb.toString()));
+            //
+            // Attach to the process's stdout, and ignore what comes back.
+            //
+            final Thread[] copyMakers = new Thread[2];
+            OutputStreamWriter oss = null;
+            if (outs != null) {
+                oss = new OutputStreamWriter(outs);
+            }
+            (copyMakers[0] = new ExecSupport.OutputCopier(new InputStreamReader(process.getInputStream()), oss, true)).start();
+            (copyMakers[1] = new ExecSupport.OutputCopier(new InputStreamReader(process.getErrorStream()), oss, true)).start();
+            try {
+                process.waitFor();
+                Thread.sleep(1000);  // time for copymakers
+            } catch (InterruptedException e) {
+            } finally {
                 try {
-                    child.waitFor();
-                    Thread.sleep(1000);  // time for copymakers
-                } catch (InterruptedException e) {
-                } finally {
-                    try {
-                        copyMakers[0].interrupt();
-                        copyMakers[1].interrupt();
-                    } catch (Exception e) {
-                    }
+                    copyMakers[0].interrupt();
+                    copyMakers[1].interrupt();
+                } catch (Exception e) {
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         
-        String onlyJarFile   = f.getName();
+        String onlyJarFile   = file.getName();
         File ff = new File(dir, onlyJarFile+".xml");        // NOI18N
         org.netbeans.modules.j2ee.sun.dd.impl.verifier.Error err = null;
         if (!ff.exists()) {
@@ -599,6 +647,20 @@ public class VerifierSupport extends TopComponent{
         resultPanel.add("North", controlPanel); //NOI18N
         resultPanel.add("Center", splitPane);   // NOI18N
     }
+
+    /**
+     * @return the verifierIsStillRunning
+     */
+    public boolean isVerifierIsStillRunning() {
+        return verifierIsStillRunning;
+    }
+
+    /**
+     * @param verifierIsStillRunning the verifierIsStillRunning to set
+     */
+    public void setVerifierIsStillRunning(boolean verifierIsStillRunning) {
+        this.verifierIsStillRunning = verifierIsStillRunning;
+    }
     
     class RadioListener implements ActionListener {
         @Override
@@ -829,15 +891,15 @@ public class VerifierSupport extends TopComponent{
         }
     }
     
-    private void savePassResultsForDisplay(Test r){
+    public void savePassResultsForDisplay(Test r){
         passResults.addElement(r);
     }
     
-    private void saveWarnResultsForDisplay(Test r){
+    public void saveWarnResultsForDisplay(Test r){
         warnResults.addElement(r);
     }
     
-    private void saveFailResultsForDisplay(Test r){
+    public void saveFailResultsForDisplay(Test r){
         failResults.addElement(r);
     }
     
@@ -849,39 +911,39 @@ public class VerifierSupport extends TopComponent{
         errorResults.addElement(r);
     }
     
-    private void saveNaResultsForDisplay(Test r){
+    public void saveNaResultsForDisplay(Test r){
         naResults.addElement(r);
     }
         
-    private Vector getPassResultsForDisplay(){
+    public Vector getPassResultsForDisplay(){
         return passResults;
     }
     
-    private Vector getWarnResultsForDisplay(){
+    public Vector getWarnResultsForDisplay(){
         return warnResults;
     }
     
-    private Vector getFailResultsForDisplay(){
+    public Vector getFailResultsForDisplay(){
         return failResults;
     }
     
-    private Vector getErrorResultsForDisplay(){
+    public Vector getErrorResultsForDisplay(){
         return errorResults;
     }
     
-    private Vector getNaResultsForDisplay(){
+    public Vector getNaResultsForDisplay(){
         return naResults;
     }
     
-    private Vector getNotImplementedResultsForDisplay(){
+    public Vector getNotImplementedResultsForDisplay(){
         return notImplementedResults;
     }
     
-    private Vector getNotRunResultsForDisplay(){
+    public Vector getNotRunResultsForDisplay(){
         return notRunResults;
     }
     
-    private Vector getDefaultResultsForDisplay(){
+    public Vector getDefaultResultsForDisplay(){
         return defaultResults;
     }
     

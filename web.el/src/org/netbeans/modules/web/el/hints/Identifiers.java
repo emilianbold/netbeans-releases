@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
+import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -95,6 +96,7 @@ public final class Identifiers extends ELRule {
 
             each.getNode().accept(new NodeVisitor() {
 
+                private Node parent;
                 private boolean finished;
 
                 @Override
@@ -102,16 +104,18 @@ public final class Identifiers extends ELRule {
                     if (finished) {
                         return;
                     }
-                    if (node instanceof AstIdentifier) {
+                    if (node instanceof AstMapData || node instanceof AstListData) {
+                        parent = node;
+                    } else if (node instanceof AstIdentifier) {
                         if (ELTypeUtilities.resolveElement(info, each, node) == null) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;
                         }
+                        parent = node;
                     }
                     if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
-                        Element resolvedElement = ELTypeUtilities.resolveElement(info, each, node);
-                        if (resolvedElement == null) {
+                        if (!isValidNode(info, each, parent, node)) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),
                                     elResult.getFileObject(),
@@ -119,23 +123,52 @@ public final class Identifiers extends ELRule {
                                     Collections.<HintFix>emptyList(), 200);
                             result.add(hint);
                             finished = true; // warn only about the first unknown property
-
                         }
+                        parent = node;
                     }
                 }
             });
         }
     }
 
+    private static boolean isValidNode(CompilationContext info, ELElement element, Node parent, Node node) {
+        // valid bean's property/method
+        Element resolvedElement = ELTypeUtilities.resolveElement(info, element, node);
+        if (resolvedElement != null) {
+            return true;
+        }
+
+        // EL3.0 stream method
+        if (node.getImage() != null && ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
+            if (parent == null) {
+                return false;
+            } else {
+                // valid operator for static list, set, map
+                if (parent instanceof AstMapData || parent instanceof AstListData) {
+                    return true;
+                }
+                // valid operator for Iterable or array return type
+                if (parent instanceof AstDotSuffix) {
+                    Element methodElement = ELTypeUtilities.resolveElement(info, element, parent);
+                    if (methodElement == null) {
+                        return true;
+                    }
+                    return ELTypeUtilities.isIterableElement(info, methodElement);
+                }
+            }
+        }
+        return false;
+    }
+
     private static String getMsg(Node node) {
         if (node instanceof AstIdentifier) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Identifier", node.getImage());
         }
-        if (node instanceof AstDotSuffix) {
-            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());
-        }
         if (NodeUtil.isMethodCall(node)) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Method", node.getImage());
+        }
+        if (node instanceof AstDotSuffix) {
+            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());
         }
         assert false;
         return null;

@@ -13,8 +13,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -35,11 +33,11 @@ public class CI1CClass {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CI1CClass
-     * @return an instance of org.codehaus.jettison.json.JSONObject
+     * @return an instance of java.lang.String
      */
     @GET
     @Produces("application/json")
-    public JSONObject getJson() {
+    public String getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -52,7 +50,7 @@ public class CI1CClass {
     @POST
     @Consumes("application/json")
     @Produces("application/json")
-    public Response postJson(JSONString content) {
+    public Response postJson(String content) {
         //TODO
         return Response.created(context.getAbsolutePath()).build();
     }

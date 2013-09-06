@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -62,6 +64,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementat
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -78,6 +82,7 @@ public final class ProjectImpl implements Project {
     
     public ProjectImpl(String moduleVersion, EnterpriseReferenceContainer erContainer) {
         lookup = Lookups.fixed(
+                new ClassPathProviderImpl(),
                 new J2eeModuleProviderImpl(moduleVersion),
                 new SourcesImpl(),
                 erContainer,
@@ -246,6 +251,21 @@ public final class ProjectImpl implements Project {
             return new EjbJar[] { EjbJar.getEjbJar(projectDirectory) };
         }
     
+    }
+
+    public final class ClassPathProviderImpl implements ClassPathProvider {
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            if (ClassPath.SOURCE.equals(type)) {
+                return ClassPathSupport.createClassPath(projectDirectory.getFileObject("src").getFileObject("java"));
+            } else if (ClassPath.COMPILE.equals(type)) {
+                return ClassPathSupport.createClassPath(projectDirectory.getFileObject("src").getFileObject("java"));
+            } else if (ClassPath.BOOT.equals(type)) {
+                return JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+            }
+            return null;
+        }
     }
     
 }

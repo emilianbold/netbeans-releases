@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
@@ -56,6 +58,7 @@ import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -65,7 +68,7 @@ public class JSFResourceBundlesProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JSFResourceBundlesProvider.class.getName());
 
-    public static List<ResourceBundle> getResourceBundles(Project project) {
+    public static List<ResourceBundle> getResourceBundles(final Project project) {
        MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
         if (model == null) {
             return Collections.emptyList();
@@ -79,7 +82,27 @@ public class JSFResourceBundlesProvider {
                     List<ResourceBundle> result = new ArrayList<ResourceBundle>();
                     for (Application application : applications) {
                         for (org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle : application.getResourceBundles()) {
-                            result.add(new ResourceBundle(bundle.getBaseName(), bundle.getVar()));
+                            if (bundle.getBaseName() == null) {
+                                continue;
+                            }
+
+                            List<FileObject> files = new ArrayList<FileObject>();
+                            for (SourceGroup sourceGroup : SourceGroups.getJavaSourceGroups(project)) {
+                                int lastDot = bundle.getBaseName().lastIndexOf("."); //NOI18N
+                                String parentPkg = lastDot == -1
+                                        ? bundle.getBaseName()
+                                        : bundle.getBaseName().replace(".", "/").substring(0, lastDot); //NOI18N
+                                String bundleName = bundle.getBaseName().substring(lastDot + 1);
+                                FileObject fileObject = sourceGroup.getRootFolder().getFileObject(parentPkg);
+                                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
+                                    for (FileObject fo : fileObject.getChildren()) {
+                                        if (fo.getName().startsWith(bundleName) && "properties".equals(fo.getExt())) { //NOI18N
+                                            files.add(fo);
+                                        }
+                                    }
+                                }
+                            }
+                            result.add(new ResourceBundle(bundle.getBaseName(), bundle.getVar(), files));
                         }
                     }
                     return result;

@@ -132,8 +132,28 @@ public class JSFConfigModelTest extends NbTestCase {
         }
     }
 
+    public void testReadJSFVersion2_2() throws Exception {
+        // TODO finish with JSF2.2 update
+        JSFConfigModel model = Util.loadRegistryModel("faces-config_2_2.xml");
+        assertEquals(JSFVersion.JSF_2_2, model.getVersion());
+        FacesConfig facesConfig = model.getRootComponent();
+        assertNotNull(facesConfig);
+        System.out.println("facesConfig: " + facesConfig);
+        Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+        for (ManagedBean elem : managedBeans) {
+            System.out.println(elem.getManagedBeanName() + ", " + elem.getManagedBeanClass() + ", " + elem.getManagedBeanScope());
+        }
+        List<Factory> factories = facesConfig.getFactories();
+        for (Factory factory : factories) {
+            List<FaceletCacheFactory> faceletCacheFactories = factory.getFaceletCacheFactories();
+            assertEquals(1, faceletCacheFactories.size());
+            assertEquals("my.bean.FaceletCacheFactory", faceletCacheFactories.get(0).getFullyQualifiedClassType());
+            System.out.println(faceletCacheFactories.get(0).getFullyQualifiedClassType());
+        }
+    }
+
     public void testReadJSFJPAExample() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-jsfjpa-example2.xml");
         FacesConfig facesConfig = model.getRootComponent();
         assertNotNull(facesConfig);
         // testing managed bean

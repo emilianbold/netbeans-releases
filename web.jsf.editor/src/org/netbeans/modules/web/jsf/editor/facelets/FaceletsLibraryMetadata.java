@@ -46,6 +46,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -69,7 +71,14 @@ public class FaceletsLibraryMetadata {
     }
 
     public static LibraryMetadata get(String libraryURL){
-        return libMap.get(libraryURL);
+        LibraryMetadata metadata = libMap.get(libraryURL);
+        if (metadata == null) {
+            String legacyNamespace = NamespaceUtils.NS_MAPPING.get(libraryURL);
+            if (legacyNamespace != null) {
+                metadata = libMap.get(legacyNamespace);
+            }
+        }
+        return metadata;
     }
 
     private static void loadLib(String filePath){

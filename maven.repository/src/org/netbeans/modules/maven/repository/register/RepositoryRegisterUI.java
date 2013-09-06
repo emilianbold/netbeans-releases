@@ -233,7 +233,8 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         "LBL_Repo_id_Error2=Repository Id already exist",
         "LBL_Repo_Name_Error1=Repository Name can't be empty",
         "LBL_Repo_Path_Error=Invalid Repository Path",
-        "LBL_Repo_Url_Error=Repository URL can't be empty"
+        "LBL_Repo_Url_Error=Repository URL can't be empty",
+        "LBL_Repo_Url_Http=Repository URL has to be of protocol http or https"
     })
     private void validateInfo() {
         //check repo id
@@ -270,9 +271,15 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         }
 
         //check repo url
-        if (txtRepoUrl.getText().trim().length() == 0) {
+        String url = txtRepoUrl.getText().trim();
+        if (url.length() == 0) {
             btnOK.setEnabled(false);
             lblValidate.setText(LBL_Repo_Url_Error());
+            return;
+        }
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            btnOK.setEnabled(false);
+            lblValidate.setText(LBL_Repo_Url_Http());
             return;
         }
 

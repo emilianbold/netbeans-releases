@@ -69,7 +69,7 @@ public class SaveActionTest extends JellyTestCase {
     public static Test suite() {
         return createModuleTest(SaveActionTest.class, tests);
     }
-    private static EditorOperator eo;
+    protected static EditorOperator eo;
 
     /** Open a source in editor and modify something. */
     @Override

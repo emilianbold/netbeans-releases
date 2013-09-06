@@ -163,7 +163,7 @@ public class RestResourceGenerator {
 
                     final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
                     try {
-                        restSupport.ensureRestDevelopmentReady();
+                        restSupport.ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify();
                     }
@@ -208,7 +208,7 @@ public class RestResourceGenerator {
                                                 RestServices root = metadata.getRoot();
 
                                                 if (root.sizeRestServiceDescription() < 1) {
-                                                    restSupport.removeRestDevelopmentReadiness();
+                                                    //restSupport.removeRestDevelopmentReadiness();
                                                 }
 
                                                 return null;
