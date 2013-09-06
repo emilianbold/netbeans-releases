@@ -81,7 +81,7 @@ public final class ApiGenPreferences {
     public static final Property<String> CHARSETS = new Property<String>("charsets") { // NOI18N
         @Override
         public String getDefaultValue(PhpModule phpModule) {
-            return phpModule.getLookup().lookup(PhpModuleProperties.class).getEncoding();
+            return phpModule.getLookup().lookup(PhpModuleProperties.Factory.class).create().getEncoding();
         }
     };
     public static final Property<String> EXCLUDES = new Property<>("excludes"); // NOI18N

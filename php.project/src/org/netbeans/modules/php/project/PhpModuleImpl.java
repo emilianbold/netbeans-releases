@@ -105,11 +105,12 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public Lookup getLookup() {
+        // XXX cache it?
         Lookup projectLookup = phpProject.getLookup();
         return Lookups.fixed(
                 projectLookup.lookup(CustomizerProvider2.class),
                 projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
-                new PhpModulePropertiesLookupItem(phpProject).getInstance()
+                new PhpModulePropertiesFactory(phpProject)
         );
     }
 
@@ -142,17 +143,18 @@ public class PhpModuleImpl extends PhpModule {
 
     //~ Inner classes
 
-    private static final class PhpModulePropertiesLookupItem extends Lookup.Item<PhpModuleProperties> {
+    private static final class PhpModulePropertiesFactory implements PhpModuleProperties.Factory {
 
         private final PhpProject phpProject;
 
 
-        public PhpModulePropertiesLookupItem(PhpProject project) {
-            this.phpProject = project;
+        public PhpModulePropertiesFactory(PhpProject phpProject) {
+            assert phpProject != null;
+            this.phpProject = phpProject;
         }
 
         @Override
-        public PhpModuleProperties getInstance() {
+        public PhpModuleProperties create() {
             PhpModuleProperties properties = new PhpModuleProperties();
             properties = setEncoding(properties);
             properties = setWebRoot(properties);
@@ -161,21 +163,6 @@ public class PhpModuleImpl extends PhpModule {
             properties = setIndexFile(properties);
             properties = setIncludePath(properties);
             return properties;
-        }
-
-        @Override
-        public Class<? extends PhpModuleProperties> getType() {
-            return PhpModuleProperties.class;
-        }
-
-        @Override
-        public String getId() {
-            return PhpModuleProperties.class.getName();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return PhpModuleProperties.class.getName();
         }
 
         private PhpModuleProperties setEncoding(PhpModuleProperties properties) {
