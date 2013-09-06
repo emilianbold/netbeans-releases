@@ -118,7 +118,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningJava() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Source Packages|test|TestSessionRemote.java";
         editorTitle = "TestSessionRemote.java";
@@ -129,7 +128,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningSessionBean() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Enterprise Beans|TestSessionSB";
         editorTitle = "TestSessionBean.java";
@@ -140,7 +138,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningEntityBean() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Enterprise Beans|TestEntityEB";
         editorTitle = "TestEntityBean.java";
@@ -151,7 +148,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningEjbJarXml() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|ejb-jar.xml";
         editorTitle = "ejb-jar.xml";
@@ -162,7 +158,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningSunEjbJarXml() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication-ejb";
         filePath = "Configuration Files|sun-ejb-jar.xml";
         editorTitle = "sun-ejb-jar.xml";
@@ -173,7 +168,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningApplicationXml() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|application.xml";
         editorTitle = "application.xml";
@@ -184,7 +178,6 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
 
     public void testOpeningSunApplicationXml() {
         WAIT_AFTER_OPEN = 1000;
-        setJavaEditorCaretFilteringOn();
         fileProject = "TestApplication";
         filePath = "Configuration Files|sun-application.xml";
         editorTitle = "sun-application.xml";
@@ -197,6 +190,7 @@ public class OpenJ2EEFilesTest extends PerformanceTestCase {
     public void initialize() {
         EditorOperator.closeDiscardAll();
         addEditorPhaseHandler();
+        disableEditorCaretBlinking();
     }
 
     @Override

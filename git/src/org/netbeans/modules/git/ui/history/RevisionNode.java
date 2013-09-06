@@ -76,9 +76,9 @@ class RevisionNode extends AbstractNode {
     static final String COLUMN_NAME_MESSAGE     = "message"; // NOI18N
     static final String COLUMN_NAME_PATH        = "path"; // NOI18N
         
-    private RepositoryRevision.Event    event;
+    private final RepositoryRevision.Event event;
     private RepositoryRevision          container;
-    private String                      path;
+    private final String path;
     private String bgColor;
     private String fgColor;
     
@@ -101,10 +101,6 @@ class RevisionNode extends AbstractNode {
         initProperties();
     }
 
-    RepositoryRevision.Event getRevision() {
-        return event;
-    }
-
     RepositoryRevision getContainer() {
         return container;
     }
@@ -124,7 +120,7 @@ class RevisionNode extends AbstractNode {
         if (event == null) {
             return container.getActions();
         } else {
-            return event.getActions();
+            return event.getActions(true);
         }
     }
     

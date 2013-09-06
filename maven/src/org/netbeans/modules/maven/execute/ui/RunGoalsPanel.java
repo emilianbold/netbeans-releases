@@ -82,6 +82,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     /** Creates new form RunGoalsPanel */
     public RunGoalsPanel() {
         initComponents();
+        cbRememberActionPerformed(null);
         historyMappings = new ArrayList<NetbeansActionMapping>();
         btnPrev.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/back.png", false)); //NOI18N
         btnNext.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/forward.png", false)); //NOI18N
@@ -320,6 +321,11 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbRemember, org.openide.util.NbBundle.getMessage(RunGoalsPanel.class, "LBL_Remember")); // NOI18N
         cbRemember.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbRemember.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        cbRemember.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbRememberActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(btnAddProps, "&Add >");
         btnAddProps.addActionListener(new java.awt.event.ActionListener() {
@@ -328,7 +334,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
             }
         });
 
-        epProperties.setContentType("text/x-properties");
+        epProperties.setContentType("text/x-properties"); // NOI18N
         jScrollPane2.setViewportView(epProperties);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -424,6 +430,10 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
         ActionMappings.showAddPropertyPopupMenu(btnAddProps, epProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
+
+    private void cbRememberActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbRememberActionPerformed
+        txtRemember.setEnabled(cbRemember.isSelected());
+    }//GEN-LAST:event_cbRememberActionPerformed
 
     public boolean isOffline() {
         return cbOffline.isSelected();

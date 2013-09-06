@@ -484,11 +484,14 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
         Set<Profile> profiles = new HashSet<Profile>(5);
         profiles.add(Profile.J2EE_13);
         profiles.add(Profile.J2EE_14);
-        if (manager.isTomcat60() || manager.isTomcat70()) {
+        if (manager.isTomcat60() || manager.isTomcat70() || manager.isTomcat80()) {
             profiles.add(Profile.JAVA_EE_5);
         }
-        if (manager.isTomcat70()) {
+        if (manager.isTomcat70() || manager.isTomcat80()) {
             profiles.add(Profile.JAVA_EE_6_WEB);
+        }
+        if (manager.isTomcat80()) {
+            profiles.add(Profile.JAVA_EE_7_WEB);
         }
         return profiles;
     }
@@ -499,6 +502,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
         versions.add("1.4"); // NOI18N
         versions.add("1.5"); // NOI18N
         versions.add("1.6"); // NOI18N
+        versions.add("1.7"); // NOI18N
         return versions;
     }
     

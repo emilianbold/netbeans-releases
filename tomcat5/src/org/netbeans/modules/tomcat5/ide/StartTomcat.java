@@ -332,7 +332,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (MonitorSupport.getMonitorFlag(tm)) {
                         // tomcat has been started with monitor enabled
                         MonitorSupport.setMonitorFlag(tm, false);
-                        fireCmdExecProgressEvent(tm.isTomcat60() || tm.isTomcat70() ? "MSG_enableMonitorSupportErr60" : "MSG_enableMonitorSupportErr", StateType.FAILED);
+                        fireCmdExecProgressEvent(!tm.isTomcat50() && !tm.isTomcat55() ? "MSG_enableMonitorSupportErr60" : "MSG_enableMonitorSupportErr", StateType.FAILED);
                     } else {
                         // tomcat has been started with monitor disabled
                         fireCmdExecProgressEvent("MSG_disableMonitorSupportErr", StateType.FAILED);
@@ -389,7 +389,7 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                     if (javaOpts.indexOf(prop) == -1) {
                         String value = System.getProperty(prop);
                         if (value != null) {
-                            if ((isWindows || tm.isTomcat70()) && "http.nonProxyHosts".equals(prop)) { // NOI18N
+                            if ((isWindows || tm.isTomcat70() || tm.isTomcat80()) && "http.nonProxyHosts".equals(prop)) { // NOI18N
                                 // enclose in double quotes to escape the pipes separating the hosts on windows
                                 // or on unix - tomcat 7 use eval instead of exec
                                 value = "\"" + value + "\""; // NOI18N

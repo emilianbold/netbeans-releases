@@ -122,6 +122,7 @@ public class OpenServletFileTest extends PerformanceTestCase {
 
     public void initialize(){
         EditorOperator.closeDiscardAll();
+        disableEditorCaretBlinking();
     }
 
     public void shutdown(){
@@ -147,7 +148,6 @@ public class OpenServletFileTest extends PerformanceTestCase {
         log("------------------------- after popup invocation ------------");
         try {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
             popup.pushMenu(this.menuItem);
         }
         catch (org.netbeans.jemmy.TimeoutExpiredException tee) {

@@ -78,12 +78,13 @@ final class CheckoutCompletedPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 3, 3, 0);
         add(jLabel1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(againCheckBox, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "BK3002")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cbOpenInFavorites, org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "CheckoutCompletedPanel.cbOpenInFavorites")); // NOI18N
+        cbOpenInFavorites.setToolTipText(org.openide.util.NbBundle.getMessage(CheckoutCompletedPanel.class, "CLONE_CheckoutCompletedPanel.cbOpenInFavorites.TT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 0);
-        add(againCheckBox, gridBagConstraints);
+        add(cbOpenInFavorites, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -115,7 +116,7 @@ final class CheckoutCompletedPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    final javax.swing.JCheckBox againCheckBox = new javax.swing.JCheckBox();
+    final javax.swing.JCheckBox cbOpenInFavorites = new javax.swing.JCheckBox();
     final javax.swing.JButton closeButton = new javax.swing.JButton();
     final javax.swing.JButton createButton = new javax.swing.JButton();
     final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();

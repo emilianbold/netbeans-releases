@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.performance.guitracker;
 
 import java.awt.AWTEvent;
@@ -54,39 +53,45 @@ import java.util.Stack;
 
 /**
  *
- * @author  Tim Boudreau
+ * @author Tim Boudreau
  */
 public class LoggingEventQueue extends EventQueue {
 
     private static Method popMethod = null;
+
     static {
         try {
-            popMethod = EventQueue.class.getDeclaredMethod ("pop", new Class [] {} );
+            popMethod = EventQueue.class.getDeclaredMethod("pop", (Class<?>[]) null);
             popMethod.setAccessible(true);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
     }
-    
+
     private ActionTracker tr;
 
     private EventQueue orig = null;
-    
-    /** Creates a new instance of LoggingEventQueue */
+
+    /**
+     * Creates a new instance of LoggingEventQueue
+     *
+     * @param tr tracker
+     */
     public LoggingEventQueue(ActionTracker tr) {
         this.tr = tr;
     }
 
+    @Override
     public void postEvent(AWTEvent e) {
         tr.add(e);
-        super.postEvent (e);
+        super.postEvent(e);
     }
-    
+
     public boolean isEnabled() {
         return orig != null;
     }
-    
-    public void setEnabled (boolean val) {
+
+    public void setEnabled(boolean val) {
         if (isEnabled() != val) {
             if (val) {
                 enable();
@@ -95,15 +100,15 @@ public class LoggingEventQueue extends EventQueue {
             }
         }
     }
-    
+
     private void enable() {
         if (!isEnabled()) {
             orig = Toolkit.getDefaultToolkit().getSystemEventQueue();
-            orig.push (this);
+            orig.push(this);
             System.err.println("Installed logging event queue"); // XXX use logger?
         }
     }
-    
+
     private void disable() {
         try {
             if (isEnabled()) {
@@ -123,35 +128,31 @@ public class LoggingEventQueue extends EventQueue {
                     curr.push(next);
                     curr = next;
                 }
-            System.err.println("Uninstalled logging event queue"); // use logger?
+                System.err.println("Uninstalled logging event queue"); // use logger?
             }
         } finally {
             orig = null;
         }
     }
-    
+
+    @Override
     public synchronized void push(EventQueue newEventQueue) {
-        if (newEventQueue instanceof LoggingEventQueue) {
-            return;
-        }
     }
-    
-    private EventQueue popQ() { 
+
+    private EventQueue popQ() {
         try {
             if (popMethod == null) {
                 throw new IllegalStateException("Can't access EventQueue.pop");
             }
             EventQueue result = Toolkit.getDefaultToolkit().getSystemEventQueue();
-            popMethod.invoke(result, new Object[] {});
+            popMethod.invoke(result, new Object[]{});
             return result;
         } catch (Exception e) {
             if (e instanceof RuntimeException) {
                 throw (RuntimeException) e;
             } else {
-                throw new IllegalStateException ("Can't invoke EventQueue.pop"); 
+                throw new IllegalStateException("Can't invoke EventQueue.pop");
             }
         }
-        
     }
-    
 }

@@ -529,6 +529,7 @@ public class AddTest extends AbstractGitTestCase {
         // now with internal
         File link2 = new File(workDir, "link2");
         Files.createSymbolicLink(Paths.get(link2.getAbsolutePath()), Paths.get(path));
+        ts = Files.readAttributes(Paths.get(link2.getAbsolutePath()), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS).lastModifiedTime().toMillis();
         getClient(workDir).add(new File[] { link2 }, NULL_PROGRESS_MONITOR);
         
         DirCacheEntry e2 = repository.readDirCache().getEntry(link2.getName());

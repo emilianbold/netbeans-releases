@@ -138,7 +138,10 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                 }
                 entryName = entryName.substring(ajaxLibsIndex+ajaxLibs.length()); // NOI18N
                 int i = entryName.indexOf("/"); // NOI18N
-                assert i != -1 : original;
+                if (i == -1) {
+                    // unexpected file
+                    continue;
+                }
                 String libraryFolder = entryName.substring(0, i);
                 entryName = entryName.substring(i+1);
                 LibraryFiles lf = libs.get(libraryFolder);

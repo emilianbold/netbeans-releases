@@ -54,17 +54,22 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.versioning.util.ProjectUtilities;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -122,7 +127,8 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
         panel.createButton.addActionListener(this);
         panel.closeButton.addActionListener(this);
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        panel.againCheckBox.setVisible(false); // XXX as in prior versions it is disabled? Why?
+        panel.cbOpenInFavorites.setToolTipText(type.getMessage("CheckoutCompletedPanel.cbOpenInFavorites.TT")); //NOI18N
+        panel.cbOpenInFavorites.getAccessibleContext().setAccessibleDescription(type.getMessage("CheckoutCompletedPanel.cbOpenInFavorites.TT")); //NOI18N
         String title = type.getMessage("BK3008"); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         descriptor.setModal(true);
@@ -168,6 +174,18 @@ public class ProjectOpener implements ActionListener, PropertyChangeListener {
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
         dialog.setVisible(false);
+        if (panel.cbOpenInFavorites.isSelected()) {
+            Utils.post(new Runnable() {
+                @Override
+                public void run () {
+                    try {
+                        Favorites.getDefault().selectWithAddition(FileUtil.toFileObject(workingFolder));
+                    } catch (DataObjectNotFoundException ex) {
+                        Logger.getLogger(ProjectOpener.class.getName()).log(Level.INFO, null, ex);
+                    }
+                }
+            });
+        }
         if (panel.openButton.equals(src)) {
             // show project chooser
             if (numberOfProjects > 1) {
