@@ -559,7 +559,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 pri.runWithRevision(new Runnable() {
                     @Override
                     public void run() {
-                        DiffAction.diff(pri.getOriginalFile(), pri.getPreviousRevision(), originalFile, new HgRevision(changesetIdPerLine, revisionPerLine));
+                        DiffAction.diff(pri.getOriginalFile(), pri.getPreviousRevision(), originalFile, new HgRevision(changesetIdPerLine, revisionPerLine),
+                                lineNumber > 1 ? lineNumber - 1 : lineNumber);
                     }
                 }, true);
             }
