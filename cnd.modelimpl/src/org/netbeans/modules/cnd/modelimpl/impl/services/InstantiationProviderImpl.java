@@ -1073,6 +1073,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }        
     
     private static CsmCacheMap getTemplateRelatedCache(CsmObject template, boolean specialize) {
+        if (true) return null;
         return CsmCacheManager.getClientCache(new TemplateCacheKey(template, specialize), new TemplateCacheInitializer(template));
     }
 
