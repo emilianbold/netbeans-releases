@@ -39,20 +39,19 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seembedded.project;
+package org.netbeans.modules.java.j2seproject.api;
 
-import org.netbeans.modules.java.j2seembedded.platform.RemotePlatform;
-import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformType;
-import org.netbeans.spi.project.ProjectServiceProvider;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.openide.modules.SpecificationVersion;
 
 /**
  *
  * @author Tomas Zezula
  */
-@ProjectServiceProvider(service=J2SERuntimePlatformType.class, projectType="org-netbeans-modules-java-j2seproject")
-public class RemotePlatformType implements J2SERuntimePlatformType {
-    @Override
-    public String getPlatformType() {
-        return RemotePlatform.SPEC_NAME;
-    }
+public interface J2SERuntimePlatformProvider {
+    @NonNull
+    Collection<? extends JavaPlatform> getPlatformType(SpecificationVersion targetLevel, SourceLevelQuery.Profile profile);
 }

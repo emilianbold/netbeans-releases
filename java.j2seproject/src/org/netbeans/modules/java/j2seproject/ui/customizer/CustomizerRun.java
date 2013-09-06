@@ -79,15 +79,18 @@ import java.text.Collator;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformType;
+import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
@@ -140,7 +143,28 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configChanged(uiProperties.activeConfig);
         
         configCombo.setRenderer(new ConfigListCellRenderer());                
-        jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );        
+        jButtonMainClass.addActionListener( new MainClassListener( project.getSourceRoots(), jTextFieldMainClass ) );
+        final ListDataListener currentSourceLevelListener = new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                PlatformKey currentPlatform = (PlatformKey) platform.getSelectedItem();
+                platform.setSelectedIndex(0);
+                final Collection<? extends PlatformKey> updatedPlatforms = updatePlatformsList();
+                if (updatedPlatforms.contains(currentPlatform)) {
+                    platform.setSelectedItem(currentPlatform);
+                }
+            }
+        };
+        uiProperties.JAVAC_SOURCE_MODEL.addListDataListener(currentSourceLevelListener);
+        uiProperties.JAVAC_PROFILE_MODEL.addListDataListener(currentSourceLevelListener);
     }
     
     public HelpCtx getHelpCtx() {
@@ -416,28 +440,40 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.weighty = 1.0;
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private Collection<? extends JavaPlatform> getPlatforms(@NonNull final String platformType) {
-        Parameters.notNull("platformType", platformType);   //NOI18N
-        final Collection<JavaPlatform> result = new ArrayList<>();
-        Collections.addAll(
-            result,
-            JavaPlatformManager.getDefault().getPlatforms(null, new Specification(platformType, null)));
-        return Collections.<JavaPlatform>unmodifiableCollection(result);
-    }
+    
     
     private java.util.List<PlatformKey> updatePlatformsList() {
         final java.util.List<PlatformKey> platformList = new ArrayList<>();
-        for (J2SERuntimePlatformType rpt : project.getLookup().lookupAll(J2SERuntimePlatformType.class)) {
-            for (JavaPlatform jp : getPlatforms(rpt.getPlatformType())) {
-                platformList.add(PlatformKey.create(jp));
+        final SpecificationVersion targetLevel = getProjectTargetLevel();
+        final SourceLevelQuery.Profile targetProfile = getProjectProfile();
+        if (targetLevel != null && targetProfile != null) {
+            for (J2SERuntimePlatformProvider rpt : project.getLookup().lookupAll(J2SERuntimePlatformProvider.class)) {
+                for (JavaPlatform jp : rpt.getPlatformType(targetLevel, targetProfile)) {
+                    platformList.add(PlatformKey.create(jp));
+                }
             }
+            Collections.sort(platformList);
         }
-        Collections.sort(platformList);
         platformList.add(0, PlatformKey.createDefault());
         final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<>(platformList.toArray(new PlatformKey[0]));
         platform.setModel(model);
         return platformList;
+    }
+
+    @CheckForNull
+    private SpecificationVersion getProjectTargetLevel() {
+        final Object key = uiProperties.JAVAC_SOURCE_MODEL.getSelectedItem();
+        return key == null ?
+            null :
+            PlatformUiSupport.getSourceLevel(key);
+    }
+
+    @CheckForNull
+    private SourceLevelQuery.Profile getProjectProfile() {
+        final Object key = uiProperties.JAVAC_PROFILE_MODEL.getSelectedItem();
+        return key == null ?
+            null :
+            PlatformUiSupport.getProfile(key);
     }
 
     @Deprecated
