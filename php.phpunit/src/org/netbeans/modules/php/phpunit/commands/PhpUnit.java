@@ -86,6 +86,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -208,7 +209,7 @@ public final class PhpUnit {
             }
         } catch (InvalidPhpExecutableException ex) {
             if (showCustomizer) {
-                phpModule.openCustomizer(PhpTesting.CUSTOMIZER_IDENT);
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpTesting.CUSTOMIZER_IDENT, null);
                 defaultPhpUnitExc = null;
             }
         }

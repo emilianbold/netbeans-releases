@@ -51,10 +51,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik
@@ -99,6 +101,13 @@ public class PhpModuleImpl extends PhpModule {
     @Override
     public boolean isBroken() {
         return PhpProjectValidator.isFatallyBroken(phpProject);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookups.fixed(
+                phpProject.getLookup().lookup(CustomizerProvider2.class)
+        );
     }
 
     @Override
@@ -174,11 +183,6 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
-    public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
-        notifyPropertyChanged(propertyChangeEvent);
-    }
-
-    @Override
     public void notifyPropertyChanged(PropertyChangeEvent propertyChangeEvent) {
         if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
             phpProject.resetFrameworks();
@@ -187,7 +191,7 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public void openCustomizer(String category) {
-        PhpProjectUtils.openCustomizer(phpProject, category);
+        getLookup().lookup(CustomizerProvider2.class).showCustomizer(category, null);
     }
 
 }
