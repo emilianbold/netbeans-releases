@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.utilities;
+package org.netbeans.modules.utilities.project;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;

@@ -75,6 +75,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
@@ -476,6 +477,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - commit id", "CTL_AnnotationBar.action.showCommit=Show Commit {0}"
+    })
     private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
@@ -506,12 +510,21 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                         @Override
                         public void run() {
                             SystemAction.get(DiffAction.class).diff(originalFile, new Revision(pri.getPreviousRevision(), pri.getPreviousRevision()),
-                                    new Revision(revisionPerLine.getRevision(), revisionPerLine.getRevision()));
+                                    new Revision(revisionPerLine.getRevision(), revisionPerLine.getRevision()), sourceLine);
                         }
                     }, true, null);
                 }
             });
             popupMenu.add(diffMenu);
+
+            JMenuItem showCommitMenu = new JMenuItem(Bundle.CTL_AnnotationBar_action_showCommit(revisionPerLine.getRevision().substring(0, 7)));
+            showCommitMenu.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    SearchHistoryAction.openSearch(repositoryRoot, file, file.getName(), revisionPerLine.getRevision());
+                }
+            });
+            popupMenu.add(showCommitMenu);
 
             final JMenuItem checkoutMenu = new JMenuItem();
             checkoutMenu.addActionListener(new ActionListener() {

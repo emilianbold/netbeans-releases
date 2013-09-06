@@ -69,6 +69,7 @@ import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -279,6 +280,9 @@ final class RepositoryRevision {
             return action;
         }
     
+        @NbBundle.Messages({
+            "CTL_Action.ViewCurrent.name=View Current"
+        })
         Action[] getActions () {
             if (actions == null) {
                 actions = new ArrayList<Action>();
@@ -325,6 +329,17 @@ final class RepositoryRevision {
                                 @Override
                                 public void run() {
                                     viewFile(true);
+                                }
+                            });
+                        }
+                    });
+                    actions.add(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Utils.openFile(FileUtil.normalizeFile(getFile()));
                                 }
                             });
                         }

@@ -133,6 +133,7 @@ public final class VariousUtils {
     public static final String STATIC_FIELD_TYPE_PREFIX = "static.fld" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
+    public static final String TYPE_TYPE_PREFIX = "type" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<>();
     private static final Collection<String> STATIC_CLASS_NAMES = new LinkedList<>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
@@ -447,9 +448,13 @@ public final class VariousUtils {
                     operation = VariousUtils.FIELD_TYPE_PREFIX;
                 } else if (VariousUtils.CONSTRUCTOR_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
                     operation = VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                } else if (VariousUtils.TYPE_TYPE_PREFIX.equalsIgnoreCase(operationPrefix)) {
+                    operation = VariousUtils.TYPE_TYPE_PREFIX;
                 } else {
                     if (operation == null) {
                         assert i == 0 : frag;
+                        recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
+                    } else if (operation.startsWith(VariousUtils.TYPE_TYPE_PREFIX)) {
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
                         // !!! THIS IS A HACK !!!
                         // varScope.getDeclaredVariables() method invokes lazy scan of methods, so proper variables are assigned
@@ -1091,9 +1096,11 @@ public final class VariousUtils {
                                     metaAll.insert(0, token.text().toString());
                                     break;
                                 }
+                                metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.TYPE_TYPE_PREFIX);
                             }
                         } else {
                             metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
+                            metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.TYPE_TYPE_PREFIX);
                         }
                         state = State.STOP;
                         break;
@@ -1111,6 +1118,7 @@ public final class VariousUtils {
                             metaAll = transformToFullyQualifiedType(metaAll, tokenSequence, varScope);
                         }
                     }
+                    metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.TYPE_TYPE_PREFIX);
                     state = State.STOP;
                     break;
                 } else if (state.equals(State.METHOD)) {
