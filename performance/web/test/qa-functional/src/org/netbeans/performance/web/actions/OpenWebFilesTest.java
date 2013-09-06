@@ -112,7 +112,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
 
     public void testOpeningWebXmlFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF"; 
         fileName = "web.xml";
@@ -122,7 +121,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
 
     public void testOpeningJSPFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
         fileName = "Test.jsp";
@@ -132,7 +130,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
 
     public void testOpeningBigJSPFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
         fileName = "BigJSP.jsp";
@@ -142,7 +139,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
     
     public void testOpeningHTMLFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "";
         fileName = "HTML.html";
@@ -152,7 +148,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
 
     public void testOpeningTagFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF|tags"; 
         fileName = "mytag.tag";
@@ -162,7 +157,6 @@ public class OpenWebFilesTest extends PerformanceTestCase {
 
     public void testOpeningTldFile(){
         WAIT_AFTER_OPEN = 2000;
-        setXMLEditorCaretFilteringOn();
         fileProject = "TestWebProject";
         fileFolder = "WEB-INF"; 
         fileName = "MyTLD.tld";
@@ -174,6 +168,7 @@ public class OpenWebFilesTest extends PerformanceTestCase {
         EditorOperator.closeDiscardAll();
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         addEditorPhaseHandler();
+        disableEditorCaretBlinking();
     }
 
     public void shutdown(){

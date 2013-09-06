@@ -56,6 +56,7 @@ import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,6 +74,8 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
@@ -85,6 +88,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.Places;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -104,6 +108,8 @@ public class AttachmentsPanel extends JPanel {
     private JLabel dummyAttachLabel = new JLabel();
     private Method maxMethod;
     private JComponent parentPanel;
+    private final ChangeSupport supp;
+    private ChangeListener changeList;
     
     public interface NBBugzillaCallback {
         public String getLogFilePath();
@@ -114,6 +120,7 @@ public class AttachmentsPanel extends JPanel {
     
     public AttachmentsPanel(JComponent parentPanel) {
         this.parentPanel = parentPanel;
+        this.supp = new ChangeSupport(this);
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         ResourceBundle bundle = NbBundle.getBundle(AttachmentsPanel.class);
         noneLabel = new JLabel(bundle.getString("AttachmentsPanel.noneLabel.text")); // NOI18N
@@ -128,10 +135,11 @@ public class AttachmentsPanel extends JPanel {
     }
 
     public void setAttachments(List<? extends Attachment> attachments) {
-        setAttachments(attachments, null);
+        setAttachments(attachments, Collections.<AttachmentInfo>emptyList(), null);
     }
     
-    public void setAttachments(List<? extends Attachment> attachments, NBBugzillaCallback nbCallback) {
+    public void setAttachments(List<? extends Attachment> attachments, List<? extends AttachmentInfo> unsubmittedAttachments,
+            NBBugzillaCallback nbCallback) {
         
         if(nbCallback != null) {
             attachLogFileButton = new LinkButton(new CreateNewAction(nbCallback));
@@ -339,6 +347,10 @@ public class AttachmentsPanel extends JPanel {
         }
         
         setLayout(layout);
+        
+        for (AttachmentInfo newAttachment : unsubmittedAttachments) {
+            ((CreateNewAction)createNewButton.getAction()).createAttachment(newAttachment);
+        }
     }
 
     @Override
@@ -392,15 +404,18 @@ public class AttachmentsPanel extends JPanel {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (AttachmentPanel.PROP_DELETED.equals(evt.getPropertyName())) {
-                        for (AttachmentPanel panel : newAttachments) {
-                            if (!panel.isDeleted()) {
-                                return;
+                        supp.fireChange();
+                        if (hadNoAttachments) {
+                            for (AttachmentPanel panel : newAttachments) {
+                                if (!panel.isDeleted()) {
+                                    return;
+                                }
                             }
+                            // The last attachment deleted
+                            noneLabel.setVisible(true);
+                            switchHelper();
+                            updateButtonText(true);
                         }
-                        // The last attachment deleted
-                        noneLabel.setVisible(true);
-                        switchHelper();
-                        updateButtonText(true);
                     }
                 }
             };
@@ -441,7 +456,15 @@ public class AttachmentsPanel extends JPanel {
         return infos;
     }
 
-    public final class AttachmentInfo {
+    public void addChangeListener (ChangeListener changeListener) {
+        supp.addChangeListener(changeListener);
+    }
+
+    public void removeChangeListener (ChangeListener changeListener) {
+        supp.removeChangeListener(changeListener);
+    }
+
+    public static final class AttachmentInfo {
         private File file;
         private String description;
         private String contentType;
@@ -466,11 +489,23 @@ public class AttachmentsPanel extends JPanel {
         public void setDescription(String description) {
             this.description = description;
         }
+
+        public void setContentType (String contentType) {
+            this.contentType = contentType;
+        }
+
+        public void setFile (File file) {
+            this.file = file;
+        }
+
+        public void setIsPatch (boolean isPatch) {
+            this.isPatch = isPatch;
+        }
     }
 
     class CreateNewAction extends AbstractAction {
         private final NBBugzillaCallback nbCallback;
-
+        
         public CreateNewAction() {
             this(null);
         }
@@ -490,6 +525,10 @@ public class AttachmentsPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            createAttachment(null);
+        }
+            
+        private void createAttachment (AttachmentInfo newAttachment) {
             AttachmentPanel attachment = new AttachmentPanel(nbCallback);
             attachment.setBackground(UIUtils.getSectionPanelBackground());
             horizontalGroup.addComponent(attachment, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE);
@@ -500,14 +539,16 @@ public class AttachmentsPanel extends JPanel {
                 switchHelper();
                 updateButtonText(false);
             }
-            if (hadNoAttachments) {
-                attachment.addPropertyChangeListener(getDeletedListener());
-            }
+            attachment.addPropertyChangeListener(getDeletedListener());
             
+            if (newAttachment != null) {
+                attachment.setAttachment(newAttachment.getFile(), newAttachment.getDescription(),
+                        newAttachment.getContentType(), newAttachment.isPatch());
+            }
             if(nbCallback != null) {
                 File f = new File(Places.getUserDirectory(), nbCallback.getLogFilePath()); 
                 if(f.exists()) {
-                    attachment.setAttachment(f, nbCallback.getLogFileDescription(), nbCallback.getLogFileContentType()); // NOI18N
+                    attachment.setAttachment(f, nbCallback.getLogFileDescription(), nbCallback.getLogFileContentType(), false); // NOI18N
                 }
                 attachment.browseButton.setEnabled(false);
                 attachment.fileField.setEnabled(false);
@@ -520,8 +561,23 @@ public class AttachmentsPanel extends JPanel {
             newAttachments.add(attachment);
             UIUtils.keepFocusedComponentVisible(attachment, parentPanel);
             revalidate();
+            attachment.addChangeListener(getChangeListener());
+            if (nbCallback != null) {
+                supp.fireChange();
+            }
         }
 
+    }
+
+    private ChangeListener getChangeListener () {
+        if (changeList == null) {
+            changeList = new ChangeListener() {
+                @Override
+                public void stateChanged (ChangeEvent e) {
+                    supp.fireChange();
+                }
+            };
+        }return changeList;
     }
     
     private static boolean hasPatchUtils() {

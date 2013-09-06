@@ -109,6 +109,9 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private final ChangeSupport cs = new ChangeSupport(this);
     private final PropertyChangeListener pcl = new PropertyChangeListener() {
         public @Override void propertyChange(PropertyChangeEvent event) {
+            if (proj.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
+                return; //let's just continue with the old value, stripping classpath for broken project and re-creating it later serves no greater good.
+            }
             checkChanges(true, true);
         }
     };
@@ -137,7 +140,7 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         "SG_Sources=Source Packages",
         "SG_Test_Sources=Test Packages"
     })
-    private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {
+    private void checkChanges(boolean fireChanges, boolean checkAlsoNonJavaStuff) {        
         boolean changed = false;
         synchronized (lock) {
             NbMavenProjectImpl project = project();

@@ -184,11 +184,8 @@ public final class NbTaskDataModel {
             if (editsData != null && repositoryData != null) {
                 for (Iterator<TaskAttribute> it = unsavedChangedAttributes.iterator(); it.hasNext(); ) {
                     TaskAttribute ta = it.next();
-                    TaskAttribute repositoryTA = repositoryData.getRoot().getMappedAttribute(ta.getPath());
                     if (!editsDiffer(ta, repositoryData)) {
-                        if (repositoryTA != null) {
-                            editsData.getRoot().removeAttribute(repositoryTA.getId());
-                        }
+                        editsData.getRoot().removeAttribute(ta.getId());
                         it.remove();
                     }
                 }

@@ -95,12 +95,15 @@ public class UpdateAction extends ContextAction {
         return ICON_RESOURCE;
     }
 
-    public static void update(final VCSContext ctx, HgLogMessage rev){
+    public void update (final VCSContext ctx, HgLogMessage rev){
 
         final File roots[] = HgUtils.getActionRoots(ctx);
         if (roots == null || roots.length == 0) return;
-        final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
-
+        File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+        update(root, rev);
+    }
+    
+    public void update (final File root, HgLogMessage rev) {
         final Update update = new Update(root, rev);
         if (!update.showDialog()) {
             return;
@@ -157,7 +160,7 @@ public class UpdateAction extends ContextAction {
                         // Force Status Refresh from this dir and below
                         if(!bNoUpdates) {
                             HgUtils.notifyUpdatedFiles(root, list);
-                            HgUtils.forceStatusRefreshProject(ctx);
+                            HgUtils.forceStatusRefresh(root);
                         }
                         //logger.clearOutput();
                         logger.output(list);

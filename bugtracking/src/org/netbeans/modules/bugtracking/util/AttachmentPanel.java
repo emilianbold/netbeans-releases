@@ -41,26 +41,36 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ResourceBundle;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Stola
  */
-public class AttachmentPanel extends javax.swing.JPanel {
+public class AttachmentPanel extends javax.swing.JPanel implements DocumentListener, ActionListener {
     static final String PROP_DELETED = "attachmentDeleted"; // NOI18N
     private final AttachmentsPanel.NBBugzillaCallback nbCallback;
+    private final ChangeSupport supp;
     
     public AttachmentPanel(AttachmentsPanel.NBBugzillaCallback nbCallback) {
         this.nbCallback = nbCallback;
+        this.supp = new ChangeSupport(this);
         initComponents();
         setBackground( UIUtils.getSectionPanelBackground() );
         initFileTypeCombo();
+        attachListeners();
     }
 
     private void initFileTypeCombo() {
@@ -77,10 +87,11 @@ public class AttachmentPanel extends javax.swing.JPanel {
         fileTypeCombo.setModel(model);
     }
 
-    void setAttachment(File f, String description, String conntentType) {
+    void setAttachment(File f, String description, String conntentType, boolean isPatch) {
         descriptionField.setText(description);
         
         fileField.setText(f.getAbsolutePath());
+        patchChoice.setSelected(isPatch);
         int c = fileTypeCombo.getItemCount();
         if(conntentType != null) {
             for (int i = 0; i < c; i++) {
@@ -281,6 +292,45 @@ public class AttachmentPanel extends javax.swing.JPanel {
     final javax.swing.JLabel patchLabel = new javax.swing.JLabel();
     final org.netbeans.modules.bugtracking.util.LinkButton viewButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
+
+    void addChangeListener (ChangeListener changeListener) {
+        supp.addChangeListener(changeListener);
+    }
+
+    private void attachListeners () {
+        fileField.getDocument().addDocumentListener(this);
+        descriptionField.getDocument().addDocumentListener(this);
+        fileTypeCombo.addActionListener(this);
+        patchChoice.addActionListener(this);
+    }
+
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        fieldUpdated(e.getDocument());
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        fieldUpdated(e.getDocument());
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) { }
+
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (e.getSource() == fileTypeCombo
+                || e.getSource() == patchChoice) {
+            supp.fireChange();
+        }
+    }
+
+    private void fieldUpdated (Document document) {
+        if (document == fileField.getDocument()
+                || document == descriptionField.getDocument()) {
+            supp.fireChange();
+        }
+    }
 
     static class FileType {
         private String contentType;

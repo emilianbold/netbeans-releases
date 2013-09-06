@@ -83,6 +83,7 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
         }
         panel.setBorder( BorderFactory.createCompoundBorder( outerBorder, 
                 BorderFactory.createEmptyBorder(3,3,3,3) ) );
+        lblStatus.setName("AutoHideStatusTextLabel"); //NOI18N
         panel.add( lblStatus, BorderLayout.CENTER );
         frame.getLayeredPane().add( panel, Integer.valueOf( 101 ) );
         StatusDisplayer.getDefault().addChangeListener( this );

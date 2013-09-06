@@ -76,6 +76,9 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                    if (project.getProjectWatcher().isUnloadable()) {
+                        return; //let's just continue with the old value, stripping classpath for broken project and re-creating it later serves no greater good.
+                    }
                     List<PathResourceImplementation> newValues = getPath();
                     List<PathResourceImplementation> oldvalue;
                     boolean hasChanged;

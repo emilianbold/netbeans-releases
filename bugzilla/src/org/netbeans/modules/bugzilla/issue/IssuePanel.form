@@ -352,22 +352,30 @@
                                   <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                                   <Component id="timetrackingWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                                   <Component id="commentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="attachmentsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="statusWhiteboardLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="timetrackingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="attachmentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="productLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
-                                  <Component id="targetMilestoneLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="statusWhiteboardLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="timetrackingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="productLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
+                                          <Component id="targetMilestoneLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                           <Component id="customFieldsPanelLeft" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -386,7 +394,7 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="dummyTimetrackingPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
-                          <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="scrollPane1" alignment="0" pref="0" max="32767" attributes="0"/>
                           <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
                           <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
@@ -643,11 +651,12 @@
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                      <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Component id="dummyLabel3" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
-                      <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Component id="attachmentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -1500,6 +1509,8 @@
     <Component class="javax.swing.JLabel" name="commentWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="duplicateWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="attachmentsWarning">
     </Component>
   </SubComponents>
 </Form>

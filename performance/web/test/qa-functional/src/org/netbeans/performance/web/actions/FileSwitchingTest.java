@@ -125,7 +125,7 @@ public class FileSwitchingTest  extends PerformanceTestCase {
     @Override
     protected void initialize() {
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
-        setJavaEditorCaretFilteringOn();
+        disableEditorCaretBlinking();
 
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         Node prn = pto.getProjectRootNode("TestWebProject");

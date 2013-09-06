@@ -42,14 +42,21 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -63,6 +70,12 @@ public abstract class AbstractNbTaskWrapper {
     private static final Object MODEL_LOCK = new Object();
     private static final Logger LOG = Logger.getLogger(AbstractNbTaskWrapper.class.getName());
     private static final RequestProcessor RP = new RequestProcessor("NBTasks"); //NOI18N
+    public static final String NEW_ATTACHMENT_ATTRIBUTE_ID = "nb.attachments.new"; //NOI18N
+    private static final String NB_NEW_ATTACHMENT_PATCH_ATTR_ID = "nb.newattachment.patch"; //NOI18N
+    private static final String NB_NEW_ATTACHMENT_FILE_ATTR_ID = "nb.newattachment.file"; //NOI18N
+    private static final String NB_NEW_ATTACHMENT_CONTENT_TYPE_ATTR_ID = "nb.newattachment.contentType"; //NOI18N
+    private static final String NB_NEW_ATTACHMENT_DESC_ATTR_ID = "nb.newattachment.desc"; //NOI18N
+    private static final String NB_NEW_ATTACHMENT_ATTR_ID = "nb.newattachment."; //NOI18N
 
     private NbTask task;
     private NbTaskDataModel model;
@@ -99,6 +112,25 @@ public abstract class AbstractNbTaskWrapper {
             return "-" + task.getTaskId();
         }
         return task.getTaskId();
+    }
+
+    protected static boolean attachmentAttributesDiffer (TaskAttribute ta1, TaskAttribute ta2) {
+        if (ta2 == null) {
+            return true;
+        }
+        String value1 = ta1.getValue();
+        String value2 = ta2.getValue();
+        boolean changes = !value1.equals(value2);
+        if (!changes) {
+            // is a child attribue changed??
+            for (TaskAttribute childTA : ta1.getAttributes().values()) {
+                if (attachmentAttributesDiffer(childTA, ta2.getAttribute(childTA.getId()))) {
+                    changes = true;
+                    break;
+                }
+            }
+        }
+        return changes;
     }
 
     protected final TaskData getRepositoryTaskData () {
@@ -427,6 +459,87 @@ public abstract class AbstractNbTaskWrapper {
      * @return false when the sync fails for some reason
      */
     protected abstract boolean synchronizeTask ();
+
+    protected final boolean setNewAttachments (List<AttachmentsPanel.AttachmentInfo> newAttachments) {
+        NbTaskDataModel m = getModel();
+        TaskData td = m.getLocalTaskData();
+        TaskAttribute ta = td.getRoot().getAttribute(AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID);
+        Map<String, TaskAttribute> previousAttachments = Collections.<String, TaskAttribute>emptyMap();
+        if (ta != null) {
+            previousAttachments = ta.getAttributes();
+            ta.clearAttributes();
+        }
+        boolean retval = false;
+        if (newAttachments.isEmpty() && !previousAttachments.isEmpty()) {
+            m.attributeChanged(ta);
+            retval = true;
+        } else if (!newAttachments.isEmpty()) {
+            if (ta == null) {
+                ta = td.getRoot().createAttribute(AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID);
+            }
+            boolean present = true;
+            for (int i = 0; i < newAttachments.size(); ++i) {
+                AttachmentsPanel.AttachmentInfo att = newAttachments.get(i);
+                TaskAttribute attAttr = ta.createAttribute(NB_NEW_ATTACHMENT_ATTR_ID + i);
+                if (att.getDescription() != null) {
+                    attAttr.createAttribute(NB_NEW_ATTACHMENT_DESC_ATTR_ID).setValue(att.getDescription());
+                }
+                if (att.getContentType() != null) {
+                    attAttr.createAttribute(NB_NEW_ATTACHMENT_CONTENT_TYPE_ATTR_ID).setValue(att.getContentType());
+                }
+                if (att.getFile() != null) {
+                    attAttr.createAttribute(NB_NEW_ATTACHMENT_FILE_ATTR_ID).setValue(att.getFile().getAbsolutePath());
+                }
+                attAttr.createAttribute(NB_NEW_ATTACHMENT_PATCH_ATTR_ID).setValue(att.isPatch() ? "1" : "0");
+                if (present) {
+                    present = false;
+                    for (TaskAttribute previousAttachment : previousAttachments.values()) {
+                        if (!attachmentAttributesDiffer(previousAttachment, ta)) {
+                            present = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!present || previousAttachments.size() != newAttachments.size()) {
+                m.attributeChanged(ta);
+                retval = true;
+            }
+        }
+        return retval;
+    }
+
+    protected final List<AttachmentsPanel.AttachmentInfo> getNewAttachments () {
+        NbTaskDataModel m = getModel();
+        TaskData td = m == null ? null : m.getLocalTaskData();
+        List<AttachmentsPanel.AttachmentInfo> attachments = Collections.<AttachmentsPanel.AttachmentInfo>emptyList();
+        if (td != null) {
+            TaskAttribute ta = td.getRoot().getAttribute(AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID);
+            if (ta != null) {
+                Map<String, TaskAttribute> attributes = ta.getAttributes();
+                attachments = new ArrayList<AttachmentsPanel.AttachmentInfo>(attributes.size());
+                for (TaskAttribute attAttr : attributes.values()) {
+                    AttachmentsPanel.AttachmentInfo attInfo = new AttachmentsPanel.AttachmentInfo();
+                    attInfo.setDescription("");
+                    attInfo.setFile(null);
+                    attInfo.setIsPatch(false);
+                    for (Map.Entry<String, TaskAttribute> attSubAttr : attAttr.getAttributes().entrySet()) {
+                        if (NB_NEW_ATTACHMENT_DESC_ATTR_ID.equals(attSubAttr.getKey())) {
+                            attInfo.setDescription(attSubAttr.getValue().getValue());
+                        } else if (NB_NEW_ATTACHMENT_CONTENT_TYPE_ATTR_ID.equals(attSubAttr.getKey())) {
+                            attInfo.setContentType(attSubAttr.getValue().getValue());
+                        } else if (NB_NEW_ATTACHMENT_FILE_ATTR_ID.equals(attSubAttr.getKey())) {
+                            attInfo.setFile(new File(attSubAttr.getValue().getValue()));
+                        } else if (NB_NEW_ATTACHMENT_PATCH_ATTR_ID.equals(attSubAttr.getKey())) {
+                            attInfo.setIsPatch("1".equals(attSubAttr.getValue().getValue()));
+                        }
+                    }
+                    attachments.add(attInfo);
+                }
+            }
+        }
+        return attachments;
+    }
 
     private class TaskDataListenerImpl implements TaskDataListener {
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.repository;
 
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.netbeans.modules.mylyn.util.AbstractNbTaskWrapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,6 +92,8 @@ public class IssueField {
     public static final IssueField COMMENT = new IssueField(TaskAttribute.COMMENT_NEW, null, true);
     public static final IssueField DUPLICATE_ID = new IssueField(BugzillaAttribute.DUP_ID.getKey(), "LBL_DUPLICATE_ID", true);
     public static final IssueField REASSIGN_TO_DEFAULT = new IssueField(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey(), null, true);
+    public static final IssueField NB_ATTACH_IDE_LOG = new IssueField("nb.attachMessageLog", "LBL_ATTACH_IDE_LOG"); //NOI18N
+    public static final IssueField NB_NEW_ATTACHMENTS = new IssueField(AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID, "LBL_NEW_ATTACHMENTS", false); //NOI18N
 
     private final String key;
     private final String displayNameKey;
