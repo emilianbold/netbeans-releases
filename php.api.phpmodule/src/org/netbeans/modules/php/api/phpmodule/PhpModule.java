@@ -139,7 +139,7 @@ public abstract class PhpModule implements Lookup.Provider {
     public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
 
     /**
-     * <b>Deprecated, {@link #getLookup() lookup} {@link PhpModuleProperties} class.
+     * <b>Deprecated, {@link #getLookup() lookup} its {@link PhpModuleProperties.Factory factory} class.
      * This method will be removed after NB 8.0.</b>
      * <p>
      * Get the current {@link PhpModuleProperties properties} of this PHP module.
