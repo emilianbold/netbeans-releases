@@ -112,6 +112,7 @@ import org.netbeans.modules.mercurial.kenai.HgKenaiAccessor;
 import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
+import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModifications;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -530,6 +531,9 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - changeset id", "CTL_AnnotationBar.action.showCommit=Show Revision {0}"
+    })
     private JPopupMenu createPopup(MouseEvent e) {
         final ResourceBundle loc = NbBundle.getBundle(AnnotationBar.class);
         final JPopupMenu popupMenu = new JPopupMenu();
@@ -566,6 +570,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
         popupMenu.add(diffMenu);
+        if (changesetIdPerLine != null) {
+            JMenuItem showCommitMenu = new JMenuItem(Bundle.CTL_AnnotationBar_action_showCommit(revisionPerLine));
+            showCommitMenu.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    LogAction.openHistory(repositoryRoot, new File[] { file }, changesetIdPerLine);
+                }
+            });
+            popupMenu.add(showCommitMenu);
+        }
 
         JMenuItem rollbackMenu = new JMenuItem(loc.getString("CTL_MenuItem_Revert")); // NOI18N
         rollbackMenu.addActionListener(new ActionListener() {
