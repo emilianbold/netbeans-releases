@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
 import org.openide.filesystems.FileObject;
@@ -80,7 +81,7 @@ public final class ApiGenPreferences {
     public static final Property<String> CHARSETS = new Property<String>("charsets") { // NOI18N
         @Override
         public String getDefaultValue(PhpModule phpModule) {
-            return phpModule.getProperties().getEncoding();
+            return phpModule.getLookup().lookup(PhpModuleProperties.class).getEncoding();
         }
     };
     public static final Property<String> EXCLUDES = new Property<>("excludes"); // NOI18N
