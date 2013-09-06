@@ -71,6 +71,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -597,7 +598,7 @@ public final class PhpUnit {
                         // comment about %INCLUDE_PATH%, let's skip it
                         continue;
                     }
-                    List<String> includePath = phpModule.getProperties().getIncludePath();
+                    List<String> includePath = phpModule.getLookup().lookup(PhpModuleProperties.class).getIncludePath();
                     assert includePath != null : "Include path should be always present";
                     line = processIncludePath(
                             finalBootstrap,
