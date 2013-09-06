@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Keymaps">
+        <folder name="Idea">
+            <file name="DS-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-utilities-CopyPathToClipboard.instance"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

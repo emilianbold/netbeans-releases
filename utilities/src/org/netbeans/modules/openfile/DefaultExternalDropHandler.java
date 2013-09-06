@@ -77,7 +77,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.ExternalDropHandler.class)
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.ExternalDropHandler.class, position = 1000)
 public class DefaultExternalDropHandler extends ExternalDropHandler {
     
     private static final Logger LOG =

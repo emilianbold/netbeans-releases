@@ -269,4 +269,18 @@ public final class PhpModuleProperties {
 
     }
 
+    //~ Inner classes
+
+    /**
+     * Factory for PHP module properties that can be found in PHP module {@link PhpModule#getLookup() lookup}.
+     * @since 2.28
+     */
+    public interface Factory {
+        /**
+         * Create new PHP module properties.
+         * @return new PHP module properties
+         */
+        PhpModuleProperties create();
+    }
+
 }
