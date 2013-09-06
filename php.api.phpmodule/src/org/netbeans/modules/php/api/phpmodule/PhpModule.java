@@ -119,15 +119,6 @@ public abstract class PhpModule implements Lookup.Provider {
     public abstract Lookup getLookup();
 
     /**
-     * Get the current {@link PhpModuleProperties properties} of this PHP module.
-     * Please note that caller should not hold this properties because they can
-     * change very often (if user changes Run Configuration).
-     * @return the current {@link PhpModuleProperties properties}
-     */
-    @NonNull
-    public abstract PhpModuleProperties getProperties();
-
-    /**
      * Get {@link Preferences} of this PHP module.
      * This method is suitable for storing (and reading) PHP module specific properties.
      * For more information, see {@link org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)}.
@@ -146,6 +137,19 @@ public abstract class PhpModule implements Lookup.Provider {
      * @see #PROPERTY_FRAMEWORKS
      */
     public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * <b>Deprecated, {@link #getLookup() lookup} {@link PhpModuleProperties} class.
+     * This method will be removed after NB 8.0.</b>
+     * <p>
+     * Get the current {@link PhpModuleProperties properties} of this PHP module.
+     * Please note that caller should not hold this properties because they can
+     * change very often (if user changes Run Configuration).
+     * @return the current {@link PhpModuleProperties properties}
+     */
+    @Deprecated
+    @NonNull
+    public abstract PhpModuleProperties getProperties();
 
     /**
      * <b>Deprecated, {@link #getLookup() lookup} {@link org.netbeans.spi.project.ui.CustomizerProvider2} class
