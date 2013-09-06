@@ -805,8 +805,9 @@ public class Util {
     }
 
     /**
-     * An implementation of the PersistenceProviderSupplier that returns an empty list for supported
-     * providers and doesn't support a default provider. Used when an implementation of
+     * An implementation of the PersistenceProviderSupplier that returns an list of providers 
+     * provided by bundled/registered libraries
+     *  and doesn't support a default provider. Used when an implementation of
      * the PersistenceProviderSupplier can't be found in the project lookup (as is the case
      * for instance for Java SE projects).
      */
@@ -814,8 +815,23 @@ public class Util {
 
         @Override
         public List<Provider> getSupportedProviders() {
-            return Collections.<Provider>emptyList();
-        }
+            List<Provider> model = new ArrayList<Provider>();
+            //get all, but remove duplicates
+            for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()) {
+                boolean found = false;
+                for (int i = 0; i < model.size(); i++) {
+                    Object elem = model.get(i);
+                    if (elem instanceof Provider && each.equals(elem)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    model.add(each);
+                }
+            }
+            return model;
+        }       
 
         @Override
         public boolean supportsDefaultProvider() {
