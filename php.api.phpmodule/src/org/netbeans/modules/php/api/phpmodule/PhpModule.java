@@ -62,7 +62,7 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
-public abstract class PhpModule {
+public abstract class PhpModule implements Lookup.Provider {
 
     /**
      * Property for frameworks.
@@ -111,6 +111,14 @@ public abstract class PhpModule {
     public abstract FileObject getTestDirectory();
 
     /**
+     * Get any optional abilities of this PHP module.
+     * @return a set of abilities
+     * @since 2.28
+     */
+    @Override
+    public abstract Lookup getLookup();
+
+    /**
      * Get the current {@link PhpModuleProperties properties} of this PHP module.
      * Please note that caller should not hold this properties because they can
      * change very often (if user changes Run Configuration).
@@ -132,31 +140,25 @@ public abstract class PhpModule {
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
-     * Open Project Properties dialog for this PHP module with the given category.
-     * @param category category to be preselected
-     * @since 2.12
-     */
-    public abstract void openCustomizer(String category);
-
-    /**
-     * <b>Deprecated, use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}. This
-     * method will be removed after NB 7.4.</b>
-     * A way for informing PHP module that something has changed.
-     * @param propertyChangeEvent property change event
-     * @since 2.4
-     * @see #PROPERTY_FRAMEWORKS
-     * @deprecated use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}
-     */
-    @Deprecated
-    public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
-
-    /**
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
      * @since 2.18
      * @see #PROPERTY_FRAMEWORKS
      */
     public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * <b>Deprecated, {@link #getLookup() lookup} {@link org.netbeans.spi.project.ui.CustomizerProvider2} class
+     * and use its methods. This method will be removed after NB 8.0.</b>
+     * <p>
+     * Open Project Properties dialog for this PHP module with the given category.
+     * @param category category to be preselected
+     * @since 2.12
+     */
+    @Deprecated
+    public abstract void openCustomizer(String category);
+
+    //~ Factories
 
     /**
      * Gets PHP module for the given {@link FileObject}.
@@ -238,7 +240,7 @@ public abstract class PhpModule {
 
     /**
      * Get {@link PhpModule PHP module} from the given lookup.
-     * @param project a PHP project where to look for a PHP module for
+     * @param lookup a lookup where to look for a PHP module for
      * @return PHP module or {@code null} if not found
      * @see 1.38
      */
