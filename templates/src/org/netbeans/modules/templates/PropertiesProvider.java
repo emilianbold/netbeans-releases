@@ -54,6 +54,7 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
 public final class PropertiesProvider implements CreateFromTemplateAttributesProvider {
 
+    @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         FileObject dir = FileUtil.getConfigFile("Templates/Properties");
         if (dir == null) {
@@ -62,7 +63,7 @@ public final class PropertiesProvider implements CreateFromTemplateAttributesPro
         Charset set;
         InputStream is;
         
-        Map<String, Object> ret = new HashMap<String, Object>();
+        Map<String, Object> ret = new HashMap<>();
         for (Enumeration<? extends FileObject> en = dir.getChildren(true); en.hasMoreElements(); ) {
             try {
                 FileObject fo = en.nextElement();
@@ -72,8 +73,9 @@ public final class PropertiesProvider implements CreateFromTemplateAttributesPro
                 is.close();
                 for (Map.Entry<Object, Object> entry : p.entrySet()) {
                     if (entry.getKey() instanceof String) {
-                        if (!ret.containsKey(entry.getKey())) {
-                            ret.put((String)entry.getKey(), entry.getValue());
+                        String key = (String) entry.getKey();
+                        if (!ret.containsKey(key)) {
+                            ret.put(key, entry.getValue());
                         }
                     }
                 }
