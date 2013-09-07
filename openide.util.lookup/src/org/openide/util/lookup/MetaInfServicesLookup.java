@@ -84,7 +84,16 @@ final class MetaInfServicesLookup extends AbstractLookup {
                 Class<?> seek = Class.forName("org.openide.util.RequestProcessor");
                 res = (Executor)seek.newInstance();
             } catch (Throwable t) {
-                res = Executors.newSingleThreadExecutor();
+                try {
+                    res = Executors.newSingleThreadExecutor();
+                } catch (Throwable t2) {
+                    res = new Executor() {
+                        @Override
+                        public void execute(Runnable command) {
+                            command.run();
+                        }
+                    };
+                }
             }
             RP = new SoftReference<Executor>(res);
         }
