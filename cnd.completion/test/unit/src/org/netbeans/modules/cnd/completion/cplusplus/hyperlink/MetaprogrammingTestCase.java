@@ -47,6 +47,7 @@ import org.netbeans.junit.RandomlyFails;
 /**
  * @author Nikolay Krasilnikov
  */
+@RandomlyFails
 public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
 
     public MetaprogrammingTestCase(String testName) {
