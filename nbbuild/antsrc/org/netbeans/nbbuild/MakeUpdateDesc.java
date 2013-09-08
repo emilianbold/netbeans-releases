@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,8 +45,6 @@
 package org.netbeans.nbbuild;
 
 import java.io.BufferedReader;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
 import org.apache.tools.ant.types.FileSet;
@@ -70,8 +68,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -794,6 +795,14 @@ public class MakeUpdateDesc extends MatchingTask {
             if(needsNetbinox) {
                 manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
             }
+            String provides = computeExported(attr).toString();
+            if (! provides.isEmpty()) {
+                manifest.setAttribute("OpenIDE-Module-Provides", provides);
+            }
+            String recommends = computeImported(attr).toString();
+            if (! recommends.isEmpty()) {
+                manifest.setAttribute("OpenIDE-Module-Recommends", recommends);
+            }
         }
         String bundleCategory = loc(localized, attr, "Bundle-Category");
         if (bundleCategory != null) {
@@ -815,6 +824,63 @@ public class MakeUpdateDesc extends MatchingTask {
         } else {
             return val;
         }
+    }
+    
+    private static StringTokenizer createTokenizer(String osgiDep) {
+        for (;;) {
+            int first = osgiDep.indexOf('"');
+            if (first == -1) {
+                break;
+            }
+            int second = osgiDep.indexOf('"', first + 1);
+            if (second == -1) {
+                break;
+            }
+            osgiDep = osgiDep.substring(0, first - 1) + osgiDep.substring(second + 1);
+        }
+        
+        return new StringTokenizer(osgiDep, ",");
+    }
+
+    private static String beforeSemicolon(StringTokenizer tok) {
+        String dep = tok.nextToken().trim();
+        int semicolon = dep.indexOf(';');
+        if (semicolon >= 0) {
+            dep = dep.substring(0, semicolon);
+        }
+        return dep.replace('-', '_');
+    }
+    
+    private static StringBuilder computeExported(Attributes attr) {
+        StringBuilder sb = new StringBuilder();
+        String pkgs = attr.getValue("Export-Package"); // NOI18N
+        if (pkgs == null) {
+            return sb;
+        }
+        StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+        while (tok.hasMoreElements()) {
+            sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+        }
+        return sb;
+    }
+    
+    private static StringBuilder computeImported(Attributes attr) {
+        StringBuilder sb = new StringBuilder();
+        String pkgs = attr.getValue("Import-Package"); // NOI18N
+        if (pkgs != null) {
+            StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+            while (tok.hasMoreElements()) {
+                sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+            }
+        }
+        String recomm = attr.getValue("Require-Bundle"); // NOI18N
+        if (recomm != null) {
+            StringTokenizer tok = createTokenizer(recomm); // NOI18N
+            while (tok.hasMoreElements()) {
+                sb.append(sb.length() == 0 ? "" : ", ").append("cnb.").append(beforeSemicolon(tok));
+            }
+        }
+        return sb;
     }
 
 }

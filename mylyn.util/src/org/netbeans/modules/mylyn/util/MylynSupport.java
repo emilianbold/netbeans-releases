@@ -812,4 +812,31 @@ public class MylynSupport {
             }
         }
     }
+
+    void editorOpened (final ITask task) throws CoreException {
+        // mark the task as not read pending to block incoming refreshes
+        // from rewriting last seen task data while the editor is open
+        // maybe we should follow the mylyn's way of handling incoming updates
+        if (task instanceof AbstractTask) {
+            taskList.run(new ITaskListRunnable() {
+                @Override
+                public void execute (IProgressMonitor monitor) throws CoreException {
+                    ((AbstractTask) task).setMarkReadPending(false);
+                }
+            }, null, true);
+        }
+    }
+
+    void editorClosing (final ITask task, final TaskData td) throws CoreException {
+        // copy repository task data into last seen data
+        if (task instanceof AbstractTask) {
+            taskList.run(new ITaskListRunnable() {
+                @Override
+                public void execute (IProgressMonitor monitor) throws CoreException {
+                    ((AbstractTask) task).setMarkReadPending(true);
+                    taskDataManager.putUpdatedTaskData(task, td, true);
+                }
+            }, null, true);
+        }
+    }
 }

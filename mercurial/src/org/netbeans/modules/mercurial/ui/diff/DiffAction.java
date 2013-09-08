@@ -133,10 +133,14 @@ public class DiffAction extends ContextAction {
         tc.requestActive();
     }
 
-    public static void diff(File file1, HgRevision rev1, File file2, HgRevision rev2) {
+    public static void diff (File file1, HgRevision rev1, File file2, HgRevision rev2) {
+        diff(file1, rev1, file2, rev2, -1);
+    }
+
+    public static void diff (File file1, HgRevision rev1, File file2, HgRevision rev2, int lineNumber) {
         MultiDiffPanel panel = new MultiDiffPanel(file2, rev1, rev2,
                 new FileInformation(FileInformation.STATUS_VERSIONED_UPTODATE, new FileStatus(file2, file1), false),
-                false); // spawns background DiffPrepareTask
+                false, lineNumber); // spawns background DiffPrepareTask
         DiffTopComponent tc = new DiffTopComponent(panel);
         tc.setName(CTL_DiffPanel_Title(file2.getName()));
         tc.open();
