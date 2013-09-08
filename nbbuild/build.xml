@@ -1041,7 +1041,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
              classpath="${nbantext.jar}"/>
     <property name="l10n.kit" location="${nb.build.dir}/l10n.zip"/>
     <property name="nbms.location" location="nbms"/>
-    <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}"/>
+    <property name="locales" value=""/>
+    <l10n nbmsdir="${nbms.location}" tmpdir="tmp" patternsFile="l10n.patterns" kitFile="${l10n.kit}" locales="${locales}"/>
   </target>
   
   <target name="hg-l10n-kit">

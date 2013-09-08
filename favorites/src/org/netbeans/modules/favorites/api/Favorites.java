@@ -55,6 +55,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
+import org.openide.util.Mutex;
 
 /**
  * Singleton for access to Favorites.
@@ -110,7 +111,15 @@ public final class Favorites {
             }
             result = obj != null;
         }
-        Actions.Add.selectAfterAddition(obj);
+        if (obj != null) {
+            final DataObject fObj = obj;
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run () {
+                    Actions.Add.selectAfterAddition(fObj);
+                }
+            });
+        }
         return result;
     }
 

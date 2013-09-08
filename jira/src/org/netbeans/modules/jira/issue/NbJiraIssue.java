@@ -96,6 +96,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.JiraConfig;
@@ -307,6 +308,14 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
         }
         return null;
+    }
+
+    boolean setUnsubmittedAttachments (List<AttachmentInfo> newAttachments) {
+        return super.setNewAttachments(newAttachments);
+    }
+
+    List<AttachmentInfo> getUnsubmittedAttachments () {
+        return getNewAttachments();
     }
 
     public enum IssueField {
@@ -1647,7 +1656,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                 if (Jira.LOG.isLoggable(Level.FINEST)) {
                     Jira.LOG.log(Level.FINEST, "submitAndRefresh: id: {0}, new: {1}", new Object[]{getKey(), wasNew});
                 }
-
+                List<AttachmentInfo> newAttachments = getNewAttachments();
+                if (!newAttachments.isEmpty()) {
+                    // clear before submit, we do not know how connectors deal with internal attributes
+                    setNewAttachments(Collections.<AttachmentInfo>emptyList());
+                }
+                
                 SubmitTaskCommand submitCmd;
                 try {
                     // fix status according to the selected operation
@@ -1710,7 +1724,22 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
                 if(submitCmd.hasFailed()) {
                     result[0] = false;
+                    if (!newAttachments.isEmpty()) {
+                        setNewAttachments(newAttachments);
+                        saveChanges();
+                    }
                     return;
+                } else {
+                    if (!newAttachments.isEmpty()) {
+                        for (AttachmentInfo attachment : newAttachments) {
+                            File f = attachment.getFile();
+                            if (f.isFile()) {
+                                addAttachment(f, null, null);
+                            } else {
+                                // PENDING notify user
+                            }
+                        }
+                    }
                 }
                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_JiraIssue_statusBar_submitted(getDisplayName()));
 

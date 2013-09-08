@@ -47,6 +47,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.modules.editor.search.EditorFindSupport;
+import org.netbeans.modules.editor.search.SearchBar;
 import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
 
@@ -70,6 +71,10 @@ public class FindPreviousAction extends AbstractEditorAction {
             }
             SearchNbEditorKit.openFindIfNecessary(eui, evt);
             EditorFindSupport.getInstance().find(null, true);
+            SearchBar searchBarInstance = SearchBar.getInstance();
+            if (searchBarInstance.isVisible()) {
+                searchBarInstance.showNumberOfMatches(null, -1);
+            }
         }
     }
 

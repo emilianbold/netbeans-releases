@@ -451,12 +451,14 @@ public final class CsmInheritanceUtilities {
     }
 
     public static CsmClass getCsmClass(CsmInheritance inh) {
+        CsmClass out = null;
         CsmClassifier classifier = inh.getClassifier();
         classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
         if (CsmKindUtilities.isClass(classifier)) {
-            return (CsmClass)classifier;
+            out = (CsmClass)classifier;
         }
-        return null;
+        LOG.log(Level.FINE, "getCsmClass for\n{0}\n=>getCsmClass=>\n{1}", new Object[] {inh, out});
+        return out;
     }
 
     private static CsmInheritance findDirectInheritance(CsmClass child, CsmClass parent) {

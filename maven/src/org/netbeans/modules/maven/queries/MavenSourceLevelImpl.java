@@ -222,6 +222,9 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         private final FileObject javaFile;
         private final ChangeSupport cs = new ChangeSupport(this);
         private final PropertyChangeListener pcl = WeakListeners.propertyChange(this, project.getLookup().lookup(NbMavenProject.class));
+        private String cachedLevel = null;
+        private SourceLevelQuery.Profile cachedProfile;
+        private final Object CACHE_LOCK = new Object();
         
         ResultImpl(FileObject javaFile) {
             this.javaFile = javaFile;
@@ -229,7 +232,12 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         }
 
         @Override public String getSourceLevel() {
-            return getSourceLevelString(javaFile);
+            synchronized (CACHE_LOCK) {
+                if (cachedLevel == null) {
+                    cachedLevel = getSourceLevelString(javaFile);
+                }
+                return cachedLevel;
+            }
         }
 
         @Override public void addChangeListener(ChangeListener listener) {
@@ -242,13 +250,26 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
 
         @Override public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                Project p = (Project) evt.getSource();
+                if (p.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
+                    return; //let's just continue with the old value, rescanning classpath for broken project and re-creating it later serves no greater good.
+                }
+                synchronized (CACHE_LOCK) {
+                    cachedLevel = null;
+                    cachedProfile = null;
+                }
                 cs.fireChange();
             }
         }
 
         @Override
         public SourceLevelQuery.Profile getProfile() {
-           return getSourceProfile(javaFile);
+            synchronized (CACHE_LOCK) {
+                if (cachedProfile == null) {
+                    cachedProfile = getSourceProfile(javaFile);
+                }
+                return cachedProfile;
+            }
         }
 
     }

@@ -45,8 +45,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
@@ -70,16 +68,11 @@ public final class Queries {
      * @return PHP visibility query
      */
     public static PhpVisibilityQuery getVisibilityQuery(@NullAllowed PhpModule phpModule) {
-        // XXX query should be in lookup of php module
         if (phpModule == null) {
             return DEFAULT_PHP_VISIBILITY_QUERY;
         }
-        Project project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
-        if (project == null) {
-            return DEFAULT_PHP_VISIBILITY_QUERY;
-        }
-        PhpVisibilityQuery visibilityQuery = project.getLookup().lookup(PhpVisibilityQuery.class);
-        assert visibilityQuery != null : "No php visibility query for project " + project.getClass().getName();
+        PhpVisibilityQuery visibilityQuery = phpModule.getLookup().lookup(PhpVisibilityQuery.class);
+        assert visibilityQuery != null : "No php visibility query for php module " + phpModule.getClass().getName();
         return visibilityQuery;
     }
 

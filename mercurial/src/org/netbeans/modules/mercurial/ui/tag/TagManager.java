@@ -71,17 +71,13 @@ import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -214,14 +210,11 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
         if (e.getSource() == panel.btnRemove) {
             removeTag(getSelectedTag());
         } else if (e.getSource() == panel.btnUpdate) {
-            final VCSContext ctx = VCSContext.forNodes(new Node[] {
-                new AbstractNode(Children.LEAF, Lookups.fixed(repository))
-            });
             dialog.setVisible(false);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run () {
-                    UpdateAction.update(ctx, getSelectedTag().getRevisionInfo());
+                    SystemAction.get(UpdateAction.class).update(repository, getSelectedTag().getRevisionInfo());
                 }
             });
         }

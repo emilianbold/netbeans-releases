@@ -65,6 +65,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TooManyListenersException;
@@ -447,74 +448,90 @@ final class QuietEditorPane extends JEditorPane {
 	}
     }
     
-    private class DelegatingDropTarget extends DropTarget implements UIResource {
-        private DropTarget orig;
+     private class DelegatingDropTarget extends DropTarget implements UIResource {
+
+        private final DropTarget orig;
         private boolean isDragging = false;
 
-        public DelegatingDropTarget( DropTarget orig ) {
+        public DelegatingDropTarget(DropTarget orig) {
             this.orig = orig;
         }
+
         @Override
         public void addDropTargetListener(DropTargetListener dtl) throws TooManyListenersException {
             //#131830: It is to avoid NPE on JDK 1.5
             orig.removeDropTargetListener(dtl);
-            orig.addDropTargetListener( dtl );
+            orig.addDropTargetListener(dtl);
         }
 
         @Override
         public void removeDropTargetListener(DropTargetListener dtl) {
-            orig.removeDropTargetListener( dtl );
+            orig.removeDropTargetListener(dtl);
         }
 
         @Override
         public void dragEnter(DropTargetDragEvent dtde) {
-            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
-            if( null != handler && handler.canDrop( dtde ) ) {
-                dtde.acceptDrag( DnDConstants.ACTION_COPY );
-                isDragging = false;
-            } else {
-                orig.dragEnter( dtde );
-                isDragging = true;
+            Collection<? extends ExternalDropHandler> handlers = Lookup.getDefault().lookupAll(ExternalDropHandler.class);
+            for (ExternalDropHandler handler : handlers) {
+                if (handler.canDrop(dtde)) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
+                    isDragging = false;
+                    return;
+                }
             }
+
+            orig.dragEnter(dtde);
+            isDragging = true;
         }
 
         @Override
         public void dragExit(DropTargetEvent dte) {
-            if( isDragging ) {
-                orig.dragExit( dte );
+            if (isDragging) {
+                orig.dragExit(dte);
             }
             isDragging = false;
         }
 
         @Override
         public void dragOver(DropTargetDragEvent dtde) {
-            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
-            if( null != handler && handler.canDrop( dtde ) ) {
-                dtde.acceptDrag( DnDConstants.ACTION_COPY );
-                isDragging = false;
-            } else {
-                orig.dragOver( dtde );
-                isDragging = true;
+            Collection<? extends ExternalDropHandler> handlers = Lookup.getDefault().lookupAll(ExternalDropHandler.class);
+            for (ExternalDropHandler handler : handlers) {
+                if (handler.canDrop(dtde)) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY);
+                    isDragging = false;
+                    return;
+                }
             }
+
+            orig.dragOver(dtde);
+            isDragging = true;
+
         }
 
         @Override
         public void drop(DropTargetDropEvent e) {
-            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
-            if( null != handler && handler.canDrop( e ) ) {
-                e.acceptDrop( DnDConstants.ACTION_COPY );
-
-                e.dropComplete( handler.handleDrop( e ) );
-            } else {
-                orig.drop( e );
+            Collection<? extends ExternalDropHandler> handlers = Lookup.getDefault().lookupAll(ExternalDropHandler.class);
+            for (ExternalDropHandler handler : handlers) {
+                if (handler.canDrop(e)) {
+                    e.acceptDrop(DnDConstants.ACTION_COPY);
+                    boolean dropped = handler.handleDrop(e);
+                    if(!dropped) {
+                        continue; //try next ExternalDropHandler
+                    }
+                    e.dropComplete(true);
+                    isDragging = false;
+                    return;
+                }
             }
+            orig.drop(e);
             isDragging = false;
         }
 
         @Override
         public void dropActionChanged(DropTargetDragEvent dtde) {
-            if( isDragging )
-                orig.dropActionChanged( dtde );
+            if (isDragging) {
+                orig.dropActionChanged(dtde);
+            }
         }
     }
 }

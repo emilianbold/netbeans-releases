@@ -596,6 +596,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 specialization = (CsmClassifier) obj ;
             }
         }
+        LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
+
         return specialization != null ? specialization : classifier;
     }
 
@@ -1071,6 +1073,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }        
     
     private static CsmCacheMap getTemplateRelatedCache(CsmObject template, boolean specialize) {
+        if (true) return null;
         return CsmCacheManager.getClientCache(new TemplateCacheKey(template, specialize), new TemplateCacheInitializer(template));
     }
 

@@ -35,22 +35,30 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="addCommentWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="externalWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="subtaskWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="foundInWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="dueDateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="ownerWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="ccWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="parentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                          <Component id="descriptionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="addCommentWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="externalWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="subtaskWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="priorityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="foundInWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="dueDateWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="ownerWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="ccWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="parentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="descriptionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="descriptionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -130,7 +138,7 @@
                               <Component id="duplicateButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="0" pref="31" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="30" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -305,8 +313,9 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="dummyAttachmentsPanel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="attachmentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="attachmentsWarning" min="-2" pref="16" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
                   <Component id="summaryField" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="summaryLabel" alignment="2" min="-2" max="-2" attributes="0"/>
@@ -1128,6 +1137,8 @@
           <ResourceString bundle="org/netbeans/modules/odcs/tasks/issue/Bundle.properties" key="IssuePanel.duplicateLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="attachmentsWarning">
     </Component>
   </SubComponents>
 </Form>

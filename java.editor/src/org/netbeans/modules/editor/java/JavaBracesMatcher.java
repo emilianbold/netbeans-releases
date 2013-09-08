@@ -338,12 +338,20 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
                     case WHILE_LOOP: 
                     case METHOD:
                     case NEW_CLASS:
-                    case CLASS:
                     case CASE:
                     {
                         // take start of the command as the context
                         long start = ctrl.getTrees().getSourcePositions().getStartPosition(
                                 ctrl.getCompilationUnit(), path.getLeaf());
+                        ret[0] = BraceContext.create(
+                            context.getDocument().createPosition((int)start),
+                            context.getDocument().createPosition(position));
+                        return;
+                    }
+                    case CLASS:
+                    {
+                        long start = ctrl.getTrees().getSourcePositions().getStartPosition(
+                                ctrl.getCompilationUnit(), block != null ? block : path.getLeaf());
                         ret[0] = BraceContext.create(
                             context.getDocument().createPosition((int)start),
                             context.getDocument().createPosition(position));
