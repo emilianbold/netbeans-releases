@@ -80,7 +80,7 @@ public class OutAction extends SearchHistoryAction {
             return;
         }
         outputSearchContextTab(repositoryRoot, "MSG_LogOut_Title");
-        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(HgUtils.filterForRepository(context, repositoryRoot, false), ""); //NOI18N
+        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(HgUtils.filterForRepository(context, repositoryRoot, false), "", ""); //NOI18N
         tc.setDisplayName(NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", repositoryRoot.getName()));
         tc.open();
         tc.requestActive();

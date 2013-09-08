@@ -77,7 +77,9 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -487,6 +489,24 @@ class SummaryView extends AbstractSummaryView {
                                     if (getProgressMonitor().isCanceled()) {
                                         return;
                                     }
+                                }
+                            }
+                        }
+                    }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                {
+                    setEnabled(canAnnotate);
+                }
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new GitProgressSupport() {
+                        @Override
+                        protected void perform () {
+                            for (RepositoryRevision.Event evt : drev) {
+                                if (evt.getFile() != null && evt.getAction() != 'D') {
+                                    Utils.openFile(FileUtil.normalizeFile(evt.getFile()));
                                 }
                             }
                         }

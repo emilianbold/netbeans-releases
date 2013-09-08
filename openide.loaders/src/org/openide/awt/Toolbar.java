@@ -158,10 +158,12 @@ public class Toolbar extends ToolbarWithOverflow /*implemented by patchsuperclas
         // check for too early call (from constructor and UI.setUp...)
         if (backingFolder == null) return null;
         
-        if(processor == null && isVisible()) {
-            processor = new Folder(); // It will start tracking immediatelly
+        synchronized (this) {
+            if (processor == null && isVisible()) {
+                processor = new Folder(); // It will start tracking immediatelly
+            }
+            return processor;
         }
-        return processor;
     }    
     
     @Override
