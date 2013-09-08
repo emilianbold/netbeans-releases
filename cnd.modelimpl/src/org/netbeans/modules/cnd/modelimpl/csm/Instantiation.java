@@ -1295,6 +1295,12 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         }
         
         private CharSequence getTextImpl(boolean instantiate) {
+            if (originalType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+                return ((org.netbeans.modules.cnd.modelimpl.csm.NestedType)originalType).getOwnText();
+            } 
+            if (originalType instanceof NestedType) {
+                return ((NestedType)originalType).getOwnText();
+            }            
             if (originalType instanceof TypeImpl) {
                 // try to instantiate original classifier
                 CsmClassifier classifier = null;
@@ -1311,9 +1317,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                     clsText = classifier.getName();
                 }
                 return ((TypeImpl)originalType).decorateText( clsText, this, false, null);
-            }
-            if (originalType instanceof NestedType) {
-                return ((NestedType)originalType).getOwnText();
             }
             return originalType.getText();
         }
