@@ -54,8 +54,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
@@ -69,6 +75,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -86,6 +93,8 @@ import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvide
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider.class)
 public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
+    
+    private static final Logger LOG = Logger.getLogger(ExpressionEvaluator.class.getSimpleName());
 
     private int level;
     
@@ -99,6 +108,8 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
     @Override
     public Object eval(String expr) {
+        LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -134,6 +145,8 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
     @Override
     public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
+        
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -159,7 +172,32 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
             mapping.putAll(inst.getMapping());
             while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
                 inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                for (CsmTemplateParameter param : inst.getMapping().keySet()) {
+                
+                List<CsmTemplateParameter> orderedParamsList = new ArrayList<>(inst.getMapping().keySet());
+
+                final CsmInstantiation finalInst = inst;
+                Collections.sort(orderedParamsList, new Comparator<CsmTemplateParameter>() {
+
+                    @Override
+                    public int compare(CsmTemplateParameter o1, CsmTemplateParameter o2) {
+                        int score1 = calcScore(o1);
+                        int score2 = calcScore(o2);
+                        return score1 - score2;
+                    }
+                    
+                    private int calcScore(CsmTemplateParameter param) {
+                        CsmSpecializationParameter spec = finalInst.getMapping().get(param);
+                        if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+                            if (!((CsmExpressionBasedSpecializationParameter) spec).isDefaultValue()) {
+                                return -1;
+                            }
+                        }
+                        return param.getStartOffset();
+                    }
+                    
+                });
+                                
+                for (CsmTemplateParameter param : orderedParamsList) {
                     Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
                     CsmSpecializationParameter spec = inst.getMapping().get(param);
                     if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
