@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class ReleaseVersionError implements POMErrorFixProvider {
-    private Configuration configuration;
+    private final Configuration configuration;
 
     static final String PROP_RELEASE = "release";//NOI18N
     static final String PROP_LATEST = "latest";//NOI18N

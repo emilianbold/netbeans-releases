@@ -56,9 +56,9 @@ import org.openide.util.ImageUtilities;
  */
 public class VersionNode extends AbstractNode {
 
-    private NBVersionInfo nbvi;
-    private boolean hasJavadoc;
-    private boolean hasSources;
+    private final NBVersionInfo nbvi;
+    private final boolean hasJavadoc;
+    private final boolean hasSources;
 
 
 

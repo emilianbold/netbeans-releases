@@ -70,7 +70,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class OverrideDependencyManagementError implements POMErrorFixProvider {
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public OverrideDependencyManagementError() {
         configuration = new Configuration("OverrideDependencyManagementError", //NOI18N
@@ -156,7 +156,7 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
     }
 
     private static class OverrideFix implements Fix, Runnable {
-        private Dependency dependency;
+        private final Dependency dependency;
 
         OverrideFix(Dependency dep) {
             dependency = dep;
