@@ -173,7 +173,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         private Lookup.Result<T> delegate;
 
         /** listeners set */
-        private javax.swing.event.EventListenerList listeners;
+        private LookupListenerList listeners;
         private LookupListener lastListener;
 
         /** Just remembers the supplied argument in variable template.*/
@@ -251,15 +251,15 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
         public synchronized void addLookupListener(LookupListener l) {
             if (listeners == null) {
-                listeners = new javax.swing.event.EventListenerList();
+                listeners = new LookupListenerList();
             }
 
-            listeners.add(LookupListener.class, l);
+            listeners.add(l);
         }
 
         public synchronized void removeLookupListener(LookupListener l) {
             if (listeners != null) {
-                listeners.remove(LookupListener.class, l);
+                listeners.remove(l);
             }
         }
 
@@ -292,7 +292,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         } 
         
         protected void collectFires(Collection<Object> evAndListeners) {
-            javax.swing.event.EventListenerList l = this.listeners;
+            LookupListenerList l = this.listeners;
 
             if (l == null) {
                 return;

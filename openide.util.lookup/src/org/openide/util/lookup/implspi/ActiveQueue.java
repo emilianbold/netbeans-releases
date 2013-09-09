@@ -81,9 +81,7 @@ public final class ActiveQueue {
             try {
                 f = ReferenceQueue.class.getDeclaredField("lock"); // NOI18N
                 f.setAccessible(true);
-            } catch (NoSuchFieldException ex) {
-                reportError(ex);
-            } catch (SecurityException ex) {
+            } catch (Throwable ex) {
                 reportError(ex);
             }
             LOCK = f;
