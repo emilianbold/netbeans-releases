@@ -6,12 +6,16 @@ METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
 METHOD     addBack(selector): jQuery       [PUBLIC]   jquery-api.xml
 METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
 METHOD     after(content): jQuery          [PUBLIC]   jquery-api.xml
+METHOD     ajax(url, settings): jqXHR      [PUBLIC]   jquery-api.xml
 METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   jquery-api.xml
 METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   jquery-api.xml
+METHOD     ajaxPrefilter(dataTypes, handl  [PUBLIC]   jquery-api.xml
 METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   jquery-api.xml
+METHOD     ajaxSetup(options)              [PUBLIC]   jquery-api.xml
 METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   jquery-api.xml
 METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   jquery-api.xml
 METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   jquery-api.xml
+METHOD     ajaxTransport(dataType, handle  [PUBLIC]   jquery-api.xml
 METHOD     andSelf(): jQuery               [PUBLIC]   jquery-api.xml
 METHOD     animate(properties, options, n  [PUBLIC]   jquery-api.xml
 METHOD     append(function(index, html)):  [PUBLIC]   jquery-api.xml
