@@ -90,8 +90,8 @@ final class ButtonsHTMLParser {
         if (formParser == null) {
             throw new IllegalStateException("parse() must be called before this.");
         }
-        options = new ArrayList<Object>();
-        additionalOptions = new ArrayList<Object>();
+        options = new ArrayList<>();
+        additionalOptions = new ArrayList<>();
         List<MutableAttributeSet> inputs = formParser.getInputs();
         if (inputs.isEmpty()) {
             return ;
@@ -195,7 +195,7 @@ final class ButtonsHTMLParser {
         private boolean readingTitle = false;
         private String title;
         private boolean readingForm = false;
-        private final List<MutableAttributeSet> inputs = new ArrayList<MutableAttributeSet>();
+        private final List<MutableAttributeSet> inputs = new ArrayList<>();
         
         public String getTitle() {
             return title;

@@ -66,7 +66,7 @@ import org.openide.util.io.NbObjectInputStream;
  */
 class AfterRestartExceptions implements Runnable {
     
-    private static final Set<String> scheduledThrowableClasses = new HashSet<String>(
+    private static final Set<String> scheduledThrowableClasses = new HashSet<>(
             Arrays.asList(new String[] {
                 OutOfMemoryError.class.getName(),
                 "org.netbeans.modules.deadlock.detector.Detector$DeadlockDetectedException",
@@ -157,7 +157,7 @@ class AfterRestartExceptions implements Runnable {
         if (logRecords == null || !logRecords.exists()) {
             return false;
         }
-        Set<LogRecord> records = new LinkedHashSet<LogRecord>();
+        Set<LogRecord> records = new LinkedHashSet<>();
         ObjectInputStream in = null;
         synchronized (IOLock) {
             try {
@@ -168,8 +168,7 @@ class AfterRestartExceptions implements Runnable {
                         records.add((LogRecord) obj);
                     }
                 }
-            } catch (IOException ioex) {
-            } catch (ClassNotFoundException cnfex) {
+            } catch (IOException | ClassNotFoundException ex) {
             } finally {
                 if (in != null) {
                     try {
@@ -210,12 +209,11 @@ class AfterRestartExceptions implements Runnable {
                 public void run() {
                     Installer.displaySummary("ERROR_URL", true, false, true,
                                              Installer.DataType.DATA_UIGESTURE,
-                                             new ArrayList<LogRecord>(records), null, true);
+                                             new ArrayList<>(records), null, true);
                     Installer.setSelectedExcParams(null);
                     afterRestartRecords = null;
                 }
             });
-            return ;
         }
         
     }
