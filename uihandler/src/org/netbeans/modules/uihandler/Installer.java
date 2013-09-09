@@ -226,6 +226,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public void restored() {
         TimeToFailure.logAction();
+        deleteAnExcessiveAmountOfUIGestureHTMLFiles();
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
@@ -285,6 +286,27 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
+    private static void deleteAnExcessiveAmountOfUIGestureHTMLFiles() {
+        String tmpDirStr = System.getProperty("java.io.tmpdir");                // NOI18N
+        if (tmpDirStr == null) {
+            return ;
+        }
+        File tmpDir = new File(tmpDirStr);
+        String[] list = tmpDir.list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.startsWith("uigesture") && name.endsWith(".html"); // NOI18N
+                            }
+                        });
+        if (list == null || list.length < 10) {
+            // Ignore the few files.
+            return ;
+        }
+        for (String tempFile : list) {
+            new File(tmpDir, tempFile).delete();
+        }
+    }
+
     /** Accessed from tests. */
     static int getLogsSizeTest() {
         return logsSize;
