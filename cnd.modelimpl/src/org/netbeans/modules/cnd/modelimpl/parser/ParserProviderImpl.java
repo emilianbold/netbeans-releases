@@ -117,6 +117,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
         
         private Map<Integer, CsmObject> objects = null;
         private final CsmParserProvider.CsmParserParameters params;
+        private final CsmCorePackageAccessor csmCorePackageAccessor;
         
         Antlr2CppParser(CsmParserProvider.CsmParserParameters params) {
             this.params = params;
@@ -127,6 +128,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             }
             this.flags = aFlags;
             this.language = params.getLanguage();
+            csmCorePackageAccessor = CsmCorePackageAccessor.get();
         }
 
         @Override
@@ -214,7 +216,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case TRANSLATION_UNIT:
                         if (ast != null) {
                             CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
-                            FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
+                            FileContent parseFileContent = getCsmCorePackageAccessor().getFileContent(descr);
                             new AstRenderer(file, parseFileContent, language, objects).render(ast);
                         }                        
                         break;
@@ -262,6 +264,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             } finally {
                 CsmCacheManager.leave();
             }
+        }
+
+        private CsmCorePackageAccessor getCsmCorePackageAccessor() {
+            return csmCorePackageAccessor;
         }
         
         @Override
