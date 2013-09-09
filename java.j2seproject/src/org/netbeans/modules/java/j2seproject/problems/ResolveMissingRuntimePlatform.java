@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.j2seembedded.project;
+package org.netbeans.modules.java.j2seproject.problems;
 
 import java.awt.Component;
 import java.awt.event.ItemEvent;
@@ -64,7 +64,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
+final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
 
     private static enum Type {
         MISSING_PLATFORM,
@@ -78,9 +78,9 @@ final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
     private final ChangeSupport changeSupport;
 
     /**
-     * Creates new form ResolveMissingRemotePlatform
+     * Creates new form ResolveMissingRuntimePlatform
      */
-    private ResolveMissingRemotePlatform(
+    private ResolveMissingRuntimePlatform(
             @NonNull final Type type,
             @NonNull final Project prj,
             @NonNull final String platformId) {
@@ -153,7 +153,7 @@ final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
         @NonNull final String platformId) {
         switch (type) {
             case MISSING_PLATFORM:
-                return NbBundle.getMessage(ResolveMissingRemotePlatform.class, "LBL_MissingRuntimePlatform", platformId);
+                return NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "LBL_MissingRuntimePlatform", platformId);
             case INVALID_PLATFORM:
             default:
                 throw new IllegalArgumentException(String.valueOf(type));
@@ -161,10 +161,10 @@ final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
     }
 
 
-    static ResolveMissingRemotePlatform createMissingPlatform(
+    static ResolveMissingRuntimePlatform createMissingPlatform(
             @NonNull final Project project,
             @NonNull final String platformId) {
-        return new ResolveMissingRemotePlatform(Type.MISSING_PLATFORM, project, platformId);
+        return new ResolveMissingRuntimePlatform(Type.MISSING_PLATFORM, project, platformId);
     }
 
     /**
@@ -187,14 +187,14 @@ final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, getMessage(this.type, platformId));
 
         actions.add(projectPlatform);
-        org.openide.awt.Mnemonics.setLocalizedText(projectPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRemotePlatform.class, "ResolveMissingRemotePlatform.projectPlatform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.projectPlatform.text")); // NOI18N
 
         actions.add(specificPlatform);
-        org.openide.awt.Mnemonics.setLocalizedText(specificPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRemotePlatform.class, "ResolveMissingRemotePlatform.specificPlatform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(specificPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.specificPlatform.text")); // NOI18N
 
         platforms.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(create, org.openide.util.NbBundle.getMessage(ResolveMissingRemotePlatform.class, "ResolveMissingRemotePlatform.create.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(create, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.create.text")); // NOI18N
         create.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 create(evt);
@@ -202,7 +202,7 @@ final class ResolveMissingRemotePlatform extends javax.swing.JPanel {
         });
 
         jLabel2.setLabelFor(platforms);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ResolveMissingRemotePlatform.class, "ResolveMissingRemotePlatform.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

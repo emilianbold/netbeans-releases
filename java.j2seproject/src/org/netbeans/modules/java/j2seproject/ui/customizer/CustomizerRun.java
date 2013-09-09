@@ -861,7 +861,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         String getPlatformAntName() {
             String antName = platform == null ?
                 "" :    //NOI18N
-                platform.getProperties().get("platform.ant.name");  //NOI18N
+                platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME);
             assert antName != null;
             return antName;
         }
