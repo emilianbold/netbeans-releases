@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -454,14 +453,17 @@ public class MavenProjectSupport {
         } else {
             getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
         }
-        
-        CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
-        if (copyOnSave != null) {
-            if (isDeployOnSave(project)) {
-                copyOnSave.initialize();
-            } else {
-                copyOnSave.cleanup();
-            }
+    }
+
+    public static boolean isCopyStaticResourcesOnSave(Project project) {
+        return getPreferences(project, true).getBoolean(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE, true);
+    }
+
+    public static void setCopyStaticResourcesOnSave(Project project, Boolean value) {
+        if (value == null || value == true) {
+            getPreferences(project, true).remove(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE);
+        } else {
+            getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE, value);
         }
     }
 
