@@ -439,10 +439,10 @@ public class TemplateUtils {
         Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
         if (inst != null) {
             CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
+            newMapping.putAll(inst.getMapping());
             if(decl instanceof CsmInstantiation) {
                 newMapping.putAll(gatherMapping((CsmInstantiation) decl));
             }
-            newMapping.putAll(inst.getMapping());
         }
         return newMapping;
     }
