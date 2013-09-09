@@ -44,9 +44,10 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
+import java.util.Iterator;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.List;
-import java.util.LinkedList;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
@@ -55,31 +56,28 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStream;
  * passed list is unchanged
  * @author Vladimir Voskresensky
  */
-public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
+public final class LinkedListBasedTokenStream implements TokenStream, APTTokenStream {
     private final List<APTToken> tokens;
-    private final int size;
-    private int position;
+    private final Iterator<APTToken> iterator;
     /** Creates a new instance of ListBasedTokenStream */
-    public ListBasedTokenStream(List<APTToken> tokens) {
+    public LinkedListBasedTokenStream(List<APTToken> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
-        assert(tokens.getClass() != LinkedList.class) : "Only list";
+        assert(tokens.getClass() == LinkedList.class) : "Only linked list";
         this.tokens = tokens;
-        this.size = tokens.size();
-        position = 0;
+        iterator = tokens.iterator();
     }
 
     @Override
     public APTToken nextToken() {
-        if (position < size) {
-            return tokens.get(position++);
-        } else {
-            return APTUtils.EOF_TOKEN;
+        if (iterator.hasNext()) {
+            return iterator.next();
         }
+        return APTUtils.EOF_TOKEN;
     }   
 
     @Override
     public String toString() {
-        return APTUtils.debugString(new ListBasedTokenStream(tokens));
+        return APTUtils.debugString(new LinkedListBasedTokenStream(tokens));
     }
     
     //public List<APTToken> getList() {
