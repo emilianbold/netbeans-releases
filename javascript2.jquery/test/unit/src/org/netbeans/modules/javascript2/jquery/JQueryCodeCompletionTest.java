@@ -104,4 +104,8 @@ public class JQueryCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue223060() throws Exception {
         checkCompletion("testfiles/completion/jQuery/issue223060.js", "form.^", false);
     }
+    
+    public void testIssue235647() throws Exception {
+        checkCompletion("testfiles/completion/issue235647.js", "$.po^", false);
+    }
 }
