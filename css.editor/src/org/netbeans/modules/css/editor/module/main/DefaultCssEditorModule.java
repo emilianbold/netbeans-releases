@@ -95,7 +95,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssEditorModule.class)
 public class DefaultCssEditorModule extends CssEditorModule {
 
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/properties/"; //NOI18N    
     private static final CssModule[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new CssModule[]{
         module("default_module", "http://www.w3.org/TR/CSS2"),
@@ -439,7 +438,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     }
                         break;
                     case URI:
-                        Matcher m = URI_PATTERN.matcher(ts.token().text());
+                        Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
                         if (m.matches()) {
                             int groupIndex = 1;
                             String value = m.group(groupIndex);
@@ -477,7 +476,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                         //adjust the value if a part of an URI
                         if (valueToken.id() == CssTokenId.URI) {
-                            Matcher m = URI_PATTERN.matcher(valueToken.text());
+                            Matcher m = Css3Utils.URI_PATTERN.matcher(valueToken.text());
                             if (m.matches()) {
                                 int groupIndex = 1;
                                 valueText = m.group(groupIndex);

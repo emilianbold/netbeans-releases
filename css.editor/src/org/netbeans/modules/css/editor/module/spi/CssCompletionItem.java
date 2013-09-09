@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.spi;
 
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collections;
@@ -50,6 +51,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -65,19 +67,27 @@ import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
- * Represents a CSS completion proposal. Various predefined item types can be used
- * or the client of the SPI may override some of the defaults.
- * 
+ * Represents a CSS completion proposal. Various predefined item types can be
+ * used or the client of the SPI may override some of the defaults.
+ *
  * For more info see the CompletionProposal from csl.api
- * 
- * @todo support for more completion type providers - like colors => subclass this class, remove the kind field, it's just temp. hack
+ *
+ * @todo support for more completion type providers - like colors => subclass
+ * this class, remove the kind field, it's just temp. hack
  *
  */
-public abstract class CssCompletionItem implements CompletionProposal {
+public abstract class CssCompletionItem extends DefaultCompletionProposal {
 
     private int anchorOffset;
     private String value;
@@ -96,7 +106,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         return new ValueCompletionItem(element, value, origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
-    
+
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             ValueGrammarElement value,
             String origin,
@@ -106,7 +116,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         return new ValueCompletionItem(element, value.getValue(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
-    
+
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
             GrammarElement value,
             int anchorOffset,
@@ -177,11 +187,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         return new FileCompletionItem(element, value, anchorOffset, color, icon, addQuotes, addSemicolon);
     }
-    
+
     public static CompletionProposal createUnitCompletionItem(UnitGrammarElement element) {
         return new UnitItem(element);
     }
-    
+
     protected static final int SORT_PRIORITY = 300;
 
     private CssCompletionItem() {
@@ -312,7 +322,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return "<font color=999999>" + (origin == null ? "" : origin) + "</font>"; //NOI18N
         }
     }
-    
+
     //XXX fix the CssCompletionItem class so the Value and Property normally subclass it!!!!!!!!!
     static class ColorCompletionItem extends ValueCompletionItem {
 
@@ -389,8 +399,8 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return hash;
         }
     }
-    
-      static class ColorChooserItem extends DefaultCompletionProposal {
+
+    static class ColorChooserItem extends DefaultCompletionProposal {
 
         private static JColorChooser COLOR_CHOOSER;
         private Color color;
@@ -404,12 +414,12 @@ public abstract class CssCompletionItem implements CompletionProposal {
         }
 
         private static synchronized JColorChooser getColorChooser() {
-             if(COLOR_CHOOSER == null) {
-                 COLOR_CHOOSER = new JColorChooser();
-             }
-             return COLOR_CHOOSER;
+            if (COLOR_CHOOSER == null) {
+                COLOR_CHOOSER = new JColorChooser();
+            }
+            return COLOR_CHOOSER;
         }
-        
+
         @Override
         public boolean beforeDefaultAction() {
             final JColorChooser colorChooser = getColorChooser();
@@ -417,17 +427,17 @@ public abstract class CssCompletionItem implements CompletionProposal {
                     NbBundle.getMessage(CssCompletion.class, "MSG_Choose_Color"), //NOI18N
                     true, colorChooser, new ActionListener() {
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    color = colorChooser.getColor();
-                }
-            }, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            color = colorChooser.getColor();
+                        }
+                    }, new ActionListener() {
 
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    color = null;
-                }
-            });
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            color = null;
+                        }
+                    });
             dialog.setVisible(true);
             dialog.dispose();
 
@@ -510,11 +520,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
             return "<font color=#aaaaaa>" + element.getTokenAcceptorId() + "</font>"; //NOI18N
         }
 
-         @Override
+        @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             return "<font color=999999>" + element.getVisibleOrigin() + "</font>"; //NOI18N
         }
-        
+
         @Override
         public boolean isSmart() {
             return false;
@@ -526,7 +536,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
         private String propertyInsertPrefix;
         private PropertyDefinition property;
         private boolean vendorProperty;
-        
+
         private PropertyCompletionItem(CssElement element,
                 PropertyDefinition property,
                 String propertyInsertPrefix,
@@ -568,11 +578,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
             formatter.appendHtml("<font color=999999>"); //NOI18N
             formatter.appendText(property.getPropertyCategory().getDisplayName());
             formatter.appendHtml("</font>");
-             
+
             return formatter.getText();
-            
+
         }
-        
+
         @Override
         public String getInsertPrefix() {
             return propertyInsertPrefix + ": "; //NOI18N
@@ -631,6 +641,8 @@ public abstract class CssCompletionItem implements CompletionProposal {
         private final String colorCode;
         private final boolean addQuotes;
 
+        private static final String FILE_SEPARATOR = System.getProperty("file.separator"); //NOI18N
+
         private FileCompletionItem(CssElement element,
                 String value,
                 int anchorOffset,
@@ -643,6 +655,36 @@ public abstract class CssCompletionItem implements CompletionProposal {
             this.colorCode = color == null ? null : WebUtils.toHexCode(color).substring(1);
             this.addQuotes = addQuotes;
             this.addSemicolon = addSemicolon;
+        }
+
+        @Override
+        public boolean beforeDefaultAction() {
+            //XXX pretty hacky!
+            //XXX there should be a corresponding method like afterDefaultAction
+            //triggered after the atomic change so we don't have to use the dirty tricks
+            //with tasks put of by some magic delay!
+            
+            //reopen/refresh the completion for folders
+            FileObject file = getElement().getFileObject();
+            if (file != null && file.isFolder()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ParserManager.parse("text/css", new UserTask() { //NOI18N
+                                @Override
+                                public void run(ResultIterator ri) {
+                                    Completion.get().showCompletion();
+                                }
+                            });
+                        } catch (ParseException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }, 200);
+
+            }
+            return false;
         }
 
         @Override
@@ -662,6 +704,10 @@ public abstract class CssCompletionItem implements CompletionProposal {
                 b.append('"'); //NOI18N
             }
             b.append(getName());
+            FileObject file = getElement().getFileObject();
+            if (file != null && file.isFolder()) {
+                b.append(FILE_SEPARATOR); //NOI18N
+            }
             if (addQuotes) {
                 b.append('"'); //NOI18N
             }
@@ -673,11 +719,11 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if(colorCode != null) {
+            if (colorCode != null) {
                 formatter.appendHtml(String.format("<font color=\"%s\">", colorCode)); //NOI18N
             }
             formatter.appendText(getName());
-            if(colorCode != null) {
+            if (colorCode != null) {
                 formatter.appendHtml("</font>"); //NOI18N
             }
             return formatter.getText();
