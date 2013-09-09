@@ -82,55 +82,56 @@ import org.netbeans.modules.tomcat5.util.*;
 import org.openide.util.NbBundle;
 
 
-/** DeploymentManager that can deploy to 
+/**
+ * DeploymentManager that can deploy to
  * Tomcat 5 using manager application.
  *
- * @author  Radim Kubacki
+ * @author Petr Hejl, Radim Kubacki
  */
 public class TomcatManager implements DeploymentManager {
-    
+
     public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80};
-    
+
     public static final String KEY_UUID = "NB_EXEC_TOMCAT_START_PROCESS_UUID"; //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
 
     /** Enum value for get*Modules methods. */
     static final int ENUM_AVAILABLE = 0;
-    
+
     /** Enum value for get*Modules methods. */
     static final int ENUM_RUNNING = 1;
-    
+
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
-    
+
     public static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
-    
+
     /** Manager state. */
     private boolean connected;
-    
+
     /** uri of this DeploymentManager. */
     private final String uri;
-    
+
     private StartTomcat startTomcat;
-    
+
     /** System process of the started Tomcat */
     private Process process;
-    
+
     /** Easier access to some server.xml settings. */
     private TomcatManagerConfig tomcatManagerConfig;
-    
+
     /** LogManager manages all context and shared context logs for this TomcatManager. */
     private LogManager logManager = new LogManager(this);
-    
+
     private TomcatPlatformImpl tomcatPlatform;
-    
+
     private TomcatProperties tp;
-    
+
     private TomcatVersion tomcatVersion;
-    
+
     private InstanceProperties ip;
-    
+
     private boolean needsRestart;
 
     private boolean misconfiguredProxy;
@@ -141,7 +142,7 @@ public class TomcatManager implements DeploymentManager {
      * @param uname username
      * @param passwd password
      */
-    public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion) 
+    public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion)
     throws IllegalArgumentException {
         LOGGER.log(Level.FINE, "Creating connected TomcatManager uri=" + uri); //NOI18N
         this.connected = conn;
@@ -156,7 +157,7 @@ public class TomcatManager implements DeploymentManager {
     public InstanceProperties getInstanceProperties() {
         return ip;
     }
-    
+
     public boolean isBundledTomcat() {
         if (ip == null) {
             return false;
@@ -165,15 +166,15 @@ public class TomcatManager implements DeploymentManager {
         return val != null ? Boolean.valueOf(val).booleanValue()
                            : false;
     }
-    
+
     public TomcatProperties getTomcatProperties() {
         return tp;
     }
-    
+
     public synchronized void setNeedsRestart(boolean needsRestart) {
         this.needsRestart = needsRestart;
     }
-    
+
     public synchronized boolean getNeedsRestart() {
         return needsRestart;
     }
@@ -195,10 +196,10 @@ public class TomcatManager implements DeploymentManager {
     public boolean isRunning(boolean checkResponse) {
         return isRunning(tp.getRunningCheckTimeout(), checkResponse);
     }
-    
+
     /**
      * Returns true if the server is running.
-     * 
+     *
      * @param timeout for how long should we keep trying to detect the running state.
      * @param checkResponse should be checked whether is the server responding - is really up?
      * @return <code>true</code> if the server is running.
@@ -223,7 +224,7 @@ public class TomcatManager implements DeploymentManager {
             return false; // cannot resolve the state
         }
     }
-    
+
     /** Returns identifier of TomcatManager. This is not a real URI!
      * @return URI including home and base specification
      */
@@ -233,16 +234,16 @@ public class TomcatManager implements DeploymentManager {
                 return TomcatFactory.TOMCAT_URI_PREFIX_80 + uri;
             case TOMCAT_70:
                 return TomcatFactory.TOMCAT_URI_PREFIX_70 + uri;
-            case TOMCAT_60: 
+            case TOMCAT_60:
                 return TomcatFactory.TOMCAT_URI_PREFIX_60 + uri;
-            case TOMCAT_55: 
+            case TOMCAT_55:
                 return TomcatFactory.TOMCAT_URI_PREFIX_55 + uri;
-            case TOMCAT_50: 
+            case TOMCAT_50:
             default:
                 return TomcatFactory.TOMCAT_URI_PREFIX_50 + uri;
         }
     }
-    
+
     /** Returns URI of TomcatManager (manager application).
      * @return URI without home and base specification
      */
@@ -252,7 +253,7 @@ public class TomcatManager implements DeploymentManager {
         }
         return "http://" + tp.getHost() + ":" + getCurrentServerPort() + "/manager/"; //NOI18N
     }
-    
+
     /** Returns URI of TomcatManager.
      * @return URI without home and base specification
      */
@@ -261,7 +262,7 @@ public class TomcatManager implements DeploymentManager {
     }
 
     /**
-     * Return path to catalina work directory, which is used to store generated 
+     * Return path to catalina work directory, which is used to store generated
      * sources and classes from JSPs.
      *
      * @return path to catalina work directory.
@@ -272,9 +273,9 @@ public class TomcatManager implements DeploymentManager {
         String hostName = tmConfig.getHostElement().getAttributeValue("name"); //NOI18N
         StringBuffer catWork = new StringBuffer(tp.getCatalinaDir().toString());
         catWork.append("/work/").append(engineName).append("/").append(hostName); //NOI18N
-        return catWork.toString(); 
+        return catWork.toString();
     }
-    
+
     /** Ensure that the catalina base folder is ready, generate it if empty. */
     public void ensureCatalinaBaseReady() {
         File baseDir = tp.getCatalinaBase();
@@ -298,21 +299,21 @@ public class TomcatManager implements DeploymentManager {
             }
         }
     }
-    
+
     public StartTomcat getStartTomcat(){
         return startTomcat;
     }
-    
+
     public void setStartTomcat (StartTomcat st){
         startTomcat = st;
     }
-    
+
     /**
      * Returns true if this server is started in debug mode AND debugger is attached to it.
      * Doesn't matter whether the thread are suspended or not.
      */
     public boolean isDebugged() {
-        
+
         ServerDebugInfo sdi = null;
 
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
@@ -345,9 +346,9 @@ public class TomcatManager implements DeploymentManager {
 
         return false;
     }
-        
+
     /**
-     * Returns true if this server is started in debug mode AND debugger is attached to it 
+     * Returns true if this server is started in debug mode AND debugger is attached to it
      * AND threads are suspended (e.g. debugger stopped on breakpoint)
      */
     public boolean isSuspended() {
@@ -409,49 +410,49 @@ public class TomcatManager implements DeploymentManager {
     public boolean isTomcat60() {
         return tomcatVersion == TomcatVersion.TOMCAT_60;
     }
-    
+
     public boolean isTomcat55() {
         return tomcatVersion == TomcatVersion.TOMCAT_55;
     }
-    
+
     public boolean isTomcat50() {
         return tomcatVersion == TomcatVersion.TOMCAT_50;
     }
-    
+
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
     public String libFolder() {
         // Tomcat 5.x and 6.0 uses different lib folder
         return isTomcat50() || isTomcat55() ? "common/lib" : "lib"; // NOI18N
     }
-    
+
     public TomcatVersion getTomcatVersion() {
         return tomcatVersion;
     }
 
 // --- DeploymentManager interface implementation ----------------------
-    
-    public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
+
+    public DeploymentConfiguration createConfiguration (DeployableObject deplObj)
     throws InvalidModuleException {
         throw new RuntimeException("This should never be called"); // NOI18N
     }
-    
+
     public Locale getCurrentLocale () {
         return Locale.getDefault ();
     }
-    
+
     public Locale getDefaultLocale () {
         return Locale.getDefault ();
     }
-    
+
     public Locale[] getSupportedLocales () {
         return Locale.getAvailableLocales ();
     }
-    
+
     public boolean isLocaleSupported (Locale locale) {
         if (locale == null) {
             return false;
         }
-        
+
         Locale [] supLocales = getSupportedLocales ();
         for (int i =0; i<supLocales.length; i++) {
             if (locale.equals (supLocales[i])) {
@@ -460,72 +461,72 @@ public class TomcatManager implements DeploymentManager {
         }
         return false;
     }
-    
-    public TargetModuleID[] getAvailableModules (ModuleType moduleType, Target[] targetList) 
+
+    public TargetModuleID[] getAvailableModules (ModuleType moduleType, Target[] targetList)
     throws TargetException, IllegalStateException {
         return modules (ENUM_AVAILABLE, moduleType, targetList);
     }
-    
-    public TargetModuleID[] getNonRunningModules (ModuleType moduleType, Target[] targetList) 
+
+    public TargetModuleID[] getNonRunningModules (ModuleType moduleType, Target[] targetList)
     throws TargetException, IllegalStateException {
         return modules (ENUM_NONRUNNING, moduleType, targetList);
     }
-    
-    public TargetModuleID[] getRunningModules (ModuleType moduleType, Target[] targetList) 
+
+    public TargetModuleID[] getRunningModules (ModuleType moduleType, Target[] targetList)
     throws TargetException, IllegalStateException {
         return modules (ENUM_RUNNING, moduleType, targetList);
-    }    
-    
+    }
+
     public Target[] getTargets () throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.getTargets called on disconnected instance");   // NOI18N
         }
-        
-        // PENDING 
-        return new TomcatTarget [] { 
+
+        // PENDING
+        return new TomcatTarget [] {
             new TomcatTarget (uri, "Tomcat at "+uri, getServerUri ())
         };
     }
-    
+
     public DConfigBeanVersionType getDConfigBeanVersion () {
-        // PENDING 
+        // PENDING
         return null;
     }
-    
-    public void setDConfigBeanVersion (DConfigBeanVersionType version) 
+
+    public void setDConfigBeanVersion (DConfigBeanVersionType version)
     throws DConfigBeanVersionUnsupportedException {
         if (!DConfigBeanVersionType.V1_3_1.equals (version)) {
             throw new DConfigBeanVersionUnsupportedException ("unsupported version");
         }
     }
-    
+
     public boolean isDConfigBeanVersionSupported (DConfigBeanVersionType version) {
         return DConfigBeanVersionType.V1_3_1.equals (version);
     }
-    
+
     public boolean isRedeploySupported () {
         // XXX what this really means
         return false;
     }
-    
-    public ProgressObject redeploy (TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2) 
+
+    public ProgressObject redeploy (TargetModuleID[] targetModuleID, InputStream inputStream, InputStream inputStream2)
     throws UnsupportedOperationException, IllegalStateException {
         // PENDING
         throw new UnsupportedOperationException ("TomcatManager.redeploy not supported yet.");
     }
-    
-    public ProgressObject redeploy (TargetModuleID[] tmID, File file, File file2) 
+
+    public ProgressObject redeploy (TargetModuleID[] tmID, File file, File file2)
     throws UnsupportedOperationException, IllegalStateException {
         // PENDING
         throw new UnsupportedOperationException ("TomcatManager.redeploy not supported yet.");
     }
-    
+
     public void release () {
     }
-    
+
     public void setLocale (Locale locale) throws UnsupportedOperationException {
     }
-    
+
     public ProgressObject start (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.start called on disconnected instance");   // NOI18N
@@ -533,12 +534,12 @@ public class TomcatManager implements DeploymentManager {
         if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
             throw new IllegalStateException ("TomcatManager.start invalid TargetModuleID passed");   // NOI18N
         }
-        
+
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.start ((TomcatModule)tmID[0]);
         return impl;
     }
-    
+
     public ProgressObject stop (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.stop called on disconnected instance");   // NOI18N
@@ -546,38 +547,38 @@ public class TomcatManager implements DeploymentManager {
         if (tmID.length != 1 || !(tmID[0] instanceof TomcatModule)) {
             throw new IllegalStateException ("TomcatManager.stop invalid TargetModuleID passed");   // NOI18N
         }
-        
+
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         impl.stop ((TomcatModule)tmID[0]);
         return impl;
     }
-    
+
     public ProgressObject undeploy (TargetModuleID[] tmID) throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.undeploy called on disconnected instance");   // NOI18N
         }
-        
+
         if (tmID == null) {
             throw new NullPointerException("TomcatManager.undeploy the tmID argument must not be null."); // NOI18N
         }
-        
+
         if (tmID.length == 0) {
             throw new IllegalArgumentException("TomcatManager.undeploy at least one TargetModuleID object must be passed."); // NOI18N
         }
-        
+
         for (int i = 0; i < tmID.length; i++) {
             if (!(tmID[i] instanceof TomcatModule)) {
                 throw new IllegalStateException ("TomcatManager.undeploy invalid TargetModuleID passed: " + tmID[i].getClass().getName());   // NOI18N
             }
         }
-        
+
         TomcatManagerImpl[] tmImpls = new TomcatManagerImpl[tmID.length];
         for (int i = 0; i < tmID.length; i++) {
             tmImpls[i] = new TomcatManagerImpl (this);
         }
         // wrap all the progress objects into a single one
         ProgressObject po = new MultiProgressObjectWrapper(tmImpls);
-        
+
         for (int i = 0; i < tmID.length; i++) {
             TomcatModule tm = (TomcatModule) tmID[i];
             // it should not be allowed to undeploy the /manager application
@@ -589,15 +590,15 @@ public class TomcatManager implements DeploymentManager {
         }
         return po;
     }
-    
+
     /** Deploys web module using deploy command
      * @param targets Array containg one web module
      * @param is Web application stream
      * @param deplPlan Server specific data
      * @throws IllegalStateException when TomcatManager is disconnected
      * @return Object that reports about deployment progress
-     */ 
-    public ProgressObject distribute (Target[] targets, InputStream is, InputStream deplPlan) 
+     */
+    public ProgressObject distribute (Target[] targets, InputStream is, InputStream deplPlan)
     throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
@@ -607,15 +608,15 @@ public class TomcatManager implements DeploymentManager {
         impl.deploy (targets[0], is, deplPlan);
         return impl;
     }
-    
+
     /** Deploys web module using install command
      * @param targets Array containg one web module
      * @param moduleArchive directory with web module or WAR file
      * @param deplPlan Server specific data
      * @throws IllegalStateException when TomcatManager is disconnected
      * @return Object that reports about deployment progress
-     */    
-    public ProgressObject distribute (Target[] targets, File moduleArchive, File deplPlan) 
+     */
+    public ProgressObject distribute (Target[] targets, File moduleArchive, File deplPlan)
     throws IllegalStateException {
         if (!isConnected ()) {
             throw new IllegalStateException ("TomcatManager.distribute called on disconnected instance");   // NOI18N
@@ -625,14 +626,14 @@ public class TomcatManager implements DeploymentManager {
         impl.install (targets[0], moduleArchive, deplPlan);
         return impl;
     }
-    
+
     public ProgressObject distribute(Target[] target, ModuleType moduleType, InputStream inputStream, InputStream inputStream0) throws IllegalStateException {
         return distribute(target, inputStream, inputStream0);
     }
-    
+
 // --- End of DeploymentManager interface implementation ----------------------
-        
-    /** Utility method that retrieve the list of J2EE application modules 
+
+    /** Utility method that retrieve the list of J2EE application modules
      * distributed to the identified targets.
      * @param state     One of available, running, non-running constants.
      * @param moduleType    Predefined designator for a J2EE module type.
@@ -646,41 +647,41 @@ public class TomcatManager implements DeploymentManager {
         if (targetList.length != 1) {
             throw new TargetException ("TomcatManager.modules supports only one target");   // NOI18N
         }
-        
+
         if (!ModuleType.WAR.equals (moduleType)) {
             return new TargetModuleID[0];
         }
-        
+
         TomcatManagerImpl impl = new TomcatManagerImpl (this);
         return impl.list (targetList[0], state);
     }
-    
+
     /** Connected / disconnected status.
      * @return <CODE>true</CODE> when connected.
      */
     public boolean isConnected () {
         return connected;
     }
-    
+
     public String toString () {
         return "Tomcat manager ["+uri+", home "+tp.getCatalinaHome()+", base "+tp.getCatalinaBase()+(connected?"conneceted":"disconnected")+"]";    // NOI18N
     }
-    
+
     public void setServerPort(int port) {
         ensureCatalinaBaseReady(); // generated the catalina base folder if empty
         if (TomcatInstallUtil.setServerPort(port, tp.getServerXml())) {
             tp.setServerPort(port);
         }
     }
-    
+
     public void setShutdownPort(int port) {
         ensureCatalinaBaseReady(); // generated the catalina base folder if empty
         if (TomcatInstallUtil.setShutdownPort(port, tp.getServerXml())) {
             tp.setShutdownPort(port);
         }
     }
-    
-    /** If Tomcat is running, return the port it was started with. Please note that 
+
+    /** If Tomcat is running, return the port it was started with. Please note that
      * the value in the server.xml (returned by getServerPort()) may differ. */
     public int getCurrentServerPort() {
         if (startTomcat != null && isRunning(false)) {
@@ -696,12 +697,12 @@ public class TomcatManager implements DeploymentManager {
         ensurePortsUptodate();
         return tp.getServerPort();
     }
-    
+
     public int getShutdownPort() {
         ensurePortsUptodate();
         return tp.getShutdownPort();
     }
-    
+
     private void ensurePortsUptodate() {
         File serverXml = tp.getServerXml();
         long timestamp = -1;
@@ -709,7 +710,7 @@ public class TomcatManager implements DeploymentManager {
             timestamp = serverXml.lastModified();
             if (timestamp > tp.getTimestamp()) {
                 try {
-                    // for the bundled tomcat we cannot simply use the server.xml 
+                    // for the bundled tomcat we cannot simply use the server.xml
                     // file from the home folder, since we change the port numbers
                     // during base folder generation
                     if (isBundledTomcat() && !new File(tp.getCatalinaBase(), "conf/server.xml").exists()) { // NOI18N
@@ -732,8 +733,8 @@ public class TomcatManager implements DeploymentManager {
             }
         }
     }
-    
-    public Server getRoot() {        
+
+    public Server getRoot() {
         try {
             return Server.createGraph(tp.getServerXml());
         } catch (IOException e) {
@@ -744,12 +745,12 @@ public class TomcatManager implements DeploymentManager {
             return null;
         }
     }
-    
-    /** Initializes base dir for use with Tomcat 5.0.x. 
+
+    /** Initializes base dir for use with Tomcat 5.0.x.
      *  @param baseDir directory for base dir.
      *  @param homeDir directory to copy config files from.
      *  @return File with absolute path for created dir or <CODE>null</CODE> when ther is an error.
-     */    
+     */
     public File createBaseDir(File baseDir, File homeDir) {
         File targetFolder;
         if (!baseDir.isAbsolute ()) {
@@ -759,18 +760,18 @@ public class TomcatManager implements DeploymentManager {
         } else {
             targetFolder = baseDir.getParentFile ();
         }
-        
+
         try {
-            
+
             if (targetFolder == null) {
                 LOGGER.log(Level.INFO, "Cannot find parent folder for base dir " + baseDir.getPath());
                 return null;
             }
             File baseDirFO = new File (targetFolder, baseDir.getName ());
             baseDirFO.mkdir ();
-                        
+
             // create directories
-            String [] subdirs = new String [] { 
+            String [] subdirs = new String [] {
                 "conf",   // NOI18N
                 "conf/Catalina",   // NOI18N
                 "conf/Catalina/localhost",   // NOI18N
@@ -785,14 +786,14 @@ public class TomcatManager implements DeploymentManager {
             }
             // copy config files
             final String ADMIN_XML = "conf/Catalina/localhost/admin.xml";
-            String [] files = new String [] { 
+            String [] files = new String [] {
                 "conf/catalina.policy",   // NOI18N
                 "conf/catalina.properties",   // NOI18N
                 "conf/logging.properties", // NOI18N
                 "conf/server.xml",   // NOI18N
                 "conf/tomcat-users.xml",   // NOI18N
                 "conf/web.xml",   // NOI18N
-                ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x 
+                ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
             };
             boolean[] userReadOnly = new boolean[] {
@@ -805,14 +806,14 @@ public class TomcatManager implements DeploymentManager {
                 false,
                 false
             };
-            String [] patternFrom = new String [] { 
-                null, 
-                null, 
+            String [] patternFrom = new String [] {
+                null,
+                null,
                 null,
                 null,
                 "</tomcat-users>",   // NOI18N
                 null,
-                "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x 
+                "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x
                 isTomcat50() || isTomcat55() ? "docBase=\"../server/webapps/manager\"" : null,    // NOI18N
             };
             String passwd = null;
@@ -824,7 +825,7 @@ public class TomcatManager implements DeploymentManager {
                     tp.setPassword(passwd);
                 }
             }
-            
+
             String usersString = null;
             if (passwd != null) {
                 if (isTomcat70() || isTomcat80()) {
@@ -833,15 +834,15 @@ public class TomcatManager implements DeploymentManager {
                     usersString = "<user username=\"ide\" password=\"" + passwd + "\" roles=\"manager,admin\"/>\n</tomcat-users>";
                 }
             }
-            String [] patternTo = new String [] { 
-                null, 
-                null, 
+            String [] patternTo = new String [] {
+                null,
+                null,
                 null,
                 null,
                 usersString,
-                null, 
+                null,
                 "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
-                isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null,   // NOI18N 
+                isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null,   // NOI18N
             };
             for (int i = 0; i < files.length; i++) {
                 // get folder from, to, name and ext
@@ -876,7 +877,7 @@ public class TomcatManager implements DeploymentManager {
                 } else {
                     // use patched version
                     if (!copyAndPatch (
-                        new File (fromDir, files[i].substring (slash+1)), 
+                        new File (fromDir, files[i].substring (slash+1)),
                         targetFile,
                         patternFrom[i],
                         patternTo[i]
@@ -924,7 +925,7 @@ public class TomcatManager implements DeploymentManager {
         }
         return baseDir;
     }
-    
+
     /**
      * Create a file and fill it with the data.
      */
@@ -937,7 +938,7 @@ public class TomcatManager implements DeploymentManager {
             if (bw != null) bw.close();
         }
     }
-    
+
     /** Copies server.xml file and patches appBase="webapps" to
      * appBase="$CATALINA_HOME/webapps" during the copy.
      * @return success status.
@@ -968,7 +969,7 @@ public class TomcatManager implements DeploymentManager {
             }
             out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8")); // NOI18N
             out.write (sb.toString ());
-            
+
         } catch (java.io.IOException ioe) {
             LOGGER.log(Level.INFO, null, ioe);
             return false;
@@ -986,7 +987,7 @@ public class TomcatManager implements DeploymentManager {
         }
         return true;
     }
-    
+
     /**
      * Open a context log for the specified module, if specified module does not
      * have its own logger defined, open shared context log instead.
@@ -1016,7 +1017,7 @@ public class TomcatManager implements DeploymentManager {
             logManager.openSharedContextLog();
         }
     }
-    
+
     /**
      * Return <code>TomcatManagerConfig</code> for easier access to some server.xml
      * settings.
@@ -1030,7 +1031,7 @@ public class TomcatManager implements DeploymentManager {
         }
         return tomcatManagerConfig;
     }
-    
+
     /**
      * Return <code>LogManager</code> which manages all context and shared context
      * logs for this <code>TomcatManager</code>.
@@ -1041,7 +1042,7 @@ public class TomcatManager implements DeploymentManager {
     public LogManager logManager() {
         return logManager;
     }
-    
+
     /**
      * Set the <code>Process</code> of the started Tomcat.
      *
@@ -1060,7 +1061,7 @@ public class TomcatManager implements DeploymentManager {
     public synchronized Process getTomcatProcess() {
         return process;
     }
-    
+
     /** Terminates the running Tomcat process. */
     public void terminate() {
         Process proc = getTomcatProcess();
@@ -1070,7 +1071,7 @@ public class TomcatManager implements DeploymentManager {
             ExternalProcessSupport.destroy(process, env);
         }
     }
-    
+
     public synchronized TomcatPlatformImpl getTomcatPlatform() {
         if (tomcatPlatform == null) {
             tomcatPlatform = new TomcatPlatformImpl(this);
