@@ -90,29 +90,6 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
 
     private static DataFlavor uriListDataFlavor;
 
-    private boolean containsHtmlCode(final Document document) {
-        final AtomicBoolean result = new AtomicBoolean();
-        document.render(new Runnable() {
-
-            @Override
-            public void run() {
-                TokenHierarchy th = TokenHierarchy.get(document);
-                Set<LanguagePath> languagePaths = th.languagePaths();
-                for (LanguagePath path : languagePaths) {
-                    for (int i = 0; i < path.size(); i++) {
-                        if (HTMLTokenId.language() == path.language(i)) {
-                            result.set(true);
-                            return;
-                        }
-                    }
-                }
-            }
-
-        });
-
-        return result.get();
-    }
-
     private boolean containsHtmlAtOffset(final Document document, final int offset) {
         if (offset == -1) {
             return false;
