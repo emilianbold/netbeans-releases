@@ -429,14 +429,24 @@ public class DefaultCssEditorModule extends CssEditorModule {
                 }
 
                 Token<CssTokenId> token = ts.token();
-                int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
-                OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-                if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
-                    //check if there is @import token before
-                    if (LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
-                        //gotcha!
+                switch (token.id()) {
+                    case STRING:
+                        //check if there is @import token before
+                        if (LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+                        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
                         result.set(range);
                     }
+                        break;
+                    case URI:
+                        Matcher m = URI_PATTERN.matcher(ts.token().text());
+                        if (m.matches()) {
+                            int groupIndex = 1;
+                            String value = m.group(groupIndex);
+                            int quotesDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
+                            result.set(new OffsetRange(ts.offset() + m.start(groupIndex) + quotesDiff, ts.offset() + m.end(groupIndex) - quotesDiff));
+                        }
+
                 }
             }
 
@@ -477,9 +487,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         valueText = WebUtils.unquotedValue(valueText);
 
                         FileObject resolved = WebUtils.resolve(context.getSource().getFileObject(), valueText);
-                        if (resolved != null) {
-                            result.set(new DeclarationLocation(resolved, 0));
-                        }
+                        result.set(resolved != null ? new DeclarationLocation(resolved, 0) : DeclarationLocation.NONE);
                     }
                 });
                 return result.get();
