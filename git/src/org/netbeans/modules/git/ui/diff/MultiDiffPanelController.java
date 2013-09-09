@@ -54,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -212,6 +213,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private RequestProcessor.Task refreshComboTask;
     private boolean activated = true;
     private int popupViewIndex;
+    private int requestedRightLine = -1;
+    private int requestedLeftLine = -1;
 
     public MultiDiffPanelController (VCSContext context, Revision rev1, Revision rev2) {
         this(context, rev1, rev2, false);
@@ -236,9 +239,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshComponents();
     }
 
-    public MultiDiffPanelController (File file, Revision rev1, Revision rev2) {
+    public MultiDiffPanelController (File file, Revision rev1, Revision rev2, int requestedRightLine) {
         this(null, rev1, rev2, true);
         this.currentFile = file;
+        this.requestedRightLine = requestedRightLine;
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
         initNextPrevActions();
@@ -908,6 +912,26 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 applyChange(changedEvent);
             }
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            // something has changed
+            Setup setup = setups.get(currentFile);
+            if (setup != null && setup.getView() != null) {
+                final DiffController view = setup.getView();
+                if (view.getDifferenceCount() > 0 && requestedRightLine != -1) {
+                    final int leftLine = requestedLeftLine;
+                    final int rightLine = requestedRightLine;
+                    requestedRightLine = requestedLeftLine = -1;
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.LineNumber, rightLine);
+                            if (leftLine != -1) {
+                                view.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE);
+                                view.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, leftLine);
+                            }
+                        }
+                    });
+                }
+            }
             refreshComponents();
         } else if (VCSStatusTable.PROP_SELECTED_FILES.equals(evt.getPropertyName())) {
             tableRowSelected((File[]) evt.getNewValue());
@@ -1395,6 +1419,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         }
                         StreamSource ss1 = setup.getFirstSource();
                         StreamSource ss2 = setup.getSecondSource();
+                        if (requestedRightLine != -1) {
+                            requestedLeftLine = getMatchingLine(ss2, ss1, requestedRightLine);
+                        }
                         final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                         view.addPropertyChangeListener(MultiDiffPanelController.this);
                         if (Thread.interrupted() || canceled) {
@@ -1429,6 +1456,28 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         @Override
         public boolean cancel() {
             return this.canceled = true;
+        }
+
+        private int getMatchingLine (StreamSource ss2, StreamSource ss1, int requestedRightLine) {
+            Reader currentReader = null, previousReader = null;
+            try {
+                currentReader = ss2.createReader();
+                previousReader = ss1.createReader();
+                return DiffUtils.getMatchingLine(currentReader, previousReader, requestedRightLine);
+            } catch (IOException ex) {
+                return -1;
+            } finally {
+                if (currentReader != null) {
+                    try {
+                        currentReader.close();
+                    } catch (IOException ex) {}
+                }
+                if (previousReader != null) {
+                    try {
+                        previousReader.close();
+                    } catch (IOException ex) {}
+                }
+            }
         }
     }// </editor-fold>
     

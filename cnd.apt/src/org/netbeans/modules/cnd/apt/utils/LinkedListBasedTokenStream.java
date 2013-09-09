@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,57 +42,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.dialogs;
+package org.netbeans.modules.cnd.apt.utils;
 
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import java.util.Iterator;
+import java.util.LinkedList;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import java.util.List;
+import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
 /**
- * Test of Template Manager invoked from main menu.
- *
- * @author  mmirilovic@netbeans.org
+ * implementation of TokenStream based on list
+ * passed list is unchanged
+ * @author Vladimir Voskresensky
  */
-public class TemplateManagerTest extends PerformanceTestCase {
+public final class LinkedListBasedTokenStream implements TokenStream, APTTokenStream {
+    private final List<APTToken> tokens;
+    private final Iterator<APTToken> iterator;
+    /** Creates a new instance of ListBasedTokenStream */
+    public LinkedListBasedTokenStream(List<APTToken> tokens) {
+        assert(tokens != null) : "not valid to pass null list"; // NOI18N
+        assert(tokens.getClass() == LinkedList.class) : "Only linked list";
+        this.tokens = tokens;
+        iterator = tokens.iterator();
+    }
 
-    /** Creates a new instance of TemplateManager */
-    public TemplateManagerTest(String testName) {
-        super(testName);
-        expectedTime = WINDOW_OPEN;
+    @Override
+    public APTToken nextToken() {
+        if (iterator.hasNext()) {
+            return iterator.next();
+        }
+        return APTUtils.EOF_TOKEN;
+    }   
+
+    @Override
+    public String toString() {
+        return APTUtils.debugString(new LinkedListBasedTokenStream(tokens));
     }
     
-    /** Creates a new instance of TemplateManager */
-    public TemplateManagerTest(String testName, String performanceDataName) {
-        super(testName, performanceDataName);
-        expectedTime = WINDOW_OPEN;
-    }
-
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(TemplateManagerTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
-    }
-
-    public void testTemplateManager() {
-        doMeasurement();
-    }
-    
-    public void prepare(){
-    }
-    
-    public ComponentOperator open(){
-        String menu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle","Menu/Tools") + "|" +
-                      Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle","LBL_TemplatesAction_Name");
-        MainWindowOperator.getDefault().menuBar().pushMenu(menu);
-        return new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.templates.actions.Bundle","LBL_TemplatesPanel_Title"));
-    }
-
+    //public List<APTToken> getList() {
+    //    return tokens;
+    //}
 }

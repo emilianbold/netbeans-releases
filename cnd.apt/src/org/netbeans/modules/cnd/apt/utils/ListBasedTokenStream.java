@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.apt.utils;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.util.List;
+import java.util.LinkedList;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 
@@ -61,6 +62,7 @@ public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
     /** Creates a new instance of ListBasedTokenStream */
     public ListBasedTokenStream(List<APTToken> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
+        assert(tokens.getClass() != LinkedList.class) : "Only list";
         this.tokens = tokens;
         this.size = tokens.size();
         position = 0;
@@ -80,7 +82,7 @@ public final class ListBasedTokenStream implements TokenStream, APTTokenStream {
         return APTUtils.debugString(new ListBasedTokenStream(tokens));
     }
     
-    public List<APTToken> getList() {
-        return tokens;
-    }
+    //public List<APTToken> getList() {
+    //    return tokens;
+    //}
 }

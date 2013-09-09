@@ -322,12 +322,12 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
 
     private void btnGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGlobalActionPerformed
         // TODO add your handling code here:
-        Action action = FileUtil.getConfigObject("Actions/System/org-netbeans-modules-favorites-templates-TemplatesAction.instance", Action.class);
+        Action action = FileUtil.getConfigObject("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance", Action.class);
         if (action != null) {
-            System.setProperty("org.netbeans.modules.favorites.templates.TemplatesAction.preselect", "Licenses");
+            System.setProperty("org.netbeans.modules.templates.actions.TemplatesAction.preselect", "Licenses");
             action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "perform"));
         } else {
-            Exceptions.printStackTrace(new Exception("Actions/System/org-netbeans-modules-favorites-templates-TemplatesAction.instance not found"));
+            Exceptions.printStackTrace(new Exception("Actions/System/org-netbeans-modules-templates-actions-TemplatesAction.instance not found"));
         }
     }//GEN-LAST:event_btnGlobalActionPerformed
 

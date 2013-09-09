@@ -71,7 +71,9 @@ import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -476,6 +478,20 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                         @Override
                         public void run() {
                             view(selection[0], true);
+                        }
+                    });
+                }
+            }));
+            menu.add(new JMenuItem(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                {
+                    setEnabled(viewEnabled);
+                }
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Utils.openFile(FileUtil.normalizeFile(drev[0].getFile()));
                         }
                     });
                 }

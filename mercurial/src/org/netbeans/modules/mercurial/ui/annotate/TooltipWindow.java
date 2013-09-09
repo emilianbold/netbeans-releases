@@ -63,6 +63,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.io.File;
 import java.text.DateFormat;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -72,20 +73,23 @@ import javax.swing.JTextPane;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.AuthorLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.IssueLinker;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport.StyledDocumentHyperlink;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * Window displaying the line annotation with links to bugtracking in the commit message.
@@ -266,10 +270,14 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 StyleConstants.setForeground(authorStyle, LINK_COLOR == null ? Color.BLUE : LINK_COLOR);
 
                 // revision
-                doc.insertString(
-                        doc.getLength(),
-                        annotateLine.getRevision() + ":" + annotateLine.getId() + " - ",
-                        normalStyle);
+                {
+                    String revisionNumber = annotateLine.getRevision();
+                    String changesetId = annotateLine.getId();
+                    StyledDocumentHyperlink l = new RevisionLinker(revisionNumber, changesetId, doc, master.getRepositoryRoot(), master.getCurrentFile());
+                    linkerSupport.add(l, 0);
+                    l.insertString(doc, hyperlinkStyle);
+                    doc.insertString(doc.getLength(), " - ", normalStyle); //NOI18N
+                }
 
                 // author
                 {
@@ -358,6 +366,68 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 add(jsp);
             } catch (BadLocationException ex) {
 
+            }
+        }
+    }
+    
+    private static class RevisionLinker extends StyledDocumentHyperlink {
+        private final String revision;
+        private final int docstart;
+        private final int docend;
+        private Rectangle bounds;
+        private final File repository;
+        private final File root;
+        private final String changeset;
+        private final String toInsert;
+
+        public RevisionLinker (String revision, String changeset, StyledDocument sd, File repository, File root) {
+            this.revision = revision;
+            this.changeset = changeset;
+            this.repository = repository;
+            this.root = root;
+            this.toInsert = revision + ":" + changeset; //NOI18N
+            int doclen = sd.getLength();
+            int textlen = toInsert.length();
+
+            docstart = doclen;
+            docend = doclen + textlen;
+        }
+
+        @Override
+        public void insertString (StyledDocument sd, Style style) throws BadLocationException {
+            sd.insertString(sd.getLength(), toInsert, style);
+        }
+
+        @Override
+        public boolean mouseMoved (Point p, JComponent component) {
+            if (bounds != null && bounds.contains(p)) {
+                component.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                component.setToolTipText(Bundle.CTL_AnnotationBar_action_showCommit(revision));
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean mouseClicked (Point p) {
+            if (bounds != null && bounds.contains(p)) {
+                LogAction.openHistory(repository, new File[] { root }, changeset);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void computeBounds (JTextPane textPane) {
+            Rectangle tpBounds = textPane.getBounds();
+            TextUI tui = textPane.getUI();
+            this.bounds = new Rectangle();
+            try {
+                Rectangle startr = tui.modelToView(textPane, docstart, Position.Bias.Forward).getBounds();
+                Rectangle endr = tui.modelToView(textPane, docend, Position.Bias.Backward).getBounds();
+                this.bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
