@@ -55,20 +55,27 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.ExternalDropHandler;
 
@@ -80,53 +87,108 @@ import org.openide.windows.ExternalDropHandler;
 public class HtmlExternalDropHandler extends ExternalDropHandler {
 
     private static final Logger LOG = Logger.getLogger(HtmlExternalDropHandler.class.getName());
-    
+
     private static DataFlavor uriListDataFlavor;
-    
+
+    private boolean containsHtmlCode(final Document document) {
+        final AtomicBoolean result = new AtomicBoolean();
+        document.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(document);
+                Set<LanguagePath> languagePaths = th.languagePaths();
+                for (LanguagePath path : languagePaths) {
+                    for (int i = 0; i < path.size(); i++) {
+                        if (HTMLTokenId.language() == path.language(i)) {
+                            result.set(true);
+                            return;
+                        }
+                    }
+                }
+            }
+
+        });
+
+        return result.get();
+    }
+
+    private boolean containsHtmlAtOffset(final Document document, final int offset) {
+        if (offset == -1) {
+            return false;
+        }
+        final AtomicBoolean result = new AtomicBoolean();
+        document.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenHierarchy<Document> th = TokenHierarchy.get(document);
+                List<TokenSequence<?>> embeddedTokenSequences = th.embeddedTokenSequences(offset, true);
+                if (!embeddedTokenSequences.isEmpty()) {
+                    TokenSequence<?> leaf = embeddedTokenSequences.get(embeddedTokenSequences.size() - 1);
+                    result.set(leaf.language() == HTMLTokenId.language());
+                }
+
+            }
+
+        });
+        return result.get();
+    }
+
+    private int getLineEndOffset(JEditorPane pane, Point location) {
+        int offset = pane.getUI().viewToModel(pane, location);
+        try {
+            return Utilities.getRowEnd((BaseDocument) pane.getDocument(), offset);
+        } catch (BadLocationException ex) {
+            //highly unlikely to happen
+            Exceptions.printStackTrace(ex);
+            return offset;
+        }
+    }
+
     @Override
     public boolean canDrop(DropTargetDragEvent e) {
         //check if the JEditorPane contains html document
         JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
-        if(pane == null) {
+        if (pane == null) {
             return false;
         }
-        if(!(pane.getEditorKit() instanceof HtmlKit)) { //bit hacky, but fast
+        int offset = getLineEndOffset(pane, e.getLocation());
+        if (!containsHtmlAtOffset(pane.getDocument(), offset)) {
             return false;
-        }
-        
-        //check if the dropped target is supported
-        boolean canDrop = canDrop( e.getCurrentDataFlavors() );
-        if(canDrop) {
+        } else {
             //update the caret as the user drags the object
             //needs to be done explicitly here as QuietEditorPane doesn't call
             //the original Swings DropTarget which does this
-            Point location = e.getLocation();
-            pane.requestFocusInWindow(); //pity we need to call this all the time when dragging, but  ExternalDropHandler don't handle dragEnter event
-            int offset = pane.getUI().viewToModel(pane, location);
             pane.setCaretPosition(offset);
+
+            pane.requestFocusInWindow(); //pity we need to call this all the time when dragging, but  ExternalDropHandler don't handle dragEnter event
+
+            return canDrop(e.getCurrentDataFlavors());
         }
-        return canDrop;
+
     }
-    
+
     @Override
     public boolean canDrop(DropTargetDropEvent e) {
         //check if the JEditorPane contains html document
         JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
-        if(pane == null) {
+        if (pane == null) {
             return false;
         }
-        if(!(pane.getEditorKit() instanceof HtmlKit)) { //bit hacky, but fast
+        int offset = getLineEndOffset(pane, e.getLocation());
+        if (!containsHtmlAtOffset(pane.getDocument(), offset)) {
             return false;
         }
-        
+
         //check if the dropped target is supported
-        return canDrop( e.getCurrentDataFlavors() );
+        return canDrop(e.getCurrentDataFlavors());
     }
 
-    private boolean canDrop( DataFlavor[] flavors ) {
-        for( int i=0; null != flavors && i<flavors.length; i++ ) {
-            if( DataFlavor.javaFileListFlavor.equals( flavors[i] )
-                || getUriListDataFlavor().equals( flavors[i] ) ) {
+    private boolean canDrop(DataFlavor[] flavors) {
+        for (int i = 0; null != flavors && i < flavors.length; i++) {
+            if (DataFlavor.javaFileListFlavor.equals(flavors[i])
+                    || getUriListDataFlavor().equals(flavors[i])) {
 
                 return true;
             }
@@ -137,35 +199,36 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
     @Override
     public boolean handleDrop(DropTargetDropEvent e) {
         Transferable t = e.getTransferable();
-        if( null == t )
+        if (null == t) {
             return false;
-        List<File> fileList = getFileList( t );
+        }
+        List<File> fileList = getFileList(t);
         if ((fileList == null) || fileList.isEmpty()) {
             return false;
         }
-        
+
         //handle just the first file
         File file = fileList.get(0);
         FileObject target = FileUtil.toFileObject(file);
-        if(file.isDirectory()) {
+        if (file.isDirectory()) {
             return true; //as we previously claimed we canDrop() it so we need to say we've handled it even if did nothing.
         }
-        
+
         JEditorPane pane = findPane(e.getDropTargetContext().getComponent());
-        if(pane == null) {
+        if (pane == null) {
             return false;
         }
-        
-        final BaseDocument document = (BaseDocument)pane.getDocument();
+
+        final BaseDocument document = (BaseDocument) pane.getDocument();
         FileObject current = DataLoadersBridge.getDefault().getFileObject(document);
         String relativePath = WebUtils.getRelativePath(current, target);
-        
+
         final StringBuilder sb = new StringBuilder();
-        
+
         //hardcoded support for common file types
         String mimeType = target.getMIMEType();
-        switch(mimeType) { //NOI18N -- whole switch content
-            case "text/html": 
+        switch (mimeType) { //NOI18N -- whole switch content
+            case "text/html":
             case "text/xhtml":
                 sb.append("<a href=\"").append(relativePath).append("\"></a>");
                 break;
@@ -184,30 +247,50 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
                 Logger.getAnonymousLogger().log(Level.INFO, "Dropping of files with mimetype {0} is not supported - what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
                 break;
         }
-        
-        Point location = e.getLocation();
-        final int offset = pane.getUI().viewToModel(pane, location);
-        
-        document.runAtomic(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    document.insertString(offset, sb.toString(), null);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+        //check if the line is white, and if not, insert a new line before the text
+        final int offset = getLineEndOffset(pane, e.getLocation());
+
+        final Indent indent = Indent.get(document);
+        indent.lock();
+        try {
+
+            document.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        int ofs = offset;
+                        if (!Utilities.isRowWhite(document, ofs)) {
+                            document.insertString(ofs, "\n", null);
+                            ofs++;
+                        }
+                        document.insertString(ofs, sb.toString(), null);
+
+                        //reformat the line
+                        final int from = Utilities.getRowStart(document, ofs);
+                        final int to = Utilities.getRowEnd(document, ofs);
+
+                        indent.reindent(from, to);
+
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            }
-            
-        });
-        
+
+            });
+
+        } finally {
+            indent.unlock();
+        }
+
         return true;
     }
-    
+
     private JEditorPane findPane(Component component) {
-        while(component != null) {
-            if(component instanceof JEditorPane) {
-                return (JEditorPane)component;
+        while (component != null) {
+            if (component instanceof JEditorPane) {
+                return (JEditorPane) component;
             }
             component = component.getParent();
         }
@@ -215,9 +298,9 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
     }
 
     //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
-    private List<File> getFileList( Transferable t ) {
+    private List<File> getFileList(Transferable t) {
         try {
-            if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor ) ) {
+            if (t.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                 //windows & mac
                 try {
                     return (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
@@ -227,12 +310,12 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
             }
             if (t.isDataFlavorSupported(getUriListDataFlavor())) {
                 //linux
-                String uriList = (String)t.getTransferData( getUriListDataFlavor() );
-                return textURIListToFileList( uriList );
+                String uriList = (String) t.getTransferData(getUriListDataFlavor());
+                return textURIListToFileList(uriList);
             }
-        } catch( UnsupportedFlavorException ex ) {
-            ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex );
-        } catch( IOException ex ) {
+        } catch (UnsupportedFlavorException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        } catch (IOException ex) {
             // Ignore. Can be just "Owner timed out" from sun.awt.X11.XSelection.getData.
             LOG.log(Level.FINE, null, ex);
         }
@@ -241,10 +324,10 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
 
     //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
     private DataFlavor getUriListDataFlavor() {
-        if( null == uriListDataFlavor ) {
+        if (null == uriListDataFlavor) {
             try {
                 uriListDataFlavor = new DataFlavor("text/uri-list;class=java.lang.String");
-            } catch( ClassNotFoundException cnfE ) {
+            } catch (ClassNotFoundException cnfE) {
                 //cannot happen
                 throw new AssertionError(cnfE);
             }
@@ -253,25 +336,24 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
     }
 
     //copied from org.netbeans.modules.openfile.DefaultExternalDropHandler
-    private List<File> textURIListToFileList( String data ) {
+    private List<File> textURIListToFileList(String data) {
         List<File> list = new ArrayList<>(1);
-        for( StringTokenizer st = new StringTokenizer(data, "\r\n\u0000");
-            st.hasMoreTokens();) {
+        for (StringTokenizer st = new StringTokenizer(data, "\r\n\u0000");
+                st.hasMoreTokens();) {
             String s = st.nextToken();
-            if( s.startsWith("#") ) {
+            if (s.startsWith("#")) {
                 // the line is a comment (as per the RFC 2483)
                 continue;
             }
             try {
                 URI uri = new URI(s);
-                File file = Utilities.toFile(uri);
-                list.add( file );
-            } catch(URISyntaxException | IllegalArgumentException e ) {
+                File file = org.openide.util.Utilities.toFile(uri);
+                list.add(file);
+            } catch (URISyntaxException | IllegalArgumentException e) {
                 // malformed URI
             }
         }
         return list;
     }
-    
 
 }
