@@ -77,7 +77,7 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
     
     static final String DEFAULT_URLS = "http://download.java.net/maven/2/ http://download.java.net/maven/1/";
     
-    private Configuration configuration;
+    private final Configuration configuration;
 
     @NbBundle.Messages({
         "TIT_JavaNetRepositoryError=Uses blacklisted repository",
@@ -200,7 +200,9 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
         }
     }
     
-    @NbBundle.Messages("TXT_Configure=Configure \"{0}\" hint")
+    @NbBundle.Messages(
+            {"# {0} - hint name", 
+             "TXT_Configure=Configure \"{0}\" hint"})
     private static class Configure implements Fix {
         private final Configuration config;
 

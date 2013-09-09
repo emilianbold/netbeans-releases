@@ -54,7 +54,9 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.ConfigSupport.DeployOnSaveListener;
 import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -257,11 +259,38 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 checkPreprocessors(fe.getFile());
                 
                 if (!isInPlace()) {
-                    handleCopyFileToDestDir(fe.getFile());
+                    boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
+                    boolean deployOnSave;
+                    if (!compileOnSave) {
+                        // If compile on save is set to false, then deploy on save doesn't make any sense
+                        deployOnSave = false;
+                    } else {
+                        deployOnSave = MavenProjectSupport.isDeployOnSave(project);
+                    }
+                    boolean copyStaticResourcesOnSave = MavenProjectSupport.isCopyStaticResourcesOnSave(project);
+
+                    // DoS is enabled and copy static resource too --> handle all files
+                    if (deployOnSave && copyStaticResourcesOnSave) {
+                        handleCopyFileToDestDir(fe.getFile());
+                    }
+
+                    if (!deployOnSave && copyStaticResourcesOnSave) {
+                        // DoS is disabled --> handle only static resources
+                        if (isStaticResource(fe.getFile().getExt())) {
+                            handleCopyFileToDestDir(fe.getFile());
+                        }
+                    }
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
+        }
+
+        private boolean isStaticResource(String fileExt) {
+            if ("html".equals(fileExt) || "jsp".equals(fileExt) || "xhtml".equals(fileExt)) { //NOI18N
+                return true;
+            }
+            return false;
         }
 
         @Override

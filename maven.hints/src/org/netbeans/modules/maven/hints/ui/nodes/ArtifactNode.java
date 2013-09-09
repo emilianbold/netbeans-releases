@@ -59,7 +59,7 @@ import org.openide.util.ImageUtilities;
 public class ArtifactNode extends AbstractNode {
 
     private List<NBVersionInfo> versionInfos;
-    private ArtifactNodeChildren myChildren;
+    private final ArtifactNodeChildren myChildren;
     
     public ArtifactNode(String name, List<NBVersionInfo> list) {
         super(new ArtifactNodeChildren(list));

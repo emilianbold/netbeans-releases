@@ -51,14 +51,14 @@ import org.openide.util.NbPreferences;
  * @author mkleint
  */
 public final class Configuration {
-    private String id;
-    private String description;
-    private boolean defaultEnabled;
+    private final String id;
+    private final String description;
+    private final boolean defaultEnabled;
     static final String ENABLED_KEY = "enabled";         // NOI18N
     static final String SEVERITY_KEY = "severity";       // NOI18N
     static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
-    private HintSeverity defaultSeverity;
-    private String displayName;
+    private final HintSeverity defaultSeverity;
+    private final String displayName;
 
     public Configuration(String id, String displayName, String description, boolean defaultEnabled, HintSeverity defaultSeverity) {
         this.id = id;

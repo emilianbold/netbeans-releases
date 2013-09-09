@@ -60,12 +60,13 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=SourceJavadocAttacherImplementation.Definer.class)
@@ -133,7 +134,10 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
             online.resolve(art, repos, online.getLocalRepository());
             File result = art.getFile();
             if (result.isFile()) {
-                return Collections.singletonList(Utilities.toURI(result).toURL());
+                URL rootUrl = findRoot(result, javadoc);
+                if (rootUrl != null) {
+                    return Collections.singletonList(rootUrl);
+                }
             } else {
                 if (Boolean.TRUE.equals(cancel.call())) {
                     return Collections.emptyList();
@@ -153,8 +157,9 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                                     "jar",
                                     javadoc ? "javadoc" : "sources"); //NOI18N
                             online.resolve(sources, repos, online.getLocalRepository());
-                            if (sources.getFile() != null && sources.getFile().isFile()) {
-                                res.add(Utilities.toURI(sources.getFile()).toURL());
+                            URL rootUrl = findRoot(sources.getFile(), javadoc);
+                            if (rootUrl != null) {
+                                res.add(rootUrl);
                             }
                         }
                         if (!res.isEmpty()) {
@@ -175,6 +180,21 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
             ProgressTransferListener.clearAggregateHandle();
         }
         return Collections.emptyList();
+    }
+    
+    private URL findRoot(File jarFile, boolean javadoc) {
+        if (jarFile != null && jarFile.isFile()) {
+            FileObject fo = FileUtil.toFileObject(jarFile);
+            if (fo != null && FileUtil.isArchiveFile(fo)) {
+                FileObject foRoot = FileUtil.getArchiveRoot(fo);
+                foRoot = javadoc ? JavadocAndSourceRootDetection.findJavadocRoot(foRoot) : JavadocAndSourceRootDetection.findSourceRoot(foRoot);
+                if (foRoot != null) {
+                    return foRoot.toURL();
+                }
+            }
+        }
+        return null;
+
     }
 
     @Override

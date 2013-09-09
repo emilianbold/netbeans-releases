@@ -100,7 +100,7 @@ import org.openide.util.RequestProcessor;
  */
 public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
-    private AtomicBoolean cancel = new AtomicBoolean(false);
+    private final AtomicBoolean cancel = new AtomicBoolean(false);
 
     public SearchClassDependencyInRepo() {
     }
@@ -431,9 +431,9 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
     static final class MavenFixImport implements EnhancedFix {
 
-        private Project mavProj;
-        private NBVersionInfo nbvi;
-        private boolean test;
+        private final Project mavProj;
+        private final NBVersionInfo nbvi;
+        private final boolean test;
 
         public MavenFixImport(Project mavProj, NBVersionInfo nbvi, boolean test) {
             this.mavProj = mavProj;
@@ -473,9 +473,9 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
     static final class MavenSearchFix implements EnhancedFix {
 
-        private Project mavProj;
-        private String clazz;
-        private boolean test;
+        private final Project mavProj;
+        private final String clazz;
+        private final boolean test;
 
         public MavenSearchFix(Project mavProj, String clazz, boolean test) {
             this.mavProj = mavProj;

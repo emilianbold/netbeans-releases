@@ -69,6 +69,15 @@ public class MavenJavaEEConstants {
      * @since NetBeans 7.0
      */
     public static final String HINT_DEPLOY_ON_SAVE = "netbeans.deploy.on.save"; //NOI18N
+
+    /**
+     * Optional property, if static resources should be copy to the target directory on save.
+     * <ul>
+     * <li>true  - copy static resources on save is enabled - default value</li>
+     * <li>false - copy static resources on save is disabled</li>
+     * </ul>
+     */
+    public static final String HINT_COPY_STATIC_RESOURCES_ON_SAVE = "netbeans.copy.static.resources.on.save"; //NOI18N
     
     /**
      * when present, will deploy the web/ejb/ear project to an app server

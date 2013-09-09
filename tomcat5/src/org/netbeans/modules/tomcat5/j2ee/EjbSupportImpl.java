@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,47 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.tomcat5.j2ee;
 
-package org.netbeans.modules.cnd.apt.utils;
-
-import java.util.Iterator;
-import java.util.LinkedList;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import java.util.List;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
+import java.io.File;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
+import org.netbeans.modules.tomcat5.TomcatManager;
 
 /**
- * implementation of TokenStream based on list
- * passed list is unchanged
- * @author Vladimir Voskresensky
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class LinkedListBasedTokenStream implements TokenStream, APTTokenStream {
-    private final List<APTToken> tokens;
-    private final Iterator<APTToken> iterator;
-    /** Creates a new instance of ListBasedTokenStream */
-    public LinkedListBasedTokenStream(List<APTToken> tokens) {
-        assert(tokens != null) : "not valid to pass null list"; // NOI18N
-        assert(tokens.getClass() == LinkedList.class || tokens.isEmpty()) : "Only linked list";
-        this.tokens = tokens;
-        iterator = tokens.iterator();
+public class EjbSupportImpl implements EjbSupportImplementation {
+
+    private final TomcatManager manager;
+
+    public EjbSupportImpl(TomcatManager manager) {
+        this.manager = manager;
     }
 
     @Override
-    public APTToken nextToken() {
-        if (iterator.hasNext()) {
-            return iterator.next();
+    public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
+        if (manager.isTomEE()) {
+            return true;
         }
-        return APTUtils.EOF_TOKEN;
-    }   
 
-    @Override
-    public String toString() {
-        return APTUtils.debugString(new LinkedListBasedTokenStream(tokens));
+        for (File cpEntry : j2eePlatform.getClasspathEntries()) {
+            if (cpEntry.getName().startsWith("openejb-tomcat")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
-    
-    //public List<APTToken> getList() {
-    //    return tokens;
-    //}
+
 }

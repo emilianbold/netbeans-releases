@@ -534,7 +534,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
     // possibly items from groupids that are already present in the pom should also be
     // put up front.
     private class HeuristicsComparator implements Comparator<String> {
-        private Set<String> privilegedGroupIds = new HashSet<String>();
+        private final Set<String> privilegedGroupIds = new HashSet<String>();
         
         private HeuristicsComparator() {
             String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
