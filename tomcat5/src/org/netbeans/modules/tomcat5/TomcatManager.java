@@ -92,6 +92,8 @@ public class TomcatManager implements DeploymentManager {
 
     public enum TomcatVersion {TOMCAT_50, TOMCAT_55, TOMCAT_60, TOMCAT_70, TOMCAT_80};
 
+    public enum TomEEVersion {TOMEE_15, TOMEE_16};
+
     public static final String KEY_UUID = "NB_EXEC_TOMCAT_START_PROCESS_UUID"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
@@ -105,10 +107,10 @@ public class TomcatManager implements DeploymentManager {
     /** Enum value for get*Modules methods. */
     static final int ENUM_NONRUNNING = 2;
 
-    public static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat";       // NOI18N
+    public static final String PROP_BUNDLED_TOMCAT = "is_it_bundled_tomcat"; // NOI18N
 
     /** Manager state. */
-    private boolean connected;
+    private final boolean connected;
 
     /** uri of this DeploymentManager. */
     private final String uri;
@@ -122,15 +124,17 @@ public class TomcatManager implements DeploymentManager {
     private TomcatManagerConfig tomcatManagerConfig;
 
     /** LogManager manages all context and shared context logs for this TomcatManager. */
-    private LogManager logManager = new LogManager(this);
+    private final LogManager logManager = new LogManager(this);
 
     private TomcatPlatformImpl tomcatPlatform;
 
-    private TomcatProperties tp;
+    private final TomcatProperties tp;
 
-    private TomcatVersion tomcatVersion;
+    private final TomcatVersion tomcatVersion;
 
-    private InstanceProperties ip;
+    private final TomEEVersion tomEEVersion;
+
+    private final InstanceProperties ip;
 
     private boolean needsRestart;
 
@@ -143,15 +147,17 @@ public class TomcatManager implements DeploymentManager {
      * @param passwd password
      */
     public TomcatManager(boolean conn, String uri, TomcatVersion tomcatVersion)
-    throws IllegalArgumentException {
+            throws IllegalArgumentException {
         LOGGER.log(Level.FINE, "Creating connected TomcatManager uri=" + uri); //NOI18N
         this.connected = conn;
         this.tomcatVersion = tomcatVersion;
         this.uri = uri;
         ip = InstanceProperties.getInstanceProperties(getUri());
-        if (ip != null) {
-            tp = new TomcatProperties(this);
-        }
+        assert ip != null;
+
+        this.tp = new TomcatProperties(this);
+        // XXX this may be slow
+        this.tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome());
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -419,6 +425,10 @@ public class TomcatManager implements DeploymentManager {
         return tomcatVersion == TomcatVersion.TOMCAT_50;
     }
 
+    public boolean isTomEE() {
+        return tomEEVersion != null;
+    }
+
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
     public String libFolder() {
         // Tomcat 5.x and 6.0 uses different lib folder
@@ -427,6 +437,10 @@ public class TomcatManager implements DeploymentManager {
 
     public TomcatVersion getTomcatVersion() {
         return tomcatVersion;
+    }
+
+    public TomEEVersion getTomEEVersion() {
+        return tomEEVersion;
     }
 
 // --- DeploymentManager interface implementation ----------------------
