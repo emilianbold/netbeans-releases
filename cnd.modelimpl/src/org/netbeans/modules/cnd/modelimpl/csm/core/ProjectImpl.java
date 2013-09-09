@@ -370,7 +370,7 @@ public final class ProjectImpl extends ProjectBase {
         // we don't need this since ProjectBase persists fqn
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //aFactory.writeUID(getUID(), aStream);
-        LibraryManager.getInstance(this).writeProjectLibraries(getUID(), aStream);
+        getLibraryManager().writeProjectLibraries(getUID(), aStream);
     }
 
     public ProjectImpl(RepositoryDataInput input) throws IOException {
@@ -379,7 +379,7 @@ public final class ProjectImpl extends ProjectBase {
         //UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         //CsmUID uid = aFactory.readUID(input);
         //LibraryManager.getInsatnce().read(uid, input);
-        LibraryManager.getInstance(this).readProjectLibraries(getUID(), input);
+        getLibraryManager().readProjectLibraries(getUID(), input);
     //nativeFiles = new NativeFileContainer();
     }
 
