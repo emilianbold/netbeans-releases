@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -81,7 +82,6 @@ import org.openide.util.Parameters;
  */
 final class Utilities {
 
-    private static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
     private static final String TARGET_RUN = "$target.run";             //NOI18N
     private static final String TARGET_DEBUG = "$target.debug";         //NOI18N
     private static final String COS_DISABLE = "compile.on.save.unsupported.remote.platform"; //NOI18N
@@ -91,6 +91,9 @@ final class Utilities {
     private static final String BUILD_SCRIPT_BACK_UP = "remote-platform-impl_backup";   //NOI18N
     private static final String BUILD_SCRIPT_PROTOTYPE = "/org/netbeans/modules/java/j2seembedded/resources/remote-platform-impl.xml";  //NOI18N
     private static final Map<String,String> CONFIG_PROPERTIES;
+
+    static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
+
     static {
         Map<String,String> m = new HashMap<>();
         m.put(TARGET_RUN,"run-remote");     //NOI18N
@@ -136,19 +139,28 @@ final class Utilities {
         }
     };
 
+    @CheckForNull
+    static JavaPlatform findRemotePlatform(@NonNull final String platformId) {
+        Parameters.notNull("platformId", platformId);   //NOI18N
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
+                null,
+                new Specification(RemotePlatform.SPEC_NAME, null));
+        for (JavaPlatform platform : platforms) {
+            final String antPlatformName = platform.getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME);
+            if (platformId.equals(antPlatformName)) {
+                return platform;
+            }
+        }
+        return null;
+    }
+
 
     static boolean hasRemotePlatform(@NonNull final Project prj) {
         final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();
         final String rpid = eval.getProperty(PLATFORM_RUNTIME);
         if (rpid != null) {
-            final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
-                null,
-                new Specification(RemotePlatform.SPEC_NAME, null));
-            for (JavaPlatform platform : platforms) {
-                final String antPlatformName = platform.getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME);
-                if (rpid.equals(antPlatformName)) {
-                    return true;
-                }
+            if (findRemotePlatform(rpid) != null) {
+                return true;
             }
         }
         return false;
