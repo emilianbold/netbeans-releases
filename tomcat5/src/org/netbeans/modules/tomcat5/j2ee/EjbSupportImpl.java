@@ -39,31 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.specs.support;
+package org.netbeans.modules.tomcat5.j2ee;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.api.j2ee.core.Profile;
+import java.io.File;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
+import org.netbeans.modules.tomcat5.TomcatManager;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DefaultEjbSupportImpl implements EjbSupportImplementation {
+public class EjbSupportImpl implements EjbSupportImplementation {
 
-    public DefaultEjbSupportImpl() {
+    private final TomcatManager manager;
+
+    public EjbSupportImpl(TomcatManager manager) {
+        this.manager = manager;
     }
 
     @Override
     public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
-        Set<Profile> profiles = new HashSet<Profile>(j2eePlatform.getSupportedProfiles());
-        profiles.remove(Profile.J2EE_13);
-        profiles.remove(Profile.J2EE_14);
-        profiles.remove(Profile.JAVA_EE_5);
-        // we assume higher specs include it
-        return !profiles.isEmpty();
+        if (manager.isTomEE()) {
+            return true;
+        }
+
+        for (File cpEntry : j2eePlatform.getClasspathEntries()) {
+            if (cpEntry.getName().startsWith("openejb-tomcat")) { //NOI18N
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -59,7 +59,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
-import org.netbeans.modules.tomcat5.ide.EjbSupportImpl;
+import org.netbeans.modules.tomcat5.j2ee.EjbSupportImpl;
+import org.netbeans.modules.tomcat5.j2ee.JpaSupportImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
@@ -165,9 +166,9 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     
     private static final String ICON = "org/netbeans/modules/tomcat5/resources/tomcat5instance.png"; // NOI18N
     
-    private String displayName;
-    private TomcatProperties tp;
-    private TomcatManager manager;
+    private final String displayName;
+    private final TomcatProperties tp;
+    private final TomcatManager manager;
 
     /* GuardedBy("this") */
     private LibraryImplementation[] libraries;
@@ -482,10 +483,14 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     @Override
     public Set<Profile> getSupportedProfiles() {
         Set<Profile> profiles = new HashSet<Profile>(5);
-        profiles.add(Profile.J2EE_13);
-        profiles.add(Profile.J2EE_14);
-        if (manager.isTomcat60() || manager.isTomcat70() || manager.isTomcat80()) {
-            profiles.add(Profile.JAVA_EE_5);
+        if (!manager.isTomEE()) {
+            // TomEE is new and it actually does not support older specs (classloading separation etc).
+            // we will see if that's a problem for anybody
+            profiles.add(Profile.J2EE_13);
+            profiles.add(Profile.J2EE_14);
+            if (manager.isTomcat60() || manager.isTomcat70() || manager.isTomcat80()) {
+                profiles.add(Profile.JAVA_EE_5);
+            }
         }
         if (manager.isTomcat70() || manager.isTomcat80()) {
             profiles.add(Profile.JAVA_EE_6_WEB);
@@ -498,9 +503,11 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     
     @Override
     public Set<String> getSupportedJavaPlatformVersions() {
-        Set<String> versions = new HashSet<String>();
-        versions.add("1.4"); // NOI18N
-        versions.add("1.5"); // NOI18N
+        Set<String> versions = new HashSet<String>(4);
+        if (!manager.isTomEE()) {
+            versions.add("1.4"); // NOI18N
+            versions.add("1.5"); // NOI18N
+        }
         versions.add("1.6"); // NOI18N
         versions.add("1.7"); // NOI18N
         return versions;
@@ -513,10 +520,16 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     
     @Override
     public Lookup getLookup() {
+        List content = new ArrayList();
         WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
                 new TomcatJaxWsStack(tp.getCatalinaHome()), WSStack.Source.SERVER);
-        Lookup baseLookup = Lookups.fixed(tp.getCatalinaHome(), 
-                new EjbSupportImpl(), wsStack);
+        Collections.addAll(content, tp.getCatalinaHome(),
+                new EjbSupportImpl(manager), wsStack);
+        if (manager.isTomEE()) {
+            content.add(new JpaSupportImpl());
+        }
+
+        Lookup baseLookup = Lookups.fixed(content.toArray());
         return LookupProviderSupport.createCompositeLookup(baseLookup, 
                 "J2EE/DeploymentPlugins/Tomcat5/Lookup"); //NOI18N
     }
