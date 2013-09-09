@@ -45,6 +45,7 @@ import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
@@ -54,10 +55,11 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.odcs.versioning.SourceAccessorImpl.ProjectAndRepository;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -111,7 +113,7 @@ public final class GetSourcesFromODCSAction extends AbstractAction {
         if (options[0].equals(option)) {
             
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
-            final ApiProvider prov = getSourcesPanel.getProvider();
+            final VCSProvider prov = getSourcesPanel.getProvider();
             
             if (sourcesInfo == null || prov == null) {
                 return;
@@ -126,12 +128,16 @@ public final class GetSourcesFromODCSAction extends AbstractAction {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    OdcsUIUtil.logODCSUsage("CLONE" + prov.getName()); //NOI18N
-                    NbPreferences.forModule(GetSourcesFromODCSAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
-                    File cloneDest = prov.getSources(url, passwdAuth);
-                    if (cloneDest != null && srcHandle != null) {
-                        srcHandle.setWorkingDirectory(url, cloneDest);
-                        srcHandle.refresh();
+                    try {
+                        OdcsUIUtil.logODCSUsage("CLONE" + prov.getDisplayName()); //NOI18N
+                        NbPreferences.forModule(GetSourcesFromODCSAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
+                        File cloneDest = prov.getSources(url, passwdAuth);
+                        if (cloneDest != null && srcHandle != null) {
+                            srcHandle.setWorkingDirectory(url, cloneDest);
+                            srcHandle.refresh();
+                        }
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
             });

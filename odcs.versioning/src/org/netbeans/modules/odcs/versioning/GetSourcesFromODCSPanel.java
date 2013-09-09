@@ -93,7 +93,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import static org.netbeans.modules.odcs.versioning.Bundle.*;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.openide.util.Lookup;
@@ -112,7 +112,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
     private DefaultComboBoxModel comboModel;
     private ODCSUiServer server;
     private PropertyChangeListener listener;
-    private ArrayList<ApiProvider> providerList;
+    private ArrayList<VCSProvider> providerList;
 
     public GetSourcesFromODCSPanel(ODCSUiServer server) {
         this(server, null);
@@ -171,8 +171,8 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         return (item != null) ? new GetSourcesInfo(item.projectHandle, item.repository, item.getUrl()) : null;
     }
 
-    ApiProvider getProvider () {
-        return (ApiProvider) cmbProvider.getSelectedItem();
+    VCSProvider getProvider () {
+        return (VCSProvider) cmbProvider.getSelectedItem();
     }
 
     /** This method is called from within the constructor to
@@ -340,36 +340,36 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         cmbProvider.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof ApiProvider) {
-                    value = ((ApiProvider) value).getName();
+                if (value instanceof VCSProvider) {
+                    value = ((VCSProvider) value).getDisplayName();
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
 
         });
-        Collection<? extends ApiProvider> providers = Lookup.getDefault().lookupAll(ApiProvider.class);
-        providerList = new ArrayList<ApiProvider>(providers);
-        Collections.sort(providerList, new Comparator<ApiProvider>() {
+        Collection<? extends VCSProvider> providers = Lookup.getDefault().lookupAll(VCSProvider.class);
+        providerList = new ArrayList<VCSProvider>(providers);
+        Collections.sort(providerList, new Comparator<VCSProvider>() {
             @Override
-            public int compare (ApiProvider p1, ApiProvider p2) {
-                return p1.getName().compareToIgnoreCase(p2.getName());
+            public int compare (VCSProvider p1, VCSProvider p2) {
+                return p1.getDisplayName().compareToIgnoreCase(p2.getDisplayName());
             }
         });
         lblError.setVisible(false);
     }
 
     private void updateProviders (ScmRepository repository, String url) {
-        List<ApiProvider> providers = new ArrayList<ApiProvider>(providerList.size());
-        ApiProvider preferredProvider = null, gitProvider = null;
+        List<VCSProvider> providers = new ArrayList<VCSProvider>(providerList.size());
+        VCSProvider preferredProvider = null, gitProvider = null;
         Preferences prefs = NbPreferences.forModule(GetSourcesFromODCSPanel.class);
         String className = prefs.get("repository.scm.provider." + url, ""); //NOI18N
-        for (ApiProvider p : providerList) {
-            if (repository.getScmLocation() != ScmLocation.CODE2CLOUD || p.accepts(repository.getType().name())) {
+        for (VCSProvider p : providerList) {
+            if (repository.getScmLocation() != ScmLocation.CODE2CLOUD || Utils.isVCSProviderOfType(repository.getType(), p)) {
                 providers.add(p);
                 if (className.equals(p.getClass().getName())) {
                     preferredProvider = p;
                 }
-                if (p.accepts(ScmType.GIT.name())) {
+                if (Utils.isVCSProviderOfType(ScmType.GIT, p)) {
                     gitProvider = p;
                 }
             }
@@ -378,7 +378,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
             preferredProvider = gitProvider;
         }
         
-        cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new ApiProvider[providers.size()])));
+        cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new VCSProvider[providers.size()])));
         lblError.setVisible(false);
         panelProvider.setVisible(false);
         if (providers.isEmpty()) {

@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.odcs.subversion;
 
-import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import javax.swing.Action;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -56,14 +54,19 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ondrej Vrabec
  */
-@ServiceProvider(service=ApiProvider.class)
-public class SvnApiProviderImpl implements ApiProvider {
+@ServiceProvider(service=VCSProvider.class)
+public class SvnApiProviderImpl implements VCSProvider {
 
     @Override
-    public boolean accepts (String type) {
-        return ScmType.SVN.name().equals(type);
+    public Type getType() {
+        return Type.SVN;
     }
     
+    @Override
+    public boolean providesSources(String url) {
+        return true;
+    }
+        
     @Override
     public File getSources (String repositoryUrl, PasswordAuthentication passwdAuth) {
         File cloneDest = null;
@@ -78,18 +81,28 @@ public class SvnApiProviderImpl implements ApiProvider {
     }
 
     @Override
-    public String getName () {
+    public String getDisplayName () {
         return "Subversion"; //NOI18N
     }
 
     @Override
-    public Action createOpenHistoryAction (File workdir, String commitId) {
-        return null;
+    public boolean providesOpenHistory(File workdir) {
+        return false;
     }
 
     @Override
-    public LocalRepositoryInitializer getRepositoryInitializer () {
-        return null;
+    public boolean openHistory(File workdir, String commitId) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean providesLocalInit(String repositoryUrl) {
+        return false;
+    }
+
+    @Override
+    public boolean localInit(File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws MalformedURLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }
