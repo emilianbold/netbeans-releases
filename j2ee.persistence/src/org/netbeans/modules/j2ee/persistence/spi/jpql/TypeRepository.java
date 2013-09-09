@@ -151,12 +151,12 @@ public class TypeRepository implements ITypeRepository {
             }
             ret = types.get(fqn);
         }
-        if((ret == null || ret[0]==null) && isValid()){
+        if((ret == null || ret[0]==null)){//it cost almost nothing to create type here, can create even if provider isn't valid
             //it's still null/unresoved, create "null" type for unresoved fqn
             ret = new Type[] {new Type(this, (String)null)};
             types.put(fqn, ret);
         }
-        return ret!=null ? ret[0] : null;
+        return ret[0];
     }
 
     @Override
