@@ -77,8 +77,8 @@ import org.openide.util.NbBundle;
  * 
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@NbBundle.Messages({"DN_org.netbeans.modules.java.hints.suggestions.Move.moveInitialization=Move initilization to constructor",
-                    "DESC_org.netbeans.modules.java.hints.suggestions.Move.moveInitialization=Moves a fields initilization expression to the constructors.",
+@NbBundle.Messages({"DN_org.netbeans.modules.java.hints.suggestions.Move.moveInitialization=Move initialization to constructor",
+                    "DESC_org.netbeans.modules.java.hints.suggestions.Move.moveInitialization=Moves a fields initialization expression to the constructors.",
                     "FIX_moveInitialization=Move initializer to constructor(s)"})
 public class Move {
     
