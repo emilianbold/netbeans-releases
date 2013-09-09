@@ -39,26 +39,35 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tomcat5.ide;
+package org.netbeans.modules.tomcat5.j2ee;
 
-import java.io.File;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
+import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
+import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Hejl
  */
-public class EjbSupportImpl implements EjbSupportImplementation {
+public class JpaSupportImpl implements JpaSupportImplementation {
+
+    private static final String OPENJPA_JPA_PROVIDER = "org.apache.openjpa.persistence.PersistenceProviderImpl"; // NOI18N
+
+    public JpaSupportImpl() {
+        super();
+    }
 
     @Override
-    public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
-        for (File cpEntry : j2eePlatform.getClasspathEntries()) {
-            if (cpEntry.getName().startsWith("openejb-tomcat")) { //NOI18N
-                return true;
-            }
-        }
-        return false;
+    public JpaProvider getDefaultProvider() {
+        return JpaProviderFactory.createJpaProvider(OPENJPA_JPA_PROVIDER, true, true, true, false);
+    }
+
+    @Override
+    public Set<JpaProvider> getProviders() {
+        return Collections.singleton(getDefaultProvider());
     }
 
 }
