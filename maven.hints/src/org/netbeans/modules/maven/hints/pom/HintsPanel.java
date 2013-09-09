@@ -67,8 +67,8 @@ import org.openide.util.RequestProcessor;
 
 final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
     
-    private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
-    private JCheckBox renderer = new JCheckBox();
+    private final DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
+    private final JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
        
       

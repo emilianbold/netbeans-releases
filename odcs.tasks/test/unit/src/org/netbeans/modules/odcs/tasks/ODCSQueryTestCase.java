@@ -139,7 +139,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         List<SavedTaskQuery> l = conf.getSavedTaskQueries();
         assertNotNull(l);
         assertFalse(l.isEmpty());
-        
+    
         SavedTaskQuery stq = null;
         for (SavedTaskQuery q : l) {
             if(q.getName().equals(UNIT_TEST_QUERY)) {
@@ -152,7 +152,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setAttribute(CloudDevConstants.QUERY_CRITERIA, stq.getQueryString());
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testSavedQueries");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", IStatus.OK, status.getCode());
         assertEquals(1, c.arr.size());
@@ -162,9 +162,9 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     public void testPredefinedQueries() throws IOException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.toString());
         query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RECENT.toString());
+        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RELATED.toString());
         
-        Collector c = new Collector();
+        Collector c = new Collector("testPredefinedQueries");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", IStatus.OK, status.getCode());
         assertFalse(c.arr.isEmpty());
@@ -172,7 +172,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     
     public void testEqualsQueryCriteria() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), ""); // NOI18N
-        
+  
         String summary = UNIT_TEST_SUMMARY;
         CriteriaBuilder cb = new CriteriaBuilder();
         cb.column(QueryParameters.Column.SUMMARY.toString(), Criteria.Operator.EQUALS, summary);
@@ -182,7 +182,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testEqualsQueryCriteria");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", IStatus.OK, status.getCode());
         assertEquals(1, c.arr.size());
@@ -201,7 +201,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testContainsQueryCriteria");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertTrue(c.arr.size() >= 2);
@@ -221,7 +221,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testQueryProduct");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertFalse(c.arr.isEmpty());
@@ -239,7 +239,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testC1AndC2");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(1, c.arr.size());
@@ -258,7 +258,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testC1OrC2");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(3, c.arr.size());
@@ -283,7 +283,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         query.setUrl(CloudDevConstants.CRITERIA_QUERY);
         System.out.println(" Query Criteria : " + crit);
         
-        Collector c = new Collector();
+        Collector c = new Collector("testC1And_C2OrC3");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertEquals(3, c.arr.size());
@@ -296,9 +296,9 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     public void testGetManyTasks() throws IOException, CoreException {
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), PredefinedTaskQuery.RECENT.toString());
         query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RECENT.toString());
+        query.setAttribute(CloudDevConstants.QUERY_NAME, PredefinedTaskQuery.RELATED.toString());
         
-        Collector c = new Collector();
+        Collector c = new Collector("testGetManyTasks");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", IStatus.OK, status.getCode());
         assertTrue(c.arr.size() > 50);
@@ -338,7 +338,7 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
         System.out.println(" dateLess       : " + dateLess);
         System.out.println("==============================================");
         
-        Collector c = new Collector();
+        Collector c = new Collector("testQueryByDate");
         IStatus status = rc.performQuery(taskRepository, query, c, null, new NullProgressMonitor());
         assertEquals("Status not OK", status.getCode(), IStatus.OK);
         assertFalse(c.arr.isEmpty());
@@ -358,10 +358,20 @@ public class ODCSQueryTestCase extends AbstractODCSTestCase {
     
     private class Collector extends TaskDataCollector {
         List<TaskData> arr = new ArrayList<TaskData>();
+        String name;
+        boolean printedName = false;
+        public Collector(String name) {
+            this.name = name;
+        }
+        
         @Override
         public void accept(TaskData td) {
+            if(!printedName) {
+                printedName = true;
+                System.out.println(" *** Collecting tasks for :" + name + " ***");
+            }
             arr.add(td);
-            System.out.println(" task data: " + td.getTaskId() + " " + td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue());
+            System.out.println("  " + td.getTaskId() + " " + td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue());
         }
     }
 }

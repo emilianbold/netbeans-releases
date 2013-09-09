@@ -387,8 +387,11 @@ public final class CompletionSupport implements DocumentListener {
     public static Collection<CsmFunction> filterMethods(Collection<CsmFunction> methodList, List parmTypeList,
             boolean acceptMoreParameters, boolean acceptIfSameNumberParams) {
         Collection<CsmFunction> result = filterMethods(methodList, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, false);
-        if (result.size() != 1) {
+        if (result.size() > 1) {
+            // it seems that this call couldn't filter anything
             result = filterMethods(result, parmTypeList, acceptMoreParameters, acceptIfSameNumberParams, true);
+            
+            // perform more accurate filtering if it is a strict request (for navigation probably)
             if (!acceptMoreParameters && acceptIfSameNumberParams) {
                 result = accurateFilterMethods(result, parmTypeList);
             }

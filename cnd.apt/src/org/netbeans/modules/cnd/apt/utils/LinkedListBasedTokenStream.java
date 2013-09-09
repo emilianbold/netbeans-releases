@@ -62,7 +62,7 @@ public final class LinkedListBasedTokenStream implements TokenStream, APTTokenSt
     /** Creates a new instance of ListBasedTokenStream */
     public LinkedListBasedTokenStream(List<APTToken> tokens) {
         assert(tokens != null) : "not valid to pass null list"; // NOI18N
-        assert(tokens.getClass() == LinkedList.class) : "Only linked list";
+        assert(tokens.getClass() == LinkedList.class || tokens.isEmpty()) : "Only linked list";
         this.tokens = tokens;
         iterator = tokens.iterator();
     }
