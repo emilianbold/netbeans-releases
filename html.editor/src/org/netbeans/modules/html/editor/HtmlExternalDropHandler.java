@@ -55,7 +55,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -64,7 +63,6 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -205,10 +203,6 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
         //hardcoded support for common file types
         String mimeType = target.getMIMEType();
         switch (mimeType) { //NOI18N -- whole switch content
-            case "text/html":
-            case "text/xhtml":
-                sb.append("<a href=\"").append(relativePath).append("\"></a>");
-                break;
             case "text/css":
                 sb.append("<link href=\"").append(relativePath).append("\" rel=\"stylesheet\" type=\"text/css\"/>");
                 break;
@@ -220,11 +214,16 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
             case "text/javascript":
                 sb.append("<script src=\"").append(relativePath).append("\" type=\"text/javascript\"></script>");
                 break;
+            case "text/html":
+            case "text/xhtml":
             default:
-                Logger.getAnonymousLogger().log(Level.INFO, "Dropping of files with mimetype {0} is not supported - what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
+                //the rest of file types generates a simple file link
+                sb.append("<a href=\"").append(relativePath).append("\"></a>");
+                
+                Logger.getAnonymousLogger().log(Level.INFO, "Dropping of files with mimetype {0} is not fully supported - only a simple file link is used - what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
                 break;
         }
-
+        
         //check if the line is white, and if not, insert a new line before the text
         final int offset = getLineEndOffset(pane, e.getLocation());
 
