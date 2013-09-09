@@ -97,7 +97,7 @@ public class JavacParserFactory extends ParserFactory {
     
     public static JavacParserFactory getDefault () {
         final Lookup lookup = MimeLookup.getLookup (JavacParser.MIME_TYPE);
-        return lookup.lookup (JavacParserFactory.class);       
+        return (JavacParserFactory)lookup.lookup (ParserFactory.class);       
     }
 
 }
