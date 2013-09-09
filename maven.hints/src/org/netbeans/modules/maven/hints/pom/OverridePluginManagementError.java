@@ -74,7 +74,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class OverridePluginManagementError implements POMErrorFixProvider {
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public OverridePluginManagementError() {
         configuration = new Configuration("OverridePluginManagementError", //NOI18N
@@ -168,7 +168,7 @@ public class OverridePluginManagementError implements POMErrorFixProvider {
     }
 
     private static class OverrideFix implements Fix, Runnable {
-        private Plugin plugin;
+        private final Plugin plugin;
 
         OverrideFix(Plugin plg) {
             plugin = plg;

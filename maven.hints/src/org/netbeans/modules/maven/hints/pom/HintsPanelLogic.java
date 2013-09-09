@@ -85,9 +85,9 @@ import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixBase;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
-    private Map<POMErrorFixBase, ModifiedPreferences> changes;
+    private final Map<POMErrorFixBase, ModifiedPreferences> changes;
     
-    private static Map<Configuration.HintSeverity, Integer> severity2index;
+    private static final Map<Configuration.HintSeverity, Integer> severity2index;
     
     private static final String DESCRIPTION_HEADER = 
         "<html><head>" + // NOI18N
@@ -405,7 +405,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
            
     private static class ModifiedPreferences extends AbstractPreferences {
         
-        private Map<String,Object> map = new HashMap<String, Object>();
+        private final Map<String,Object> map = new HashMap<String, Object>();
 
         public ModifiedPreferences( Preferences node ) {
             super(null, ""); // NOI18N
