@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
@@ -67,19 +68,19 @@ public class SourceRootContainer {
         this.isFixedRoots = isFixedRoots;
     }
     
-    public boolean isMySource(String includePath){
+    public boolean isMySource(CharSequence includePath){
         if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
             return true;
         }
         while (true){
-            int i = includePath.lastIndexOf('\\');
+            int i = CharSequenceUtils.lastIndexOf(includePath, '\\');
             if (i <= 0) {
-                i = includePath.lastIndexOf('/');
+                i = CharSequenceUtils.lastIndexOf(includePath, '/');
             }
             if (i <= 0) {
                 return false;
             }
-            includePath = includePath.substring(0,i);
+            includePath = includePath.subSequence(0,i);
             Integer val = projectRoots.get(DefaultCache.getManager().getString(includePath));
             if (val != null) {
                 if (isFixedRoots) {
@@ -95,7 +96,7 @@ public class SourceRootContainer {
         }
     }
     
-    public void fixFolder(String path){
+    public void fixFolder(CharSequence path){
         if (path != null) {
             projectRoots.put(FilePathCache.getManager().getString(path), Integer.MAX_VALUE / 2);
         }

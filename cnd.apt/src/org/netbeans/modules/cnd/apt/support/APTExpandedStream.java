@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.apt.utils.LinkedListBasedTokenStream;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 import org.openide.util.CharSequences;
@@ -231,7 +232,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             }
             if (needsSubstitution) {
                 List<APTToken> substParamsList = subsituteParams(macro, Collections.<List<APTToken>>emptyList(), callback, isExpandingPPExpression());
-                out = new ListBasedTokenStream(substParamsList);
+                out = new LinkedListBasedTokenStream(substParamsList);
             }
         } else {
             // create wrapper for function-like macro:
@@ -239,7 +240,6 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             APTToken next;
             boolean cont;
             do {
-                cont = false;
                 // the first token must be LPAREN
                 // but skip all comments
                 do {
@@ -253,7 +253,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 		// - subsitute all parameters in macro body
 		List<APTToken> substParamsList = subsituteParams(macro, params, callback, isExpandingPPExpression());
 		// - put result list in TokenStream wrapper
-		out = new ListBasedTokenStream(substParamsList);
+		out = new LinkedListBasedTokenStream(substParamsList);
 	    }
 	    else {
 		// if function-like macro us used without parenthesis, 
