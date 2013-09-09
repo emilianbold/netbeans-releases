@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor;
+package org.netbeans.modules.css.editor;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -62,12 +62,12 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.ErrorManager;
@@ -81,10 +81,10 @@ import org.openide.windows.ExternalDropHandler;
  *
  * @author marek
  */
-@ServiceProvider(service = ExternalDropHandler.class, position = 500)
-public class HtmlExternalDropHandler extends ExternalDropHandler {
+@ServiceProvider(service = ExternalDropHandler.class, position = 750)
+public class CssExternalDropHandler extends ExternalDropHandler {
 
-    private static final Logger LOG = Logger.getLogger(HtmlExternalDropHandler.class.getName());
+    private static final Logger LOG = Logger.getLogger(CssExternalDropHandler.class.getName());
 
     private static DataFlavor uriListDataFlavor;
 
@@ -101,14 +101,14 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
                 List<TokenSequence<?>> embeddedTokenSequences = th.embeddedTokenSequences(offset, true); //backward bias
                 if (!embeddedTokenSequences.isEmpty()) {
                     TokenSequence<?> leaf = embeddedTokenSequences.get(embeddedTokenSequences.size() - 1);
-                    if (leaf.language() == HTMLTokenId.language()) {
+                    if (leaf.language() == CssTokenId.language()) {
                         result.set(true);
                     }
                 }
                 embeddedTokenSequences = th.embeddedTokenSequences(offset, false); //fw bias
                 if (!embeddedTokenSequences.isEmpty()) {
                     TokenSequence<?> leaf = embeddedTokenSequences.get(embeddedTokenSequences.size() - 1);
-                    if (leaf.language() == HTMLTokenId.language()) {
+                    if (leaf.language() == CssTokenId.language()) {
                         result.set(true);
                     }
                 }
@@ -213,26 +213,15 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
         String mimeType = target.getMIMEType();
         switch (mimeType) { //NOI18N -- whole switch content
             case "text/css":
-                sb.append("<link href=\"").append(relativePath).append("\" rel=\"stylesheet\" type=\"text/css\"/>");
+            case "text/less":
+            case "text/scss":
+                sb.append("@import \"").append(relativePath).append("\";");
                 break;
-            case "image/png":
-            case "image/jpeg":
-            case "image/gif": //TODO possibly just check for "image/" prefix?
-                sb.append("<img src=\"").append(relativePath).append("\" alt=\"\"/>");
-                break;
-            case "text/javascript":
-                sb.append("<script src=\"").append(relativePath).append("\" type=\"text/javascript\"></script>");
-                break;
-            case "text/html":
-            case "text/xhtml":
             default:
-                //the rest of file types generates a simple file link
-                sb.append("<a href=\"").append(relativePath).append("\"></a>");
-                
-                Logger.getAnonymousLogger().log(Level.INFO, "Dropping of files with mimetype {0} is not fully supported - only a simple file link is used - what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
-                break;
+                LOG.log(Level.INFO, "Dropping of files with mimetype {0} is not supported -  what would you like to generate? Let me know in the issue 219985 please. Thank you!", mimeType);
+                return true;
         }
-        
+
         //check if the line is white, and if not, insert a new line before the text
         final int offset = getLineEndOffset(pane, e.getLocation());
 
