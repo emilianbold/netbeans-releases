@@ -55,7 +55,11 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProbe;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
+import org.netbeans.modules.java.j2seembedded.ui.CreateJREPanel;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
@@ -120,7 +124,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             public void changedUpdate(DocumentEvent e) {
                 updateDefaultDirectory(e);
                 cs.fireChange();
-            }           
+            }
         };
         this.displayName.getDocument().addDocumentListener(docListener);
         this.host.getDocument().addDocumentListener(docListener);
@@ -202,6 +206,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         displayNameLabel = new javax.swing.JLabel();
         displayName = new javax.swing.JTextField();
         fillerBottomVertical = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        buttonCreate = new javax.swing.JButton();
 
         setName(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "TXT_SetUpRemotePlatform")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -417,6 +422,20 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         add(fillerBottomVertical, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonCreate, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.buttonCreate.text")); // NOI18N
+        buttonCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonCreateActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        add(buttonCreate, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBrowseActionPerformed
@@ -432,8 +451,20 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_buttonBrowseActionPerformed
 
+    private void buttonCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateActionPerformed
+        DialogDescriptor d = null;
+        if (username.getText().isEmpty()) {
+            d = new DialogDescriptor(new CreateJREPanel(), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
+        } else {
+            d = new DialogDescriptor(new CreateJREPanel(username.getText()), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
+        }
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return;
+        }
+    }//GEN-LAST:event_buttonCreateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
+    private javax.swing.JButton buttonCreate;
     private javax.swing.ButtonGroup buttonGroupAuth;
     private javax.swing.JTextField displayName;
     private javax.swing.JLabel displayNameLabel;
