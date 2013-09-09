@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -72,9 +73,11 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
@@ -101,6 +104,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -609,6 +613,18 @@ public class CssCompletion implements CodeCompletionHandler {
             case STRING:
                 skipPrefixChars = 1; //skip the leading quotation char
                 break;
+            case URI:
+                if (diff > 0) {
+                    //inside the URI value
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        String value = m.group(groupIndex);
+                        int quotesDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
+                        skipPrefixChars = m.start(groupIndex) + quotesDiff;
+                    }
+            }
+            break;
         }
 
         return t.text().subSequence(skipPrefixChars, diff == 0 ? t.text().length() : diff).toString().trim();
@@ -713,6 +729,37 @@ public class CssCompletion implements CodeCompletionHandler {
                         int moveBack = addSemicolon ? 1 : 0;
                         return new CssFileCompletionResult(imports, moveBack);
 
+                    }
+                    break;
+                    
+                case URI:
+                    //url(...)
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        String value = m.group(groupIndex);
+                        int diff = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); //use prefix from last separator in the URL
+                        if(diff != -1) {
+                            //some folders already in the path, we also need to adjust the base file
+                            int quotDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
+                            String valuePrefix = value.substring(quotDiff, diff);
+                            FileObject base = WebUtils.resolve(file, valuePrefix);
+                            if(base != null) {
+                                String prefix = value.substring(diff + 1, tokenDiff - m.start(groupIndex));
+                                List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(base,
+                                caretOffset, prefix, false, false);
+                            return new CssFileCompletionResult(imports, 0);
+                            }
+                        } else {
+                            //no separator in the URL, prefix from the beginning
+                            diff = WebUtils.isValueQuoted(value) ? 1 : 0;
+                             String valuePrefix = ts.token().text().toString().substring(m.start(groupIndex) + diff, tokenDiff);
+                        List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
+                                    caretOffset, valuePrefix, false, false);
+                            return new CssFileCompletionResult(imports, 0);
+                        }
+                        
+                       
                     }
                     break;
 
@@ -1609,7 +1656,9 @@ public class CssCompletion implements CodeCompletionHandler {
         @Override
         public void afterInsert(CompletionProposal item) {
             Caret c = EditorRegistry.lastFocusedComponent().getCaret();
-            c.setDot(c.getDot() - moveCaretBack);
+            if(moveCaretBack > 0) {
+                c.setDot(c.getDot() - moveCaretBack);
+            }
         }
     }
 
