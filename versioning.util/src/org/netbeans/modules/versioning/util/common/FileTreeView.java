@@ -56,11 +56,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -85,6 +89,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 
@@ -101,6 +106,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     private EditorCookie[] editorCookies;
     private final ViewContainer viewComponent;
     private T[] nodes;
+    private final Map<T, TreeFilterNode> nodeMapping = Collections.synchronizedMap(new WeakHashMap<T, TreeFilterNode>());
     
     private static class ViewContainer extends JPanel implements ExplorerManager.Provider {
 
@@ -160,7 +166,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         return view.getOutline().getPreferredSize().height;
     }
     
-    protected final Node getNodeAt( int rowIndex ) {
+    private Node getNodeAt( int rowIndex ) {
         Node result = null;
         TreePath path = view.getOutline().getOutlineModel().getLayout().getPathForRow(rowIndex);
         if (path != null) {
@@ -175,7 +181,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         this.nodes = nodes;
         em.setRootContext((Node) modelData);
         for (T n : nodes) {
-            view.expandNode(n);
+            view.expandNode(toTreeNode(n));
         }
     }
     
@@ -203,7 +209,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
             Node[] selectedNodes = em.getSelectedNodes();
             if (selectedNodes.length == 1) {
                 // single selection
-                T node = convertToAcceptedNode(em.getSelectedNodes()[0]);
+                T node = convertNode(em.getSelectedNodes()[0]);
                 if (node != null) {
                     nodeSelected(node);
                     return;
@@ -279,7 +285,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = view.getOutline().rowAtPoint(e.getPoint());
             if (row == -1) return;
-            T n = convertToAcceptedNode(getNodeAt(view.getOutline().convertRowIndexToModel(row)));
+            T n = convertNode(getNodeAt(view.getOutline().convertRowIndexToModel(row)));
             if (n != null) {
                 Action action = n.getPreferredAction();
                 if (action != null && action.isEnabled()) {
@@ -290,6 +296,14 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     }
 
     protected abstract T convertToAcceptedNode (Node node);
+    
+    private T convertNode (Node node) {
+        if (node instanceof TreeFilterNode) {
+            return (T) ((TreeFilterNode) node).getOriginal();
+        } else {
+            return convertToAcceptedNode(node);
+        }
+    }
 
     protected abstract void nodeSelected (T node);
     
@@ -300,15 +314,39 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         T node = null;
         Node[] selectedNodes = em.getSelectedNodes();
         if (selectedNodes.length == 1) {
-            node = convertToAcceptedNode(selectedNodes[0]);
+            node = convertNode(selectedNodes[0]);
         }
         return node;
+    }
+
+    /**
+     * 
+     * @return may contain also other than T nodes
+     */
+    public final List<Node> getSelectedNodes () {
+        Node[] selectedNodes = em.getSelectedNodes();
+        List<Node> nodeList = new ArrayList<Node>(selectedNodes.length);
+        for (Node n : selectedNodes) {
+            T converted = convertNode(n);
+            if (converted == null) {
+                nodeList.add(n);
+            } else {
+                nodeList.add(converted);
+            }
+        }
+        return nodeList;
+    }
+
+    protected final Node createFilterNode (T original) {
+        TreeFilterNode n = new TreeFilterNode(original);
+        nodeMapping.put(original, n);
+        return n;
     }
 
     @Override
     public void setSelectedNode (T toSelect) {
         try {
-            em.setSelectedNodes(new Node[] { toSelect });
+            em.setSelectedNodes(new Node[] { toTreeNode(toSelect) });
         } catch (PropertyVetoException ex) {
             Logger.getLogger(FileTreeView.class.getName()).log(Level.FINE, null, ex);
         }
@@ -318,7 +356,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     public T getNodeAtPosition (int position) {
         for (int i = 0; i < view.getOutline().getRowCount(); ++i) {
             Node n = getNodeAt(view.getOutline().convertRowIndexToModel(i));
-            T converted = convertToAcceptedNode(n);
+            T converted = convertNode(n);
             if (converted != null) {
                 if (position-- == 0) {
                     return converted;
@@ -334,11 +372,11 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         Set<T> neighbours = new LinkedHashSet<T>(5);
         neighbours.add(node);
         for (int i = 1; i < boundary; ++i) {
-            T next = convertToAcceptedNode(findShiftNode(node, i, false));
+            T next = convertNode(findShiftNode(toTreeNode(node), i, false));
             if (next != null) {
                 neighbours.add(next);
             }
-            T prev = convertToAcceptedNode(findShiftNode(node, -i, false));
+            T prev = convertNode(findShiftNode(toTreeNode(node), -i, false));
             if (prev != null) {
                 neighbours.add(prev);
             }
@@ -350,24 +388,29 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
 
     @Override
     public T getNextNode (T node) {
-        Node nextNode = findShiftNode(node, 1, true);
-        return convertToAcceptedNode(nextNode);
+        Node nextNode = findShiftNode(toTreeNode(node), 1, true);
+        return convertNode(nextNode);
     }
 
     @Override
     public T getPreviousNode (T node) {
-        Node prevNode = findShiftNode(node, -1, true);
-        return convertToAcceptedNode(prevNode);
+        Node prevNode = findShiftNode(toTreeNode(node), -1, true);
+        return convertNode(prevNode);
     }
 
     @Override
     public boolean hasNextNode (T node) {
-        return convertToAcceptedNode(findShiftNode(node, 1, false)) != null;
+        return convertNode(findShiftNode(toTreeNode(node), 1, false)) != null;
     }
 
     @Override
     public boolean hasPreviousNode (T node) {
-        return convertToAcceptedNode(findShiftNode(node, -1, false)) != null;
+        return convertNode(findShiftNode(toTreeNode(node), -1, false)) != null;
+    }
+
+    private Node toTreeNode (T n) {
+        Node filterNode = nodeMapping.get(n);
+        return filterNode == null ? n : filterNode;
     }
     
     private Node findShiftNode (Node startingNode, int direction, boolean canExpand) {
@@ -377,7 +420,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
     private Node findDetailNode(Node fromNode, int direction,
             OutlineView outlineView, boolean canExpand) {
         return findUp(fromNode, direction,
-                convertToAcceptedNode(fromNode) != null || direction < 0 ? direction : 0,
+                convertNode(fromNode) != null || direction < 0 ? direction : 0,
                 outlineView, canExpand);
     }
     
@@ -431,7 +474,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
             }
         }
         for (int i = nodeIndex; i >= 0 && i < siblings.length; i += dir) {
-            Node converted = convertToAcceptedNode(siblings[i]);
+            Node converted = convertNode(siblings[i]);
             if (converted != null) {
                 return converted;
             }
@@ -532,7 +575,7 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         public String getDisplayName (Object o) {
             Node n = Visualizer.findNode(o);
             String value = n.getDisplayName();
-            T leafNode = convertToAcceptedNode(n);
+            T leafNode = convertNode(n);
             if (leafNode != null) {
                 String htmlDisplayName = DiffUtils.getHtmlDisplayName(leafNode, isModified(leafNode), Arrays.asList(em.getSelectedNodes()).contains(n));
                 htmlDisplayName = annotateName(leafNode, htmlDisplayName);
@@ -578,5 +621,17 @@ public abstract class FileTreeView<T extends Node> implements FileViewComponent<
         }
 
         protected abstract String annotateName (T leafNode, String htmlDisplayName);
+    }
+    
+    private static class TreeFilterNode<T extends Node> extends FilterNode {
+
+        public TreeFilterNode (T original) {
+            super(original);
+        }
+        
+        @Override
+        public T getOriginal () {
+            return (T) super.getOriginal();
+        }
     }
 }
