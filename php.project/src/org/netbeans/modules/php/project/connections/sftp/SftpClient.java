@@ -513,7 +513,7 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public int getPermissions(String path) throws RemoteException {
+    public synchronized int getPermissions(String path) throws RemoteException {
         int permissions = -1;
         try {
             sftpLogger.info("LIST " + path); // NOI18N
@@ -559,7 +559,8 @@ public class SftpClient implements RemoteClient {
         return false;
     }
 
-    private synchronized ChannelSftp.LsEntry getFile(String path) throws SftpException {
+    private ChannelSftp.LsEntry getFile(String path) throws SftpException {
+        assert Thread.holdsLock(this);
         assert path != null && path.trim().length() > 0;
 
         @SuppressWarnings("unchecked")
@@ -876,11 +877,13 @@ public class SftpClient implements RemoteClient {
                         return true;
                     }
 
+                    @org.netbeans.api.annotations.common.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "Not known which encoding should be used.")
                     @Override
                     public String getAlgName() {
                         return new String((new Buffer(getPublicKeyBlob())).getString());
                     }
 
+                    @org.netbeans.api.annotations.common.SuppressWarnings(value = "DM_DEFAULT_ENCODING", justification = "Not known which encoding should be used.")
                     @Override
                     public String getName() {
                         return new String(identity.getComment());
