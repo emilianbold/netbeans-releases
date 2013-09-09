@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.j2seembedded.project;
+package org.netbeans.modules.java.j2seproject.problems;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -64,13 +64,13 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seembedded.platform.RemotePlatform;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -96,10 +96,10 @@ import org.openide.util.WeakListeners;
  * @author Tomas Zezula
  */
 @ProjectServiceProvider(service = ProjectProblemsProvider.class, projectType = "org-netbeans-modules-java-j2seproject")
-public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, PropertyChangeListener, FileChangeListener {
+public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider, PropertyChangeListener, FileChangeListener {
 
-    private static final Logger LOG = Logger.getLogger(RemotePlatformProblemsProvider.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(RemotePlatformProblemsProvider.class);
+    private static final Logger LOG = Logger.getLogger(RuntimePlatformProblemsProvider.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RuntimePlatformProblemsProvider.class);
     private static final String CFG_PATH = "nbproject/configs"; //NOI18N
 
     private final Project project;
@@ -111,7 +111,7 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
     //@GuardedBy("this")
     private Collection<? extends ProjectProblem> problemCache;
 
-    public RemotePlatformProblemsProvider(@NonNull final Project project) {
+    public RuntimePlatformProblemsProvider(@NonNull final Project project) {
         Parameters.notNull("project", project); //NOI18N
         this.project = project;
         this.support = new PropertyChangeSupport(this);
@@ -147,8 +147,8 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                 for (RuntimePlatformResolver resolver : resolvers) {
                     _problems.add(
                         ProjectProblem.createError(
-                        NbBundle.getMessage(RemotePlatformProblemsProvider.class, "LBL_BrokenRuntimePlatform"),
-                        NbBundle.getMessage(RemotePlatformProblemsProvider.class, "DESC_BrokenRuntimePlatform", resolver.getDisplayName()),
+                        NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "LBL_BrokenRuntimePlatform"),
+                        NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "DESC_BrokenRuntimePlatform", resolver.getDisplayName()),
                         resolver));
                 }
                 problems = _problems;
@@ -248,9 +248,9 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                                 try (final InputStream in = cfgFile.getInputStream()){
                                     ep.load(in);
                                 }
-                                final String runtimePlatform = ep.getProperty(Utilities.PLATFORM_RUNTIME);
+                                final String runtimePlatform = ep.getProperty(J2SEProjectProperties.PLATFORM_RUNTIME);
                                     if (runtimePlatform != null && !runtimePlatform.isEmpty()) {
-                                        if (Utilities.findRemotePlatform(runtimePlatform) == null) {
+                                        if (findPlatform(runtimePlatform) == null) {
                                             collector.add(new RuntimePlatformResolver(
                                                     project,
                                                     cfgFile.getName(),
@@ -269,6 +269,15 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                 return Collections.unmodifiableCollection(collector);
             }
         });
+    }
+
+    private static JavaPlatform findPlatform(@NonNull final String platformId)  {
+        for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            if (platformId.equals(jp.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME))) {
+                return jp;
+            }
+        }
+        return null;
     }
 
     private static final class RuntimePlatformResolver implements ProjectProblemResolver {
@@ -300,13 +309,13 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
 
         @Override
         public Future<Result> resolve() {
-            final ResolveMissingRemotePlatform panel = ResolveMissingRemotePlatform.createMissingPlatform(
+            final ResolveMissingRuntimePlatform panel = ResolveMissingRuntimePlatform.createMissingPlatform(
                     prj,
                     platformId);
             final OK okButton = new OK(panel);
             final DialogDescriptor dd = new DialogDescriptor(
                     panel,
-                    NbBundle.getMessage(RemotePlatformProblemsProvider.class, "TITLE_MissingRuntimePlatform"),
+                    NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "TITLE_MissingRuntimePlatform"),
                     true,
                     new Object[] {DialogDescriptor.CANCEL_OPTION, okButton},
                     okButton,
@@ -315,7 +324,7 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                     null);
             if (DialogDisplayer.getDefault().notify(dd) == okButton) {
                 final String newPlatformId = panel.isSpecificPlatform() ?
-                    panel.getRuntimePlatform().getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME) :
+                    panel.getRuntimePlatform().getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME) :
                     null;
                 final FutureTask<Result> res = new FutureTask<>(new Callable<Result>() {
                     @Override
@@ -376,9 +385,9 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                                     ep.load(in);
                                 }
                                 if (newPlatformId == null) {
-                                    ep.remove(Utilities.PLATFORM_RUNTIME);
+                                    ep.remove(J2SEProjectProperties.PLATFORM_RUNTIME);
                                 } else {
-                                    ep.setProperty(Utilities.PLATFORM_RUNTIME, newPlatformId);
+                                    ep.setProperty(J2SEProjectProperties.PLATFORM_RUNTIME, newPlatformId);
                                 }
                                 final FileLock lock = cfg.lock();
                                 try (OutputStream out = cfg.getOutputStream(lock)) {
@@ -398,10 +407,10 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
 
     private static class OK extends JButton implements ChangeListener {
 
-        private ResolveMissingRemotePlatform panel;
+        private ResolveMissingRuntimePlatform panel;
 
-        OK (@NonNull final ResolveMissingRemotePlatform panel) {
-            super(NbBundle.getMessage(RemotePlatformProblemsProvider.class,"LBL_OK"));
+        OK (@NonNull final ResolveMissingRuntimePlatform panel) {
+            super(NbBundle.getMessage(RuntimePlatformProblemsProvider.class,"LBL_OK"));
             Parameters.notNull("panel", panel);
             this.panel = panel;
             panel.addChangeListener(this);

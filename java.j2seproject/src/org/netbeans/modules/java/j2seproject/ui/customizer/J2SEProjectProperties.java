@@ -195,6 +195,9 @@ public class J2SEProjectProperties {
     //Runtime platform
     public static final String PLATFORM_RUNTIME = "platform.runtime";   //NOI18N
 
+    //Name of ant platform name property
+    public static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
+
     private static final String[] CONFIG_AWARE_PROPERTIES = {
         ProjectProperties.MAIN_CLASS,
         ProjectProperties.APPLICATION_ARGS,
