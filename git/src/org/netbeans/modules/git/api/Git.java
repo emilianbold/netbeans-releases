@@ -56,6 +56,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
@@ -94,7 +95,7 @@ public final class Git {
                 file, file.getName(), commitId);
     }
 
-    public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException, URISyntaxException {
+    public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws URISyntaxException {
         GitClient client = null;
         try {
             client = org.netbeans.modules.git.Git.getInstance().getClient(localFolder);
@@ -121,7 +122,9 @@ public final class Git {
             createBranchRef(GitUtils.getGitFolderForRoot(localFolder), GitUtils.MASTER, remoteName);
             org.netbeans.modules.git.Git.getInstance().versionedFilesChanged();                       
         } catch (GitException ex) {
-            throw new IOException(ex);
+            GitClientExceptionHandler.notifyException(ex, true);
+        } catch (IOException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
         } finally {
             if (client != null) {
                 client.release();

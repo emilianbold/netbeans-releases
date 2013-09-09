@@ -131,7 +131,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.46</specification-version>
+                        <specification-version>1.52</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -343,7 +343,6 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.odcs.mercurial</friend>
                 <package>org.netbeans.modules.mercurial.api</package>
             </friend-packages>
         </data>

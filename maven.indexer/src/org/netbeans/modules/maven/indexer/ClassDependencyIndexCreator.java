@@ -72,9 +72,9 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.maven.index.ArtifactContext;
 import org.apache.maven.index.ArtifactInfo;
 import org.apache.maven.index.Field;
+import org.apache.maven.index.Indexer;
 import org.apache.maven.index.IndexerField;
 import org.apache.maven.index.IndexerFieldVersion;
-import org.apache.maven.index.NexusIndexer;
 import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.creator.AbstractIndexCreator;
@@ -141,8 +141,8 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
             in.close();
         }
     }
-    private static byte[] ZIP_HEADER_1 = {80, 75, 3, 4};
-    private static byte[] ZIP_HEADER_2 = {80, 75, 5, 6};
+    private static final byte[] ZIP_HEADER_1 = {80, 75, 3, 4};
+    private static final byte[] ZIP_HEADER_2 = {80, 75, 5, 6};
     
     @Override public boolean updateArtifactInfo(Document document, ArtifactInfo artifactInfo) {
         return false;
@@ -180,7 +180,7 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
         doc.add(FLD_NB_DEPENDENCY_CLASS.toField(b.toString()));
     }
 
-    static void search(String className, NexusIndexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsage> results) throws IOException {
+    static void search(String className, Indexer indexer, Collection<IndexingContext> contexts, List<? super ClassUsage> results) throws IOException {
         String searchString = crc32base64(className.replace('.', '/'));
         Query refClassQuery = indexer.constructQuery(ClassDependencyIndexCreator.FLD_NB_DEPENDENCY_CLASS.getOntology(), new StringSearchExpression(searchString));
         TopScoreDocCollector collector = TopScoreDocCollector.create(NexusRepositoryIndexerImpl.MAX_RESULT_COUNT, true);

@@ -171,6 +171,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 if (defaultType != null) {
                                     mapping.put(templateParam, new TypeBasedSpecializationParameterImpl(defaultType));
                                 }
+                            } else if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(defaultValue)) {
+                                mapping.put(templateParam, defaultValue);
                             }
                         }
                         i++;
@@ -570,24 +572,21 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);
             Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(mapping);
             for (CsmTemplateParameter p : mapping.keySet()) {
-                int length = (clsParams.size() < specParams.size()) ? clsParams.size() : specParams.size();
-                for (int i = 0; i < length; i++) {
-                    if(p.equals(clsParams.get(i))) {
-                        newMapping.put(specParams.get(i), mapping.get(p));
-                        break;
-                    }
-                }
-            }
-            for (CsmTemplateParameter p : mapping.keySet()) {
                 int length = clsParams.size();
+                outer_cls_params:
                 for (int i = 0; i < length; i++) {
-                    if(p.equals(clsParams.get(i))) {
-                        for (CsmTemplateParameter p2 : specParams ) {
-                            if(p2.getName().toString().equals(clsParams.get(i).getName().toString())) {
-                                newMapping.put(p2, mapping.get(p));
-                                break;
+                    if (p.equals(clsParams.get(i))) {
+                        for (CsmTemplateParameter specParam : specParams) {
+                            if (specParam.getName().toString().equals(p.getName().toString())) {
+                                newMapping.put(specParam, mapping.get(p));
+                                break outer_cls_params;
                             }
                         }
+                        if (i < specParams.size()) {
+                            // fallback
+                            newMapping.put(specParams.get(i), mapping.get(p));
+                        }
+                        break;
                     }
                 }
             }
@@ -1073,6 +1072,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }        
     
     private static CsmCacheMap getTemplateRelatedCache(CsmObject template, boolean specialize) {
+        if (true) return null;
         return CsmCacheManager.getClientCache(new TemplateCacheKey(template, specialize), new TemplateCacheInitializer(template));
     }
 

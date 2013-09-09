@@ -467,6 +467,28 @@ public class TemplateUtils {
         }     
         return type;
     }    
+    
+    public static String traceInstantiationMap(Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        StringBuilder out = new StringBuilder();
+        int indent = 0;
+        if (mapping != null && !mapping.isEmpty()) {
+            repeat(out, indent, ' ').append("\n"); // NOI18N
+            for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
+                repeat(out, indent, ' ').append("[").append(entry.getKey()).append("]=>{"); // NOI18N
+                out.append(entry.getValue()).append("}\n"); // NOI18N
+            }
+        } else {
+            out.append("{}"); // NOI18N
+        }   
+        return out.toString();
+    }
+    
+    private static StringBuilder repeat(StringBuilder b, int level, char character) {
+        for (int i = 0; i < level; i++) {
+            b.append(character);
+        }
+        return b;
+    }    
 
     private TemplateUtils() {
     }

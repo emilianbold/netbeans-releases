@@ -87,7 +87,7 @@ import org.openide.util.NbBundle;
 public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
     private static final Logger LOG = Logger.getLogger(MoveToDependencyManagementHint.class.getName());
 
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public MoveToDependencyManagementHint() {
         configuration = new Configuration("MoveToDependencyManagementHint", //NOI18N
@@ -137,9 +137,9 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
     }
 
     private static class MoveFix implements Fix {
-        private POMModel mdl;
-        private int start;
-        private int end;
+        private final POMModel mdl;
+        private final int start;
+        private final int end;
         private final Project project;
 
         MoveFix(int selectionStart, int selectionEnd, POMModel model, Project prj) {

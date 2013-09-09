@@ -406,24 +406,31 @@ public final class DiffUtils {
         if (diffProvider == null) {
             return -1;
         }
-        Reader r1 = null, r2 = null;
-        Difference[] differences;
+        Reader currentReader = null, previousReader = null;
         try {
-            r1 = Utils.createReader(currentFile);
-            r2 = Utils.createReader(previousFile);
-            differences = diffProvider.computeDiff(r1, r2);
+            currentReader = Utils.createReader(currentFile);
+            previousReader = Utils.createReader(previousFile);
+            return getMatchingLine(currentReader, previousReader, originalLineNumber);
         } finally {
-            if (r1 != null) {
+            if (currentReader != null) {
                 try {
-                    r1.close();
+                    currentReader.close();
                 } catch (IOException ex) {}
             }
-            if (r2 != null) {
+            if (previousReader != null) {
                 try {
-                    r2.close();
+                    previousReader.close();
                 } catch (IOException ex) {}
             }
         }
+    }
+    
+    public static int getMatchingLine (Reader currentReader, Reader previousReader, int originalLineNumber) throws IOException {
+        DiffProvider diffProvider = Lookup.getDefault().lookup(DiffProvider.class);
+        if (diffProvider == null || currentReader == null || previousReader == null) {
+            return -1;
+        }
+        Difference[] differences = diffProvider.computeDiff(currentReader, previousReader);
         return getMatchingLine(differences, originalLineNumber);
     }
 

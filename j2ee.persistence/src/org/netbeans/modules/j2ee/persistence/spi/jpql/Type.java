@@ -120,7 +120,10 @@ public class Type implements IType{
 
     @Override
     public boolean equals(IType itype) {
-        return this==itype || getName().equals(itype.getName());
+        if (itype == null) {
+            return false;
+        }
+        return this==itype || (getName()!=null && (getName().equals(itype.getName())));
     }
     
     @Override

@@ -14,12 +14,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.apache.ws.commons.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.eclipse.core.runtime</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

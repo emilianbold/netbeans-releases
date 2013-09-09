@@ -78,20 +78,36 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 public final class ExpressionBasedSpecializationParameterImpl extends OffsetableBase implements CsmExpressionBasedSpecializationParameter, SelfPersistent, Persistent {
 
     private final CharSequence expression;
+    
+    private final boolean defaultValue;
 
-    private ExpressionBasedSpecializationParameterImpl(CharSequence expression, CsmFile file, int start, int end) {
+    private ExpressionBasedSpecializationParameterImpl(CharSequence expression, CsmFile file, int start, int end, boolean defaultValue) {
         super(file, start, end);
         this.expression = NameCache.getManager().getString(expression);
+        this.defaultValue = defaultValue;
     }
-
+    
     public static ExpressionBasedSpecializationParameterImpl create(CsmExpressionStatement expression, CsmFile file, int start, int end) {
-        return new ExpressionBasedSpecializationParameterImpl(expression.getText(), file, start, end);
-    }
+        return create(expression.getText(), file, start, end, false);
+    }    
 
+    public static ExpressionBasedSpecializationParameterImpl create(CsmExpressionStatement expression, CsmFile file, int start, int end, boolean defaultValue) {
+        return new ExpressionBasedSpecializationParameterImpl(expression.getText(), file, start, end, defaultValue);
+    }
+    
     public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmFile file, int start, int end) {
-        return new ExpressionBasedSpecializationParameterImpl(expression, file, start, end);
+        return create(expression, file, start, end, false);
+    }  
+
+    public static ExpressionBasedSpecializationParameterImpl create(CharSequence expression, CsmFile file, int start, int end, boolean defaultValue) {
+        return new ExpressionBasedSpecializationParameterImpl(expression, file, start, end, defaultValue);
     }
 
+    @Override
+    public boolean isDefaultValue() {
+        return defaultValue;
+    }
+    
     @Override
     public CharSequence getText() {
         return expression;
@@ -145,7 +161,7 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
                 expr = NameCache.getManager().getString("1"); // NOI18N
             }
             
-            ExpressionBasedSpecializationParameterImpl param = new ExpressionBasedSpecializationParameterImpl(expr, getFile(), getStartOffset(), getEndOffset());
+            ExpressionBasedSpecializationParameterImpl param = new ExpressionBasedSpecializationParameterImpl(expr, getFile(), getStartOffset(), getEndOffset(), false);
             return param;
         }
     }
@@ -157,11 +173,13 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeUTF(expression, output);
+        output.writeBoolean(defaultValue);
     }
 
     public ExpressionBasedSpecializationParameterImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.expression = PersistentUtils.readUTF(input, NameCache.getManager());
+        this.defaultValue = input.readBoolean();
     }
 
 }

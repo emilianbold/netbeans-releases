@@ -153,6 +153,8 @@ public class L10nTask extends Task {
                         if (lines.isEmpty()) {
                             lines.add(lineRaw.replace(LOCALES_TOKEN, "*")); // NOI18N
                         }
+                    } else {
+                        lines.add(lineRaw); // NOI18N
                     }
                     for (String oneLine : lines) {
                         String[] p = oneLine.split(":");

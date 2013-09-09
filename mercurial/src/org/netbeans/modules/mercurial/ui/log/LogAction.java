@@ -93,10 +93,14 @@ public class LogAction extends SearchHistoryAction {
     private void openHistory (final VCSContext context, final String title) {
         File repositoryRoot = getRepositoryRoot(context);
         final File[] files = replaceCopiedFiles(getFiles(context, repositoryRoot));
-        openHistory(repositoryRoot, files, title);
+        openHistory(repositoryRoot, files, title, null);
     }
     
     public static void openHistory (File repositoryRoot, File[] files) {
+        openHistory(repositoryRoot, files, null);
+    }
+    
+    public static void openHistory (File repositoryRoot, File[] files, String revision) {
         List<Node> nodes = new ArrayList<Node>(files.length);
         for (File file : files) {
             FileObject fo = FileUtil.toFileObject(file);
@@ -116,10 +120,10 @@ public class LogAction extends SearchHistoryAction {
                 LogAction.class, 
                 "MSG_Log_TabTitle", // NOI18N
                 Utils.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))));
-        openHistory(repositoryRoot, files, title);
+        openHistory(repositoryRoot, files, title, revision);
     }
     
-    private static void openHistory (final File repositoryRoot, final File[] files, final String title) {
+    private static void openHistory (final File repositoryRoot, final File[] files, final String title, final String revision) {
         Utils.postParallel(new Runnable() {
             @Override
             public void run () {
@@ -129,20 +133,24 @@ public class LogAction extends SearchHistoryAction {
                 outputSearchContextTab(repositoryRoot, files, "MSG_Log_Title");
                 final boolean startSearch = files != null && (files.length == 1 && !files[0].isDirectory() || files.length > 1 && Utils.shareCommonDataObject(files));
                 final String branchName;
-                HgLogMessage[] parents = WorkingCopyInfo.getInstance(repositoryRoot).getWorkingCopyParents();
-                if (parents.length == 1) {
-                    if (parents[0].getBranches().length > 0) {
-                        branchName = parents[0].getBranches()[0];
-                    } else {
-                        branchName = HgBranch.DEFAULT_NAME;
-                    }
-                } else {
+                if (revision != null && !revision.isEmpty()) {
                     branchName = ""; //NOI18N
+                } else {
+                    HgLogMessage[] parents = WorkingCopyInfo.getInstance(repositoryRoot).getWorkingCopyParents();
+                    if (parents.length == 1) {
+                        if (parents[0].getBranches().length > 0) {
+                            branchName = parents[0].getBranches()[0];
+                        } else {
+                            branchName = HgBranch.DEFAULT_NAME;
+                        }
+                    } else {
+                        branchName = ""; //NOI18N
+                    }
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
-                        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files, branchName);
+                        SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files, branchName, revision);
                         tc.setDisplayName(title);
                         tc.open();
                         tc.requestActive();

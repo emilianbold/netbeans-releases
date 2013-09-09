@@ -95,7 +95,11 @@ public class DiffAction extends GitAction {
     }
 
     public void diff (File file, Revision rev1, Revision rev2) {
-        MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2);
+        diff(file, rev1, rev2, -1);
+    }
+
+    public void diff (File file, Revision rev1, Revision rev2, int requestedRightLine) {
+        MultiDiffPanelController controller = new MultiDiffPanelController(file, rev1, rev2, requestedRightLine);
         DiffTopComponent tc = new DiffTopComponent(controller);
         controller.setActions(tc);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", file.getName())); // NOI18N
