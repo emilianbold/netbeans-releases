@@ -422,7 +422,7 @@ public class MavenProjectSupport {
         };
 
         final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        if (pom != null) {
+        if (pom != null && pom.isValid() && pom.canRead()) {
             try {
                 pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                     @Override
