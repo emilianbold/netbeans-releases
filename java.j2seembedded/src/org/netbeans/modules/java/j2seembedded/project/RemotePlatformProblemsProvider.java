@@ -141,10 +141,10 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
         }
         if (problems == null) {
             initListeners();
-            final Collection<? extends RemotePlatformResolver> resolvers = findProblems();
+            final Collection<? extends RuntimePlatformResolver> resolvers = findProblems();
             if (!resolvers.isEmpty()) {
                 Queue<ProjectProblem> _problems = new ArrayDeque<>();
-                for (RemotePlatformResolver resolver : resolvers) {
+                for (RuntimePlatformResolver resolver : resolvers) {
                     _problems.add(
                         ProjectProblem.createError(
                         NbBundle.getMessage(RemotePlatformProblemsProvider.class, "LBL_BrokenRuntimePlatform"),
@@ -230,11 +230,11 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
     }
 
     @NonNull
-    private Collection<? extends RemotePlatformResolver> findProblems() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends RemotePlatformResolver>>() {
+    private Collection<? extends RuntimePlatformResolver> findProblems() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends RuntimePlatformResolver>>() {
             @Override
-            public Collection<? extends RemotePlatformResolver> run() {
-                final Collection<RemotePlatformResolver> collector = new HashSet<>();
+            public Collection<? extends RuntimePlatformResolver> run() {
+                final Collection<RuntimePlatformResolver> collector = new HashSet<>();
                 final FileObject prjDir = project.getProjectDirectory();
                 if (prjDir != null) {
                     final FileObject cfgFolder = prjDir.getFileObject(CFG_PATH);
@@ -251,7 +251,7 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
                                 final String runtimePlatform = ep.getProperty(Utilities.PLATFORM_RUNTIME);
                                     if (runtimePlatform != null && !runtimePlatform.isEmpty()) {
                                         if (Utilities.findRemotePlatform(runtimePlatform) == null) {
-                                            collector.add(new RemotePlatformResolver(
+                                            collector.add(new RuntimePlatformResolver(
                                                     project,
                                                     cfgFile.getName(),
                                                     ep.getProperty("$label"),
@@ -271,14 +271,14 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
         });
     }
 
-    private static final class RemotePlatformResolver implements ProjectProblemResolver {
+    private static final class RuntimePlatformResolver implements ProjectProblemResolver {
 
         private final Project prj;
         private final String cfgId;
         private final String cfgDisplayName;
         private final String platformId;
 
-        RemotePlatformResolver(
+        RuntimePlatformResolver(
             @NonNull final Project project,
             @NonNull final String cfgId,
             @NullAllowed final String cfgDisplayName,
@@ -342,10 +342,10 @@ public class RemotePlatformProblemsProvider implements ProjectProblemsProvider, 
             if (obj == this) {
                 return true;
             }
-            if (!(obj instanceof RemotePlatformResolver)) {
+            if (!(obj instanceof RuntimePlatformResolver)) {
                 return false;
             }
-            final RemotePlatformResolver other = (RemotePlatformResolver) obj;
+            final RuntimePlatformResolver other = (RuntimePlatformResolver) obj;
             final FileObject thisPrjDir = prj.getProjectDirectory();
             final FileObject otherPrjDir = other.prj.getProjectDirectory();
             return thisPrjDir == null ? otherPrjDir == null : thisPrjDir.equals(otherPrjDir) &&
