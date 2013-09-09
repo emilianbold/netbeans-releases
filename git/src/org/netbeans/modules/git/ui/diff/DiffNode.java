@@ -57,18 +57,28 @@ import org.openide.cookies.EditorCookie;
  *
  * @author ondra
  */
-public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> {
+public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> implements Cloneable {
 
-    protected DiffNode (T node, EditorCookie eCookie) {
+    private final Setup setup;
+    
+    protected DiffNode (T node, Setup setup, EditorCookie eCookie) {
         super(node, getLookupFor(eCookie, node.getLookupObjects()));
+        this.setup = setup;
     }
+    
+    public Setup getSetup() {
+        return setup;
+    }
+    
+    @Override
+    public abstract DiffNode clone ();
     
     public static class DiffLocalNode extends DiffNode<GitLocalFileNode> {
     
         private final Mode mode;
 
-        DiffLocalNode (GitLocalFileNode node, EditorCookie eCookie, Mode mode) {
-            super(node, eCookie);
+        DiffLocalNode (GitLocalFileNode node, Setup setup, EditorCookie eCookie, Mode mode) {
+            super(node, setup, eCookie);
             this.mode = mode;
         }
 
@@ -81,12 +91,17 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> {
         public String getStatusText () {
             return node.getInformation().getStatusText(mode);
         }
+
+        @Override
+        public DiffNode clone () {
+            return new DiffLocalNode(getFileNode(), getSetup(), getLookup().lookup(EditorCookie.class), mode);
+        }
     }
     
     public static class DiffHistoryNode extends DiffNode<GitHistoryFileNode> {
     
-        DiffHistoryNode (GitHistoryFileNode node) {
-            super(node, null);
+        DiffHistoryNode (GitHistoryFileNode node, Setup setup) {
+            super(node, setup, null);
         }
 
         @Override
@@ -97,6 +112,11 @@ public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> {
         @Override
         public String getStatusText () {
             return node.getInformation().getStatusText();
+        }
+
+        @Override
+        public DiffNode clone () {
+            return new DiffHistoryNode(getFileNode(), getSetup());
         }
     }
 

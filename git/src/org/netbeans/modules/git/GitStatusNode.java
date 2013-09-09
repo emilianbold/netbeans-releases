@@ -46,7 +46,6 @@ import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -107,20 +106,6 @@ public abstract class GitStatusNode<T extends GitFileNode> extends VCSStatusNode
     }
 
     public abstract String getStatusText ();
-
-    protected static abstract class NodeProperty<T> extends ReadOnly<T> {
-        protected NodeProperty (String name, Class<T> type, String displayName, String description) {
-            super(name, type, displayName, description);
-        }
-
-        @Override
-        public String toString() {
-            return getValue().toString();
-        }
-
-        @Override
-        public abstract T getValue ();
-    }
 
     private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     public static class GitStatusProperty extends NodeProperty<String> {

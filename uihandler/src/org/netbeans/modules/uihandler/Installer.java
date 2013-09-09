@@ -146,7 +146,7 @@ public class Installer extends ModuleInstall implements Runnable {
     private static boolean logMetricsUploadFailed = false;
     
     /** Log records currently displaying/uploading */
-    private static final ThreadLocal<List<LogRecord>> logRecords = new ThreadLocal<List<LogRecord>>();
+    private static final ThreadLocal<List<LogRecord>> logRecords = new ThreadLocal<>();
     
     private static final  String USAGE_STATISTICS_ENABLED          = "usageStatisticsEnabled"; // NOI18N
     private static final String USAGE_STATISTICS_SET_BY_IDE       = "usageStatisticsSetByIde"; // NOI18N
@@ -226,6 +226,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public void restored() {
         TimeToFailure.logAction();
+        deleteAnExcessiveAmountOfUIGestureHTMLFiles();
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
@@ -253,8 +254,8 @@ public class Installer extends ModuleInstall implements Runnable {
             try {
                 LogRecord userData = getUserData(log);
                 LogRecords.write(logStreamMetrics(), userData);
-                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
-                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
+                List<LogRecord> enabledRec = new ArrayList<>();
+                List<LogRecord> disabledRec = new ArrayList<>();
                 getModuleList(log, enabledRec, disabledRec);
                 for (LogRecord rec : enabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
@@ -285,6 +286,27 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
+    private static void deleteAnExcessiveAmountOfUIGestureHTMLFiles() {
+        String tmpDirStr = System.getProperty("java.io.tmpdir");                // NOI18N
+        if (tmpDirStr == null) {
+            return ;
+        }
+        File tmpDir = new File(tmpDirStr);
+        String[] list = tmpDir.list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.startsWith("uigesture") && name.endsWith(".html"); // NOI18N
+                            }
+                        });
+        if (list == null || list.length < 10) {
+            // Ignore the few files.
+            return ;
+        }
+        for (String tempFile : list) {
+            new File(tmpDir, tempFile).delete();
+        }
+    }
+
     /** Accessed from tests. */
     static int getLogsSizeTest() {
         return logsSize;
@@ -443,7 +465,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (logOverflow) {
                     closeLogStream();
                     if (isHintsMode()) {
-                        logs = new ArrayList<LogRecord>(getLogs());
+                        logs = new ArrayList<>(getLogs());
                     }
                 }
                 logSizeControl = (logsSize % 100) == 0 && !logOverflow;
@@ -499,7 +521,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static LogRecord getUserData (Logger logger) {
         LogRecord userData;
-        ArrayList<String> params = new ArrayList<String>();
+        ArrayList<String> params = new ArrayList<>();
         params.add(Submit.getOS());
         params.add(Submit.getVM());
         params.add(Submit.getVersion());
@@ -632,8 +654,8 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static void getModuleList (Logger logger, List<LogRecord> enabledRec, List<LogRecord> disabledRec) {
-        List<ModuleInfo> enabled = new ArrayList<ModuleInfo>();
-        List<ModuleInfo> disabled = new ArrayList<ModuleInfo>();
+        List<ModuleInfo> enabled = new ArrayList<>();
+        List<ModuleInfo> disabled = new ArrayList<>();
         for (ModuleInfo m : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
             if (m.isEnabled()) {
                 enabled.add(m);
@@ -725,7 +747,9 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
             if (!fileContentReported) {
                 try {
-                    LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f));
+                    if (LOG.isLoggable(Level.INFO)) {
+                        LOG.log(Level.INFO, "Problematic file content = {0}", reportFileContent(f));
+                    }
                 } finally {
                     fileContentReported = true;
                 }
@@ -735,7 +759,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     static List<LogRecord> getLogs() {
         class H extends Handler {
-            List<LogRecord> logs = new LinkedList<LogRecord>();
+            List<LogRecord> logs = new LinkedList<>();
 
             @Override
             public void publish(LogRecord r) {
@@ -762,7 +786,7 @@ public class Installer extends ModuleInstall implements Runnable {
         synchronized (METRICS_LOG_LOCK) {
         
             class H extends Handler {
-                List<LogRecord> logs = new LinkedList<LogRecord>();
+                List<LogRecord> logs = new LinkedList<>();
 
                 @Override
                 public void publish(LogRecord r) {
@@ -789,7 +813,9 @@ public class Installer extends ModuleInstall implements Runnable {
                     );
                     if (!fileContentReported) {
                         try {
-                            LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f1));
+                            if (LOG.isLoggable(Level.INFO)) {
+                                LOG.log(Level.INFO, "Problematic file content = {0}", reportFileContent(f1));
+                            }
                         } finally {
                             fileContentReported = true;
                         }
@@ -954,7 +980,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
     
-    private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
+    private static AtomicReference<String> DISPLAYING = new AtomicReference<>();
 
     static boolean displaySummary(String msg, boolean explicit, boolean auto,
                                   boolean connectDialog, DataType dataType,
@@ -1167,6 +1193,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         if (!fileProtocol) {
+            assert conn != null;
             if (conn instanceof HttpURLConnection) {
                 ((HttpURLConnection) conn).setChunkedStreamingMode(0);
             }
@@ -1188,6 +1215,7 @@ public class Installer extends ModuleInstall implements Runnable {
         if (fileProtocol) {
             os = new PrintStream(new FileOutputStream(postURL.getFile()));
         } else {
+            assert conn != null;
             os = new PrintStream(conn.getOutputStream());
         }
         /*
@@ -1252,19 +1280,19 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Type: x-application/heap");
             os.println();
             GZIPOutputStream gzip = new GZIPOutputStream(os);
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f));
-            byte[] heapDumpData = new byte[8192];
-            int read;
-            int workunit;
-            while ((read = bis.read(heapDumpData)) != -1){
-                gzip.write(heapDumpData, 0, read);
-                alreadyWritten += read;
-                workunit = (int)(alreadyWritten / progressUnit);
-                if(workunit < 1000) {
-                    h.progress(70 + workunit);
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(f))) {
+                byte[] heapDumpData = new byte[8192];
+                int read;
+                int workunit;
+                while ((read = bis.read(heapDumpData)) != -1){
+                    gzip.write(heapDumpData, 0, read);
+                    alreadyWritten += read;
+                    workunit = (int)(alreadyWritten / progressUnit);
+                    if(workunit < 1000) {
+                        h.progress(70 + workunit);
+                    }
                 }
             }
-            bis.close();
             gzip.finish();
             os.println();
             os.println("\n----------konec<>bloku");
@@ -1316,6 +1344,7 @@ public class Installer extends ModuleInstall implements Runnable {
         StringBuffer redir = null;
         Matcher m = null;
         if (!fileProtocol) {
+            assert conn != null;
             LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
             if (conn instanceof HttpURLConnection) {
                 int responseCode = ((HttpURLConnection) conn).getResponseCode();
@@ -1325,16 +1354,16 @@ public class Installer extends ModuleInstall implements Runnable {
                     throw new ResponseException(responseMessage);
                 }
             }
-            InputStream is = conn.getInputStream();
-            redir = new StringBuffer();
-            for (;;) {
-                int ch = is.read();
-                if (ch == -1) {
-                    break;
+            try (InputStream is = conn.getInputStream()) {
+                redir = new StringBuffer();
+                for (;;) {
+                    int ch = is.read();
+                    if (ch == -1) {
+                        break;
+                    }
+                    redir.append((char)ch);
                 }
-                redir.append((char)ch);
             }
-            is.close();
 
             if (dataType != DataType.DATA_METRICS) {
                 h.progress(cnt + 20);
@@ -1363,15 +1392,17 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         if (!fileProtocol) {
+            assert m != null;
             if (m.find()) {
                 LOG.log(Level.FINE, "uploadLogs, found url = {0}", m.group(1)); // NOI18N
                 return new URL(m.group(1));
             } else {
+                assert redir != null;
                 File f = File.createTempFile("uipage", "html");
                 f.deleteOnExit();
-                FileWriter w = new FileWriter(f);
-                w.write(redir.toString());
-                w.close();
+                try (FileWriter w = new FileWriter(f)) {
+                    w.write(redir.toString());
+                }
                 LOG.log(Level.FINE, "uploadLogs, temporary url = {0}", Utilities.toURI(f)); // NOI18N
                 return Utilities.toURI(f).toURL();
             }
@@ -1474,9 +1505,7 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static void uploadGZFile(PrintStream os, File f) throws IOException {
         GZIPOutputStream gzip = new GZIPOutputStream(os);
-        BufferedInputStream is = null;
-        try {
-            is = new BufferedInputStream(new FileInputStream(f));
+        try (BufferedInputStream is = new BufferedInputStream(new FileInputStream(f))) {
             byte[] buffer = new byte[4096];
             int readLength = is.read(buffer);
             while (readLength != -1){
@@ -1484,9 +1513,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 readLength = is.read(buffer);
             }
         } finally {
-            if (is != null) {
-                is.close();
-            }
             gzip.finish();
         }
     }
@@ -1609,7 +1635,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType == DataType.DATA_METRICS) {
                     this.recs = getLogsMetrics();
                 } else {
-                    this.recs = new ArrayList<LogRecord>(getLogs());
+                    this.recs = new ArrayList<>(getLogs());
                 }
             }
             if ("ERROR_URL".equals(msg)) { // NOI18N
@@ -1701,35 +1727,34 @@ public class Installer extends ModuleInstall implements Runnable {
                     conn.setConnectTimeout(5000);
                     tmp = File.createTempFile("uigesture", ".html");
                     tmp.deleteOnExit();
-                    FileOutputStream os = new FileOutputStream(tmp);
-                    connURL = conn.getURL().toExternalForm();
-                    Map<String, String> replacements = new HashMap<String, String>();
-                    String errURL = (errorURL == null) ? "" : errorURL;
-                    replacements.put("{org.netbeans.modules.uihandler.LoadURL}", errURL);
-                    String errMsg = (errorMessage == null) ? "" : errorMessage;
-                    replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
-                    if(conn instanceof HttpsURLConnection){
-                        Installer.initSSL((HttpsURLConnection) conn);
-                    }
-                    //for HTTP or HTTPS: conenct and read response - redirection or not?
-                    if (conn instanceof HttpURLConnection){
-                        conn.connect();
-                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
-                            // in case of redirection, try to obtain new URL
-                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
-                            if( null != redirUrl && !redirUrl.isEmpty() ) {
-                                //create connection to redirected url and substitute original conn
-                                URL redirectedUrl = new URL(redirUrl);
-                                URLConnection connRedir = redirectedUrl.openConnection();
-                                connRedir.setRequestProperty("User-Agent", "NetBeans");
-                                connRedir.setConnectTimeout(5000);
-                                conn = (HttpURLConnection) connRedir;
+                    try (FileOutputStream os = new FileOutputStream(tmp)) {
+                        Map<String, String> replacements = new HashMap<>();
+                        String errURL = (errorURL == null) ? "" : errorURL;
+                        replacements.put("{org.netbeans.modules.uihandler.LoadURL}", errURL);
+                        String errMsg = (errorMessage == null) ? "" : errorMessage;
+                        replacements.put("{org.netbeans.modules.uihandler.LoadError}", errMsg);
+                        if(conn instanceof HttpsURLConnection){
+                            Installer.initSSL((HttpsURLConnection) conn);
+                        }
+                        //for HTTP or HTTPS: conenct and read response - redirection or not?
+                        if (conn instanceof HttpURLConnection){
+                            conn.connect();
+                            if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP ) {
+                                // in case of redirection, try to obtain new URL
+                                String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                                if( null != redirUrl && !redirUrl.isEmpty() ) {
+                                    //create connection to redirected url and substitute original conn
+                                    URL redirectedUrl = new URL(redirUrl);
+                                    URLConnection connRedir = redirectedUrl.openConnection();
+                                    connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                    connRedir.setConnectTimeout(5000);
+                                    conn = (HttpURLConnection) connRedir;
+                                }
                             }
                         }
+                        copyWithEncoding(conn.getInputStream(), os, replacements);
+                        connURL = conn.getURL().toExternalForm(); // URL could change by redirect
                     }
-                    copyWithEncoding(conn.getInputStream(), os, replacements);
-                    connURL = conn.getURL().toExternalForm(); // URL could change by redirect
-                    os.close();
                     conn.getInputStream().close();
                     LOG.log(Level.FINE, "doShow, all read from = {0}", connURL); // NOI18N
                     /* //Temporary logging to investigate #141497
@@ -1739,18 +1764,16 @@ public class Installer extends ModuleInstall implements Runnable {
                     sb.append("Content:\n").append(new String(arr)).append("\nEnd of Content");
                     is.close();
                     *///End
-                    InputStream is = new FileInputStream(tmp);
-                    DialogDescriptor dd = findDD();
-                    parseButtons(is, exitMsg, dd);
-                    LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
-                    alterMessage(dd);
-                    is.close();
+                    try (InputStream is = new FileInputStream(tmp)) {
+                        DialogDescriptor dd = findDD();
+                        parseButtons(is, exitMsg, dd);
+                        LOG.log(Level.FINE, "doShow, parsing buttons: {0}", Arrays.toString(dd.getOptions())); // NOI18N
+                        alterMessage(dd);
+                    }
                     url = Utilities.toURI(tmp).toURL();
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                } catch (InvocationTargetException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                } catch (ParserConfigurationException ex) {
+                } catch (InterruptedException |
+                         InvocationTargetException |
+                         ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
                     boolean doContinue = catchParsingProblem(ex, connURL);
@@ -1758,52 +1781,18 @@ public class Installer extends ModuleInstall implements Runnable {
                     if (doContinue) {
                         if (tmp != null) {
                             tmp.delete();
-                            tmp = null;
                         }
                         continue;
                     }
-                } catch (IllegalStateException ex){
+                } catch (IllegalStateException |
+                         java.net.SocketTimeoutException |
+                         UnknownHostException |
+                         NoRouteToHostException |
+                         ConnectException ex) {
                     boolean doContinue = catchConnectionProblem(ex);
                     if (doContinue) {
                         if (tmp != null) {
                             tmp.delete();
-                            tmp = null;
-                        }
-                        continue;
-                    }
-                } catch (java.net.SocketTimeoutException ex) {
-                    boolean doContinue = catchConnectionProblem(ex);
-                    if (doContinue) {
-                        if (tmp != null) {
-                            tmp.delete();
-                            tmp = null;
-                        }
-                        continue;
-                    }
-                } catch (UnknownHostException ex) {
-                    boolean doContinue = catchConnectionProblem(ex);
-                    if (doContinue) {
-                        if (tmp != null) {
-                            tmp.delete();
-                            tmp = null;
-                        }
-                        continue;
-                    }
-                } catch (NoRouteToHostException ex) {
-                    boolean doContinue = catchConnectionProblem(ex);
-                    if (doContinue) {
-                        if (tmp != null) {
-                            tmp.delete();
-                            tmp = null;
-                        }
-                        continue;
-                    }
-                } catch (ConnectException ex) {
-                    boolean doContinue = catchConnectionProblem(ex);
-                    if (doContinue) {
-                        if (tmp != null) {
-                            tmp.delete();
-                            tmp = null;
                         }
                         continue;
                     }
@@ -1813,7 +1802,6 @@ public class Installer extends ModuleInstall implements Runnable {
                         if (doContinue) {
                             if (tmp != null) {
                                 tmp.delete();
-                                tmp = null;
                             }
                             firstRound = false;
                             continue;
@@ -2064,7 +2052,6 @@ public class Installer extends ModuleInstall implements Runnable {
             if (Button.EXIT.isCommand(e.getActionCommand())) {
                 // this should close the descriptor
                 doCloseDialog();
-                return;
             }
         }
 
@@ -2152,7 +2139,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         protected final LogRecord getUserData(boolean openPasswd, ReportPanel panel) {
             LogRecord userData;
-            ArrayList<String> params = new ArrayList<String>(6);
+            ArrayList<String> params = new ArrayList<>(6);
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
@@ -2343,9 +2330,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         d = DialogDisplayer.getDefault().createDialog(descr);
                     }
                 });
-            } catch (InterruptedException ex) {
-                throw new IllegalStateException(ex);
-            } catch (InvocationTargetException ex) {
+            } catch (InterruptedException | InvocationTargetException ex) {
                 throw new IllegalStateException(ex);
             }
             assert d != null;
@@ -2400,8 +2385,8 @@ public class Installer extends ModuleInstall implements Runnable {
                     panel.setText(panelContent.toString());
                     panel.getExplorerManager().setRootContext(root);
                 } else {
-                    List<LogRecord> displayedRecords = new ArrayList<LogRecord>(recs);
-                    LinkedList<Node> nodes = new LinkedList<Node>();
+                    List<LogRecord> displayedRecords = new ArrayList<>(recs);
+                    LinkedList<Node> nodes = new LinkedList<>();
                     root.setName("root"); // NOI18N
                     root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", displayedRecords.size() + 1, new Date()));
                     root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
@@ -2448,7 +2433,7 @@ public class Installer extends ModuleInstall implements Runnable {
             Object[] closingOption = new Object[] { DialogDescriptor.CANCEL_OPTION  };
             viewDD.setOptions(closingOption);
             viewDD.setClosingOptions(closingOption);
-            List<Object> additionalButtons = new ArrayList<Object>();
+            List<Object> additionalButtons = new ArrayList<>();
             if (slownData != null){
                 JButton slownButton = new JButton();
                 org.openide.awt.Mnemonics.setLocalizedText(slownButton, 
@@ -2485,9 +2470,9 @@ public class Installer extends ModuleInstall implements Runnable {
              try { 
                  tempFile = File.createTempFile("selfsampler", ".npss"); // NOI18N
                  tempFile = FileUtil.normalizeFile(tempFile);
-                 OutputStream os = new FileOutputStream(tempFile);
-                 os.write(slownData.getNpsContent());
-                 os.close();
+                 try (OutputStream os = new FileOutputStream(tempFile)) {
+                     os.write(slownData.getNpsContent());
+                 }
 
                  File varLogs = logsDirectory();
                  File gestures = (varLogs != null) ? new File(varLogs, "uigestures") : null; // NOI18N
@@ -2564,9 +2549,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     } else {
                         params.add("*********");// NOI18N
                     }
-                } catch (GeneralSecurityException exc) {
-                    LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
-                } catch (IOException exc) {
+                } catch (GeneralSecurityException | IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 }
             }
@@ -2601,9 +2584,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         d.setVisible(true);
                     }
                 });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
+            } catch (InterruptedException | InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
             synchronized (this){
@@ -2727,9 +2708,7 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                     }
                 });
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (InvocationTargetException ex) {
+            } catch (InterruptedException | InvocationTargetException ex) {
                 Exceptions.printStackTrace(ex);
             }
             return DialogDescriptor.CLOSED_OPTION;

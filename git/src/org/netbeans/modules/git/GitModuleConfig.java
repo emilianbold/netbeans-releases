@@ -86,7 +86,7 @@ public final class GitModuleConfig {
     private static final String SHOW_CLONE_COMPLETED    = "cloneCompleted.showCloneCompleted";        // NOI18N  
     private static final String GURI_PASSWORD           = "guri_password";
     private static final String GURI_PASSPHRASE           = "guri_passphrase";
-    
+    private static final String PROP_DIFF_VIEW_MODE = "diffViewMode"; //NOI18N
     private static final String DELIMITER               = "<=~=>";              // NOI18N
     private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
@@ -454,6 +454,14 @@ public final class GitModuleConfig {
             guriString = guri.setUser(null).setPass(null).toString();
         }
         return guriString;
+    }
+
+    public int getDiffViewMode (int def) {
+        return getPreferences().getInt(PROP_DIFF_VIEW_MODE, def);
+    }
+
+    public void setDiffViewMode (int value) {
+        getPreferences().putInt(PROP_DIFF_VIEW_MODE, value);
     }
     
     private static class GitConnectionSettingsEntry {

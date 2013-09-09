@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -55,12 +56,15 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.*;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.index.*;
 import org.apache.maven.index.artifact.ArtifactPackagingMapper;
+import org.apache.maven.index.context.DefaultIndexingContext;
 import org.apache.maven.index.context.IndexCreator;
+import org.apache.maven.index.context.IndexUtils;
 import org.apache.maven.index.context.IndexingContext;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.apache.maven.index.search.grouping.GGrouping;
@@ -86,6 +90,7 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.component.repository.ComponentRequirement;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.SuppressWarnings;
@@ -161,10 +166,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     }     
 
     private PlexusContainer embedder;
-    private NexusIndexer indexer;
+    private Indexer indexer;
+    private org.apache.maven.index.Scanner scanner;
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
+    private final Map<String, IndexingContext> indexingContexts = new ConcurrentHashMap<String, IndexingContext>();
+    
     private boolean inited = false;
     /**
      * any reads, writes from/to index shal be done under mutex access.
@@ -223,8 +231,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 req.setRole(ArtifactPackagingMapper.class.getName());
                 desc.addRequirement(req);
                 embedder.addComponentDescriptor(desc);
-
-                indexer = embedder.lookup(NexusIndexer.class);
+                indexer = embedder.lookup(Indexer.class);
+                scanner = embedder.lookup(org.apache.maven.index.Scanner.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
@@ -234,6 +242,34 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         }
     }
+    
+    public Map<String, IndexingContext> getIndexingContexts()
+    {
+        return Collections.unmodifiableMap( indexingContexts );
+    }
+    
+    //TODO try to experiment with the non-forced version of the context addition
+    public IndexingContext addIndexingContextForced( String id, String repositoryId, File repository,
+        File indexDirectory, String repositoryUrl, String indexUpdateUrl,
+        List<? extends IndexCreator> indexers )
+        throws IOException
+    {
+        IndexingContext context =
+            indexer.createIndexingContext( id, repositoryId, repository, indexDirectory, repositoryUrl, indexUpdateUrl,
+                                           true, true, indexers );
+        indexingContexts.put( context.getId(), context );
+        return context;
+    } 
+    
+    public void removeIndexingContext( IndexingContext context, boolean deleteFiles )
+        throws IOException
+    {
+        if ( indexingContexts.containsKey( context.getId() ) )
+        {
+            indexingContexts.remove( context.getId() );
+            indexer.closeIndexingContext( context, deleteFiles );
+        }
+    }    
 
     private boolean loadIndexingContext2(final RepositoryInfo info) throws IOException {
         boolean index = false;
@@ -241,7 +277,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             assert getRepoMutex(info).isWriteAccess();
             initIndexer();
 
-            IndexingContext context = indexer.getIndexingContexts().get(info.getId());
+            IndexingContext context = getIndexingContexts().get(info.getId());
             String indexUpdateUrl = info.getIndexUpdateUrl();
             if (context != null) {
                 String contexturl = context.getIndexUpdateUrl();
@@ -284,7 +320,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     creators.add(new NotifyingIndexCreator());
                 }
                 try {
-                    indexer.addIndexingContextForced(
+                    addIndexingContextForced(
                             info.getId(), // context id
                             info.getId(), // repository id
                             info.isLocal() ? new File(info.getRepositoryPath()) : null, // repository folder
@@ -294,7 +330,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             creators);
                     LOGGER.log(Level.FINE, "using index creators: {0}", creators);
                 } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "Found a broken index at " + loc + " with loaded contexts " + indexer.getIndexingContexts().keySet(), ex);
+                    LOGGER.log(Level.INFO, "Found a broken index at " + loc + " with loaded contexts " + getIndexingContexts().keySet(), ex);
                     break LOAD;
                 }
                 }
@@ -304,7 +340,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         for (RepositoryInfo info2 : RepositoryPreferences.getInstance().getRepositoryInfos()) {
             currents.add(info2.getId());
         }
-        Set<String> toRemove = new HashSet<String>(indexer.getIndexingContexts().keySet());
+        Set<String> toRemove = new HashSet<String>(getIndexingContexts().keySet());
         toRemove.removeAll(currents);
         if (!toRemove.isEmpty()) {
             for (final String repo : toRemove) {
@@ -375,9 +411,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private void unloadIndexingContext(final String repo) throws IOException {
         assert getRepoMutex(repo).isWriteAccess();
         LOGGER.log(Level.FINE, "Unloading Context: {0}", repo);
-        IndexingContext ic = indexer.getIndexingContexts().get(repo);
+        IndexingContext ic = getIndexingContexts().get(repo);
         if (ic != null) {
-            indexer.removeIndexingContext(ic, false);
+            removeIndexingContext(ic, false);
         }
     }
 
@@ -388,8 +424,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             indexingMutexes.add(mutex);
         }
         try {
-            Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
-            IndexingContext indexingContext = indexingContexts.get(repo.getId());
+            IndexingContext indexingContext = getIndexingContexts().get(repo.getId());
             if (indexingContext == null) {
                 LOGGER.log(Level.WARNING, "Indexing context could not be found: {0}", repo.getId());
                 return;
@@ -466,7 +501,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 } else {
                     RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
                     try {
-                        indexer.scan(indexingContext, listener, updateLocal);
+                        scan(indexingContext, null, listener, updateLocal);
                     } finally {
                         listener.close();
                     }
@@ -534,15 +569,91 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         // Do not acquire write access since that can block waiting for a hung download.
         try {
             if (inited) {
-                for (IndexingContext ic : indexer.getIndexingContexts().values()) {
+                for (IndexingContext ic : getIndexingContexts().values()) {
                     LOGGER.log(Level.FINER, "Shutting Down: {0}", ic.getId());
-                    indexer.removeIndexingContext(ic, false);
+                    removeIndexingContext(ic, false);
                 }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+/**
+     * Uses {@link Scanner} to scan repository content. A {@link ArtifactScanningListener} is used to process found
+     * artifacts and to add them to the index using
+     * {@link NexusIndexer#artifactDiscovered(ArtifactContext, IndexingContext)}.
+     *
+     * @see DefaultScannerListener
+     * @see #artifactDiscovered(ArtifactContext, IndexingContext)
+     */
+    private void scan( final IndexingContext context, final String fromPath, final ArtifactScanningListener listener,
+        final boolean update )
+        throws IOException
+    {
+        final File repositoryDirectory = context.getRepository();
+        if ( repositoryDirectory == null )
+        {
+            // nothing to scan
+            return;
+        }
+ 
+        if ( !repositoryDirectory.exists() )
+        {
+            throw new IOException( "Repository directory " + repositoryDirectory + " does not exist" );
+        }
+ 
+        // always use temporary context when reindexing
+        final File tmpFile = File.createTempFile( context.getId() + "-tmp", "" );
+        final File tmpDir = new File( tmpFile.getParentFile(), tmpFile.getName() + ".dir" );
+        if ( !tmpDir.mkdirs() )
+        {
+            throw new IOException( "Cannot create temporary directory: " + tmpDir );
+        }
+ 
+        IndexingContext tmpContext = null;
+        try
+        {
+            final FSDirectory directory = FSDirectory.open( tmpDir );
+            if ( update )
+            {
+                IndexUtils.copyDirectory( context.getIndexDirectory(), directory );
+            }
+            tmpContext = new DefaultIndexingContext( context.getId() + "-tmp", //
+                                                     context.getRepositoryId(), //
+                                                     context.getRepository(), //
+                                                     directory, //
+                                                     context.getRepositoryUrl(), //
+                                                     context.getIndexUpdateUrl(), //
+                                                     context.getIndexCreators(), //
+                                                     true );
+ 
+            scanner.scan( new ScanningRequest( tmpContext, //
+                                               new DefaultScannerListener( tmpContext, embedder.lookup(IndexerEngine.class),
+                                                                           update, listener ), fromPath ) );
+ 
+            tmpContext.updateTimestamp( true );
+            context.replace( tmpContext.getIndexDirectory() );
+        }
+        catch ( Exception ex )
+        {
+            throw new IOException("Error scanning context " + context.getId() + ": " + ex, ex);
+        }
+        finally
+        {
+            if ( tmpContext != null )
+            {
+                tmpContext.close( true );
+            }
+ 
+            if ( tmpFile.exists() )
+            {
+                tmpFile.delete();
+            }
+ 
+            FileUtils.deleteDirectory( tmpDir );
+        }
+    }    
 
     @Override
     public void updateIndexWithArtifacts(final RepositoryInfo repo, final Collection<Artifact> artifacts) {
@@ -559,7 +670,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             return null;
                         }    
                     }
-                    Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
+                    Map<String, IndexingContext> indexingContexts = getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
                         LOGGER.log(Level.WARNING, "Indexing context could not be created: {0}", repo.getId());
@@ -605,7 +716,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     //                            System.out.println("ac info=" + ac.getArtifactInfo());
     //                                assert indexingContext.getIndexSearcher() != null;
                                 try {
-                                    indexer.addArtifactToIndex(ac, indexingContext);
+                                    //TODO batch addition??
+                                    indexer.addArtifactsToIndex(Collections.singleton(ac), indexingContext);
                                 } catch (ZipError err) {
                                     LOGGER.log(Level.INFO, "#230581 concurrent access to local repository file. Skipping..", err);
                                 }
@@ -641,7 +753,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             return null;
                         }
                     }
-                    Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
+                    Map<String, IndexingContext> indexingContexts = getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
                         LOGGER.log(Level.WARNING, "Indexing context could not be created: {0}", repo.getId());
@@ -668,7 +780,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     pomPath += "pom"; //NOI18N
                     File pom = new File(pomPath);
                     if (pom.exists()) {
-                        indexer.deleteArtifactFromIndex(contextProducer.getArtifactContext(indexingContext, pom), indexingContext);
+                        //TODO batch removal??
+                        indexer.deleteArtifactsFromIndex(Collections.singleton(contextProducer.getArtifactContext(indexingContext, pom)), indexingContext);
                     }
                     return null;
                 }
@@ -735,7 +848,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             spawnIndexLoadedRepo(repo);
                             return null;
                         }
-                        IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
+                        IndexingContext context = getIndexingContexts().get(repo.getId());
                         if (context == null) {
                             if (skipUnIndexed) {
                                 actionSkip.run(repo, null);

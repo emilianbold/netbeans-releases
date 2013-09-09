@@ -42,8 +42,16 @@
 
 package org.netbeans.modules.versioning.util.status;
 
+import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.nodes.AbstractNode;
@@ -110,6 +118,15 @@ public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode 
 
         @Override
         public abstract T getValue ();
+        
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            try {
+                return new NodePropertyEditor(getValue());
+            } catch (Exception e) {
+                return super.getPropertyEditor();
+            }
+        }
     }
 
     public static class PathProperty extends NodeProperty<String> {
@@ -166,6 +183,36 @@ public abstract class VCSStatusNode<T extends VCSFileNode> extends AbstractNode 
         public String getValue () {
             VCSFileInformation finfo =  fileNode.getInformation();
             return finfo.getStatusText();
+        }
+    }
+    
+    private static class NodePropertyEditor extends PropertyEditorSupport {
+
+        private static final JLabel renderer = new JLabel();
+
+        static {
+            renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+        }
+
+        public NodePropertyEditor (Object value) {
+            setValue(value);
+        }
+
+        @Override
+        public void paintValue (Graphics gfx, Rectangle box) {
+            renderer.setForeground(gfx.getColor());
+            Object val = getValue();
+            if (val instanceof Date) {
+                val = DateFormat.getDateTimeInstance().format((Date) val);
+            }
+            renderer.setText(val.toString());
+            renderer.setBounds(box);
+            renderer.paint(gfx);
+        }
+
+        @Override
+        public boolean isPaintable() {
+            return true;
         }
     }
 }
