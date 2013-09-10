@@ -89,7 +89,13 @@ public class CreateJREPanel extends javax.swing.JPanel {
         jreCreateLocation.getDocument().addDocumentListener(docListener);
         remoteJREPath.getDocument().addDocumentListener(docListener);
         labelRemoteJREInfo.setText(NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelRemoteJREInfo.text", username, host)); //NOI18N
-        remoteJREPath.setText(NbBundle.getMessage(CreateJREPanel.class, "LBL_JRE_Path_Default", username)); //NOI18N
+        if (username == null || host == null) {
+            labelRemoteJREPath.setVisible(false);
+            remoteJREPath.setVisible(false);
+            labelRemoteJREInfo.setVisible(false);
+        } else {
+            remoteJREPath.setText(NbBundle.getMessage(CreateJREPanel.class, "LBL_JRE_Path_Default", username)); //NOI18N
+        }
         validatePanel();
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -175,7 +181,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
             valid = false;
             return;
         }
-        if (remoteJREPath.getText().isEmpty()) {
+        if (remoteJREPath.isVisible() && remoteJREPath.getText().isEmpty()) {
             labelError.setText(NbBundle.getMessage(CreateJREPanel.class, "ERROR_JRE_Path")); //NOI18N
             valid = false;
             return;
@@ -232,6 +238,11 @@ public class CreateJREPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(labelProfile, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelProfile.text")); // NOI18N
 
         comboBoxProfile.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Compact1", "Compact2", "Compact3", "Full JRE" }));
+        comboBoxProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxProfileActionPerformed(evt);
+            }
+        });
 
         comboBoxVM.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Minimal", "Client", "Server", "All" }));
 
@@ -410,6 +421,16 @@ public class CreateJREPanel extends javax.swing.JPanel {
             jreCreateLocation.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_buttonBrowseActionPerformed
+
+    private void comboBoxProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxProfileActionPerformed
+        if (comboBoxProfile.getSelectedIndex() == 0 || comboBoxProfile.getSelectedIndex() == 1) {
+            comboBoxVM.setSelectedIndex(0);
+        } else if (comboBoxProfile.getSelectedIndex() == 2) {
+            comboBoxVM.setSelectedIndex(1);
+        } else if (comboBoxProfile.getSelectedIndex() == 3) {
+            comboBoxVM.setSelectedIndex(3);
+        }
+    }//GEN-LAST:event_comboBoxProfileActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
     private javax.swing.JCheckBox checkBoxCharsets;
