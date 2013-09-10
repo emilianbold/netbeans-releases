@@ -72,10 +72,11 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
@@ -205,9 +206,9 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(
                 this,
                 jpm));
-            J2SEPropertyEvaluator evalProvider = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            if (evalProvider != null) {
-                evalProvider.evaluator().addPropertyChangeListener(this);
+            J2SEProject j2sePrj = project.getLookup().lookup(J2SEProject.class);
+            if (j2sePrj != null) {
+                j2sePrj.evaluator().addPropertyChangeListener(this);
             } else {
                 LOG.log(
                    Level.WARNING,
@@ -310,6 +311,15 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
             }
         }
         return null;
+    }
+
+    @NonNull
+    static SourceLevelQuery.Profile getPlatformProfile(@NonNull final JavaPlatform jp) {
+        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(jp.getProperties().get("netbeans.java.profile"));   //NOI18N
+        if (profile == null) {
+            profile = SourceLevelQuery.Profile.DEFAULT;
+        }
+        return profile;
     }
 
     static final class InvalidPlatformData {
@@ -419,13 +429,18 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
                     null,
                     null);
             if (DialogDisplayer.getDefault().notify(dd) == okButton) {
+                final boolean isSourceLevelChange = panel.isDowngradeSourceLevel();
                 final String newPlatformId = panel.isSpecificPlatform() ?
                     panel.getRuntimePlatform().getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME) :
                     null;
                 final FutureTask<Result> res = new FutureTask<>(new Callable<Result>() {
                     @Override
                     public Result call() throws Exception {
-                        return resolveImpl(newPlatformId);
+                        if (isSourceLevelChange) {
+                            return resolveSourceLevelImpl(data.second().jp);
+                        } else {
+                            return resolvePlatformImpl(newPlatformId);
+                        }
                     }
                 });
                 RP.post(res);
@@ -466,7 +481,7 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
         }
 
         @NonNull
-        private Result resolveImpl(@NullAllowed final String newPlatformId) throws Exception {
+        private Result resolvePlatformImpl(@NullAllowed final String newPlatformId) throws Exception {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Result>() {
                 @Override
                 public Result run() throws Exception {
@@ -494,6 +509,30 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
                                 return Result.create(Status.RESOLVED);
                             }
                         }
+                    }
+                    return Result.create(Status.UNRESOLVED);
+                }
+            });
+        }
+
+        @NonNull
+        private Result resolveSourceLevelImpl(@NonNull final JavaPlatform jp) throws Exception {
+            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Result>() {
+                @Override
+                public Result run() throws Exception {
+                    final J2SEProject j2sePrj = prj.getLookup().lookup(J2SEProject.class);
+                    if (j2sePrj != null) {
+                        final EditableProperties props = j2sePrj.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        props.setProperty(J2SEProjectProperties.JAVAC_SOURCE, jp.getSpecification().getVersion().toString());
+                        props.setProperty(J2SEProjectProperties.JAVAC_TARGET, jp.getSpecification().getVersion().toString());
+                        final SourceLevelQuery.Profile profile = getPlatformProfile(jp);
+                        if (profile == SourceLevelQuery.Profile.DEFAULT) {
+                            props.remove(J2SEProjectProperties.JAVAC_PROFILE);
+                        } else {
+                            props.setProperty(J2SEProjectProperties.JAVAC_PROFILE, profile.getName());
+                        }
+                        j2sePrj.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        ProjectManager.getDefault().saveProject(prj);
                     }
                     return Result.create(Status.UNRESOLVED);
                 }
