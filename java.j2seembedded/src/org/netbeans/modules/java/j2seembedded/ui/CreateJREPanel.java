@@ -54,6 +54,8 @@ import org.openide.util.NbBundle;
  */
 public class CreateJREPanel extends javax.swing.JPanel {
 
+    private boolean valid = false;
+
     public CreateJREPanel(String username, String host) {
         initComponents();
 
@@ -91,13 +93,16 @@ public class CreateJREPanel extends javax.swing.JPanel {
     private void validatePanel() {
         if (jreCreateLocation.getText().isEmpty()) {
             labelError.setText(NbBundle.getMessage(CreateJREPanel.class, "ERROR_JRE_Create")); //NOI18N
+            valid = false;
             return;
         }
         if (remoteJREPath.getText().isEmpty()) {
             labelError.setText(NbBundle.getMessage(CreateJREPanel.class, "ERROR_JRE_Path")); //NOI18N
+            valid = false;
             return;
         }
         labelError.setText(null);
+        valid = true;
     }
 
     /**
@@ -408,5 +413,9 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
     public boolean isNashorn() {
         return checkBoxNashorn.isSelected();
+    }
+
+    public boolean isPanelValid() {
+        return valid;
     }
 }

@@ -456,6 +456,15 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
             return;
         }
+        CreateJREPanel panel = (CreateJREPanel) d.getMessage();
+        if (!panel.isPanelValid()) {
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Invalid_CreateJREPanel"),
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return;
+        }
+        jreLocation.setText(panel.getRemoteJREPath());
     }//GEN-LAST:event_buttonCreateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
