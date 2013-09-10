@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.callgraph.impl;
+package org.netbeans.modules.cnd.callgraph.support;
 
 import java.awt.Dimension;
 import java.awt.Point;
