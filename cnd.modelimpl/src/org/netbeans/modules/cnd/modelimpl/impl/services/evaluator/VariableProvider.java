@@ -102,6 +102,7 @@ public class VariableProvider {
     
     public VariableProvider(int level) {
         this.level = level;
+        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITHOUT MAP HIERARCHY\n"); // NOI18N
     }
     
     public VariableProvider(CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping, CsmFile variableFile, int variableStartOffset, int variableEndOffset, int level) {
@@ -111,6 +112,7 @@ public class VariableProvider {
         this.variableStartOffset = variableStartOffset;
         this.variableEndOffset = variableEndOffset;
         this.level = level;
+        LOG.log(Level.FINE, "\nVARIABLE PROVIDER CREATED WITH MAP HIERARCHY:\n{0}\n", mapping); // NOI18N
     }    
 
     public int getValue(String variableName) {
