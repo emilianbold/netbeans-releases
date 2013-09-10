@@ -53,12 +53,16 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Roman Svitanic
+ * @author Tomas Zezula
  */
 public class CreateJREPanel extends javax.swing.JPanel {
 
@@ -104,11 +108,41 @@ public class CreateJREPanel extends javax.swing.JPanel {
     @CheckForNull
     public static List<String> configure(
             @NonNull File destFolder) {
+        Parameters.notNull("destFolder", destFolder);   //NOI18N
         CreateJREPanel panel = new CreateJREPanel(null, null);
+        return configureImpl(panel, destFolder);
+    }
+
+    @CheckForNull
+    public static Pair<List<String>,String> configure(
+        @NonNull final String userName,
+        @NonNull final String host,
+        @NonNull File destFolder) {
+        Parameters.notNull("destFolder", destFolder);   //NOI18N
+        Parameters.notNull("userName", userName);   //NOI18N
+        Parameters.notNull("host", host);   //NOI18N
+        final CreateJREPanel panel = new CreateJREPanel(userName, host);
+        final List<String> cmdLine = configureImpl(panel, destFolder);
+        return cmdLine == null ?
+            null :
+            Pair.<List<String>,String>of(cmdLine, panel.getRemoteJREPath());
+    }
+
+    @CheckForNull
+    private static List<String> configureImpl(
+        @NonNull final CreateJREPanel panel,
+        @NonNull final File destFolder) {
         DialogDescriptor dd = new DialogDescriptor(
             panel,
             NbBundle.getMessage(CreateJREPanel.class, "LBL_CreateJRETitle"));
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            if (!panel.isPanelValid()) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                    NbBundle.getMessage(CreateJREPanel.class, "ERROR_Invalid_CreateJREPanel"),
+                    NotifyDescriptor.WARNING_MESSAGE));
+                return null;
+            }
             final List<String> cmdLine = new ArrayList<>();
             final File ejdk = new File(panel.getJRECreateLocation());
             final File bin = new File (ejdk, "bin");   //NOI18N
