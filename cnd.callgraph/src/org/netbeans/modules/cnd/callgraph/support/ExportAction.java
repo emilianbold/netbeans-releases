@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.callgraph.impl;
+package org.netbeans.modules.cnd.callgraph.support;
 
 import java.awt.Dialog;
 import java.awt.Graphics2D;
@@ -69,9 +69,9 @@ import org.openide.util.actions.Presenter;
 public class ExportAction extends AbstractAction  implements Presenter.Popup {
 
     private static final String EXTENSION = "png"; // NOI18N
-    private Scene scene;
-    private JComponent parent;
-    private JMenuItem menuItem;
+    private final Scene scene;
+    private final JComponent parent;
+    private final JMenuItem menuItem;
     
     public ExportAction(Scene scene, JComponent parent) {
         this.scene = scene;
@@ -82,10 +82,12 @@ public class ExportAction extends AbstractAction  implements Presenter.Popup {
 
     }
 
+    @Override
     public JMenuItem getPopupPresenter() {
         return menuItem;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         print();
     }
@@ -137,7 +139,7 @@ public class ExportAction extends AbstractAction  implements Presenter.Popup {
         try {
             ImageIO.write(bi, EXTENSION, file);
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(System.err);
         }
     }
 
@@ -146,6 +148,7 @@ public class ExportAction extends AbstractAction  implements Presenter.Popup {
     }
 
     private static class MyFileFilter extends FileFilter {
+        @Override
         public boolean accept(File file) {
             if (file.isDirectory()) {
                 return true;
@@ -153,6 +156,7 @@ public class ExportAction extends AbstractAction  implements Presenter.Popup {
             return file.getName().toLowerCase().endsWith("."+EXTENSION); // NOI18N
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(ExportAction.class, "PNG"); // NOI18N
         }

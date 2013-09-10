@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.csl.api;
 
-import jdk.nashorn.internal.ir.Node;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Documentation;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
- * Can be returned by the {@link JsDocumentationFallbackProvider}. It provides
- * empty data. It is used to prevent null checking in the model, visitor codes.
+ * Specifies additional method to {@link CodeCompletionHandler} providing
+ * complete documentation for elements.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Hejl
+ * @since 2.43
  */
-public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
+public interface CodeCompletionHandler2 extends CodeCompletionHandler {
 
-    public JsDocumentationFallbackHolder(JsDocumentationProvider provider, Snapshot snapshot) {
-        super(provider, snapshot);
-    }
-
-    @Override
-    public List getReturnType(Node node) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List getParameters(Node node) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Documentation getDocumentation(Node node) {
-        return null;
-    }
-
-    @Override
-    public boolean isDeprecated(Node node) {
-        return false;
-    }
-
-    @Override
-    public Set getModifiers(Node node) {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Map getCommentBlocks() {
-        return Collections.emptyMap();
-    }
-
+    /**
+     * Provides a full documentation for the element. The infrastructure will
+     * always prefer this method to the {@link CodeCompletionHandler#document(org.netbeans.modules.csl.spi.ParserResult, org.netbeans.modules.csl.api.ElementHandle)}.
+     * The old method will be called as callback only if this one returns {@code null}.
+     *
+     * @param info the parsing information
+     * @param element the element for which the documentation is requested
+     * @return the documentation for the element
+     */
+    @CheckForNull
+    Documentation documentElement(@NonNull ParserResult info, @NonNull ElementHandle element);
 }

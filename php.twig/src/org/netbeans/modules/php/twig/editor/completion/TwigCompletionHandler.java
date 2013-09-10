@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.twig.editor.completion;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,15 +52,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
@@ -74,14 +79,21 @@ import org.netbeans.modules.php.twig.editor.lexer.TwigLexerUtils;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
-import org.openide.util.NbBundle;
 
-public class TwigCompletionHandler implements CodeCompletionHandler {
-    private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
-    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+public class TwigCompletionHandler implements CodeCompletionHandler2 {
+    private static final Logger LOGGER = Logger.getLogger(TwigCompletionHandler.class.getName());
+    private static URL documentationUrl = null;
+    static {
+        try {
+            documentationUrl = new URL("http://twig.sensiolabs.org/documentation"); //NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+    }
+    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
             Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
 
-    private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> TAGS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = TagDocumentationFactory.getInstance();
         TAGS.add(TwigElement.Factory.create("autoescape", documentationFactory)); //NOI18N
@@ -119,7 +131,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TAGS.add(TwigElement.Factory.create("endtrans", documentationFactory)); //NOI18N
     }
 
-    private static final Set<TwigElement> FILTERS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> FILTERS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = FilterDocumentationFactory.getInstance();
         FILTERS.add(TwigElement.Factory.create("abs", documentationFactory)); //NOI18N
@@ -156,7 +168,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 Arrays.asList(new Parameter[] {new Parameter("width"), new Parameter("'break'"), new Parameter("cut")}))); //NOI18N
     }
 
-    private static final Set<TwigElement> FUNCTIONS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> FUNCTIONS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = FunctionDocumentationFactory.getInstance();
         FUNCTIONS.add(TwigElement.Factory.create(
@@ -179,7 +191,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
-    private static final Set<TwigElement> TESTS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> TESTS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = TestDocumentationFactory.getInstance();
         TESTS.add(TwigElement.Factory.create("constant", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'const'")}))); //NOI18N
@@ -193,7 +205,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TESTS.add(TwigElement.Factory.create("sameas", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
     }
 
-    private static final Set<TwigElement> OPERATORS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> OPERATORS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = OperatorDocumentationFactory.getInstance();
         OPERATORS.add(TwigElement.Factory.create("in", documentationFactory)); //NOI18N
@@ -209,7 +221,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext codeCompletionContext) {
-        final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> completionProposals = new ArrayList<>();
         ParserResult parserResult = codeCompletionContext.getParserResult();
         if (parserResult instanceof TwigParserResult) {
             TwigParserResult twigParserResult = (TwigParserResult) parserResult;
@@ -298,13 +310,17 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public String document(ParserResult pr, ElementHandle eh) {
-        String result = "";
-        if (eh instanceof TwigElement) {
-            DOCUMENTATION_DECORATOR.setDocumentation(((TwigElement) eh).getDocumentation());
-            result = DOCUMENTATION_DECORATOR.asText();
+    public Documentation documentElement(ParserResult parserResult, ElementHandle elementHandle) {
+        Documentation result = null;
+        if (elementHandle instanceof TwigElement) {
+            result = Documentation.create(((TwigElement) elementHandle).getDocumentation().asText(), documentationUrl);
         }
         return result;
+    }
+
+    @Override
+    public String document(ParserResult pr, ElementHandle eh) {
+        return null;
     }
 
     @Override
@@ -355,30 +371,6 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
-    }
-
-    private static final class DocumentationDecorator implements TwigDocumentation {
-
-        private static final DocumentationDecorator INSTANCE = new DocumentationDecorator();
-        private TwigDocumentation documentation;
-
-        public static DocumentationDecorator getInstance() {
-            return INSTANCE;
-        }
-
-        private DocumentationDecorator() {
-        }
-
-        public void setDocumentation(final TwigDocumentation documentation) {
-            this.documentation = documentation;
-        }
-
-        @Override
-        @NbBundle.Messages("OnlineDocumentation=<p><strong>Online Documentation:</strong> <a href=\"http://twig.sensiolabs.org/documentation\">http://twig.sensiolabs.org/documentation</a></p>")
-        public String asText() {
-            return documentation.asText() + Bundle.OnlineDocumentation();
-        }
-
     }
 
     private static final class PrefixResolver {

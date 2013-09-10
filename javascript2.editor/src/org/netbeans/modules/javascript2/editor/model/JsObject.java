@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
@@ -88,5 +89,5 @@ public interface JsObject extends JsElement {
      */ 
     public boolean hasExactName();
     
-    public String getDocumentation();
+    public Documentation getDocumentation();
 }
