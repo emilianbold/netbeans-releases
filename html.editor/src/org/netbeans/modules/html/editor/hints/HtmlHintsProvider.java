@@ -180,6 +180,10 @@ public class HtmlHintsProvider implements HintsProvider {
                 }
             }
         }
+        
+        if(RemoveSurroundingTag.RULE.appliesTo(context)) {
+            suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(context.caretOffset, context.caretOffset)));
+        }
     }
 
     /**
