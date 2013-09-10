@@ -82,7 +82,7 @@ public class JsDocCompletionDocumentationTest extends JsDocumentationTestBase {
         Source testSource = getTestSource(getTestFile(relPath));
         final int caretOffset = getCaretOffset(testSource, caretSeeker);
         initializeDocumentationHolder(testSource);
-        assertDescriptionMatches(relPath, documentationHolder.getDocumentation(getNodeForOffset(parserResult, caretOffset)), true, "completionDoc.html");
+        assertDescriptionMatches(relPath, documentationHolder.getDocumentation(getNodeForOffset(parserResult, caretOffset)).getContent(), true, "completionDoc.html");
     }
 
     public void testCompletionDocumentation01() throws Exception {
