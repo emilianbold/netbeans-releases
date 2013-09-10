@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seembedded.ui;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.NbBundle;
@@ -53,35 +54,39 @@ import org.openide.util.NbBundle;
  */
 public class CreateJREPanel extends javax.swing.JPanel {
 
-    public CreateJREPanel() {
+    public CreateJREPanel(String username, String host) {
         initComponents();
+
+        final DocumentListener docListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                validatePanel();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                validatePanel();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                validatePanel();
+            }
+        };
         jreCreateLocation.getDocument().addDocumentListener(docListener);
         remoteJREPath.getDocument().addDocumentListener(docListener);
-        validatePanel();
-    }
-
-    public CreateJREPanel(String username) {
-        this();
+        labelRemoteJREInfo.setText(NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.labelRemoteJREInfo.text", username, host)); //NOI18N
         remoteJREPath.setText(NbBundle.getMessage(CreateJREPanel.class, "LBL_JRE_Path_Default", username)); //NOI18N
-        remoteJREPath.selectAll();
+        validatePanel();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                remoteJREPath.requestFocusInWindow();
+                remoteJREPath.selectAll();
+            }
+        });
     }
-
-    final DocumentListener docListener = new DocumentListener() {
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            validatePanel();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            validatePanel();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            validatePanel();
-        }
-    };
 
     private void validatePanel() {
         if (jreCreateLocation.getText().isEmpty()) {
@@ -197,9 +202,17 @@ public class CreateJREPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSeparator1)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(checkBoxDebug)
+                            .addComponent(checkBoxKeepDebugInfo)
+                            .addComponent(checkBoxNoCompression))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -229,7 +242,6 @@ public class CreateJREPanel extends javax.swing.JPanel {
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(10, 10, 10)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(labelJRECreateInfo)
                                             .addComponent(checkBoxSunpkcs11)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -241,17 +253,13 @@ public class CreateJREPanel extends javax.swing.JPanel {
                                                     .addComponent(checkBoxNashorn)
                                                     .addComponent(checkBox1Charsets)
                                                     .addComponent(checkBoxLocales))))))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(checkBoxDebug)
-                            .addComponent(labelRemoteJREInfo)
-                            .addComponent(checkBoxKeepDebugInfo)
-                            .addComponent(checkBoxNoCompression))
-                        .addGap(0, 142, Short.MAX_VALUE))))
-            .addComponent(jSeparator1)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(10, 10, 10)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(labelJRECreateInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                                    .addComponent(labelRemoteJREInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -262,13 +270,13 @@ public class CreateJREPanel extends javax.swing.JPanel {
                     .addComponent(jreCreateLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(buttonBrowse))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(labelJRECreateInfo)
+                .addComponent(labelJRECreateInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(labelRemoteJREPath)
                     .addComponent(remoteJREPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(labelRemoteJREInfo)
+                .addComponent(labelRemoteJREInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -303,7 +311,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
                     .addComponent(checkBoxNashorn))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkBoxSunpkcs11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                 .addComponent(labelError))
         );
     }// </editor-fold>//GEN-END:initComponents

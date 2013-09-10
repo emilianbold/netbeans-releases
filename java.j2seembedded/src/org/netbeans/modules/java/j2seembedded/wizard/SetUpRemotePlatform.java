@@ -452,12 +452,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonBrowseActionPerformed
 
     private void buttonCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateActionPerformed
-        DialogDescriptor d = null;
-        if (username.getText().isEmpty()) {
-            d = new DialogDescriptor(new CreateJREPanel(), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
-        } else {
-            d = new DialogDescriptor(new CreateJREPanel(username.getText()), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
-        }
+        DialogDescriptor d = new DialogDescriptor(new CreateJREPanel(username.getText(), host.getText()), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
         if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
             return;
         }
@@ -596,6 +591,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         }
 
         private boolean checkPanelValidity() {
+            ui.buttonCreate.setEnabled(false);
             if (ui.displayName.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_DisplayName")); // NOI18N
                 return false;
@@ -620,6 +616,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_KeyFile")); // NOI18N
                 return false;
             }
+            ui.buttonCreate.setEnabled(true);
             if (ui.jreLocation.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_JRE")); // NOI18N
                 return false;
