@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seembedded.wizard;
 
 import java.awt.Component;
 import java.io.File;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
@@ -65,6 +66,7 @@ import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -452,19 +454,14 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonBrowseActionPerformed
 
     private void buttonCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateActionPerformed
-        DialogDescriptor d = new DialogDescriptor(new CreateJREPanel(username.getText(), host.getText()), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreateJRETitle"));
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
+        final File ejdkTmp = new File (new File (System.getProperty("java.io.tmpdir")),"nbjdkcreate");  //NOI18N
+        Pair<List<String>,String> data = CreateJREPanel.configure(
+            username.getText(),
+            host.getText(),
+            ejdkTmp);
+        if (data != null) {
+            jreLocation.setText(data.second());
         }
-        CreateJREPanel panel = (CreateJREPanel) d.getMessage();
-        if (!panel.isPanelValid()) {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Invalid_CreateJREPanel"),
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        jreLocation.setText(panel.getRemoteJREPath());
     }//GEN-LAST:event_buttonCreateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
