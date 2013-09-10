@@ -55,6 +55,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -211,6 +212,15 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
 
         //hardcoded support for common file types
         String mimeType = target.getMIMEType();
+        
+        //try to find a mimetype for NB unresolved files
+        if("content/unknown".equals(mimeType)) { //NOI18N
+            String guess = guessMimeFromFileExtension(target);
+            if(guess != null) {
+                mimeType = guess;
+            }
+        }
+        
         switch (mimeType) { //NOI18N -- whole switch content
             case "text/css":
                 sb.append("<link href=\"").append(relativePath).append("\" rel=\"stylesheet\" type=\"text/css\"/>");
@@ -225,6 +235,33 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
                 break;
             case "text/html":
             case "text/xhtml":
+                sb.append("<a href=\"").append(relativePath).append("\"></a>");
+                break;
+            case "audio/ogg":
+            case "audio/mpeg":
+            case "audio/wav":
+                sb.append("<audio controls>\n");
+                sb.append("<source src=\"");
+                sb.append(relativePath);
+                sb.append("\" type=\"");
+                sb.append(mimeType);
+                sb.append("\">\n");
+                sb.append("Your browser does not support the <code>audio</code> tag.\n");
+                sb.append("</audio>");
+                break;
+                
+            case "video/mp4":
+            case "video/webm":
+                sb.append("<video width=\"320\" height=\"240\" controls>\n");
+                sb.append("<source src=\"");
+                sb.append(relativePath);
+                sb.append("\" type=\"");
+                sb.append(mimeType);
+                sb.append("\">\n");
+                sb.append("Your browser does not support the <code>video</code> tag.\n");
+                sb.append("</video>");
+                break;    
+                
             default:
                 //the rest of file types generates a simple file link
                 sb.append("<a href=\"").append(relativePath).append("\"></a>");
@@ -254,7 +291,7 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
 
                         //reformat the line
                         final int from = Utilities.getRowStart(document, ofs);
-                        final int to = Utilities.getRowEnd(document, ofs);
+                        final int to = Utilities.getRowEnd(document, ofs + sb.length());
 
                         indent.reindent(from, to);
 
@@ -270,6 +307,25 @@ public class HtmlExternalDropHandler extends ExternalDropHandler {
         }
 
         return true;
+    }
+    
+    private String guessMimeFromFileExtension(FileObject file) {
+        //XXX how to recognize off audio vs video?
+        switch(file.getExt().toLowerCase(Locale.ENGLISH)) {
+            case "mp3": //NOI18N
+                return "audio/mpeg"; //NOI18N
+            case "ogg": //NOI18N
+                return "audio/ogg"; //NOI18N
+            case "wav": //NOI18N
+                return "audio/wav"; //NOI18N
+            case "mp4":
+                return "video/mp4";
+            case "webm":
+                return "video/webm";
+            
+            default:
+                return null;
+        }
     }
 
     private JEditorPane findPane(Component component) {
