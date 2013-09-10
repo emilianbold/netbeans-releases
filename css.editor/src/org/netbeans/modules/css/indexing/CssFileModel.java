@@ -75,10 +75,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * Instances of this class represents a css model associated with a snapshot of the file content.
+ * Instances of this class represents a css model associated with a snapshot of
+ * the file content.
  *
  * TODO: make it CssIndexModel so it uses the generic mechanism.
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public class CssFileModel {
@@ -97,9 +98,9 @@ public class CssFileModel {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 Snapshot topLevelSnapshot = resultIterator.getSnapshot();
-                model.set(cssRi == null 
-                        ? new CssFileModel(topLevelSnapshot) 
-                        : new CssFileModel((CssParserResult)cssRi.getParserResult(), topLevelSnapshot));
+                model.set(cssRi == null
+                        ? new CssFileModel(topLevelSnapshot)
+                        : new CssFileModel((CssParserResult) cssRi.getParserResult(), topLevelSnapshot));
             }
         });
         return model.get();
@@ -116,7 +117,7 @@ public class CssFileModel {
     private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
         this.snapshot = parserResult.getSnapshot();
         this.topLevelSnapshot = topLevelSnapshot;
-        if ( parserResult.getParseTree() != null) {
+        if (parserResult.getParseTree() != null) {
             ParseTreeVisitor visitor = new ParseTreeVisitor();
             visitor.visitChildren(parserResult.getParseTree());
         } //else broken source, no parse tree
@@ -174,7 +175,8 @@ public class CssFileModel {
 
     /**
      *
-     * @return true if the model is empty - nothing interesting found in the page.
+     * @return true if the model is empty - nothing interesting found in the
+     * page.
      */
     public boolean isEmpty() {
         return null == classes && null == ids && null == htmlElements && null == imports && null == colors;
@@ -246,96 +248,106 @@ public class CssFileModel {
     private class ParseTreeVisitor extends NodeVisitor {
 
         private int[] currentBodyRange;
-        
+
         @Override
         public boolean visit(Node node) {
-            if (node.type() == NodeType.importItem) {
-                getImportsCollectionInstance().addAll(getImports(node));
-            } else if (node.type() == NodeType.rule) {
-                currentBodyRange = NodeUtil.getRuleBodyRange(node);
-            } else if (NodeUtil.isSelectorNode(node)) {
-
-                if(!NodeUtil.containsError(node)) {
-                    Collection<Entry> collection;
-                    int start_offset_diff;
-
-                    switch (node.type()) {
-                        case cssClass:
-                            collection = getClassesCollectionInstance();
-                            start_offset_diff = 1; //cut off the dot (.)
-                            break;
-                        case cssId:
-                            collection = getIdsCollectionInstance();
-                            start_offset_diff = 1; //cut of the hash (#)
-                            break;
-                        case elementName:
-                            collection = getHtmlElementsCollectionInstance();
-                            start_offset_diff = 0;
-                            break;
-                        default:
-                            throw new IllegalStateException();
-                    }
-
-                    CharSequence image = node.image().subSequence(start_offset_diff, node.image().length());
-                    OffsetRange range = new OffsetRange(node.from() + start_offset_diff, node.to());
-
-                    //check if the real start offset can be translated to the original offset
-                    boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
-
-                    OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
-                    Entry e = createEntry(image.toString(), range, body, isVirtual);
+            switch (node.type()) {
+                case resourceIdentifier:
+                    getImportsCollectionInstance().addAll(getImportsFromString(node));
+                    //fallback to term
+                case term:
+                    getImportsCollectionInstance().addAll(getImportsFromURI(node)); //take imports from term only from uris, not strings!
+                    break;
+                case rule:
+                    currentBodyRange = NodeUtil.getRuleBodyRange(node);
+                    break;
+                case hexColor:
+                    CharSequence image = node.image();
+                    int[] wsLens = getTextWSPreAndPostLens(image);
+                    image = image.subSequence(wsLens[0], image.length() - wsLens[1]);
+                    OffsetRange range = new OffsetRange(node.from() + wsLens[0], node.to() - wsLens[1]);
+                    Entry e = createEntry(image.toString(), range, false);
                     if (e != null) {
-                        collection.add(e);
+                        getColorsCollectionInstance().add(e);
+                    }
+                    break;
+                default:
+                    if (NodeUtil.isSelectorNode(node)) {
+                    if (!NodeUtil.containsError(node)) {
+                        Collection<Entry> collection;
+                        int start_offset_diff;
+
+                        switch (node.type()) {
+                            case cssClass:
+                                collection = getClassesCollectionInstance();
+                                start_offset_diff = 1; //cut off the dot (.)
+                                break;
+                            case cssId:
+                                collection = getIdsCollectionInstance();
+                                start_offset_diff = 1; //cut of the hash (#)
+                                break;
+                            case elementName:
+                                collection = getHtmlElementsCollectionInstance();
+                                start_offset_diff = 0;
+                                break;
+                            default:
+                                throw new IllegalStateException();
+                        }
+
+                        image = node.image().subSequence(start_offset_diff, node.image().length());
+                        range = new OffsetRange(node.from() + start_offset_diff, node.to());
+
+                        //check if the real start offset can be translated to the original offset
+                        boolean isVirtual = getSnapshot().getOriginalOffset(node.from()) == -1;
+
+                        OffsetRange body = currentBodyRange != null ? new OffsetRange(currentBodyRange[0], currentBodyRange[1]) : OffsetRange.NONE;
+                        e = createEntry(image.toString(), range, body, isVirtual);
+                        if (e != null) {
+                            collection.add(e);
+                        }
                     }
                 }
+                    break;
 
-            } else if (node.type() == NodeType.hexColor) {
-                CharSequence image = node.image();
-                int[] wsLens = getTextWSPreAndPostLens(image);
-                image = image.subSequence(wsLens[0], image.length() - wsLens[1]);
-                OffsetRange range = new OffsetRange(node.from() + wsLens[0], node.to() - wsLens[1]);
-                Entry e = createEntry(image.toString(), range, false);
-                if (e != null) {
-                    getColorsCollectionInstance().add(e);
-                }
             }
+
             return false;
         }
 
-        private Collection<Entry> getImports(Node node) {
-            Collection<Entry> imports = new ArrayList<>();
-            //@import "resources/global.css";
-            Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
-            //scss import can contain several resourece separated by comma
-            for(Node resourceIdentifier : resourceIdentifiers) {
-                Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.STRING);
-                if (token != null) {
-                    CharSequence image = token.image();
-                    boolean quoted = WebUtils.isValueQuoted(image);
-                    imports.add(createEntry(WebUtils.unquotedValue(image),
-                            new OffsetRange(token.from() + (quoted ? 1 : 0),
-                            token.to() - (quoted ? 1 : 0)),
+        private Collection<Entry> getImportsFromString(Node resourceIdentifier) {
+            Collection<Entry> files = new ArrayList<>();
+            //string value only from resourceIdentifier
+
+            Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.STRING);
+            if (token != null) {
+                CharSequence image = token.image();
+                boolean quoted = WebUtils.isValueQuoted(image);
+                files.add(createEntry(WebUtils.unquotedValue(image),
+                        new OffsetRange(token.from() + (quoted ? 1 : 0),
+                        token.to() - (quoted ? 1 : 0)),
+                        false));
+            }
+            return files;
+        }
+
+        private Collection<Entry> getImportsFromURI(Node resourceIdentifier) {
+            Collection<Entry> files = new ArrayList<>();
+            //@import url("another.css");
+            Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
+            if (token != null) {
+                Matcher m = URI_PATTERN.matcher(token.image());
+                if (m.matches()) {
+                    int groupIndex = 1;
+                    String content = m.group(groupIndex);
+                    boolean quoted = WebUtils.isValueQuoted(content);
+                    int from = token.from() + m.start(groupIndex) + (quoted ? 1 : 0);
+                    int to = token.from() + m.end(groupIndex) - (quoted ? 1 : 0);
+                    files.add(createEntry(WebUtils.unquotedValue(content),
+                            new OffsetRange(from, to),
                             false));
                 }
-
-                //@import url("another.css");
-                token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
-                if (token != null) {
-                    Matcher m = URI_PATTERN.matcher(token.image());
-                    if (m.matches()) {
-                        int groupIndex = 1;
-                        String content = m.group(groupIndex);
-                        boolean quoted = WebUtils.isValueQuoted(content);
-                        int from = token.from() + m.start(groupIndex) + (quoted ? 1 : 0);
-                        int to = token.from() + m.end(groupIndex) - (quoted ? 1 : 0);
-                        imports.add(createEntry(WebUtils.unquotedValue(content),
-                                new OffsetRange(from, to),
-                                false));
-                    }
-                }
             }
-
-            return imports;
+            return files;
         }
     }
 
@@ -407,7 +419,7 @@ public class CssFileModel {
 
         @Override
         public synchronized int getLineOffset() {
-            if(lineOffset == -1) {
+            if (lineOffset == -1) {
                 if (topLevelSnapshot != null && isValidInSourceDocument()) {
                     try {
                         lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), getDocumentRange().getStart());
@@ -421,16 +433,16 @@ public class CssFileModel {
 
         @Override
         public synchronized CharSequence getText() {
-            if(elementText == null) {
+            if (elementText == null) {
                 //delegate to the underlying source charsequence, do not duplicate any chars!
-                elementText = new CharSubSequence(getSnapshot().getText(),  range.getStart(), range.getEnd());
+                elementText = new CharSubSequence(getSnapshot().getText(), range.getStart(), range.getEnd());
             }
             return elementText;
         }
 
         @Override
         public synchronized CharSequence getLineText() {
-            if(elementLineText == null) {
+            if (elementLineText == null) {
                 try {
                     int astLineStart = GsfUtilities.getRowStart(getSnapshot().getText(), range.getStart());
                     int astLineEnd = GsfUtilities.getRowEnd(getSnapshot().getText(), range.getStart());
@@ -455,7 +467,7 @@ public class CssFileModel {
 
         @Override
         public synchronized OffsetRange getDocumentRange() {
-            if(documentRange == null) {
+            if (documentRange == null) {
                 int documentFrom = getSnapshot().getOriginalOffset(range.getStart());
                 int documentTo = getSnapshot().getOriginalOffset(range.getEnd());
 

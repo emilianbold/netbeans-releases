@@ -84,13 +84,23 @@ public final class ServerUtils {
         final Type moduleType = getModuleType(project);
         final String instanceID = JavaEEProjectSettings.getServerInstanceID(project);
         if (instanceID != null) {
-            return findServerByInstance(moduleType, instanceID);
+            Server server = findServerByInstance(moduleType, instanceID);
+            if (server != null) {
+                return server;
+            } else {
+                return new Server(instanceID);
+            }
         }
 
         // Try to read serverID directly from pom.xml properties configration
         final String serverID = MavenProjectSupport.readServerID(project);
         if (serverID != null) {
-            return findServerByType(moduleType, serverID);
+            Server server = findServerByType(moduleType, serverID);
+            if (server != null) {
+                return server;
+            } else {
+                return new Server(null, serverID);
+            }
         }
 
         return Server.NO_SERVER_SELECTED;
@@ -110,7 +120,7 @@ public final class ServerUtils {
                 return server;
             }
         }
-        return Server.NO_SERVER_SELECTED;
+        return null;
     }
 
     private static Server findServerByType(Type moduleType, String serverId) {
@@ -119,7 +129,7 @@ public final class ServerUtils {
                 return server;
             }
         }
-        return Server.NO_SERVER_SELECTED;
+        return null;
     }
 
     /**

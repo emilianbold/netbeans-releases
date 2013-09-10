@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
@@ -809,7 +810,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         Resolver resolver = ResolverFactory.createResolver(this);
         try {
-            if (isInstantiationOrSpecialization()) {
+            boolean searchSpecializations = !TraceFlags.COMPLETE_EXPRESSION_EVALUATOR;
+            if (isInstantiationOrSpecialization() && searchSpecializations) {
                 CharSequence[] specializationQname = new CharSequence[qname.length];
                 final int last = qname.length - 1;
                 StringBuilder sb = new StringBuilder(qname[last]);
@@ -832,6 +834,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 CsmObject o = resolver.resolve(qname, Resolver.CLASSIFIER);
                 if( CsmKindUtilities.isClassifier(o) ) {
                     result = (CsmClassifier) o;
+                }
+            }
+            if (isInstantiationOrSpecialization() && !searchSpecializations) {
+                // If we do not need specializations we must check that resolver returns us not a specialization
+                if (CsmKindUtilities.isClassifier(result) && CsmKindUtilities.isSpecialization(result)) {
+                    CsmInstantiationProvider ip = CsmInstantiationProvider.getDefault();
+                    Collection<CsmOffsetableDeclaration> baseDecls = ip.getBaseTemplate(result);
+                    for (CsmOffsetableDeclaration decl : baseDecls) {
+                        if (CsmKindUtilities.isClassifier(decl) && !CsmKindUtilities.isSpecialization(decl)) {
+                            result = (CsmClassifier) decl;
+                            break;
+                        }
+                    }
                 }
             }
         } finally {
