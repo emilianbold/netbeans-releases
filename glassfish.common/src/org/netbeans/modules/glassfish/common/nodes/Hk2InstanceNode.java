@@ -177,8 +177,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             SystemAction.get(ProfileAction.class),
             SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
-// Disabled: Not finished
-//            SystemAction.get(KillServerAction.class),
+            SystemAction.get(KillServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
             null,
             SystemAction.get(RemoveServerAction.class),

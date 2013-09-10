@@ -578,7 +578,6 @@ public class StartTask extends BasicTask<TaskState> {
             LOGGER.log(Level.INFO,
                     "Caught InterruptedException while waiting for {0} to start: {1}",
                     new Object[] {instance.getName(), ie.getLocalizedMessage()});
-            
         } finally {
             GlassFishStatus.removeListener(instance, listener);
         }
