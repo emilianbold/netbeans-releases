@@ -58,10 +58,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -114,6 +116,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -569,31 +572,65 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             // inherit mapping
             List<CsmTemplateParameter> specParams = ((CsmTemplate)specialization).getTemplateParameters();
             List<CsmTemplateParameter> clsParams = ((CsmTemplate)classifier).getTemplateParameters();
-            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);
-            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>(mapping);
-            for (CsmTemplateParameter p : mapping.keySet()) {
+            
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);
+            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>(mapping.peek());
+            
+            Set<CsmTemplateParameter> mapped = new HashSet<>();
+            
+            outer:
+            for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
+                CsmTemplateParameter p = entry.getKey();
                 int length = (clsParams.size() < specParams.size()) ? clsParams.size() : specParams.size();
                 for (int i = 0; i < length; i++) {
                     if(p.equals(clsParams.get(i))) {
-                        newMapping.put(specParams.get(i), mapping.get(p));
-                        break;
+                        if (!mapped.contains(specParams.get(i))) { 
+                            newMapping.put(specParams.get(i), entry.getValue());
+                        }
+                        mapped.add(specParams.get(i));
+                        if (mapped.size() >= length) {
+                            break outer;
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
-            for (CsmTemplateParameter p : mapping.keySet()) {
+            
+            mapped.clear();
+            
+            outer:
+            for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entries()) {
+                CsmTemplateParameter p = entry.getKey();
                 int length = clsParams.size();
                 for (int i = 0; i < length; i++) {
                     if(p.equals(clsParams.get(i))) {
                         for (CsmTemplateParameter p2 : specParams ) {
                             if(p2.getName().toString().equals(clsParams.get(i).getName().toString())) {
-                                newMapping.put(p2, mapping.get(p));
-                                break;
+                                if (!mapped.contains(p2)) {
+                                    newMapping.put(p2, entry.getValue());
+                                }                                
+                                mapped.add(p2);
+                                if (mapped.size() >= specParams.size()) {
+                                    break outer;
+                                } else {
+                                    break;
+                                }
                             }
                         }
                     }
                 }
             }
-            CsmObject obj =  Instantiation.create((CsmTemplate) specialization,  newMapping);
+
+            mapping.pop();
+            mapping.push(newMapping);
+            
+            CsmObject obj = specialization;
+            List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());            
+            for (int i = maps.size() - 1; i >= 0; i--) {
+                obj = instantiate((CsmTemplate) obj, maps.get(i), false);
+            }
+
             if(CsmKindUtilities.isClassifier(obj)) {
                 specialization = (CsmClassifier) obj ;
             }
