@@ -42,11 +42,19 @@
 package org.netbeans.modules.java.j2seembedded.ui;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -54,7 +62,10 @@ import org.openide.util.NbBundle;
  */
 public class CreateJREPanel extends javax.swing.JPanel {
 
-    public CreateJREPanel(String username, String host) {
+    public CreateJREPanel(
+            @NullAllowed final String username,
+            @NullAllowed final String host) {
+        assert username == null ? host == null : host != null;
         initComponents();
 
         final DocumentListener docListener = new DocumentListener() {
@@ -86,6 +97,74 @@ public class CreateJREPanel extends javax.swing.JPanel {
                 remoteJREPath.selectAll();
             }
         });
+    }
+
+    @CheckForNull
+    public static List<String> configure(
+            @NonNull File destFolder) {
+        CreateJREPanel panel = new CreateJREPanel(null, null);
+        DialogDescriptor dd = new DialogDescriptor(
+            panel,
+            NbBundle.getMessage(CreateJREPanel.class, "LBL_CreateJRETitle"));
+        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            final List<String> cmdLine = new ArrayList<>();
+            final File ejdk = new File(panel.getJRECreateLocation());
+            final File bin = new File (ejdk, "bin");   //NOI18N
+            final File jrecreate = new File(
+                    bin,
+                    Utilities.isWindows() ?
+                        "jrecreate.bat" :   //NOI18N
+                         "jrecreate.sh");   //NOI18N
+            cmdLine.add(jrecreate.getAbsolutePath());
+            cmdLine.add("--dest");          //NOI18N
+            cmdLine.add(destFolder.getAbsolutePath());
+            cmdLine.add("--ejdk-home");     //NOI18N
+            cmdLine.add(ejdk.getAbsolutePath());
+            final String profile = panel.getProfile();
+            if (profile != null) {
+                cmdLine.add("--profile");     //NOI18N
+                cmdLine.add(profile);
+            }
+            cmdLine.add("--vm");     //NOI18N
+            cmdLine.add(panel.getVirtualMachine());
+            if (panel.isDebug()) {
+                cmdLine.add("--debug");   //NOI18N
+            }
+            if (panel.isKeepDebugInfo()) {
+                cmdLine.add("--keep-debug-info");   //NOI18N
+            }
+            if (panel.isNoCompression()) {
+                cmdLine.add("--no-compression");   //NOI18N
+            }
+            List<String> extensions = new ArrayList<>();
+            if (panel.isFxGraphics()) {
+                extensions.add("fx:graphics");  //NOI18N
+            }
+            if (panel.isFxControls()) {
+                extensions.add("fx:controls");  //NOI18N
+            }
+            if (panel.isSunec()) {
+                extensions.add("sunec");        //NOI18N
+            }
+            if (panel.isSunpkcs11()) {
+                extensions.add("sunpkcs11");        //NOI18N
+            }
+            if (panel.isLocales()) {
+                extensions.add("locales");        //NOI18N
+            }
+            if (panel.isCharsets()) {
+                extensions.add("charsets");        //NOI18N
+            }
+            if (panel.isNashorn()) {
+                extensions.add("nashorn");        //NOI18N
+            }
+            if (!extensions.isEmpty()) {
+                cmdLine.add("--extension"); //NOI18N
+                cmdLine.addAll(extensions);
+            }
+            return cmdLine;
+        }
+        return null;
     }
 
     private void validatePanel() {
@@ -363,11 +442,16 @@ public class CreateJREPanel extends javax.swing.JPanel {
     }
 
     public String getProfile() {
-        return (String) comboBoxProfile.getSelectedItem();
+        String profile = (String) comboBoxProfile.getSelectedItem();
+        if (profile == null ||
+            profile.equals(comboBoxProfile.getModel().getElementAt(comboBoxProfile.getModel().getSize()-1))) {
+            return null;
+        }
+        return profile.toLowerCase();
     }
 
     public String getVirtualMachine() {
-        return (String) comboBoxVM.getSelectedItem();
+        return ((String) comboBoxVM.getSelectedItem()).toLowerCase();
     }
 
     public boolean isDebug() {
