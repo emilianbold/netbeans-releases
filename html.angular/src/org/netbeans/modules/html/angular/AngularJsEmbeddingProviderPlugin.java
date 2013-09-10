@@ -422,7 +422,23 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     String[] conditionParts = parts[partIndex].trim().split(":");
                     if(conditionParts.length > 1) {
                         String propName = conditionParts[1].trim();
+                        int indexInName = 0;
+                        char ch = propName.charAt(indexInName);
+                        while ((indexInName < (propName.length() - 1)) && (Character.isWhitespace(ch) || ch == '{')) {
+                            ch = propName.charAt(++indexInName);
+                        }
+                        if (indexInName > 0) {
+                            propName = propName.substring(indexInName);
+                        }
                         int position = lastPartPos + parts[partIndex].indexOf(propName) + 1;
+                        indexInName = propName.length() - 1;
+                        ch = propName.charAt(indexInName);
+                        while (indexInName > 0 && (Character.isWhitespace(ch) || ch == '{' || ch == '}')) {
+                            ch = propName.charAt(--indexInName);
+                        }
+                        if (indexInName < (propName.length() - 1)) {
+                            propName = propName.substring(0, indexInName - 1);
+                        }
                         if (propertyToFqn.containsKey(propName)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
                         }
