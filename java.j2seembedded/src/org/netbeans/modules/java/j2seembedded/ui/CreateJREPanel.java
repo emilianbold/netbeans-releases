@@ -123,7 +123,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
         checkBoxSunec = new javax.swing.JCheckBox();
         checkBoxSunpkcs11 = new javax.swing.JCheckBox();
         checkBoxLocales = new javax.swing.JCheckBox();
-        checkBox1Charsets = new javax.swing.JCheckBox();
+        checkBoxCharsets = new javax.swing.JCheckBox();
         checkBoxNashorn = new javax.swing.JCheckBox();
         labelError = new javax.swing.JLabel();
         labelJRECreateLocation = new javax.swing.JLabel();
@@ -140,10 +140,8 @@ public class CreateJREPanel extends javax.swing.JPanel {
         checkBoxDebug.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxDebug, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxDebug.text")); // NOI18N
 
-        checkBoxKeepDebugInfo.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxKeepDebugInfo, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxKeepDebugInfo.text")); // NOI18N
 
-        checkBoxNoCompression.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoCompression, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxNoCompression.text")); // NOI18N
 
         labelProfile.setLabelFor(comboBoxProfile);
@@ -168,7 +166,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxLocales, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxLocales.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(checkBox1Charsets, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBox1Charsets.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxCharsets, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxCharsets.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNashorn, org.openide.util.NbBundle.getMessage(CreateJREPanel.class, "CreateJREPanel.checkBoxNashorn.text")); // NOI18N
 
@@ -251,7 +249,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
                                                 .addGap(18, 18, 18)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                     .addComponent(checkBoxNashorn)
-                                                    .addComponent(checkBox1Charsets)
+                                                    .addComponent(checkBoxCharsets)
                                                     .addComponent(checkBoxLocales))))))
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
@@ -304,7 +302,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(checkBoxFxControls)
-                    .addComponent(checkBox1Charsets))
+                    .addComponent(checkBoxCharsets))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(checkBoxSunec)
@@ -330,7 +328,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonBrowseActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
-    private javax.swing.JCheckBox checkBox1Charsets;
+    private javax.swing.JCheckBox checkBoxCharsets;
     private javax.swing.JCheckBox checkBoxDebug;
     private javax.swing.JCheckBox checkBoxFxControls;
     private javax.swing.JCheckBox checkBoxFxGraphics;
@@ -356,7 +354,59 @@ public class CreateJREPanel extends javax.swing.JPanel {
     private javax.swing.JTextField remoteJREPath;
     // End of variables declaration//GEN-END:variables
 
+    public String getJRECreateLocation() {
+        return jreCreateLocation.getText();
+    }
+
     public String getRemoteJREPath() {
         return remoteJREPath.getText();
+    }
+
+    public String getProfile() {
+        return (String) comboBoxProfile.getSelectedItem();
+    }
+
+    public String getVirtualMachine() {
+        return (String) comboBoxVM.getSelectedItem();
+    }
+
+    public boolean isDebug() {
+        return checkBoxDebug.isSelected();
+    }
+
+    public boolean isKeepDebugInfo() {
+        return checkBoxKeepDebugInfo.isSelected();
+    }
+
+    public boolean isNoCompression() {
+        return checkBoxNoCompression.isSelected();
+    }
+
+    public boolean isFxGraphics() {
+        return checkBoxFxGraphics.isSelected();
+    }
+
+    public boolean isFxControls() {
+        return checkBoxFxControls.isSelected();
+    }
+
+    public boolean isSunec() {
+        return checkBoxSunec.isSelected();
+    }
+
+    public boolean isSunpkcs11() {
+        return checkBoxSunpkcs11.isSelected();
+    }
+
+    public boolean isLocales() {
+        return checkBoxLocales.isSelected();
+    }
+
+    public boolean isCharsets() {
+        return checkBoxCharsets.isSelected();
+    }
+
+    public boolean isNashorn() {
+        return checkBoxNashorn.isSelected();
     }
 }

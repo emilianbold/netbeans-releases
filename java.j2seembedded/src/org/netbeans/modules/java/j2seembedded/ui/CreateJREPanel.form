@@ -75,7 +75,7 @@
                                               <EmptySpace type="separate" max="-2" attributes="0"/>
                                               <Group type="103" groupAlignment="0" attributes="0">
                                                   <Component id="checkBoxNashorn" min="-2" max="-2" attributes="0"/>
-                                                  <Component id="checkBox1Charsets" min="-2" max="-2" attributes="0"/>
+                                                  <Component id="checkBoxCharsets" min="-2" max="-2" attributes="0"/>
                                                   <Component id="checkBoxLocales" min="-2" max="-2" attributes="0"/>
                                               </Group>
                                           </Group>
@@ -146,7 +146,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="checkBoxFxControls" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="checkBox1Charsets" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="checkBoxCharsets" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -179,7 +179,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="checkBoxKeepDebugInfo">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/j2seembedded/ui/Bundle.properties" key="CreateJREPanel.checkBoxKeepDebugInfo.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -187,7 +186,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="checkBoxNoCompression">
       <Properties>
-        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/java/j2seembedded/ui/Bundle.properties" key="CreateJREPanel.checkBoxNoCompression.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -279,10 +277,10 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="checkBox1Charsets">
+    <Component class="javax.swing.JCheckBox" name="checkBoxCharsets">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/j2seembedded/ui/Bundle.properties" key="CreateJREPanel.checkBox1Charsets.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/java/j2seembedded/ui/Bundle.properties" key="CreateJREPanel.checkBoxCharsets.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
