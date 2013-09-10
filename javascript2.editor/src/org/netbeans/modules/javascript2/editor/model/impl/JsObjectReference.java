@@ -46,6 +46,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -134,7 +135,7 @@ public class JsObjectReference extends JsObjectImpl {
     }
 
     @Override
-    public String getDocumentation() {
+    public Documentation getDocumentation() {
         return original.getDocumentation(); 
     }
 

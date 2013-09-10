@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
 import jdk.nashorn.internal.objects.PrototypeObject;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -60,7 +61,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
     final private NavigableMap<Integer, Collection<TypeUsage>> assignments = new TreeMap<Integer, Collection<TypeUsage>>();
     final private boolean hasName;
-    private String documentation;
+    private Documentation documentation;
     protected JsElement.Kind kind;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange,
@@ -601,11 +602,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     @Override
-    public String getDocumentation() {
+    public Documentation getDocumentation() {
         return documentation;
     }
  
-    public void setDocumentation(String doc) {
+    public void setDocumentation(Documentation doc) {
         this.documentation = doc;
     }
 

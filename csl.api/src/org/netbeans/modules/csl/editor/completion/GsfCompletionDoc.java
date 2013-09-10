@@ -54,6 +54,8 @@ import javax.swing.Action;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -107,7 +109,19 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         }
 
         if (completer != null) {
-            this.content = completer.document(controller, elementHandle);
+            if (completer instanceof CodeCompletionHandler2) {
+                Documentation doc = ((CodeCompletionHandler2) completer).documentElement(controller, elementHandle);
+                if (doc != null) {
+                    this.content = doc.getContent();
+                    if (docURL == null) {
+                        docURL = doc.getUrl();
+                    }
+                } else {
+                    this.content = completer.document(controller, elementHandle);
+                }
+            } else {
+                this.content = completer.document(controller, elementHandle);
+            }
         }
 
         if (this.content == null) {
@@ -128,6 +142,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         return docURL;
     }
 
+    @Override
     public CompletionDocumentation resolveLink(String link) {
         if (link.startsWith("www.")) {
             link = "http://" + link;
