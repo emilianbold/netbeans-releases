@@ -63,28 +63,20 @@ import org.netbeans.jemmy.ComponentChooser;
 public class Utilities {
 
     private static boolean debug = false;
+    /* it is used, when there is project name in menu structure. */
+    private static String projectName;
 
     /**
      * reads menus like http://wiki.netbeans.org/MainMenu
-     * 
-     * 
-     * | View |                       V (mnemonics)
-     * ========
-     *     Editors                >   E
-     *     Code Folds             >   C
-     * ============================
-     *     Web Browser                W
-     *     IDE Log                    L
-     * ============================
-     *     Toolbars               >   T
-     * [x] Show Editor Toolbar        h
-     * [ ] Show Line Numbers          S
-     * [x] Show Diff Sidebar          D
-     * [ ] Show Versioning Labels     V
-     * ============================
-     *     Full Screen                F
-     * 
-     * 
+     *
+     *
+     * | View | V (mnemonics) ======== Editors > E Code Folds > C
+     * ============================ Web Browser W IDE Log L
+     * ============================ Toolbars > T [x] Show Editor Toolbar h [ ]
+     * Show Line Numbers S [x] Show Diff Sidebar D [ ] Show Versioning Labels V
+     * ============================ Full Screen F
+     *
+     *
      * @param filename
      * @return parsed menu structure
      */
@@ -100,11 +92,11 @@ public class Utilities {
             }
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
-                try{
-                parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
-                char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
-                parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
-                } catch(StringIndexOutOfBoundsException ex) {
+                try {
+                    parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
+                    char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
+                    parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
+                } catch (StringIndexOutOfBoundsException ex) {
                     System.err.println("Wrong format of \"Menu name\":"
                             + "It has to be in following format \"| menuName |\" in GoldenFile.txt");
                     System.err.println("Format of your \"Menu name\" is: \""
@@ -139,19 +131,18 @@ public class Utilities {
         return parsedMenu;
     }
 
+    public static NbMenuItem readSubmenuStructureFromFile(String filename, String projectName) throws IllegalStateException {
+        Utilities.projectName = new String(projectName);
+        return readSubmenuStructureFromFile(filename);
+    }
+
     /**
      * reads submenus like http://wiki.netbeans.org/MainMenu
-    
-     *     Toolbars                 > [x] Build                  B
-     *                                [ ] Debug                  D
-     *                                [x] Edit                   E
-     *                                [x] File                   F
-     *                                [ ] Memory                 M
-     *                               ========================
-     *                                    Small Toolbar Icons    S
-     *                                ========================
-     *                                    Reset Toolbars         R
-     *                                    Customize...           C
+     *
+     * Toolbars > [x] Build B [ ] Debug D [x] Edit E [x] File F [ ] Memory M
+     * ======================== Small Toolbar Icons S ========================
+     * Reset Toolbars R Customize... C
+     *
      * @param filename
      * @return parsed submenu structure
      */
@@ -170,7 +161,7 @@ public class Utilities {
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
-            submenu.add(parseMenuLineText(submenuName.substring(to+1)));
+            submenu.add(parseMenuLineText(submenuName.substring(to + 1)));
             while (scanner.hasNextLine()) {
                 submenu.add(parseMenuLineText(scanner.nextLine().trim()));
             }
@@ -186,14 +177,9 @@ public class Utilities {
     }
 
     /**
-     * Parses menu line like
-     *     IDE Log                    L
-     * ============================
-     *     Toolbars               >   T
-     * [x] Show Editor Toolbar        h
-     * [ ] Show Line Numbers          S
-     * (x) Show Diff Sidebar          D
-     * 
+     * Parses menu line like IDE Log L ============================ Toolbars > T
+     * [x] Show Editor Toolbar h [ ] Show Line Numbers S (x) Show Diff Sidebar D
+     *
      * @param lineText
      * @return parsed menu item from line
      */
@@ -233,8 +219,14 @@ public class Utilities {
                 if (partOfText.length() == 1 && partOfText.charAt(0) != '/') {
                     if (partOfText.charAt(0) == '>') {
                         menuitem.setSubmenu(new ArrayList<NbMenuItem>());
-                    } else { //it must be the mnemonic
-
+                    } else if (partOfText.charAt(0) == '-') {
+                        // There is following project name, which has to be
+                        // loaded right now. It is dynamicly changing.
+                        partOfText = partOfText + " " + projectName;
+                        text.append(partOfText);
+                        text.append(" ");
+                    } else {
+                        //it must be the mnemonic
                         menuitem.setMnemo(partOfText.charAt(0));
                         read = false;
                     }
@@ -251,7 +243,8 @@ public class Utilities {
     }
 
     /**
-     * Prints NbMenuItem to the printstream 
+     * Prints NbMenuItem to the printstream
+     *
      * @param out PrintStream
      * @param menu NbMenuItem
      * @param separator
@@ -292,14 +285,10 @@ public class Utilities {
     }
 
     /**
-     * Parses files like http://wiki.netbeans.org/NewProjectWizard
-     * Java
-     *    Java Application
-     *    Java Desktop Application
-     *    Java Class Library
-     *    Java Project with Existing Sources
-     *    Java Free-form Project
-     * 
+     * Parses files like http://wiki.netbeans.org/NewProjectWizard Java Java
+     * Application Java Desktop Application Java Class Library Java Project with
+     * Existing Sources Java Free-form Project
+     *
      * @param filename
      * @return
      */
@@ -385,6 +374,7 @@ public class Utilities {
 
     /**
      * trims unnecessary spaces from text line
+     *
      * @param line
      * @return
      */
@@ -407,7 +397,9 @@ public class Utilities {
     }
 
     /**
-     * Compares two NbMenuItems. Return a String with description of all the differences
+     * Compares two NbMenuItems. Return a String with description of all the
+     * differences
+     *
      * @param menuOrigin
      * @param menuCompare
      * @param submenuLevel
@@ -453,6 +445,7 @@ public class Utilities {
 
     /**
      * Filter out all NbMenuItem.separators from array
+     *
      * @param array
      * @return
      */
@@ -489,7 +482,7 @@ public class Utilities {
     public static String readFileToString(String filename) {
         if (!(new File(filename).exists())) {
             return "file " + filename + " is empty";
-        } 
+        }
         FileInputStream fis = null;
         byte[] b = null;
 
@@ -513,7 +506,6 @@ public class Utilities {
             }
         }
 
-
         return new String(b);
     }
 
@@ -524,7 +516,7 @@ public class Utilities {
             if (components[i] != null) {
                 if (chooser.checkComponent(components[i])) {
                     results.add(components[i]);
-                //System.out.println("Added :"+components[i].toString());
+                    //System.out.println("Added :"+components[i].toString());
                 }
                 if (recursive && components[i] instanceof Container) {
                     ArrayList<Component> aa = findComponentsInContainer((Container) components[i], chooser, recursive);
