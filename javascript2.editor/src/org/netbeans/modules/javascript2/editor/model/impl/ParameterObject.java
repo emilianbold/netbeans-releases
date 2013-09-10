@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -82,7 +83,7 @@ public class ParameterObject extends JsObjectImpl {
     }
 
     @Override
-    public String getDocumentation() {
+    public Documentation getDocumentation() {
         final String[] result = new String[1];
         try {
             ParserManager.parse(Collections.singleton(Source.create(getParent().getFileObject())), new UserTask() {
@@ -106,6 +107,9 @@ public class ParameterObject extends JsObjectImpl {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return result[0];
+        if (result[0] != null && !result[0].isEmpty()) {
+            return Documentation.create(result[0]);
+        }
+        return null;
     }
 }

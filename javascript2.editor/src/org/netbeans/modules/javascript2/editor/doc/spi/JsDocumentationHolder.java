@@ -51,6 +51,7 @@ import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
@@ -150,10 +151,13 @@ public abstract class JsDocumentationHolder {
      * @param node of the javaScript code
      * @return documentation text if any {@code null} otherwise
      */
-    public String getDocumentation(Node node) {
+    public Documentation getDocumentation(Node node) {
         JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
         if (comment != null) {
-            return JsDocumentationPrinter.printDocumentation(comment);
+            String content = JsDocumentationPrinter.printDocumentation(comment);
+            if (!content.isEmpty()) {
+                return Documentation.create(content);
+            }
         }
         return null;
     }

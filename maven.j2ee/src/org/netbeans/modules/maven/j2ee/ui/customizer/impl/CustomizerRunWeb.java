@@ -316,6 +316,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         org.openide.awt.Mnemonics.setLocalizedText(browserLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.browserLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCopyStaticResources, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.text")); // NOI18N
+        jCheckBoxCopyStaticResources.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

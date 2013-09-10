@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -222,7 +223,7 @@ public class JQueryModel {
         }
 
         @Override
-        public String getDocumentation() {
+        public Documentation getDocumentation() {
             return delegate.getDocumentation();
         }
 

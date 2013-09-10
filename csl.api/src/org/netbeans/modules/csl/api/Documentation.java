@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc;
+package org.netbeans.modules.csl.api;
 
-import jdk.nashorn.internal.ir.Node;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Documentation;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
+import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
- * Can be returned by the {@link JsDocumentationFallbackProvider}. It provides
- * empty data. It is used to prevent null checking in the model, visitor codes.
+ * Represents documentation displayed in code completion window.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Hejl
+ * @since 2.43
  */
-public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
+public final class Documentation {
 
-    public JsDocumentationFallbackHolder(JsDocumentationProvider provider, Snapshot snapshot) {
-        super(provider, snapshot);
+    private final String content;
+
+    private final URL url;
+
+    private Documentation(String content, URL url) {
+        assert content != null;
+        this.content = content;
+        this.url = url;
     }
 
-    @Override
-    public List getReturnType(Node node) {
-        return Collections.emptyList();
+    @NonNull
+    public static Documentation create(@NonNull String content) {
+        Parameters.notNull("content", content);
+        return new Documentation(content, null);
     }
 
-    @Override
-    public List getParameters(Node node) {
-        return Collections.emptyList();
+    @NonNull
+    public static Documentation create(@NonNull String content, URL url) {
+        Parameters.notNull("content", content);
+        return new Documentation(content, url);
     }
 
-    @Override
-    public Documentation getDocumentation(Node node) {
-        return null;
+    /**
+     * The documentation itself.
+     *
+     * @return documentation itself
+     */
+    @NonNull
+    public String getContent() {
+        return content;
     }
 
-    @Override
-    public boolean isDeprecated(Node node) {
-        return false;
-    }
-
-    @Override
-    public Set getModifiers(Node node) {
-        return Collections.emptySet();
-    }
-
-    @Override
-    public Map getCommentBlocks() {
-        return Collections.emptyMap();
+    /**
+     * The external documentation URL. Might be {@code null}.
+     *
+     * @return external documentation URL
+     */
+    @CheckForNull
+    public URL getUrl() {
+        return url;
     }
 
 }
