@@ -503,6 +503,18 @@ public class CssCompletionTest extends CssModuleTestBase {
         setDocumentContent(document, ".clz { background: url('st|'); }");
         assertCompletion(document, Match.EXACT, "style.css");
         
+        setDocumentContent(document, ".clz { background: url(folder/|); }");
+        assertCompletion(document, Match.CONTAINS, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/st|); }");
+        assertCompletion(document, Match.EXACT, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/|); }");
+        assertCompletion(document, Match.CONTAINS, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/st|); }");
+        assertCompletion(document, Match.EXACT, "style2.css");
+        
     }
     
 }
