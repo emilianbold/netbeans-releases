@@ -147,16 +147,21 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         DISPLAY_REVISIONS,
         DISPLAY_TAGS,
         DISPLAY_TOOLBAR,
+        EXPAND_BRANCHES,
+        EXPAND_TAGS,
         ENABLE_POPUP
     }
 
     public static final EnumSet<Option> OPTIONS_INSIDE_PANEL = EnumSet.of(Option.DISPLAY_BRANCHES_LOCAL,
             Option.DISPLAY_BRANCHES_REMOTE,
             Option.DISPLAY_REVISIONS,
+            Option.EXPAND_BRANCHES,
+            Option.EXPAND_TAGS,
             Option.DISPLAY_TAGS);
 
     public RepositoryBrowserPanel () {
-        this(EnumSet.complementOf(EnumSet.of(Option.DISPLAY_REVISIONS)), null, new File[0], null);
+        this(EnumSet.complementOf(EnumSet.of(Option.DISPLAY_REVISIONS, Option.EXPAND_BRANCHES, Option.EXPAND_TAGS)),
+                null, new File[0], null);
     }
 
     public RepositoryBrowserPanel (EnumSet<Option> options, File repository, File[] roots, RepositoryInfo info) {
@@ -204,6 +209,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
                 }
             });
+        }
+        if (options.contains(Option.EXPAND_BRANCHES) || options.contains(Option.EXPAND_TAGS)) {
+            tree.expandNode(root);
         }
     }
 
@@ -455,6 +463,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                     }
                                 }
                                 putAll(nodes);
+                                if (options.contains(Option.EXPAND_BRANCHES) || options.contains(Option.EXPAND_TAGS)) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run () {
+                                            for (Node n : getNodes()) {
+                                                tree.expandNode(n);
+                                            }
+                                        }
+                                    });
+                                }
                             }
                         });
                     }
@@ -596,6 +614,22 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Node[] createNodes (AbstractNode key) {
+            final Node toExpand;
+            if (options.contains(Option.EXPAND_BRANCHES) && key instanceof BranchesTopNode) {
+                toExpand = key;
+            } else if (options.contains(Option.EXPAND_TAGS) && key instanceof TagsNode) {
+                toExpand = key;
+            } else {
+                toExpand = null;
+            }
+            if (toExpand != null) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        tree.expandNode(toExpand);
+                    }
+                });
+            }
             return new Node[] { key };
         }
 
@@ -694,7 +728,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Node[] createNodes (BranchNodeType key) {
-            BranchesNode node;
+            final BranchesNode node;
             switch (key) {
                 case LOCAL:
                     node = local = new BranchesNode(repository, key, branches);
@@ -704,6 +738,14 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     break;
                 default:
                     throw new IllegalStateException();
+            }
+            if (options.contains(Option.EXPAND_BRANCHES)) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        tree.expandNode(node);
+                    }
+                });
             }
             return new Node[] { node };
         }
