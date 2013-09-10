@@ -166,9 +166,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="matchCaseValue">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="org.openide.util.NbBundle.getMessage(AddModulePanel.class, &quot;CTL_MatchCase&quot;)" type="code"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="Match &amp;Case"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="matchCaseValueActionPerformed"/>
@@ -184,9 +182,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="showExclModulesCheckBox">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="org.openide.util.NbBundle.getMessage(AddModulePanel.class, &quot;CTL_ShowExclModules&quot;)" type="code"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="Show &amp;Excl. Modules"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showExclModulesCheckBoxActionPerformed"/>

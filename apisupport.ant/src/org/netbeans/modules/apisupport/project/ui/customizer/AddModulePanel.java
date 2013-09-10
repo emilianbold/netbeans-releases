@@ -553,7 +553,7 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(showNonAPIModules, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(matchCaseValue, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_MatchCase"));
+        org.openide.awt.Mnemonics.setLocalizedText(matchCaseValue, "Match &Case");
         matchCaseValue.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         matchCaseValue.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -567,7 +567,7 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
         add(matchCaseValue, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(showExclModulesCheckBox, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "CTL_ShowExclModules"));
+        org.openide.awt.Mnemonics.setLocalizedText(showExclModulesCheckBox, "Show &Excl. Modules");
         showExclModulesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showExclModulesCheckBoxActionPerformed(evt);
