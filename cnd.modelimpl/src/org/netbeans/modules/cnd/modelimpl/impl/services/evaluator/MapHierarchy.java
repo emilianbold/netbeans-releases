@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 
 /**
  *
@@ -149,6 +150,25 @@ public final class MapHierarchy<K, V> {
             
         };        
     }
+
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        traceMaps(out, 0);
+        return out.toString();
+    }
+    
+    private void traceMaps(StringBuilder out, int from) {
+        if (from == maps.size()) {
+            return;
+        }
+        TemplateUtils.repeat(out, from * 2, ' '); // NOI18N
+        out.append("MAPPING:\n"); // NOI18N
+        traceMaps(out, from + 1);
+        out.append(TemplateUtils.traceMap(maps.get(from), from * 2));
+        TemplateUtils.repeat(out, from * 2, ' '); // NOI18N
+        out.append("END OF MAPPING\n"); // NOI18N
+    }
     
     /*
     ****************************************************************************
@@ -190,7 +210,7 @@ public final class MapHierarchy<K, V> {
         
         @Override
         public void remove() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
         
         private I computeNext() {
