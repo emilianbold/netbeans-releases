@@ -232,6 +232,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                         org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaret);
                         if (leaf != null) {
                             switch (leaf.type()) {
+                                case resourceIdentifier:
                                 case elementName:
                                 case cssClass:
                                 case cssId:

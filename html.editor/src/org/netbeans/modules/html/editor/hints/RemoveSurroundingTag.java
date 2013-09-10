@@ -50,10 +50,12 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +64,7 @@ import org.openide.util.NbBundle;
  */
 public class RemoveSurroundingTag extends Hint {
 
-    private static final Rule RULE = new RemoveSurroundingTagRule();
+    public static final Rule RULE = new RemoveSurroundingTagRule();
     private static final String DISPLAYNAME = NbBundle.getMessage(RemoveSurroundingTag.class, "MSG_RemoveSurroundingTag");
 
     public RemoveSurroundingTag(RuleContext context, OffsetRange range) {
@@ -89,23 +91,23 @@ public class RemoveSurroundingTag extends Hint {
 
         @Override
         public void implement() throws Exception {
-            
+
             context.doc.runAtomic(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        Element[] surroundingPair = findPairNodesAtSelection(context) ;
-                        if(surroundingPair == null) {
-                            return ;
+                        Element[] surroundingPair = findPairNodesAtSelection(context);
+                        if (surroundingPair == null) {
+                            return;
                         }
                         int otfrom = surroundingPair[0].from();
                         int otto = surroundingPair[0].to();
                         int otlen = otto - otfrom;
-                        
+
                         int ctfrom = surroundingPair[1].from();
                         int ctto = surroundingPair[1].to();
-                        
+
                         context.doc.remove(otfrom, otlen);
                         context.doc.remove(ctfrom - otlen, ctto - ctfrom);
 
@@ -152,33 +154,50 @@ public class RemoveSurroundingTag extends Hint {
     }
 
     private static Element[] findPairNodesAtSelection(RuleContext context) {
-        if (context.selectionStart == -1 || context.selectionEnd == -1) {
-            return null;
-        }
-
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        if (context.selectionStart == -1 || context.selectionEnd == -1) {
+            //no selection - find the containing element
+            Snapshot snap = result.getSnapshot();
+            int embeddedCaret = snap.getEmbeddedOffset(context.caretOffset);
+            if (embeddedCaret != -1) {
+                Node containing = result.findBySemanticRange(embeddedCaret, false);
+                if (containing != null) {
+                    if (containing.type() == ElementType.OPEN_TAG) {
+                        OpenTag ot = (OpenTag) containing;
+                        CloseTag ct = ot.matchingCloseTag();
+                        if (ct != null) {
+                            return new Element[]{ot, ct};
+                        }
+                    }
+                }
+            }
+        } else {
+            //selection - find the element inside selection
 
-        //check whether the selection starts at a tag and ends at a tag
-        //open tag
-        Element open = result.findByPhysicalRange(context.selectionStart, true);
-        if (open == null || open.type() != ElementType.OPEN_TAG) {
-            return null;
+            //check whether the selection starts at a tag and ends at a tag
+            //open tag
+            Element open = result.findByPhysicalRange(context.selectionStart, true);
+            if (open == null || open.type() != ElementType.OPEN_TAG) {
+                return null;
+            }
+
+            //close tag
+            Element close = result.findByPhysicalRange(context.selectionEnd, false);
+            if (close == null || close.type() != ElementType.CLOSE_TAG) {
+                return null;
+            }
+
+            //is the end tag really a pair node of the open tag?
+            OpenTag openTag = (OpenTag) open;
+            if (openTag.matchingCloseTag() != close) { //same AST ... reference test is ok
+                return null;
+            }
+
+            return new Element[]{open, close};
+
         }
 
-        //close tag
-        Element close = result.findByPhysicalRange(context.selectionEnd, false);
-        if (close == null || close.type() != ElementType.CLOSE_TAG) {
-            return null;
-        }
-
-        //is the end tag really a pair node of the open tag?
-        OpenTag openTag = (OpenTag)open;
-        if (openTag.matchingCloseTag() != close) { //same AST ... reference test is ok
-            return null;
-        }
-
-        return new Element[]{open, close};
+        return null;
     }
-    
-    
+
 }
