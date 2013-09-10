@@ -73,13 +73,16 @@ public final class Server implements Comparable<Server> {
 
 
     private Server() {
-        this.serverInstanceId = ExecutionChecker.DEV_NULL;
-        this.serverID = ExecutionChecker.DEV_NULL;
+        this(ExecutionChecker.DEV_NULL, ExecutionChecker.DEV_NULL);
     }
 
     public Server(String serverInstanceId) {
-        this.serverInstanceId = serverInstanceId;
-        this.serverID = MavenProjectSupport.obtainServerID(serverInstanceId);
+        this(serverInstanceId, MavenProjectSupport.obtainServerID(serverInstanceId));
+    }
+
+    public Server(String serverInstanceID, String serverID) {
+        this.serverInstanceId = serverInstanceID;
+        this.serverID = serverID;
     }
 
     public String getServerInstanceID() {
