@@ -83,6 +83,7 @@
                 <friend>org.netbeans.modules.cnd.navigation</friend>
                 <package>org.netbeans.modules.cnd.callgraph.api</package>
                 <package>org.netbeans.modules.cnd.callgraph.api.ui</package>
+                <package>org.netbeans.modules.cnd.callgraph.support</package>
             </friend-packages>
         </data>
     </configuration>
