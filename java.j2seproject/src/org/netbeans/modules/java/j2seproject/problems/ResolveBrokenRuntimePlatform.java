@@ -45,8 +45,6 @@ package org.netbeans.modules.java.j2seproject.problems;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -105,13 +103,19 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
             public void actionPerformed(@NullAllowed final ActionEvent e) {
                 platforms.setEnabled(specificPlatform.isSelected());
                 create.setEnabled(specificPlatform.isSelected());
+                sourceLevelWarning.setEnabled(sourceLevel.isSelected());
                 changeSupport.fireChange();
             }
         };
         specificPlatform.addActionListener(specificPlatformListener);
         projectPlatform.addActionListener(specificPlatformListener);
+        sourceLevel.addActionListener(specificPlatformListener);
         specificPlatformListener.actionPerformed(null);
         projectPlatform.setSelected(true);
+        if (type == Type.MISSING_PLATFORM) {
+            sourceLevel.setVisible(false);
+            sourceLevelWarning.setVisible(false);
+        }
     }
 
     public void addChangeListener(@NonNull final ChangeListener listener) {
@@ -124,6 +128,7 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
 
     boolean hasValidData() {
         return projectPlatform.isSelected() ||
+           sourceLevel.isSelected() ||
            (specificPlatform.isSelected() && platforms.getSelectedItem() != null);
     }
 
@@ -133,6 +138,10 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
 
     boolean isSpecificPlatform() {
         return specificPlatform.isSelected();
+    }
+
+    boolean isDowngradeSourceLevel() {
+        return sourceLevel.isSelected();
     }
 
     @NonNull
@@ -174,20 +183,20 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
                     data.second().getProfile().getDisplayName(),
                     data.second().getJavaPlatform().getDisplayName(),
                     data.second().getJavaPlatform().getSpecification().getVersion(),
-                    getPlatformProfile(data.second().getJavaPlatform()));
+                    RuntimePlatformProblemsProvider.getPlatformProfile(data.second().getJavaPlatform()).getDisplayName());
             default:
                 throw new IllegalArgumentException(String.valueOf(type));
         }
     }
 
     @NonNull
-    private static String getPlatformProfile(@NonNull final JavaPlatform jp) {
-        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(jp.getProperties().get("netbeans.java.profile"));   //NOI18N
-        if (profile == null) {
-            profile = SourceLevelQuery.Profile.DEFAULT;
-        }
-        return profile.getDisplayName();
-    }
+    private static String getPlatformSourceLevelMessage(@NonNull final JavaPlatform jp) {
+        return NbBundle.getMessage(
+            ResolveBrokenRuntimePlatform.class,
+            "LBL_DowngradeSourceLevel",
+            jp.getSpecification().getVersion(),
+            RuntimePlatformProblemsProvider.getPlatformProfile(jp).getDisplayName());
+    }    
 
 
     static ResolveBrokenRuntimePlatform createMissingPlatform(
@@ -224,6 +233,8 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
         platforms = new javax.swing.JComboBox();
         create = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        sourceLevel = new javax.swing.JRadioButton();
+        sourceLevelWarning = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, getMessage(this.type, prj, data));
 
@@ -245,6 +256,12 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
         jLabel2.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.jLabel2.text")); // NOI18N
 
+        actions.add(sourceLevel);
+        sourceLevel.setMnemonic(org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "MNE_DowngradeSourceLevel").charAt(0));
+        sourceLevel.setText(type == Type.MISSING_PLATFORM ? "" : getPlatformSourceLevelMessage(data.second().getJavaPlatform()));
+
+        org.openide.awt.Mnemonics.setLocalizedText(sourceLevelWarning, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.sourceLevelWarning.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -253,17 +270,26 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(projectPlatform, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(specificPlatform, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(29, 29, 29)
-                        .addComponent(jLabel2)
+                        .addComponent(sourceLevelWarning)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(sourceLevel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(projectPlatform, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(specificPlatform, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(platforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(platforms, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(create))
+                        .addComponent(create))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -279,7 +305,11 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
                     .addComponent(platforms, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(create)
                     .addComponent(jLabel2))
-                .addContainerGap(75, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sourceLevel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(sourceLevelWarning)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -297,6 +327,8 @@ final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JComboBox platforms;
     private javax.swing.JRadioButton projectPlatform;
+    private javax.swing.JRadioButton sourceLevel;
+    private javax.swing.JLabel sourceLevelWarning;
     private javax.swing.JRadioButton specificPlatform;
     // End of variables declaration//GEN-END:variables
 
