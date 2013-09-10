@@ -81,7 +81,7 @@ import org.openide.util.RequestProcessor;
 )
 public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener, DeployOnSaveListener {
 
-    private static final RequestProcessor COS_PROCESSOR = new RequestProcessor("Maven Copy on Save", 5);
+    private static final RequestProcessor RP = new RequestProcessor("Maven Copy on Save", 5);
     private final Project project;
     private final FileChangeListener listener;
     
@@ -247,7 +247,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         @Override
         public void fileChanged(final FileEvent fe) {
             if (SwingUtilities.isEventDispatchThread()) {//#167740
-                COS_PROCESSOR.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         fileChanged(fe);
@@ -296,7 +296,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         @Override
         public void fileDataCreated(final FileEvent fe) {
             if (SwingUtilities.isEventDispatchThread()) {//#167740
-                COS_PROCESSOR.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         fileDataCreated(fe);
@@ -318,7 +318,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         @Override
         public void fileRenamed(final FileRenameEvent fe) {
             if (SwingUtilities.isEventDispatchThread()) {//#167740
-                COS_PROCESSOR.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         fileRenamed(fe);
@@ -358,7 +358,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         @Override
         public void fileDeleted(final FileEvent fe) {
             if (SwingUtilities.isEventDispatchThread()) { //#167740
-                COS_PROCESSOR.post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         fileDeleted(fe);
