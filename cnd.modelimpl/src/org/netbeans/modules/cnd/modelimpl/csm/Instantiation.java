@@ -488,7 +488,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public Collection<CsmInheritance> getBaseClasses() {
-            List<CsmInheritance> inheritances = null;
             if (inheritances == null) {
                 List<CsmInheritance> res = new ArrayList<>(1);
                 for (CsmInheritance inh : declaration.getBaseClasses()) {
