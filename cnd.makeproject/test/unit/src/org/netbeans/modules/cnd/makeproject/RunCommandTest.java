@@ -44,11 +44,13 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
+import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -84,10 +86,19 @@ public class RunCommandTest extends CndBaseTestCase{
     }
     
     @Test
-    public static void testExpandingMacroses() {
+    public static void testExpandingMacroses() throws InterruptedException{
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
         MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
+        final CompilerSetManagerImpl csmi = (CompilerSetManagerImpl) CompilerSetManager.get(conf.getFileSystemHost());
+        
+        int count = 100;
+        while (count > 0 && !csmi.isComplete()) {
+            Thread.sleep(1000);
+            count--;
+        }
+        assertTrue(csmi.isComplete());
+        
         String result = ProjectActionEvent.getRunCommandAsString(
                 "\"${OUTPUT_PATH}\" \"arg 1\" \"${OUTPUT_PATH}\" \"arg 2\"", 
                 conf, 
