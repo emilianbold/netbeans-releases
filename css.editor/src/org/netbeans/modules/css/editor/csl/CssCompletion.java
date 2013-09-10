@@ -734,28 +734,40 @@ public class CssCompletion implements CodeCompletionHandler {
                     
                 case URI:
                     //url(...)
-                    Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
+                    String text = ts.token().text().toString();
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(text);
                     if (m.matches()) {
                         int groupIndex = 1;
+                        //content of the url(...) function w/o ws prefix/postfix if there's any
                         String value = m.group(groupIndex);
-                        int diff = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); //use prefix from last separator in the URL
-                        if(diff != -1) {
+                        int valueStart = m.start(groupIndex);
+                    
+                        if(tokenDiff > 0) {
+                            int cutIndex = tokenDiff - valueStart;
+                            value = value.substring(0, cutIndex); //cut off everyhing after caret: fold|er/file.css
+                        }
+                        
+                        //is the value quoted?
+                        if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                            value = value.substring(1); //cut of the quote
+                        }
+                        
+                        //use prefix from last separator in the URL
+                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                        if(lastSeparatorIndex != -1) {
                             //some folders already in the path, we also need to adjust the base file
-                            int quotDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
-                            String valuePrefix = value.substring(quotDiff, diff);
+                            String valuePrefix = value.substring(0, lastSeparatorIndex);
                             FileObject base = WebUtils.resolve(file, valuePrefix);
                             if(base != null) {
-                                String prefix = value.substring(diff + 1, tokenDiff - m.start(groupIndex));
+                                String prefix = value.substring(lastSeparatorIndex + 1);
                                 List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(base,
                                 caretOffset, prefix, false, false);
                             return new CssFileCompletionResult(imports, 0);
                             }
                         } else {
                             //no separator in the URL, prefix from the beginning
-                            diff = WebUtils.isValueQuoted(value) ? 1 : 0;
-                             String valuePrefix = ts.token().text().toString().substring(m.start(groupIndex) + diff, tokenDiff);
-                        List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
-                                    caretOffset, valuePrefix, false, false);
+                            List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
+                                    caretOffset, value, false, false);
                             return new CssFileCompletionResult(imports, 0);
                         }
                         
