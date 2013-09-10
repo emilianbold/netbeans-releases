@@ -46,6 +46,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -91,6 +92,8 @@ final class Utilities {
     private static final String BUILD_SCRIPT_BACK_UP = "remote-platform-impl_backup";   //NOI18N
     private static final String BUILD_SCRIPT_PROTOTYPE = "/org/netbeans/modules/java/j2seembedded/resources/remote-platform-impl.xml";  //NOI18N
     private static final Map<String,String> CONFIG_PROPERTIES;
+    private static final Set<String> REMOVE_CONFIG_PROPERTIES = Collections.unmodifiableSet(
+        new HashSet<String>(Arrays.asList(new String[] {TARGET_RUN, TARGET_DEBUG})));
 
     static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
 
@@ -189,10 +192,10 @@ final class Utilities {
                                     }
                                     final String runtimePlatform = ep.getProperty(PLATFORM_RUNTIME);
                                     if (runtimePlatform != null && !runtimePlatform.isEmpty()) {
-                                        if (configAlreadyUpdated(ep)) {
+                                        if (configAlreadyUpdated(ep, true)) {
                                             upToDate.add(relPath);
                                         } else {
-                                            updateConfig(ep);
+                                            extendConfig(ep);
                                             final FileLock lock = cfgFile.lock();
                                             try (final OutputStream out = cfgFile.getOutputStream(lock)) {
                                                 ep.store(out);
@@ -200,6 +203,14 @@ final class Utilities {
                                                 lock.releaseLock();
                                             }
                                             updated.add(relPath);
+                                        }
+                                    } else if (configAlreadyUpdated(ep, false)) {
+                                        clearConfig(ep);
+                                        final FileLock lock = cfgFile.lock();
+                                        try (final OutputStream out = cfgFile.getOutputStream(lock)) {
+                                            ep.store(out);
+                                        } finally {
+                                            lock.releaseLock();
                                         }
                                     }
                                 }
@@ -277,18 +288,28 @@ final class Utilities {
     }
 
 
-    private static boolean configAlreadyUpdated(@NonNull final EditableProperties props) {
+    private static boolean configAlreadyUpdated(
+        @NonNull final EditableProperties props,
+        final boolean fullCheck) {
         for (Map.Entry<String,String> e : CONFIG_PROPERTIES.entrySet()) {
-            if (!e.getValue().equals(props.get(e.getKey()))) {
-                return false;
+            if (fullCheck || REMOVE_CONFIG_PROPERTIES.contains(e.getKey())) {
+                if (!e.getValue().equals(props.get(e.getKey()))) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    private static void updateConfig(@NonNull final EditableProperties props) {
+    private static void extendConfig(@NonNull final EditableProperties props) {
         for (Map.Entry<String,String> e : CONFIG_PROPERTIES.entrySet()) {
             props.setProperty(e.getKey(), e.getValue());
+        }
+    }
+
+    private static void clearConfig(@NonNull final EditableProperties props) {
+        for (String key : REMOVE_CONFIG_PROPERTIES) {
+            props.remove(key);
         }
     }
 

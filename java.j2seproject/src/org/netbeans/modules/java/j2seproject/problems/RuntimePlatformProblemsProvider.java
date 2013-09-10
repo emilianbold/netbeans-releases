@@ -73,6 +73,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
+import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -505,6 +506,9 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
                                     ep.store(out);
                                 } finally {
                                     lock.releaseLock();
+                                }
+                                for (J2SECustomPropertySaver saver : prj.getLookup().lookupAll(J2SECustomPropertySaver.class)) {
+                                    saver.save(prj);
                                 }
                                 return Result.create(Status.RESOLVED);
                             }
