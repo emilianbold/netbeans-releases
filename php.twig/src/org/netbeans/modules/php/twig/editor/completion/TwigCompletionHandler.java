@@ -78,10 +78,10 @@ import org.openide.util.NbBundle;
 
 public class TwigCompletionHandler implements CodeCompletionHandler {
     private static final DocumentationDecorator DOCUMENTATION_DECORATOR = DocumentationDecorator.getInstance();
-    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
+    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
             Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
 
-    private static final Set<TwigElement> TAGS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> TAGS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = TagDocumentationFactory.getInstance();
         TAGS.add(TwigElement.Factory.create("autoescape", documentationFactory)); //NOI18N
@@ -119,7 +119,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TAGS.add(TwigElement.Factory.create("endtrans", documentationFactory)); //NOI18N
     }
 
-    private static final Set<TwigElement> FILTERS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> FILTERS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = FilterDocumentationFactory.getInstance();
         FILTERS.add(TwigElement.Factory.create("abs", documentationFactory)); //NOI18N
@@ -156,7 +156,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 Arrays.asList(new Parameter[] {new Parameter("width"), new Parameter("'break'"), new Parameter("cut")}))); //NOI18N
     }
 
-    private static final Set<TwigElement> FUNCTIONS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> FUNCTIONS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = FunctionDocumentationFactory.getInstance();
         FUNCTIONS.add(TwigElement.Factory.create(
@@ -179,7 +179,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
                 Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
-    private static final Set<TwigElement> TESTS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> TESTS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = TestDocumentationFactory.getInstance();
         TESTS.add(TwigElement.Factory.create("constant", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'const'")}))); //NOI18N
@@ -193,7 +193,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TESTS.add(TwigElement.Factory.create("sameas", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("variable")}))); //NOI18N
     }
 
-    private static final Set<TwigElement> OPERATORS = new HashSet<TwigElement>();
+    private static final Set<TwigElement> OPERATORS = new HashSet<>();
     static {
         TwigDocumentationFactory documentationFactory = OperatorDocumentationFactory.getInstance();
         OPERATORS.add(TwigElement.Factory.create("in", documentationFactory)); //NOI18N
@@ -209,7 +209,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext codeCompletionContext) {
-        final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> completionProposals = new ArrayList<>();
         ParserResult parserResult = codeCompletionContext.getParserResult();
         if (parserResult instanceof TwigParserResult) {
             TwigParserResult twigParserResult = (TwigParserResult) parserResult;
