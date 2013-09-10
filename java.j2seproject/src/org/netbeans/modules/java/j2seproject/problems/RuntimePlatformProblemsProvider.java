@@ -49,17 +49,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
-import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
@@ -68,8 +68,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -84,11 +88,13 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Union2;
 import org.openide.util.WeakListeners;
 
 /**
@@ -141,20 +147,7 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
         }
         if (problems == null) {
             initListeners();
-            final Collection<? extends RuntimePlatformResolver> resolvers = findProblems();
-            if (!resolvers.isEmpty()) {
-                Queue<ProjectProblem> _problems = new ArrayDeque<>();
-                for (RuntimePlatformResolver resolver : resolvers) {
-                    _problems.add(
-                        ProjectProblem.createError(
-                        NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "LBL_BrokenRuntimePlatform"),
-                        NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "DESC_BrokenRuntimePlatform", resolver.getDisplayName()),
-                        resolver));
-                }
-                problems = _problems;
-            } else {
-                problems = Collections.<ProjectProblem>emptySet();
-            }            
+            problems = findProblems();
             synchronized (this) {
                 if (eventId == currentId) {
                     problemCache = problems;
@@ -171,7 +164,9 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
     public void propertyChange(@NonNull final PropertyChangeEvent evt) {
         Parameters.notNull("evt", evt); //NOI18N
         final String propName = evt.getPropertyName();
-        if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName)) {
+        if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName) ||
+            J2SEProjectProperties.JAVAC_TARGET.equals(propName) ||
+            J2SEProjectProperties.JAVAC_PROFILE.equals(propName)) {
             resetAndFire();
         }
     }
@@ -210,6 +205,19 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
             jpm.addPropertyChangeListener(WeakListeners.propertyChange(
                 this,
                 jpm));
+            J2SEPropertyEvaluator evalProvider = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+            if (evalProvider != null) {
+                evalProvider.evaluator().addPropertyChangeListener(this);
+            } else {
+                LOG.log(
+                   Level.WARNING,
+                   "No property evaluator provider in project {0}({1})", //NOI18N
+                   new Object[]{
+                       ProjectUtils.getInformation(project).getDisplayName(),
+                       FileUtil.getFileDisplayName(project.getProjectDirectory())
+                   });
+            }
+
             final FileObject projectFolder = project.getProjectDirectory();
             if (projectFolder != null) {
                 final File projectDir = FileUtil.toFile(projectFolder);
@@ -230,38 +238,62 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
     }
 
     @NonNull
-    private Collection<? extends RuntimePlatformResolver> findProblems() {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends RuntimePlatformResolver>>() {
+    private Collection<? extends ProjectProblem> findProblems() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Collection<? extends ProjectProblem>>() {
             @Override
-            public Collection<? extends RuntimePlatformResolver> run() {
-                final Collection<RuntimePlatformResolver> collector = new HashSet<>();
+            public Collection<? extends ProjectProblem> run() {
+                final Collection<ProjectProblem> collector = new HashSet<>();
                 final FileObject prjDir = project.getProjectDirectory();
                 if (prjDir != null) {
                     final FileObject cfgFolder = prjDir.getFileObject(CFG_PATH);
                     if (cfgFolder != null) {
-                        for (FileObject cfgFile : cfgFolder.getChildren()) {
-                            if (!cfgFile.hasExt("properties")) {    //NOI18N
-                                continue;
+                        final Set<JavaPlatform> allowedPlatforms = new HashSet<>();
+                        final SourceLevelQuery.Result slqr = SourceLevelQuery.getSourceLevel2(prjDir);
+                        final String sourceLevel = slqr.getSourceLevel();
+                        final SourceLevelQuery.Profile profile = slqr.getProfile();
+                        if (sourceLevel != null) {
+                            for (J2SERuntimePlatformProvider rpp : project.getLookup().lookupAll(J2SERuntimePlatformProvider.class)) {
+                                allowedPlatforms.addAll(rpp.getPlatformType(new SpecificationVersion(sourceLevel), profile));
                             }
-                            try {
-                                final EditableProperties ep = new EditableProperties(true);
-                                try (final InputStream in = cfgFile.getInputStream()){
-                                    ep.load(in);
+                            for (FileObject cfgFile : cfgFolder.getChildren()) {
+                                if (!cfgFile.hasExt("properties")) {    //NOI18N
+                                    continue;
                                 }
-                                final String runtimePlatform = ep.getProperty(J2SEProjectProperties.PLATFORM_RUNTIME);
-                                    if (runtimePlatform != null && !runtimePlatform.isEmpty()) {
-                                        if (findPlatform(runtimePlatform) == null) {
-                                            collector.add(new RuntimePlatformResolver(
+                                try {
+                                    final EditableProperties ep = new EditableProperties(true);
+                                    try (final InputStream in = cfgFile.getInputStream()){
+                                        ep.load(in);
+                                    }
+                                    final String runtimePlatform = ep.getProperty(J2SEProjectProperties.PLATFORM_RUNTIME);
+                                        if (runtimePlatform != null && !runtimePlatform.isEmpty()) {
+                                            final JavaPlatform platform = findPlatform(runtimePlatform);
+                                            if (platform == null) {
+                                                final RuntimePlatformResolver resolver = new RuntimePlatformResolver(
                                                     project,
                                                     cfgFile.getName(),
-                                                    ep.getProperty("$label"),
-                                                    runtimePlatform));
-                                        } else {
-                                            //Todo: check target level and compact profile
+                                                    ep.getProperty("$label"),   //NOI18N
+                                                    runtimePlatform);
+                                                collector.add(ProjectProblem.createError(
+                                                    NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "LBL_MissingRuntimePlatform"),
+                                                    NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "DESC_MissingRuntimePlatform", resolver.getDisplayName()),
+                                                    resolver));
+                                            } else if (!allowedPlatforms.contains(platform)) {
+                                                final RuntimePlatformResolver resolver = new RuntimePlatformResolver(
+                                                    project,
+                                                    cfgFile.getName(),
+                                                    ep.getProperty("$label"),   //NOI18N
+                                                    platform,
+                                                    new SpecificationVersion(sourceLevel),
+                                                    profile);
+                                                collector.add(ProjectProblem.createError(
+                                                    NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "LBL_InvalidRuntimePlatform"),
+                                                    NbBundle.getMessage(RuntimePlatformProblemsProvider.class, "DESC_InvalidRuntimePlatform", resolver.getDisplayName()),
+                                                    resolver));
+                                            }
                                         }
-                                    }
-                            } catch (IOException e) {
-                                Exceptions.printStackTrace(e);
+                                } catch (IOException e) {
+                                    Exceptions.printStackTrace(e);
+                                }
                             }
                         }
                     }
@@ -280,27 +312,87 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
         return null;
     }
 
+    static final class InvalidPlatformData {
+        private final JavaPlatform jp;
+        private final SpecificationVersion targetLevel;
+        private final SourceLevelQuery.Profile profile;
+
+        InvalidPlatformData(
+            @NonNull final JavaPlatform jp,
+            @NonNull final SpecificationVersion targetLevel,
+            @NonNull final SourceLevelQuery.Profile profile) {
+            Parameters.notNull("jp", jp);   //NOI18N
+            Parameters.notNull("targetLevel", targetLevel); //NOI18N
+            Parameters.notNull("profile", profile); //NOI18N
+            this.jp = jp;
+            this.targetLevel = targetLevel;
+            this.profile = profile;
+        }
+
+        @NonNull
+        JavaPlatform getJavaPlatform() {
+            return jp;
+        }
+
+        @NonNull
+        SpecificationVersion getTargetLevel() {
+            return targetLevel;
+        }
+
+        @NonNull
+        SourceLevelQuery.Profile getProfile() {
+            return profile;
+        }
+    }
+    
     private static final class RuntimePlatformResolver implements ProjectProblemResolver {
 
         private final Project prj;
         private final String cfgId;
         private final String cfgDisplayName;
-        private final String platformId;
+        private final Union2<String,InvalidPlatformData> data;
 
-        RuntimePlatformResolver(
+        private RuntimePlatformResolver(
             @NonNull final Project project,
             @NonNull final String cfgId,
             @NullAllowed final String cfgDisplayName,
-            @NonNull final String platformId) {
+            @NonNull final Union2<String,InvalidPlatformData> data) {
             Parameters.notNull("project", project); //NOI18N
             Parameters.notNull("cfgId", cfgId);     //NOI18N
-            Parameters.notNull("platformId", platformId);   //NOI18N
+            Parameters.notNull("data", data);   //NOI18N
             this.prj = project;
             this.cfgId = cfgId;
             this.cfgDisplayName = cfgDisplayName == null ?
                 cfgId :
                 cfgDisplayName;
-            this.platformId = platformId;
+            this.data = data;
+        }
+        
+        RuntimePlatformResolver(
+            @NonNull final Project project,
+            @NonNull final String cfgId,
+            @NullAllowed final String cfgDisplayName,
+            @NonNull final String platformId) {
+            this(
+                project,
+                cfgId,
+                cfgDisplayName,
+                Union2.<String,InvalidPlatformData>createFirst(platformId));
+        }
+
+        RuntimePlatformResolver(
+            @NonNull final Project project,
+            @NonNull final String cfgId,
+            @NullAllowed final String cfgDisplayName,
+            @NonNull final JavaPlatform jp,
+            @NonNull final SpecificationVersion targetLevel,
+            @NonNull final SourceLevelQuery.Profile profile) {
+            this(
+                project,
+                cfgId,
+                cfgDisplayName,
+                Union2.<String,InvalidPlatformData>createSecond(
+                    new InvalidPlatformData(jp, targetLevel, profile)));
         }
 
         String getDisplayName() {
@@ -309,9 +401,13 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
 
         @Override
         public Future<Result> resolve() {
-            final ResolveMissingRuntimePlatform panel = ResolveMissingRuntimePlatform.createMissingPlatform(
-                    prj,
-                    platformId);
+            final ResolveBrokenRuntimePlatform panel = data.hasFirst() ?
+                    ResolveBrokenRuntimePlatform.createMissingPlatform(
+                        prj,
+                        data.first()) :
+                    ResolveBrokenRuntimePlatform.createInvalidPlatform(
+                        prj,
+                        data.second());
             final OK okButton = new OK(panel);
             final DialogDescriptor dd = new DialogDescriptor(
                     panel,
@@ -358,14 +454,14 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
             final FileObject thisPrjDir = prj.getProjectDirectory();
             final FileObject otherPrjDir = other.prj.getProjectDirectory();
             return thisPrjDir == null ? otherPrjDir == null : thisPrjDir.equals(otherPrjDir) &&
-                platformId.equals(other.platformId);
+                data.equals(other.data);
         }
 
         @Override
         public int hashCode() {
             int res = 17;
             res = res * 31 + Objects.hashCode(prj.getProjectDirectory());
-            res = res * 31 + platformId.hashCode();
+            res = res * 31 + data.hashCode();
             return res;
         }
 
@@ -407,9 +503,9 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
 
     private static class OK extends JButton implements ChangeListener {
 
-        private ResolveMissingRuntimePlatform panel;
+        private ResolveBrokenRuntimePlatform panel;
 
-        OK (@NonNull final ResolveMissingRuntimePlatform panel) {
+        OK (@NonNull final ResolveBrokenRuntimePlatform panel) {
             super(NbBundle.getMessage(RuntimePlatformProblemsProvider.class,"LBL_OK"));
             Parameters.notNull("panel", panel);
             this.panel = panel;

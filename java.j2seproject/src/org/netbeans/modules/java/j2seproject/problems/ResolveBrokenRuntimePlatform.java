@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.j2seproject.problems;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.DefaultComboBoxModel;
@@ -50,21 +52,24 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Union2;
 
 /**
  *
  * @author Tomas Zezula
  */
-final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
+final class ResolveBrokenRuntimePlatform extends javax.swing.JPanel {
 
     private static enum Type {
         MISSING_PLATFORM,
@@ -74,36 +79,38 @@ final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
     
     private final Type type;
     private final Project prj;
-    private final String platformId;
+    private final Union2<String,RuntimePlatformProblemsProvider.InvalidPlatformData> data;
     private final ChangeSupport changeSupport;
 
     /**
      * Creates new form ResolveMissingRuntimePlatform
      */
-    private ResolveMissingRuntimePlatform(
+    private ResolveBrokenRuntimePlatform(
             @NonNull final Type type,
             @NonNull final Project prj,
-            @NonNull final String platformId) {
+            @NonNull final Union2<String,RuntimePlatformProblemsProvider.InvalidPlatformData> data) {
         Parameters.notNull("type", type);   //NOI18N
         Parameters.notNull("prj", prj);   //NOI18N
-        Parameters.notNull("platformId", platformId);   //NOI18N
+        Parameters.notNull("data", data);   //NOI18N
         this.type = type;
         this.prj = prj;
-        this.platformId = platformId;
+        this.data = data;
         this.changeSupport = new ChangeSupport(this);
         initComponents();
         platforms.setRenderer(new PlatformRenderer());
         platforms.setModel(new DefaultComboBoxModel<JavaPlatform>());
         updatePlatforms();
-        final ItemListener specificPlatformListener = new ItemListener() {
+        final ActionListener specificPlatformListener = new ActionListener() {
             @Override
-            public void itemStateChanged(ItemEvent e) {
+            public void actionPerformed(@NullAllowed final ActionEvent e) {
                 platforms.setEnabled(specificPlatform.isSelected());
                 create.setEnabled(specificPlatform.isSelected());
+                changeSupport.fireChange();
             }
         };
-        specificPlatform.addItemListener(specificPlatformListener);
-        specificPlatformListener.itemStateChanged(null);
+        specificPlatform.addActionListener(specificPlatformListener);
+        projectPlatform.addActionListener(specificPlatformListener);
+        specificPlatformListener.actionPerformed(null);
         projectPlatform.setSelected(true);
     }
 
@@ -150,21 +157,55 @@ final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
     @NonNull
     private static String getMessage(
         @NonNull final Type type,
-        @NonNull final String platformId) {
+        @NonNull final Project project,
+        @NonNull final Union2<String,RuntimePlatformProblemsProvider.InvalidPlatformData> data) {
         switch (type) {
             case MISSING_PLATFORM:
-                return NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "LBL_MissingRuntimePlatform", platformId);
+                return NbBundle.getMessage(
+                    ResolveBrokenRuntimePlatform.class,
+                    "LBL_ResolveMissingRuntimePlatform",
+                    data.first());
             case INVALID_PLATFORM:
+                return NbBundle.getMessage(
+                    ResolveBrokenRuntimePlatform.class,
+                    "LBL_ResolveInvalidRuntimePlatform",
+                    ProjectUtils.getInformation(project).getDisplayName(),
+                    data.second().getTargetLevel(),
+                    data.second().getProfile().getDisplayName(),
+                    data.second().getJavaPlatform().getDisplayName(),
+                    data.second().getJavaPlatform().getSpecification().getVersion(),
+                    getPlatformProfile(data.second().getJavaPlatform()));
             default:
                 throw new IllegalArgumentException(String.valueOf(type));
         }
     }
 
+    @NonNull
+    private static String getPlatformProfile(@NonNull final JavaPlatform jp) {
+        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(jp.getProperties().get("netbeans.java.profile"));   //NOI18N
+        if (profile == null) {
+            profile = SourceLevelQuery.Profile.DEFAULT;
+        }
+        return profile.getDisplayName();
+    }
 
-    static ResolveMissingRuntimePlatform createMissingPlatform(
+
+    static ResolveBrokenRuntimePlatform createMissingPlatform(
             @NonNull final Project project,
             @NonNull final String platformId) {
-        return new ResolveMissingRuntimePlatform(Type.MISSING_PLATFORM, project, platformId);
+        return new ResolveBrokenRuntimePlatform(
+                Type.MISSING_PLATFORM,
+                project,
+                Union2.<String, RuntimePlatformProblemsProvider.InvalidPlatformData>createFirst(platformId));
+    }
+
+    static ResolveBrokenRuntimePlatform createInvalidPlatform(
+            @NonNull final Project project,
+            @NonNull final RuntimePlatformProblemsProvider.InvalidPlatformData data) {
+        return new ResolveBrokenRuntimePlatform(
+            Type.INVALID_PLATFORM,
+            project,
+            Union2.<String, RuntimePlatformProblemsProvider.InvalidPlatformData>createSecond(data));
     }
 
     /**
@@ -184,17 +225,17 @@ final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
         create = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, getMessage(this.type, platformId));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, getMessage(this.type, prj, data));
 
         actions.add(projectPlatform);
-        org.openide.awt.Mnemonics.setLocalizedText(projectPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.projectPlatform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectPlatform, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.projectPlatform.text")); // NOI18N
 
         actions.add(specificPlatform);
-        org.openide.awt.Mnemonics.setLocalizedText(specificPlatform, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.specificPlatform.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(specificPlatform, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.specificPlatform.text")); // NOI18N
 
         platforms.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        org.openide.awt.Mnemonics.setLocalizedText(create, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.create.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(create, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.create.text")); // NOI18N
         create.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 create(evt);
@@ -202,7 +243,7 @@ final class ResolveMissingRuntimePlatform extends javax.swing.JPanel {
         });
 
         jLabel2.setLabelFor(platforms);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ResolveMissingRuntimePlatform.class, "ResolveMissingRuntimePlatform.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ResolveBrokenRuntimePlatform.class, "ResolveBrokenRuntimePlatform.jLabel2.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
