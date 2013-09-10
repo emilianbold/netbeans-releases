@@ -67,6 +67,7 @@ import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosest
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.utils.MutableObject;
@@ -435,16 +436,15 @@ public class TemplateUtils {
         return type;
     }   
 
-    public static Map<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
-        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-        if (inst != null) {
-            CsmOffsetableDeclaration decl = inst.getTemplateDeclaration();
-            newMapping.putAll(inst.getMapping());
-            if(decl instanceof CsmInstantiation) {
-                newMapping.putAll(gatherMapping((CsmInstantiation) decl));
+    public static MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> gatherMapping(CsmInstantiation inst) {
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapHierarchy = new MapHierarchy<>(inst.getMapping());
+            
+            while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                mapHierarchy.push(inst.getMapping());
             }
-        }
-        return newMapping;
+            
+            return mapHierarchy;
     }
 
     public static boolean isTemplateQualifiedName(String name) {

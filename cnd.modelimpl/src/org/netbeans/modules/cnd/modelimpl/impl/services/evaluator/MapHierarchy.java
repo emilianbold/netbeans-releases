@@ -78,6 +78,10 @@ public final class MapHierarchy<K, V> {
         return maps.peek();
     }
     
+    public List<Map<K, V>> getMaps() {
+        return getMaps(new AcceptingFilter());
+    }
+    
     public List<Map<K, V>> getMaps(Filter<Map<K, V>> filter) {
         List<Map<K, V>> result = new ArrayList<Map<K, V>>();
         for (Map<K, V> map : maps) {
@@ -116,6 +120,14 @@ public final class MapHierarchy<K, V> {
             }
         }
         return null;
+    }
+    
+    public int size() {
+        int result = 0;
+        for (Map<K, V> map : maps) {
+            result += map.size();
+        }
+        return result;
     }
     
     public Iterable<Map.Entry<K, V>> entries() {
@@ -271,6 +283,15 @@ public final class MapHierarchy<K, V> {
     public static interface Filter<T> {
         
         boolean accept(T t);
+        
+    }
+    
+    public static class AcceptingFilter<K, V> implements Filter<Map<K, V>> {
+
+        @Override
+        public boolean accept(Map<K, V> t) {
+            return true;
+        }
         
     }
     
