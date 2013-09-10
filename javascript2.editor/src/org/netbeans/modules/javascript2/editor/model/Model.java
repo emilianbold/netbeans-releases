@@ -441,7 +441,7 @@ public final class Model {
         return getModelVisitor().getGlobalObject();
     }
     
-    public void resolve() {
+    public synchronized void resolve() {
         if (visitor == null) {
             getModelVisitor();
         }
