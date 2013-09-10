@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvider;
 import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.parser.generated.EvaluatorParser;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
@@ -140,11 +141,19 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     
     @Override
     public Object eval(String expr, CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
-        return eval(expr, decl, null, 0, 0, mapping);
+        return eval(expr, decl, new MapHierarchy<>(mapping));
     }
+    
+    public Object eval(String expr, CsmOffsetableDeclaration decl, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, null, 0, 0, mapping);
+    }    
 
     @Override
     public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return eval(expr, decl, expressionFile, startOffset, endOffset, new MapHierarchy<>(mapping));
+    }
+    
+    public Object eval(String expr, CsmOffsetableDeclaration decl, CsmFile expressionFile, int startOffset, int endOffset, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
@@ -166,12 +175,15 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         return result;
     }
     
-    private Map<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
+    private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
         if (TraceFlags.EXPRESSION_EVALUATOR_RECURSIVE_CALC) {
-            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-            mapping.putAll(inst.getMapping());
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapHierarchy = new MapHierarchy<>(inst.getMapping());
+            
             while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
                 inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                
+                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();                
+                mapHierarchy.push(mapping);
                 
                 List<CsmTemplateParameter> orderedParamsList = new ArrayList<>(inst.getMapping().keySet());
 
@@ -201,7 +213,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                     Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
                     CsmSpecializationParameter spec = inst.getMapping().get(param);
                     if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                        Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapping);
+                        Object o = eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), inst.getTemplateDeclaration(), mapHierarchy);
                         CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(o.toString(),
                                 spec.getContainingFile(), spec.getStartOffset(), spec.getEndOffset());
                         newMapping.put(param, newSpec);
@@ -211,12 +223,13 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
                     mapping.putAll(newMapping);
                 }
             }
-            return mapping;
+            
+            return mapHierarchy;
         } else {
-            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<CsmTemplateParameter, CsmSpecializationParameter>();
-            mapping.putAll(inst.getMapping());
-            if(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                mapping.putAll(getMapping((CsmInstantiation) inst.getTemplateDeclaration()));
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(inst.getMapping());
+            while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                mapping.push(inst.getMapping());
             }
             return mapping;
         }
