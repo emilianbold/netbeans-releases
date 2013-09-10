@@ -46,9 +46,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.editor.EditorUtilities;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -89,7 +86,7 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Pisl
  */
-class JsCodeCompletion implements CodeCompletionHandler {
+class JsCodeCompletion implements CodeCompletionHandler2 {
 
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
@@ -241,8 +238,17 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        final StringBuilder documentation = new StringBuilder();
-        if(element instanceof IndexedElement) {
+        Documentation doc = documentElement(info, element);
+        if (doc != null) {
+            return doc.getContent();
+        }
+        return null;
+    }
+
+    @Override
+    public Documentation documentElement(ParserResult info, ElementHandle element) {
+        if (element instanceof IndexedElement) {
+            final Documentation[] result = new Documentation[1];
             final IndexedElement indexedElement = (IndexedElement)element;
             FileObject nextFo = indexedElement.getFileObject();
             if (nextFo != null) {
@@ -259,10 +265,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
                                 JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
                                 if (property != null) {
-                                    String doc = property.getDocumentation();
-                                    if (doc != null && !doc.isEmpty()) {
-                                        documentation.append(doc);
-                                    }
+                                    Documentation doc = property.getDocumentation();
+                                    result[0] = doc;
                                 }
 
                             } else {
@@ -275,27 +279,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
             }
+            if (result[0] != null) {
+                return result[0];
+            }
         } else if (element instanceof JsObject) {
             JsObject jsObject = (JsObject) element;
             if (jsObject.getDocumentation() != null) {
-                documentation.append(jsObject.getDocumentation());
+                return jsObject.getDocumentation();
             }
         }
-        if (documentation.length() == 0) {
-            for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
-                String doc = interceptor.getHelpDocumentation(info, element);
-                if (doc != null && !doc.isEmpty()) {
-                    documentation.append(doc);
-                }
+
+        for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
+            String doc = interceptor.getHelpDocumentation(info, element);
+            if (doc != null && !doc.isEmpty()) {
+                return Documentation.create(doc);
             }
         }
+
         if (element instanceof JsDocumentationElement) {
-            return ((JsDocumentationElement) element).getDocumentation();
+            return Documentation.create(((JsDocumentationElement) element).getDocumentation());
         }
-        if (documentation.length() == 0) {
-            documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
-        }
-        return documentation.toString();
+
+        return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));
     }
 
     

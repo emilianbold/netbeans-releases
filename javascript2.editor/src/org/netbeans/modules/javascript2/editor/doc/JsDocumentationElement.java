@@ -104,6 +104,7 @@ public class JsDocumentationElement implements ElementHandle {
         return OffsetRange.NONE;
     }
 
+    // XXX csl Documentation usage ?
     public String getDocumentation() {
         return documentation;
     }
