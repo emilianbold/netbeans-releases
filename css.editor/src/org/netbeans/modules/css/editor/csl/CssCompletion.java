@@ -616,12 +616,30 @@ public class CssCompletion implements CodeCompletionHandler {
             case URI:
                 if (diff > 0) {
                     //inside the URI value
-                    Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
+                    String text = ts.token().text().toString();
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(text);
                     if (m.matches()) {
                         int groupIndex = 1;
+                        //content of the url(...) function w/o ws prefix/postfix if there's any
                         String value = m.group(groupIndex);
-                        int quotesDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
-                        skipPrefixChars = m.start(groupIndex) + quotesDiff;
+                        int valueStart = m.start(groupIndex);
+                    
+                        //cut off everyhing after caret: fold|er/file.css
+                        int cutIndex = diff - valueStart;
+                        value = value.substring(0, cutIndex); 
+
+                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                        if(lastSeparatorIndex != -1) {
+                            //url(folder/xxx|)
+                            skipPrefixChars = valueStart + lastSeparatorIndex + 1;
+                        } else {
+                            //url(xx|)
+                            skipPrefixChars = valueStart;
+                             //is the value quoted?
+                            if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                                skipPrefixChars++;
+                            }
+                        }
                     }
             }
             break;
