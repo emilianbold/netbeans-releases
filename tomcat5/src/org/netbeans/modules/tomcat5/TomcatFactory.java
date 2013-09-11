@@ -351,7 +351,7 @@ public final class TomcatFactory implements DeploymentFactory {
     }
 
     @CheckForNull
-    private static File getTomEEWebAppJar(File catalinaHome, File catalinaBase) {
+    public static File getTomEEWebAppJar(File catalinaHome, File catalinaBase) {
         // XXX this is not really accurate as when using basedir
         // webapp from home may not be linked there we would have to check xml files
         File ret = getTomEEWebAppJar(catalinaHome);
