@@ -355,22 +355,6 @@ public final class MenuWarmUpTask implements Runnable {
                 UILOG.log(r);
             }
 
-            if (counter >= 1) {
-                Message nd = new Message(new RefreshWarningVisual());
-                nd.setOptions(new Object[] { Message.YES_OPTION, Message.NO_OPTION });
-                if (DialogDisplayer.getDefault().notify(nd) == Message.YES_OPTION) {
-                    NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").putBoolean("manual", true); // NOI18N
-
-                    if (UILOG.isLoggable(Level.FINE)) {
-                        LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_REFRESH_OFF"); // NOI18N
-                        r.setParameters(new Object[]{counter});
-                        r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-                        r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-                        r.setLoggerName(UILOG.getName());
-                        UILOG.log(r);
-                    }
-                }
-            }
             return true;
         }
     } // end of NbWindowsAdapter
