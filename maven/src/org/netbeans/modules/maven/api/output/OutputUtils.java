@@ -109,7 +109,9 @@ public final class OutputUtils {
          */
         @Override
         @NbBundle.Messages({
+            "# {0} - class name",
             "OutputUtils_NotFound=Class \"{0}\" not found on classpath", 
+            "# {0} - file name",
             "OutputUtils_NoSource=Source file not found for \"{0}\""
         })
         public void outputLineAction(OutputEvent ev) {

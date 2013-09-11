@@ -76,14 +76,15 @@ import org.openide.util.Lookup;
 
 /**
  * a default implementation of MavenActionsProvider, a fallback when nothing is
- * user configured or overriden by a more specialized provider.
+ * user configured or overridden by a more specialized provider.
  * @author mkleint
  */
 public abstract class AbstractMavenActionsProvider implements MavenActionsProvider {
+    private static final Logger LOG = Logger.getLogger(AbstractMavenActionsProvider.class.getName());
 
     protected ActionToGoalMapping originalMappings;
-    protected NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
-    private NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
+    protected final NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
+    private final NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
 
     /** Creates a new instance of DefaultActionProvider */
     public AbstractMavenActionsProvider() {
@@ -91,6 +92,8 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     /**
      * just gets the array of FOs from lookup.
+     * @param lookup
+     * @return 
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
@@ -165,17 +168,16 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                     rdr = new InputStreamReader(in);
                     originalMappings = reader.read(rdr);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.INFO, "Loading raw mappings", ex);
                     originalMappings = new ActionToGoalMapping();
                 } catch (XmlPullParserException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.INFO, "Loading raw mappings", ex);
                     originalMappings = new ActionToGoalMapping();
                 } finally {
                     if (rdr != null) {
                         try {
                             rdr.close();
                         } catch (IOException ex) {
-                            ex.printStackTrace();
                         }
                     }
                 }
@@ -189,7 +191,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
         try {
             writer.write(str, getRawMappings());
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.INFO, "Loading raw mappings", ex);
         }
         return str.toString();
     }
@@ -214,6 +216,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     /**
      * override in children that are listening on changes of model and need refreshing..
+     * @return 
      */
     protected boolean reloadStream() {
         return false;
@@ -223,6 +226,8 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
      * get a action to maven mapping configuration for the given action.
      * No replacements happen.
      * The instance returned is always a new copy, can be modified or reused.
+     * @param actionName
+     * @param project
      */
     @Override
     public NetbeansActionMapping getMappingForAction(String actionName, Project project) {
@@ -246,9 +251,9 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 }
             }
         } catch (XmlPullParserException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.INFO, "Parsing action mapping", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.INFO, "Parsing action mapping", ex);
         }
         return action;
 
@@ -287,15 +292,19 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
                 return mrc;
             }
         } catch (XmlPullParserException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.INFO, "Parsing action mapping", ex);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            LOG.log(Level.INFO, "Parsing action mapping", ex);
         }
         return null;
     }
 
     /**
      * takes the input stream and a map, and for each occurence of ${<mapKey>}, replaces it with map entry value..
+     * @param replaceMap
+     * @param in
+     * @return 
+     * @throws java.io.IOException
      */
     protected Reader performDynamicSubstitutions(Map<String,String> replaceMap, String in) throws IOException {
         return new StringReader(dynamicSubstitutions(replaceMap, in));

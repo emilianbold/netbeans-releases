@@ -183,11 +183,18 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         }
 
         @Override
-        @Messages({"TIP_Resource1=<html>Resource directory defined in POM.<br><i>Directory: </i><b>{0}</b><br>", 
+        @Messages({
+            "# {0} - directory path",
+            "TIP_Resource1=<html>Resource directory defined in POM.<br><i>Directory: </i><b>{0}</b><br>", 
+            "# {0} - maven resource target path",
             "TIP_Resource2=<i>Target Path: </i><b>{0}</b><br>", 
+            "# {0} - boolean value",
             "TIP_Resource6=<b><i>Filtering: </i>{0}. Please note that some IDE features rely on non-filtered content only.</b><br>", 
+            "# {0} - includes string value",
             "TIP_Resource3=<i>Includes: </i><b>{0}</b><br>", 
+            "# {0} - excludes string value",
             "TIP_Resource4=<i>Excludes: </i><b>{0}</b><br>", 
+            "# {0} - directory path",
             "TIP_Resource5=<html>Configuration Directory<br><i>Directory: </i><b>{0}</b><br>"})
         public String getShortDescription() {
             if (group.getResource() != null) {

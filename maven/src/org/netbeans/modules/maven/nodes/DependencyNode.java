@@ -1235,7 +1235,9 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             }
 
             @Override
-            @Messages("ERR_No_Javadoc_Found=Javadoc for {0} not found.")
+            @Messages({
+                "# {0} - artifact path",
+                "ERR_No_Javadoc_Found=Javadoc for {0} not found."})
             public void actionPerformed(ActionEvent e) {
                 DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
                 if (dobj == null) {

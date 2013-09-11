@@ -1071,6 +1071,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         
 
         @Messages({"MSG_ClassesExcluded=Too general query. Class names excluded from the search.",
+                   "# {0} - number",
+                   "# {1} - total number",
                    "MSG_Narrow=Only {0} of {1} results shown. Consider narrowing your search."
                   })
         void find(String queryText) {

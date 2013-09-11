@@ -801,7 +801,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }
     
-    @Messages({"MAVEN_RUNTIME_Bundled=Bundled", "MAVEN_RUNTIME_External={0}", "MAVEN_RUNTIME_Browse=Browse..."})
+    @Messages({
+        "MAVEN_RUNTIME_Bundled=Bundled", 
+        "# {0} - external maven",
+        "MAVEN_RUNTIME_External={0}", 
+        "MAVEN_RUNTIME_Browse=Browse..."})
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
 
