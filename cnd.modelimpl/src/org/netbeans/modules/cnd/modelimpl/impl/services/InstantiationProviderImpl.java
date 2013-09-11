@@ -574,8 +574,8 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
             List<CsmTemplateParameter> clsParams = ((CsmTemplate)classifier).getTemplateParameters();
             
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping((CsmInstantiation) classifier);
-            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>(mapping.peek());
             
+            Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();            
             Set<CsmTemplateParameter> mapped = new HashSet<>();
             
             outer:
