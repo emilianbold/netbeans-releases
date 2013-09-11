@@ -476,8 +476,8 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                     new ProgressRunnable<Void>() {
                 @Override
                 public Void run(ProgressHandle handle) {
-                    handle.start(2);
-                    handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"));
+                    handle.switchToDeterminate(2);
+                    handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"),0);
                     try {
                         int res = jreCreate(data.first());
                         if (res != 0) {
@@ -491,7 +491,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                                 }
                             });
                             return null;
-                        }
+                        };
                         handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
                         res = upload(ejreTmp, data.second());
                         if (res != 0) {
@@ -506,7 +506,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                             });
                             return null;
                         }
-                        handle.progress(2);
+                        handle.finish();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {

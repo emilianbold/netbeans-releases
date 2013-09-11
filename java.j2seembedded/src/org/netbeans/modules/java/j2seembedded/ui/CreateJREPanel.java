@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.java.j2seembedded.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -57,6 +60,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -69,13 +73,23 @@ import org.openide.util.Utilities;
 public class CreateJREPanel extends javax.swing.JPanel {
 
     private static final String HELP_ID = "java.j2seembedded.create-remote-platform";    //NOI18N
-    private boolean valid = false;
-    private final static JButton buttonCreate = new JButton(NbBundle.getMessage(CreateJREPanel.class, "LBL_Dialog_Button_Create"));
+    private static final String KEY_EJDK = "ejdk.home"; //NOI18N
 
-    public CreateJREPanel(
+    private final JButton buttonCreate;
+    private boolean valid = false;
+
+    private CreateJREPanel(
+            @NonNull JButton okOption,
             @NullAllowed final String username,
             @NullAllowed final String host) {
         assert username == null ? host == null : host != null;
+        buttonCreate = okOption;
+        buttonCreate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setEJDKHome(jreCreateLocation.getText());
+            }
+        });
         initComponents();
 
         final DocumentListener docListener = new DocumentListener() {
@@ -104,6 +118,10 @@ public class CreateJREPanel extends javax.swing.JPanel {
         } else {
             remoteJREPath.setText(NbBundle.getMessage(CreateJREPanel.class, "LBL_JRE_Path_Default", username)); //NOI18N
         }
+        final File path = getEJDKHome();
+        if (path != null) {
+            jreCreateLocation.setText(path.getAbsolutePath());
+        }
         validatePanel();
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -119,8 +137,8 @@ public class CreateJREPanel extends javax.swing.JPanel {
     public static List<String> configure(
             @NonNull File destFolder) {
         Parameters.notNull("destFolder", destFolder);   //NOI18N
-        CreateJREPanel panel = new CreateJREPanel(null, null);
-        return configureImpl(panel, destFolder);
+        final Pair<List<String>,String> data = configureImpl(null, null, destFolder);
+        return data == null ? null : data.first();
     }
 
     @CheckForNull
@@ -130,18 +148,17 @@ public class CreateJREPanel extends javax.swing.JPanel {
         @NonNull File destFolder) {
         Parameters.notNull("destFolder", destFolder);   //NOI18N
         Parameters.notNull("userName", userName);   //NOI18N
-        Parameters.notNull("host", host);   //NOI18N
-        final CreateJREPanel panel = new CreateJREPanel(userName, host);
-        final List<String> cmdLine = configureImpl(panel, destFolder);
-        return cmdLine == null ?
-            null :
-            Pair.<List<String>,String>of(cmdLine, panel.getRemoteJREPath());
+        Parameters.notNull("host", host);   //NOI18N        
+        return configureImpl(userName, host, destFolder);
     }
 
     @CheckForNull
-    private static List<String> configureImpl(
-        @NonNull final CreateJREPanel panel,
-        @NonNull final File destFolder) {        
+    private static Pair<List<String>,String> configureImpl(
+        @NullAllowed final String userName,
+        @NullAllowed final String host,
+        @NonNull final File destFolder) {
+        JButton buttonCreate = new JButton(NbBundle.getMessage(CreateJREPanel.class, "LBL_Dialog_Button_Create"));
+        final CreateJREPanel panel = new CreateJREPanel(buttonCreate, userName, host);
         DialogDescriptor dd = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(CreateJREPanel.class, "LBL_CreateJRETitle"), //NOI18N
@@ -217,7 +234,7 @@ public class CreateJREPanel extends javax.swing.JPanel {
                 cmdLine.add("--extension"); //NOI18N
                 cmdLine.addAll(extensions);
             }
-            return cmdLine;
+            return  Pair.<List<String>,String>of(cmdLine, panel.getRemoteJREPath());
         }
         return null;
     }
@@ -572,5 +589,21 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
     public boolean isPanelValid() {
         return valid;
+    }
+
+    @CheckForNull
+    private static File getEJDKHome() {
+        final Preferences prefs = NbPreferences.forModule(CreateJREPanel.class);
+        final String path = prefs.get(KEY_EJDK, null);
+        return path == null ? null : new File(path);
+    }
+
+    private static void setEJDKHome(@NullAllowed final String path) {
+        final Preferences prefs = NbPreferences.forModule(CreateJREPanel.class);
+        prefs.put(
+            KEY_EJDK,
+            path == null || path.isEmpty() ?
+                null :
+                path);
     }
 }
