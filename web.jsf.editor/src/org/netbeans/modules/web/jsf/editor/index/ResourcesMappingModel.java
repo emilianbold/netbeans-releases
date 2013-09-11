@@ -87,7 +87,7 @@ public class ResourcesMappingModel extends JsfPageModel {
         StringBuilder resString = new StringBuilder();
         for (Iterator<Resource> it = staticResources.iterator(); it.hasNext();) {
             Resource resource = it.next();
-            resString.append(resource.type);
+            resString.append(resource.type.toString());
             resString.append(NAME_SEPARATOR);
             resString.append(resource.name);
             resString.append(LIB_SEPARATOR);
@@ -196,6 +196,7 @@ public class ResourcesMappingModel extends JsfPageModel {
                         case OPEN_TAG:
                             OpenTag openTag = (OpenTag) node;
                             if (LexerUtils.equals(LINK_TAG_NAME, openTag.unqualifiedName(), true, true)) {
+                                // TODO - get correct resource values from the EL
                                 Attribute rel = openTag.getAttribute("rel");            //NOI18N
                                 Attribute type = openTag.getAttribute("type");          //NOI18N
                                 Attribute href = openTag.getAttribute("href");          //NOI18N
@@ -207,6 +208,7 @@ public class ResourcesMappingModel extends JsfPageModel {
                                         href.unquotedValue().toString());
                                 resources.add(resource);
                             } else if (LexerUtils.equals(SCRIPT_TAG_NAME, openTag.unqualifiedName(), true, true)) {
+                                // TODO - get correct resource values from the EL
                                 Attribute type = openTag.getAttribute("type");          //NOI18N
                                 Attribute src = openTag.getAttribute("src");            //NOI18N
                                 if (type == null || src == null) {

@@ -109,7 +109,7 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
     }
 
     private static String getRelativePathForResource(FileObject file, ResourcesMappingModel.Resource resource, String relPath) {
-        // TODO for contracts
+        // TODO handle contracts
         if (resource.getLibrary().isEmpty()) {
             return RESOURCE_DIR + "/" + resource.getName();
         } else {
@@ -126,9 +126,11 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
         String[] pairs = query.split("&"); //NOI18N
         for (String pair : pairs) {
             int idx = pair.indexOf("="); //NOI18N
-            result.put(
-                    URLDecoder.decode(pair.substring(0, idx), "UTF-8"),     //NOI18N
-                    URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));   //NOI18N
+            if (idx != -1) {
+                result.put(
+                        URLDecoder.decode(pair.substring(0, idx), "UTF-8"),     //NOI18N
+                        URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));   //NOI18N
+            }
         }
         return result;
     }
