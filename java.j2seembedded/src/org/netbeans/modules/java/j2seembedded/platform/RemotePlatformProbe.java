@@ -128,7 +128,7 @@ public final class RemotePlatformProbe {
                     prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
                 }
 
-                final FileObject antScript = FileUtil.toFileObject(buildScript != null ? buildScript : createBuildScript());
+                final FileObject antScript = FileUtil.toFileObject(buildScript != null && buildScript.exists() ? buildScript : createBuildScript());
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
                 final int antResult = executorTask.result();
                 if (antResult != 0) {

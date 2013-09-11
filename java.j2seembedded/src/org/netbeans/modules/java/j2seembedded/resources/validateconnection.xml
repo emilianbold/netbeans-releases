@@ -75,6 +75,7 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <scp todir="${remote.username}@${remote.host}:${remote.jre.dir}" port="${remote.port}" password="${remote.password}" trust="true">
             <fileset dir="${jre.dir}"/>
         </scp>
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true" command="chmod -R 755 '${remote.jre.dir}/bin'" />
     </target>
     
     <target name="upload-JRE-keyfile">
@@ -82,5 +83,6 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <scp todir="${remote.username}@${remote.host}:${remote.jre.dir}" port="${remote.port}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true">
             <fileset dir="${jre.dir}"/>
         </scp>
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true" command="chmod -R 755 '${remote.jre.dir}/bin'" />
     </target>
 </project>
