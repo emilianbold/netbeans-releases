@@ -45,7 +45,10 @@ package org.netbeans.modules.git.ui.history;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.List;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
@@ -75,10 +78,12 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     
     public static void openSearch(final File repository, final File[] roots, final String contextName) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        final String activeBranch = getActiveBranchName(repository);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
                 SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, roots);
+                tc.setBranch(activeBranch);
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
@@ -122,6 +127,19 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.activateDiffView(true);
             }
         });
+    }
+
+    private static String getActiveBranchName (File repository) {
+        GitBranch activeBranch = RepositoryInfo.getInstance(repository).getActiveBranch();
+        String branchName = null;
+        if (activeBranch != GitBranch.NO_BRANCH_INSTANCE) {
+            if (activeBranch.getName() == GitBranch.NO_BRANCH) {
+                branchName = GitUtils.HEAD;
+            } else {
+                branchName = activeBranch.getName();
+            }
+        }
+        return branchName;
     }
 
 }

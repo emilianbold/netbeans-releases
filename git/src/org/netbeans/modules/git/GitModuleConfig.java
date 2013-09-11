@@ -90,6 +90,7 @@ public final class GitModuleConfig {
     private static final String DELIMITER               = "<=~=>";              // NOI18N
     private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
+    private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled"; //NOI18N
     
     private String lastCanceledCommitMessage;
     
@@ -462,6 +463,14 @@ public final class GitModuleConfig {
 
     public void setDiffViewMode (int value) {
         getPreferences().putInt(PROP_DIFF_VIEW_MODE, value);
+    }
+    
+    public boolean isSearchOnlyCurrentBranchEnabled () {
+        return getPreferences().getBoolean(KEY_SEARCH_ON_BRANCH, true);
+    }
+
+    public void setSearchOnlyCurrentBranchEnabled (boolean enabled) {
+        getPreferences().putBoolean(KEY_SEARCH_ON_BRANCH, enabled);
     }
     
     private static class GitConnectionSettingsEntry {
