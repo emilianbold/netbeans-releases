@@ -123,6 +123,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private boolean selectFirstRevision;
     private DiffResultsViewFactory diffViewFactory;
     private boolean searchStarted;
+    private String currentBranch;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -182,6 +183,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     boolean isShowInfo() {
         return fileInfoCheckBox.isSelected();
+    }
+
+    void setBranch (String branch) {
+        this.currentBranch = branch;
     }
 
     void setSearchCriteria(boolean b) {
@@ -246,6 +251,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         getActionMap().put("jumpPrev", prevAction); // NOI18N
         
         fileInfoCheckBox.setSelected(GitModuleConfig.getDefault().getShowFileInfo());
+        
+        criteria.btnSelectBranch.addActionListener(this);
     }
 
     private ExplorerManager             explorerManager;
@@ -363,8 +370,17 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         cancelBackgroundTasks();
         setResults(null, null, true, -1);
         GitModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
-        currentSearch = new SearchExecutor(this);
-        currentSearch.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
+        if (currentBranch != null) {
+            // search history opened with request to work only on current branch
+            // did user change this setting and cleared the branch field?
+            GitModuleConfig.getDefault().setSearchOnlyCurrentBranchEnabled(criteria.getBranch() != null);
+        }
+        try {
+            currentSearch = new SearchExecutor(this);
+            currentSearch.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
+        } catch (IllegalArgumentException ex) {
+            GitClientExceptionHandler.annotate(ex.getLocalizedMessage());
+        }
     }
     
     void cancelBackgroundTasks () {
@@ -624,6 +640,11 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
             }
             if (diffView != null) {
                 diffView.refreshResults(filter(results));
+            }
+        } else if (e.getSource() == criteria.btnSelectBranch) {
+            BranchSelector selector = new BranchSelector(repository);
+            if (selector.open()) {
+                criteria.setBranch(selector.getSelectedBranch());
             }
         }
     }  

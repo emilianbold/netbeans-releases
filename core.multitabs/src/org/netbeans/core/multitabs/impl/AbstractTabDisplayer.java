@@ -47,7 +47,12 @@ package org.netbeans.core.multitabs.impl;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.dnd.Autoscroll;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseWheelEvent;
@@ -59,8 +64,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -75,7 +80,7 @@ import org.netbeans.swing.tabcontrol.TabDataModel;
  *
  * @author S. Aubrecht
  */
-abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelListener {
+abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelListener, Autoscroll {
 
     protected Controller controller;
     protected final JScrollPane scrollPane;
@@ -233,5 +238,90 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         if( null == rect )
             return;
         scrollPane.getViewport().scrollRectToVisible( rect );
+    }
+
+    @Override
+    public Rectangle getTabsArea() {
+        return scrollPane.getBounds();
+    }
+
+    @Override
+    public Insets getAutoscrollInsets() {
+        if( orientation == JTabbedPane.HORIZONTAL ) {
+            return new Insets( 0, 25, 0, 25 );
+        } else {
+            return new Insets( 25, 0, 25, 0 );
+        }
+    }
+
+    @Override
+    public void autoscroll( Point cursorLocn ) {
+        Rectangle tabsArea = getTabsArea();
+        if( !tabsArea.contains( cursorLocn ) ) {
+            autoscroller.stop();
+            return;
+        }
+        if( orientation == JTabbedPane.HORIZONTAL ) {
+            if( cursorLocn.x < tabsArea.x+25 ) {
+                autoscroller.start( true );
+            } else if( cursorLocn.x > tabsArea.x+tabsArea.width-25 ) {
+                autoscroller.start( false );
+            } else {
+                autoscroller.stop();
+            }
+        } else {
+            if( cursorLocn.y < tabsArea.y+25 ) {
+                autoscroller.start( true );
+            } else if( cursorLocn.y > tabsArea.y+tabsArea.height-25 ) {
+                autoscroller.start( false );
+            } else {
+                autoscroller.stop();
+            }
+        }
+    }
+
+
+    private final Autoscroller autoscroller = new Autoscroller();
+
+    private class Autoscroller implements ActionListener {
+
+        private int direction = 0;
+        private Timer timer;
+
+        public void start( boolean scrollLeft ) {
+            int newDirection = scrollLeft ? -1 : 1;
+            if( null == timer || !timer.isRunning() || direction != newDirection ) {
+                if( null == timer ) {
+                    timer = new Timer( 300, this );
+                    timer.setRepeats( true );
+                }
+                this.direction = newDirection;
+                timer.start();
+            }
+        }
+
+        public void stop() {
+            if( null != timer ) {
+                timer.stop();
+            }
+            direction = 0;
+        }
+
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+            if( direction < 0 ) {
+                if( scrollLeft.isEnabled() ) {
+                    scrollLeft.actionPerformed( e );
+                } else {
+                    timer.stop();
+                }
+            } else if( direction > 0 ) {
+                if( scrollRight.isEnabled() ) {
+                    scrollRight.actionPerformed( e );
+                } else {
+                    timer.stop();
+                }
+            }
+        }
     }
 }

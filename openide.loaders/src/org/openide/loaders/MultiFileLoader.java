@@ -162,6 +162,9 @@ public abstract class MultiFileLoader extends DataLoader {
             }
         } catch (DataObjectExistsException ex) {
             // object already exists
+            if (willLog) {
+                ERR.log(Level.FINE, "{0} get existing data object for: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
+            }
             DataObject dataObject = ex.getDataObject ();
             synchronized (DataObjectPool.getPOOL()) {
                 originalItem = dataObject.item();
@@ -237,7 +240,7 @@ public abstract class MultiFileLoader extends DataLoader {
         boolean tryAgain = false;
         org.openide.loaders.MultiDataObject.Entry e = null;
         synchronized (DataObjectPool.getPOOL()) {
-            if (originalItem != obj.item() || !originalItem.isValid()) {
+            if (originalItem != obj.item() || !originalItem.isValid() || !fo.isValid()) {
                 tryAgain = true;
             } else {
                 e = obj.registerEntry (fo);

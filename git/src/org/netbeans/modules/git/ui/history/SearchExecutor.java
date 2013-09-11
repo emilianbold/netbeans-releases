@@ -63,6 +63,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.util.NbBundle;
 
 /**
  * Executes searches in Search History panel.
@@ -91,14 +92,26 @@ class SearchExecutor extends GitProgressSupport {
     static final int UNLIMITTED = -1;
     private final SearchCriteria sc;
 
-    public SearchExecutor (SearchHistoryPanel master) {
+    @NbBundle.Messages({
+        "MSG_IllegalSearchArgument.bothBranchAndTo=Cannot set both Branch and To parameters.\n"
+                + "Please choose just one of them or specify To as a date."
+    })
+    public SearchExecutor (SearchHistoryPanel master) throws IllegalArgumentException {
         this.master = master;
         assert EventQueue.isDispatchThread();
         SearchCriteriaPanel criteria = master.getCriteria();
         from = parseDate(criteria.getFrom());
         fromRevision = from == null ? criteria.getFrom() : null;
         to = parseDate(criteria.getTo());
-        toRevision = to == null ? criteria.getTo() : null;
+        String branch = criteria.getBranch();
+        if (branch == null) {
+            toRevision = to == null ? criteria.getTo() : null;
+        } else {
+            toRevision = branch;
+            if (to == null && criteria.getTo() != null) {
+                throw new IllegalArgumentException(Bundle.MSG_IllegalSearchArgument_bothBranchAndTo());
+            }
+        }
         username = criteria.getUsername();
         message = criteria.getCommitMessage();
         int limit = criteria.getLimit();

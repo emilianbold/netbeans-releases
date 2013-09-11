@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.EventListenerList;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -342,7 +341,7 @@ public class ProxyLookup extends Lookup {
         private final WeakResult<T> weakL;
         
         /** list of listeners added */
-        private javax.swing.event.EventListenerList listeners;
+        private LookupListenerList listeners;
 
         /** collection of Objects */
         private Collection[] cache;
@@ -482,11 +481,11 @@ public class ProxyLookup extends Lookup {
         public void addLookupListener(LookupListener l) {
             synchronized (proxy()) {
                 if (listeners == null) {
-                    listeners = new EventListenerList();
+                    listeners = new LookupListenerList();
                 }
             }
 
-            listeners.add(LookupListener.class, l);
+            listeners.add(l);
             initResults();
         }
 
@@ -494,7 +493,7 @@ public class ProxyLookup extends Lookup {
          */
         public void removeLookupListener(LookupListener l) {
             if (listeners != null) {
-                listeners.remove(LookupListener.class, l);
+                listeners.remove(l);
             }
         }
 
