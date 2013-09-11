@@ -57,9 +57,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
@@ -68,6 +68,8 @@ import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProbe;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.netbeans.modules.java.j2seembedded.ui.CreateJREPanel;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
@@ -85,9 +87,10 @@ import org.openide.util.Parameters;
 public class SetUpRemotePlatform extends javax.swing.JPanel {
 
     private static final String HELP_ID = "java.j2seembedded.setup-remote-platform";    //NOI18N
-    private static final String ENV_JAVA_HOME = "JAVA_HOME";    //NOI18N
+    private static final String ENV_JAVA_HOME = "JAVA_HOME";    //NOI18N    
     private final ChangeSupport cs = new ChangeSupport(this);
     private String currentDefaultWorkDir;
+    private WizardDescriptor wizardDescriptor;
 
     /**
      * Creates new form SetUpRemotePlatform
@@ -470,36 +473,54 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             ejreTmp);
         if (data != null) {
             ProgressUtils.showProgressDialogAndRun(
-                new ProgressRunnable<Void>() {
-                    @Override
-                    public Void run(ProgressHandle handle) {
-                        handle.start(2);
-                        handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"));
-                        try {
-                            int res = jreCreate(data.first());
-                            if (res != 0) {
-                                //Todo: handle error - switch to EDT!
-                            }
-                            handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
-                            res = upload(ejreTmp, data.second());
-                            if (res != 0) {
-                                //Todo: handle error - switch to EDT!
-                            }
-                            handle.progress(2);
+                    new ProgressRunnable<Void>() {
+                @Override
+                public Void run(ProgressHandle handle) {
+                    handle.start(2);
+                    handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"));
+                    try {
+                        int res = jreCreate(data.first());
+                        if (res != 0) {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    jreLocation.setText(data.second());
+                                    DialogDisplayer.getDefault().notify(
+                                            new NotifyDescriptor.Message(
+                                            NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_JRECreate"),
+                                            NotifyDescriptor.ERROR_MESSAGE));
                                 }
                             });
                             return null;
-                        } finally {
-                            deleteAll(ejreTmp);
                         }
+                        handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
+                        res = upload(ejreTmp, data.second());
+                        if (res != 0) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    DialogDisplayer.getDefault().notify(
+                                            new NotifyDescriptor.Message(
+                                            NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_JREUpload"),
+                                            NotifyDescriptor.ERROR_MESSAGE));
+                                }
+                            });
+                            return null;
+                        }
+                        handle.progress(2);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                jreLocation.setText(data.second());
+                            }
+                        });
+                        return null;
+                    } finally {
+                        deleteAll(ejreTmp);
                     }
-                },
-                NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreatingNewPlatform"),
-                true);
+                }
+            },
+                    NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreatingNewPlatform"),
+                    true);
         }
     }//GEN-LAST:event_buttonCreateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -580,8 +601,33 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         return res;
     }
 
-    private static int upload(File folder, String path) {
-        return 0;
+    private int upload(File folder, String path) {
+        final ConnectionMethod cm;
+        if (radioButtonPassword.isSelected()) {
+            cm = ConnectionMethod.sshPassword(
+                    host.getText(),
+                    ((Integer) port.getValue()).intValue(),
+                    username.getText(),
+                    String.valueOf(password.getPassword()));
+        } else {
+            cm = ConnectionMethod.sshKey(
+                    host.getText(),
+                    ((Integer) port.getValue()).intValue(),
+                    username.getText(),
+                    new File(keyFilePath.getText()),
+                    String.valueOf(passphrase.getPassword()));
+        }
+        final Object scriptObject = wizardDescriptor.getProperty(RemotePlatformIt.PROP_BUILDSCRIPT);
+        File buildScript = scriptObject != null ? (File) scriptObject : null;
+        if (buildScript == null) {
+            buildScript = RemotePlatformProbe.createBuildScript();
+            wizardDescriptor.putProperty(RemotePlatformIt.PROP_BUILDSCRIPT, buildScript);
+        }
+        return RemotePlatformProbe.uploadJRE(folder.getAbsolutePath(), path, cm, buildScript);
+    }
+
+    public void setWizardDescriptor(WizardDescriptor wizardDescriptor) {
+        this.wizardDescriptor = wizardDescriptor;
     }
 
     static class Panel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
@@ -614,6 +660,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         @Override
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            ui.setWizardDescriptor(wizardDescriptor);
 
             if (settings.getProperty(RemotePlatformIt.PROP_DISPLAYNAME) != null) {
                 ui.displayName.setText((String) settings.getProperty(RemotePlatformIt.PROP_DISPLAYNAME));
@@ -755,10 +802,12 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                        new File(ui.keyFilePath.getText()),
                        String.valueOf(ui.passphrase.getPassword()));
                 }
+                final File buildScript = (File) wizardDescriptor.getProperty(RemotePlatformIt.PROP_BUILDSCRIPT);
                 connectionValidator = new ConnectionValidator(
                     ui.jreLocation.getText(),
                     ui.workingDir.getText(),
-                    cm);
+                    cm,
+                    buildScript);
             }
         }
 
@@ -777,22 +826,25 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         private final String jreLocation;
         private final String workingDir;
         private final ConnectionMethod connectionMethod;
+        private final File buildScript;
 
         ConnectionValidator(
             @NonNull final String jreLocation,
             @NonNull final String workingDir,
-            @NonNull final ConnectionMethod connectionMethod) {
+            @NonNull final ConnectionMethod connectionMethod,
+            @NullAllowed final File buildScript) {
             Parameters.notNull("jreLocation", jreLocation); //NOI18N
             Parameters.notNull("workingDir", workingDir);   //NOI18N
             Parameters.notNull("connectionMethod", connectionMethod);   //NOI18N
             this.jreLocation = jreLocation;
             this.workingDir = workingDir;
             this.connectionMethod = connectionMethod;
+            this.buildScript = buildScript;
         }
 
         @Override
         public Properties call() throws WizardValidationException {
-            return RemotePlatformProbe.verifyPlatform(jreLocation, workingDir, connectionMethod);
+            return RemotePlatformProbe.verifyPlatform(jreLocation, workingDir, connectionMethod, buildScript);
         }
     }
 }

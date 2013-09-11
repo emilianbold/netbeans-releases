@@ -44,6 +44,7 @@ package org.netbeans.modules.java.j2seembedded.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -54,6 +55,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -66,7 +68,9 @@ import org.openide.util.Utilities;
  */
 public class CreateJREPanel extends javax.swing.JPanel {
 
+    private static final String HELP_ID = "java.j2seembedded.create-remote-platform";    //NOI18N
     private boolean valid = false;
+    private final static JButton buttonCreate = new JButton(NbBundle.getMessage(CreateJREPanel.class, "LBL_Dialog_Button_Create"));
 
     public CreateJREPanel(
             @NullAllowed final String username,
@@ -137,26 +141,35 @@ public class CreateJREPanel extends javax.swing.JPanel {
     @CheckForNull
     private static List<String> configureImpl(
         @NonNull final CreateJREPanel panel,
-        @NonNull final File destFolder) {
+        @NonNull final File destFolder) {        
         DialogDescriptor dd = new DialogDescriptor(
-            panel,
-            NbBundle.getMessage(CreateJREPanel.class, "LBL_CreateJRETitle"));
-        if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+                panel,
+                NbBundle.getMessage(CreateJREPanel.class, "LBL_CreateJRETitle"), //NOI18N
+                true,
+                new Object[]{buttonCreate, DialogDescriptor.CANCEL_OPTION},
+                0,
+                DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx(HELP_ID),
+                null);
+        if (DialogDisplayer.getDefault().notify(dd).equals(buttonCreate)) {
             if (!panel.isPanelValid()) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
-                    NbBundle.getMessage(CreateJREPanel.class, "ERROR_Invalid_CreateJREPanel"),
+                    NbBundle.getMessage(CreateJREPanel.class, "ERROR_Invalid_CreateJREPanel"), //NOI18N
                     NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
             final List<String> cmdLine = new ArrayList<>();
             final File ejdk = new File(panel.getJRECreateLocation());
-            final File bin = new File (ejdk, "bin");   //NOI18N
-            final File jrecreate = new File(
-                    bin,
-                    Utilities.isWindows() ?
-                        "jrecreate.bat" :   //NOI18N
-                         "jrecreate.sh");   //NOI18N
+            final File bin = new File(ejdk, "bin");   //NOI18N
+            File jrecreate = null;
+            if (Utilities.isWindows()) {
+                cmdLine.add("cmd"); //NOI18N
+                cmdLine.add("/c"); //NOI18N
+                jrecreate = new File(bin, "jrecreate.bat"); //NOI18N
+            } else {
+                jrecreate = new File(bin, "jrecreate.sh");   //NOI18N
+            }
             cmdLine.add(jrecreate.getAbsolutePath());
             cmdLine.add("--dest");          //NOI18N
             cmdLine.add(destFolder.getAbsolutePath());
@@ -213,15 +226,18 @@ public class CreateJREPanel extends javax.swing.JPanel {
         if (jreCreateLocation.getText().isEmpty()) {
             labelError.setText(NbBundle.getMessage(CreateJREPanel.class, "ERROR_JRE_Create")); //NOI18N
             valid = false;
+            buttonCreate.setEnabled(false);
             return;
         }
         if (remoteJREPath.isVisible() && remoteJREPath.getText().isEmpty()) {
             labelError.setText(NbBundle.getMessage(CreateJREPanel.class, "ERROR_JRE_Path")); //NOI18N
             valid = false;
+            buttonCreate.setEnabled(false);
             return;
         }
         labelError.setText(null);
         valid = true;
+        buttonCreate.setEnabled(true);
     }
 
     /**

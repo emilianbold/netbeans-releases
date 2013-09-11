@@ -66,6 +66,7 @@ import org.openide.util.Pair;
 /**
  *
  * @author Tomas Zezula
+ * @author Roman Svitanic
  */
 public final class RemotePlatformProbe {
 
@@ -74,12 +75,30 @@ public final class RemotePlatformProbe {
     private RemotePlatformProbe() {
         throw new IllegalStateException();
     }
+    
+    public static File createBuildScript() {
+        final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N        
+        File buildScript = null;
+        try {
+            buildScript = FileUtil.normalizeFile(File.createTempFile("antScript", ".xml")); //NOI18N
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        try (InputStream inputStream = RemotePlatformProbe.class.getClassLoader().getResourceAsStream(resourcesPath);
+                OutputStream outputStream = new FileOutputStream(buildScript)) {
+            FileUtil.copy(inputStream, outputStream);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return buildScript;
+    }
 
     @NonNull
     public static Properties verifyPlatform(
         @NonNull final String jreLocation,
         @NonNull final String workingDir,
-        @NonNull final ConnectionMethod connectionMethod) throws WizardValidationException {
+        @NonNull final ConnectionMethod connectionMethod,
+        @NullAllowed File buildScript) throws WizardValidationException {
         String[] antTargets = null;
             final Properties prop = new Properties();
             prop.setProperty("remote.host", connectionMethod.getHost()); //NOI18N
@@ -95,8 +114,7 @@ public final class RemotePlatformProbe {
                     null);
             }
             prop.setProperty("probe.file", probe.getAbsolutePath());
-            File platformProperties = null;
-            File buildScript = null;
+            File platformProperties = null;            
             ExecutorTask executorTask = null;
             try {
                 platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
@@ -110,13 +128,7 @@ public final class RemotePlatformProbe {
                     prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
                 }
 
-                final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
-                buildScript = FileUtil.normalizeFile(File.createTempFile("antScript", ".xml")); //NOI18N
-                try (InputStream inputStream = RemotePlatformProbe.class.getClassLoader().getResourceAsStream(resourcesPath);
-                     OutputStream outputStream = new FileOutputStream(buildScript)) {
-                    FileUtil.copy(inputStream, outputStream);
-                }
-                final FileObject antScript = FileUtil.toFileObject(buildScript);
+                final FileObject antScript = FileUtil.toFileObject(buildScript != null ? buildScript : createBuildScript());
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
                 final int antResult = executorTask.result();
                 if (antResult != 0) {
@@ -163,5 +175,35 @@ public final class RemotePlatformProbe {
             }
         }
         return Pair.<Map<String,String>,Map<String,String>>of(properties,sysProps);
+    }
+
+    public static int uploadJRE(
+            @NonNull final String localJreLocation,
+            @NonNull final String remoteJreLocation,
+            @NonNull final ConnectionMethod connectionMethod,
+            @NullAllowed File buildScript) {
+        String[] antTargets = null;
+        final Properties prop = new Properties();
+        prop.setProperty("remote.host", connectionMethod.getHost()); //NOI18N
+        prop.setProperty("remote.port", String.valueOf(connectionMethod.getPort())); //NOI18N
+        prop.setProperty("remote.username", connectionMethod.getAuthentification().getUserName()); //NOI18N
+        prop.setProperty("remote.jre.dir", remoteJreLocation); //NOI18N
+        prop.setProperty("jre.dir", localJreLocation); //NOI18N
+        ExecutorTask executorTask = null;
+        if (connectionMethod.getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
+            antTargets = new String[]{"upload-JRE-password"}; //NOI18N
+            prop.setProperty("remote.password", ((ConnectionMethod.Authentification.Password) connectionMethod.getAuthentification()).getPassword()); //NOI18N
+        } else {
+            antTargets = new String[]{"upload-JRE-keyfile"}; //NOI18N
+            prop.setProperty("keystore.file", ((ConnectionMethod.Authentification.Key) connectionMethod.getAuthentification()).getKeyStore().getAbsolutePath()); //NOI18N
+            prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key) connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
+        }
+        final FileObject antScript = FileUtil.toFileObject(buildScript != null ? buildScript : createBuildScript());
+        try {
+            executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
+        } catch (IOException | IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return executorTask != null ? executorTask.result() : -1;
     }
 }

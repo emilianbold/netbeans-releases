@@ -518,7 +518,8 @@ final class RemotePlatformNode extends AbstractNode {
                                 RemotePlatformProbe.verifyPlatform(
                                     rp.getInstallFolder().toString(),
                                     rp.getWorkFolder().toString(),
-                                    rp.getConnectionMethod());
+                                    rp.getConnectionMethod(),
+                                    null);
                                 DialogDisplayer.getDefault().notify(
                                     new NotifyDescriptor.Message(
                                         NbBundle.getMessage(RemotePlatformNode.class, "TXT_CorrectPlatform"),

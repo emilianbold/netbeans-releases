@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -81,6 +80,7 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
     public static final String PROP_JREPATH = "jrePath"; //NOI18N
     public static final String PROP_WORKINGDIR = "workingDir"; //NOI18N
     public static final String PROP_SYS_PROPERTIES = "sysProperties";   //NOI18N
+    public static final String PROP_BUILDSCRIPT = "buildscript";    //NOI18N
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -192,6 +192,10 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         panels = null;
         names = null;
         index = -1;
+        File buildScript = (File) wizard.getProperty(PROP_BUILDSCRIPT);
+        if (buildScript != null) {
+            buildScript.delete();
+        }
     }    
 
 }

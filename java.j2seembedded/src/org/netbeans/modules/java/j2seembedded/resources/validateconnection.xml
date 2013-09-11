@@ -69,4 +69,18 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true"
                  command="cd '${remote.working.dir}'; rm ${probe.name}; rm ${remote.platform.properties.file}"/>
     </target>
+    
+    <target name="upload-JRE-password">
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" password="${remote.password}" trust="true" command="mkdir -p '${remote.jre.dir}'" />
+        <scp todir="${remote.username}@${remote.host}:${remote.jre.dir}" port="${remote.port}" password="${remote.password}" trust="true">
+            <fileset dir="${jre.dir}"/>
+        </scp>
+    </target>
+    
+    <target name="upload-JRE-keyfile">
+        <sshexec host="${remote.host}" port="${remote.port}" username="${remote.username}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true" command="mkdir -p '${remote.jre.dir}'" />
+        <scp todir="${remote.username}@${remote.host}:${remote.jre.dir}" port="${remote.port}" keyfile="${keystore.file}" passphrase="${keystore.passphrase}" trust="true">
+            <fileset dir="${jre.dir}"/>
+        </scp>
+    </target>
 </project>
