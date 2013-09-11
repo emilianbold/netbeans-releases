@@ -117,8 +117,8 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         }
         Collection<Issue> issues = new LinkedList<Issue>();
         for (Issue issue : c) {
-            if(issue.getStatus() == Issue.Status.MODIFIED ||
-               issue.getStatus() == Issue.Status.NEW) 
+            if(issue.getStatus() == Issue.Status.INCOMING_MODIFIED ||
+               issue.getStatus() == Issue.Status.INCOMING_NEW) 
             {
                 issues.add(issue);
             }
@@ -143,8 +143,8 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         if(c != null || !c.isEmpty()) {
             issues = new LinkedList<Issue>();
             for (Issue issue : c) {
-                if(issue.getStatus() == Issue.Status.MODIFIED ||
-                    issue.getStatus() == Issue.Status.NEW) 
+                if(issue.getStatus() == Issue.Status.INCOMING_MODIFIED ||
+                    issue.getStatus() == Issue.Status.INCOMING_NEW) 
                 {
                     issues.add(issue);
                 }

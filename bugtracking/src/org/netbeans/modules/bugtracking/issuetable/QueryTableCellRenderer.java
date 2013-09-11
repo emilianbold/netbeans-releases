@@ -323,12 +323,12 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 status = issue.getStatus();
                 if(status != IssueStatusProvider.Status.SEEN) {
                     switch(status) {
-                        case NEW :
+                        case INCOMING_NEW :
                             style.format     = isSelected ? style.format      : issueNewFormat;
                             style.background = isSelected ? newHighlightColor : style.background;
                             style.foreground = isSelected ? table.getBackground() : style.foreground;
                             break;
-                        case MODIFIED :
+                        case INCOMING_MODIFIED :
                             style.format     = isSelected ? style.format           : issueModifiedFormat;
                             style.background = isSelected ? modifiedHighlightColor : style.background;
                             style.foreground = isSelected ? table.getBackground() : style.foreground;
@@ -353,11 +353,11 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                         status = issue.getStatus();
                     }
                     switch(status) {
-                        case NEW :
+                        case INCOMING_NEW :
                             sb.append("<br>").append(issueNewFormat.format(new Object[] { labelNew }, new StringBuffer(), null)); // NOI18N
                             sb.append(msgNew);
                             break;
-                        case MODIFIED :
+                        case INCOMING_MODIFIED :
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
                             sb.append(MessageFormat.format(msgModified, p.getRecentChanges()));
                             break;

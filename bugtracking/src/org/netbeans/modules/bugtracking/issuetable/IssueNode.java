@@ -117,8 +117,8 @@ public abstract class IssueNode<I> extends AbstractNode {
                 if(!IssueNode.this.issueImpl.isData(evt.getSource())) {
                     return;
                 }
-                if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_SEEN_CHANGED)) {
-                    fireSeenValueChanged((Boolean)evt.getOldValue(), (Boolean)evt.getNewValue());
+                if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {
+                    fireSeenValueChanged();
                 }
             }
         });
@@ -172,24 +172,19 @@ public abstract class IssueNode<I> extends AbstractNode {
         return htmlDisplayName;
     }
 
-    void fireSeenValueChanged(final boolean oldValue, final boolean newValue) {
-        if(oldValue != newValue) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    firePropertyChange(LABEL_NAME_SEEN, oldValue, newValue);
-                    Property[] properties = getProperties();
-                    for (Property p : properties) {
-                        if(p instanceof IssueNode.IssueProperty) {
-                            String pName = ((IssueProperty)p).getName();
-                            if(!pName.equals(LABEL_NAME_SEEN)) {
-                                firePropertyChange(pName, null, null);
-                            }
-                        }
+    void fireSeenValueChanged() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Property[] properties = getProperties();
+                for (Property p : properties) {
+                    if(p instanceof IssueNode.IssueProperty) {
+                        String pName = ((IssueProperty)p).getName();
+                        firePropertyChange(pName, null, null);
                     }
                 }
-            });
-        }
+            }
+        });
     }
 
     protected void fireDataChanged() {
@@ -246,7 +241,7 @@ public abstract class IssueNode<I> extends AbstractNode {
                 changes = changes.trim();
             }
             IssueStatusProvider.Status status = IssueNode.this.issueImpl.getStatus();
-            if(changes.equals("") && status == IssueStatusProvider.Status.MODIFIED) { // NOI18N
+            if(changes.equals("") && status == IssueStatusProvider.Status.INCOMING_MODIFIED) { // NOI18N
                 changes = NbBundle.getMessage(IssueNode.class, "LBL_IssueModified"); // NOI18N
             }
             return changes;

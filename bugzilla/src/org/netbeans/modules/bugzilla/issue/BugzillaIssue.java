@@ -219,8 +219,8 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         deleteTask();
     }
     
-    private void fireSeenChanged(boolean wasSeen, boolean seen) {
-        support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
+    private void fireStatusChanged() {
+        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
     public void opened() {
@@ -1588,12 +1588,11 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     @Override
     protected void taskModified (boolean syncStateChanged) {
-        boolean seen = isSeen();
         if (updateRecentChanges() | updateTooltip()) {
             fireDataChanged();
         }
         if (syncStateChanged) {
-            fireSeenChanged(!seen, seen);
+            fireStatusChanged();
         }
     }
     
