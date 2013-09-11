@@ -55,7 +55,6 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Assert;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -90,7 +89,7 @@ public final class CountingSecurityManager extends SecurityManager {
         try {
             CountingSecurityManager.prefix = new File(prefix).getCanonicalPath();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         }
         System.err.println("setting prefix to " + CountingSecurityManager.prefix);
     }

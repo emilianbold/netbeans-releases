@@ -50,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
-public class MainMenuTestJava extends MainMenuTest {
+public class MainMenuJavaTest extends MainMenuTest {
     
     private static boolean init = true;
     public static final String[] TESTS = new String[]{
@@ -58,17 +58,16 @@ public class MainMenuTestJava extends MainMenuTest {
         "testRefactorMenu",
         "testDebugMenu",
         "testRunMenu",
-        "testTeamMenu",
         "testToolsMenu",
         "testProfileMenu",
         "testView_CodeFoldsSubMenu"};
 
-    public MainMenuTestJava(String name) {
+    public MainMenuJavaTest(String name) {
         super(name);
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuTestJava.class).clusters(".*").enableModules(".*");
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuJavaTest.class).clusters(".*").enableModules(".*");
 
         conf = conf.addTest(TESTS);
         //conf = conf.addTest("testTeamMenu");
@@ -80,7 +79,7 @@ public class MainMenuTestJava extends MainMenuTest {
      */
     @Override
     public void setUp() {
-        System.out.println("########  " + ProjectContext.JAVA.toString() + " CONTEXT - " + getName() + "  #######");
+        System.out.println("########  " + " CONTEXT -> " + ProjectContext.JAVA.toString() + " - " + getName() + "  #######");
         try {
             clearWorkDir();
             getWorkDir();
@@ -117,7 +116,7 @@ public class MainMenuTestJava extends MainMenuTest {
 
     @Override
     public void setInit(boolean init) {
-        MainMenuTestJava.init = init;
+        MainMenuJavaTest.init = init;
     }
 
     @Override
@@ -141,11 +140,6 @@ public class MainMenuTestJava extends MainMenuTest {
     }
 
     @Override
-    public void testTeamMenu() {
-        oneMenuTest("Team");
-    }
-
-    @Override
     public void testToolsMenu() {
         oneMenuTest("Tools");
     }
@@ -162,6 +156,6 @@ public class MainMenuTestJava extends MainMenuTest {
     
     @Override
     public void setContext() {
-        MainMenuTestJava.context = ProjectContext.JAVA;
+        MainMenuJavaTest.context = ProjectContext.JAVA;
     }
 }

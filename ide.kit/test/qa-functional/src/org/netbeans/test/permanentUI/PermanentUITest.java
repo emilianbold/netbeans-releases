@@ -54,7 +54,8 @@ public class PermanentUITest {
         NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().clusters(".*").enableModules(".*");
         return conf
                 .addTest(MainMenuTest.class, MainMenuTest.TESTS)
-                .addTest(MainMenuTestJava.class, MainMenuTestJava.TESTS)
+                .addTest(MainMenuJavaTest.class, MainMenuJavaTest.TESTS)
+                .addTest(TeamMenuVCSActivatedTest.class, TeamMenuVCSActivatedTest.TESTS)
                 .addTest(NewProjectTest.class)
                 .addTest(OptionsTest.class)
                 .suite();
