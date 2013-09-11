@@ -43,27 +43,34 @@ package org.netbeans.modules.java.j2seembedded.wizard;
 
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProbe;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.netbeans.modules.java.j2seembedded.ui.CreateJREPanel;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -77,6 +84,7 @@ import org.openide.util.Parameters;
 public class SetUpRemotePlatform extends javax.swing.JPanel {
 
     private static final String HELP_ID = "java.j2seembedded.setup-remote-platform";    //NOI18N
+    private static final String ENV_JAVA_HOME = "JAVA_HOME";    //NOI18N
     private final ChangeSupport cs = new ChangeSupport(this);
     private String currentDefaultWorkDir;
 
@@ -455,12 +463,38 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
     private void buttonCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateActionPerformed
         final File ejdkTmp = new File (new File (System.getProperty("java.io.tmpdir")),"nbjdkcreate");  //NOI18N
-        Pair<List<String>,String> data = CreateJREPanel.configure(
+        final Pair<List<String>,String> data = CreateJREPanel.configure(
             username.getText(),
             host.getText(),
             ejdkTmp);
         if (data != null) {
-            jreLocation.setText(data.second());
+            ProgressUtils.showProgressDialogAndRun(
+                new ProgressRunnable<Void>() {
+                    @Override
+                    public Void run(ProgressHandle handle) {
+                        handle.start(2);
+                        handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"));
+                        int res = jreCreate(data.first());
+                        if (res != 0) {
+                            //Todo: handle error - switch to EDT!
+                        }
+                        handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
+                        res = upload(ejdkTmp, data.second());
+                        if (res != 0) {
+                            //Todo: handle error - switch to EDT!
+                        }
+                        handle.progress(2);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                jreLocation.setText(data.second());
+                            }
+                        });
+                        return null;
+                    }
+                },
+                NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreatingNewPlatform"),
+                true);
         }
     }//GEN-LAST:event_buttonCreateActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -491,6 +525,29 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     private javax.swing.JTextField workingDir;
     private javax.swing.JLabel workingDirLabel;
     // End of variables declaration//GEN-END:variables
+
+    private static int jreCreate(@NonNull final List<String> cmdLine) {
+        final ExternalProcessBuilder pb = new ExternalProcessBuilder(cmdLine.get(0));
+        pb.addEnvironmentVariable(
+            ENV_JAVA_HOME,
+            FileUtil.toFile(JavaPlatform.getDefault().getInstallFolders().iterator().next()).getAbsolutePath());
+        for (String arg : cmdLine.subList(1, cmdLine.size())) {
+            pb.addArgument(arg);
+        }
+        int res;
+        try {
+            final Process process = pb.call();
+            process.waitFor();
+            res = process.exitValue();
+        } catch (IOException | InterruptedException e) {
+            res = -1;
+        }
+        return res;
+    }
+
+    private static int upload(File folder, String path) {
+        return 0;
+    }
 
     static class Panel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
