@@ -98,11 +98,17 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
         if (wm != null) {
             Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
             if (preferences.get("Facelets", "").equals("")) { //NOI18N
-                ClassPath cp  = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+                ClassPath cp  = wm.getDocumentBase() != null
+                        ? ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE)
+                        : ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);
                 if (!JSFUtils.isFaceletsPresent(cp)) {
                     wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TemplatePanel.class, "ERR_NoJSFLibraryFound"));
                     return false;
                 }
+            }
+            if (wm.getDocumentBase() == null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(TemplatePanel.class, "ERR_NoDocumentRootFound"));
+                return false;
             }
         }
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);

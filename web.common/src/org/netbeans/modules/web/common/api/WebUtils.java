@@ -392,8 +392,8 @@ public class WebUtils {
     public static String urlToString(URL url) {
         return urlToString(url, false);
     }
-    
-    static String urlToString(URL url, boolean pathOnly) {
+
+    public static String urlToString(URL url, boolean pathOnly) {
         URI uri;
         try {
             uri = url.toURI();
