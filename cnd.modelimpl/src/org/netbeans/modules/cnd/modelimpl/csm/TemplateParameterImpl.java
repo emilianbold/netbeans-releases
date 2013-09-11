@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -76,11 +77,11 @@ import org.openide.util.CharSequences;
  */
 public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T> implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;
-    private CsmUID<CsmScope> scope;
+    private final CsmUID<CsmScope> scope;
+    private final TemplateDescriptor templateDescriptor;
         
     private CsmSpecializationParameter defaultValue;
 
-    private TemplateDescriptor templateDescriptor = null;
         
     public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean variadic, boolean global) {
         super(file, getStartOffset(ast), getEndOffset(ast));
@@ -89,6 +90,8 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, scope, global);
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
+        } else {
+            this.scope = null;
         }
         this.defaultValue = variadic ? VARIADIC : null;
     }
@@ -107,6 +110,8 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         this.templateDescriptor = templateDescriptor;
         if ((scope instanceof CsmIdentifiable)) {
             this.scope = UIDCsmConverter.scopeToUID(scope);
+        } else {
+            this.scope = null;
         }
         this.defaultValue = variadic ? VARIADIC : defaultValue;
     }    
@@ -120,26 +125,49 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
     public CsmSpecializationParameter getDefaultValue() {
         return defaultValue == VARIADIC ? null : defaultValue;
     }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof TemplateParameterImpl) {
-            if (this.getName().equals(((TemplateParameterImpl)obj).getName())){
-                if(scope != null) {
-                    return scope.equals(((TemplateParameterImpl)obj).scope);
-                } else {
-                    return ((TemplateParameterImpl)obj).scope == null;
-                }
-            }
-        }
-        return false;
-    }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        if (true) return name.hashCode();
+        int hash = 5;
+        hash = 19 * hash + Objects.hashCode(this.name);
+        hash = 19 * hash + Objects.hashCode(this.scope);
+        hash = 19 * hash + Objects.hashCode(this.defaultValue);
+        hash = 19 * hash + Objects.hashCode(this.templateDescriptor);
+        hash = 19 * hash + Objects.hashCode(super.hashCode());
+        return hash;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }        
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TemplateParameterImpl<?> other = (TemplateParameterImpl<?>) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.scope, other.scope)) {
+            return false;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        if (!Objects.equals(this.defaultValue, other.defaultValue)) {
+            return false;
+        }
+        if (!Objects.equals(this.templateDescriptor, other.templateDescriptor)) {
+            return false;
+        }
+        return true;
+    }
+    
     @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
@@ -257,7 +285,7 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         return getQualifiedName().toString() + getPositionString();
     }
     
-    private static CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
+    private static final CsmSpecializationParameter VARIADIC = new CsmSpecializationParameter() {
         @Override
         public CsmFile getContainingFile() {
             throw new UnsupportedOperationException();
@@ -282,6 +310,22 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
         public CharSequence getText() {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public String toString() {
+            return "VARIADIC";// NOI18N
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return this == obj;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+                
     };
     
 }

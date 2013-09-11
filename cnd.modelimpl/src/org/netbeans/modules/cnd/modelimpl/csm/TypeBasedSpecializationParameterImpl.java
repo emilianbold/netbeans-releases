@@ -57,6 +57,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
@@ -169,6 +170,29 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
         return type.toString();
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + Objects.hashCode(this.type);
+        hash = 97 * hash + Objects.hashCode(super.hashCode());
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TypeBasedSpecializationParameterImpl other = (TypeBasedSpecializationParameterImpl) obj;
+        if (!Objects.equals(this.type, other.type)) {
+            return false;
+        }
+        return super.equals(obj);
+    }
+    
     public static class TypeBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
 
         private TypeBuilder typeBuilder;

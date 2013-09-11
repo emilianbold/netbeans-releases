@@ -47,6 +47,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -70,7 +75,8 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class CsmSelect {
-
+    private static final Logger LOG = Logger.getLogger(CsmSelect.class.getSimpleName());
+    
     private static CsmSelectProvider DEFAULT = new Default();
     public static final CsmFilter FUNCTION_KIND_FILTER = CsmSelect.getFilterBuilder().createKindFilter(
             CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.FUNCTION_LAMBDA,
@@ -115,9 +121,35 @@ public class CsmSelect {
     }
 
     public static Iterator<CsmMember> getClassMembers(CsmClass cls, CsmFilter filter)  {
-        return getDefault().getClassMembers(cls, filter);
+        long time = System.currentTimeMillis();
+        try {
+            Iterator<CsmMember> out;
+            CsmCacheMap cache = CsmCacheManager.getClientCache(ClassMembersKey.class, SELECT_INITIALIZER);
+            Object key = new ClassMembersKey(cls, filter);
+            IteratorWrapper<CsmMember> wrap = (IteratorWrapper<CsmMember>) CsmCacheMap.getFromCache(cache, key, null);
+            if (wrap == null) {
+                time = System.currentTimeMillis();
+                Iterator<CsmMember> orig = getDefault().getClassMembers(cls, filter);
+                time = System.currentTimeMillis() - time;                
+                if (cache != null) {
+                    wrap = new IteratorWrapper<CsmMember>(orig);
+                    cache.put(key, CsmCacheMap.toValue(wrap, time));
+                    out = wrap.iterator();
+                } else {
+                    out = orig;
+                }
+            } else {
+                out = wrap.iterator();
+                time = System.currentTimeMillis() - time;
+            }
+            return out;
+        } finally {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "getClassMembers took {0}ms:\n\tcls={1}\n\tfilter={2}\n", new Object[]{time, getPosition(cls), filter});
+            }
+        }
     }
-
+    
     public static Iterator<CsmFunction> getFunctions(CsmProject project, CharSequence qualifiedName) {
         // ensure that qName does NOT start with "::"
         if (qualifiedName.length() > 1 && qualifiedName.charAt(0) == ':' && qualifiedName.charAt(1) == ':') {
@@ -357,6 +389,107 @@ public class CsmSelect {
                 return service.getFileUIDs(csmProject, filter);
             }
             return Collections.<CsmUID<CsmFile>>emptyList().iterator();
+        }
+    }
+    
+    private static CharSequence getPosition(CsmClass obj) {
+        CsmFile file = obj.getContainingFile();
+        String position = file.getAbsolutePath().toString();
+        int[] lineColumn = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, obj.getStartOffset());
+        if (lineColumn != null) {
+            position = "line=" + lineColumn[0] + ":" + lineColumn[1] + " " + position; // NOI18N
+        }
+        return position;
+    }
+    
+    private static final Callable<CsmCacheMap> SELECT_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("SELECT Cache", 1); // NOI18N
+        }
+    };
+
+    private static final class ClassMembersKey {
+        private final CsmClass cls;
+        private final CsmFilter filter;
+
+        public ClassMembersKey(CsmClass cls, CsmFilter filter) {
+            this.cls = cls;
+            this.filter = filter;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + this.cls.hashCode();
+            hash = 67 * hash + this.filter.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ClassMembersKey other = (ClassMembersKey) obj;
+            if (!this.filter.equals(other.filter)) {
+                return false;
+            }
+            if (!this.cls.equals(other.cls)) {
+                return false;
+            }
+            return true;
+        }            
+    }
+
+    private static final class IteratorWrapper<T>  {
+        private final Iterator<T> orig;
+        private final List<T> fetched = new ArrayList<T>(10);
+        
+        public IteratorWrapper(Iterator<T> iter) {
+            this.orig = iter;
+        }
+
+        public Iterator<T> iterator() {
+            return new Impl();
+        }
+        
+        private final class Impl implements Iterator<T> {
+            int index = 0;
+                        
+            @Override
+            public boolean hasNext() {
+                if (index < fetched.size()) {
+                    return true;
+                }
+                return orig.hasNext();
+            }
+
+            @Override
+            public T next() {
+                if (index < fetched.size()) {
+                    return fetched.get(index++);
+                }
+                if (orig.hasNext()) {
+                    fetched.add(orig.next());
+                    return fetched.get(index++);
+                }
+                throw new NoSuchElementException("Invalid index " + index + " has only " + fetched.size()); // NOI18N
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String toString() {
+                return "Impl{" + "index=" + index + '}'; // NOI18N
+            }                        
         }
     }
 }

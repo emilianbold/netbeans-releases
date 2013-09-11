@@ -53,6 +53,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
 import org.netbeans.modules.cnd.api.model.*;
@@ -87,8 +89,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  *
  * @author eu155513, Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
-public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
+public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends OffsetableIdentifiableBase<CsmInstantiation> implements CsmOffsetableDeclaration, CsmInstantiation, CsmIdentifiable {
     private static final int MAX_INHERITANCE_DEPTH = 20;
+    private static final Logger LOG = Logger.getLogger(Instantiation.class.getSimpleName());
 
     protected final T declaration;
     protected final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
@@ -112,6 +115,9 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     // FIX for 146522, we compare toString value until better solution is found
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         if (!(obj instanceof CsmObject)) {
             return false;
         }
@@ -148,6 +154,40 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return toString(new StringBuilder(), 0);
+    }
+    
+    private String toString(StringBuilder out, int indent) {
+        indent(out, indent).append("INSTANTIATION OF "); // NOI18N
+        String instName = this.getClass().getSimpleName()+"@"+System.identityHashCode(this); // NOI18N
+        out.append(instName).append(":\n");// NOI18N
+        if (declaration instanceof Instantiation) {
+            ((Instantiation)declaration).toString(out, indent + 2);
+        } else {
+            indent(out, indent + 2);
+            out.append(declaration);
+        }
+        out.append("\n");// NOI18N
+        if (!mapping.isEmpty()) {
+            indent(out, indent).append("WITH MAPPING:\n");// NOI18N
+            for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
+                indent(out, indent).append("[").append(entry.getKey()).append("]=>{"); // NOI18N
+                out.append(entry.getValue()).append("}\n"); // NOI18N
+            }
+        }
+        indent(out, indent).append("END OF ").append(instName);// NOI18N
+        return out.toString();
+    }
+        
+    protected static StringBuilder indent(StringBuilder b, int level) {
+        for (int i = 0; i < level; i++) {
+            b.append(' '); // NOI18N
+        }
+        return b;
+    }
+    
     private CsmClassForwardDeclaration findCsmClassForwardDeclaration(CsmScope scope, CsmClass cls) {
         if (scope != null) {
             if (CsmKindUtilities.isFile(scope)) {
@@ -338,6 +378,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     ////////////// STATIC MEMBERS
     public static class Class extends Instantiation<CsmClass> implements CsmClass, CsmMember, CsmTemplate,
                                     SelectImpl.FilterableMembers {
+        private volatile List<CsmInheritance> inheritances;
         public Class(CsmClass clazz, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             super(clazz, mapping);
         }
@@ -447,16 +488,14 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
         @Override
         public Collection<CsmInheritance> getBaseClasses() {
-            Collection<CsmInheritance> res = new ArrayList<CsmInheritance>();
-            for (CsmInheritance inh : declaration.getBaseClasses()) {
-                res.add(new Inheritance(inh, this));
+            if (inheritances == null) {
+                List<CsmInheritance> res = new ArrayList<>(1);
+                for (CsmInheritance inh : declaration.getBaseClasses()) {
+                    res.add(new Inheritance(inh, this));
+                }
+                inheritances = res.isEmpty() ? Collections.<CsmInheritance>emptyList() : res;
             }
-            return res;
-        }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF CLASS: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
+            return inheritances;
         }
 
         @Override
@@ -506,6 +545,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         public Inheritance(CsmInheritance inheritance, Instantiation instantiation) {
             this.inheritance = inheritance;
             this.type = createType(inheritance.getAncestorType(), instantiation);
+            LOG.log(Level.FINE, "Inheritance for\n{0}\n=>INHERITANCE TYPE=>\n{1}", new Object[] {this, type});
         }
 
         @Override
@@ -569,7 +609,25 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         
         @Override
         public String toString() {
-            return "INSTANTION OF INHERITANCE: " + inheritance + " with " + type; // NOI18N
+            return toString(new StringBuilder(), 0);
+        }
+        
+        private String toString(StringBuilder out, int indent) {
+            indent(out, indent).append("INSTANTIATION OF "); // NOI18N
+            String instName = this.getClass().getSimpleName()+"@"+System.identityHashCode(this);//NOI18N
+            out.append(instName).append(":\n");// NOI18N
+            if (inheritance instanceof Inheritance) {
+                ((Inheritance) inheritance).toString(out, indent + 2);
+            } else {
+                indent(out, indent + 2);
+                out.append(inheritance);
+            }
+            out.append("\n");// NOI18N
+            indent(out, indent).append("WITH TYPE:\n"); // NOI18N
+            ((Type)type).toString(out, indent + 2);
+            out.append("\n");// NOI18N
+            indent(out, indent).append("END OF ").append(instName);// NOI18N
+            return out.toString();
         }
     }
 
@@ -652,11 +710,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         }
 
         @Override
-        public String toString() {
-            return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
-        }
-
-        @Override
         public boolean isStatic() {
             return false;
         }
@@ -714,11 +767,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         public CsmClass getContainingClass() {
             return declaration.getContainingClass();
         }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF FIELD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
-        }
     }
 
     private static class Typedef extends Instantiation<CsmTypedef> implements CsmTypedef, CsmMember {
@@ -752,11 +800,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         @Override
         public boolean isStatic() {
             return ((CsmMember)declaration).isStatic();
-        }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF TYPEDEF: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
     
@@ -822,11 +865,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         public CharSequence getDisplayName() {
             return ((CsmTypeAlias)declaration).getDisplayName();
         }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF TYPEALIAS: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
-        }
     }    
       
     private static class ClassForward extends Instantiation<CsmClassForwardDeclaration> implements CsmClassForwardDeclaration, CsmMember {
@@ -862,11 +900,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 }
             }
             return csmClass;
-        }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF CLASS FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
 
@@ -904,11 +937,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 }
             }
             return csmEnum;
-        }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF ENUM FORWARD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
     }
 
@@ -1067,11 +1095,6 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
             }
             return this;
         }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF METHOD: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
-        }
     }
 
     private static class Parameter extends Instantiation<CsmParameter> implements CsmParameter {
@@ -1116,17 +1139,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         public boolean isVarArgs() {
             return declaration.isVarArgs();
         }
-
-        @Override
-        public String toString() {
-            return "INSTANTIATION OF FUN PARAM: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
-        }
     }
     
     public static CsmType createType(CsmType type, CsmInstantiation instantiation) {
         if (type == null) {
             throw new NullPointerException("no type for " + instantiation); // NOI18N
         }
+        LOG.log(Level.FINE, "Instantiation.createType {0}; inst:{1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
 //        System.err.println("Instantiation.createType for " + type + " with instantiation " + instantiation);
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             CsmType instantiatedType = resolveTemplateParameterType(type, instantiation);
@@ -1143,6 +1162,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
 
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
+            LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
             Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
             CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
@@ -1153,6 +1173,7 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     }
     
     public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;
         while (CsmKindUtilities.isTypeBasedSpecalizationParameter(instantiatedType) &&
@@ -1578,11 +1599,32 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
         
         @Override
         public String toString() {
-            String res = "INSTANTIATION OF TYPE: " + originalType + " with types (" + instantiation.getMapping() + ")"; // NOI18N
-            if (instantiationHappened()) {
-                res += " becomes " + instantiatedType; // NOI18N
+            return toString(new StringBuilder(), 0);
+        }
+        
+        private String toString(StringBuilder out, int indent) {
+            indent(out, indent).append("INSTANTIATION OF "); // NOI18N
+            String instName = this.getClass().getSimpleName()+"@"+System.identityHashCode(this);//NOI18N
+            out.append(instName).append(":\n");// NOI18N
+            if (originalType instanceof Type) {
+                ((Type) originalType).toString(out, indent + 2);
+            } else {
+                indent(out, indent + 2);
+                out.append(originalType);
             }
-            return res;
+            out.append("\n");// NOI18N
+            if (!instantiation.getMapping().isEmpty()) {
+                indent(out, indent).append("WITH MAPPING:\n"); // NOI18N
+                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : instantiation.getMapping().entrySet()) {
+                    indent(out, indent).append("[").append(entry.getKey()).append("]=>{"); // NOI18N
+                    out.append(entry.getValue()).append("}\n"); // NOI18N
+                }
+            }
+            if (instantiationHappened()) {
+                indent(out, indent).append(" BECOME ").append(instantiatedType); // NOI18N
+            }
+            indent(out, indent).append("END OF ").append(instName);// NOI18N
+            return out.toString();
         }
     }
 

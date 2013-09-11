@@ -478,8 +478,8 @@ public abstract class CsmFileTaskFactory {
     }
 
     private static final class CsmSafeRunnable implements Runnable {
-        private FileObject fileObject;
-        private Runnable run;
+        private final FileObject fileObject;
+        private final Runnable run;
         public CsmSafeRunnable(Runnable run, FileObject fileObject) {
             this.run = run;
             this.fileObject = fileObject;
@@ -489,11 +489,14 @@ public abstract class CsmFileTaskFactory {
         public void run() {
             CsmFile file = getCsmFile(fileObject, false);
             if (file !=  null && file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
+                String oldName = Thread.currentThread().getName();
                 try {
+                    Thread.currentThread().setName(oldName + ":" + file.getAbsolutePath()); // NOI18N
                     CsmCacheManager.enter();
                     run.run();
                 } finally {
                     CsmCacheManager.leave();
+                    Thread.currentThread().setName(oldName);
                 }
             }
         }
