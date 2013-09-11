@@ -300,6 +300,22 @@ public abstract class TabDisplayerUI extends ComponentUI {
             //TODO do something here??
         }
     }
+
+    /**
+     * @return Insets denoting active autoscroll areas.
+     * @since 1.48
+     */
+    public Insets getAutoscrollInsets() {
+        return new Insets(0,0,0,0);
+    }
+
+    /**
+     * Scroll the tabs when something is dragged over the TabDisplayer.
+     * @param location Mouse location in TabDisplayer's coordinates.
+     * @since 1.48
+     */
+    public void autoscroll( Point location ) {
+    }
     
     private static Map<Integer, String[]> buttonIconPaths;
     private static void initIcons() {
