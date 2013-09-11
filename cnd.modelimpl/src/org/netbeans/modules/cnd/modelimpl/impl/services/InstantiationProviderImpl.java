@@ -116,7 +116,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
