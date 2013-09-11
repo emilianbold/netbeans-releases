@@ -472,6 +472,21 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             host.getText(),
             ejreTmp);
         if (data != null) {
+            final ConnectionMethod cm;
+            if (radioButtonPassword.isSelected()) {
+                cm = ConnectionMethod.sshPassword(
+                        host.getText(),
+                        ((Integer) port.getValue()).intValue(),
+                        username.getText(),
+                        String.valueOf(password.getPassword()));
+            } else {
+                cm = ConnectionMethod.sshKey(
+                        host.getText(),
+                        ((Integer) port.getValue()).intValue(),
+                        username.getText(),
+                        new File(keyFilePath.getText()),
+                        String.valueOf(passphrase.getPassword()));
+            }
             ProgressUtils.showProgressDialogAndRun(
                     new ProgressRunnable<Void>() {
                 @Override
@@ -493,7 +508,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                             return null;
                         };
                         handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
-                        res = upload(ejreTmp, data.second());
+                        res = upload(ejreTmp, data.second(), cm, wizardDescriptor);
                         if (res != 0) {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
@@ -601,27 +616,16 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         return res;
     }
 
-    private int upload(File folder, String path) {
-        final ConnectionMethod cm;
-        if (radioButtonPassword.isSelected()) {
-            cm = ConnectionMethod.sshPassword(
-                    host.getText(),
-                    ((Integer) port.getValue()).intValue(),
-                    username.getText(),
-                    String.valueOf(password.getPassword()));
-        } else {
-            cm = ConnectionMethod.sshKey(
-                    host.getText(),
-                    ((Integer) port.getValue()).intValue(),
-                    username.getText(),
-                    new File(keyFilePath.getText()),
-                    String.valueOf(passphrase.getPassword()));
-        }
-        final Object scriptObject = wizardDescriptor.getProperty(RemotePlatformIt.PROP_BUILDSCRIPT);
+    private static int upload(
+            @NonNull final File folder,
+            @NonNull final String path,
+            @NonNull final ConnectionMethod cm,
+            @NonNull final WizardDescriptor wd) {
+        final Object scriptObject = wd.getProperty(RemotePlatformIt.PROP_BUILDSCRIPT);
         File buildScript = scriptObject != null ? (File) scriptObject : null;
         if (buildScript == null) {
             buildScript = RemotePlatformProbe.createBuildScript();
-            wizardDescriptor.putProperty(RemotePlatformIt.PROP_BUILDSCRIPT, buildScript);
+            wd.putProperty(RemotePlatformIt.PROP_BUILDSCRIPT, buildScript);
         }
         return RemotePlatformProbe.uploadJRE(folder.getAbsolutePath(), path, cm, buildScript);
     }
