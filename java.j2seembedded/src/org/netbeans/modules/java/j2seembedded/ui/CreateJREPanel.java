@@ -44,6 +44,7 @@ package org.netbeans.modules.java.j2seembedded.ui;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -55,6 +56,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -65,6 +67,8 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public class CreateJREPanel extends javax.swing.JPanel {
+
+    private static final String KEY_EJDK = "ejdk.home"; //NOI18N
 
     private boolean valid = false;
 
@@ -99,6 +103,10 @@ public class CreateJREPanel extends javax.swing.JPanel {
             labelRemoteJREInfo.setVisible(false);
         } else {
             remoteJREPath.setText(NbBundle.getMessage(CreateJREPanel.class, "LBL_JRE_Path_Default", username)); //NOI18N
+        }
+        final File path = getEJDKHome();
+        if (path != null) {
+            jreCreateLocation.setText(path.getAbsolutePath());
         }
         validatePanel();
 
@@ -556,5 +564,17 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
     public boolean isPanelValid() {
         return valid;
+    }
+
+    @CheckForNull
+    private static File getEJDKHome() {
+        final Preferences prefs = NbPreferences.forModule(CreateJREPanel.class);
+        final String path = prefs.get(KEY_EJDK, null);
+        return path == null ? null : new File(path);
+    }
+
+    private static void setEJDKHome(@NullAllowed final File path) {
+        final Preferences prefs = NbPreferences.forModule(CreateJREPanel.class);
+        prefs.put(KEY_EJDK, path == null ? null : path.getAbsolutePath());
     }
 }
