@@ -112,11 +112,11 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
         ActionToGoalMapping rawMappings = getRawMappings();
-        Iterator it = rawMappings.getActions().iterator();
+        Iterator<NetbeansActionMapping> it = rawMappings.getActions().iterator();
         NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
         String prjPack = mp.getPackagingType();
         while (it.hasNext()) {
-            NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
+            NetbeansActionMapping elem = it.next();
             if (action.equals(elem.getActionName()) &&
                     (elem.getPackagings().isEmpty() ||
                     elem.getPackagings().contains(prjPack.trim()) ||
@@ -202,8 +202,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
     public Set<String> getSupportedDefaultActions() {
         HashSet<String> toRet = new HashSet<String>();
         ActionToGoalMapping raw = getRawMappings();
-        for (Object obj : raw.getActions()) {
-            NetbeansActionMapping nb = (NetbeansActionMapping) obj;
+        for (NetbeansActionMapping nb : raw.getActions()) {
             String name = nb.getActionName();
             if (name != null && !name.startsWith("CUSTOM-")) {
                 toRet.add(name);
@@ -230,14 +229,14 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
         NetbeansActionMapping action = null;
         try {
             // just a converter for the To-Object reader..
-            Reader read = performDynamicSubstitutions(Collections.EMPTY_MAP, getRawMappingsAsString());
+            Reader read = performDynamicSubstitutions(Collections.<String, String>emptyMap(), getRawMappingsAsString());
             // basically doing a copy here..
             ActionToGoalMapping mapping = reader.read(read);
-            Iterator it = mapping.getActions().iterator();
+            Iterator<NetbeansActionMapping> it = mapping.getActions().iterator();
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             String prjPack = mp.getPackagingType();
             while (it.hasNext()) {
-                NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
+                NetbeansActionMapping elem = it.next();
                 if (actionName.equals(elem.getActionName()) &&
                         (elem.getPackagings().isEmpty() ||
                          elem.getPackagings().contains(prjPack.trim()) ||
@@ -257,6 +256,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     /**
      * content of the input stream shall be the xml with action definitions
+     * @return 
      */
     protected abstract InputStream getActionDefinitionStream();
 
@@ -265,12 +265,12 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             // TODO need some caching really badly here..
             Reader read = performDynamicSubstitutions(replaceMap, getRawMappingsAsString());
             ActionToGoalMapping mapping = reader.read(read);
-            Iterator it = mapping.getActions().iterator();
+            Iterator<NetbeansActionMapping> it = mapping.getActions().iterator();
             NetbeansActionMapping action = null;
             NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
             String prjPack = mp.getPackagingType();
             while (it.hasNext()) {
-                NetbeansActionMapping elem = (NetbeansActionMapping) it.next();
+                NetbeansActionMapping elem = it.next();
                 if (actionName.equals(elem.getActionName()) &&
                         (elem.getPackagings().contains(prjPack.trim()) ||
                         elem.getPackagings().contains("*") || elem.getPackagings().isEmpty())) {//NOI18N
@@ -302,13 +302,13 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
     }
     public static String dynamicSubstitutions(Map<String,String> replaceMap, String in) {
         StringBuilder buf = new StringBuilder(in);
-        Iterator it = replaceMap.entrySet().iterator();
+        Iterator<Map.Entry<String, String>> it = replaceMap.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry elem = (Map.Entry) it.next();
+            Map.Entry<String, String> elem = it.next();
             String replaceItem = "${" + elem.getKey() + "}";//NOI18N
             int index = buf.indexOf(replaceItem);
             while (index > -1) {
-                String newItem = (String) elem.getValue();
+                String newItem = elem.getValue();
                 if (newItem == null) {
 //                    System.out.println("no value for key=" + replaceItem);
                 }
