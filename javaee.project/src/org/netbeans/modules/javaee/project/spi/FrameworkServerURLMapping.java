@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javaee.project.spi;
 
+import java.net.URL;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -62,5 +63,13 @@ public interface FrameworkServerURLMapping {
      * @return file which corresponds to the given URL or {@code null} if no such file exists
      */
     FileObject convertURLtoFile(FileObject docRoot, String uriWithoutMapping, String urlQuery);
+
+    /**
+     * Guesses from file path to real browser URL.
+     * @param file file
+     * @param relPath relative URI of the file in its project
+     * @return guessed relative path for the browser
+     */
+    String convertFileToRelativeURL(FileObject file, String relPath);
 
 }

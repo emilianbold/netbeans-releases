@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.netbeans.modules.javaee.project.spi.FrameworkServerURLMapping;
+import org.netbeans.modules.web.jsf.editor.index.ResourcesMappingModel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,6 +60,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = FrameworkServerURLMapping.class)
 public final class JsfServerURLMapping implements FrameworkServerURLMapping {
 
+    private static final String RESOURCE_DIR = "javax.faces.resource"; //NOI18N
+
     private static final String LIBRARY_PARAM = "ln";       //NOI18N
     private static final String CONTRACT_PARAM = "con";     //NOI18N
     private static final String RESOURCES = "resources";    //NOI18N
@@ -66,7 +69,7 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
 
     @Override
     public FileObject convertURLtoFile(FileObject docRoot, String uriWithoutMapping, String urlQuery) {
-        if (uriWithoutMapping.startsWith("javax.faces.resource/")) { //NOI18N
+        if (uriWithoutMapping.startsWith(RESOURCE_DIR + "/")) { //NOI18N
             String relPath = uriWithoutMapping.substring(21);
             try {
                 String uriWithNoSessionId = removeSessionIdFromUri(relPath);
@@ -85,6 +88,33 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
             }
         }
         return null;
+    }
+
+    @Override
+    public String convertFileToRelativeURL(FileObject file, String relPath) {
+        JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(file);
+        if (jsfSupport == null) {
+            return relPath;
+        }
+        String path = file.getPath();
+        for (ResourcesMappingModel.Resource resource : jsfSupport.getIndex().getAllStaticResources()) {
+            // another file
+            if (!path.contains(resource.getLibrary()) || !path.endsWith(resource.getName())) {
+                continue;
+            }
+
+            return getRelativePathForResource(file, resource, relPath);
+        }
+        return relPath;
+    }
+
+    private static String getRelativePathForResource(FileObject file, ResourcesMappingModel.Resource resource, String relPath) {
+        // TODO for contracts
+        if (resource.getLibrary().isEmpty()) {
+            return RESOURCE_DIR + "/" + resource.getName();
+        } else {
+            return RESOURCE_DIR + "/" + resource.getLibrary() + "/" + resource.getName();
+        }
     }
 
     private static Map<String, String> splitQuery(String query) throws UnsupportedEncodingException {
@@ -109,4 +139,5 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
         }
         return relPath;
     }
+
 }
