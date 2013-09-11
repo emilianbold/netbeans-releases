@@ -1221,7 +1221,7 @@ public final class ModuleList {
             if (f == null) {
                 return null;
             }
-            if (new File(f, "nbbuild").isDirectory() && new File(f, "core.startup").isDirectory()) { // NOI18N
+            if (new File(f, "nbbuild").isDirectory() && new File(f, "core").isDirectory()) { // NOI18N
                 return f;
             }
         }
