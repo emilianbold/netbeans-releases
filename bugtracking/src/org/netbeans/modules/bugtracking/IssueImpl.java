@@ -86,18 +86,9 @@ public final class IssueImpl<I> {
      * Opens this issue in the IDE
      */
     public void open() {
-        IssueAction.openIssue(this, false);
+        IssueAction.openIssue(this);
     }
 
-    /**
-     * Opens this issue in the IDE
-     * @param refresh also refreshes the issue after opening
-     *
-     */
-    public final void open(final boolean refresh) {
-        IssueAction.openIssue(this, refresh);
-    }    
-    
     /**
      * Returns a short variant of the display name. The short variant is used
      * in cases where the full display name might be too long, such as when used

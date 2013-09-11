@@ -174,16 +174,6 @@ public final class Issue {
     }
 
     /**
-     * Opens this issue in the IDE
-     * 
-     * @param refresh if true the issue is also refreshed after opening
-     *
-     */
-    public final void open(final boolean refresh) {
-        impl.open(refresh);
-    }    
-    
-    /**
      * Opens the issue with the given issueId in the IDE. In case that issueId
      * is null a new issue will be created.
      *

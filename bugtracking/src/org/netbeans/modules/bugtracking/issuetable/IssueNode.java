@@ -91,7 +91,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     private Action preferedAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            issueImpl.open(true);
+            issueImpl.open();
         }
     };
     private final ChangesProvider<I> changesProvider;
