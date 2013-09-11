@@ -311,6 +311,7 @@
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.samples</friend>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.javaee.project.api</package>
                 <package>org.netbeans.modules.javaee.project.api.ant</package>
