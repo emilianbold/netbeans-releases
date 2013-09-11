@@ -57,6 +57,7 @@ import org.netbeans.swing.tabcontrol.plaf.WinClassicViewTabDisplayerUI;
 import javax.swing.*;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
+import java.awt.dnd.Autoscroll;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -66,6 +67,7 @@ import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleSelection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.plaf.AbstractTabCellRenderer;
+import org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.BasicTabDisplayerUI;
 import org.netbeans.swing.tabcontrol.plaf.TabCellRenderer;
 import org.netbeans.swing.tabcontrol.plaf.TabState;
@@ -95,7 +97,7 @@ import org.netbeans.swing.tabcontrol.plaf.WinXPViewTabDisplayerUI;
  *
  * @author Tim Boudreau
  */
-public final class TabDisplayer extends JComponent implements Accessible {
+public final class TabDisplayer extends JComponent implements Accessible, Autoscroll {
     
     private boolean initialized = false;
     private TabDataModel model;
@@ -669,6 +671,16 @@ public final class TabDisplayer extends JComponent implements Accessible {
 
     public ComponentConverter getComponentConverter() {
         return componentConverter;
+    }
+
+    @Override
+    public Insets getAutoscrollInsets() {
+        return getUI().getAutoscrollInsets();
+    }
+
+    @Override
+    public void autoscroll( Point cursorLocn ) {
+        getUI().autoscroll( cursorLocn );
     }
     
     

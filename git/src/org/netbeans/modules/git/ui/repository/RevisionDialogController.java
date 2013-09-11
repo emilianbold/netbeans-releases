@@ -69,6 +69,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
 import org.openide.awt.QuickSearch;
 import org.openide.util.NbBundle;
 
@@ -99,6 +101,12 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         hideFields(new JComponent[] { panel.lblBranch, panel.branchesPanel });
     }
 
+    /**
+     * 
+     * @param repository
+     * @param roots
+     * @param branches if this is an empty map, branches will be loaded in background
+     */
     public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches) {
         this(repository, roots);
         hideFields(new JComponent[] { panel.lblRevision, panel.revisionField, panel.btnSelectRevision });
@@ -242,6 +250,10 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         "MSG_RevisionDialog.selectBranch=Select Branch"
     })
     private void setModel (Map<String, GitBranch> branches) {
+        if (branches.isEmpty()) {
+            loadBranches();
+            return;
+        }
         final List<Revision> branchList = new ArrayList<Revision>(branches.size());
         List<Revision> remoteBranchList = new ArrayList<Revision>(branches.size());
         Revision activeBranch = null;
@@ -411,5 +423,30 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                 qs.processKeyEvent(e);
             }
         });
+    }
+
+    @NbBundle.Messages({
+        "RevisionDialogController.loadingBranches=Loading Branches..."
+    })
+    private void loadBranches () {
+        DefaultListModel model = new DefaultListModel();
+        model.addElement(Bundle.RevisionDialogController_loadingBranches());
+        panel.lstBranches.setModel(model);
+        panel.lstBranches.setEnabled(false);
+        new GitProgressSupport.NoOutputLogging() {
+            
+            @Override
+            protected void perform () {
+                final Map<String, GitBranch> branches = RepositoryInfo.getInstance(repository).getBranches();
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        panel.lstBranches.setEnabled(true);
+                        setModel(branches);
+                    }
+                });
+            }
+        }.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.RevisionDialogController_loadingBranches());
     }
 }

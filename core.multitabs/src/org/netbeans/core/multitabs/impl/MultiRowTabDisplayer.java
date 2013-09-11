@@ -237,11 +237,6 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
     }
 
     @Override
-    public Rectangle getTabsArea() {
-        return rowPanel.getBounds();
-    }
-
-    @Override
     public void addNotify() {
         super.addNotify();
         tabModel.addComplexListDataListener( this );

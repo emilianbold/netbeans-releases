@@ -190,9 +190,4 @@ public class SimpleTabDisplayer extends AbstractTabDisplayer implements ListSele
         }
         return rect;
     }
-
-    @Override
-    public Rectangle getTabsArea() {
-        return table.getBounds();
-    }
 }

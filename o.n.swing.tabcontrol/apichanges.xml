@@ -109,6 +109,25 @@ is the proper place.
 
 <changes>
 
+    <change id="autoscroll">
+      <api name="tabcontrol"/>
+      <summary>Added ability to scroll document tabs when dragging a TopComponent
+          over the editor area.</summary>
+      <version major="1" minor="48"/>
+      <date day="11" month="9" year="2013"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        TabDisplayer no implements java.awt.dnd.Autoscroll interface. The new
+          methods just delegate to TabDisplayerUI.
+          The actual implementation is in BasicScrollingTabDisplayerUI class
+          which scrolls the tabs to the left or to the right when a TopComponent
+          is being dragged over its left or right edge.
+      </description>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayer"/>
+      <class package="org.netbeans.swing.tabcontrol" name="TabDisplayerUI"/>
+    </change>
+
     <change id="componentconverter">
       <api name="tabcontrol"/>
       <summary>Added getter and setter for ComponentConverter to TabDisplayer class.</summary>
