@@ -752,7 +752,7 @@ public final class FoldHierarchyTransactionImpl {
             blocked = false;
             prevOverlapIndexes = null;
         }
-
+        
         if (!blocked) {
             // Which fold will be the next important for the insert (possibly overlapped)
             int nextIndex = index;
@@ -864,7 +864,7 @@ public final class FoldHierarchyTransactionImpl {
                     Fold realPrev = ix > 0 ? realPF.getFold(ix - 1) : null;
                     Fold realNext = ix < realPF.getFoldCount() - 1 ? realPF.getFold(ix + 1) : null;
                     if ((realPrev != null && realPrev.getEndOffset() > fold.getStartOffset()) ||
-                        (realNext != null && realNext.getStartOffset() < fold.getStartOffset())) {
+                        (realNext != null && realNext.getStartOffset() < fold.getEndOffset())) {
                         LOG.warning("Invalid next/prev offsets: fold = " + fold + ", prev = " + realPrev + ", next = " + realNext);
                         LOG.warning("debug info: " + sbDebug.toString());
                     }

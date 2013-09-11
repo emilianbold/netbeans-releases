@@ -189,6 +189,7 @@ public class CreateSubclass {
                             desc.setValid(errorMessage == null);
                         }
                     });
+                    panel.checkValid();
                     if (DialogDisplayer.getDefault().notify(desc) != DialogDescriptor.OK_OPTION) {
                         return null;
                     }
