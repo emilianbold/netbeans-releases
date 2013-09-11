@@ -58,11 +58,23 @@ public final class Issue {
         /**
          * the user hasn't seen this issue yet
          */
-        NEW,
+        INCOMING_NEW,
         /**
          * the issue was modified since the issue was seen the last time
          */
-        MODIFIED,
+        INCOMING_MODIFIED,
+        /**
+         * the issue is new on client and haven't been submited yet
+         */
+        OUTGOING_NEW,
+        /**
+         * there are outgoing changes in the issue
+         */
+        OUTGOING_MODIFIED,
+        /**
+         * there are incoming and outgoing changes at one
+         */
+        CONFLICT,        
         /**
          * the user has seen the issue and there haven't been any changes since then
          */
@@ -75,9 +87,9 @@ public final class Issue {
     public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
     
     /**
-     * issues seen flag has changed 
+     * status has changed 
      */
-    public static final String EVENT_SEEN_CHANGED = IssueStatusProvider.EVENT_SEEN_CHANGED;
+    public static final String EVENT_STATUS_CHANGED = IssueStatusProvider.EVENT_STATUS_CHANGED;
     
     private final IssueImpl impl;
 
@@ -162,16 +174,6 @@ public final class Issue {
     }
 
     /**
-     * Opens this issue in the IDE
-     * 
-     * @param refresh if true the issue is also refreshed after opening
-     *
-     */
-    public final void open(final boolean refresh) {
-        impl.open(refresh);
-    }    
-    
-    /**
      * Opens the issue with the given issueId in the IDE. In case that issueId
      * is null a new issue will be created.
      *
@@ -212,10 +214,16 @@ public final class Issue {
         switch(status) {
             case SEEN:
                 return Status.SEEN;
-            case NEW:
-                return Status.NEW;
-            case MODIFIED:
-                return Status.MODIFIED;
+            case INCOMING_NEW:
+                return Status.INCOMING_NEW;
+            case INCOMING_MODIFIED:
+                return Status.INCOMING_MODIFIED;
+            case OUTGOING_NEW:
+                return Status.OUTGOING_NEW;
+            case OUTGOING_MODIFIED:
+                return Status.OUTGOING_MODIFIED;
+            case CONFLICT:
+                return Status.CONFLICT;
             default:
                 throw new IllegalStateException("Unexpected status value " + status);
         }

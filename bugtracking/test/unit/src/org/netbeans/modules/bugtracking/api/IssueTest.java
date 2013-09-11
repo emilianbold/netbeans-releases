@@ -136,9 +136,8 @@ public class IssueTest extends NbTestCase {
         
         apiIssue.wasRefreshed = false;
         apiIssue.wasOpened = false;
-        issue.open(true);
+        issue.open();
         assertOpened(apiIssue);
-        assertTrue(apiIssue.wasRefreshed);
     }
     
     public void testAddedComment() {

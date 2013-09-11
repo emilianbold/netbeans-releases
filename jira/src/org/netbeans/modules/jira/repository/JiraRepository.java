@@ -860,9 +860,9 @@ public class JiraRepository {
             NbJiraIssue issue = getIssue(id);
             if (issue != null) {
                 switch (issue.getStatus()) {
-                    case MODIFIED:
+                    case INCOMING_MODIFIED:
                         return IssueCache.Status.ISSUE_STATUS_MODIFIED;
-                    case NEW:
+                    case INCOMING_NEW:
                         return IssueCache.Status.ISSUE_STATUS_NEW;
                     case SEEN:
                         return IssueCache.Status.ISSUE_STATUS_SEEN;

@@ -42,45 +42,74 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * 
  *
  * @author Tomas Stupka
+ * @param <I> issue data
  */
 public interface IssueStatusProvider<I> {
 
     public enum Status {
-        NEW,
-        MODIFIED,
+        /**
+         * the user hasn't seen this issue yet
+         */
+        INCOMING_NEW,
+        /**
+         * the issue was modified since the issue was seen the last time
+         */
+        INCOMING_MODIFIED,
+        /**
+         * the issue is new on client and haven't been submited yet
+         */
+        OUTGOING_NEW,
+        /**
+         * there are outgoing changes in the issue
+         */
+        OUTGOING_MODIFIED,
+        /**
+         * there are incoming and outgoing changes at one
+         */
+        CONFLICT,        
+        /**
+         * the user has seen the issue and there haven't been any changes since then
+         */
         SEEN
     }
         
     /**
-     * issue status changed
+     * Issue status has changed.
      */
-    public static final String EVENT_SEEN_CHANGED = "issue.status_changed"; // NOI18N
+    public static final String EVENT_STATUS_CHANGED = "issue.status_changed"; // NOI18N
 
-    /*
+    /**
      * 
+     * @param issue
+     * @return 
      */
     public Status getStatus(I issue);
 
-    /*
-     * 
+    /**
+     * DeterminesResets the INCOMING_XXX status
+     * @param issue
+     * @param seen 
      */
     public void setSeen(I issue, boolean seen);
     
-    /*
+    /**
      * 
+     * XXX just a change listener maybe
+     * @param issue
+     * @param listener
      */
     public void removePropertyChangeListener(I issue, PropertyChangeListener listener);
 
-    /*
+    /**
      * 
+     * XXX just a change listener maybe
+     * @param issue
+     * @param listener 
      */
     public void addPropertyChangeListener(I issue, PropertyChangeListener listener);
 

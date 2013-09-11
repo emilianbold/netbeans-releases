@@ -456,9 +456,9 @@ public abstract class AbstractNbTaskWrapper {
         switch (getSynchronizationState()) {
             case CONFLICT:
             case INCOMING:
-                return IssueStatusProvider.Status.MODIFIED;
+                return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
-                return IssueStatusProvider.Status.NEW;
+                return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
             case OUTGOING_NEW:
             case SYNCHRONIZED:
