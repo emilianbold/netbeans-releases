@@ -60,6 +60,7 @@ public class RefreshModulesAction extends NodeAction {
     public RefreshModulesAction() {
     }
     
+    @Override
     protected boolean enable(Node[] nodes) {
         for(Node node:nodes) {
             RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
@@ -67,20 +68,17 @@ public class RefreshModulesAction extends NodeAction {
                 return false;
             }
         }
-        
         return true;
     }    
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(RefreshModulesAction.class, "LBL_RefreshModulesAction"); // NOI18N
     }
     
+    @Override
     protected void performAction(Node[] nodes) {
         for(Node node:nodes) {
-//            RefreshModulesCookie cookie = node.getCookie(RefreshModulesCookie.class);
-//            if (cookie != null) {
-//                cookie.refresh();
-//            }
             Collection<? extends RefreshModulesCookie> cookies = 
                     node.getLookup().lookupAll(RefreshModulesCookie.class);
             for(RefreshModulesCookie cookie: cookies) {
@@ -94,6 +92,7 @@ public class RefreshModulesAction extends NodeAction {
         return false;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -59,11 +59,11 @@ import org.netbeans.modules.form.codestructure.CodeExpressionOrigin;
  */
 class QueryResultListCreator implements CreationDescriptor.Creator {
     /** Parameter types. */
-    private Class[] paramTypes = new Class[] {String.class, boolean.class, boolean.class};
+    private final Class[] paramTypes = new Class[] {String.class, boolean.class, boolean.class};
     /** Exception types. */
-    private Class[] exTypes = new Class[0];
+    private final Class[] exTypes = new Class[0];
     /** Property names. */
-    private String[] propNames = new String[] {"query", "observable", "modifiableWrapper"}; // NOI18N
+    private final String[] propertyNames = new String[] {"query", "observable", "modifiableWrapper"}; // NOI18N
     
     /**
      * Returns number of parameters of the creator.
@@ -72,7 +72,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      */
     @Override
     public int getParameterCount() {
-        return propNames.length;
+        return propertyNames.length;
     }
     
     /**
@@ -102,7 +102,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      */
     @Override
     public String[] getPropertyNames() {
-        return propNames;
+        return propertyNames;
     }
     
     /**
@@ -131,27 +131,29 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
      * Returns creation code according to given properties.
      *
      * @param props properties describing the instance whose creation code should be returned.
+     * @param propNames not used
+     * @param propCodes not used
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
     @Override
     public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
-        assert (props.length == propNames.length);
+        assert (props.length == propertyNames.length);
         
         String query = null;
         Object observableValue = null;
         Object modifiableValue = null;
         for (int i=0; i<props.length; i++) {
             String propName = props[i].getName();
-            if (propNames[0].equals(propName)) {
+            if (propertyNames[0].equals(propName)) {
                 query = props[i].getJavaInitializationString();
-            } else if (propNames[1].equals(propName)) {
+            } else if (propertyNames[1].equals(propName)) {
                 try {
                     observableValue = props[i].getRealValue();
                 } catch (Exception ex) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
-            } else if (propNames[2].equals(propName)) {
+            } else if (propertyNames[2].equals(propName)) {
                 try {
                     modifiableValue = props[i].getRealValue();
                 } catch (Exception ex) {
