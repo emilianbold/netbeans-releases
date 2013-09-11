@@ -42,8 +42,10 @@
 package org.netbeans.modules.java.j2seembedded.wizard;
 
 import java.awt.Component;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -70,7 +72,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -462,11 +463,11 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonBrowseActionPerformed
 
     private void buttonCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCreateActionPerformed
-        final File ejdkTmp = new File (new File (System.getProperty("java.io.tmpdir")),"nbjdkcreate");  //NOI18N
+        final File ejreTmp = createJRETempDir();
         final Pair<List<String>,String> data = CreateJREPanel.configure(
             username.getText(),
             host.getText(),
-            ejdkTmp);
+            ejreTmp);
         if (data != null) {
             ProgressUtils.showProgressDialogAndRun(
                 new ProgressRunnable<Void>() {
@@ -474,23 +475,27 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                     public Void run(ProgressHandle handle) {
                         handle.start(2);
                         handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JRECreate"));
-                        int res = jreCreate(data.first());
-                        if (res != 0) {
-                            //Todo: handle error - switch to EDT!
-                        }
-                        handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
-                        res = upload(ejdkTmp, data.second());
-                        if (res != 0) {
-                            //Todo: handle error - switch to EDT!
-                        }
-                        handle.progress(2);
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                jreLocation.setText(data.second());
+                        try {
+                            int res = jreCreate(data.first());
+                            if (res != 0) {
+                                //Todo: handle error - switch to EDT!
                             }
-                        });
-                        return null;
+                            handle.progress(NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_JREUpload"), 1);
+                            res = upload(ejreTmp, data.second());
+                            if (res != 0) {
+                                //Todo: handle error - switch to EDT!
+                            }
+                            handle.progress(2);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    jreLocation.setText(data.second());
+                                }
+                            });
+                            return null;
+                        } finally {
+                            deleteAll(ejreTmp);
+                        }
                     }
                 },
                 NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_CreatingNewPlatform"),
@@ -526,17 +531,47 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     private javax.swing.JLabel workingDirLabel;
     // End of variables declaration//GEN-END:variables
 
+    private static File createJRETempDir() {
+        final File tmpDir = new File(System.getProperty("java.io.tmpdir")); //NOI18N
+        final String namePattern = "nb-jrecreate-%d";  //NOI18N
+        File tmpJreDir;
+        int i = -1;
+        do {
+            i++;
+            tmpJreDir = new File (tmpDir,String.format(namePattern, i));
+        } while (tmpJreDir.exists());
+        return tmpJreDir;
+    }
+
+    private static void deleteAll(File file) {
+        if (file.isDirectory()) {
+            final File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    deleteAll(child);
+                }
+            }
+        }
+        file.delete();
+    }
+
     private static int jreCreate(@NonNull final List<String> cmdLine) {
-        final ExternalProcessBuilder pb = new ExternalProcessBuilder(cmdLine.get(0));
-        pb.addEnvironmentVariable(
+        ExternalProcessBuilder pb = new ExternalProcessBuilder(cmdLine.get(0));
+        pb = pb.addEnvironmentVariable(
             ENV_JAVA_HOME,
             FileUtil.toFile(JavaPlatform.getDefault().getInstallFolders().iterator().next()).getAbsolutePath());
         for (String arg : cmdLine.subList(1, cmdLine.size())) {
-            pb.addArgument(arg);
+            pb = pb.addArgument(arg);
         }
         int res;
         try {
             final Process process = pb.call();
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                String line;
+                while ((line = in.readLine())!= null) {
+                    System.out.println(line);
+                }
+            }
             process.waitFor();
             res = process.exitValue();
         } catch (IOException | InterruptedException e) {
