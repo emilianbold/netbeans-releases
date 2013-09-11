@@ -107,7 +107,7 @@ public class DiffTest extends AbstractGitTestCase {
         f = MultiDiffPanelController.class.getDeclaredField("changeTask");
         f.setAccessible(true);
         changeTask = (Task) f.get(controller);
-        f = MultiDiffPanelController.class.getDeclaredField("fileTable");
+        f = MultiDiffPanelController.class.getDeclaredField("fileListComponent");
         f.setAccessible(true);
         DiffFileTable statusTable = (DiffFileTable) f.get(controller);
         f = VCSStatusTable.class.getDeclaredField("tableModel");

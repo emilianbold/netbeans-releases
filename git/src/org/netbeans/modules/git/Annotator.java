@@ -150,7 +150,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new PatchesMenu(ActionDestination.MainMenu, null));
                 actions.add(null);
                 
-                actions.add(new BranchMenu(ActionDestination.MainMenu, null));
+                actions.add(new BranchMenu(ActionDestination.MainMenu, null, null));
                 actions.add(new RemoteMenu(ActionDestination.MainMenu, null, null));
                 actions.add(new RevertMenu(ActionDestination.MainMenu, null));
                 actions.add(null);
@@ -181,7 +181,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new PatchesMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(null);
                 
-                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp));
+                actions.add(new BranchMenu(ActionDestination.PopupMenu, lkp, context));
                 actions.add(new RemoteMenu(ActionDestination.PopupMenu, lkp, context));
                 actions.add(new RevertMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(null);
