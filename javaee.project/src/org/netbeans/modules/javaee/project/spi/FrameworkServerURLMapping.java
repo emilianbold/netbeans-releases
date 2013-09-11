@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javaee.project.spi;
 
-package org.netbeans.modules.web.jsf.editor.index;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import java.net.URL;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
+import org.openide.filesystems.FileObject;
 
 /**
+ * URL mapping is handled by default by {@link ServerURLMappingImplementation}, But Java EE frameworks are able often
+ * change significantly appearance of the created URL. It means that we need to obtain also frameworks specific mapping.
+ * Such mapping can be provided by implementation of this interface.
+ * @see ServerURLMappingImplementation
  *
- * @author marekfukala
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class JsfPageModelFactory {
+public interface FrameworkServerURLMapping {
 
-    private static final Collection<JsfPageModelFactory> FACTORIES = new ArrayList<>();
-    static {
-        FACTORIES.add(new CompositeComponentModel.Factory());
-        FACTORIES.add(new ResourcesMappingModel.Factory());
-    }
+    /**
+     * Searches existing file for given url.
+     * @param docRoot documentation root of the project
+     * @param uriWithoutMapping URI without servlet mapping defined within deployment descriptor
+     * @param urlQuery query of the url - i.e. ?ln=css&param=5
+     * @return file which corresponds to the given URL or {@code null} if no such file exists
+     */
+    FileObject convertURLtoFile(FileObject docRoot, String uriWithoutMapping, String urlQuery);
 
-    public static Collection<JsfPageModel> getModels(HtmlParserResult result) {
-        Collection<JsfPageModel> models = new ArrayList<>();
-        for(JsfPageModelFactory factory : FACTORIES) {
-            JsfPageModel model = factory.getModel(result);
-            if(model != null) {
-                models.add(model);
-            }
-        }
-        return models;
-    }
+    /**
+     * Guesses from file path to real browser URL.
+     * @param file file
+     * @param relPath relative URI of the file in its project
+     * @return guessed relative path for the browser
+     */
+    String convertFileToRelativeURL(FileObject file, String relPath);
 
-    public static JsfPageModelFactory getFactory(Class modelFactoryClass) {
-        for(JsfPageModelFactory factory : FACTORIES) {
-            if(factory.getClass().equals(modelFactoryClass)) {
-                return factory;
-            }
-        }
-        return null;
-    }
-
-    public abstract JsfPageModel getModel(HtmlParserResult result);
-
-    public abstract JsfPageModel loadFromIndex(IndexResult result);
-    
 }

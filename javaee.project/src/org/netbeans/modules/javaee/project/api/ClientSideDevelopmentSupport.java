@@ -47,11 +47,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.javaee.project.spi.FrameworkServerURLMapping;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -71,6 +72,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -154,6 +156,10 @@ public final class ClientSideDevelopmentSupport implements
         String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
         // #233748 - disable using Servlet URL mapping for now:
         // relPath = applyServletPattern(relPath);
+        Collection<? extends FrameworkServerURLMapping> mappings = Lookup.getDefault().lookupAll(FrameworkServerURLMapping.class);
+        for (FrameworkServerURLMapping mapping : mappings) {
+            relPath = mapping.convertFileToRelativeURL(projectFile, relPath);
+        }
         try {
             URL u = new URL(projectRootURL + relPath);
             WebBrowser browser = getWebBrowser();
@@ -169,6 +175,13 @@ public final class ClientSideDevelopmentSupport implements
 
     @Override
     public FileObject fromServer(int projectContext, URL serverURL) {
+        String query = serverURL.getQuery();
+        // #219339 - strip down query and/or fragment:
+        serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+        if (serverURL == null) {
+            return null;
+        }
+
         init();
         if (projectRootURL == null || webDocumentRoot == null) {
             return null;
@@ -185,7 +198,7 @@ public final class ClientSideDevelopmentSupport implements
                 return getExistingWelcomeFile();
             } else {
                 // use servlet mappings to map server URL to a project file:
-                return convertServerURLToProjectFile(name);
+                return convertServerURLToProjectFile(name, query);
             }
         }
         return null;
@@ -291,7 +304,7 @@ public final class ClientSideDevelopmentSupport implements
         }
         return BrowserUISupport.getBrowser(selectedBrowser);
     }
-    
+
     private final List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
     private final List<String> welcomeFiles = new CopyOnWriteArrayList<String>();
 
@@ -369,12 +382,19 @@ public final class ClientSideDevelopmentSupport implements
         return null;
     }
 
-    private FileObject convertServerURLToProjectFile(String name) {
+    private FileObject convertServerURLToProjectFile(String name, String query) {
         // bellow code is limited to understand following simple usecase:
         // pattern "/faces/*" means that URL /faces/index.anything maps to
         // file web-root/index.anything and vice versa:
         for (String pattern : servletURLPatterns) {
             if (name.startsWith(pattern)) {
+                Collection<? extends FrameworkServerURLMapping> mappings = Lookup.getDefault().lookupAll(FrameworkServerURLMapping.class);
+                for (FrameworkServerURLMapping mapping : mappings) {
+                    FileObject file = mapping.convertURLtoFile(webDocumentRoot, name.substring(pattern.length()), query);
+                    if (file != null) {
+                        return file;
+                    }
+                }
                 FileObject fo = webDocumentRoot.getFileObject(name.substring(pattern.length()));
                 if (fo != null) {
                     return fo;

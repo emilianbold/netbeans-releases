@@ -105,6 +105,12 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
 
     @Override
     public FileObject fromServer(int projectContext, URL serverURL) {
+        // #219339 - strip down query and/or fragment:
+        serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+        if (serverURL == null) {
+            return null;
+        }
+
         WebBrowser browser = project.getProjectWebBrowser();
         if (browser != null) {
             serverURL = browser.fromBrowserURL(project, serverURL);
