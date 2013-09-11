@@ -329,6 +329,7 @@
 				<file title="AddingUnitTests.html"/>
 				<file title="CandC++BuildingTasks.html"/>
 				<file title="CodeAssistance.html"/>
+				<file title="CodeAssistanceCache.html"/>
 				<file title="CodeAssistanceWizardP1.html"/>
 				<file title="CodeAssistanceWizardP2.html"/>
 				<file title="CodeAssistanceWizardP3.html"/>
@@ -370,6 +371,7 @@
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
 				<file title="ProjectTasks.html"/>
+				<file title="PublicPrivateProperties.html"/>
 				<file title="RemoteDevelopment.html"/>
 				<file title="RemoteDevelopmentConfigureHost.html"/>
 				<file title="RemoteDevelopmentFileSharing.html"/>
