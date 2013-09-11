@@ -629,7 +629,15 @@ public class TomcatProperties {
         // tomcat libs
         List<URL> retValue = new ArrayList<URL>();
         retValue.addAll(listUrls(new File(homeDir, tm.libFolder()), nbFilter));
-        
+
+        // TOMEE as webapp
+        if (tm.isTomEE()) {
+            File tomee = TomcatFactory.getTomEEWebAppJar(homeDir, baseDir);
+            if (tomee != null) {
+                retValue.addAll(listUrls(tomee.getParentFile(), nbFilter));
+            }
+        }
+
         if (tm.isTomcat60()) {
             try {
                 retValue.add(new File(homeDir, "bin/tomcat-juli.jar").toURI().toURL()); // NOI18N

@@ -157,7 +157,7 @@ public class TomcatManager implements DeploymentManager {
 
         this.tp = new TomcatProperties(this);
         // XXX this may be slow
-        this.tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome());
+        this.tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase());
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -426,7 +426,7 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public boolean isTomEE() {
-        return tomEEVersion != null;
+        return tomEEVersion != null || Boolean.getBoolean(TomcatManager.class.getName() + "tomee");
     }
 
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
@@ -792,7 +792,9 @@ public class TomcatManager implements DeploymentManager {
                 "logs",   // NOI18N
                 "work",   // NOI18N
                 "temp",   // NOI18N
-                "webapps" // NOI18N
+                "webapps", // NOI18N
+                // TOMEE dir
+                "conf/conf.d" // NOI18N
             };
             for (int i = 0; i<subdirs.length; i++) {
                 File dest = new File (baseDirFO, subdirs [i]);
@@ -809,6 +811,10 @@ public class TomcatManager implements DeploymentManager {
                 "conf/web.xml",   // NOI18N
                 ADMIN_XML,   // NOI18N For bundled tomcat 5.0.x
                 "conf/Catalina/localhost/manager.xml",   // NOI18N
+                // TOMEE files
+                "conf/system.properties", // NOI18N
+                "conf/tomee.xml", // NOI18N
+                "conf/conf.d/hsql.properties" // NOI18N
             };
             boolean[] userReadOnly = new boolean[] {
                 false,
@@ -816,6 +822,9 @@ public class TomcatManager implements DeploymentManager {
                 false,
                 false,
                 true,
+                false,
+                false,
+                false,
                 false,
                 false,
                 false
@@ -827,8 +836,11 @@ public class TomcatManager implements DeploymentManager {
                 null,
                 "</tomcat-users>",   // NOI18N
                 null,
-                "docBase=\"../server/webapps/admin\"",    // NOI18N For bundled tomcat 5.0.x
-                isTomcat50() || isTomcat55() ? "docBase=\"../server/webapps/manager\"" : null,    // NOI18N
+                "docBase=\"../server/webapps/admin\"", // NOI18N For bundled tomcat 5.0.x
+                isTomcat50() || isTomcat55() ? "docBase=\"../server/webapps/manager\"" : null, // NOI18N
+                null,
+                null,
+                null
             };
             String passwd = null;
             if (isBundledTomcat()) {
@@ -855,8 +867,11 @@ public class TomcatManager implements DeploymentManager {
                 null,
                 usersString,
                 null,
-                "docBase=\"${catalina.home}/server/webapps/admin\"",   // NOI18N For bundled tomcat 5.0.x
-                isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null,   // NOI18N
+                "docBase=\"${catalina.home}/server/webapps/admin\"", // NOI18N For bundled tomcat 5.0.x
+                isTomcat50() || isTomcat55() ? "docBase=\"${catalina.home}/server/webapps/manager\"" : null, // NOI18N
+                null,
+                null,
+                null
             };
             for (int i = 0; i < files.length; i++) {
                 // get folder from, to, name and ext
@@ -922,6 +937,17 @@ public class TomcatManager implements DeploymentManager {
             if (!isTomcat50() && !isTomcat55() && new File(homeDir, "webapps/manager").exists()) { // NOI18N
                 writeToFile(new File(baseDir, "conf/Catalina/localhost/manager.xml"), // NOI18N
                      "<Context docBase=\"${catalina.home}/webapps/manager\" antiResourceLocking=\"false\" privileged=\"true\"/>\n"); // NOI18N
+            }
+            // TOMEE deploy
+            if (isTomEE()) {
+                File tomee = TomcatFactory.getTomEEWebAppJar(homeDir);
+                if (tomee != null) {
+                    // cd to lib and to app folder
+                    File folder = tomee.getParentFile().getParentFile();
+                    assert folder != null;
+                    writeToFile(new File(baseDir, "conf/Catalina/localhost/" + folder.getName() + ".xml"), // NOI18N
+                        "<Context path=\"" + folder.getName() + "\" docBase=\"${catalina.home}/webapps/" + folder.getName() + "\"/>\n"); // NOI18N
+                }
             }
 
             if (isBundledTomcat()) {

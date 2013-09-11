@@ -379,4 +379,6 @@
 	<mapID target="CodeCompletionOptions" url="WorkingWithCandC++Projects/CodeCompletionOptions.html"/>
 	<mapID target="SettingCandC++FolderProperties" url="WorkingWithCandC++Projects/SettingCandC++FolderProperties.html"/>
 	<mapID target="UsingCandC++Launchers" url="WorkingWithCandC++Projects/UsingCandC++Launchers.html"/>
+	<mapID target="CodeAssistanceCache" url="WorkingWithCandC++Projects/CodeAssistanceCache.html"/>
+	<mapID target="PublicPrivateProperties" url="WorkingWithCandC++Projects/PublicPrivateProperties.html"/>
 </map>
