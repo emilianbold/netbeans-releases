@@ -208,31 +208,49 @@ public class CreateJREPanel extends javax.swing.JPanel {
             if (panel.isNoCompression()) {
                 cmdLine.add("--no-compression");   //NOI18N
             }
-            List<String> extensions = new ArrayList<>();
+            final StringBuilder extensions = new StringBuilder();
             if (panel.isFxGraphics()) {
-                extensions.add("fx:graphics");  //NOI18N
+                extensions.append("fx:graphics");  //NOI18N
             }
             if (panel.isFxControls()) {
-                extensions.add("fx:controls");  //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("fx:controls");  //NOI18N
             }
             if (panel.isSunec()) {
-                extensions.add("sunec");        //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("sunec");        //NOI18N
             }
             if (panel.isSunpkcs11()) {
-                extensions.add("sunpkcs11");        //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("sunpkcs11");        //NOI18N
             }
             if (panel.isLocales()) {
-                extensions.add("locales");        //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("locales");        //NOI18N
             }
             if (panel.isCharsets()) {
-                extensions.add("charsets");        //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("charsets");        //NOI18N
             }
             if (panel.isNashorn()) {
-                extensions.add("nashorn");        //NOI18N
+                if (extensions.length() > 0) {
+                    extensions.append(","); //NOI18N
+                }
+                extensions.append("nashorn");        //NOI18N
             }
-            if (!extensions.isEmpty()) {
+            if (extensions.length() > 0) {
                 cmdLine.add("--extension"); //NOI18N
-                cmdLine.addAll(extensions);
+                cmdLine.add(extensions.toString());
             }
             return  Pair.<List<String>,String>of(cmdLine, panel.getRemoteJREPath());
         }
