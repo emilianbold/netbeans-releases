@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;

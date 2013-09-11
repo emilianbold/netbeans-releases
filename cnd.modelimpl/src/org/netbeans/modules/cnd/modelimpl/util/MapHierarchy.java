@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
+package org.netbeans.modules.cnd.modelimpl.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Stack;
-import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 
 /**
  *
@@ -174,11 +174,11 @@ public final class MapHierarchy<K, V> {
         if (from == maps.size()) {
             return;
         }
-        TemplateUtils.repeat(out, from * 2, ' '); // NOI18N
+        TraceUtils.repeat(out, from * 2, ' '); // NOI18N
         out.append("MAPPING:\n"); // NOI18N
         traceMaps(out, from + 1);
-        out.append(TemplateUtils.traceMap(maps.get(from), from * 2));
-        TemplateUtils.repeat(out, from * 2, ' '); // NOI18N
+        out.append(TraceUtils.traceMap(maps.get(from), from * 2));
+        TraceUtils.repeat(out, from * 2, ' '); // NOI18N
         out.append("END OF MAPPING\n"); // NOI18N
     }
     
