@@ -125,7 +125,9 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                         }
                     }
                     for (URL u :  stripDefaultJavaPlatform(boot)) {
-                        result.add (ClassPathSupport.createResource(u));
+                        if (u != null) {
+                            result.add (ClassPathSupport.createResource(u));
+                        }
                     }
                 }
                 File[] jars = endorsed.listFiles();
@@ -135,7 +137,10 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                             if (endorsed2Repo.containsKey(jar)) {
                                 File toScan = endorsed2Repo.get(jar);
                                 if (toScan != null) {
-                                    result.add(ClassPathSupport.createResource(FileUtil.urlForArchiveOrDir(toScan)));
+                                    URL url = FileUtil.urlForArchiveOrDir(toScan);
+                                    if (url != null) {
+                                        result.add(ClassPathSupport.createResource(url));
+                                    }
                                 }
                             } else {
                                 // #197510: blocking, must do this asynch
