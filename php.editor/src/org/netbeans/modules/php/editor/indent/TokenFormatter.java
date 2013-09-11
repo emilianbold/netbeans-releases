@@ -682,8 +682,15 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesBeforeNamespace + 1 > newLines ? docOptions.blankLinesBeforeNamespace + 1 : newLines;
-                                        countSpaces = Math.max(indent, countSpaces);
+                                        if (docOptions.blankLinesBeforeNamespace != 0 && docOptions.blankLinesBeforeNamespace + 1 > newLines) {
+                                            newLines = docOptions.blankLinesBeforeNamespace + 1;
+                                            countSpaces = indent;
+                                        } else {
+                                            if (newLines == 0) {
+                                                countSpaces = 1; // one space before OPEN_TAG and NS_DECLARATION - probably in one line
+                                            }
+                                            countSpaces = Math.max(indent, countSpaces);
+                                        }
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
                                         indentRule = true;
@@ -1390,9 +1397,14 @@ public class TokenFormatter {
                                         indentRule = true;
                                         indent = Math.max(lastPHPIndent, indent);
                                         if (!isOpenAndCloseTagOnOneLine(formatTokens, index)) {
-                                            newLines = ((FormatToken.InitToken) formatTokens.get(0)).hasHTML()
-                                                    ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
-                                                    : docOptions.blankLinesAfterOpenPHPTag + 1;
+                                            if (((FormatToken.InitToken) formatTokens.get(0)).hasHTML()) {
+                                                newLines = docOptions.blankLinesAfterOpenPHPTagInHTML + 1;
+                                            } else {
+                                                newLines = docOptions.blankLinesAfterOpenPHPTag;
+                                                if (newLines > 0) {
+                                                    newLines++;
+                                                }
+                                            }
                                             suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
                                             if (suggestedLineIndents != null) {
                                                 try {
