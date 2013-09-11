@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
+import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -1163,7 +1164,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static CsmType resolveTemplateParameterType(CsmType type, CsmInstantiation instantiation) {
         if (CsmKindUtilities.isTemplateParameterType(type)) {
             LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{type.getText(), instantiation.getTemplateDeclaration().getName()});
-            Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
+            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = TemplateUtils.gatherMapping(instantiation);
             CsmType resolvedType = resolveTemplateParameter(((CsmTemplateParameterType) type).getParameter(), mapping);
             if (resolvedType != null) {
                 return resolvedType;
@@ -1173,6 +1174,10 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     }
     
     public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
+        return resolveTemplateParameter(templateParameter, new MapHierarchy<>(mapping));
+    }
+    
+    public static CsmType resolveTemplateParameter(CsmTemplateParameter templateParameter, MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         LOG.log(Level.FINE, "Instantiation.resolveTemplateParameter {0}; mapping={1}\n", new Object[]{templateParameter.getName(), mapping.size()});
         CsmSpecializationParameter instantiatedType = mapping.get(templateParameter);
         int iteration = MAX_INHERITANCE_DEPTH;

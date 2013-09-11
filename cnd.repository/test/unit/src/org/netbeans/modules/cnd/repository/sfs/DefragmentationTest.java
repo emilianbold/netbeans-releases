@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.test.TestObjectCreator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 
@@ -56,7 +55,7 @@ import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
  * A test for DoubleFileStorage defragmentation
  * @author Vladimir Kvashin
  */
-public class DefragmentationTest extends NbTestCase {
+public class DefragmentationTest extends ModelImplBaseTestCase {
 
     private static final boolean TRACE = false;
 

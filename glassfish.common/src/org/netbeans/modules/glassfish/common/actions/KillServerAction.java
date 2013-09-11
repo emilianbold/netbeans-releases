@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.nodes.Node;
@@ -126,7 +127,9 @@ public class KillServerAction extends NodeAction {
      * @param commonSupport Interface implemented by common server support.
      */
     private static void performActionImpl(GlassfishModule commonSupport) {
-        commonSupport.killServer(null);
+        if (WarnPanel.gfKillWarning(commonSupport.getInstance().getName())) {
+            commonSupport.killServer(null);
+        }
     }
 
     /**
