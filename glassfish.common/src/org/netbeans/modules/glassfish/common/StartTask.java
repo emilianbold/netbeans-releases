@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.glassfish.common;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -79,8 +78,6 @@ import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -722,7 +719,6 @@ public class StartTask extends BasicTask<TaskState> {
                 }
             }
         }
-        //try {
         if (null == debugPortString
                 || "0".equals(debugPortString) || "".equals(debugPortString)) {
             if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
@@ -738,18 +734,6 @@ public class StartTask extends BasicTask<TaskState> {
                             "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
                 }
             }
-            DialogDescriptor note =
-                    new DialogDescriptor(
-                    NbBundle.getMessage(StartTask.class, "MSG_SELECTED_PORT", debugPortString),
-                    NbBundle.getMessage(StartTask.class, "TITLE_MESSAGE"),
-                    false,
-                    new Object[]{DialogDescriptor.OK_OPTION},
-                    DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);
-            Dialog d = DialogDisplayer.getDefault().createDialog(note);
-            d.setVisible(true);
         }
         support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
         optList.add("-Xdebug");
