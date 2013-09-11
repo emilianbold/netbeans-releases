@@ -226,8 +226,7 @@ public final class JavadocGenerator {
             case ENUM_CONSTANT:
                 return generateComment((VariableElement) elm, javac);
             default:
-                throw new UnsupportedOperationException(elm.getKind() +
-                        ", " + elm.getClass() + ": " + elm.toString()); // NOI18N
+                return null;
         }
     }
     
