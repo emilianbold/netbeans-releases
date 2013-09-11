@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.git.ui.checkout;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.AbstractMap;
+import javax.swing.AbstractAction;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.repository.RevisionDialogController;
@@ -52,6 +55,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
@@ -69,7 +73,7 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
 
     public void checkoutRevision (final File repository, String preselectedRevision) {
         checkoutRevision(repository, new SwitchBranch(repository, RepositoryInfo.getInstance(repository), preselectedRevision), "LBL_SwitchBranchAction.progressName", //NOI18N
-                new HelpCtx(SwitchBranchAction.class));
+                new HelpCtx("org.netbeans.modules.git.ui.checkout.SwitchBranchAction")); //NOI18N
     }
     
     private static class SwitchBranch extends AbstractCheckoutRevision {
@@ -86,6 +90,31 @@ public class SwitchBranchAction extends AbstractCheckoutAction {
         @Override
         protected String getDialogTitle () {
             return NbBundle.getMessage(CheckoutRevisionAction.class, "LBL_SwitchBranch.title"); //NOI18N
+        }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - branch name", "SwitchBranchAction.KnownBranchAction.name=Switch to {0}",
+        "# {0} - branch name", "SwitchBranchAction.KnownBranchAction.progress=Switching to {0}"
+    })
+    public static class KnownBranchAction extends AbstractAction {
+        private final VCSContext ctx;
+        private final String branchName;
+
+        public KnownBranchAction (String recentBranch, VCSContext ctx) {
+            super(Bundle.SwitchBranchAction_KnownBranchAction_name(recentBranch));
+            this.branchName = recentBranch;
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            final AbstractMap.SimpleImmutableEntry<File, File[]> roots = GitUtils.getActionRoots(ctx);
+            if (roots != null) {
+                final File root = roots.getKey();
+                SystemAction.get(SwitchBranchAction.class).checkoutRevision(root, branchName, null,
+                        Bundle.SwitchBranchAction_KnownBranchAction_progress(branchName));
+            }
         }
     }
 }

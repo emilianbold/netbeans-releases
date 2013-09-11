@@ -55,6 +55,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.geom.AffineTransform;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Set;
 
 
@@ -86,6 +88,8 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     /** <code>TopComponentDroppable</code> used in paint to get indication
      * rectangle. */
     private TopComponentDroppable droppable;
+
+    private Reference<Autoscroll> lastAutoscroll = null;
     
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(DropTargetGlassPane.class);
@@ -121,12 +125,14 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         }
 
         setVisible(false);
+        stopAutoscroll();
     }
     
     /** Called when the drag operation performed over this drop target. */
     void dragOver(Point location, TopComponentDroppable droppable) {
         this.droppable = droppable;
         setDragLocation (location);
+        autoscroll( droppable, location );
     }
     
     
@@ -235,6 +241,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     
     /** Clears glass pane. */
     private void clear() {
+        stopAutoscroll();
         this.droppable = null;
         
         setDragLocation(null);
@@ -352,6 +359,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         Component c = evt.getDropTargetContext().getComponent();
         if(c == this) {
             this.dragExited();
+            stopAutoscroll();
         }
     }
     
@@ -366,6 +374,36 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
         
         // XXX Eliminate bug, see dragExitedHack.
         observer.setLastDropTarget(this);
+    }
+
+    void autoscroll( TopComponentDroppable droppable, Point location ) {
+        Component c = droppable.getDropComponent();
+        location = SwingUtilities.convertPoint( this, location, c );
+        Component child = SwingUtilities.getDeepestComponentAt( c, location.x, location.y );
+        Autoscroll as;
+        if( child instanceof Autoscroll ) {
+            as = ( Autoscroll ) child;
+        } else {
+            as = ( Autoscroll ) SwingUtilities.getAncestorOfClass( Autoscroll.class, child );
+        }
+        Autoscroll prev = null == lastAutoscroll ? null : lastAutoscroll.get();
+        if( null != prev && prev != as ) {
+            prev.autoscroll( new Point(Integer.MIN_VALUE, Integer.MIN_VALUE) );
+        }
+        if( as != null ) {
+            as.autoscroll( location );
+            lastAutoscroll = new WeakReference<Autoscroll>( as );
+        } else {
+            lastAutoscroll = null;
+        }
+    }
+
+    void stopAutoscroll() {
+        Autoscroll as = null == lastAutoscroll ? null : lastAutoscroll.get();
+        lastAutoscroll = null;
+        if( as != null ) {
+            as.autoscroll( new Point(Integer.MIN_VALUE, Integer.MIN_VALUE) );
+        }
     }
 
     /** Implements <code>DropTargetListener</code> method.

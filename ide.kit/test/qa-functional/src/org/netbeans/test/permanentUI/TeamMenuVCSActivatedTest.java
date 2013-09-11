@@ -45,75 +45,66 @@ import java.io.*;
 import java.util.ArrayList;
 import javax.swing.MenuElement;
 import javax.swing.JMenuItem;
+import javax.swing.JTextField;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
+import static org.netbeans.junit.NbTestCase.assertFile;
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
 import org.netbeans.test.permanentUI.utils.Utilities;
 import org.netbeans.test.permanentUI.utils.MenuChecker;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Lukas Hasik, Jan Peska
  */
-public class MainMenuTest extends JellyTestCase {
+public class TeamMenuVCSActivatedTest extends JellyTestCase {
 
     //context says what kind of project is open
-    public static ProjectContext context = ProjectContext.NONE;
-    private static final boolean screen = false;
+    public static ProjectContext context;
+    private Node projectRootNode;
+    private static boolean init = true;
+    private static String projectName;
     // array of tests to be executed
     public static final String[] TESTS = new String[]{
-        // here you test main-menu bar
-        "testFileMenu",
-        "testEditMenu",
-        "testViewMenu",
-        "testNavigateMenu",
-        "testSourceMenu",
-        "testRefactorMenu",
-        "testDebugMenu",
-        "testRunMenu",
-        "testHelpMenu",
-        "testToolsMenu",
         "testTeamMenu",
-        "testWindowMenu",
-        "testProfileMenu",
-        // here you test sub-menus in each menu.
-        "testFile_ProjectGroupSubMenu",
-        "testFile_ImportProjectSubMenu",
-        "testFile_ExportProjectSubMenu",
-        "testNavigate_InspectSubMenu",
-        "testView_CodeFoldsSubMenu",
-        "testView_ToolbarsSubMenu",
-        "testProfile_AdvancedCommandsSubMenu",
-        "testDebug_StackSubMenu",
-        "testSource_PreprocessorBlocksSubMenu",
-        "testTools_InternationalizationSubMenu",
-        "testTools_PaletteSubMenu",
-        "testTeam_GitSubMenu",
-        "testTeam_MercurialSubMenu",
-        "testTeam_SubversionSubMenu",
-        "testTeam_HistorySubMenu",
-        "testWindow_DebuggingSubMenu",
-        "testWindow_IDE_ToolsSubMenu",
-        "testWindow_Configure_WindowSubMenu",
-        "testWindow_ProfilingSubMenu"
+        "testTeam_DiffSubMenu",
+        "testTeam_IgnoreSubMenu",
+        "testTeam_PatchesSubMenu",
+        "testTeam_BranchTagSubMenu",
+        "testTeam_QueuesSubMenu",
+        "testTeam_RemoteSubMenu",
+        "testTeam_RecoverSubMenu",
+        "testTeam_ShelveChangesSubMenu",
+        "testTeam_OtherVCSSubMenu",
+        "testTeam_HistorySubMenu"
     };
 
     /**
      * Need to be defined because of JUnit
      */
-    public MainMenuTest(String name) {
+    public TeamMenuVCSActivatedTest(String name) {
         super(name);
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuTest.class).clusters(".*").enableModules(".*");
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(TeamMenuVCSActivatedTest.class).clusters(".*").enableModules(".*");
         conf.addTest(TESTS);
         //conf = conf.addTest("testView_CodeFoldsSubMenu");
         return conf.suite();
@@ -124,12 +115,11 @@ public class MainMenuTest extends JellyTestCase {
      */
     @Override
     public void setUp() {
-        System.out.println("########  " + " CONTEXT -> " + ProjectContext.NONE.toString() + " - " + getName() + "  #######");
+        System.out.println("########  " + " CONTEXT -> " + ProjectContext.VERSIONING_ACTIVATED.toString() + " - " + getName() + "  #######");
         try {
             clearWorkDir();
             getWorkDir();
             if (isInit()) {
-                openDataProjects("SampleProject");
                 setInit(false);
                 initSources();
             }
@@ -139,14 +129,20 @@ public class MainMenuTest extends JellyTestCase {
     }
 
     protected void initSources() {
-        setContext();
+        String newProject = "MyApp";
+        setContext(); // must be called because of correct golden file name which has contained context in suffix.
+        newProject = createNewJavaEEProject(newProject);
+        waitScanFinished();
+        versioningActivation(newProject);
+        projectName = newProject;
     }
 
     public boolean isInit() {
-        return false;
+        return init;
     }
 
     public void setInit(boolean init) {
+        this.init = init;
     }
 
     /**
@@ -154,134 +150,58 @@ public class MainMenuTest extends JellyTestCase {
      */
     @Override
     public void tearDown() {
-    }
-
-    public void testFileMenu() {
-        oneMenuTest("File");
-    }
-
-    public void testEditMenu() {
-        oneMenuTest("Edit");
-    }
-
-    public void testViewMenu() {
-        oneMenuTest("View");
-    }
-
-    public void testNavigateMenu() {
-        oneMenuTest("Navigate");
-    }
-
-    public void testSourceMenu() {
-        oneMenuTest("Source");
-    }
-
-    public void testRefactorMenu() {
-        oneMenuTest("Refactor");
-    }
-
-    public void testRunMenu() {
-        oneMenuTest("Run");
-    }
-
-    public void testDebugMenu() {
-        oneMenuTest("Debug");
-    }
-
-    public void testHelpMenu() {
-        oneMenuTest("Help");
-    }
-
-    public void testToolsMenu() {
-        oneMenuTest("Tools");
+//        projectRootNode.callPopup().showMenuItem("Delete").push();
+//        new WizardOperator("Delete Project").yes();
     }
 
     public void testTeamMenu() {
         oneMenuTest("Team");
     }
 
-    public void testWindowMenu() {
-        oneMenuTest("Window");
+    public void testTeam_DiffSubMenu() {
+        oneSubMenuTest("Team|Diff", false, null);
     }
 
-    public void testProfileMenu() {
-        oneMenuTest("Profile");
+    public void testTeam_IgnoreSubMenu() {
+        oneSubMenuTest("Team|Ignore", false, null);
     }
 
-    public void testFile_ProjectGroupSubMenu() {
-        oneSubMenuTest("File|Project Group", false);
+    public void testTeam_PatchesSubMenu() {
+        oneSubMenuTest("Team|Patches", false, null);
     }
 
-    public void testFile_ImportProjectSubMenu() {
-        oneSubMenuTest("File|Import Project", true);
+    public void testTeam_BranchTagSubMenu() {
+        oneSubMenuTest("Team|Branch/Tag", false, null);
     }
 
-    public void testFile_ExportProjectSubMenu() {
-        oneSubMenuTest("File|Export Project", false);//here
+    public void testTeam_QueuesSubMenu() {
+        oneSubMenuTest("Team|Queues", false, null);
     }
 
-    public void testNavigate_InspectSubMenu() {
-        oneSubMenuTest("Navigate|Inspect", false);
+    public void testTeam_RemoteSubMenu() {
+        oneSubMenuTest("Team|Remote", false, projectName);
     }
 
-    public void testView_CodeFoldsSubMenu() {
-        //Submenu disabled - do nothing
+    public void testTeam_RecoverSubMenu() {
+        oneSubMenuTest("Team|Recover", false, projectName);
     }
 
-    public void testView_ToolbarsSubMenu() {
-        oneSubMenuTest("View|Toolbars", false);
+    public void testTeam_ShelveChangesSubMenu() {
+        oneSubMenuTest("Team|Shelve Changes", false, null);
     }
 
-    public void testProfile_AdvancedCommandsSubMenu() {
-        oneSubMenuTest("Profile|Advanced Commands", true);
-    }
-
-    public void testDebug_StackSubMenu() {
-        oneSubMenuTest("Debug|Stack", false);
-    }
-
-    public void testSource_PreprocessorBlocksSubMenu() {
-        //Submenu disabled - do nothing
-    }
-
-    public void testTools_InternationalizationSubMenu() {
-        oneSubMenuTest("Tools|Internationalization", false);//here
-    }
-
-    public void testTools_PaletteSubMenu() {
-        oneSubMenuTest("Tools|Palette", false);
-    }
-
-    public void testTeam_GitSubMenu() {
-        oneSubMenuTest("Team|Git", true);//here
-    }
-
-    public void testTeam_MercurialSubMenu() {
-        oneSubMenuTest("Team|Mercurial", true);
-    }
-
-    public void testTeam_SubversionSubMenu() {
-        //Submenu initializing - do nothing
+    public void testTeam_OtherVCSSubMenu() {
+        oneSubMenuTest("Team|Other VCS", false, null);
     }
 
     public void testTeam_HistorySubMenu() {
-        oneSubMenuTest("Team|History", true);
-    }
-
-    public void testWindow_DebuggingSubMenu() {
-        oneSubMenuTest("Window|Debugging", false);
-    }
-
-    public void testWindow_IDE_ToolsSubMenu() {
-        oneSubMenuTest("Window|IDE Tools", false);
-    }
-
-    public void testWindow_Configure_WindowSubMenu() {
-        oneSubMenuTest("Window|Configure Window", false);
-    }
-
-    public void testWindow_ProfilingSubMenu() {
-        oneSubMenuTest("Window|Profiling", false);
+        try {
+            MainWindowOperator.getDefault().menuBar().showMenuItem("Team|History|Show History");
+            Thread.sleep(10000);
+//        oneSubMenuTest("Team|History", true, null);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     //=============================oneMenuTests=================================
@@ -297,7 +217,7 @@ public class MainMenuTest extends JellyTestCase {
      * @param menuName to be tested
      * @param goldenFileName to be tested
      * @return difference between menuName and goldenFileName
-     * 
+     *
      * You shouldn't call directly this method.
      */
     private void oneMenuTest(String menuName, String goldenFileName) throws IllegalArgumentException {
@@ -343,12 +263,13 @@ public class MainMenuTest extends JellyTestCase {
      * @param submenuPath Menu name e.g. Window|Projects.
      * @param context context e.g. Java, Php, none
      * @param preInitSubMenu when sub menu doesn't pop up in time, you can try
-     * to pre-initialize the sub menu. TRUE = pre-init. FALSE by default. The
-     * item HAS TO BE JAVAX.SWING item !!!
+     * @param projectName has to be set, when there is project name in menu
+     * structure. to pre-initialize the sub menu. TRUE = pre-init. FALSE by
+     * default. The item HAS TO BE JAVAX.SWING item !!!
      */
-    void oneSubMenuTest(String submenuPath, boolean preInitSubMenu) {
-        String fileName = submenuPath.replace('|', '-').replace(' ', '_');
-        oneSubMenuTest(submenuPath, getMainMenuGoldenFile(fileName, context), preInitSubMenu);
+    void oneSubMenuTest(String submenuPath, boolean preInitSubMenu, String projectName) {
+        String fileName = submenuPath.replace('|', '-').replace(' ', '_').replace("/", "#");
+        oneSubMenuTest(submenuPath, getMainMenuGoldenFile(fileName, context), preInitSubMenu, projectName);
     }
 
     /**
@@ -359,8 +280,14 @@ public class MainMenuTest extends JellyTestCase {
      * @param goldenFileName to be tested
      * @return difference between submenuName and goldenFileName
      */
-    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean preInitSubMenu) throws IllegalArgumentException {
-        NbMenuItem testedSubMenuItem = Utilities.readSubmenuStructureFromFile(goldenFileName);
+    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean preInitSubMenu, String projectName) throws IllegalArgumentException {
+        NbMenuItem testedSubMenuItem;
+        if (projectName == null) {
+            testedSubMenuItem = Utilities.readSubmenuStructureFromFile(goldenFileName);
+        } else {
+            testedSubMenuItem = Utilities.readSubmenuStructureFromFile(goldenFileName, projectName);
+        }
+        
         assertNotNull("Nothing read from " + goldenFileName, testedSubMenuItem); //was the file read correctly?
 
         // when sub-menu has time out exception problems. It can Helps.
@@ -382,7 +309,7 @@ public class MainMenuTest extends JellyTestCase {
             ideFileStream = new PrintStream(pathToIdeLogFile);
             goldenFileStream = new PrintStream(pathToGoldenLogFile);
 
-            Utilities.printMenuStructure(goldenFileStream, testedSubMenuItem, "   ", 1);
+            Utilities.printMenuStructure(goldenFileStream, testedSubMenuItem, "   ", 2);
             captureScreen();
 
             //TEST 1
@@ -464,7 +391,7 @@ public class MainMenuTest extends JellyTestCase {
      * Take a screen shot.
      */
     private void captureScreen() {
-        if (screen) {
+        if (true) {
             try {
                 String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
                 PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
@@ -489,6 +416,113 @@ public class MainMenuTest extends JellyTestCase {
     }
 
     public void setContext() {
-        MainMenuTest.context = ProjectContext.NONE;
+        context = ProjectContext.VERSIONING_ACTIVATED;
+    }
+
+    /**
+     * Create new Java EE project in default path.
+     *
+     * @param projectName Name of project.
+     * @return name of currently created project.
+     */
+    public String createNewJavaEEProject(String projectName) {
+        //TODO check if already existing project is versioning.
+//        WizardOperator wo1 = getJavaEEProjectWizard();
+//        String pathToSave = new JTextFieldOperator((JTextField) new JLabelOperator(wo1, "Project Location:").getLabelFor()).getText();
+//        wo1.cancel();
+//        boolean projectAlredyExists = projectExistence(projectName, pathToSave);
+//        
+//        if(projectAlredyExists && !isVersioningProject(projectName)) {
+//            projectName = modifyProjectNameIfExists(projectName, pathToSave);
+//        }
+        
+        
+        
+        WizardOperator wo2 = getJavaEEProjectWizard();
+        String pathToSave = new JTextFieldOperator((JTextField) new JLabelOperator(wo2, "Project Location:").getLabelFor()).getText();
+        boolean projectAlredyExists = projectExistence(projectName, pathToSave);
+        
+        if(projectAlredyExists) {
+            projectName = findUnusedProjectName(projectName, pathToSave);
+        }
+        JTextFieldOperator txtName = new JTextFieldOperator((JTextField) new JLabelOperator(wo2, "Project Name:").getLabelFor());
+        txtName.clearText();
+        txtName.typeText(projectName);
+        wo2.finish();
+        return projectName;
+    }
+
+    /**
+     * Create repository (Mercurial) for given project.
+     *
+     * @param projectName
+     */
+    public void versioningActivation(String projectName) {
+        ProjectRootNode pto = new ProjectsTabOperator().getProjectRootNode(projectName);
+        projectRootNode = new Node(pto.tree(), projectName);
+        projectRootNode.callPopup().showMenuItem("Versioning|Initialize Mercurial Repository...").push();
+        WizardOperator wo2 = new WizardOperator("Initialize a Mercurial Repository");
+        wo2.ok();
+    }
+
+    /**
+     * Check, if location of project already exists.
+     * @param projectName Name of project.
+     * @param pathToSave Path to save. Has to be set.
+     * @return True if exists, otherwise False.
+     */
+    public boolean projectExistence(String projectName, String pathToSave) {
+        String pathAndNameOfProject = pathToSave + File.separator + projectName;
+        return (new File(pathAndNameOfProject).exists());
+    }
+    /**
+     * Check if following project exists. If it does, It is tested for VCS
+     * activation, which is required. Otherwise, old project is
+     * deleted. If old project is unsuccessfully deleted, new project is
+     * renamed.
+     *
+     * @param projectName - name of new project.
+     * @param pathToSave - path to folder with projects.
+     * @return Name of project, which is not occupied.
+     */
+    public String findUnusedProjectName(String projectName, String pathToSave) {
+        int projectSuffix = 2;
+        File oldProject;
+        boolean isDeleted = false;
+        
+        while (true) {
+            if ((oldProject = new File(pathToSave + File.separator + projectName + projectSuffix)).exists()) {
+                isDeleted = oldProject.delete();
+            } else {
+                return projectName + projectSuffix;
+            }
+            if (!isDeleted) {
+                projectSuffix++;
+            } else {
+                return projectName + projectSuffix;
+            }
+        }
+        
+
+    }
+    
+//    public boolean isVersioningProject(String projectName){
+//        try {
+//            openProjects(projectName);
+//        } catch (IOException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        ProjectRootNode pto = new ProjectsTabOperator().getProjectRootNode(projectName);
+//        new Node(pto.tree(), projectName).select();
+//        int menuSize = getMainMenuItem("Team").getSubmenu().size();
+//        return menuSize > 8;
+//}
+    
+    public WizardOperator getJavaEEProjectWizard() {
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory("Java");
+        npwo.selectProject("Java Application");
+        npwo.next();
+        return new WizardOperator("Java Application");
     }
 }

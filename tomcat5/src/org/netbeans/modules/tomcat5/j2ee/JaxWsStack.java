@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.tomcat5;
+package org.netbeans.modules.tomcat5.j2ee;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,7 +66,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  * @author mkuchtiak
  * @author ads
  */
-public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
+public class JaxWsStack implements WSStackImplementation<JaxWs> {
     
     private static final String SHARED_METRO_LIBS[] = new String[] {
         "shared/lib/webservices-rt.jar",   // NOI18N
@@ -89,7 +89,7 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     private String version;
     private JaxWs jaxWs;
     
-    public TomcatJaxWsStack(File catalinaHome) {
+    public JaxWsStack(File catalinaHome) {
         this.catalinaHome = catalinaHome;
         try {
             version = resolveImplementationVersion();

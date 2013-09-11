@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.j2ee.JaxWsStack;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
@@ -522,7 +523,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     public Lookup getLookup() {
         List content = new ArrayList();
         WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
-                new TomcatJaxWsStack(tp.getCatalinaHome()), WSStack.Source.SERVER);
+                new JaxWsStack(tp.getCatalinaHome()), WSStack.Source.SERVER);
         Collections.addAll(content, tp.getCatalinaHome(),
                 new EjbSupportImpl(manager), wsStack);
         if (manager.isTomEE()) {

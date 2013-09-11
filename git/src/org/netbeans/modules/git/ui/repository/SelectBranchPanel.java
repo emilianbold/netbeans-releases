@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
 /*
- * SampleAppWarningVisual.java
+ * CheckoutBranch.java
  *
- * Created on 16.2.2010, 15:07:58
+ * Created on Jan 12, 2011, 12:06:04 PM
  */
 
-package org.netbeans.core.ui.warmup;
-
-import javax.swing.event.HyperlinkEvent;
-import org.openide.WizardDescriptor;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.git.ui.repository;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author ondra
  */
-class RefreshWarningVisual extends javax.swing.JPanel {
-    RefreshWarningVisual() {
+public class SelectBranchPanel extends javax.swing.JPanel {
+    private final RevisionDialog revisionPanel;
+
+    /** Creates new form CheckoutBranch */
+    public SelectBranchPanel (RevisionDialog revisionPanel) {
+        this.revisionPanel = revisionPanel;
         initComponents();
     }
 
@@ -72,40 +70,33 @@ class RefreshWarningVisual extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        info = new javax.swing.JEditorPane();
-
-        info.setContentType("text/html"); // NOI18N
-        info.setEditable(false);
-        info.setText(org.openide.util.NbBundle.getMessage(RefreshWarningVisual.class, "MSG_SoDInfo", new Object[] {})); // NOI18N
-        info.setOpaque(false);
-        info.setPreferredSize(new java.awt.Dimension(300, 150));
-        info.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
-            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
-                infoHyperlinkUpdate(evt);
-            }
-        });
+        org.netbeans.modules.git.ui.repository.RevisionDialog revisionPickerDialog = this.revisionPanel;
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(info, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 578, Short.MAX_VALUE)
+                    .addComponent(jLabel1))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(info, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(revisionPickerDialog, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void infoHyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_infoHyperlinkUpdate
-        if (HyperlinkEvent.EventType.ACTIVATED == evt.getEventType()) {
-            URLDisplayer.getDefault().showURLExternal(evt.getURL());
-        }
-    }//GEN-LAST:event_infoHyperlinkUpdate
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane info;
+    final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
-
 
 }

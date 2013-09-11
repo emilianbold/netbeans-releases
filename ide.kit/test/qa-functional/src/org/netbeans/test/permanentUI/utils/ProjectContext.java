@@ -49,7 +49,8 @@ public enum ProjectContext {
 
     NONE(""),
     JAVA("-java"),
-    PHP("-php");
+    PHP("-php"),
+    VERSIONING_ACTIVATED("-vcs");
 
     private String pathSuffix;
 

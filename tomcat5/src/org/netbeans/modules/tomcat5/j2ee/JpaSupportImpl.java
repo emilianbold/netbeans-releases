@@ -42,7 +42,6 @@
 package org.netbeans.modules.tomcat5.j2ee;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
