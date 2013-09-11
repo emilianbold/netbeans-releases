@@ -75,6 +75,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.Cache;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.completion.CompletionContextFinder.KeywordCompletionType;
@@ -272,7 +273,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 props.addPropertyChangeListener(propertyChangeListener);
                 PROPERTIES_CACHE.save(fileObject, props);
             }
-            if (props.getPhpVersion() != PhpLanguageProperties.PhpVersion.PHP_5) {
+            if (props.getPhpVersion() != PhpVersion.PHP_5) {
                 if (generateAs == null) {
                     CodeCompletionType codeCompletionType = OptionsUtils.codeCompletionType();
                     switch (codeCompletionType) {
@@ -874,6 +875,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             Completion.get().showToolTip();
             return getName();
         }
+
+        @Override
+        @NbBundle.Messages("MagicConstant=Magic Constant")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getConstant().isMagic()) {
+                formatter.appendText(Bundle.MagicConstant());
+                return formatter.getText();
+            }
+            return super.getRhsHtml(formatter);
+        }
     }
 
     public static class MethodDeclarationItem extends MethodElementItem {
@@ -1203,6 +1214,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case ENDS_WITH_COLON:
                     builder.append(getName());
                     builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                case CURSOR_BEFORE_ENDING_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor};"); //NOI18N
                     break;
                 default:
                     assert false : type.toString();

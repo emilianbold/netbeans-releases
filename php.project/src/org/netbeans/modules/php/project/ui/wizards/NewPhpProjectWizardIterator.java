@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -63,12 +65,12 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.classpath.BasePathSupport.Item;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -99,6 +101,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.InputOutput;
 
 /**
@@ -117,24 +120,61 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     private static final Logger LOGGER = Logger.getLogger(NewPhpProjectWizardIterator.class.getName());
 
     private final WizardType wizardType;
+    private final List<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender> phpModuleExtenders = new CopyOnWriteArrayList<>();
     private WizardDescriptor descriptor;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private int index;
 
     public NewPhpProjectWizardIterator() {
-        this(WizardType.NEW);
+        this(WizardType.NEW, createPhpModuleExtenders());
     }
 
-    private NewPhpProjectWizardIterator(WizardType wizardType) {
+    private NewPhpProjectWizardIterator(WizardType wizardType, Collection<? extends org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender> phpModuleExtenders) {
+        assert wizardType != null;
+        assert phpModuleExtenders != null;
         this.wizardType = wizardType;
+        this.phpModuleExtenders.addAll(phpModuleExtenders);
     }
 
     public static NewPhpProjectWizardIterator existing() {
-        return new NewPhpProjectWizardIterator(WizardType.EXISTING);
+        return new NewPhpProjectWizardIterator(WizardType.EXISTING, Collections.<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender>emptyList());
     }
 
     public static NewPhpProjectWizardIterator remote() {
-        return new NewPhpProjectWizardIterator(WizardType.REMOTE);
+        return new NewPhpProjectWizardIterator(WizardType.REMOTE, Collections.<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender>emptyList());
+    }
+
+    // workaround for wizards api
+    static boolean areAllStepsValid(WizardDescriptor descriptor) {
+        // first step does not need to be checked, just the 2nd and more
+        Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
+        if (isValid != null && !isValid) {
+            return false;
+        }
+        isValid = (Boolean) descriptor.getProperty(PhpFrameworksPanel.VALID);
+        if (isValid != null && !isValid) {
+            return false;
+        }
+        Map<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender, Boolean> validity = (Map<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender, Boolean>) descriptor.getProperty(PhpExtenderPanel.VALID);
+        if (validity != null) {
+            for (Boolean extenderValid : validity.values()) {
+                if (!extenderValid) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private static List<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender> createPhpModuleExtenders() {
+        Collection<? extends org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.Factory> factories = Lookups
+                .forPath(org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.Factory.EXTENDERS_PATH)
+                .lookupAll(org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.Factory.class);
+        List<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender> phpModuleExtenders = new ArrayList<>(factories.size());
+        for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.Factory factory : factories) {
+            phpModuleExtenders.add(factory.create());
+        }
+        return phpModuleExtenders;
     }
 
     @Override
@@ -201,7 +241,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (wizardType) {
             case NEW:
             case EXISTING:
-                monitor = new LocalProgressMonitor(handle, frameworkExtenders);
+                monitor = new LocalProgressMonitor(handle, frameworkExtenders, phpModuleExtenders);
                 break;
             case REMOTE:
                 monitor = new RemoteProgressMonitor(handle);
@@ -239,7 +279,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         // post process
         switch (wizardType) {
             case NEW:
-                extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
+                if (!frameworkExtenders.isEmpty()
+                        || !phpModuleExtenders.isEmpty()) {
+                    assert monitor instanceof LocalProgressMonitor;
+                    LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
+                    localMonitor.startingExtending();
+                    extendPhpModule(phpModule, frameworkExtenders, monitor, resultSet);
+                    extendPhpModule(phpModule, monitor, resultSet);
+                    localMonitor.finishingExtending();
+                }
                 break;
             case REMOTE:
                 downloadRemoteFiles(createProperties, monitor);
@@ -355,12 +403,17 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     }
 
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
+        // step names
         String step2 = null;
         String step3 = null;
+        List<String> extenderSteps = new ArrayList<>();
         switch (wizardType) {
             case NEW:
                 step2 = "LBL_RunConfiguration"; // NOI18N
                 step3 = "LBL_Frameworks"; // NOI18N
+                for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender extender : phpModuleExtenders) {
+                    extenderSteps.add(extender.getDisplayName());
+                }
                 break;
             case EXISTING:
                 step2 = "LBL_RunConfiguration"; // NOI18N
@@ -372,18 +425,24 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
-        List<String> steps = new ArrayList<>(3);
+        List<String> steps = new ArrayList<>();
         steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"));
         steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2));
         if (step3 != null) {
             steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step3));
         }
+        steps.addAll(extenderSteps);
         String[] stepsArray = steps.toArray(new String[steps.size()]);
-
+        // panels
         WizardDescriptor.Panel<WizardDescriptor> panel3 = null;
+        List<WizardDescriptor.Panel<WizardDescriptor>> extenderPanels = new ArrayList<>();
         switch (wizardType) {
             case NEW:
                 panel3 = new PhpFrameworksPanel(stepsArray);
+                int i = 3;
+                for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender extender : phpModuleExtenders) {
+                    extenderPanels.add(new PhpExtenderPanel(extender, stepsArray, i++));
+                }
                 break;
             case EXISTING:
                 break;
@@ -401,6 +460,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (panel3 != null) {
             pnls.add(panel3);
         }
+        pnls.addAll(extenderPanels);
         @SuppressWarnings("unchecked")
         WizardDescriptor.Panel<WizardDescriptor>[] pnlsArray = (WizardDescriptor.Panel<WizardDescriptor>[]) Array.newInstance(WizardDescriptor.Panel.class, pnls.size());
         return pnls.toArray(pnlsArray);
@@ -431,6 +491,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.ROUTER, null);
         settings.putProperty(PhpFrameworksPanel.VALID, null);
         settings.putProperty(PhpFrameworksPanel.EXTENDERS, null);
+        settings.putProperty(PhpExtenderPanel.VALID, null);
         settings.putProperty(RemoteConfirmationPanel.REMOTE_FILES, null);
         settings.putProperty(RemoteConfirmationPanel.REMOTE_CLIENT, null);
     }
@@ -532,28 +593,40 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         assert monitor instanceof LocalProgressMonitor;
 
         LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
-        if (!frameworkExtenders.isEmpty()) {
-            localMonitor.startingExtending();
+        for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworkExtenders.entrySet()) {
+            PhpFrameworkProvider frameworkProvider = entry.getKey();
+            assert frameworkProvider != null;
 
-            for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworkExtenders.entrySet()) {
-                PhpFrameworkProvider frameworkProvider = entry.getKey();
-                assert frameworkProvider != null;
-
-                localMonitor.extending(frameworkProvider.getName());
-                PhpModuleExtender phpModuleExtender = entry.getValue();
-                if (phpModuleExtender != null) {
-                    try {
-                        Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
-                        assert newFiles != null;
-                        filesToOpen.addAll(newFiles);
-                    } catch (ExtendingException ex) {
-                        warnUser(ex.getFailureMessage());
-                    }
+            localMonitor.extending(frameworkProvider.getName());
+            PhpModuleExtender phpModuleExtender = entry.getValue();
+            if (phpModuleExtender != null) {
+                try {
+                    Set<FileObject> newFiles = phpModuleExtender.extend(phpModule);
+                    assert newFiles != null;
+                    filesToOpen.addAll(newFiles);
+                } catch (ExtendingException ex) {
+                    warnUser(ex.getFailureMessage());
                 }
             }
         }
+    }
 
-        localMonitor.finishingExtending();
+    private void extendPhpModule(PhpModule phpModule, PhpProjectGenerator.Monitor monitor, Set<FileObject> filesToOpen) {
+        assert wizardType == WizardType.NEW : "Extending not allowed for: " + wizardType;
+        assert monitor instanceof LocalProgressMonitor;
+
+        LocalProgressMonitor localMonitor = (LocalProgressMonitor) monitor;
+        for (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender extender : phpModuleExtenders) {
+            assert extender != null;
+            localMonitor.extending(extender.getDisplayName());
+            try {
+                Set<FileObject> newFiles = extender.extend(phpModule);
+                assert newFiles != null;
+                filesToOpen.addAll(newFiles);
+            } catch (org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender.ExtendingException ex) {
+                warnUser(ex.getFailureMessage());
+            }
+        }
     }
 
     private void warnUser(String message) {
@@ -721,12 +794,13 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         private final int units;
         private int unit = 0;
 
-        private LocalProgressMonitor(ProgressHandle handle, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders) {
+        private LocalProgressMonitor(ProgressHandle handle, Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders, List<org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender> phpModuleExtenders) {
             assert handle != null;
             assert frameworkExtenders != null;
+            assert phpModuleExtenders != null;
 
             this.handle = handle;
-            units = 5 + 2 * frameworkExtenders.size();
+            units = 5 + 2 * frameworkExtenders.size() + 2 * phpModuleExtenders.size();
         }
 
         @Override

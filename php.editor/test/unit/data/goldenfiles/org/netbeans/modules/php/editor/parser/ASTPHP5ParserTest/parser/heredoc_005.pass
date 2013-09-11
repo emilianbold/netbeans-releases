@@ -159,10 +159,16 @@
                 </Include>
             </ExpressionStatement>
             <ASTError start='106' end='163'/>
+            <ASTError start='163' end='163'/>
+            <ASTError start='163' end='173'/>
             <ASTError start='173' end='178'/>
+            <ASTError start='178' end='192'/>
             <EmptyStatement start='193' end='194'/>
             <ASTError start='196' end='252'/>
+            <ASTError start='252' end='252'/>
+            <ASTError start='252' end='262'/>
             <ASTError start='262' end='267'/>
+            <ASTError start='267' end='281'/>
             <EmptyStatement start='282' end='283'/>
             <ExpressionStatement start='285' end='298'>
                 <FunctionInvocation start='285' end='297'>

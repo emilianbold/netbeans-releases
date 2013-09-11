@@ -256,7 +256,12 @@ public final class PathUiSupport {
                     //break;
                 default:
                     if (item.isBroken()) {
-                        return NbBundle.getMessage(PathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
+                        if (new File(item.getFilePath()).isAbsolute()) {
+                            // absolute file path
+                            return NbBundle.getMessage(PathUiSupport.class, "LBL_MissingFile", getFileRefName(item));
+                        }
+                        // just reference
+                        return NbBundle.getMessage(PathUiSupport.class, "LBL_BrokenReference", getFileRefName(item));
                     }
                     return item.getAbsoluteFilePath(projectFolder);
                     //break;

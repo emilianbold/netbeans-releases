@@ -105,6 +105,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String URL = "url"; // NOI18N
     public static final String INDEX_FILE = "index.file"; // NOI18N
     public static final String INCLUDE_PATH = "include.path"; // NOI18N
+    public static final String PRIVATE_INCLUDE_PATH = "include.path.private"; // NOI18N
     public static final String GLOBAL_INCLUDE_PATH = "php.global.include.path"; // NOI18N
     public static final String ARGS = "script.arguments"; // NOI18N
     public static final String PHP_ARGS = "php.arguments"; // NOI18N
@@ -250,6 +251,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     // CustomizerPhpIncludePath
     private DefaultListModel<BasePathSupport.Item> includePathListModel = null;
+    private DefaultListModel<BasePathSupport.Item> privateIncludePathListModel = null;
     private ListCellRenderer<BasePathSupport.Item> includePathListRenderer = null;
 
     // CustomizerIgnorePath
@@ -439,6 +441,15 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return includePathListModel;
     }
 
+    public DefaultListModel<BasePathSupport.Item> getPrivateIncludePathListModel() {
+        if (privateIncludePathListModel == null) {
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            privateIncludePathListModel = PathUiSupport.createListModel(includePathSupport.itemsIterator(
+                    properties.getProperty(PRIVATE_INCLUDE_PATH)));
+        }
+        return privateIncludePathListModel;
+    }
+
     public ListCellRenderer<BasePathSupport.Item> getIncludePathListRenderer() {
         if (includePathListRenderer == null) {
             includePathListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
@@ -599,6 +610,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         if (includePathListModel != null) {
             includePath = includePathSupport.encodeToStrings(PathUiSupport.getIterator(includePathListModel));
         }
+        String[] privateIncludePath = null;
+        if (privateIncludePathListModel != null) {
+            privateIncludePath = includePathSupport.encodeToStrings(PathUiSupport.getIterator(privateIncludePathListModel), false);
+        }
 
         // encode ignore path
         String[] ignorePath = null;
@@ -654,6 +669,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         // php include path
         if (includePath != null) {
             projectProperties.setProperty(INCLUDE_PATH, includePath);
+        }
+        if (privateIncludePath != null) {
+            privateProperties.setProperty(PRIVATE_INCLUDE_PATH, privateIncludePath);
         }
 
         // ignore path
