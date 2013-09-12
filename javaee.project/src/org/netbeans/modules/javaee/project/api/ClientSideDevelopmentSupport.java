@@ -156,11 +156,11 @@ public final class ClientSideDevelopmentSupport implements
             return null;
         }
         String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
-        // #233748 - disable using Servlet URL mapping for now:
-        // relPath = applyServletPattern(relPath);
         for (FrameworkServerURLMapping mapping : lookupFrameworkMappings()) {
             relPath = mapping.convertFileToRelativeURL(projectFile, relPath);
         }
+        // #233748 - disable using Servlet URL mapping for now:
+        // relPath = applyServletPattern(relPath);
         try {
             URL u = new URL(projectRootURL + relPath);
             WebBrowser browser = getWebBrowser();
