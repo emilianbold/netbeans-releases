@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.spi.queries;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.project.ProjectServiceProvider;
+package org.netbeans.modules.maven.spi.nodes;
 
 /**
- * Extension point for contributing source roots compilable in parallel with Java sources.
- * Necessary since the {@link ClassPath#SOURCE} for {@code src/main/java/} must include {@code src/main/KIND/} too.
- * Generally these roots (under {@code src/test/KIND/} also) will get the same classpath information as Java.
- * Creation of {@link SourceGroup}s (or their nodes) is not automatic, as this requires display labels
- * and might merit further customization.
- * Related/similar to {@link OtherSourcesExclude}
+ * Extension point to tell the Other sources project subnode to exclude the given folder name in
+ * src/main and src/test. It is assumed that implementing this interface is associated 
+ * with implementation of a NodeFactory providing special handling for such folder.
+ * To be registered in project lookup.
+ * Related to {@link JavaLikeRootProvider} but only handling the Other sources node display.
  * 
- * Note: the api is a bit simplistic for performance reasons, eg. if user reconfigures the src/main/groovy content to a different location in pom.xml we silently assume that
- * src/main/groovy doesn't exist then.
- * @see ProjectServiceProvider
- * @since 2.36
+ * Note: the api is a bit simplistic for performance reasons, eg. if user reconfigures the src/main/webapp content to a different location in pom.xml we silently assume that
+ * src/main/webapp doesn't exist then.
+ * @author mkleint
+ * @since 2.88
  */
-public interface JavaLikeRootProvider {
-
+public interface OtherSourcesExclude {
     /**
-     * Obtains the kind of language supported.
-     * @return e.g. {@code "groovy"}
+     * name of subfolder of src/main and src/test that should be excluded
+     * @return e.g. {@code "webapp"}
      */
-    String kind();
-
+    String folderName();
 }

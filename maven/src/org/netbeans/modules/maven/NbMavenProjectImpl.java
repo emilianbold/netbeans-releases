@@ -90,6 +90,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
+import org.netbeans.modules.maven.spi.nodes.OtherSourcesExclude;
 import org.netbeans.modules.maven.spi.queries.JavaLikeRootProvider;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ProjectState;
@@ -666,11 +667,10 @@ public final class NbMavenProjectImpl implements Project {
 
                 @Override
                 public boolean accept(File dir, String name) {
-                    //TODO most probably a performance bottleneck of sorts..
-                    if ("java".equalsIgnoreCase(name) ||
-                            // XXX this cannot continue in a modular system! rethink "other root" system
-                            "webapp".equalsIgnoreCase(name)) {
-                        return false;
+                    for (OtherSourcesExclude rp : getLookup().lookupAll(OtherSourcesExclude.class)) {
+                        if (rp.folderName().equalsIgnoreCase(name)) {
+                            return false;
+                        }
                     }
                     for (JavaLikeRootProvider rp : getLookup().lookupAll(JavaLikeRootProvider.class)) {
                         if (rp.kind().equalsIgnoreCase(name)) {

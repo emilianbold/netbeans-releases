@@ -50,6 +50,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.spi.nodes.OtherSourcesExclude;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.openide.filesystems.FileObject;
@@ -62,7 +63,8 @@ import org.openide.util.NbBundle;
  */
 @ProjectServiceProvider(
     service = {
-        Sources.class
+        Sources.class,
+        OtherSourcesExclude.class
     },
     projectType = {
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
@@ -73,7 +75,7 @@ import org.openide.util.NbBundle;
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
     }
 )
-public class J2eeMavenSourcesImpl implements Sources {
+public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
     
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N
     public static final String TYPE_WEB_INF="web_inf"; //NOI18N
@@ -172,6 +174,11 @@ public class J2eeMavenSourcesImpl implements Sources {
             changed = true;
         }
         return changed;
+    }
+
+    @Override
+    public String folderName() {
+        return "webapp";
     }
     
 }
