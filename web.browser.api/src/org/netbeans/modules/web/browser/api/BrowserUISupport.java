@@ -59,6 +59,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.browser.ui.picker.BrowserCombo;
+import org.openide.util.NbBundle;
 
 /**
  * Support for web browser selection in the UI.
@@ -75,7 +76,7 @@ public final class BrowserUISupport {
      * Create model for component with browsers, possibly with the
      * {@link BrowserComboBoxModel#getSelectedBrowserId() selected browser identifier}.
      * <p>
-     * If the browser identifier is {@code null} (likely not set yet?), then the 
+     * If the browser identifier is {@code null} (likely not set yet?), then the
      * selected browser will depend on whether {@code showIDEGlobalBrowserOption} is set
      * to true or not. If it is set to true then {@link #getDefaultBrowserId() IDE default}
      * browser is selected; otherwise a browser with NetBeans integration will be selected.
@@ -162,6 +163,33 @@ public final class BrowserUISupport {
     }
 
     /**
+     * Returns browser name with possible "with NetBeans integration" suffix (does not apply for embedded
+     * or mobile browsers).
+     * @param browser browser to get name of
+     * @return browser name with possible "with NetBeans integration" suffix
+     * @since 1.36
+     */
+    @NbBundle.Messages({
+        "# {0} - browser name",
+        "BrowserUISupport.browser.name.integrated={0} with NetBeans Integration",
+    })
+    public static String getLongDisplayName(WebBrowser browser) {
+        String name = browser.getName();
+        switch (browser.getBrowserFamily()) {
+            case JAVAFX_WEBVIEW:
+            case ANDROID:
+            case IOS:
+                // no suffix for embedded or mobile browser
+                return name;
+            default:
+            if (browser.hasNetBeansIntegration()) {
+                return Bundle.BrowserUISupport_browser_name_integrated(name);
+            }
+            return name;
+        }
+    }
+
+    /**
      * Returns an ID of default IDE's browser, that is not really a browser instance
      * but an artificial browser item representing whatever is IDE's default browser.
      * @since 1.11
@@ -192,7 +220,7 @@ public final class BrowserUISupport {
      * @see BrowserPickerPopup
      */
     public static JComboBox createBrowserPickerComboBox( @NullAllowed String selectedBrowserId,
-            boolean showIDEGlobalBrowserOption, boolean includePhoneGap, 
+            boolean showIDEGlobalBrowserOption, boolean includePhoneGap,
             ComboBoxModel model) {
         return new BrowserCombo( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap, model);
     }
@@ -305,7 +333,7 @@ public final class BrowserUISupport {
         @Override
         public Component getListCellRendererComponent(JList<? extends WebBrowser> list, WebBrowser value, int index, boolean isSelected, boolean cellHasFocus) {
             assert EventQueue.isDispatchThread();
-            Component c = defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
+            Component c = defaultRenderer.getListCellRendererComponent(list, getLongDisplayName(value), index, isSelected, cellHasFocus);
             if (c instanceof JLabel) {
                 JLabel l = (JLabel)c;
                 l.setIcon(new ImageIcon(value.getIconImage(true)));
