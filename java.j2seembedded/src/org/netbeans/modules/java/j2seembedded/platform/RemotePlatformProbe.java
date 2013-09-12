@@ -203,6 +203,10 @@ public final class RemotePlatformProbe {
             executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
         } catch (IOException | IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (executorTask != null) {
+                executorTask.getInputOutput().closeInputOutput();
+            }
         }
         return executorTask != null ? executorTask.result() : -1;
     }
