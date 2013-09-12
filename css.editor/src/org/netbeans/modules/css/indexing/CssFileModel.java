@@ -45,20 +45,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.refactoring.api.Entry;
@@ -69,6 +66,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -84,9 +82,6 @@ import org.openide.util.Exceptions;
  */
 public class CssFileModel {
 
-    private static final Logger LOGGER = Logger.getLogger(CssIndex.class.getSimpleName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     private Collection<Entry> classes, ids, htmlElements, imports, colors;
     private final Snapshot snapshot;
     private final Snapshot topLevelSnapshot;
@@ -98,9 +93,14 @@ public class CssFileModel {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
                 Snapshot topLevelSnapshot = resultIterator.getSnapshot();
-                model.set(cssRi == null
-                        ? new CssFileModel(topLevelSnapshot)
-                        : new CssFileModel((CssParserResult) cssRi.getParserResult(), topLevelSnapshot));
+                if(cssRi != null) {
+                    Parser.Result parserResult = cssRi.getParserResult();
+                    if(parserResult != null) {
+                        model.set(new CssFileModel((CssParserResult)parserResult, topLevelSnapshot));
+                        return ;
+                    }
+                }
+                model.set(new CssFileModel(topLevelSnapshot));
             }
         });
         return model.get();
@@ -335,7 +335,7 @@ public class CssFileModel {
             //@import url("another.css");
             Node token = NodeUtil.getChildTokenNode(resourceIdentifier, CssTokenId.URI);
             if (token != null) {
-                Matcher m = URI_PATTERN.matcher(token.image());
+                Matcher m = Css3Utils.URI_PATTERN.matcher(token.image());
                 if (m.matches()) {
                     int groupIndex = 1;
                     String content = m.group(groupIndex);
