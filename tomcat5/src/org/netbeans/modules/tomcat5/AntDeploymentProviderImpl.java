@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

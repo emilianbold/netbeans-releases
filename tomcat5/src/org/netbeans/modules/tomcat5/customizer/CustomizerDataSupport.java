@@ -63,7 +63,7 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.openide.util.Exceptions;
 

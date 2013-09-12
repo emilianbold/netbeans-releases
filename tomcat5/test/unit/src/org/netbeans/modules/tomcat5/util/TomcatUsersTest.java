@@ -46,7 +46,7 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.File;
 import java.io.FileWriter;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 
 /**
  *
