@@ -158,8 +158,7 @@ public final class ClientSideDevelopmentSupport implements
         String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
         // #233748 - disable using Servlet URL mapping for now:
         // relPath = applyServletPattern(relPath);
-        Collection<? extends FrameworkServerURLMapping> mappings = Lookup.getDefault().lookupAll(FrameworkServerURLMapping.class);
-        for (FrameworkServerURLMapping mapping : mappings) {
+        for (FrameworkServerURLMapping mapping : lookupFrameworkMappings()) {
             relPath = mapping.convertFileToRelativeURL(projectFile, relPath);
         }
         try {
