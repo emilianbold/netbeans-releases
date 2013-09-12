@@ -100,7 +100,7 @@ public class DocRendererTest extends PHPNavTestBase {
         String tested = "Sort the given array of {@link MyObject}s by ORDER field.";
         String expected = "Sort the given array of <a href=\"MyObject\">MyObject</a>s by ORDER field.";
 
-        DocRenderer.PHPDocExtractor extractor = new DocRenderer.PHPDocExtractor(null, null, null);
+        DocRenderer.PHPDocExtractor extractor = new DocRenderer.PHPDocExtractor(null, null);
 
         String result = extractor.processDescription(tested);
 
