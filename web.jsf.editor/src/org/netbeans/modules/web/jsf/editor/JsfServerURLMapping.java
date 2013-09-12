@@ -46,6 +46,7 @@ import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport.Pattern;
 import org.netbeans.modules.javaee.project.spi.FrameworkServerURLMapping;
 import org.netbeans.modules.web.jsf.editor.index.ResourcesMappingModel;
 import org.openide.filesystems.FileObject;
@@ -68,20 +69,28 @@ public final class JsfServerURLMapping implements FrameworkServerURLMapping {
     private static final String CONTRACTS = "contracts";    //NOI18N
 
     @Override
-    public FileObject convertURLtoFile(FileObject docRoot, String uriWithoutMapping, String urlQuery) {
-        if (uriWithoutMapping.startsWith(RESOURCE_DIR + "/")) { //NOI18N
-            String relPath = uriWithoutMapping.substring(21);
+    public FileObject convertURLtoFile(FileObject docRoot, Pattern mapping, String uri, String urlQuery) {
+        switch (mapping.getType()) {
+            case PREFIX:
+                uri = uri.substring(mapping.getPattern().length());
+                break;
+            case SUFFIX:
+                uri = uri.substring(0, uri.length() - mapping.getPattern().length());
+        }
+
+        if (uri.startsWith(RESOURCE_DIR + "/")) { //NOI18N
+            String relPath = uri.substring(21);
             try {
-                String uriWithNoSessionId = removeSessionIdFromUri(relPath);
+                relPath = removeSessionIdFromUri(relPath);
                 Map<String, String> pairs = splitQuery(urlQuery);
                 String libraryValue = pairs.get(LIBRARY_PARAM);
                 String contractValue = pairs.get(CONTRACT_PARAM);
                 if (libraryValue != null) {
-                    return docRoot.getFileObject(RESOURCES + "/" + libraryValue + "/" + uriWithNoSessionId);
+                    return docRoot.getFileObject(RESOURCES + "/" + libraryValue + "/" + relPath);
                 } else if (contractValue != null) {
-                    return docRoot.getFileObject(CONTRACTS + "/" + contractValue + "/" + uriWithNoSessionId);
+                    return docRoot.getFileObject(CONTRACTS + "/" + contractValue + "/" + relPath);
                 } else {
-                    return docRoot.getFileObject(RESOURCES + "/" + uriWithNoSessionId);
+                    return docRoot.getFileObject(RESOURCES + "/" + relPath);
                 }
             } catch (UnsupportedEncodingException ex) {
                 Exceptions.printStackTrace(ex);

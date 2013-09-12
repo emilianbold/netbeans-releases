@@ -305,8 +305,8 @@ public final class ClientSideDevelopmentSupport implements
         return BrowserUISupport.getBrowser(selectedBrowser);
     }
 
-    private final List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
-    private final List<String> welcomeFiles = new CopyOnWriteArrayList<String>();
+    private final List<Pattern> servletURLPatterns = new CopyOnWriteArrayList<>();
+    private final List<String> welcomeFiles = new CopyOnWriteArrayList<>();
 
     private synchronized void readWebAppMetamodelData() {
         if (initialized) {
@@ -322,20 +322,19 @@ public final class ClientSideDevelopmentSupport implements
                 
                 @Override
                 public Void run(WebAppMetadata metadata) throws Exception {
-                    List<String> l = new ArrayList<String>();
+                    List<Pattern> l = new ArrayList<>();
                     for (ServletInfo si : metadata.getServlets()) {
                         for (String pattern : si.getUrlPatterns()) {
                             // only some patterns are currently handled;
                             // see comments in convertServerURLToProjectFile method
-                            if (!pattern.endsWith("*")) { // NOI18N
-                                continue;
-                            } else {
-                                pattern = pattern.substring(0, pattern.length()-1);
+                            if (pattern.endsWith("*")) { // NOI18N
+                                // /faces/*
+                                String pat = pattern.substring(0, pattern.length() - 1);
+                                l.add(new Pattern(Pattern.Type.PREFIX, pat.startsWith("/") ? pat.substring(1) : pat));
+                            } else if (pattern.startsWith("*")) { //NOI18N
+                                // *.xhtml
+                                l.add(new Pattern(Pattern.Type.SUFFIX, pattern.substring(1)));
                             }
-                            if (pattern.startsWith("/")) { // NOI18N
-                                pattern = pattern.substring(1);
-                            }
-                            l.add(pattern);
                         }
                     }
                     // WelcomeList file is not available in merged WebAppMetadata;
@@ -366,9 +365,9 @@ public final class ClientSideDevelopmentSupport implements
     private FileObject getExistingWelcomeFile() {
         // try to map it to welcome-file-list:
         for (String welcomeFile : welcomeFiles) {
-            for (String pattern : servletURLPatterns) {
-                if (welcomeFile.startsWith(pattern)) {
-                    FileObject fo = webDocumentRoot.getFileObject(welcomeFile.substring(pattern.length()));
+            for (Pattern pattern : servletURLPatterns) {
+                if (welcomeFile.startsWith(pattern.getPattern())) {
+                    FileObject fo = webDocumentRoot.getFileObject(welcomeFile.substring(pattern.getPattern().length()));
                     if (fo != null) {
                         return fo;
                     }
@@ -383,22 +382,38 @@ public final class ClientSideDevelopmentSupport implements
     }
 
     private FileObject convertServerURLToProjectFile(String name, String query) {
-        // bellow code is limited to understand following simple usecase:
+        // bellow code is limited to understand following simple usecases:
         // pattern "/faces/*" means that URL /faces/index.anything maps to
-        // file web-root/index.anything and vice versa:
-        for (String pattern : servletURLPatterns) {
-            if (name.startsWith(pattern)) {
-                Collection<? extends FrameworkServerURLMapping> mappings = Lookup.getDefault().lookupAll(FrameworkServerURLMapping.class);
-                for (FrameworkServerURLMapping mapping : mappings) {
-                    FileObject file = mapping.convertURLtoFile(webDocumentRoot, name.substring(pattern.length()), query);
-                    if (file != null) {
-                        return file;
+        // file web-root/index.anything and vice versa, pattern "*.xhtml"
+        // means that URL /index.anything maps to file web-root/index.anything
+        for (Pattern servletURLPattern : servletURLPatterns) {
+            String pattern = servletURLPattern.getPattern();
+            switch (servletURLPattern.getType()) {
+                case PREFIX:
+                    if (name.startsWith(pattern)) {
+                        for (FrameworkServerURLMapping mapping : lookupFrameworkMappings()) {
+                            FileObject file = mapping.convertURLtoFile(webDocumentRoot, servletURLPattern, name, query);
+                            if (file != null) {
+                                return file;
+                            }
+                        }
+                        FileObject fo = webDocumentRoot.getFileObject(name.substring(pattern.length()));
+                        if (fo != null) {
+                            return fo;
+                        }
                     }
-                }
-                FileObject fo = webDocumentRoot.getFileObject(name.substring(pattern.length()));
-                if (fo != null) {
-                    return fo;
-                }
+                    break;
+                case SUFFIX:
+                    name = truncatePathForSessionId(name);
+                    if (name.endsWith(pattern)) {
+                        for (FrameworkServerURLMapping mapping : lookupFrameworkMappings()) {
+                            FileObject file = mapping.convertURLtoFile(webDocumentRoot, servletURLPattern, name, query);
+                            if (file != null) {
+                                return file;
+                            }
+                        }
+                    }
+                    break;
             }
         }
         FileObject result = webDocumentRoot.getFileObject(name);
@@ -420,9 +435,14 @@ public final class ClientSideDevelopmentSupport implements
         return result;
     }
 
+    private static Collection<? extends FrameworkServerURLMapping> lookupFrameworkMappings() {
+        return Lookup.getDefault().lookupAll(FrameworkServerURLMapping.class);
+    }
+
     private boolean isWelcomeFile(FileObject context) {
         for (String welcomeFile : welcomeFiles) {
-            for (String pattern : servletURLPatterns) {
+            for (Pattern servletURLPattern : servletURLPatterns) {
+                String pattern = servletURLPattern.getPattern();
                 if (welcomeFile.startsWith(pattern)) {
                     FileObject fo = webDocumentRoot.getFileObject(welcomeFile.substring(pattern.length()));
                     if (fo != null && fo.equals(context)) {
@@ -444,9 +464,42 @@ public final class ClientSideDevelopmentSupport implements
     // changed to read servlet URL patterns only from a well-known servlets
     // like JSF.
     private String applyServletPattern(String relPath) {
-        for (String pattern : servletURLPatterns) {
-            return pattern + relPath;
+        for (Pattern pattern : servletURLPatterns) {
+            return pattern.getPattern() + relPath;
         }
         return relPath;
+    }
+
+    private static String truncatePathForSessionId(String name) {
+        int semicolonOffset = name.indexOf(";"); //NOI18N
+        if (semicolonOffset == -1) {
+            return name;
+        } else {
+            return name.substring(0, semicolonOffset);
+        }
+    }
+
+    public static class Pattern {
+
+        private final Type type;
+        private final String pattern;
+
+        public Pattern(Type type, String pattern) {
+            this.type = type;
+            this.pattern = pattern;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public String getPattern() {
+            return pattern;
+        }
+
+        public static enum Type {
+            PREFIX,
+            SUFFIX
+        }
     }
 }

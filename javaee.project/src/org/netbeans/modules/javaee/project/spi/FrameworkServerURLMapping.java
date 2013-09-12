@@ -42,6 +42,8 @@
 package org.netbeans.modules.javaee.project.spi;
 
 import java.net.URL;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport.Pattern;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -58,11 +60,12 @@ public interface FrameworkServerURLMapping {
     /**
      * Searches existing file for given url.
      * @param docRoot documentation root of the project
-     * @param uriWithoutMapping URI without servlet mapping defined within deployment descriptor
+     * @param mapping mapping pattern to be examined
+     * @param uri URI including servlet mapping
      * @param urlQuery query of the url - i.e. ?ln=css&param=5
      * @return file which corresponds to the given URL or {@code null} if no such file exists
      */
-    FileObject convertURLtoFile(FileObject docRoot, String uriWithoutMapping, String urlQuery);
+    FileObject convertURLtoFile(FileObject docRoot, Pattern mapping, String uri, String urlQuery);
 
     /**
      * Guesses from file path to real browser URL.
