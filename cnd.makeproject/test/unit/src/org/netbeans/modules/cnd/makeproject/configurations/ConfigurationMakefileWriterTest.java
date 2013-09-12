@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
@@ -125,7 +126,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
-        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, null);  // NOI18N
+        MakeConfiguration conf = MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_APPLICATION, null, HostInfoUtils.LOCALHOST);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
         LibraryItem.ProjectItem projectItem;
@@ -264,7 +265,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         File folderBase = getBaseFolder();
         final FileObject folderBaseFO = CndFileUtils.toFileObject(folderBase);
         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBaseFO);
-        MakeConfiguration conf =MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB, null, null);  // NOI18N
+        MakeConfiguration conf =MakeConfiguration.createConfiguration(FSPath.toFSPath(folderBaseFO), "Default", MakeConfiguration.TYPE_DYNAMIC_LIB, null, HostInfoUtils.LOCALHOST);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), "test.cc"));
 
