@@ -58,7 +58,7 @@ public class ChromeWithNetBeansIntegrationBrowserFactory extends ChromeBrowser i
     }
 
     @NbBundle.Messages({
-        "ChromeBrowser.name=Chrome with NetBeans Integration"
+        "ChromeBrowser.name=Chrome"
     })
     @Override
     public String getDisplayName() {
