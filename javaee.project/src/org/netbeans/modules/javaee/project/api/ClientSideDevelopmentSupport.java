@@ -69,6 +69,8 @@ import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -344,8 +346,20 @@ public final class ClientSideDevelopmentSupport implements
                     FileObject fo = webModule.getDeploymentDescriptor();
                     if (fo != null) {
                         WebApp ddRoot = DDProvider.getDefault().getDDRoot(fo);
-                        if (ddRoot != null && ddRoot.getSingleWelcomeFileList() != null) {
-                            welcomeFiles.addAll(Arrays.asList(ddRoot.getSingleWelcomeFileList().getWelcomeFile()));
+                        if (ddRoot != null) {
+                            fo.addFileChangeListener(new FileChangeAdapter() {
+                                @Override
+                                public void fileChanged(FileEvent fe) {
+                                    synchronized (ClientSideDevelopmentSupport.this) {
+                                        initialized = false;
+                                        welcomeFiles.clear();
+                                        servletURLPatterns.clear();
+                                    }
+                                }
+                            });
+                            if (ddRoot.getSingleWelcomeFileList() != null) {
+                                welcomeFiles.addAll(Arrays.asList(ddRoot.getSingleWelcomeFileList().getWelcomeFile()));
+                            }
                         }
                     }
                     welcomeFiles.add("index.html"); // NOI18N
