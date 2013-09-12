@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -260,19 +261,19 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageProperties.ASP_TAGS_ENABLED);
     }
 
-    public static PhpLanguageProperties.PhpVersion getPhpVersion(PhpProject project) {
+    public static PhpVersion getPhpVersion(PhpProject project) {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
-    public static PhpLanguageProperties.PhpVersion getPhpVersion(String value) {
+    public static PhpVersion getPhpVersion(String value) {
         if (value != null) {
             try {
-                return PhpLanguageProperties.PhpVersion.valueOf(value);
+                return PhpVersion.valueOf(value);
             } catch (IllegalArgumentException iae) {
                 // ignored
             }
         }
-        return PhpLanguageProperties.PhpVersion.getDefault();
+        return PhpVersion.getDefault();
     }
 
     /**

@@ -81,7 +81,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.api.phpmodule.PhpOptions;
+import org.netbeans.modules.php.api.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.executable.DebugStarter;

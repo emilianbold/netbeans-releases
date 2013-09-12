@@ -45,8 +45,8 @@ package org.netbeans.modules.php.project.ui.options;
 import java.io.IOException;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.project.PhpPreferences;
-import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -286,19 +286,19 @@ public final class PhpOptions {
         }
     }
 
-    public PhpLanguageProperties.PhpVersion getDefaultPhpVersion() {
+    public PhpVersion getDefaultPhpVersion() {
         String defaultPhpVersion = getPreferences().get(DEFAULT_PHP_VERSION, null);
         if (defaultPhpVersion != null) {
             try {
-                return PhpLanguageProperties.PhpVersion.valueOf(defaultPhpVersion);
+                return PhpVersion.valueOf(defaultPhpVersion);
             } catch (IllegalArgumentException ex) {
                 // ignored
             }
         }
-        return PhpLanguageProperties.PhpVersion.getDefault();
+        return PhpVersion.getDefault();
     }
 
-    public void setDefaultPhpVersion(PhpLanguageProperties.PhpVersion phpVersion) {
+    public void setDefaultPhpVersion(PhpVersion phpVersion) {
         getPreferences().put(DEFAULT_PHP_VERSION, phpVersion.name());
     }
 

@@ -66,6 +66,8 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     public static final String IDX_FIELD = PHPIndexer.FIELD_CLASS_CONST;
     private final TypeElement enclosingType;
     private final String value;
+    private final boolean isMagic;
+
     private TypeConstantElementImpl(
             final TypeElement enclosingType,
             final String constantName,
@@ -74,9 +76,41 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             final String fileUrl,
             final ElementQuery elementQuery,
             final boolean isDeprecated) {
+        this(enclosingType, constantName, value, offset, fileUrl, elementQuery, isDeprecated, false);
+    }
+
+    private TypeConstantElementImpl(
+            final TypeElement enclosingType,
+            final String constantName,
+            final String value,
+            final int offset,
+            final String fileUrl,
+            final ElementQuery elementQuery,
+            final boolean isDeprecated,
+            final boolean isMagic) {
         super(constantName, enclosingType.getName(), fileUrl, offset, elementQuery, isDeprecated);
         this.enclosingType = enclosingType;
         this.value = value;
+        this.isMagic = isMagic;
+    }
+
+    public static Set<TypeConstantElement> getMagicConstants(TypeElement type) {
+        Set<TypeConstantElement> retval = new HashSet<>();
+        retval.add(createMagicConstant(type, "class")); //NOI18N
+        return retval;
+    }
+
+    private static TypeConstantElement createMagicConstant(TypeElement type, String constantName) {
+        TypeConstantElement retval = new TypeConstantElementImpl(
+                type,
+                constantName,
+                type.getFullyQualifiedName().toString(),
+                0,
+                type.getFilenameUrl(),
+                null,
+                type.isDeprecated(),
+                true);
+        return retval;
     }
 
     public static Set<TypeConstantElement> fromSignature(final TypeElement type,
@@ -203,6 +237,11 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     @Override
     public boolean isAbstract() {
         return getPhpModifiers().isAbstract();
+    }
+
+    @Override
+    public boolean isMagic() {
+        return isMagic;
     }
 
     private static class ConstantSignatureParser {
