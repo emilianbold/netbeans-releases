@@ -179,7 +179,7 @@ public abstract class Sampler {
         nanoTimeCorrection = startTime * 1000000 - System.nanoTime();
         // make sure that the sampler thread can be detected in a thread dump - add prefix
         timer = new Timer("sampler-"+name);   // NOI18N
-        timer.scheduleAtFixedRate(new TimerTask() {
+        timer.schedule(new TimerTask() {
 
             @Override
             public void run() {
