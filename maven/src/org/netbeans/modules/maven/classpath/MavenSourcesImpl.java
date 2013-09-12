@@ -83,6 +83,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.maven.classpath.Bundle.*;
+import org.netbeans.modules.maven.spi.nodes.OtherSourcesExclude;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
@@ -93,8 +94,8 @@ import org.openide.util.Utilities;
  * IMHO at least..
  * @author  Milos Kleint
  */
-@ProjectServiceProvider(service={Sources.class, SourceGroupModifierImplementation.class}, projectType="org-netbeans-modules-maven")
-public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementation {
+@ProjectServiceProvider(service={Sources.class, SourceGroupModifierImplementation.class, OtherSourcesExclude.class}, projectType="org-netbeans-modules-maven")
+public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementation, OtherSourcesExclude {
     public static final String TYPE_OTHER = "Resources"; //NOI18N
     public static final String TYPE_TEST_OTHER = "TestResources"; //NOI18N
     public static final String TYPE_GEN_SOURCES = "GeneratedSources"; //NOI18N
@@ -116,10 +117,10 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
         }
     };
     
-    private Map<String, SourceGroup> javaGroup;
-    private Map<File, SourceGroup> genSrcGroup;
-    private Map<File, OtherGroup> otherMainGroups;
-    private Map<File, OtherGroup> otherTestGroups;
+    private final Map<String, SourceGroup> javaGroup;
+    private final Map<File, SourceGroup> genSrcGroup;
+    private final Map<File, OtherGroup> otherMainGroups;
+    private final Map<File, OtherGroup> otherTestGroups;
 
     
     private final Object lock = new Object();
@@ -445,6 +446,11 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
                   JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type))
               && (JavaProjectConstants.SOURCES_HINT_MAIN.equals(hint) ||
                   JavaProjectConstants.SOURCES_HINT_TEST.equals(hint));
+    }
+
+    @Override
+    public String folderName() {
+        return "java";
     }
     
     
