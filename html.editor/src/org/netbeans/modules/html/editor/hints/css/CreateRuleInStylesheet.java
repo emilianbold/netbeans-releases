@@ -84,13 +84,13 @@ import org.openide.util.NbBundle;
 })
 public class CreateRuleInStylesheet implements HintFix {
 
-    private static String NEW_STYLESHEET_NAME = "style.css"; //NOI18N
+    private static final String NEW_STYLESHEET_NAME = "style.css"; //NOI18N
     private FileObject externalStylesheet;
     private final FileObject sourceFile;
     private final String ruleName;
     private final String path;
-    private boolean importStyleSheet;
-    private boolean createStyleSheet;
+    private final boolean importStyleSheet;
+    private final boolean createStyleSheet;
 
     public CreateRuleInStylesheet(FileObject sourceFile, final FileObject externalStylesheet, String ruleName, boolean importStylesheet, boolean createStyleSheet) {
         this.sourceFile = sourceFile;
@@ -105,7 +105,7 @@ public class CreateRuleInStylesheet implements HintFix {
     }
 
     private String getSelectorText() {
-        return new StringBuilder().append('.').append(ruleName).toString();
+        return new StringBuilder().append(ruleName).toString();
     }
 
     @Override

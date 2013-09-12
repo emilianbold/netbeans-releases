@@ -43,17 +43,12 @@ package org.netbeans.modules.html.editor.hints.css;
 
 import java.io.IOException;
 import java.util.*;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -68,6 +63,7 @@ public class CssIdsVisitor implements ElementVisitor {
     
     private final HtmlRuleContext context;
     private final Collection<FileObject> referredFiles;
+    private final Collection<FileObject> allStylesheets;
     private final Map<FileObject, Collection<String>> ids;
     private final Map<String, Collection<FileObject>> ids2files;
     
@@ -82,6 +78,8 @@ public class CssIdsVisitor implements ElementVisitor {
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
         ids = context.getCssIndex().findAllIdDeclarations();
         ids2files = createReversedMap(ids);
+        allStylesheets = context.getCssIndex().getAllIndexedFiles();
+        
     }
 
     private static Map<String, Collection<FileObject>> createReversedMap(Map<FileObject, Collection<String>> file2elements) {
@@ -122,8 +120,9 @@ public class CssIdsVisitor implements ElementVisitor {
             return ; //ignore empty value
         }
         
+        String id = value.toString();
         //all files containing the id declaration
-        Collection<FileObject> filesWithTheId = elements2files.get(value.toString());
+        Collection<FileObject> filesWithTheId = elements2files.get(id);
 
         //all referred files with the id declaration
         Collection<FileObject> referredFilesWithTheId = new LinkedList<>();
@@ -134,11 +133,11 @@ public class CssIdsVisitor implements ElementVisitor {
 
         if (referredFilesWithTheId.isEmpty()) {
             //unknown id
-//            hints.add(new MissingCssElement(rule,
-//                    NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
-//                    context,
-//                    getAttributeValueOffsetRange(attribute, context),
-//                    filesWithTheId));
+            hints.add(new MissingCssElement(rule,
+                    NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssId"),
+                    context,
+                    getAttributeValueOffsetRange(attribute, context),
+                    new HintContext(new StringBuilder().append('#').append(id).toString(), referredFiles, allStylesheets, ids, ids2files)));
         }
     }
 
@@ -148,4 +147,5 @@ public class CssIdsVisitor implements ElementVisitor {
         int to = from + attr.unquotedValue().length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.getSnapshot());
     }
+    
 }
