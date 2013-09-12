@@ -474,9 +474,9 @@ public class QueryTableCellRendererTest {
             IssueCache.Status s = repo.cache.getStatus(getID());
             switch(s) {
                 case ISSUE_STATUS_NEW:
-                    return IssueStatusProvider.Status.NEW;
+                    return IssueStatusProvider.Status.INCOMING_NEW;
                 case ISSUE_STATUS_MODIFIED:
-                    return IssueStatusProvider.Status.MODIFIED;
+                    return IssueStatusProvider.Status.INCOMING_MODIFIED;
                 case ISSUE_STATUS_SEEN:
                     return IssueStatusProvider.Status.SEEN;
             }

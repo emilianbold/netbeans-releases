@@ -807,8 +807,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         if(status != expectedStatus) {
             fail("expected [" + getName(expectedStatus) + "], " +
                  "was [" + getName(status)+ "] " +
-                 "because of value [" + issue.getFieldValue(f) + "] " +
-                 "vs [" + issue.getLastSeenFieldValue(f) + "] in field " + f);
+                 "because of value [" + issue.getFieldValue(f) + "] ");
         }
     }
 

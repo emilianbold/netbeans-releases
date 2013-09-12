@@ -870,7 +870,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
             fireDataChanged();
         }
         if (syncStateChanged) {
-            fireSeenChanged(!seen, seen);
+            fireStatusChanged();
         }
     }
 
@@ -1079,8 +1079,8 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
     
-    private void fireSeenChanged(boolean wasSeen, boolean seen) {
-        support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
+    private void fireStatusChanged() {
+        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
 
     private boolean refresh(boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache

@@ -182,9 +182,9 @@ public class DashboardUtils {
     }
 
     private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
-        if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
+        if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
             text = "<html><font color=\"" + newColor + "\">" + text + "</font></html>"; //NOI18N
-        } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
+        } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
             text = "<html><font color=\"" + modifiedColor + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
             text = "<html>" + text + "</html>"; //NOI18N
