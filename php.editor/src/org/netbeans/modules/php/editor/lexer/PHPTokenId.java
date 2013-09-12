@@ -87,6 +87,7 @@ public enum PHPTokenId implements TokenId {
     PHP_STRING(null, "identifier"), //NOI18N
     PHP_AS(null, "keyword"), //NOI18N
     PHP_TRY("try", "keyword"), //NOI18N
+    PHP_FINALLY("finally", "keyword"), //NOI18N
     PHP_STATIC(null, "keyword"), //NOI18N
     PHP_WHILE("while", "keyword"), //NOI18N
     PHP_ENDFOREACH(null, "keyword"), //NOI18N
@@ -131,6 +132,7 @@ public enum PHPTokenId implements TokenId {
     PHP_CONST(null, "keyword"), //NOI18N
     PHP_PUBLIC(null, "keyword"), //NOI18N
     PHP_RETURN(null, "keyword"), //NOI18N
+    PHP_YIELD(null, "keyword"), //NOI18N
     PHP_LOGICAL_AND(null, "operator"), //NOI18N
     PHP_INTERFACE(null, "keyword"), //NOI18N
     PHP_EXIT(null, "keyword"), //NOI18N

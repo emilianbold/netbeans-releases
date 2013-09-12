@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpTestCase;
@@ -87,7 +88,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
         assertTrue(listener.events.isEmpty());
         assertEquals(PhpLanguageProperties.SHORT_TAGS_ENABLED, defaultProps.areShortTagsEnabled());
         assertEquals(PhpLanguageProperties.ASP_TAGS_ENABLED, defaultProps.areAspTagsEnabled());
-        assertEquals(PhpLanguageProperties.PhpVersion.getDefault(), defaultProps.getPhpVersion());
+        assertEquals(PhpVersion.getDefault(), defaultProps.getPhpVersion());
     }
 
     public void testProjectPropertyChanges() throws Exception {
@@ -105,7 +106,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
 
         assertEquals(true, projectProps.areShortTagsEnabled());
         assertEquals(true, projectProps.areAspTagsEnabled());
-        assertEquals(PhpLanguageProperties.PhpVersion.PHP_54, projectProps.getPhpVersion());
+        assertEquals(PhpVersion.PHP_54, projectProps.getPhpVersion());
     }
 
     private void attachListenerAndChangeProperty(PhpLanguageProperties properties, PropertyChangeListenerImpl listener) throws Exception {
@@ -126,7 +127,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
         PhpProjectProperties phpProjectProperties = new PhpProjectProperties(project);
         phpProjectProperties.setShortTags(Boolean.FALSE.toString());
         phpProjectProperties.setAspTags(Boolean.FALSE.toString());
-        phpProjectProperties.setPhpVersion(PhpLanguageProperties.PhpVersion.PHP_5.name());
+        phpProjectProperties.setPhpVersion(PhpVersion.PHP_5.name());
         phpProjectProperties.save();
 
         properties.addPropertyChangeListener(listener);
@@ -134,7 +135,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
 
         phpProjectProperties.setShortTags(Boolean.TRUE.toString());
         phpProjectProperties.setAspTags(Boolean.TRUE.toString());
-        phpProjectProperties.setPhpVersion(PhpLanguageProperties.PhpVersion.PHP_54.name());
+        phpProjectProperties.setPhpVersion(PhpVersion.PHP_54.name());
         phpProjectProperties.save();
     }
 

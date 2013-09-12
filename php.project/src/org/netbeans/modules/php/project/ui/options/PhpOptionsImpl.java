@@ -47,8 +47,8 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * @author Tomas Mysik
  */
-@ServiceProvider(service = org.netbeans.modules.php.api.phpmodule.PhpOptions.class)
-public class PhpOptionsImpl implements org.netbeans.modules.php.api.phpmodule.PhpOptions {
+@ServiceProvider(service = org.netbeans.modules.php.api.PhpOptions.class)
+public class PhpOptionsImpl implements org.netbeans.modules.php.api.PhpOptions {
 
     @Override
     public String getPhpInterpreter() {

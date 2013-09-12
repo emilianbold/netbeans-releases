@@ -46,6 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.composer.commands.Composer;
 import org.openide.util.NbBundle;
 
@@ -57,82 +58,57 @@ public final class ComposerOptionsValidator {
     private static final Pattern VENDOR_REGEX = Pattern.compile("^[a-z0-9-]+$"); // NOI18N
     private static final Pattern EMAIL_REGEX = Pattern.compile("^\\w+[\\.\\w\\-]*@\\w+[\\.\\w\\-]*\\.[a-z]{2,}$", Pattern.CASE_INSENSITIVE); // NOI18N
 
-    private final List<Message> errors = new LinkedList<>();
-    private final List<Message> warnings = new LinkedList<>();
+    private final ValidationResult result = new ValidationResult();
 
 
-    public void validate(String composerPath, String vendor, String authorName, String authorEmail) {
+    public ValidationResult getResult() {
+        return result;
+    }
+
+    public ComposerOptionsValidator validate(ComposerOptions composerOptions) {
+        return validate(composerOptions.getComposerPath(), composerOptions.getVendor(),
+                composerOptions.getAuthorName(), composerOptions.getAuthorEmail());
+    }
+
+    public ComposerOptionsValidator validate(String composerPath, String vendor, String authorName, String authorEmail) {
         validateComposerPath(composerPath);
         validateVendor(vendor);
         validateAuthorName(authorName);
         validateAuthorEmail(authorEmail);
+        return this;
     }
 
-    public boolean hasErrors() {
-        return !errors.isEmpty();
-    }
-
-    public List<Message> getErrors() {
-        return new ArrayList<>(errors);
-    }
-
-    public boolean hasWarnings() {
-        return !warnings.isEmpty();
-    }
-
-    public List<Message> getWarnings() {
-        return new ArrayList<>(warnings);
-    }
-
-    private void validateComposerPath(String composerPath) {
+    private ComposerOptionsValidator validateComposerPath(String composerPath) {
         String warning = Composer.validate(composerPath);
         if (warning != null) {
-            warnings.add(new Message("composerPath", warning)); // NOI18N
+            result.addWarning(new ValidationResult.Message("composerPath", warning)); // NOI18N
         }
+        return this;
     }
 
     @NbBundle.Messages("ComposerOptionsValidator.error.invalidVendor=Vendor is not valid (only lower-cased letters and \"-\" allowed).")
-    void validateVendor(String vendor) {
+    ComposerOptionsValidator validateVendor(String vendor) {
         if (!VENDOR_REGEX.matcher(vendor).matches()) {
-            errors.add(new Message("vendor", Bundle.ComposerOptionsValidator_error_invalidVendor())); // NOI18N
+            result.addError(new ValidationResult.Message("vendor", Bundle.ComposerOptionsValidator_error_invalidVendor())); // NOI18N
         }
+        return this;
     }
 
     @NbBundle.Messages("ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.")
-    private void validateAuthorName(String authorName) {
+    private ComposerOptionsValidator validateAuthorName(String authorName) {
         if (!StringUtils.hasText(authorName)) {
-            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
+            result.addError(new ValidationResult.Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
         }
+        return this;
     }
 
     @NbBundle.Messages("ComposerOptionsValidator.error.invalidAuthorEmail=Author e-mail is not valid.")
-    void validateAuthorEmail(String authorEmail) {
+    ComposerOptionsValidator validateAuthorEmail(String authorEmail) {
         if (!StringUtils.hasText(authorEmail)
                 || !EMAIL_REGEX.matcher(authorEmail).matches()) {
-            errors.add(new Message("authorEmail", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail())); // NOI18N
+            result.addError(new ValidationResult.Message("authorEmail", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail())); // NOI18N
         }
-    }
-
-    //~ Inner classes
-
-    public static final class Message {
-
-        private final String source;
-        private final String message;
-
-        public Message(String source, String message) {
-            this.source = source;
-            this.message = message;
-        }
-
-        public String getSource() {
-            return source;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
+        return this;
     }
 
 }

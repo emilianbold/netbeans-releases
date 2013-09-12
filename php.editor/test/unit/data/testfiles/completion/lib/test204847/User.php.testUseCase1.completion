@@ -4,3 +4,4 @@ $this->type = Types::|
 ------------------------------------
 CONSTANT   BAR 2                           [PUBLIC]   \Package1\Types
 CONSTANT   FOO 1                           [PUBLIC]   \Package1\Types
+CONSTANT   class \Package1\Types           [PUBLIC]   Magic Constant

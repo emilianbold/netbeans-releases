@@ -111,12 +111,36 @@ public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
         assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidWebRoot_title(), projectProblem.getDisplayName());
     }
 
-    public void testProjectProblemsIncludePath() throws Exception {
+    public void testProjectProblemsPublicIncludePath() throws Exception {
         Project project = TestUtils.createPhpProject(getWorkDir());
         ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
         assertNotNull(problemsProvider);
         assertTrue(problemsProvider.getProblems().isEmpty());
         PhpProjectProperties.save((PhpProject) project, Collections.singletonMap(PhpProjectProperties.INCLUDE_PATH, "nondir"), Collections.<String, String>emptyMap());
+        assertEquals(1, problemsProvider.getProblems().size());
+        ProjectProblem projectProblem = problemsProvider.getProblems().iterator().next();
+        assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(), projectProblem.getDisplayName());
+    }
+
+    public void testProjectProblemsPrivateIncludePath() throws Exception {
+        Project project = TestUtils.createPhpProject(getWorkDir());
+        ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull(problemsProvider);
+        assertTrue(problemsProvider.getProblems().isEmpty());
+        PhpProjectProperties.save((PhpProject) project, Collections.<String, String>emptyMap(), Collections.singletonMap(PhpProjectProperties.PRIVATE_INCLUDE_PATH, "nondir"));
+        assertEquals(1, problemsProvider.getProblems().size());
+        ProjectProblem projectProblem = problemsProvider.getProblems().iterator().next();
+        assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(), projectProblem.getDisplayName());
+    }
+
+    public void testProjectProblemsWholeIncludePath() throws Exception {
+        Project project = TestUtils.createPhpProject(getWorkDir());
+        ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull(problemsProvider);
+        assertTrue(problemsProvider.getProblems().isEmpty());
+        PhpProjectProperties.save((PhpProject) project,
+                Collections.singletonMap(PhpProjectProperties.INCLUDE_PATH, "nondir"),
+                Collections.singletonMap(PhpProjectProperties.PRIVATE_INCLUDE_PATH, "nondir"));
         assertEquals(1, problemsProvider.getProblems().size());
         ProjectProblem projectProblem = problemsProvider.getProblems().iterator().next();
         assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidIncludePath_title(), projectProblem.getDisplayName());
@@ -159,6 +183,7 @@ public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
         brokenProperties.put(PhpProjectProperties.SELENIUM_SRC_DIR, "nondir");
         brokenProperties.put(PhpProjectProperties.WEB_ROOT, "nondir");
         brokenProperties.put(PhpProjectProperties.INCLUDE_PATH, "nondir");
+        brokenProperties.put(PhpProjectProperties.PRIVATE_INCLUDE_PATH, "nondir2");
         return brokenProperties;
     }
 

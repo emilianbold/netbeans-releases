@@ -58,6 +58,7 @@ public final class LastUsedFolders {
     // include path
     public static final String GLOBAL_INCLUDE_PATH = "nb.php.global.includePath";
     public static final String PROJECT_INCLUDE_PATH = "nb.php.project.includePath";
+    public static final String PROJECT_PRIVATE_INCLUDE_PATH = "nb.php.project.includePath.private";
     // debugger
     public static final String DEBUGGER_PATH_MAPPING = "nb.php.debugger.pathMapping";
     // remote connections
