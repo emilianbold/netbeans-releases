@@ -142,8 +142,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                 break;
             case refactorToExistingExternalSheet:
                 if (refactorToStyleSheet(modificationResult, context)) {
-                    importStyleSheet(modificationResult, context);
-                }
+                importStyleSheet(modificationResult, context);
+            }
                 break;
         }
 
@@ -214,23 +214,23 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                             //no existing link attribute and head tag
                             insertPositionRef.set(node.to()); //end of the open tag offset
                             increaseIndent.set(true);
-                        } else if (LexerUtils.equals("head", t.name(), true, true)) {
-                            //NOI18N
-                            //append the section as first head's child if there are
-                            //no existing style sections
-                            insertPositionRef.set(node.to()); //end of the open tag offset
-                            increaseIndent.set(true);
-                        } else if (LexerUtils.equals("style", t.name(), true, true)) {
-                            //NOI18N
-                            //existing style section
-                            //append the new section after the last one
-                            insertPositionRef.set(t.semanticEnd()); //end of the end tag offset
-                            increaseIndent.set(false);
                         }
+                    } else if (LexerUtils.equals("head", t.name(), true, true)) {
+                        //NOI18N
+                        //append the section as first head's child if there are
+                        //no existing style sections
+                        insertPositionRef.set(node.to()); //end of the open tag offset
+                        increaseIndent.set(true);
+                    } else if (LexerUtils.equals("style", t.name(), true, true)) {
+                        //NOI18N
+                        //existing style section
+                        //append the new section after the last one
+                        insertPositionRef.set(t.semanticEnd()); //end of the end tag offset
+                        increaseIndent.set(false);
                     }
                 }
             }, ElementType.OPEN_TAG);
-            
+
             int embeddedInsertOffset = insertPositionRef.get();
             if (embeddedInsertOffset
                     == -1) {
@@ -288,8 +288,8 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
         SelectorType selectorType = refactoring.getSelectorType();
         RefactoringElementType cssElementType = getCssElementType(selectorType);
 
-        Map<InlinedStyleInfo, ResolveDeclarationItem> resolvedDeclarations =
-                selectorType == SelectorType.CLASS ? context.getClassSelectorsToResolve() : context.getIdSelectorsToResolve();
+        Map<InlinedStyleInfo, ResolveDeclarationItem> resolvedDeclarations
+                = selectorType == SelectorType.CLASS ? context.getClassSelectorsToResolve() : context.getIdSelectorsToResolve();
 
         boolean atLeastOneRefactorToDefaultLocation = false;
 
@@ -328,7 +328,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                         } else {
                             FileObject file = resolvedDeclaration.getSource();
-                            final BaseDocument doc = (BaseDocument)resolvedDeclaration.getDocument();
+                            final BaseDocument doc = (BaseDocument) resolvedDeclaration.getDocument();
                             Entry entry = resolvedDeclaration.getDeclaration().entry();
                             //In case of id selector, just add the code to the refered selector body and remove the inlined style
 
@@ -347,7 +347,7 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                                 @Override
                                 public void run() {
                                     try {
-                                        if(Utilities.getFirstNonWhiteFwd(doc, appendOffset.get()) == -1) {
+                                        if (Utilities.getFirstNonWhiteFwd(doc, appendOffset.get()) == -1) {
                                             //just WS at the rest of the line
                                             //=>put the section at the beginning of the next line
                                             int newPos = Utilities.getRowEnd(doc, appendOffset.get()) + 1;
@@ -360,9 +360,9 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
                                         Exceptions.printStackTrace(ex);
                                     }
                                 }
-                                
+
                             });
-                            
+
                             //get the indentation from the selector's line indent + base indent
                             int prevLineIndent = getPreviousLineIndent(doc, appendOffset.get());
                             List<String> lines = new LinkedList<>();
@@ -402,7 +402,6 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
 
                         //XXX Reconsider - The newly generated classes are not be added to the same location as the already
                         //existing, but to the default target selected by the user
-
                         //find first free selector name
                         Collection<String> editedFileElements = usedNames.get(selectorType).get(context.getFile());
                         Collection<String> targetFileElements = usedNames.get(selectorType).get(targetStylesheet);
@@ -572,7 +571,6 @@ public class ExtractInlinedStyleRefactoringPlugin implements RefactoringPlugin {
             //and new line at the end
             b.append('\n'); //NOI18N
         }
-
 
         return b.toString();
     }
