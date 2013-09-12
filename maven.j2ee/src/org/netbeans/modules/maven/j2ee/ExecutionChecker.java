@@ -187,7 +187,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                                 address = Integer.toString(sdi.getPort());
                             }
                             MavenDebugger deb = project.getLookup().lookup(MavenDebugger.class);
-                            deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address); // NOI18N
+                            try {
+                                deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address); // NOI18N
+                            } catch (Exception ex) {
+                                // See issue #235796 --> We were not able to attach debugger because
+                                // it's already attached, BUT we still want to deploy the application
+                            }
                         }
                         return null;
                     }
