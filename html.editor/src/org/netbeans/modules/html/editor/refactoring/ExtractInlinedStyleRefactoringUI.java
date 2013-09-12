@@ -131,7 +131,7 @@ public class ExtractInlinedStyleRefactoringUI implements RefactoringUI, Refactor
 
     @Override
     public HelpCtx getHelpCtx() {
-	return null;
+	return new HelpCtx("ExtractInlinedStyleRefactoringUI"); //NOI18N
     }
 
     @Override
