@@ -140,6 +140,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                 int i = entryName.indexOf("/"); // NOI18N
                 if (i == -1) {
                     // unexpected file
+                    LOGGER.log(Level.INFO, "Unexpected file directly in ajax libs directory: {0}", original);
                     continue;
                 }
                 String libraryFolder = entryName.substring(0, i);
@@ -150,11 +151,14 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                     libs.put(libraryFolder, lf);
                 }
                 if ("package.json".equals(entryName)) {
-                    assert lf.packageInfo == null : original;
+                    if (lf.packageInfo != null) {
+                        LOGGER.log(Level.INFO, "Existing package info {0} will be replaced", lf.packageInfo.toJSONString());
+                    }
                     lf.packageInfo = readPackage(str);
                 } else {
                     i = entryName.indexOf("/"); // NOI18N
                     if (i == -1) {
+                        LOGGER.log(Level.INFO, "Misplaced file: {0}", original);
                         // ignore: there is ajax/libs/documentup/latest.js which looks misplaced
                         continue;
                     }
@@ -195,7 +199,10 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
 
         List<LibraryImplementation> result = new ArrayList<>();
         for (LibraryFiles lf : libs.values()) {
-            assert lf.packageInfo != null : lf;
+            if (lf.packageInfo == null) {
+                LOGGER.log(Level.INFO, "No package info for: {0}", lf);
+                continue;
+            }
             String name = (String)lf.packageInfo.get("name"); // NOI18N
             //String version = (String)lf.packageInfo.get("version"); // NOI18N
             //String file = (String)lf.packageInfo.get("filename"); // NOI18N
@@ -207,7 +214,9 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                 List<String> minifiedFiles = new ArrayList<>();
                 detectMinifiedAndRegularLibraries(e.getValue(), regularFiles, minifiedFiles, 
                         minifiedOrphanFiles, name+"/"+e.getKey()+"/");
-                assert !minifiedFiles.isEmpty() : "version: "+e.getKey()+" - "+lf;
+                if (minifiedFiles.isEmpty()) {
+                    LOGGER.log(Level.INFO, "No minified files for version {0} - {1}", new Object[] {e.getKey(), lf});
+                }
                 result.add(createLibrary(name, e.getKey(), minifiedFiles, regularFiles, homepage, description));
             }
         }
