@@ -193,7 +193,11 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     }
 
     @NbBundle.Messages(
-            "LBL_OpeningiOS=Connecting to iOS Device.\nMake sure, that device is attached and Mobile Safari is running.")
+            "LBL_OpeningiOS=Connecting to iOS Device.\nMake sure, that:\n"
+            + "\u2022 Device is attached\n"
+            + "\u2022 Web Inspector is enabled on your device (Settings | Safari | Advanced)\n"
+            + "\u2022 Mobile Safari is running\n"
+            + "\u2022 Your computer and iOS device are connected to the same WiFi network")
     public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
         final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
         assert build != null;
