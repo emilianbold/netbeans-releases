@@ -53,7 +53,7 @@ NetBeans.serverURL = function() {
 NetBeans.DEBUG = true;
 NetBeans.INFOBAR = false;
 
-NetBeans.VERSION = "1.7.3";
+NetBeans.VERSION = "1.7.4";
 
 NetBeans.managedTabs = new Object();
 
