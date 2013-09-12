@@ -153,9 +153,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.EditHistory;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -262,7 +264,7 @@ public abstract class CslTestBase extends NbTestCase {
         classPathsForTest = createClassPathsForTest();
         if (classPathsForTest != null) {
             RepositoryUpdater.getDefault().start(true);
-            
+
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
             Waiter w = new Waiter(classPathContainsBinaries());
@@ -291,7 +293,7 @@ public abstract class CslTestBase extends NbTestCase {
                 ClassPath cp = classPathsForTest.get(cpId);
                 GlobalPathRegistry.getDefault().unregister(cpId, new ClassPath [] { cp });
             }
-            
+
             w.waitForScanToFinish();
             logger.removeHandler(w);
         }
@@ -311,7 +313,7 @@ public abstract class CslTestBase extends NbTestCase {
                     "unknown", getPreferredMimeType(), actions,
                     defaultLanguage, getCodeCompleter(),
                     getRenameHandler(), defaultLanguage.getDeclarationFinder(),
-                    defaultLanguage.getFormatter(), getKeystrokeHandler(), 
+                    defaultLanguage.getFormatter(), getKeystrokeHandler(),
                     getIndexerFactory(), getStructureScanner(), null,
                     defaultLanguage.isUsingCustomEditorKit());
             List<org.netbeans.modules.csl.core.Language> languages = new ArrayList<org.netbeans.modules.csl.core.Language>();
@@ -331,7 +333,7 @@ public abstract class CslTestBase extends NbTestCase {
         FileObject dirFO = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         return touch(dirFO, path);
     }
-    
+
     protected FileObject touch(final FileObject dir, final String path) throws IOException {
         return FileUtil.createData(dir, path);
     }
@@ -361,7 +363,7 @@ public abstract class CslTestBase extends NbTestCase {
     /**
      * Like <code>getCaretOffset</code>, but the returned <code>CaretLineOffset</code>
      * contains also the modified <code>caretLine</code> param.
-     
+
      * @param text
      * @param caretLine
      * @return
@@ -378,7 +380,7 @@ public abstract class CslTestBase extends NbTestCase {
         return new CaretLineOffset(caretOffset, caretLine);
     }
 
-    
+
     /** Copy-pasted from APISupport. */
     protected static String slurp(File file) throws IOException {
         InputStream is = new FileInputStream(file);
@@ -390,7 +392,7 @@ public abstract class CslTestBase extends NbTestCase {
             is.close();
         }
     }
-    
+
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {
@@ -430,7 +432,7 @@ public abstract class CslTestBase extends NbTestCase {
     protected String readFile(final FileObject fo) {
         return read(fo);
     }
-    
+
     public static String read(final FileObject fo) {
         try {
             final StringBuilder sb = new StringBuilder(5000);
@@ -502,14 +504,14 @@ public abstract class CslTestBase extends NbTestCase {
             return null;
         }
     }
-    
+
     public BaseDocument getDocument(String s, String mimeType) {
         Language<?> language = LanguageManager.getInstance().findLanguage(mimeType);
         assertNotNull(language);
-        
+
         return getDocument(s, mimeType, language);
     }
-    
+
 //    public static BaseDocument createDocument(String s) {
 //        try {
 //            BaseDocument doc = new BaseDocument(null, false);
@@ -529,10 +531,10 @@ public abstract class CslTestBase extends NbTestCase {
 
         GsfLanguage language = getPreferredLanguage();
         assertNotNull("You must implement " + getClass().getName() + ".getPreferredLanguage()", language);
-        
+
         return getDocument(s, mimeType, language.getLexerLanguage());
     }
-    
+
     protected BaseDocument getDocument(FileObject fo) {
         return getDocument(fo, getPreferredMimeType(), getPreferredLanguage().getLexerLanguage());
     }
@@ -594,23 +596,23 @@ public abstract class CslTestBase extends NbTestCase {
         }
         inputFile = new File(inputFilePath);
         assertTrue(inputFile.exists());
-        
+
         return inputFile;
     }
-    
+
     private static String pathJoin(String... chunks) {
         StringBuilder result = new StringBuilder(File.separator);
         for (String chunk : chunks) {
-            result.append(chunk).append(File.separatorChar);            
+            result.append(chunk).append(File.separatorChar);
         }
         return result.toString();
     }
-    
+
     protected File getDataFile(String relFilePath) {
         File inputFile = new File(getDataSourceDir(), relFilePath);
         return inputFile;
     }
-    
+
     protected boolean failOnMissingGoldenFile() {
         return true;
     }
@@ -661,19 +663,19 @@ public abstract class CslTestBase extends NbTestCase {
 
         String expectedTrimmed = expected.trim();
         String actualTrimmed = description.trim();
-        
+
         if (expectedTrimmed.equals(actualTrimmed)) {
             return; // Actual and expected content are equals --> Test passed
         } else {
-            // We want to ignore different line separators (like \r\n against \n) because they 
+            // We want to ignore different line separators (like \r\n against \n) because they
             // might be causing failing tests on a different operation systems like Windows :]
             String expectedUnified = expectedTrimmed.replaceAll("\r", "");
             String actualUnified = actualTrimmed.replaceAll("\r", "");
-            
+
             if (expectedUnified.equals(actualUnified)) {
                 return; // Only difference is in line separation --> Test passed
             }
-            
+
             // There are some diffrerences between expected and actual content --> Test failed
             fail(getContentDifferences(relFilePath, ext, includeTestName, expectedUnified, actualUnified));
         }
@@ -766,11 +768,11 @@ public abstract class CslTestBase extends NbTestCase {
             String description, boolean includeTestName, String ext) throws IOException {
             assertDescriptionMatches(fileObject, description, includeTestName, ext, false);
     }
-    
+
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
 
-        String goldenFileDir = goldenFileInTestFileDir ? 
+        String goldenFileDir = goldenFileInTestFileDir ?
             FileUtil.getRelativePath(FileUtil.toFileObject(getDataDir()), fileObject.getParent()) :
             "testfiles";
 
@@ -842,7 +844,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
         return lineSeparator;
     }
-    
+
     protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
         File rubyFile = getDataFile(relFilePath);
         if (!rubyFile.exists()) {
@@ -893,10 +895,10 @@ public abstract class CslTestBase extends NbTestCase {
         List<String> l2 = new ArrayList<String>();
         l2.addAll(s2);
         Collections.sort(l2);
-        
+
         assertEquals(l1.toString(), l2.toString());
     }
-    
+
     protected void createFilesFromDesc(FileObject folder, String descFile) throws Exception {
         File taskFile = new File(getDataDir(), descFile);
         assertTrue(taskFile.exists());
@@ -906,7 +908,7 @@ public abstract class CslTestBase extends NbTestCase {
             if (line == null || line.trim().length() == 0) {
                 break;
             }
-            
+
             if (line.endsWith("\r")) {
                 line = line.substring(0, line.length()-1);
             }
@@ -940,7 +942,7 @@ public abstract class CslTestBase extends NbTestCase {
         writer.close();
     }
 
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Parsing Info Based Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -949,15 +951,15 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getParser(), either from your GsfLanguage or your test class", parser);
         return parser;
     }
-    
+
     protected void validateParserResult(@NullAllowed ParserResult result) {
-        // Clients can do checks to make sure everything is okay here. 
+        // Clients can do checks to make sure everything is okay here.
     }
-    
+
     protected DefaultLanguageConfig getPreferredLanguage() {
         return null;
     }
-    
+
     protected String getPreferredMimeType() {
         return null;
     }
@@ -1034,11 +1036,11 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     // Also requires getFormatter(IndentPref) defined below under the formatting tests
-    
+
     protected void assertMatches(String original) throws BadLocationException {
         KeystrokeHandler bc = getKeystrokeHandler();
         int caretPos = original.indexOf('^');
-        
+
         original = original.substring(0, caretPos) + original.substring(caretPos+1);
         int matchingCaretPos = original.indexOf('^');
         assertTrue(caretPos < matchingCaretPos);
@@ -1047,21 +1049,21 @@ public abstract class CslTestBase extends NbTestCase {
         BaseDocument doc = getDocument(original);
 
         OffsetRange range = bc.findMatching(doc, caretPos);
-        
-        assertNotSame("Didn't find matching token for " + /*LexUtilities.getToken(doc, caretPos).text().toString()*/ " position " + caretPos, 
+
+        assertNotSame("Didn't find matching token for " + /*LexUtilities.getToken(doc, caretPos).text().toString()*/ " position " + caretPos,
                 OffsetRange.NONE, range);
         assertEquals("forward match not found; found '" +
                 doc.getText(range.getStart(), range.getLength()) + "' instead of " +
-                /*LexUtilities.getToken(doc, matchingCaretPos).text().toString()*/ " position " + matchingCaretPos, 
+                /*LexUtilities.getToken(doc, matchingCaretPos).text().toString()*/ " position " + matchingCaretPos,
                 matchingCaretPos, range.getStart());
-        
+
         // Perform reverse match
         range = bc.findMatching(doc, matchingCaretPos);
-        
+
         assertNotSame(OffsetRange.NONE, range);
         assertEquals("reverse match not found; found '" +
-                doc.getText(range.getStart(), range.getLength()) + "' instead of " + 
-                /*LexUtilities.getToken(doc, caretPos).text().toString()*/ " position " + caretPos, 
+                doc.getText(range.getStart(), range.getLength()) + "' instead of " +
+                /*LexUtilities.getToken(doc, caretPos).text().toString()*/ " position " + caretPos,
                 caretPos, range.getStart());
     }
 
@@ -1069,13 +1071,13 @@ public abstract class CslTestBase extends NbTestCase {
         BracesMatcherFactory factory = MimeLookup.getLookup(getPreferredMimeType()).lookup(BracesMatcherFactory.class);
         int caretPos = original.indexOf('^');
         original = original.substring(0, caretPos) + original.substring(caretPos+1);
-        
+
         int matchingCaretPos = original.indexOf('^');
 
         original = original.substring(0, matchingCaretPos) + original.substring(matchingCaretPos+1);
-        
+
         BaseDocument doc = getDocument(original);
-        
+
         MatcherContext context = BracesMatchingTestUtils.createMatcherContext(doc, caretPos, false, 1);
         BracesMatcher matcher = factory.createMatcher(context);
         int [] origin = null, matches = null;
@@ -1084,13 +1086,13 @@ public abstract class CslTestBase extends NbTestCase {
             matches = matcher.findMatches();
         } catch (InterruptedException ex) {
         }
-        
+
         assertNotNull("Did not find origin for " + " position " + caretPos, origin);
         assertNotNull("Did not find matches for " + " position " + caretPos, matches);
-        
+
         assertEquals("Incorrect origin", caretPos, origin[0]);
         assertEquals("Incorrect matches", matchingCaretPos, matches[0]);
-        
+
         //Reverse direction
         context = BracesMatchingTestUtils.createMatcherContext(doc, matchingCaretPos, false, 1);
         matcher = factory.createMatcher(context);
@@ -1099,14 +1101,14 @@ public abstract class CslTestBase extends NbTestCase {
             matches = matcher.findMatches();
         } catch (InterruptedException ex) {
         }
-        
+
         assertNotNull("Did not find origin for " + " position " + caretPos, origin);
         assertNotNull("Did not find matches for " + " position " + caretPos, matches);
-        
+
         assertEquals("Incorrect origin", matchingCaretPos, origin[0]);
         assertEquals("Incorrect matches", caretPos, matches[0]);
     }
-    
+
     // Copied from LexUtilities
     public static int getLineIndent(BaseDocument doc, int offset) {
         try {
@@ -1211,7 +1213,7 @@ public abstract class CslTestBase extends NbTestCase {
             assertEquals(reformattedPos, caret.getDot());
         }
     }
-    
+
     protected void deleteWord(String original, String expected) throws Exception {
         String source = original;
         String reformatted = expected;
@@ -1244,7 +1246,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
     }
-    
+
     protected void assertLogicalRange(String sourceText, boolean up, String expected) throws Exception {
         String BEGIN = "%<%"; // NOI18N
         String END = "%>%"; // NOI18N
@@ -1252,7 +1254,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (sourceStartPos != -1) {
             sourceText = sourceText.substring(0, sourceStartPos) + sourceText.substring(sourceStartPos+BEGIN.length());
         }
-        
+
         final int caretPos = sourceText.indexOf('^');
         sourceText = sourceText.substring(0, caretPos) + sourceText.substring(caretPos+1);
 
@@ -1260,7 +1262,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (sourceEndPos != -1) {
             sourceText = sourceText.substring(0, sourceEndPos) + sourceText.substring(sourceEndPos+END.length());
         }
-        
+
         final int expectedStartPos = expected.indexOf(BEGIN);
         if (expectedStartPos != -1) {
             expected = expected.substring(0, expectedStartPos) + expected.substring(expectedStartPos+BEGIN.length());
@@ -1268,7 +1270,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         final int expectedCaretPos = expected.indexOf('^');
         expected = expected.substring(0, expectedCaretPos) + expected.substring(expectedCaretPos+1);
-        
+
         final int expectedEndPos = expected.indexOf(END);
         if (expectedEndPos != -1) {
             expected = expected.substring(0, expectedEndPos) + expected.substring(expectedEndPos+END.length());
@@ -1282,7 +1284,7 @@ public abstract class CslTestBase extends NbTestCase {
         final String finalSourceText = sourceText;
         final boolean finalUp = up;
         final String finalExpected = expected;
-        
+
         enforceCaretOffset(testSource, caretPos);
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
@@ -1341,7 +1343,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Mark Occurrences Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -1350,7 +1352,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getOccurrencesFinder, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
+
     /** Test the occurrences to make sure they equal the golden file.
      * If the symmetric parameter is set, this test will also ensure that asking for
      * occurrences on ANY of the matches produced by the original caret position will
@@ -1464,7 +1466,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
         return text.length();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Semantic Highlighting Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -1473,7 +1475,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getSemanticAnalyzer, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
+
     protected void checkSemantic(final String relFilePath, final String caretLine) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
@@ -1487,7 +1489,7 @@ public abstract class CslTestBase extends NbTestCase {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-                
+
                 SemanticAnalyzer analyzer = getSemanticAnalyzer();
                 assertNotNull("getSemanticAnalyzer must be implemented", analyzer);
 
@@ -1506,7 +1508,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
+
     protected void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
         // Make sure there are no overlapping ranges
         List<OffsetRange> sortedRanges = new ArrayList<OffsetRange>(ranges);
@@ -1568,7 +1570,7 @@ public abstract class CslTestBase extends NbTestCase {
     protected void checkSemantic(String relFilePath) throws Exception {
         checkSemantic(relFilePath, null);
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Rename Handling Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -1650,7 +1652,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
             lineno++;
         }
-        
+
         return sb.toString();
     }
 
@@ -1681,7 +1683,7 @@ public abstract class CslTestBase extends NbTestCase {
                 factory.getIndexVersion(),
                 tifi,
                 false,
-                false,                
+                false,
                 false,
                 SuspendSupport.NOP,
                 null,
@@ -1737,7 +1739,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".indexed");
     }
-    
+
     protected void checkIsIndexable(String relFilePath, boolean isIndexable) throws Exception {
         final EmbeddingIndexerFactory factory = getIndexerFactory();
         assertNotNull("getIndexerFactory must be implemented", factory);
@@ -1773,11 +1775,11 @@ public abstract class CslTestBase extends NbTestCase {
 
         return sb.toString();
     }
-    
+
     protected String prettyPrintValue(String key, String value) {
         return value;
     }
-    
+
     private String prettyPrint(List<TestIndexDocumentImpl> documents, String localUrl) throws IOException {
         List<String> nonEmptyDocuments = new ArrayList<String>();
         List<String> emptyDocuments = new ArrayList<String>();
@@ -1899,7 +1901,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         final HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
-            
+
             @Override
             public void reset() {
                 sb.setLength(0);
@@ -1916,7 +1918,7 @@ public abstract class CslTestBase extends NbTestCase {
                 sb.append(text, fromInclusive, toExclusive);
                 sb.append("}");
             }
-            
+
             @Override
             public void name(ElementKind kind, boolean start) {
                 if (start) {
@@ -1932,7 +1934,7 @@ public abstract class CslTestBase extends NbTestCase {
                     sb.append("}");
                 }
             }
-            
+
             @Override
             public void parameters(boolean start) {
                 if (start) {
@@ -1997,7 +1999,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
+
     protected void checkFolds(String relFilePath) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
@@ -2042,7 +2044,7 @@ public abstract class CslTestBase extends NbTestCase {
                     for (OffsetRange range : ranges) {
                         int beginIndex = Collections.binarySearch(begins, range.getStart());
                         if (beginIndex < 0) {
-                            beginIndex = -(beginIndex+2); 
+                            beginIndex = -(beginIndex+2);
                         }
                         int endIndex = Collections.binarySearch(ends, range.getEnd());
                         if (endIndex < 0) {
@@ -2123,9 +2125,9 @@ public abstract class CslTestBase extends NbTestCase {
                             return s1Name.compareTo(s2Name);
                         }
                     }
-                    
+
                 });
-                
+
                 annotateStructureItem(indent+1, sb, c, formatter, includePositions);
             }
         }
@@ -2135,10 +2137,10 @@ public abstract class CslTestBase extends NbTestCase {
             boolean includePositions) {
         StringBuilder sb = new StringBuilder();
         annotateStructureItem(0, sb, structure, formatter, includePositions);
-        
+
         return sb.toString();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Formatting Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -2264,7 +2266,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         setupDocumentIndentation(doc, preferences);
         format(doc, formatter, startPos, endPos, false);
-        
+
         String formatted = doc.getText(0, doc.getLength());
         assertEquals(reformatted, formatted);
     }
@@ -2276,7 +2278,7 @@ public abstract class CslTestBase extends NbTestCase {
         BaseDocument doc = getDocument(fo);
         assertNotNull(doc);
         //String before = doc.getText(0, doc.getLength());
-        
+
         Formatter formatter = getFormatter(preferences);
         //assertNotNull("getFormatter must be implemented", formatter);
 
@@ -2376,7 +2378,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull(a);
         a.actionPerformed(new ActionEvent(jt, 0, cmd));
     }
-    
+
     protected void setupDocumentIndentation(Document doc, IndentPrefs preferences) {
         // Enforce indentprefs
         if (preferences != null) {
@@ -2394,15 +2396,15 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
-        int sourcePos = source.indexOf('^');     
+        int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         source = source.substring(0, sourcePos) + source.substring(sourcePos+1);
         Formatter formatter = getFormatter(null);
 
-        int reformattedPos = reformatted.indexOf('^');        
+        int reformattedPos = reformatted.indexOf('^');
         assertNotNull(reformattedPos);
         reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos+1);
-        
+
         JEditorPane ta = getPane(source);
         Caret caret = ta.getCaret();
         caret.setDot(sourcePos);
@@ -2435,7 +2437,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getCompletionHandler, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
+
     private String getSourceLine(String s, int offset) {
         int begin = offset;
         if (begin > 0) {
@@ -2524,12 +2526,12 @@ public abstract class CslTestBase extends NbTestCase {
                 if (p1.getKind() != p2.getKind()) {
                     return p1.getKind().compareTo(p2.getKind());
                 }
-                
+
                 formatter.reset();
                 String p1L = p1.getLhsHtml(formatter);
                 formatter.reset();
                 String p2L = p2.getLhsHtml(formatter);
-                
+
                 if (!p1L.equals(p2L)) {
                     return p1L.compareTo(p2L);
                 }
@@ -2552,11 +2554,11 @@ public abstract class CslTestBase extends NbTestCase {
                 if (!p1.getModifiers().toString().equals(p2.getModifiers().toString())) {
                     return p1.getModifiers().toString().compareTo(p2.getModifiers().toString());
                 }
-                
+
                 return 0;
             }
         });
-        
+
         boolean isSmart = true;
         for (CompletionProposal proposal : proposals) {
             if (isSmart && !proposal.isSmart()) {
@@ -2568,7 +2570,7 @@ public abstract class CslTestBase extends NbTestCase {
             formatter.reset();
             proposal.getLhsHtml(formatter); // Side effect to deprecatedHolder used
             boolean strike = includeModifiers && deprecatedHolder[0];
-            
+
             String n = proposal.getKind().toString();
             int MAX_KIND = 10;
             if (n.length() > MAX_KIND) {
@@ -2579,7 +2581,7 @@ public abstract class CslTestBase extends NbTestCase {
                     sb.append(" ");
                 }
             }
-            
+
 //            if (proposal.getModifiers().size() > 0) {
 //                List<String> modifiers = new ArrayList<String>();
 //                for (Modifier mod : proposal.getModifiers()) {
@@ -2590,7 +2592,7 @@ public abstract class CslTestBase extends NbTestCase {
 //            }
 
             sb.append(" ");
-            
+
             formatter.reset();
             n = proposal.getLhsHtml(formatter);
             int MAX_LHS = 30;
@@ -2610,7 +2612,7 @@ public abstract class CslTestBase extends NbTestCase {
             if (strike) {
                 sb.append("---");
             }
-            
+
             sb.append("  ");
 
             assertNotNull("Return Collections.emptySet() instead from getModifiers!", proposal.getModifiers());
@@ -2630,14 +2632,14 @@ public abstract class CslTestBase extends NbTestCase {
             }
 
             sb.append("  ");
-            
+
             formatter.reset();
             sb.append(proposal.getRhsHtml(formatter));
             sb.append("\n");
-            
+
             isSmart = proposal.isSmart();
         }
-        
+
         return sb.toString();
     }
 
@@ -2652,9 +2654,9 @@ public abstract class CslTestBase extends NbTestCase {
 
         return null;
     }
-    
+
     public void checkCompletion(final String file, final String caretLine, final boolean includeModifiers) throws Exception {
-        // TODO call TestCompilationInfo.setCaretOffset!        
+        // TODO call TestCompilationInfo.setCaretOffset!
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
 
@@ -2907,7 +2909,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
     public void checkCompletionDocumentation(final String file, final String caretLine, final boolean includeModifiers, final String itemPrefix) throws Exception {
-        // TODO call TestCompilationInfo.setCaretOffset!        
+        // TODO call TestCompilationInfo.setCaretOffset!
         final QueryType type = QueryType.COMPLETION;
         final boolean caseSensitive = true;
 
@@ -3004,7 +3006,14 @@ public abstract class CslTestBase extends NbTestCase {
                 assertNotNull(match.getElement());
 
                 // Get documentation
-                String documentation = cc.document(pr, match.getElement());
+                String documentation;
+                if (cc instanceof CodeCompletionHandler2) {
+                    CodeCompletionHandler2 cc2 = (CodeCompletionHandler2) cc;
+                    Documentation docu = cc2.documentElement(pr, match.getElement());
+                    documentation = docu == null ? cc2.document(pr, match.getElement()) : docu.getContent();
+                } else {
+                    documentation = cc.document(pr, match.getElement());
+                }
 
                 final boolean deprecatedHolder[] = new boolean[1];
                 final HtmlFormatter formatter = new HtmlFormatter() {
@@ -3067,7 +3076,7 @@ public abstract class CslTestBase extends NbTestCase {
             ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
         }
     }
-    
+
     private String describeCompletionDoc(String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type,
              CompletionProposal proposal, String documentation,
             boolean includeModifiers, boolean[] deprecatedHolder, final HtmlFormatter formatter) {
@@ -3171,7 +3180,7 @@ public abstract class CslTestBase extends NbTestCase {
         sb.append("</html>");
         return sb.toString();
     }
-    
+
     /**
      * Sometimes the documentation can contain absolute path. When you overwrite
      * this method, you can exclude such thinks from it.
@@ -3181,17 +3190,17 @@ public abstract class CslTestBase extends NbTestCase {
     protected String alterDocumentationForTest(String documentation) {
         return documentation;
     }
-    
+
     protected void assertAutoQuery(QueryType queryType, String source, String typedText) {
         CodeCompletionHandler completer = getCodeCompleter();
         int caretPos = source.indexOf('^');
         source = source.substring(0, caretPos) + source.substring(caretPos+1);
-        
+
         BaseDocument doc = getDocument(source);
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
         caret.setDot(caretPos);
-        
+
         QueryType qt = completer.getAutoQuery(ta, typedText);
         assertEquals(queryType, qt);
     }
@@ -3218,10 +3227,10 @@ public abstract class CslTestBase extends NbTestCase {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-                
+
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
-                
+
                 Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
@@ -3246,7 +3255,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
+
     public void checkPrefix(final String relFilePath) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
@@ -3254,7 +3263,7 @@ public abstract class CslTestBase extends NbTestCase {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-                
+
                 CodeCompletionHandler completer = getCodeCompleter();
                 assertNotNull("getSemanticAnalyzer must be implemented", completer);
 
@@ -3301,8 +3310,8 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
-    
+
+
     ////////////////////////////////////////////////////////////////////////////
     // Ast Offsets Test
     ////////////////////////////////////////////////////////////////////////////
@@ -3310,16 +3319,16 @@ public abstract class CslTestBase extends NbTestCase {
         // Override in your test
         return null;
     }
-    
+
     protected void initializeNodes(ParserResult result, List<Object> validNodes,
             Map<Object,OffsetRange> positions, List<Object> invalidNodes) throws Exception {
         // Override in your test
     }
-    
+
     protected void checkOffsets(String relFilePath) throws Exception {
         checkOffsets(relFilePath, null);
     }
-    
+
     protected void checkOffsets(final String relFilePath, final String caretLine) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
@@ -3344,8 +3353,8 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
-    
+
+
     /** Pass the nodes in an in-order traversal order such that it can properly nest
      * items when they have identical starting or ending endpoints */
     private String annotateOffsets(List<Object> validNodes, Map<Object,OffsetRange> positions,
@@ -3360,12 +3369,12 @@ public abstract class CslTestBase extends NbTestCase {
         for (Object node : validNodes) {
             traversalNumber.put(node, id++);
         }
-                
+
         Comparator<Object> FORWARDS_COMPARATOR = new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
                 assertTrue(traversalNumber.containsKey(o1));
                 assertTrue(traversalNumber.containsKey(o2));
-                
+
                 return traversalNumber.get(o1) - traversalNumber.get(o2);
             }
         };
@@ -3374,14 +3383,14 @@ public abstract class CslTestBase extends NbTestCase {
             public int compare(Object o1, Object o2) {
                 assertTrue(traversalNumber.containsKey(o1));
                 assertTrue(traversalNumber.containsKey(o2));
-                
+
                 return traversalNumber.get(o2) - traversalNumber.get(o1);
             }
         };
-        
+
         Map<Integer,List<Object>> starts = new HashMap<Integer,List<Object>>(100);
         Map<Integer,List<Object>> ends = new HashMap<Integer,List<Object>>(100);
-    
+
         for (Object node : validNodes) {
             OffsetRange range = positions.get(node);
             List<Object> list = starts.get(range.getStart());
@@ -3397,7 +3406,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
             list.add(node);
         }
-        
+
         // Sort nodes
         for (List<Object> list : starts.values()) {
             Collections.sort(list, FORWARDS_COMPARATOR);
@@ -3405,13 +3414,13 @@ public abstract class CslTestBase extends NbTestCase {
         for (List<Object> list : ends.values()) {
             Collections.sort(list, BACKWARDS_COMPARATOR);
         }
-        
+
         // Include 0-0 nodes first
         List<String> missing = new ArrayList<String>();
         for (Object n : invalidNodes) {
             String desc = describeNode(info, n, true);
             assertNotNull("You must implement describeNode()", desc);
-            
+
             missing.add("Missing position for node " + desc);
         }
         Collections.sort(missing);
@@ -3420,7 +3429,7 @@ public abstract class CslTestBase extends NbTestCase {
             sb.append("\n");
         }
         sb.append("\n");
-        
+
         for (int i = 0; i < text.length(); i++) {
             List<Object> deferred = null;
             if (ends.containsKey(i)) {
@@ -3483,7 +3492,7 @@ public abstract class CslTestBase extends NbTestCase {
     }
 
 
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Incremental Parsing and Offsets
     ////////////////////////////////////////////////////////////////////////////
@@ -3769,11 +3778,11 @@ public abstract class CslTestBase extends NbTestCase {
         // For every node that has an associated type, add position and description information about it.
         // This will then be used to generate type hints in the source
     }
-    
+
     protected void checkTypes(String relFilePath) throws Exception {
         checkTypes(relFilePath, null);
     }
-    
+
     protected void checkTypes(final String relFilePath, final String caretLine) throws Exception {
         Source testSource = getTestSource(getTestFile(relFilePath));
 
@@ -3798,8 +3807,8 @@ public abstract class CslTestBase extends NbTestCase {
             }
         });
     }
-    
-    
+
+
     /** Pass the nodes in an in-order traversal order such that it can properly nest
      * items when they have identical starting or ending endpoints */
     private String annotateTypes(List<Object> validNodes, Map<Object,OffsetRange> positions,
@@ -3813,12 +3822,12 @@ public abstract class CslTestBase extends NbTestCase {
         for (Object node : validNodes) {
             traversalNumber.put(node, id++);
         }
-                
+
         Comparator<Object> FORWARDS_COMPARATOR = new Comparator<Object>() {
             public int compare(Object o1, Object o2) {
                 assertTrue(traversalNumber.containsKey(o1));
                 assertTrue(traversalNumber.containsKey(o2));
-                
+
                 return traversalNumber.get(o1) - traversalNumber.get(o2);
             }
         };
@@ -3827,14 +3836,14 @@ public abstract class CslTestBase extends NbTestCase {
             public int compare(Object o1, Object o2) {
                 assertTrue(traversalNumber.containsKey(o1));
                 assertTrue(traversalNumber.containsKey(o2));
-                
+
                 return traversalNumber.get(o2) - traversalNumber.get(o1);
             }
         };
-        
+
         Map<Integer,List<Object>> starts = new HashMap<Integer,List<Object>>(100);
         Map<Integer,List<Object>> ends = new HashMap<Integer,List<Object>>(100);
-    
+
         for (Object node : validNodes) {
             OffsetRange range = positions.get(node);
             List<Object> list = starts.get(range.getStart());
@@ -3850,7 +3859,7 @@ public abstract class CslTestBase extends NbTestCase {
             }
             list.add(node);
         }
-        
+
         // Sort nodes
         for (List<Object> list : starts.values()) {
             Collections.sort(list, FORWARDS_COMPARATOR);
@@ -3858,9 +3867,9 @@ public abstract class CslTestBase extends NbTestCase {
         for (List<Object> list : ends.values()) {
             Collections.sort(list, BACKWARDS_COMPARATOR);
         }
-        
+
         // TODO - include information here about nodes without correct positions
-        
+
         for (int i = 0; i < text.length(); i++) {
             if (starts.containsKey(i)) {
                 List<Object> ns = starts.get(i);
@@ -3896,7 +3905,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         return sb.toString();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Hints / Quickfix Tests
     ////////////////////////////////////////////////////////////////////////////
@@ -3909,7 +3918,7 @@ public abstract class CslTestBase extends NbTestCase {
     private GsfHintsManager getHintsManager(org.netbeans.modules.csl.core.Language language) {
         return new GsfHintsManager(getPreferredMimeType(), getHintsProvider(), language);
     }
-    
+
     protected String annotateHints(BaseDocument doc, List<Hint> result, int caretOffset) throws Exception {
         Map<OffsetRange, List<Hint>> posToDesc = new HashMap<OffsetRange, List<Hint>>();
         Set<OffsetRange> ranges = new HashSet<OffsetRange>();
@@ -4006,7 +4015,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         return sb.toString();
     }
- 
+
     protected boolean parseErrorsOk;
 
     protected boolean checkAllHintOffsets() {
@@ -4031,7 +4040,7 @@ public abstract class CslTestBase extends NbTestCase {
 //        Document doc = GsfUtilities.getDocument(result.getSnapshot().getSource().getFileObject(), true);
 //        int docLength = doc.getLength();
         int docLength = result.getSnapshot().getText().length();
-        
+
         // Replace errors with offsets
         List<Error> errors = new ArrayList<Error>();
         List<? extends Error> oldErrors = result.getDiagnostics();
@@ -4064,7 +4073,7 @@ public abstract class CslTestBase extends NbTestCase {
 //        oldErrors.clear();
 //        oldErrors.addAll(errors);
     }
-    
+
     protected ComputedHints getHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         ComputedHints hints = computeHints(test, hint, relFilePath, fileObject, caretLine, ChangeOffsetType.NONE);
 
@@ -4105,7 +4114,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (fileObject == null) {
             fileObject = getTestFile(relFilePath);
         }
-        
+
         Source testSource = getTestSource(fileObject);
 
         final int caretOffset;
@@ -4119,14 +4128,14 @@ public abstract class CslTestBase extends NbTestCase {
             caretOffset = -1;
             caretLine = lineWithCaret;
         }
-  
+
         final ComputedHints [] result = new ComputedHints[] { null };
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
                 ParserResult pr = (ParserResult) r;
-                
+
                 Document document = pr.getSnapshot().getSource().getDocument(true);
                 assert document != null : test;
 
@@ -4242,11 +4251,11 @@ public abstract class CslTestBase extends NbTestCase {
 
         return result[0];
     }
-    
+
     protected void checkHints(NbTestCase test, Rule hint, String relFilePath, String caretLine) throws Exception {
         findHints(test, hint, relFilePath, null, caretLine);
     }
-    
+
     protected void checkHints(Rule hint, String relFilePath,
             String selStartLine, String selEndLine) throws Exception {
         FileObject fo = getTestFile(relFilePath);
@@ -4254,7 +4263,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         assert selStartLine != null;
         assert selEndLine != null;
-        
+
         int selStartOffset = -1;
         int lineDelta = selStartLine.indexOf("^");
         assertTrue(lineDelta != -1);
@@ -4263,7 +4272,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertTrue(lineOffset != -1);
 
         selStartOffset = lineOffset + lineDelta;
-        
+
         int selEndOffset = -1;
         lineDelta = selEndLine.indexOf("^");
         assertTrue(lineDelta != -1);
@@ -4274,7 +4283,7 @@ public abstract class CslTestBase extends NbTestCase {
         selEndOffset = lineOffset + lineDelta;
 
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
-        
+
         checkHints(this, hint, relFilePath, caretLine);
     }
 
@@ -4282,11 +4291,11 @@ public abstract class CslTestBase extends NbTestCase {
     protected void findHints(NbTestCase test, Rule hint, FileObject fileObject, String caretLine) throws Exception {
         findHints(test, hint, null, fileObject, caretLine);
     }
-    
+
     protected String getGoldenFileSuffix() {
         return "";
     }
-    
+
     // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, Rule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, fileObject, caretLine);
@@ -4310,7 +4319,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         assert selStartLine != null;
         assert selEndLine != null;
-        
+
         int selStartOffset = -1;
         int lineDelta = selStartLine.indexOf("^");
         assertTrue(lineDelta != -1);
@@ -4319,7 +4328,7 @@ public abstract class CslTestBase extends NbTestCase {
         assertTrue(lineOffset != -1);
 
         selStartOffset = lineOffset + lineDelta;
-        
+
         int selEndOffset = -1;
         lineDelta = selEndLine.indexOf("^");
         assertTrue(lineDelta != -1);
@@ -4330,7 +4339,7 @@ public abstract class CslTestBase extends NbTestCase {
         selEndOffset = lineOffset + lineDelta;
 
         String caretLine = text.substring(selStartOffset, selEndOffset) + "^";
-        
+
         applyHint(test, hint, relFilePath, caretLine, fixDesc);
     }
 
@@ -4338,7 +4347,7 @@ public abstract class CslTestBase extends NbTestCase {
             String caretLine, String fixDesc) throws Exception {
         ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         ParserResult info = r.info;
-        
+
         HintFix fix = findApplicableFix(r, fixDesc);
         assertNotNull(fix);
 
@@ -4363,7 +4372,7 @@ public abstract class CslTestBase extends NbTestCase {
 
         assertDescriptionMatches(relFilePath, fixed, true, ".fixed");
     }
-    
+
     @SuppressWarnings("unchecked")
     protected final void ensureRegistered(AstRule hint) throws Exception {
         org.netbeans.modules.csl.core.Language language = LanguageRegistry.getInstance().getLanguageByMimeType(getPreferredMimeType());
@@ -4420,7 +4429,7 @@ public abstract class CslTestBase extends NbTestCase {
 //                    break;
 //                }
 //            }
-//            
+//
 //            assertTrue(found);
 //        }
 //    }
@@ -4453,10 +4462,10 @@ public abstract class CslTestBase extends NbTestCase {
                 }
             }
         }
-        
+
         return null;
     }
-    
+
     protected static class ComputedHints {
         ComputedHints(ParserResult info, List<Hint> hints, int caretOffset) {
             this.info = info;
@@ -4574,7 +4583,7 @@ public abstract class CslTestBase extends NbTestCase {
         public TestClassPathProvider() {
 
         }
-        
+
         public ClassPath findClassPath(FileObject file, String type) {
             Map<String, ClassPath> map = classPathsForTest;
 
@@ -4615,7 +4624,7 @@ public abstract class CslTestBase extends NbTestCase {
         private final CountDownLatch latch;
 
         private final boolean binaries;
-        
+
         public Waiter(boolean binaries) {
             latch = new CountDownLatch(binaries ? 2 : 1);
             this.binaries = binaries;
