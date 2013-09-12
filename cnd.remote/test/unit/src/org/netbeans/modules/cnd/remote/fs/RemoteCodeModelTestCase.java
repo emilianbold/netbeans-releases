@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -124,6 +125,7 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
+    @RandomlyFails
     public void testQuoteGNU() throws Exception {
         testReconnect = false;
         processSample(Toolchain.GNU, "Quote", "Quote_01");
