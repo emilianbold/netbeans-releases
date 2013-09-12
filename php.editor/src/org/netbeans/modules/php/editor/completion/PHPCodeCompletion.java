@@ -65,10 +65,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -132,7 +133,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PHPCodeCompletion implements CodeCompletionHandler {
+public class PHPCodeCompletion implements CodeCompletionHandler2 {
 
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
     static final Map<String, KeywordCompletionType> PHP_KEYWORDS = new HashMap<>();
@@ -1114,7 +1115,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     }
 
     @Override
-    public String document(ParserResult info, ElementHandle element) {
+    public Documentation documentElement(ParserResult info, ElementHandle element) {
+        Documentation result;
         if (element instanceof ModelElement) {
             ModelElement mElem = (ModelElement) element;
             ModelElement parentElem = mElem.getInScope();
@@ -1126,11 +1128,16 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             } else {
                 tooltip = mElem.getPhpElementKind() + ":<b> " + mElem.getName() + " </b>" + "(" + fName + ")"; //NOI18N
             }
-            return String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip);
+            result = Documentation.create(String.format("<div align=\"right\"><font size=-1>%s</font></div>", tooltip)); //NOI18N
+        } else {
+            result = ((element instanceof MethodElement) && ((MethodElement) element).isMagic()) ? null : DocRenderer.document(info, element);
         }
+        return result;
+    }
 
-        return ((element instanceof MethodElement) && ((MethodElement) element).isMagic()) ? null
-                : DocRenderer.document(info, element);
+    @Override
+    public String document(ParserResult info, ElementHandle element) {
+        return null;
     }
 
     @Override
