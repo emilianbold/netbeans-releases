@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.deploy.TomcatTarget;
+import org.netbeans.modules.tomcat5.deploy.TomcatModule;
 import org.netbeans.junit.NbTestCase;
 
 /**

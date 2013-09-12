@@ -44,7 +44,7 @@ package org.netbeans.modules.tomcat5.j2ee;
 import java.io.File;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 
 /**
  *

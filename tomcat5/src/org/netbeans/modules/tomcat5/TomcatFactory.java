@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -69,8 +70,8 @@ import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.tomcat5.TomcatManager.TomEEVersion;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.openide.util.NbBundle;
 
 /** 

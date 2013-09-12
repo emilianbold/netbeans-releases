@@ -50,8 +50,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 
 /**
  * Tomcat implementation of the ModuleConfigurationFactory.
