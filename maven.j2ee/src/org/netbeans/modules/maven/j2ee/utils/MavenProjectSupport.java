@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
@@ -409,33 +410,16 @@ public class MavenProjectSupport {
     }
 
     private static String readSettingsFromPom(Project project, final String key) {
-        final String[] value = new String[1];
-        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+        final NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (nbMavenProject != null) {
+            MavenProject mavenProject = nbMavenProject.getMavenProject();
+            java.util.Properties properties = mavenProject.getProperties();
 
-            @Override
-            public void performOperation(POMModel model) {
-                Properties props = model.getProject().getProperties();
-                if (props != null) {
-                    value[0] = props.getProperty(key);
-                }
-            }
-        };
-
-        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        if (pom != null && pom.isValid() && pom.canRead()) {
-            try {
-                pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    @Override
-                    public void run() throws IOException {
-                        Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (properties != null) {
+                return properties.getProperty(key);
             }
         }
-
-        return value[0];
+        return null;
     }
 
     public static boolean isDeployOnSave(Project project)  {
