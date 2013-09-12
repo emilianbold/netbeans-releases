@@ -53,7 +53,12 @@ import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -75,6 +80,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -95,13 +101,17 @@ import org.openide.util.RequestProcessor;
 public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
+    private static final String ALL_CLUSTERS = getMessage("TEXT_SelectAllClusters");
     private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 2, true);
     private static Rectangle lastSize;
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
+    private Set<ModuleDependency> selectedDeps;
     private RequestProcessor.Task filterTask;
     private AddModuleFilter filterer;
     private URL currectJavadoc;
+    
+    private final Object IMPL_LOCK = new Object();
     
     private final SingleModuleProperties props;
     private Timer timer;
@@ -164,6 +174,7 @@ public final class AddModulePanel extends JPanel {
         initAccessibility();
         filterValue.setText(initialString);
         fillUpUniverseModules();
+        fillUpUniverseClusters();
         moduleList.setCellRenderer(CustomizerComponentFactory.getDependencyCellRenderer(false));
         moduleList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -192,6 +203,55 @@ public final class AddModulePanel extends JPanel {
                 if (!FILTER_DESCRIPTION.equals(filterValue.getText())) {
                     search();
                 }
+            }
+        });
+        clusterFilterComboBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(final ItemEvent e) {
+                filterValue.setEnabled(false);
+                moduleList.setEnabled(false);
+                showNonAPIModules.setEnabled(false);
+                matchCaseValue.setEnabled(false);
+                showExclModulesCheckBox.setEnabled(false);
+                final String lastFilter = filterValue.getText();
+                filterValue.setText(UIUtil.WAIT_VALUE);
+                moduleList.setModel(UIUtil.createListWaitModel());
+                final String selectedClusterStr = String.valueOf(clusterFilterComboBox.getSelectedItem());
+                final Set<ModuleDependency> universeDeps = universeModules.getDependencies();
+                synchronized (IMPL_LOCK) {
+                    selectedDeps = new HashSet<ModuleDependency>();
+                    if(!ALL_CLUSTERS.equals(selectedClusterStr)) {
+                        for(ModuleDependency dependencyIter:universeDeps) {
+                            if(selectedClusterStr.equals(dependencyIter.getModuleEntry().getClusterDirectory().getName())) {
+                                selectedDeps.add(dependencyIter);
+                            }
+                        }
+                    } else {
+                        selectedDeps.addAll(universeDeps);
+                    }
+                }
+                ModuleProperties.RP.post(new Runnable() {
+                    public void run() {
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                moduleList.setModel(CustomizerComponentFactory.createSortedDependencyListModel(selectedDeps));
+                                moduleList.setEnabled(true);
+                                filterValue.setEnabled(true);
+                                showNonAPIModules.setEnabled(true);
+                                boolean enableExclModuleChckBox = props.isHasExcludedModules() && props.isSuiteComponent()?true:false;
+                                showExclModulesCheckBox.setEnabled(enableExclModuleChckBox);
+                                matchCaseValue.setEnabled(true);
+                            }
+                        });
+                    }
+                });
+                filterValue.setText(lastFilter);
+                if (!FILTER_DESCRIPTION.equals(lastFilter)) {
+                    search();
+                } else {
+                    filterValue.selectAll();
+                }
+                filterValue.requestFocusInWindow();
             }
         });
         // Make basic navigation commands from the list work from the text field.
@@ -238,6 +298,36 @@ public final class AddModulePanel extends JPanel {
                 }
             }
         }
+    }
+
+    private void fillUpUniverseClusters() {
+        final boolean nonApiDeps = showNonAPIModules.isSelected();
+        final boolean exclModules = showExclModulesCheckBox.isSelected();
+        final Object lastSelectedItem = clusterFilterComboBox.getSelectedItem();
+        final List<String> allClustersList = new ArrayList<String>();
+        ModuleProperties.RP.post(new Runnable() {
+            public void run() {
+                final Set<ModuleDependency> universeDeps = selectedDeps = props.getUniverseDependencies(!exclModules, !nonApiDeps);
+                EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        allClustersList.add(ALL_CLUSTERS);
+                        for(ModuleDependency dependencyIter:universeDeps) {
+                            if(!allClustersList.contains(dependencyIter.getModuleEntry().getClusterDirectory().getName())) {
+                                allClustersList.add(dependencyIter.getModuleEntry().getClusterDirectory().getName());
+                            }
+                        }
+                        String [] allClusters = new String[allClustersList.size()];
+                        allClustersList.toArray(allClusters);
+                        clusterFilterComboBox.setModel(new javax.swing.DefaultComboBoxModel(allClusters));
+                        for(int i=0; i<clusterFilterComboBox.getItemCount(); i++) {
+                            if(clusterFilterComboBox.getItemAt(i).equals(lastSelectedItem)) {
+                                clusterFilterComboBox.setSelectedIndex(i);
+                            }
+                        }
+                    }
+                });
+            }
+        });
     }
 
     private void fillUpUniverseModules() {
@@ -363,7 +453,7 @@ public final class AddModulePanel extends JPanel {
         final String text = filterValue.getText();
         final Boolean matchCase = matchCaseValue.isSelected();
         if (text.length() == 0) {
-            moduleList.setModel(universeModules);
+            moduleList.setModel(CustomizerComponentFactory.createSortedDependencyListModel(selectedDeps));
             moduleList.setSelectedIndex(0);
             moduleList.ensureIndexIsVisible(0);
         } else {
@@ -373,7 +463,10 @@ public final class AddModulePanel extends JPanel {
                     if (_filterer == null) {
                         return;
                     }
-                    final Set<ModuleDependency> matches = _filterer.getMatches(text, matchCase);
+                    final Set<ModuleDependency> matches;
+                    synchronized (IMPL_LOCK) {
+                        matches = _filterer.getMatches(selectedDeps, text, matchCase);
+                    }
                     synchronized (AddModulePanel.this) {
                         filterTask = null;
                     }
@@ -455,6 +548,8 @@ public final class AddModulePanel extends JPanel {
         showNonAPIModules = new javax.swing.JCheckBox();
         matchCaseValue = new javax.swing.JCheckBox();
         showExclModulesCheckBox = new javax.swing.JCheckBox();
+        clusterFilterComboBox = new javax.swing.JComboBox();
+        clusterFilterLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 6, 6, 6));
         setPreferredSize(new java.awt.Dimension(500, 450));
@@ -464,7 +559,7 @@ public final class AddModulePanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(moduleLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Module")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
@@ -475,7 +570,7 @@ public final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -485,7 +580,7 @@ public final class AddModulePanel extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(AddModulePanel.class, "LBL_Description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
@@ -506,6 +601,7 @@ public final class AddModulePanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(filterValue, gridBagConstraints);
 
         descValueSP.setPreferredSize(new java.awt.Dimension(450, 116));
@@ -516,7 +612,7 @@ public final class AddModulePanel extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
@@ -532,7 +628,7 @@ public final class AddModulePanel extends JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
@@ -547,7 +643,7 @@ public final class AddModulePanel extends JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
@@ -562,7 +658,7 @@ public final class AddModulePanel extends JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
         add(matchCaseValue, gridBagConstraints);
@@ -575,13 +671,31 @@ public final class AddModulePanel extends JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 0);
         add(showExclModulesCheckBox, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 2.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        add(clusterFilterComboBox, gridBagConstraints);
+
+        clusterFilterLabel.setLabelFor(clusterFilterComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(clusterFilterLabel, "C&luster:");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        add(clusterFilterLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void showNonAPIModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showNonAPIModulesActionPerformed
+        fillUpUniverseClusters();
         fillUpUniverseModules();
     }//GEN-LAST:event_showNonAPIModulesActionPerformed
     
@@ -590,15 +704,19 @@ public final class AddModulePanel extends JPanel {
     }//GEN-LAST:event_showJavadoc
 
     private void matchCaseValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_matchCaseValueActionPerformed
+        fillUpUniverseClusters();
         fillUpUniverseModules();
     }//GEN-LAST:event_matchCaseValueActionPerformed
 
     private void showExclModulesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showExclModulesCheckBoxActionPerformed
+        fillUpUniverseClusters();
         fillUpUniverseModules();
     }//GEN-LAST:event_showExclModulesCheckBoxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox clusterFilterComboBox;
+    private javax.swing.JLabel clusterFilterLabel;
     private javax.swing.JLabel descLabel;
     private javax.swing.JTextPane descValue;
     private javax.swing.JScrollPane descValueSP;
