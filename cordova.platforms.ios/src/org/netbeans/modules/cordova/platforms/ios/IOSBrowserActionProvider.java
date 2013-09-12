@@ -76,13 +76,17 @@ public class IOSBrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
-        ProgressUtils.runOffEventDispatchThread(new Runnable() {
-            @Override
-            public void run() {
-                WebKitDebuggingSupport.getDefault().stopDebugging(true);
-                IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browserId), project, browserSupport);
-            }
-        },IOSBrowser.Kind.valueOf(browserId) == IOSBrowser.Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);
+        try {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    WebKitDebuggingSupport.getDefault().stopDebugging(true);
+                    IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browserId), project, browserSupport);
+                }
+            }, IOSBrowser.Kind.valueOf(browserId) == IOSBrowser.Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);
+        } catch (IllegalStateException ise) {
+            WebKitDebuggingSupport.getDefault().stopDebugging(true);
+        }
     }
 
     @Override
