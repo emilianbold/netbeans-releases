@@ -39,35 +39,37 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.hints;
+package org.netbeans.modules.html.editor.hints.other;
 
 import java.util.Collections;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author mfukala@netbeans.org
  */
-public class SurroundWithTag extends Hint {
+@NbBundle.Messages("MSG_RemoveSurroundingTag=Remove Surrounding Tag")
+public class RemoveSurroundingTag extends Hint {
 
-    private static final Rule RULE = new SurroundWithTagRule();
-    private static final String DISPLAYNAME = NbBundle.getMessage(SurroundWithTag.class, "MSG_SurroundWithTag");
+    public static final Rule RULE = new RemoveSurroundingTagRule();
 
-    public SurroundWithTag(RuleContext context, OffsetRange range) {
+    public RemoveSurroundingTag(RuleContext context, OffsetRange range) {
         super(RULE,
-                DISPLAYNAME,
+                Bundle.MSG_RemoveSurroundingTag(),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range,
                 Collections.<HintFix>singletonList(new SurroundWithTagHintFix(context)),
@@ -76,8 +78,6 @@ public class SurroundWithTag extends Hint {
 
     private static class SurroundWithTagHintFix implements HintFix {
 
-        private static final String OPEN_TAG = "<div>"; //NOI18N
-        private static final String CLOSE_TAG = "</div>"; //NOI18N
         RuleContext context;
 
         public SurroundWithTagHintFix(RuleContext context) {
@@ -86,44 +86,30 @@ public class SurroundWithTag extends Hint {
 
         @Override
         public String getDescription() {
-            return DISPLAYNAME;
+            return Bundle.MSG_RemoveSurroundingTag();
         }
 
         @Override
         public void implement() throws Exception {
+
             context.doc.runAtomic(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
-                        //I need to insert the <div> tag instead of just empty <> tag from two reasons:
-                        //1) the InstantRenameAction from CSL does a pre check before calling the
-                        //   InstantRenamer if the text under the caret represents an identifier
-                        //2) simplier implementation of the HtmlRenameHandler so it finds a paired tags
-                        //   at the caret which wouldn't happen for the empty tags: <>...</> 
-                        //
-                        //I may possibly fix both issues later if one complains
+                        Element[] surroundingPair = findPairNodesAtSelection(context);
+                        if (surroundingPair == null) {
+                            return;
+                        }
+                        int otfrom = surroundingPair[0].from();
+                        int otto = surroundingPair[0].to();
+                        int otlen = otto - otfrom;
 
-                        context.doc.insertString(context.selectionStart, OPEN_TAG, null);
-                        context.doc.insertString(context.selectionEnd + OPEN_TAG.length(), CLOSE_TAG, null);
+                        int ctfrom = surroundingPair[1].from();
+                        int ctto = surroundingPair[1].to();
 
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                JTextComponent pane = EditorRegistry.focusedComponent();
-
-                                //select the "p" char so it is overwritten once user starts typing
-                                pane.select(context.selectionStart + 1, context.selectionStart + 2);
-
-                                //set caret after the opening tag delimiter
-                                pane.setCaretPosition(context.selectionStart + 1);
-                                
-                                //invoke instant rename
-                                BaseAction instantRenameAction = (BaseAction) CslActions.createInstantRenameAction();
-                                instantRenameAction.actionPerformed(null, pane);
-                            }
-                        });
+                        context.doc.remove(otfrom, otlen);
+                        context.doc.remove(ctfrom - otlen, ctto - ctfrom);
 
                     } catch (BadLocationException ex) {
                         //ignore
@@ -144,16 +130,16 @@ public class SurroundWithTag extends Hint {
         }
     }
 
-    private static class SurroundWithTagRule implements Rule {
+    private static class RemoveSurroundingTagRule implements Rule {
 
         @Override
         public boolean appliesTo(RuleContext context) {
-            return true;
+            return findPairNodesAtSelection(context) != null;
         }
 
         @Override
         public String getDisplayName() {
-            return DISPLAYNAME;
+            return Bundle.MSG_RemoveSurroundingTag();
         }
 
         @Override
@@ -166,4 +152,52 @@ public class SurroundWithTag extends Hint {
             return HintSeverity.INFO;
         }
     }
+
+    private static Element[] findPairNodesAtSelection(RuleContext context) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        if (context.selectionStart == -1 || context.selectionEnd == -1) {
+            //no selection - find the containing element
+            Snapshot snap = result.getSnapshot();
+            int embeddedCaret = snap.getEmbeddedOffset(context.caretOffset);
+            if (embeddedCaret != -1) {
+                Node containing = result.findBySemanticRange(embeddedCaret, false);
+                if (containing != null) {
+                    if (containing.type() == ElementType.OPEN_TAG) {
+                        OpenTag ot = (OpenTag) containing;
+                        CloseTag ct = ot.matchingCloseTag();
+                        if (ct != null) {
+                            return new Element[]{ot, ct};
+                        }
+                    }
+                }
+            }
+        } else {
+            //selection - find the element inside selection
+
+            //check whether the selection starts at a tag and ends at a tag
+            //open tag
+            Element open = result.findByPhysicalRange(context.selectionStart, true);
+            if (open == null || open.type() != ElementType.OPEN_TAG) {
+                return null;
+            }
+
+            //close tag
+            Element close = result.findByPhysicalRange(context.selectionEnd, false);
+            if (close == null || close.type() != ElementType.CLOSE_TAG) {
+                return null;
+            }
+
+            //is the end tag really a pair node of the open tag?
+            OpenTag openTag = (OpenTag) open;
+            if (openTag.matchingCloseTag() != close) { //same AST ... reference test is ok
+                return null;
+            }
+
+            return new Element[]{open, close};
+
+        }
+
+        return null;
+    }
+
 }
