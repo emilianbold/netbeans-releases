@@ -78,12 +78,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="tfCommitMessage" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="commitMessageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="tfBranch" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="branchLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnSelectBranch" alignment="1" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="commitMessageLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="tfCommitMessage" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="branchLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="tfBranch" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnSelectBranch" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
@@ -110,7 +110,7 @@
                           <Component id="tfUsername" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="usernameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="limitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="tfLimit" alignment="3" min="-2" max="-2" attributes="0"/>
