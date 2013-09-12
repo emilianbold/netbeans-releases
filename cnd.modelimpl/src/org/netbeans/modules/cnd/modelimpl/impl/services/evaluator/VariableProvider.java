@@ -253,10 +253,10 @@ public class VariableProvider {
                                 List<Map<CsmTemplateParameter, CsmSpecializationParameter>> maps = mapping.getMaps(new MapHierarchy.NonEmptyFilter());
                                 
                                 for (int i = maps.size() - 1; i > 0; i--) {
-                                    instantiate = ip.instantiate((CsmTemplate) instantiate, maps.get(i), false);
+                                    instantiate = ip.instantiate((CsmTemplate) instantiate, variableFile, variableStartOffset, maps.get(i), false);
                                 }
                                 if (!maps.isEmpty()) {
-                                    instantiate = ip.instantiate((CsmTemplate) originalClassifier, maps.get(0));
+                                    instantiate = ip.instantiate((CsmTemplate) originalClassifier, variableFile, variableStartOffset, maps.get(0));
                                 }
                                 
                                 if (CsmKindUtilities.isClassifier(instantiate)) {
