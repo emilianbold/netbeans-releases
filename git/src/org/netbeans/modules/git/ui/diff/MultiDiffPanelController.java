@@ -154,6 +154,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class MultiDiffPanelController implements ActionListener, PropertyChangeListener, PreferenceChangeListener {
     private final VCSContext context;
+    private File file;
     private EnumSet<Status> displayStatuses;
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo();
     private Mode mode;
@@ -235,6 +236,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     public MultiDiffPanelController (File file) {
         this(null, Revision.HEAD, Revision.LOCAL, true);
+        this.file = file;
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
         initNextPrevActions();
@@ -254,10 +256,11 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         }
         // mimics refreshSetups()
         Setup s = new Setup(file, rev1, rev2, null);
-        GitHistoryFileNode fNode = new GitHistoryFileNode(Git.getInstance().getRepositoryRoot(file), file, null);
-        s.setNode(new DiffHistoryNode(fNode, s));
+        GitLocalFileNode fNode = new GitLocalFileNode(Git.getInstance().getRepositoryRoot(file), file);
+        EditorCookie cookie = DiffUtils.getEditorCookie(s);
+        s.setNode(new DiffLocalNode(fNode, s, cookie, Mode.HEAD_VS_WORKING_TREE));
         Map<File, Setup> localSetups = Collections.singletonMap(file, s);
-        setSetups(localSetups, Collections.<File, EditorCookie>emptyMap());
+        setSetups(localSetups, getCookiesFromSetups(localSetups));
         setDiffIndex(s, 0, false);
         dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
         prepareTask = RP.create(dpt);
@@ -627,10 +630,15 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         if (context != null) {
             refreshNodes();
         } else {
-            Map<File, Setup> localSetups = Collections.singletonMap(currentSetup.getBaseFile(),
-                    new Setup(currentSetup.getBaseFile(), mode, false));
-            setSetups(localSetups, Collections.<File, EditorCookie>singletonMap(currentSetup.getBaseFile(),
+            assert file != null;
+            Setup s = new Setup(file, mode, false);
+            GitLocalFileNode fNode = new GitLocalFileNode(Git.getInstance().getRepositoryRoot(file), file);
+            EditorCookie cookie = DiffUtils.getEditorCookie(s);
+            s.setNode(new DiffLocalNode(fNode, s, cookie, mode));
+            Map<File, Setup> localSetups = Collections.singletonMap(file, s);
+            setSetups(localSetups, Collections.<File, EditorCookie>singletonMap(file,
                     DiffUtils.getEditorCookie(localSetups.values().iterator().next())));
+            setDiffIndex(s, 0, false);
             dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
             prepareTask = RP.create(dpt);
             prepareTask.schedule(0);
