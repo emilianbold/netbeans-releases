@@ -209,6 +209,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private boolean                     breakpointsActive = true;
     
     private InputOutput                 io;
+    
+    private PeriodicThreadsDump         ptd;
 
     // init ....................................................................
 
@@ -1202,6 +1204,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             virtualMachine = vm;
             operator = o;
         }
+        if (logger.isLoggable(Level.FINEST)) {
+            ptd = new PeriodicThreadsDump(vm);
+        }
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
         }
@@ -1393,6 +1398,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
                 virtualMachine = null;
+            }
+            if (ptd != null) {
+                ptd.finish();
             }
             setState (STATE_DISCONNECTED);
             if (jsr45EngineProviders != null) {
@@ -2483,6 +2491,40 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
         }
 
+    }
+    
+    private static class PeriodicThreadsDump implements Runnable {
+        
+        private static final int INTERVAL = 5000;
+        private RequestProcessor rp = new RequestProcessor(PeriodicThreadsDump.class.getName());
+        private VirtualMachine vm;
+        private volatile boolean finish = false;
+        
+        public PeriodicThreadsDump(VirtualMachine vm) {
+            this.vm = vm;
+            rp.post(this, INTERVAL);
+        }
+        
+        public void finish() {
+            finish = true;
+        }
+
+        @Override
+        public void run() {
+            List<ThreadReference> allThreads = vm.allThreads();
+            System.err.println("All Threads:");
+            for (ThreadReference tr : allThreads) {
+                String name = tr.name();
+                boolean suspended = tr.isSuspended();
+                int suspendCount = tr.suspendCount();
+                int status = tr.status();
+                System.err.println(name+"\t SUSP = "+suspended+", COUNT = "+suspendCount+", STATUS = "+status);
+            }
+            System.err.println("");
+            if (!finish) {
+                rp.post(this, INTERVAL);
+            }
+        }
     }
 
 }
