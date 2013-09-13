@@ -373,6 +373,14 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(ExpressionArrayAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ExpressionArrayAccess");
+        printNode.addChild(node.getExpression());
+        printNode.addChild(node.getDimension());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(ExpressionStatement expressionStatement) {
         XMLPrintNode printNode = new XMLPrintNode(expressionStatement, "ExpressionStatement");
         printNode.addChild(expressionStatement.getExpression());
@@ -393,6 +401,13 @@ public class PrintASTVisitor implements Visitor {
                 new String[]{"modifier", node.getModifierString() });
         printNode.addChildrenGroup("VariableNames", node.getVariableNames());
         printNode.addChildrenGroup("InitialValues", node.getInitialValues());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(FinallyClause node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "FinallyClause");
+        printNode.addChild(node.getBody());
         printNode.print(this);
     }
 
@@ -736,6 +751,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(TryStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "TryStatement");
         printNode.addChildrenGroup("CatchClauses", node.getCatchClauses());
+        printNode.addChild(node.getFinallyClause());
         printNode.addChild(node.getBody());
         printNode.print(this);
     }
@@ -881,6 +897,14 @@ public class PrintASTVisitor implements Visitor {
     public void visit(UseTraitStatementPart useTraitStatementPart) {
         XMLPrintNode printNode = new XMLPrintNode(useTraitStatementPart, "UseTraitStatementPart");
         printNode.addChild("Name", useTraitStatementPart.getName());
+        printNode.print(this);
+    }
+
+    @Override
+    public void visit(YieldExpression node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "YieldExpression");
+        printNode.addChild(node.getKey());
+        printNode.addChild(node.getValue());
         printNode.print(this);
     }
 

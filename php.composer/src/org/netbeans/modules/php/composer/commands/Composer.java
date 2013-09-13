@@ -137,6 +137,7 @@ public final class Composer {
     }
 
     public Future<Integer> initIfNotPresent(PhpModule phpModule) {
+        assert phpModule != null;
         FileObject configFile = getComposerConfigFile(phpModule);
         if (configFile != null && configFile.isValid()) {
             return null;
@@ -151,6 +152,7 @@ public final class Composer {
         "Composer.init.description=Description of project {0}."
     })
     public Future<Integer> init(PhpModule phpModule) {
+        assert phpModule != null;
         FileObject configFile = getComposerConfigFile(phpModule);
         if (configFile != null && configFile.isValid()) {
             if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_file_exists())) {
@@ -176,31 +178,37 @@ public final class Composer {
 
     @NbBundle.Messages("Composer.run.install=Composer (install)")
     public Future<Integer> install(PhpModule phpModule) {
+        assert phpModule != null;
         return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
     }
 
     @NbBundle.Messages("Composer.run.installDev=Composer (install dev)")
     public Future<Integer> installDev(PhpModule phpModule) {
+        assert phpModule != null;
         return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.update=Composer (update)")
     public Future<Integer> update(PhpModule phpModule) {
+        assert phpModule != null;
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
     }
 
     @NbBundle.Messages("Composer.run.updateDev=Composer (update dev)")
     public Future<Integer> updateDev(PhpModule phpModule) {
+        assert phpModule != null;
         return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.require=Composer (require)")
     public Future<Integer> require(PhpModule phpModule, String... packages) {
+        assert phpModule != null;
         return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), Arrays.asList(packages));
     }
 
     @NbBundle.Messages("Composer.run.requireDev=Composer (require dev)")
     public Future<Integer> requireDev(PhpModule phpModule, String... packages) {
+        assert phpModule != null;
         List<String> params = new ArrayList<>(packages.length + 1);
         params.add(DEV_PARAM);
         params.addAll(Arrays.asList(packages));
@@ -209,6 +217,7 @@ public final class Composer {
 
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")
     public Future<Integer> validate(PhpModule phpModule) {
+        assert phpModule != null;
         return runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
     }
 
@@ -218,7 +227,7 @@ public final class Composer {
     }
 
     @NbBundle.Messages("Composer.run.search=Composer (search)")
-    public Future<Integer> search(PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
+    public Future<Integer> search(@NullAllowed PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
         PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_search());
         if (composer == null) {
             return null;
@@ -256,7 +265,7 @@ public final class Composer {
     }
 
     @NbBundle.Messages("Composer.run.show=Composer (show)")
-    public Future<Integer> show(PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
+    public Future<Integer> show(@NullAllowed PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
         PhpExecutable composer = getComposerExecutable(phpModule, Bundle.Composer_run_show());
         if (composer == null) {
             return null;
@@ -290,11 +299,11 @@ public final class Composer {
                 });
     }
 
-    private Future<Integer> runCommand(PhpModule phpModule, String command, String title) {
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, String title) {
         return runCommand(phpModule, command, title, Collections.<String>emptyList());
     }
 
-    private Future<Integer> runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, String title, List<String> commandParams) {
         PhpExecutable composer = getComposerExecutable(phpModule, title);
         if (composer == null) {
             return null;
@@ -305,7 +314,7 @@ public final class Composer {
     }
 
     @CheckForNull
-    private PhpExecutable getComposerExecutable(PhpModule phpModule, String title) {
+    private PhpExecutable getComposerExecutable(@NullAllowed PhpModule phpModule, String title) {
         File dir = resolveWorkDir(phpModule);
         if (dir == null
                 && phpModule != null) {
@@ -359,6 +368,7 @@ public final class Composer {
     }
 
     private FileObject getComposerConfigFile(PhpModule phpModule) {
+        assert phpModule != null;
         File dir = resolveWorkDir(phpModule);
         if (dir == null) {
             return null;

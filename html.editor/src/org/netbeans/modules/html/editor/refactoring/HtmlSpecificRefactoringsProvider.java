@@ -62,7 +62,6 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 
@@ -86,9 +85,11 @@ public class HtmlSpecificRefactoringsProvider extends HtmlSpecificActionsImpleme
         if(pane == null) {
             return false;
         }
-        Document doc = ec.getDocument();
-
-        OffsetRange adjusted = adjustContextRange(doc, pane.getSelectionStart(), pane.getSelectionEnd());
+        return canExtractInlineStyle(ec.getDocument(), new OffsetRange(pane.getSelectionStart(), pane.getSelectionEnd()));
+    }
+    
+    public boolean canExtractInlineStyle(Document doc, OffsetRange range) {
+        OffsetRange adjusted = adjustContextRange(doc, range.getStart(), range.getEnd());
 
         //enable the action if there are some inlined styles in the selection or at the caret position
         return !RefactoringContext.findInlinedStyles(doc, adjusted.getStart(), adjusted.getEnd()).isEmpty();

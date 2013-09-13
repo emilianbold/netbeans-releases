@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import org.netbeans.modules.html.editor.hints.other.SurroundWithTag;
+import org.netbeans.modules.html.editor.hints.other.RemoveSurroundingTag;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -65,6 +67,8 @@ import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
 import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.hints.other.ExtractInlinedStyleHint;
+import org.netbeans.modules.html.editor.hints.other.ExtractInlinedStyleRule;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -181,9 +185,14 @@ public class HtmlHintsProvider implements HintsProvider {
             }
         }
         
+        //TODO remove the hardcoding - put the rules to the layer
+        if(ExtractInlinedStyleRule.SINGLETON.appliesTo(context)) {
+            suggestions.add(new ExtractInlinedStyleHint(context, new OffsetRange(context.caretOffset, context.caretOffset)));
+        }
         if(RemoveSurroundingTag.RULE.appliesTo(context)) {
             suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(context.caretOffset, context.caretOffset)));
         }
+        
     }
 
     /**

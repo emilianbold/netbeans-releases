@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;

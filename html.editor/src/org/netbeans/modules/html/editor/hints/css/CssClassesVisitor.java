@@ -150,7 +150,7 @@ public class CssClassesVisitor implements ElementVisitor {
                         Bundle.MissingCssClass(token),
                         context,
                         getAttributeValueOffsetRange(attribute, context),
-                        new HintContext(token)));
+                        new HintContext(new StringBuilder().append('.').append(token).toString(), referredFiles, allStylesheets, classes, classes2files)));
             }
         }
 
@@ -162,34 +162,5 @@ public class CssClassesVisitor implements ElementVisitor {
         int to = from + attr.unquotedValue().length();
         return EmbeddingUtil.convertToDocumentOffsets(from, to, context.getSnapshot());
     }
-    
-    public class HintContext {
-        
-        private final String className;
-
-        public HintContext(String className) {
-            this.className = className;
-        }
-
-        public String getClassName() {
-            return className;
-        }
-
-        public Collection<FileObject> getAllStylesheets() {
-            return allStylesheets;
-        }
-        
-        public Collection<FileObject> getReferredFiles() {
-            return referredFiles;
-        }
-
-        public Map<FileObject, Collection<String>> getClasses() {
-            return classes;
-        }
-
-        public Map<String, Collection<FileObject>> getClasses2files() {
-            return classes2files;
-        }
-        
-    }
+   
 }
