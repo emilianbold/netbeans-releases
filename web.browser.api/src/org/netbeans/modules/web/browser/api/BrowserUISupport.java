@@ -79,7 +79,7 @@ public final class BrowserUISupport {
      * If the browser identifier is {@code null} (likely not set yet?), then the
      * selected browser will depend on whether {@code showIDEGlobalBrowserOption} is set
      * to true or not. If it is set to true then {@link #getDefaultBrowserId() IDE default}
-     * browser is selected; otherwise a browser with NetBeans integration will be selected.
+     * browser is selected; otherwise a browser with NetBeans Connector will be selected.
      * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
      * @param showIDEGlobalBrowserOption show "IDE's Default Browser" option
      * @return model for component with browsers
@@ -96,7 +96,7 @@ public final class BrowserUISupport {
      * If the browser identifier is {@code null} (likely not set yet?), then the
      * selected browser will depend on whether {@code showIDEGlobalBrowserOption} is set
      * to true or not. If it is set to true then {@link #getDefaultBrowserId() IDE default}
-     * browser is selected; otherwise a browser with NetBeans integration will be selected.
+     * browser is selected; otherwise a browser with NetBeans Connector will be selected.
      * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
      * @param showIDEGlobalBrowserOption show "IDE's Default Browser" option
      * @param includePhoneGap show PhoneGap browser
@@ -163,23 +163,21 @@ public final class BrowserUISupport {
     }
 
     /**
-     * Returns browser name with possible "with NetBeans integration" suffix (does not apply for embedded
+     * Returns browser name with possible "with NetBeans Connector" suffix (does not apply for embedded
      * or mobile browsers).
      * @param browser browser to get name of
-     * @return browser name with possible "with NetBeans integration" suffix
+     * @return browser name with possible "with NetBeans Connector" suffix
      * @since 1.36
      */
     @NbBundle.Messages({
         "# {0} - browser name",
-        "BrowserUISupport.browser.name.integrated={0} with NetBeans Integration",
+        "BrowserUISupport.browser.name.integrated={0} with NetBeans Connector",
     })
     public static String getLongDisplayName(WebBrowser browser) {
         String name = browser.getName();
         switch (browser.getBrowserFamily()) {
             case JAVAFX_WEBVIEW:
-            case ANDROID:
-            case IOS:
-                // no suffix for embedded or mobile browser
+                // no suffix for embedded browser
                 return name;
             default:
             if (browser.hasNetBeansIntegration()) {

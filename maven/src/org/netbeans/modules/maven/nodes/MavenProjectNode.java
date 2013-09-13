@@ -154,7 +154,7 @@ public class MavenProjectNode extends AbstractNode {
     }
 
     @Messages({
-        "TXT_FailedProjectLoadingDesc=This project could not be loaded by the NetBeans integration. "
+        "TXT_FailedProjectLoadingDesc=This project could not be loaded by the NetBeans Connector. "
             + "That usually means something is wrong with your pom.xml, or plugins are missing. "
             + "Select \"Show and Resolve Problems\" from the project's context menu for additional information.",
         "LBL_DefaultDescription=A Maven-based project",

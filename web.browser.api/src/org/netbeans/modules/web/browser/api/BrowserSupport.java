@@ -241,7 +241,7 @@ public final class BrowserSupport {
     /**
      * Some file types should not be refresh upon save in case of some browsers.
      * For example CSS are handled directly by CSS support in case of "Chrome with
-     * NetBeans integration" browser.
+     * NetBeans Connector" browser.
      */
     public boolean ignoreChange(FileObject fo) {
         return getWebBrowserPane().ignoreChange(fo);
