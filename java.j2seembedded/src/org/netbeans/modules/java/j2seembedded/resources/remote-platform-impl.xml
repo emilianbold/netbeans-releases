@@ -49,7 +49,7 @@
                 <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" password="${remote.platform.password}" trust="true">
                     <fileset dir="${dist.dir}"/>
                 </scp>
-                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true"
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" usepty="true"
                     command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
             </sequential>
         </macrodef>
@@ -61,7 +61,7 @@
                 <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true">
                     <fileset dir="${dist.dir}"/>
                 </scp>
-                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true"
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" usepty="true"
                     command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
             </sequential>
         </macrodef>
