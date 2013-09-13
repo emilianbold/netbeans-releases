@@ -82,14 +82,20 @@ final class AddModuleFilter {
     /**
      * Find matches for a search string.
      */
-    public Set<ModuleDependency> getMatches(String text, Boolean matchCase) {
+    public Set<ModuleDependency> getMatches(Set<ModuleDependency> dependencies, String text, Boolean matchCase) {
+        Set<ModuleDependency> dependenciesToFilter;
+        if(dependencies != null) {
+            dependenciesToFilter = dependencies;
+        } else {
+            dependenciesToFilter = universe;
+        }
         String textLC = matchCase?text:text.toLowerCase(Locale.ENGLISH);
         List<Set<ModuleDependency>> matches = new ArrayList<Set<ModuleDependency>>(3);
         for (int i = 0; i < 3; i++) {
             // Within groups, just sort by module display name:
             matches.add(new TreeSet<ModuleDependency>(ModuleDependency.LOCALIZED_NAME_COMPARATOR));
         }
-        for (ModuleDependency dep : universe) {
+        for (ModuleDependency dep : dependenciesToFilter) {
             if (Thread.interrupted()) {
                 break;
             }
