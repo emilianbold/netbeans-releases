@@ -68,6 +68,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.diff.ExportCommitAction;
 import org.netbeans.modules.git.ui.revert.RevertCommitAction;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
@@ -195,6 +196,14 @@ public class RepositoryRevision {
 
     File getRepositoryRoot () {
         return repositoryRoot;
+    }
+    
+    String getShortRevision () {
+        String revision = getLog().getRevision();
+        if (revision.length() > 7) {
+            revision = revision.substring(0, 7);
+        }
+        return revision;
     }
     
     @NbBundle.Messages({
@@ -357,6 +366,7 @@ public class RepositoryRevision {
             if (isViewEnabled()) {
                 actions.add(getViewAction(forNodes ? null : this));
                 actions.add(getAnnotateAction(forNodes ? null : this));
+                actions.add(getRevertAction(forNodes ? null : this));
                 actions.add(getViewCurrentAction(forNodes ? null : this));
             }
             return actions.toArray(new Action[actions.size()]);
@@ -395,6 +405,14 @@ public class RepositoryRevision {
             }
         }
 
+        RevertAction getRevertAction (Event event) {
+            if (event == null) {
+                return revertAction;
+            } else {
+                return new RevertAction(repositoryRoot, new File[] { event.getFile() }, event.getLogInfoHeader().getShortRevision() );
+            }
+        }
+
         private boolean isViewEnabled () {
             return getFile() != null && getAction() != 'D';
         }
@@ -429,6 +447,7 @@ public class RepositoryRevision {
     private static ViewAction viewAction = new ViewAction();
     private static ViewCurrentAction viewCurrentAction = new ViewCurrentAction();
     private static AnnotateAction annotateAction = new AnnotateAction();
+    private static RevertAction revertAction = new RevertAction(0);
     
     private static class ViewAction extends HistoryEventAction {
 
@@ -545,6 +564,62 @@ public class RepositoryRevision {
         @Override
         protected Action createAction (File repositoryRoot, Event... events) {
             return new AnnotateAction(repositoryRoot, events);
+        }
+    }
+    
+    @NbBundle.Messages({
+        "RepositoryRevision.action.RevertTo.single=Revert File",
+        "RepositoryRevision.action.RevertTo=Revert Files",
+        "RepositoryRevision.action.RevertTo.progress=Reverting Files"
+    })
+    static class RevertAction extends HistoryEventAction {
+
+        private File[] files;
+        private String revision;
+        private File repositoryRoot;
+        
+        private RevertAction (int fileSize) {
+            super(fileSize == 1 ? Bundle.RepositoryRevision_action_RevertTo_single() : Bundle.RepositoryRevision_action_RevertTo());
+        }
+
+        private RevertAction (File repositoryRoot, File[] files, String revision) {
+            this(files.length);
+            this.revision = revision;
+            this.files = files;
+            this.repositoryRoot = repositoryRoot;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            SystemAction.get(RevertChangesAction.class).revertFiles(repositoryRoot, files, revision, Bundle.RepositoryRevision_action_RevertTo_progress());
+        }
+
+        @Override
+        protected Action createAction (File repositoryRoot, Event... events) {
+            String rev = null;
+            List<File> fileList = new ArrayList<File>(events.length);
+            for (Event e : events) {
+                String eventRevision = e.getLogInfoHeader().getShortRevision();
+                if (rev == null) {
+                    rev = eventRevision;
+                } else if (!rev.equals(eventRevision)) {
+                    // action disabled for multiple revision
+                    rev = null;
+                    break;
+                }
+                if (e.isViewEnabled()) {
+                    fileList.add(e.getFile());
+                }
+            }
+            final boolean enbl = rev != null;
+            return new RevertAction(repositoryRoot, fileList.toArray(new File[fileList.size()]), rev) {
+
+                @Override
+                public boolean isEnabled () {
+                    return enbl;
+                }
+                
+            };
         }
     }
     

@@ -172,5 +172,45 @@ public class RevertChangesAction extends SingleRepositoryAction {
             supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(RevertChangesAction.class, "LBL_CheckoutPaths.progressName"));        
         }
     }
+
+    public void revertFiles (File repository, final File[] files, final String revision, String progressName) {
+        if (files.length == 0) {
+            return;
+        }
+        new GitProgressSupport() {
+            @Override
+            public void perform() {
+                final Collection<File> notifiedFiles = new HashSet<File>();
+                try {
+                    GitUtils.runWithoutIndexing(new Callable<Void>() {
+
+                        @Override
+                        public Void call () throws Exception {
+                            // init client
+                            GitClient client = getClient();
+                            client.addNotificationListener(new FileListener() {
+                                @Override
+                                public void notifyFile (File file, String relativePathToRoot) {
+                                    notifiedFiles.add(file);
+                                }
+                            });
+                            client.addNotificationListener(new GitProgressSupport.DefaultFileListener(files));
+
+                            // revert
+                            client.checkout(files, revision, false, getProgressMonitor());                             
+                            return null;
+                        }
+                        
+                    }, files);
+                } catch (GitException ex) {
+                    GitClientExceptionHandler.notifyException(ex, true);
+                } finally {
+                    // refresh
+                    setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(getRepositoryRoot(), notifiedFiles));
+                }
+            }
+        }.start(Git.getInstance().getRequestProcessor(repository), repository, progressName);
+    }
     
 }

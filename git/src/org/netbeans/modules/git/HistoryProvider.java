@@ -54,6 +54,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.HistoryAction;
@@ -65,6 +66,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -261,6 +263,10 @@ public class HistoryProvider implements VCSHistoryProvider {
         
     }
 
+    @NbBundle.Messages({
+        "# {0} - commit id", "HistoryProvider.action.RevertTo=Revert to {0}",
+        "HistoryProvider.action.RevertTo.progress=Reverting Files"
+    })
     private synchronized Action[] getActions() {
         if(actions == null) {
             actions = new Action[] {
@@ -275,7 +281,33 @@ public class HistoryProvider implements VCSHistoryProvider {
                     protected void perform(HistoryEntry entry, Set<File> files) {
                         view(entry.getRevision(), true, files);
                     }
-                }
+                },
+                new HistoryAction() {
+                    @Override
+                    protected void perform(final HistoryEntry entry, final Set<File> files) {
+                        File root = Git.getInstance().getRepositoryRoot(files.iterator().next());
+                        SystemAction.get(RevertChangesAction.class).revertFiles(root, files.toArray(new File[files.size()]),
+                                getRevisionShort(), Bundle.HistoryProvider_action_RevertTo_progress());
+                    }    
+                    @Override
+                    protected boolean isMultipleHistory() {
+                        return false;
+                    }
+                    @Override
+                    public String getName() {
+                        String rev = getRevisionShort();
+                        if (rev == null) {
+                            rev = ""; // NOI18N
+                        }
+                        return Bundle.HistoryProvider_action_RevertTo(rev);
+                    }
+
+                    @Override
+                    public boolean isEnabled () {
+                        return null != getRevisionShort();
+                    }
+
+                },
             };
         }
         return actions;
