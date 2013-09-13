@@ -47,6 +47,7 @@
                 <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
+                <friend>org.netbeans.modules.php.nette.tester</friend>
                 <friend>org.netbeans.modules.php.nette2</friend>
                 <friend>org.netbeans.modules.php.phpunit</friend>
                 <friend>org.netbeans.modules.php.project</friend>

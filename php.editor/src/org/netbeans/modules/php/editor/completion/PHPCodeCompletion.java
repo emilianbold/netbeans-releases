@@ -186,6 +186,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
         PHP_KEYWORDS.put("enddeclare", KeywordCompletionType.ENDS_WITH_SEMICOLON); //NOI18N
         PHP_KEYWORDS.put("or", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
         PHP_KEYWORDS.put("xor", KeywordCompletionType.ENDS_WITH_SPACE); //NOI18N
+        PHP_KEYWORDS.put("finally", KeywordCompletionType.ENDS_WITH_CURLY_BRACKETS); //NOI18N
+        PHP_KEYWORDS.put("yield", KeywordCompletionType.CURSOR_BEFORE_ENDING_SEMICOLON); //NOI18N
     }
     private static final String[] PHP_LANGUAGE_CONSTRUCTS_WITH_QUOTES = {
         "echo", "include", "include_once", "require", "require_once", "print" // NOI18N
@@ -890,6 +892,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler2 {
                             TypeConstantElement constant = (TypeConstantElement) phpElement;
                             TypeConstantItem constantItem = PHPCompletionItem.TypeConstantItem.getItem(constant, request);
                             completionResult.add(constantItem);
+                        }
+                    }
+                    if (staticContext) {
+                        Set<TypeConstantElement> magicConstants = constantsFilter.filter(request.index.getAccessibleMagicConstants(typeScope));
+                        for (TypeConstantElement magicConstant : magicConstants) {
+                            if (magicConstant != null) {
+                                completionResult.add(PHPCompletionItem.TypeConstantItem.getItem(magicConstant, request));
+                            }
                         }
                     }
                 }

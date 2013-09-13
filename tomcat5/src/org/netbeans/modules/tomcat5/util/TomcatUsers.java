@@ -47,7 +47,7 @@ package org.netbeans.modules.tomcat5.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;

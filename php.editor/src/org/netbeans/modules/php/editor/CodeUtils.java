@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -72,6 +73,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -110,7 +112,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_5) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_5) {
             result = true;
         }
         return result;
@@ -120,7 +122,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_53) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_53) {
             result = true;
         }
         return result;
@@ -130,7 +132,17 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_54) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_54) {
+            result = true;
+        }
+        return result;
+    }
+
+    public static boolean isPhp55(FileObject file) {
+        Parameters.notNull("file", file);
+        boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_55) {
             result = true;
         }
         return result;
@@ -253,6 +265,10 @@ public final class CodeUtils {
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
+    }
+
+    public static String extractTypeName(TypeDeclaration typeDeclaration) {
+        return typeDeclaration.getName().getName();
     }
 
     private static final class VariableNameVisitor extends DefaultVisitor {

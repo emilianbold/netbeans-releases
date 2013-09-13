@@ -50,7 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.modules.tomcat5.util.Utils;
 import org.openide.filesystems.FileObject;
@@ -281,7 +281,7 @@ public class AutomaticRegistration {
      */
     private static String generateUniqueDisplayName(FileObject serverInstanceDir, String version) {
         // find a unique display name
-        String displayName = NbBundle.getMessage(TomcatFactory.class, "LBL_ApacheTomcat", version);
+        String displayName = NbBundle.getMessage(AutomaticRegistration.class, "LBL_ApacheTomcat", version);
         boolean unique = true;
         int i = 1;
         while (true) {
@@ -295,7 +295,7 @@ public class AutomaticRegistration {
             if (unique) {
                 break;
             }
-            displayName = NbBundle.getMessage(TomcatFactory.class, "LBL_ApacheTomcatAlt", version, i++);
+            displayName = NbBundle.getMessage(AutomaticRegistration.class, "LBL_ApacheTomcatAlt", version, i++);
             unique = true;
         };
         return displayName;

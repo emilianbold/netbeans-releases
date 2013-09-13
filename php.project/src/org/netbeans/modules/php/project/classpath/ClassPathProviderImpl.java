@@ -150,7 +150,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     }
 
     private List<FileObject> getPlatformPath() {
-        return getDirs(PhpProjectProperties.INCLUDE_PATH);
+        List<FileObject> files = new ArrayList<>();
+        files.addAll(getDirs(PhpProjectProperties.INCLUDE_PATH));
+        files.addAll(getDirs(PhpProjectProperties.PRIVATE_INCLUDE_PATH));
+        return files;
     }
 
     // #221036 - order of the directories is from the "nearest"
@@ -260,7 +263,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                         internalFolders.toArray(new FileObject[internalFolders.size()]));
                 ClassPath includePath = ClassPathFactory.createClassPath(
                         ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
-                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
+                        new String[] {PhpProjectProperties.INCLUDE_PATH, PhpProjectProperties.PRIVATE_INCLUDE_PATH}));
                 cp = ClassPathSupport.createProxyClassPath(
                         internalClassPath, includePath);
                 cache.put(ClassPathCache.PLATFORM, cp);
@@ -314,7 +317,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
-        if (PhpProjectProperties.INCLUDE_PATH.equals(propertyName)) {
+        if (PhpProjectProperties.INCLUDE_PATH.equals(propertyName)
+                || PhpProjectProperties.PRIVATE_INCLUDE_PATH.equals(propertyName)) {
             dirCache.remove(propertyName);
         }
     }

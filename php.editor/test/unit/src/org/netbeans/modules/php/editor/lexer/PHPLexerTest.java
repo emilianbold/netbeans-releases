@@ -328,4 +328,8 @@ public class PHPLexerTest extends PHPLexerTestBase {
     public void testIssue229960() throws Exception {
         performTest("lexer/issue229960");
     }
+
+    public void testYieldKeyword() throws Exception {
+        performTest("lexer/yieldKeyword");
+    }
 }
