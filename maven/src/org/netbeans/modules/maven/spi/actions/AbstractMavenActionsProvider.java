@@ -83,7 +83,7 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
     private static final Logger LOG = Logger.getLogger(AbstractMavenActionsProvider.class.getName());
 
     protected ActionToGoalMapping originalMappings;
-    protected final NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
+    protected NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
     private final NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
 
     /** Creates a new instance of DefaultActionProvider */
