@@ -44,6 +44,7 @@ package org.netbeans.modules.java.j2seembedded.project;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
@@ -61,19 +62,36 @@ public class RemotePlatformProjectSaver implements J2SECustomPropertySaver {
     @Override
     public void save(@NonNull final Project project) {
         Parameters.notNull("project", project);         //NOI18N
-        try {
-            final boolean hasExtension = Utilities.hasRemoteExtension(project);
-            final Utilities.UpdateConfigResult res = Utilities.updateRemotePlatformConfigurations(project);
-            if (!hasExtension && res.hasRemotePlatform()) {
+        final Runnable action = new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    Utilities.addRemoteExtension(project);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    final boolean hasExtension = Utilities.hasRemoteExtension(project);
+                    final Utilities.UpdateConfigResult res = Utilities.updateRemotePlatformConfigurations(project);
+                    if (!hasExtension && res.hasRemotePlatform()) {
+                        try {
+                            Utilities.addRemoteExtension(project);
+                            ProjectManager.getDefault().saveProject(project);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                 }
             }
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        };
+        runDeferred(action);
+    }
+
+
+    private static void runDeferred(@NonNull final Runnable r) {
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            @Override
+            public void run() {
+                ProjectManager.mutex().postWriteRequest(r);
+            }
+        });
     }
 
 }
