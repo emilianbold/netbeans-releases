@@ -752,6 +752,27 @@ public final class FoldOperationImpl {
             if (desc == null) {
                 desc = info.getTemplate().getDescription();
             }
+            // sanity check
+            Fold p = f.getParent();
+            if (p != null) {
+                int index = p.getFoldIndex(f);
+                if (index != -1) {
+                    if (index > 0) {
+                        Fold prev = p.getFold(index - 1);
+                        if (prev.getEndOffset() > f.getStartOffset()) {
+                            LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
+                            LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + soffs + "-" + eoffs);
+                        }
+                    }
+                    if (index < p.getFoldCount() - 1) {
+                        Fold next = p.getFold(index + 1);
+                        if (next.getStartOffset() < f.getEndOffset()) {
+                            LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
+                            LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + soffs + "-" + eoffs);
+                        }
+                    }
+                }
+            }
             if (!f.getDescription().equals(desc)) {
                 acc.foldSetDescription(f, desc);
                 acc.foldStateChangeDescriptionChanged(getFSCH(f));

@@ -67,13 +67,13 @@ import org.openide.util.Utilities;
  *
  * @author balek
  */
-public class NameAndPackagePanel extends javax.swing.JPanel {
+class NameAndPackagePanel extends javax.swing.JPanel {
 
     private static RequestProcessor WORKER = new RequestProcessor(NameAndPackagePanel.class.getName(), 1, false, false);
     
     static final String IS_VALID = "NameAndPackagePanel.isValidData"; //NOI18N
 
-    private ErrorListener errorListener;
+    private volatile ErrorListener errorListener;
     private final JavaSource testingJavaSource;
     private final ElementHandle<TypeElement> baseclass;
     
@@ -94,8 +94,6 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
         };
         this.classNameTextField.getDocument().addDocumentListener(l);
         this.packageNameTextField.getDocument().addDocumentListener(l);
-        
-        checkValid();
     }
     
     public void setErrorListener(ErrorListener errorListener) {
@@ -112,6 +110,9 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
 
     private static final AtomicLong documentVersion = new AtomicLong();
     
+    /**
+     * Should be called after errorListener is set up.
+     */
     @Messages({
         "ERR_TypeNameNotValid=Type name is not valid",
         "ERR_PackageNameNotValid=Package name is not valid",
@@ -120,7 +121,9 @@ public class NameAndPackagePanel extends javax.swing.JPanel {
         "ERR_ExtendsOther=The proposed type already subclasses a different class",
         "ERR_AlreadyImplements=The proposed type already implements the original interface",
     })
-    private void checkValid() {
+    void checkValid() {
+        assert errorListener != null;
+
         final long currentVersion = documentVersion.incrementAndGet();
         final String className = getClassName();
         final String packageName = getPackageName();

@@ -39,39 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.hints.suggestions;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.hints.test.api.HintTest;
+package org.netbeans.modules.test.refactoring.operators;
 
 /**
- *
- * @author lahvac
+ <p>
+ @author (stanislav.sazonov@oracle.com)
  */
-public class FlipOperandsTest extends NbTestCase {
-    
-    public FlipOperandsTest(String name) {
-        super(name);
-    }
-    
-    public void testSimple() throws Exception {
-        HintTest.create()
-                .setCaretMarker('^')
-                .input("package test;\n" +
-                       "public class Test {\n" +
-                       "    private boolean test(int i) {\n" +
-                       "        return i =^= 0;\n" +
-                       "    }\n" +
-                       "}\n")
-                .run(FlipOperands.class)
-                .findWarning("3:18-3:18:hint:" + Bundle.DESC_FlipOperands())
-                .applyFix()
-                .assertCompilable()
-                .assertOutput("package test;\n" +
-                              "public class Test {\n" +
-                              "    private boolean test(int i) {\n" +
-                              "        return 0 == i;\n" +
-                              "    }\n" +
-                              "}\n");
-    }
+public class ErrorOperator extends ParametersPanelOperator {
+
+	public ErrorOperator(){
+		super("Error");
+	}
 }

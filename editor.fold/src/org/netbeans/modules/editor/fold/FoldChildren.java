@@ -44,6 +44,9 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.modules.editor.fold.ApiPackageAccessor;
 import org.netbeans.lib.editor.util.GapList;
@@ -59,7 +62,8 @@ import org.netbeans.lib.editor.util.GapList;
  */
 
 public final class FoldChildren extends GapList {
-
+    private static final Logger LOG = Logger.getLogger(FoldChildren.class.getName()); 
+    
     /**
      * Initial size of the index gap.
      */
@@ -170,6 +174,20 @@ public final class FoldChildren extends GapList {
      * @param fold fold that will own the newly created fold children.
      */
     public FoldChildren extractToChildren(int index, int length, Fold fold) {
+        // sanity check:
+        int ps = parent.getStartOffset();
+        int pe = parent.getEndOffset();
+        int fs = fold.getStartOffset();
+        int fe = fold.getEndOffset();
+        
+        if (fs < ps || fe > pe) {
+            LOG.log(Level.WARNING, "Illegal attempt to change hierarchy. Parent fold: {0}, fold to be inserted: {1}, extract from {2}, len {3}", new Object[] {
+                parent, fold, index, length
+            });
+            LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+        }
+        
+        
         FoldChildren foldChildren = new FoldChildren(fold);
         if (length == 1) {
             Fold insertFold = getFold(index);
@@ -180,7 +198,7 @@ public final class FoldChildren extends GapList {
             remove(index, length); // removal prior insertion to set children parents properly
             foldChildren.insert(0, insertFolds);
         }
-
+        
         // Insert the fold into list of current children
         insertImpl(index, fold);
         
@@ -217,6 +235,17 @@ public final class FoldChildren extends GapList {
     }
 
     private void insertImpl(int index, Fold fold) {
+        int ps = parent.getStartOffset();
+        int pe = parent.getEndOffset();
+        int fs = fold.getStartOffset();
+        int fe = fold.getEndOffset();
+        if (fs < ps || fe > pe) {
+            LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, fold to be inserted: {1}, " +
+                    "at index {2}", new Object[] {
+                parent, fold, index
+            });
+            LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+        }
         indexGapLength--;
         indexGapIndex++;
         ApiPackageAccessor api = ApiPackageAccessor.get();
@@ -226,6 +255,21 @@ public final class FoldChildren extends GapList {
     }
     
     private void insertImpl(int index, Fold[] folds) {
+        // sanity check
+        if (folds.length > 0) {
+            int ps = parent.getStartOffset();
+            int pe = parent.getEndOffset();
+            int fs = folds[0].getStartOffset();
+            int fe = folds[folds.length - 1].getEndOffset();
+            if (fs < ps || fe > pe) {
+                LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, folds to be inserted: {1}, " +
+                        "at index {2}", new Object[] {
+                    parent, Arrays.asList(folds), index
+                });
+                LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+            }
+        }
+
         ApiPackageAccessor api = ApiPackageAccessor.get();
         int foldsLength = folds.length;
         indexGapLength -= foldsLength;
