@@ -90,7 +90,11 @@ public class RenameProjectPanel extends javax.swing.JPanel {
     private ValidationGroup vg;
     private NotificationLineSupport nls;
 
-    @Messages({"NAME_Folder=Folder Name", "NAME_Artifact=ArtifactId", "RenameProjectPanel.lblRename.text2=Rename Project \"{0}\""})
+    @Messages({
+        "NAME_Folder=Folder Name", 
+        "NAME_Artifact=ArtifactId", 
+        "# {0} - project display name",
+        "RenameProjectPanel.lblRename.text2=Rename Project \"{0}\""})
     RenameProjectPanel(NbMavenProjectImpl prj) {
         initComponents();
         SwingValidationGroup.setComponentName(txtFolder, NAME_Folder());

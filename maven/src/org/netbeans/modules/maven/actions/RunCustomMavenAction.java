@@ -68,7 +68,10 @@ import org.openide.util.lookup.Lookups;
 
 //@ActionID(category=RunCustomMavenAction.CATEGORY, id=RunCustomMavenAction.ID)
 //@ActionRegistration(displayName="#BTN_run_custom", iconBase = "org/netbeans/modules/maven/resources/Maven2Icon.gif")
-@Messages("BTN_run_custom=Run custom Maven build:{0}")
+@Messages({
+    "# {0} - maven build name",
+    "BTN_run_custom=Run custom Maven build:{0}"
+})
 public class RunCustomMavenAction extends AbstractAction implements ContextAwareAction {
 
     static final String CATEGORY = "Project";

@@ -172,7 +172,12 @@ public class InstallPanel extends javax.swing.JPanel {
         return fil != null && fil.exists() ? fil : null;
     }
     
-    @Messages({"MSG_Instructions=<html>Please enter path to JAR file that represents the dependency with <br>groupId: <b>{0}</b>,<br>artifactId: <b>{1}</b>,<br>version: <b>{2}</b>{3}<br>This JAR will be copied to your local repository. <br>Please note that having non-repository based JARs as dependencies is bad for build reproducibility.</html>", 
+    @Messages({
+        "# {0} - groupId",
+        "# {1} - artifactId",
+        "# {2} - version",
+        "# {3} - classifier",
+        "MSG_Instructions=<html>Please enter path to JAR file that represents the dependency with <br>groupId: <b>{0}</b>,<br>artifactId: <b>{1}</b>,<br>version: <b>{2}</b>{3}<br>This JAR will be copied to your local repository. <br>Please note that having non-repository based JARs as dependencies is bad for build reproducibility.</html>", 
         "BTN_Install_locally=Install locally", "TIT_Install_locally=Install locally"})
     public static File showInstallDialog(Artifact art) {
         final InstallPanel panel = new InstallPanel();
