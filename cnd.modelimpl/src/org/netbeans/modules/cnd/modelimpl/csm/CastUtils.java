@@ -127,13 +127,13 @@ public class CastUtils {
                         l.append('.');
                     }
                     l.append(getFunctionName(ast));
-                    return NameCache.getManager().getString(CharSequences.create(l.toString()));
+                    return NameCache.getManager().getString(CharSequences.create(l));
                 default:
                     //TODO: process templates
                     break;
             }
         }
-        return NameCache.getManager().getString(CharSequences.create(l.toString()));
+        return NameCache.getManager().getString(CharSequences.create(l));
     }
 
     private static void addTypeText(AST ast, StringBuilder sb) {
