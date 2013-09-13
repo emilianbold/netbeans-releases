@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.nodes.Children;
 import org.openide.util.CharSequences;
@@ -151,14 +152,14 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
     }
 
     private CharSequence createFunctionSpecializationHtmlDisplayName() {
-        return CharSequences.create(CsmDisplayUtilities.htmlize(getDisplayName()) + FONT_COLORCONTROLSHADOW + scopeName); // NOI18N
+        return CharSequences.create(CharSequenceUtils.concatenate(CsmDisplayUtilities.htmlize(getDisplayName()), FONT_COLORCONTROLSHADOW, scopeName)); 
     }
     
     private CharSequence createMemberHtmlDisplayName() {
         String aName = CsmDisplayUtilities.htmlize(scopeName); 
         String displayName = CsmDisplayUtilities.htmlize(getDisplayName()); // NOI18N
         String in = NbBundle.getMessage(getClass(), "LBL_inClass", aName); //NOI18N
-        return CharSequences.create(displayName + FONT_COLORCONTROLSHADOW + in);
+        return CharSequences.create(CharSequenceUtils.concatenate(displayName, FONT_COLORCONTROLSHADOW, in));
     }
 
     private CharSequence getFunctionSpecializationName(CsmObject csmObject) throws MissingResourceException {
@@ -380,13 +381,13 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             } else if (csmObject instanceof CsmFile) {
                 if (model.getUnopenedProject() != null) {
                     // unopened project
-                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                            NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
-                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName()));
+                    return CharSequences.create(new StringBuilder("<font color='").append(CsmDisplayUtilities.getHTMLColor(Color.red)).append(">") // NOI18N
+                            .append(NbBundle.getMessage(CppDeclarationNode.class, "UnopenedProject",  // NOI18N
+                            ProjectUtils.getInformation(model.getUnopenedProject()).getDisplayName())));
                 } else {
                     //Restricted code assistance
-                    return CharSequences.create("<font color='"+CsmDisplayUtilities.getHTMLColor(Color.red)+">"+ // NOI18N
-                            NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile")); // NOI18N
+                    return CharSequences.create(new StringBuilder("<font color='").append(CsmDisplayUtilities.getHTMLColor(Color.red)).append(">") // NOI18N
+                            .append(NbBundle.getMessage(CppDeclarationNode.class, "StandAloneFile"))); // NOI18N
                 }
             } else if (CsmKindUtilities.isFunction(csmObject) && CsmKindUtilities.isSpecialization(csmObject)) {
                 if (scopeName.length() > 0) {

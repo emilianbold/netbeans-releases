@@ -296,10 +296,10 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     @Override
-    protected String findQualifiedName() {
+    protected CharSequence findQualifiedName() {
         CsmFunction declaration = _getDeclaration();
         if (declaration != null) {
-            return declaration.getQualifiedName().toString();
+            return declaration.getQualifiedName();
         }
         return super.findQualifiedName();
     }

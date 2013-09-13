@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -243,7 +244,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     private CharSequence[] initNameParts(AST qid) {
@@ -406,7 +407,7 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
      * Creates a fake class this forward declaration refers to
      */
     protected ForwardClass createForwardClassIfNeed(AST ast, CsmScope scope, boolean registerInProject, int startOffset, int endOffset) {
-        return ForwardClass.createIfNeeded(name.toString(), getContainingFile(), ast, startOffset, endOffset, scope, registerInProject);
+        return ForwardClass.createIfNeeded(name, getContainingFile(), ast, startOffset, endOffset, scope, registerInProject);
     }
 
     @Override

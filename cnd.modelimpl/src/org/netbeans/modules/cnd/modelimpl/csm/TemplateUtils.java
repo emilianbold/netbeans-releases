@@ -85,7 +85,7 @@ public class TemplateUtils {
 //    public static final byte MASK_TEMPLATE = 0x01;
 //    public static final byte MASK_SPECIALIZATION = 0x02;
 
-    public static String getSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
+    public static CharSequence getSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
 	for( AST child = qIdToken.getFirstChild(); child != null; child = child.getNextSibling() ) {
 	    if( child.getType() == CPPTokenTypes.LESSTHAN ) {
@@ -93,14 +93,14 @@ public class TemplateUtils {
 		break;
 	    }
 	}
-	return sb.toString();
+	return sb;
     }
     
     // in class our parser skips LESSTHAN symbols in templates...
-    public static String getClassSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
+    public static CharSequence getClassSpecializationSuffix(AST qIdToken, List<CsmTemplateParameter> parameters) {
 	StringBuilder sb  = new StringBuilder();
         addSpecializationSuffix(qIdToken.getFirstChild(), sb, parameters);
-	return sb.toString();
+	return sb;
     }
     
     public static final String TYPENAME_STRING = "class"; //NOI18N
@@ -112,7 +112,7 @@ public class TemplateUtils {
     public static void addSpecializationSuffix(AST firstChild, StringBuilder res, List<CsmTemplateParameter> parameters, boolean checkForSpecialization) {
         int depth = 0;
         int paramsNumber = 0;
-        StringBuilder sb = new StringBuilder(res.toString()); // NOI18N
+        StringBuilder sb = new StringBuilder(res); // NOI18N
         for (AST child = firstChild; child != null; child = child.getNextSibling()) {
             if (child.getType() == CPPTokenTypes.LESSTHAN) {
                 depth++;

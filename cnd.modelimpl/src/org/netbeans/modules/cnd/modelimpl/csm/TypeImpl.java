@@ -97,6 +97,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 
@@ -529,7 +530,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public CharSequence getCanonicalText() {
         CharSequence text = getClassifierText();
         if (isInstantiationOrSpecialization()) {
-            text = text.toString() + Instantiation.getInstantiationCanonicalText(this.instantiationParams);
+            text = CharSequenceUtils.concatenate(text, Instantiation.getInstantiationCanonicalText(this.instantiationParams));
         }
 	return decorateText(text, this, true, null);
     }
@@ -544,7 +545,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         if (canonicalText == null) {
-            canonicalText = type.getCanonicalText().toString();
+            canonicalText = type.getCanonicalText();
         }
         return canonicalText;
     }
@@ -566,7 +567,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         if (instantiationText.length() == 0) {
             return decorateText(getClassifierText(), this, false, null);
         } else {
-            return decorateText(getClassifierText().toString() + instantiationText, this, false, null);
+            return decorateText(CharSequenceUtils.concatenate(getClassifierText(), instantiationText), this, false, null);
         }
     }
 
@@ -575,7 +576,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         if (instantiationText.length() == 0) {
             return decorateText(getClassifierText(), this, canonical, variableNameToInsert);
         } else {
-            return decorateText(getClassifierText().toString()  + instantiationText, this, canonical, variableNameToInsert);
+            return decorateText(CharSequenceUtils.concatenate(getClassifierText(), instantiationText), this, canonical, variableNameToInsert);
         }
     }
 
@@ -629,7 +630,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         else {
             StringBuilder sb = new StringBuilder();
             addText(sb, AstRenderer.getFirstSiblingSkipQualifiers(node));
-            return TextCache.getManager().getString(sb.toString());
+            return TextCache.getManager().getString(sb);
 //            return sb.toString();
         }
     }
