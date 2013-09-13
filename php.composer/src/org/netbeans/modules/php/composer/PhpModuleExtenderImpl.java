@@ -50,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -94,6 +95,7 @@ public class PhpModuleExtenderImpl implements PhpModuleExtender {
         getComponent().removeChangeListener(listener);
     }
 
+    @NonNull
     @Override
     public PhpModuleExtenderPanel getComponent() {
         if (panel == null) {
