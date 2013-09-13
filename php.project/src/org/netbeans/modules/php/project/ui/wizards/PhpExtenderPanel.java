@@ -69,6 +69,7 @@ public class PhpExtenderPanel implements WizardDescriptor.Panel<WizardDescriptor
     private JComponent component;
 
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "EI_EXPOSE_REP2", justification = "Intentional") // NOI18N
     public PhpExtenderPanel(PhpModuleExtender extender, String[] steps, int stepIndex) {
         assert extender != null;
         assert steps != null;
