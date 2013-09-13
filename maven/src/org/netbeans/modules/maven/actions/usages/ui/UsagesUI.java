@@ -86,7 +86,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
     static final int TYPE_COMPILE = 1;
     static final int TYPE_TEST = 2;
     static final int TYPE_RUNTIME = 3;
-    private ExplorerManager explorerManager = new ExplorerManager();
+    private final ExplorerManager explorerManager = new ExplorerManager();
     private NotificationLineSupport nls;
     private final Artifact artifact;
     private final String libDef;
@@ -99,9 +99,9 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
     }
 
     @Messages({
-        "# {0} maven coordinates",
+        "# {0} - maven coordinates",
         "LBL_Repo=<html>Repository Artifacts that use {0} as Dependency </html>", 
-        "# {0} maven coordinates",
+        "# {0} - maven coordinates",
         "LBL_Description=<html>Open Projects that use {0} as Dependency </html>", 
         "LBL_Incomplete=Incomplete result, processing indices...", 
         "LBL_Dependancy=As Direct Dependency", 
@@ -485,8 +485,8 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
 
     private static class OpenProjectNode extends AbstractNode {
 
-        private NbMavenProjectImpl project;
-        private ProjectInformation pi;
+        private final NbMavenProjectImpl project;
+        private final ProjectInformation pi;
 
         public OpenProjectNode(NbMavenProjectImpl project) {
             super(Children.LEAF);
