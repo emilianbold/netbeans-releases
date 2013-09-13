@@ -275,7 +275,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                 final String config = getSelectedConfig();
                 final PlatformKey pk = (PlatformKey) comboBoxRuntimePlatform.getSelectedItem();
                 final String platformId = pk == null ? null : pk.getPlatformAntName();
-                configs.setPropertyTransparent(config, JFXProjectProperties.PLATFORM_RUNTIME, platformId);
+                configs.setProperty(config, JFXProjectProperties.PLATFORM_RUNTIME, platformId);
                 final String def = configs.getDefaultProperty(JFXProjectProperties.PLATFORM_RUNTIME);
                 setEmphasizedFont(
                     labelRuntimePlatform,
@@ -290,9 +290,6 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         //#233876 - width of width/height text fields should not be changed when panel is resized
         textFieldWidth.setMinimumSize(textFieldWidth.getPreferredSize());
         textFieldHeight.setMinimumSize(textFieldHeight.getPreferredSize());
-
-        //TODO: hide fx specific options when remote platform is selected
-        //showFXSpecificOptions(false);
     }
     
     private java.util.List<PlatformKey> updatePlatformsList() {
@@ -1368,6 +1365,9 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
             comboBoxRuntimePlatform.setSelectedIndex(0);
             if (createNewConfiguration(true)) {
                 comboBoxRuntimePlatform.setSelectedItem(currentPlatform);
+            } else {
+                showFXSpecificOptions(true);
+                return;
             }
         }
         if (currentPlatformName.equals(NbBundle.getMessage(JFXRunPanel.class, "TXT_ActivePlatform"))) {
