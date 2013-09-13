@@ -87,6 +87,7 @@ import org.openide.windows.OutputWriter;
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
     private final Project project;
+    private static final Logger LOGGER = Logger.getLogger(ExecutionChecker.class.getName());
     public static final String DEV_NULL = "DEV-NULL"; //NOI18N
     public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
@@ -192,6 +193,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                             } catch (Exception ex) {
                                 // See issue #235796 --> We were not able to attach debugger because
                                 // it's already attached, BUT we still want to deploy the application
+                                LOGGER.log(Level.FINE, "Exception occured while trying to attach debugger", ex); //NOI18N
                             }
                         }
                         return null;
@@ -227,9 +229,9 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
         } catch (Deployment.DeploymentException ex) {
             ex.printStackTrace(err);
-            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
+            LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         } catch (Exception ex) {
-            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
+            LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
     }
     
