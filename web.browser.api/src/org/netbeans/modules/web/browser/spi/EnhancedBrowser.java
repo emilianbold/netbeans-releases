@@ -79,7 +79,7 @@ public interface EnhancedBrowser {
 
     /**
      * Check whether change in given file should be ignored or not. For example
-     * 'Chrome with NetBeans integration' browser handles CSS file changes 
+     * 'Chrome with NetBeans Connector' browser handles CSS file changes
      * directly via CSS editing support and therefore generic 'Refresh On Save' mechanism
      * should ignore all CSS changed. However if WebKit debugging protocol was
      * aborted then CSS file changes needs to be handled by generic 'Refresh On Save'

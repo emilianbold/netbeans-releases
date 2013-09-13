@@ -73,7 +73,7 @@ import org.openide.util.lookup.ProxyLookup;
 /**
  * Browser implementation which uses Chrome plugin together with simple Chrome
  * browser support from extbrowser module. This browser not only implements
- * "Chrome with NetBeans integration" browser but should be also used instead
+ * "Chrome with NetBeans Connector" browser but should be also used instead
  * of plain Chrome browser from extbrowser module in order to persist changes
  * done in Chrome's Developer Tools.
  */
