@@ -47,6 +47,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.options.ComposerOptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -100,17 +101,18 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isValid() {
-        ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validate(composerOptionsPanel.getComposerPath(), composerOptionsPanel.getVendor(),
-                composerOptionsPanel.getAuthorName(), composerOptionsPanel.getAuthorEmail());
+        ValidationResult result = new ComposerOptionsValidator()
+                .validate(composerOptionsPanel.getComposerPath(), composerOptionsPanel.getVendor(),
+                        composerOptionsPanel.getAuthorName(), composerOptionsPanel.getAuthorEmail())
+                .getResult();
         // errors
-        if (validator.hasErrors()) {
-            composerOptionsPanel.setError(validator.getErrors().get(0).getMessage());
+        if (result.hasErrors()) {
+            composerOptionsPanel.setError(result.getErrors().get(0).getMessage());
             return false;
         }
         // warnings
-        if (validator.hasWarnings()) {
-            composerOptionsPanel.setWarning(validator.getWarnings().get(0).getMessage());
+        if (result.hasWarnings()) {
+            composerOptionsPanel.setWarning(result.getWarnings().get(0).getMessage());
             return true;
         }
         // everything ok

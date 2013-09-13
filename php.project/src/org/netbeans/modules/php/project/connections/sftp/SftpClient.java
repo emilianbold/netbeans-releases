@@ -130,64 +130,43 @@ public class SftpClient implements RemoteClient {
             return;
         }
         LOGGER.log(Level.FINE, "SFTP client creating");
+        JSch.setLogger(sftpLogger);
 
-        String host = configuration.getHost();
-        int port = configuration.getPort();
-        int timeout = configuration.getTimeout() * 1000;
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Connecting to {0} [timeout: {1} ms]", new Object[] {host, timeout});
-        }
-        int keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
-        }
-        String username = configuration.getUserName();
-        String password = configuration.getPassword();
         String knownHostsFile = configuration.getKnownHostsFile();
         String identityFile = configuration.getIdentityFile();
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Login as {0}", username);
+
+        JSch jsch = new JSch();
+        if (StringUtils.hasText(knownHostsFile)) {
+            try {
+                jsch.setKnownHosts(knownHostsFile);
+            } catch (JSchException ex) {
+                // #220328
+                LOGGER.log(Level.INFO, "Error in JSCH library", ex);
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
+                        Bundle.SftpConfiguration_bug_knownHosts(), NotifyDescriptor.ERROR_MESSAGE));
+            }
         }
 
         boolean agentUsed = false;
         try {
-            JSch jsch = new JSch();
-            JSch.setLogger(sftpLogger);
-            sftpSession = jsch.getSession(username, host, port);
-            if (StringUtils.hasText(knownHostsFile)) {
-                try {
-                    jsch.setKnownHosts(knownHostsFile);
-                } catch (JSchException ex) {
-                    // #220328
-                    LOGGER.log(Level.INFO, "Error in JSCH library", ex);
-                    DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.SftpConfiguration_bug_knownHosts(), NotifyDescriptor.ERROR_MESSAGE));
-                }
-            }
-            if (StringUtils.hasText(password)) {
-                sftpSession.setPassword(password);
-            }
-            // proxy
-            setProxy(host);
-            sftpSession.setUserInfo(new SftpUserInfo(configuration));
-            sftpSession.setTimeout(timeout);
-            // keep-alive
-            if (keepAliveInterval > 0) {
-                sftpSession.setServerAliveInterval(keepAliveInterval);
-            }
+            // first try agent
+            LOGGER.fine("Trying to set ssh-agent");
+            agentUsed = setAgent(jsch, identityFile, true);
+            LOGGER.fine("Trying to create session");
+            sftpSession = createSftpSession(jsch, !agentUsed);
             try {
-                // first try agent
-                LOGGER.fine("Trying to set ssh-agent");
-                agentUsed = setAgent(jsch, identityFile, true);
-                LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, true});
-                connectSftpClient(timeout);
+                LOGGER.log(Level.FINE, "Trying to connect with agent used: {0}", agentUsed);
+                sftpClient = connectSftpClient();
             } catch (Exception exc) {
                 // catch rather all exceptions. In case jsch-agent-proxy is broken again we should
                 // at least fall back on key/pasphrase
                 if (agentUsed) {
                     LOGGER.log(exc instanceof JSchException ? Level.FINE : Level.INFO, null, exc);
+                    LOGGER.fine("Trying to create another session");
+                    sftpSession = createSftpSession(jsch, true);
                     setAgent(jsch, identityFile, false);
-                    LOGGER.log(Level.FINE, "Trying to connect to {0}, agent={1}", new Object[] {host, false});
-                    connectSftpClient(timeout);
+                    LOGGER.fine("Trying to connect with agent used: false");
+                    sftpClient = connectSftpClient();
                 } else {
                     throw exc;
                 }
@@ -203,13 +182,39 @@ public class SftpClient implements RemoteClient {
         }
     }
 
-    private void connectSftpClient(int timeout) throws JSchException {
-        assert Thread.holdsLock(this);
-        assert sftpSession != null;
-        sftpSession.connect(timeout);
-        Channel channel = sftpSession.openChannel("sftp"); // NOI18N
-        channel.connect();
-        sftpClient = (ChannelSftp) channel;
+    private Session createSftpSession(JSch jsch, boolean withUserInfo) throws JSchException {
+        LOGGER.fine("Creating new SFTP session...");
+        String host = configuration.getHost();
+        int port = configuration.getPort();
+        int timeout = configuration.getTimeout() * 1000;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Will connect to {0} [timeout: {1} ms]", new Object[] {host, timeout});
+        }
+        int keepAliveInterval = configuration.getKeepAliveInterval() * 1000;
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Keep-alive interval is {0} ms", keepAliveInterval);
+        }
+        String username = configuration.getUserName();
+        String password = configuration.getPassword();
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Login as {0}", username);
+        }
+        Session session = jsch.getSession(username, host, port);
+        if (StringUtils.hasText(password)) {
+            session.setPassword(password);
+        }
+        // proxy
+        setProxy(host);
+        if (withUserInfo) {
+            LOGGER.fine("Setting user info...");
+            session.setUserInfo(new SftpUserInfo(configuration));
+        }
+        session.setTimeout(timeout);
+        // keep-alive
+        if (keepAliveInterval > 0) {
+            session.setServerAliveInterval(keepAliveInterval);
+        }
+        return session;
     }
 
     private boolean setAgent(JSch jsch, String identityFile, boolean preferAgent) throws JSchException {
@@ -227,7 +232,9 @@ public class SftpClient implements RemoteClient {
             // remove all identity files
             jsch.removeAllIdentity();
             // and add the one specified by CredentialsProvider
-            jsch.addIdentity(identityFile);
+            if (StringUtils.hasText(identityFile)) {
+                jsch.addIdentity(identityFile);
+            }
         }
         return agentUsed;
     }
@@ -262,6 +269,15 @@ public class SftpClient implements RemoteClient {
         if (proxy != null) {
             sftpSession.setProxy(proxy);
         }
+    }
+
+    private ChannelSftp connectSftpClient() throws JSchException {
+        assert Thread.holdsLock(this);
+        assert sftpSession != null;
+        sftpSession.connect();
+        Channel channel = sftpSession.openChannel("sftp"); // NOI18N
+        channel.connect();
+        return (ChannelSftp) channel;
     }
 
     @Override

@@ -952,4 +952,28 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
         reformatFileContents("testfiles/formatting/spaces/issue233050_02.php", options);
     }
+
+    public void testFinally_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_BEFORE_FINALLY, true);
+        reformatFileContents("testfiles/formatting/spaces/finally_01.php", options);
+    }
+
+    public void testFinally_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_BEFORE_FINALLY, false);
+        reformatFileContents("testfiles/formatting/spaces/finally_02.php", options);
+    }
+
+    public void testFinally_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_BEFORE_FINALLY_LEFT_BRACE, true);
+        reformatFileContents("testfiles/formatting/spaces/finally_03.php", options);
+    }
+
+    public void testFinally_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_BEFORE_FINALLY_LEFT_BRACE, false);
+        reformatFileContents("testfiles/formatting/spaces/finally_04.php", options);
+    }
 }

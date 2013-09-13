@@ -15,7 +15,7 @@
         <jflex file="tools/Php5ColoringScanner.flex" destdir="src" skel="tools/skeleton.netbeans" />
     </target>-->
 
-    <!--<taskdef name="jflex"
+<!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/usr/share/ant/lib/jflex.jar" />-->
 

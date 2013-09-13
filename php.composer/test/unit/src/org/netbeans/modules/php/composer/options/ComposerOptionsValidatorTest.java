@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.composer.options;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 
 public class ComposerOptionsValidatorTest extends NbTestCase {
 
@@ -50,52 +51,63 @@ public class ComposerOptionsValidatorTest extends NbTestCase {
     }
 
     public void testValidVendor() {
-        ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validateVendor("my-company");
-        assertFalse(validator.hasErrors());
-        assertFalse(validator.hasWarnings());
-        validator = new ComposerOptionsValidator();
-        validator.validateVendor("me-09");
-        assertFalse(validator.hasErrors());
-        assertFalse(validator.hasWarnings());
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateVendor("my-company")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
+        result = new ComposerOptionsValidator()
+                .validateVendor("me-09")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
     }
 
     public void testInvalidVendor() {
-        ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validateVendor("MyCompany");
-        assertTrue(validator.hasErrors());
-        validator = new ComposerOptionsValidator();
-        validator.validateVendor("my company");
-        assertTrue(validator.hasErrors());
-        validator = new ComposerOptionsValidator();
-        validator.validateVendor("my.company");
-        assertTrue(validator.hasErrors());
-        validator = new ComposerOptionsValidator();
-        validator.validateVendor("my_company");
-        assertTrue(validator.hasErrors());
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateVendor("MyCompany")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateVendor("my company")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateVendor("my.company")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateVendor("my_company")
+                .getResult();
+        assertTrue(result.hasErrors());
     }
 
     public void testValidAuthorEmail() {
-        ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validateAuthorEmail("john.doe@domain.net");
-        assertFalse(validator.hasErrors());
-        assertFalse(validator.hasWarnings());
-        validator = new ComposerOptionsValidator();
-        validator.validateAuthorEmail("john1-doe@domain.net");
-        assertFalse(validator.hasErrors());
-        assertFalse(validator.hasWarnings());
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateAuthorEmail("john.doe@domain.net")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
+        result = new ComposerOptionsValidator()
+                .validateAuthorEmail("john1-doe@domain.net")
+                .getResult();
+        assertFalse(result.hasErrors());
+        assertFalse(result.hasWarnings());
     }
 
     public void testInvalidAuthorEmail() {
-        ComposerOptionsValidator validator = new ComposerOptionsValidator();
-        validator.validateAuthorEmail("john.doe");
-        assertTrue(validator.hasErrors());
-        validator = new ComposerOptionsValidator();
-        validator.validateAuthorEmail("john.doe@");
-        assertTrue(validator.hasErrors());
-        validator = new ComposerOptionsValidator();
-        validator.validateAuthorEmail("john.doe@domain");
-        assertTrue(validator.hasErrors());
+        ValidationResult result = new ComposerOptionsValidator()
+                .validateAuthorEmail("john.doe")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorEmail("john.doe@")
+                .getResult();
+        assertTrue(result.hasErrors());
+        result = new ComposerOptionsValidator()
+                .validateAuthorEmail("john.doe@domain")
+                .getResult();
+        assertTrue(result.hasErrors());
     }
 
 }

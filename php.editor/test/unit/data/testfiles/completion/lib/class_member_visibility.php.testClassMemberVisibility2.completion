@@ -4,3 +4,4 @@ parent::|protectedParentMethod();
 METHOD     protectedParentMethod()         [PROTECTE  ParentClass
 METHOD     publicParentMethod()            [PUBLIC]   ParentClass
 CONSTANT   ParentClassConst 1              [PUBLIC]   ParentClass
+CONSTANT   class \ParentClass              [PUBLIC]   Magic Constant
