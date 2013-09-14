@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,8 +66,10 @@ import org.netbeans.modules.cnd.api.model.CsmTemplateParameterType;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.api.model.services.CsmResolveContext;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -771,11 +774,16 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if (ip instanceof InstantiationProviderImpl) {
                 Resolver resolver = ResolverFactory.createResolver(this);
                 try {
+                    CsmResolveContext context = getLastResolveContext();
+                    
+                    CsmFile contextFile = context != null ? context.getFile() : this.getContainingFile();
+                    int contextOffset = context != null ? context.getOffset() : this.getStartOffset();
+                    
                     if (!resolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
                         for (int i = instantiations.size() - 1; i > 0; i--) {
-                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(i), false);
+                            obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(i), false);
                         }
-                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, instantiations.get(0), true);
+                        obj = ((InstantiationProviderImpl) ip).instantiate((CsmTemplate) obj, contextFile, contextOffset, instantiations.get(0), true);
                     }
                 } finally {
                     ResolverFactory.releaseResolver(resolver);
@@ -943,6 +951,13 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             }
         }
         return null;
+    }
+    
+    private CsmResolveContext getLastResolveContext() {
+        CsmResolveContext context;
+        Stack<CsmResolveContext> contexts = (Stack<CsmResolveContext>) CsmCacheManager.get(CsmResolveContext.class);
+        context = (contexts != null && !contexts.empty()) ? contexts.peek() : null;
+        return context;
     }
 
     @Override

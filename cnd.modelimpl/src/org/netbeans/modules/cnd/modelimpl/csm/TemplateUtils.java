@@ -67,7 +67,7 @@ import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosest
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
-import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.MapHierarchy;
+import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.utils.MutableObject;
@@ -466,25 +466,7 @@ public class TemplateUtils {
             }
         }     
         return type;
-    }    
-    
-    public static String traceMap(Map<?, ?> mapping, int indent) {
-        StringBuilder out = new StringBuilder();
-        if (mapping != null && !mapping.isEmpty()) {
-            for (Map.Entry<?, ?> entry : mapping.entrySet()) {
-                repeat(out, indent, ' ').append("[").append(entry.getKey()).append("]=>{"); // NOI18N
-                out.append(entry.getValue()).append("}\n"); // NOI18N
-            }
-        }
-        return out.toString();
-    }
-    
-    public static StringBuilder repeat(StringBuilder b, int level, char character) {
-        for (int i = 0; i < level; i++) {
-            b.append(character);
-        }
-        return b;
-    }    
+    }        
 
     private TemplateUtils() {
     }
