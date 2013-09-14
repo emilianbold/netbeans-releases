@@ -4899,6 +4899,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         FileInformation prev_info = null;
         String repositoryPath = repository.getAbsolutePath();
         for (String statusLine : commandOutput) {
+            if (statusLine.isEmpty()) {
+                continue;
+            }
             FileInformation info = getFileInformationFromStatusLine(statusLine);
             Mercurial.LOG.log(Level.FINE, "getStatusWithFlags(): status line {0}  info {1}", new Object[]{statusLine, info}); // NOI18N
             if (statusLine.length() > 0) {

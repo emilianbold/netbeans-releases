@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.test.permanentUI;
 
-package org.netbeans.modules.apisupport.project.spi;
-
-import java.util.List;
-import org.openide.filesystems.FileObject;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
- * Interface to be implemented by NetBeans module projects. 
  *
- * @author Martin Kozeny
- * @since org.netbeans.modules.apisupport.project 1.65
+ * @author Lukas Hasik
  */
-public interface NbRefactoringProvider {
-    
-    /**
-     * Returns list of xml files and its elements to refactor
-     * @param context refactoring context
-     * @return 
-     */
-    List<ProjectFileRefactoring> getProjectFilesRefactoring(final NbRefactoringContext context);
-    
-    
-    public abstract class ProjectFileRefactoring {
-        
-        private final FileObject parentFile;
+public class PermanentUITest {
 
-        public ProjectFileRefactoring(FileObject parentFile) {
-            this.parentFile = parentFile;
-        }
-
-        public FileObject getParentFile() {
-            return parentFile;
-        }
-        
-        public abstract void performChange();
-        
-        public abstract String getDisplayText();
-        
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().clusters(".*").enableModules(".*");
+        return conf
+                .addTest(MainMenuTest.class, MainMenuTest.TESTS)
+                .addTest(MainMenuJavaTest.class, MainMenuJavaTest.TESTS)
+                .addTest(TeamMenuVCSActivatedTest.class, TeamMenuVCSActivatedTest.TESTS)
+                .addTest(NewProjectTest.class)
+                .addTest(OptionsTest.class)
+                .suite();
     }
+
 }

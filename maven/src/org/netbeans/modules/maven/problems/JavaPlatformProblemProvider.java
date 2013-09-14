@@ -105,7 +105,9 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
 
     @Override
     @NbBundle.Messages({
+        "# {0} - jdk platform id",
         "MGS_No_such_JDK=No such Java Platform: {0}", 
+        "# {0} - jdk platform id",
         "DESC_No_such_JDK=There is no Java Platform with value \"{0}\" defined in the current IDE. The default platform is used instead. To fix, introduce a Java Platform with the given name or change the project's used Java Platform."})
     public Collection<? extends ProjectProblem> getProblems() {
         if (platformManager == null) {

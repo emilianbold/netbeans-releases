@@ -130,6 +130,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     @Messages({
+               "# {0} - project display name",
                "TIT_Project_Properties=Project Properties - {0}", 
                "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding.",
                "TXT_Unloadable=Project is unloadable, you have to fix the problems before accessing the project properties dialog. Show Problem Resolution dialog?",
@@ -384,7 +385,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         writeNbActionsModel(project, project.getProjectDirectory(), mapping, path);
     }
     
-    @Messages({"TXT_Problem_Broken_Actions=Broken nbactions.xml file.", "DESC_Problem_Broken_Actions=Cannot parse the $project_basedir/nbactions.xml file. The information contained in the file will be ignored until fixed. This affects several features in the IDE that will not work properly as a result.\n\n Parsing exception:\n{0}"})
+    @Messages({
+        "TXT_Problem_Broken_Actions=Broken nbactions.xml file.", 
+        "# {0} - exception text",
+        "DESC_Problem_Broken_Actions=Cannot parse the $project_basedir/nbactions.xml file. The information contained in the file will be ignored until fixed. This affects several features in the IDE that will not work properly as a result.\n\n Parsing exception:\n{0}"})
     private static void writeNbActionsModel(final Project project, final FileObject pomDir, final ActionToGoalMapping mapping, final String path) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
