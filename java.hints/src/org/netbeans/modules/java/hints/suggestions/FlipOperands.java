@@ -145,7 +145,7 @@ public class FlipOperands {
             displayName = Bundle.FIX_FlipOperands2(OPERATOR_DN.get(kind), OPERATOR_DN.get(targetKind));
         }
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_FlipOperands(), new FixImpl(ctx.getInfo(), ctx.getPath(), displayName, targetKind).toEditorFix());
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.DESC_FlipOperands(), new FixImpl(ctx.getInfo(), ctx.getPath(), displayName, targetKind).toEditorFix());
     }
     
     private static final class FixImpl extends JavaFix {
