@@ -79,8 +79,10 @@ public final class TurnInspectOn implements LateBoundPrerequisitesChecker {
             Method mpMethod = config.getClass().getMethod("getMavenProject");
             Object mp = mpMethod.invoke(config);
             Method artiMethod = mp.getClass().getMethod("getArtifacts");
-            Set s = (Set)artiMethod.invoke(mp);
-            return s.toString().contains("org.apidesign.html:boot-fx:");
+            Set<?> s = (Set<?>)artiMethod.invoke(mp);
+            final String text = s.toString();
+            return text.contains("org.apidesign.html:boot-fx:") ||
+                text.contains("org.apidesign.bck2brwsr:bck2brwsr-maven-plugin");
         } catch (Exception ex) {
             LOG.log(Level.SEVERE, "Problems obtaining list of artifacts", ex);
         }
