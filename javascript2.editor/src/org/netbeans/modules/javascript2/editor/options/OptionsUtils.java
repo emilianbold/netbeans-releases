@@ -69,7 +69,7 @@ public final class OptionsUtils {
     public static final String AUTO_COMPLETION_AFTER_DOT = "autoCompletionAfterDot"; // NOI18N
     
     // default values
-    public static final boolean AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT = true;
+    public static final boolean AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT = false;
     public static final boolean AUTO_COMPLETION_SMART_QUOTES_DEFAULT = true;
     public static final boolean AUTO_STRING_CONCATINATION_DEFAULT = true;
     public static final boolean AUTO_COMPLETION_FULL_DEFAULT = false;
