@@ -141,15 +141,18 @@ public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public int hashCode() {
-//        if (true) return 5;
-//        if (true) return name.hashCode();
-        int hash = 5;
-        hash = 19 * hash + Objects.hashCode(this.name);
-        hash = 19 * hash + Objects.hashCode(this.scope);
-        hash = 19 * hash + Objects.hashCode(this.defaultValue);
-        hash = 19 * hash + Objects.hashCode(this.templateDescriptor);
-        hash = 19 * hash + Objects.hashCode(super.hashCode());
-        return hash;
+        // use cheap hashCode
+        if (true) {
+            return name.hashCode();
+        } else {
+            int hash = 5;
+            hash = 19 * hash + Objects.hashCode(this.name);
+            hash = 19 * hash + Objects.hashCode(this.scope);
+            hash = 19 * hash + Objects.hashCode(this.defaultValue);
+            hash = 19 * hash + Objects.hashCode(this.templateDescriptor);
+            hash = 19 * hash + Objects.hashCode(super.hashCode());
+            return hash;
+        }
     }
 
     @Override

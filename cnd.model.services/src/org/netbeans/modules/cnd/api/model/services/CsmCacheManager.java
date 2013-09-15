@@ -123,7 +123,7 @@ public final class CsmCacheManager {
      * cache transaction is active, then value associated with key if any.
      * @see getCacheMap#getMapBasedCache
      */
-    public static CsmCacheMap.Value getValue(@NonNull Object key) {
+    public static Object get(@NonNull Object key) {
         if (key == null) {
             throw new NullPointerException();
         }
@@ -133,7 +133,7 @@ public final class CsmCacheManager {
         }
         CsmCacheMap.Value value = map.get(key);
         LOGGER.log(Level.FINE, "getValue {1}->{2}\n", new Object[]{key, value});
-        return value;
+        return value != null ? value.getResult() : null;
     }
 
     /**
@@ -145,7 +145,7 @@ public final class CsmCacheManager {
      * nothing is put into cache. If cache transaction is active, then returns
      * previous value associated with key if any.
      */
-    public static CsmCacheMap.Value putValue(@NonNull Object key, CsmCacheMap.Value value) {
+    public static Object put(@NonNull Object key, Object value) {
         if (key == null) {
             throw new NullPointerException();
         }
@@ -153,9 +153,9 @@ public final class CsmCacheManager {
         if (map == null) {
             return null;
         }
-        CsmCacheMap.Value prev = map.put(key, value);
+        CsmCacheMap.Value prev = map.put(key, CsmCacheMap.toValue(value, Integer.MAX_VALUE));
         LOGGER.log(Level.FINE, "putValue {1}->{2} (replaced {3})\n", new Object[] {key, value, prev});
-        return prev;
+        return prev != null ? prev.getResult() : null;
     }
 
     /**

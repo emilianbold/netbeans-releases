@@ -359,7 +359,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             return true;
         }
         try {
-            if (getClass().getMethod(getName()).isAnnotationPresent(RandomlyFails.class)) {
+            if (getClass().getMethod(super.getName()).isAnnotationPresent(RandomlyFails.class)) {
                 return true;
             }
         } catch (NoSuchMethodException x) {
