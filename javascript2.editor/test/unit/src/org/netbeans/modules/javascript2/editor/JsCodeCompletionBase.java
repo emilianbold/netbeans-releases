@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -94,6 +95,8 @@ public class JsCodeCompletionBase extends JsTestBase {
         MockLookup.setInstances(new ClassPathProviderImpl());
         MockLookup.setInstances(lookupAll.toArray());
         OpenProjects.getDefault().getOpenProjects();
+        OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).autoCompletionTypeResolution();
+        OptionsUtils.forLanguage(getPreferredLanguage().getLexerLanguage()).setTestTypeResolution(true);
     }
 
 //    @Override

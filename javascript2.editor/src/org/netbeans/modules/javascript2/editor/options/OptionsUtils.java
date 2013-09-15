@@ -186,4 +186,8 @@ public final class OptionsUtils {
             preferencesTracker.preferenceChange(null);
         }
     }
+    
+    public void setTestTypeResolution(boolean value) {
+        autoCompletionTypeResolution = value;
+    }
 }
