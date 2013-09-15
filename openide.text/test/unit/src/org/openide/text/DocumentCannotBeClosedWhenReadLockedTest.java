@@ -84,10 +84,8 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
     private java.util.List/*<java.beans.PropertyChangeListener>*/ propL = new java.util.ArrayList ();
     private java.beans.VetoableChangeListener vetoL;
     
+    CountDownLatch unmarkModifiedStarted = new CountDownLatch(1);
     
-    /** lock to use for communication between AWT & main thread */
-    private Object LOCK = new Object ();
-
     CountDownLatch unmarkModifiedFinished = new CountDownLatch(1);
 
     /** Creates new TextTest */
@@ -106,6 +104,8 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
     public void testReadLockTheDocumentAndThenTryToCreateAPositionInItMeanWhileLetOtherThreadCloseAComponent () throws Exception {
         StyledDocument doc = support.openDocument ();
         final CloneableEditorSupport.Pane pane = support.openAt (support.createPositionRef (0, javax.swing.text.Position.Bias.Forward), 0);
+        final CountDownLatch awtWorkStarted = new CountDownLatch(1);
+        final CountDownLatch awtWorkFinished = new CountDownLatch(1);
         assertNotNull (pane);
         assertNotNull ("TopComponent is there", pane.getComponent ());
         
@@ -115,7 +115,6 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
 
         class DoWork implements Runnable {
             private boolean startedAWT;
-            private boolean finishedAWT;
             private boolean startedWork;
             private boolean finishedWork;
             
@@ -129,10 +128,7 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
              
             private void doWorkInAWT () {
                 startedAWT = true;
-                synchronized (LOCK) {
-                    // let the main thread know that it can do the rendering
-                    LOCK.notify();
-                }
+                awtWorkStarted.countDown();
                 
                 try {
                     Thread.sleep (500);
@@ -150,46 +146,28 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
                 }
 
                 assertFalse ("The document should be marked unmodified now", modified);
-                synchronized (this) {
-                    finishedAWT = true;
-                    notifyAll ();
-                }
+                awtWorkFinished.countDown();
             }
             
             private void doWork () {
                 startedWork = true;
-                synchronized (LOCK) {
-                    try {
-                        LOCK.wait ();
-                    } catch (InterruptedException ex) {
-                        throw new org.netbeans.junit.AssertionFailedErrorException (ex);
-                    }
+                try {
+                    unmarkModifiedStarted.await();
+                } catch (InterruptedException ex) {
+                    fail(ex.getMessage());
                 }
-                
+
                 // now the document is blocked in after close, try to ask for a position
                 support.createPositionRef (0, javax.swing.text.Position.Bias.Forward);
                 finishedWork = true;
-            }
-            
-            public synchronized void waitFinishedAWT () throws InterruptedException {
-                int cnt = 5;
-                while (!finishedAWT && cnt-- > 0) {
-                    wait (500);
-                }
-                
-                if (!finishedAWT) {
-                    fail ("AWT has not finsihed");
-                }
             }
             
         }
         DoWork doWork = new DoWork ();
         
         
-        synchronized (LOCK) {
-            javax.swing.SwingUtilities.invokeLater (doWork);
-            LOCK.wait ();
-        }
+        javax.swing.SwingUtilities.invokeLater (doWork);
+        awtWorkStarted.await();
             
         
         doc.render (doWork);
@@ -200,13 +178,14 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
         assertTrue ("AWT started", doWork.startedAWT);
         assertTrue ("Work started", doWork.startedWork);
 
-        doWork.waitFinishedAWT ();
+        awtWorkFinished.await();
         assertTrue ("Work done", doWork.finishedWork);
     }
 
     public void testReadLockTheDocumentAndThenTryToCreateAPositionInItMeanWhileLetOtherThreadCloseIt () throws Exception {
+        final CountDownLatch awtWorkStarted = new CountDownLatch(1);
+        final CountDownLatch awtWorkFinished = new CountDownLatch(1);
         class DoWork implements Runnable {
-            private boolean finishedAWT;
             private boolean finishedWork;
             
             public void run () {
@@ -218,11 +197,7 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
             }
              
             private void doWorkInAWT () {
-                synchronized (LOCK) {
-                    // let the main thread know that it can do the rendering
-                    LOCK.notify();
-                }
-                
+                awtWorkStarted.countDown();
                 try {
                     Thread.sleep (500);
                 } catch (InterruptedException ex) {
@@ -239,19 +214,14 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
                 }
 
                 assertFalse ("The document should be marked unmodified now", modified);
-                synchronized (this) {
-                    finishedAWT = true;
-                    notifyAll ();
-                }
+                awtWorkFinished.countDown();
             }
             
             private void doWork () {
-                synchronized (LOCK) {
-                    try {
-                        LOCK.wait ();
-                    } catch (InterruptedException ex) {
-                        throw new org.netbeans.junit.AssertionFailedErrorException (ex);
-                    }
+                try {
+                    unmarkModifiedStarted.await();
+                } catch (InterruptedException ex) {
+                    fail(ex.getMessage());
                 }
                 
                 // now the document is blocked in after close, try to ask for a position
@@ -259,16 +229,6 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
                 finishedWork = true;
             }
             
-            public synchronized void waitFinishedAWT () throws InterruptedException {
-                int cnt = 5;
-                while (!finishedAWT && cnt-- > 0) {
-                    wait (500);
-                }
-                
-                if (!finishedAWT) {
-                    fail ("AWT has not finsihed");
-                }
-            }
         }
         DoWork doWork = new DoWork ();
         StyledDocument doc = support.openDocument ();
@@ -277,16 +237,13 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
         // Otherwise notifyUnmodified() would not be called (there's no reason to call it in such case).
         doc.insertString(0, "a", null);
 
-        synchronized (LOCK) {
-            javax.swing.SwingUtilities.invokeLater (doWork);
-            LOCK.wait ();
-        }
-            
+        javax.swing.SwingUtilities.invokeLater (doWork);
+        awtWorkStarted.await();
         
         doc.render (doWork);
         
         // maybe this needs to invokeAndWait something empty in AWT?
-        doWork.waitFinishedAWT ();
+        awtWorkFinished.await();
         assertTrue ("Work done", doWork.finishedWork);
     }
     
@@ -358,13 +315,11 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
     }
     
     public void unmarkModified() {
-        synchronized (LOCK) {
-            LOCK.notify ();
-            try {
-                LOCK.wait (500);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
+        unmarkModifiedStarted.countDown();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
         modified = false;
         unmarkModifiedFinished.countDown();
