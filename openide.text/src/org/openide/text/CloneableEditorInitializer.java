@@ -134,7 +134,8 @@ final class CloneableEditorInitializer implements Runnable {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.fine("CEI:Will wait() editor=" + System.identityHashCode(editor) + '\n'); // NOI18N
                         }
-                        edtRequests.wait();
+                        // Wait for a limited time in case the notify() would not arrive (to find a fix for issue #235319)
+                        edtRequests.wait(5000);
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -225,11 +226,19 @@ final class CloneableEditorInitializer implements Runnable {
     }
     
     void start() {
-        kit = ces.createEditorKit();
-        addLoadingLabel();
-        task = RP.create(this);
-        task.setPriority(Thread.MIN_PRIORITY + 2);
-        nextPhase(); // Process first phase
+        boolean success = false;
+        try {
+            kit = ces.createEditorKit();
+            addLoadingLabel();
+            task = RP.create(this);
+            task.setPriority(Thread.MIN_PRIORITY + 2);
+            nextPhase(); // Process first phase
+            success = true;
+        } finally {
+            if (!success) {
+                cancelInitialization();
+            }
+        }
     }
     
     boolean nextPhase() {
@@ -243,20 +252,29 @@ final class CloneableEditorInitializer implements Runnable {
                 return false;
             }
         }
-        // Schedule the task
-        if (phase.isRunInEDT()) {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("CEI:addEDTRequest(): " + this + '\n'); // NOI18N
+
+        boolean success = false;
+        try {
+            // Schedule the task
+            if (phase.isRunInEDT()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("CEI:addEDTRequest(): " + this + '\n'); // NOI18N
+                }
+                addEDTRequest(this);
+                // Ensure that the requests gets processed
+                WindowManager.getDefault().invokeWhenUIReady(processPendingEDTRequestsRunnable);
+    //            Mutex.EVENT.readAccess(processPendingEDTRequestsRunnable);
+            } else {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("CEI:task.schedule(): " + this + '\n'); // NOI18N
+                }
+                task.schedule(0);
             }
-            addEDTRequest(this);
-            // Ensure that the requests gets processed
-            WindowManager.getDefault().invokeWhenUIReady(processPendingEDTRequestsRunnable);
-//            Mutex.EVENT.readAccess(processPendingEDTRequestsRunnable);
-        } else {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("CEI:task.schedule(): " + this + '\n'); // NOI18N
+            success = true;
+        } finally {
+            if (!success) {
+                cancelInitialization();
             }
-            task.schedule(0);
         }
         return true;
     }
@@ -351,17 +369,25 @@ final class CloneableEditorInitializer implements Runnable {
             }
         }
     
-        long howLong = System.currentTimeMillis() - now;
-        if (TIMER.isLoggable(Level.FINE)) {
-            String thread = SwingUtilities.isEventDispatchThread() ? "EDT" : "RP"; // NOI18N
-            Document d = doc;
-            Object who = d == null ? null : d.getProperty(Document.StreamDescriptionProperty);
-            if (who == null) {
-                who = ces.messageName();
+        success = false;
+        try {
+            long howLong = System.currentTimeMillis() - now;
+            if (TIMER.isLoggable(Level.FINE)) {
+                String thread = SwingUtilities.isEventDispatchThread() ? "EDT" : "RP"; // NOI18N
+                Document d = doc;
+                Object who = d == null ? null : d.getProperty(Document.StreamDescriptionProperty);
+                if (who == null) {
+                    who = ces.messageName();
+                }
+                TIMER.log(Level.FINE,
+                        "Open Editor, phase " + phase + ", " + thread + " [ms]",
+                        new Object[]{who, howLong});
             }
-            TIMER.log(Level.FINE,
-                    "Open Editor, phase " + phase + ", " + thread + " [ms]",
-                    new Object[]{who, howLong});
+            success = true;
+        } finally {
+            if (!success) {
+                cancelInitialization();
+            }
         }
 
         success = false;
