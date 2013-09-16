@@ -48,8 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
@@ -76,6 +74,7 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.openide.awt.ActionReferences;
+import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -504,5 +503,10 @@ public final class DashboardTopComponent extends TopComponent {
                 refresher.setDashboardBusy(false);
             }
         }
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.bugtracking.tasks.DashboardTopComponent"); //NOI18N
     }
 }
