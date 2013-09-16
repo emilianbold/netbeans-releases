@@ -179,7 +179,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
 
             private void log (String revision, GitBranch branch) {
                 OutputLogger logger = getLogger();
-                logger.output(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
+                logger.outputLine(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
             }
 
             private void resolveConflicts (File[] conflicts) throws GitException {

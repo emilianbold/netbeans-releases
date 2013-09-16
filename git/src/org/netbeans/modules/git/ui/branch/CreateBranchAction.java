@@ -105,7 +105,7 @@ public class CreateBranchAction extends SingleRepositoryAction {
 
                     private void log (String revision, GitBranch branch) {
                         OutputLogger logger = getLogger();
-                        logger.output(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
+                        logger.outputLine(NbBundle.getMessage(CreateBranchAction.class, "MSG_CreateBranchAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
                     }
                 };
                 supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_CreateBranchAction_progressName());
