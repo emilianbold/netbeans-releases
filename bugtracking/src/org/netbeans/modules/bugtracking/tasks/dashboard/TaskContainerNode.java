@@ -227,7 +227,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
                 taskListener = new TaskListener();
             }
             
-            if(taskNodes == null) {
+            if(taskNodes == null || taskNodes.isEmpty()) {
                 taskNodes = new ArrayList<TaskNode>(tasks.size());
             }
             

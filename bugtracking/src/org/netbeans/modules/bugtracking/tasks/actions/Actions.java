@@ -598,18 +598,17 @@ public class Actions {
         }
     }
 
-    public static class CloseRepositoryNodeAction extends AbstractAction {
+    public static class CloseRepositoryNodeAction extends RepositoryAction {
 
-        private final RepositoryNode repositoryNode;
-
-        public CloseRepositoryNodeAction(RepositoryNode repositoryNode) {
-            super(org.openide.util.NbBundle.getMessage(CloseRepositoryNodeAction.class, "CTL_CloseNode")); //NOI18N
-            this.repositoryNode = repositoryNode;
+        public CloseRepositoryNodeAction(RepositoryNode... repositoryNodes) {
+            super(org.openide.util.NbBundle.getMessage(CloseRepositoryNodeAction.class, "CTL_CloseNode"), repositoryNodes); //NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, false);
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, false);
+            }
         }
     }
 
@@ -621,18 +620,27 @@ public class Actions {
         }
     }
 
-    public static class OpenRepositoryNodeAction extends AbstractAction {
+    public static class OpenRepositoryNodeAction extends RepositoryAction {
 
-        private final RepositoryNode repositoryNode;
-
-        public OpenRepositoryNodeAction(RepositoryNode repositoryNode) {
-            super(org.openide.util.NbBundle.getMessage(OpenCategoryNodeAction.class, "CTL_OpenNode")); //NOI18N
-            this.repositoryNode = repositoryNode;
+        public OpenRepositoryNodeAction(RepositoryNode... repositoryNodes) {
+            super(org.openide.util.NbBundle.getMessage(OpenCategoryNodeAction.class, "CTL_OpenNode"), repositoryNodes); //NOI18N
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, true);
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                DashboardViewer.getInstance().setRepositoryOpened(repositoryNode, true);
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                if (repositoryNode.isOpened()) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
