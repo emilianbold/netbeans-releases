@@ -173,7 +173,7 @@ class DocumentSwitcherTable extends SwitcherTable {
         }
     }
 
-    private boolean isClosable( Item item ) {
+    boolean isClosable( Item item ) {
         if( !SHOW_CLOSE_BUTTON )
             return false;
 
