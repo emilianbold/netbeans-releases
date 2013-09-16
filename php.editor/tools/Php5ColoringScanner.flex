@@ -575,7 +575,7 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
         popState();
         return PHPTokenId.PHP_STRING;
     }
-    {ANY_CHAR} {
+    {ANY_CHAR} | "class"{LABEL} {
         yypushback(yylength());
         popState();
     }

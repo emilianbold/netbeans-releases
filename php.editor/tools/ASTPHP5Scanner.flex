@@ -521,7 +521,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
         popState();
         return createFullSymbol(ASTPHP5Symbols.T_STRING);
     }
-    {ANY_CHAR} {
+    {ANY_CHAR} | "class"{LABEL} {
         yypushback(yylength());
         popState();
     }
