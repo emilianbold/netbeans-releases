@@ -374,6 +374,30 @@ final class ButtonPopupSwitcher implements MouseInputListener, AWTEventListener,
                     }
                 }
                 break;
+            case KeyEvent.VK_DELETE: {
+
+                Item item = ( Item ) pTable.getModel().getValueAt( selRow, selCol );
+                if( null != item && pTable.isClosable( item ) ) {
+                    TabData tab = item.getTabData();
+                    int tabIndex = displayer.getModel().indexOf( tab );
+                    if( tabIndex >= 0 ) {
+                        if( displayer.getModel().size() == 1 ) {
+                            SwingUtilities.invokeLater( new Runnable() {
+                                @Override
+                                public void run() {
+                                    hideCurrentPopup();
+                                }
+                            });
+                        }
+                        TabActionEvent evt = new TabActionEvent( displayer, TabDisplayer.COMMAND_CLOSE, tabIndex);
+                        displayer.postActionEvent( evt );
+                        selRow = Math.min( pTable.getModel().getRowCount()-1, selRow );
+                        selCol = Math.min( pTable.getModel().getColumnCount()-1, selCol );
+                        switched = true;
+                    }
+                }
+                break;
+            }
             case KeyEvent.VK_ENTER:
                 final SwitcherTableItem item = pTable.getSelectedItem();
                 if (item != null) {

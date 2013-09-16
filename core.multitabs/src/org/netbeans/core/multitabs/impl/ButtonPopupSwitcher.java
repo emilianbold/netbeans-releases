@@ -64,8 +64,10 @@ import org.netbeans.core.multitabs.impl.DocumentSwitcherTable.Item;
 import org.netbeans.core.multitabs.impl.ProjectSupport.ProjectProxy;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.netbeans.swing.tabcontrol.TabData;
+import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.TopComponent;
 
@@ -379,6 +381,29 @@ final class ButtonPopupSwitcher implements MouseInputListener, AWTEventListener,
                     }
                 }
                 break;
+            case KeyEvent.VK_DELETE: {
+                final Item item = ( Item ) pTable.getSelectedItem();
+                if (item != null && TabDataRenderer.isClosable( item.getTabData() )) {
+                    TabData tab = item.getTabData();
+                    int tabIndex = controller.getTabModel().indexOf( tab );
+                    if( tabIndex >= 0 ) {
+                        if( controller.getTabModel().size() == 1 ) {
+                            SwingUtilities.invokeLater( new Runnable() {
+                                @Override
+                                public void run() {
+                                    hideCurrentPopup();
+                                }
+                            });
+                        }
+                        TabActionEvent tae = new TabActionEvent( this, TabbedContainer.COMMAND_CLOSE, tabIndex );
+                        controller.postActionEvent( tae );
+                        selRow = Math.min( pTable.getModel().getRowCount()-1, selRow );
+                        selCol = Math.min( pTable.getModel().getColumnCount()-1, selCol );
+                        switched = true;
+                    }
+                }
+                break;
+            }
             case KeyEvent.VK_ENTER:
                 final SwitcherTableItem item = pTable.getSelectedItem();
                 if (item != null) {
@@ -467,7 +492,7 @@ final class ButtonPopupSwitcher implements MouseInputListener, AWTEventListener,
         java.util.List<TabData> tabs = controller.getTabModel().getTabs();
         ArrayList<Item> items = new ArrayList<Item>(tabs.size());
         int selIdx = controller.getSelectedIndex();
-        TabData selectedTab = selIdx >= 0 ? controller.getTabModel().getTab(selIdx) : null;
+        TabData selectedTab = selIdx >= 0 && selIdx < controller.getTabModel().size() ? controller.getTabModel().getTab(selIdx) : null;
         boolean hasProjectInfo = false;
         for (TabData tab : tabs) {
             String name;
