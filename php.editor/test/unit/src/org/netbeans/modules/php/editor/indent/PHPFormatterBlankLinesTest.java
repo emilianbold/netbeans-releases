@@ -943,4 +943,16 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue235710_08.php", options);
     }
 
+    public void testIssue235972_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_AFTER_OPEN_PHP_TAG, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue235972_01.php", options);
+    }
+
+    public void testIssue235972_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_AFTER_OPEN_PHP_TAG, 0);
+        reformatFileContents("testfiles/formatting/blankLines/issue235972_02.php", options);
+    }
+
 }

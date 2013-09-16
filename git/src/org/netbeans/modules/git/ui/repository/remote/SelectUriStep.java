@@ -70,6 +70,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
@@ -160,7 +161,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         }
         panel.rbConfiguredUri.setSelected(!panel.rbCreateNew.isSelected());
         if (remotes.isEmpty()) {
-            panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(new String[] { "origin" })); //NOI18N
+            panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(new String[] { GitUtils.REMOTE_ORIGIN }));
         } else {
             panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(remotes.keySet().toArray()));
         }

@@ -125,6 +125,7 @@ public final class GitUtils {
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
     public static final String MASTER = "master"; //NOI18N
     private static final Set<File> loggedRepositories = new HashSet<File>();
+    public static final String REMOTE_ORIGIN = "origin"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata

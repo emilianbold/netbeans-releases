@@ -171,9 +171,15 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
             List<String> branches = wiz.getBranchNames();
-            final List<String> refSpecs = new ArrayList<String>(branches.size());
-            for (String branchName : branches) {
-                refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
+            final List<String> refSpecs;
+            if (branches == CloneWizard.ALL_BRANCHES) {
+                // all branches to fetch
+                refSpecs = Collections.<String>singletonList(GitUtils.getGlobalRefSpec(remoteName));
+            } else {
+                refSpecs = new ArrayList<String>(branches.size());
+                for (String branchName : branches) {
+                    refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
+                }
             }
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();

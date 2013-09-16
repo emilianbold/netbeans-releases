@@ -48,15 +48,16 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.MissingResourceException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
@@ -74,7 +75,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class RepositoryStep extends AbstractWizardPanel implements ActionListener, ChangeListener, AsynchronousValidatingPanel<WizardDescriptor> {
+public class RepositoryStep extends AbstractWizardPanel implements ChangeListener, AsynchronousValidatingPanel<WizardDescriptor>,
+        WizardDescriptor.FinishablePanel<WizardDescriptor>, DocumentListener {
 
     private RepositoryStepProgressSupport support;
     private Map<String, GitBranch> branches;
@@ -82,17 +84,17 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     private Map<String, GitBranch> remoteBranches;
     private final RepositoryStepPanel panel;
     private final RemoteRepository repository;
+    private boolean destinationValid = true;
+    private boolean validatingFinish;
+    private final CloneWizard wiz;
 
-    public RepositoryStep (PasswordAuthentication pa, String forPath) {
+    public RepositoryStep (CloneWizard wiz, PasswordAuthentication pa, String forPath) {
+        this.wiz = wiz;
         repository = new RemoteRepository(pa, forPath);
         repository.addChangeListener(this);
-        this.panel = new RepositoryStepPanel(repository.getPanel());
+        panel = new RepositoryStepPanel(repository.getPanel());
+        panel.txtDestination.getDocument().addDocumentListener(this);
         validateRepository();
-    }
-
-    @Override
-    public void actionPerformed (ActionEvent e) {
-
     }
 
     @Override
@@ -102,6 +104,39 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         try {
             branches = null;
             if(!validateRepository()) return false;
+            if (validatingFinish) {
+                Message msg = null;
+                try {
+                    if ((msg = validateNoEmptyDestination()) != null) {
+                        // cannot finish
+                        destinationValid = false;
+                        return false;
+                    }
+                    File dest = getDestination();
+                    if (dest.isFile()) {
+                        setValid(false, msg = new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_DEST_IS_FILE_ERROR"), false));
+                        destinationValid = false;
+                        return false;
+                    }
+                    File[] files = dest.listFiles();
+                    if (files != null && files.length > 0) {
+                        setValid(false, msg = new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_DEST_IS_NOT_EMPTY_ERROR"), false));
+                        destinationValid = false;
+                        return false;
+                    }
+                } finally {
+                    if (msg != null) {
+                        final Message message = msg;
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                setValid(true, message);
+                            }
+                        });
+                    }
+                }
+                destinationValid = true;
+            }
 
             final File tempRepository = Utils.getTempFolder();
             GitURI uri = repository.getURI();
@@ -124,7 +159,12 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             }    
         } finally {
             support = null;
-            repository.setEnabled(true);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    enable(true);
+                }
+            });
         }
         return valid;
     }
@@ -137,6 +177,26 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
         boolean valid = repository.isValid();
         setValid(valid, repository.getMessage());
         return valid;
+    }
+
+    private Message validateNoEmptyDestination () throws MissingResourceException {
+        String parent = panel.txtDestination.getText();
+        if (parent.trim().isEmpty()) {
+            destinationValid = false;
+            Message msg = new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_PARENT_ERROR"), true);
+            setValid(true, msg);
+            return msg;
+        }
+        String name = panel.lblCloneName.getText();
+        if (name == null || name.trim().isEmpty()) {
+            destinationValid = false;
+            Message msg = new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_EMPTY_NAME_ERROR"), true);
+            setValid(true, msg);
+            return msg;
+        }
+        destinationValid = true;
+        setValid(true, null);
+        return null;
     }
 
     public Map<String, GitBranch> getBranches() {
@@ -159,7 +219,8 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     public void prepareValidation () {
-        repository.setEnabled(false);
+        validatingFinish = wiz.isFinishing();
+        enable(false);
     }    
     
     public void cancelBackgroundTasks () {
@@ -174,11 +235,70 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     
     @Override
     public void stateChanged(ChangeEvent ce) {
+        panel.lblCloneName.setText(File.separator + getCloneName(repository.getURI()));
         setValid(repository.isValid(), repository.getMessage());
+    }
+
+    @Override
+    public boolean isFinishPanel () {
+        return destinationValid;
     }
 
     void store() {
         repository.store();
+    }
+
+    String getDestinationFolder () {
+        return panel.txtDestination.getText().trim();
+    }
+
+    private void enable (boolean enabled) {
+        repository.setEnabled(enabled);
+        panel.txtDestination.setEnabled(enabled);
+        panel.btnBrowseDestination.setEnabled(enabled);
+    }
+
+    private String getCloneName (GitURI uri) {
+        String lastElem = ""; //NOI18N
+        if (uri != null) {
+            String path = uri.getPath();
+            // get the last path element
+            String[] pathElements = path.split("[/\\\\]"); //NOI18N
+            for (int i = pathElements.length - 1; i >= 0; --i) {
+                lastElem = pathElements[i];
+                if (!lastElem.isEmpty()) {
+                    break;
+                }
+            }
+            if (!lastElem.isEmpty()) {
+                // is it of the usual form abcdrepository.git ?
+                if (lastElem.endsWith(".git")) { //NOI18N
+                    lastElem = lastElem.substring(0, lastElem.length() - 4);
+                }
+                if (!lastElem.isEmpty()) {
+                    return lastElem;
+                }
+            }
+        }
+        return lastElem.trim();
+    }
+
+    File getDestination () {
+        return new File(panel.txtDestination.getText().trim() + File.separator + panel.lblCloneName.getText());
+    }
+
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        validateNoEmptyDestination();
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        validateNoEmptyDestination();
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) {
     }
 
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
@@ -221,7 +341,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
         @Override
         public void setEnabled(boolean editable) {
-            repository.setEnabled(editable);
+            enable(editable);
         }        
     };
 
