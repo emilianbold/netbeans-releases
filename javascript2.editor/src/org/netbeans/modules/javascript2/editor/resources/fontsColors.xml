@@ -7,6 +7,7 @@
     <fontcolor name="operator" default="operator"/>
     <fontcolor name="string" default="string"/>
     <fontcolor name="error" default="error"/>
+    <fontcolor name="separator" default="separator"/>
     <fontcolor name="identifier" default="identifier"/>
     <fontcolor name="whitespace" default="whitespace"/>
 
