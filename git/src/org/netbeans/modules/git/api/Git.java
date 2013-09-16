@@ -100,7 +100,7 @@ public final class Git {
         try {
             client = org.netbeans.modules.git.Git.getInstance().getClient(localFolder);
             client.init(GitUtils.NULL_PROGRESS_MONITOR);
-            String remoteName = "origin"; //NOI18N
+            String remoteName = GitUtils.REMOTE_ORIGIN;
             client.setRemote(new GitRemoteConfig(remoteName, Arrays.asList(repositoryUrl),
                     Collections.<String>emptyList(),
                     Arrays.asList(GitUtils.getRefSpec("*", remoteName)),

@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
-    private List<TaskNode> taskNodes;
+    private List<TaskNode> taskNodes = Collections.emptyList();
     private List<TaskNode> filteredTaskNodes = Collections.emptyList();
     private TaskListener taskListener;
     private boolean refresh;
