@@ -281,9 +281,9 @@ final class FileObjectKeeper implements FileChangeListener {
             if (arr == null || kept == null) {  //#178378 - ignore queued events when no more listening (kept == null)
                 return;
             }
-            for (FileChangeListener l : arr) {
-                l.fileFolderCreated(fe);
-            }
+        }
+        for (FileChangeListener l : arr) {
+            l.fileFolderCreated(fe);
         }
     }
 
