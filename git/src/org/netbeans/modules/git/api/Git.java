@@ -92,7 +92,7 @@ public final class Git {
 
     public static void openSearchHistory (File file, String commitId) {
         SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), 
-                file, file.getName(), commitId);
+                file, file.getName(), commitId, commitId);
     }
 
     public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws URISyntaxException {

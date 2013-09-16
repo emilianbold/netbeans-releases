@@ -415,7 +415,7 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
         @Override
         public boolean mouseClicked (Point p) {
             if (bounds != null && bounds.contains(p)) {
-                SearchHistoryAction.openSearch(repository, root, root.getName(), revision);
+                SearchHistoryAction.openSearch(repository, root, root.getName(), revision, revision);
                 return true;
             }
             return false;

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.git.ui.output;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +56,8 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -159,7 +162,7 @@ public class OutputLogger {
         });
     }
     
-    public void output (final String msg) {
+    public void outputLine (final String msg) {
         if(msg == null) return;
         rp.post(new Runnable() {
             @Override
@@ -167,6 +170,33 @@ public class OutputLogger {
                 OutputWriter out = getLog().getOut();
                 out.println(msg);
                 out.flush();
+            }
+        });
+    }
+    
+    public void output (final String msg, final OutputListener list) {
+        if(msg == null) return;
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                InputOutput out = getLog();
+                if (writable) {
+                    if (IOColorPrint.isSupported(out) && IOColors.isSupported(out)) {
+                        Color c;
+                        if (list == null) {
+                            c = IOColors.getColor(out, IOColors.OutputType.OUTPUT);
+                        } else {
+                            c = IOColors.getColor(out, IOColors.OutputType.HYPERLINK);
+                        }
+                        try {
+                            IOColorPrint.print(log, msg, list, false, c);
+                        } catch (IOException ex) {
+                            out.getOut().print(msg);
+                        }
+                    } else {
+                        out.getOut().print(msg);
+                    }
+                }
             }
         });
     }
@@ -225,7 +255,11 @@ public class OutputLogger {
         }
 
         @Override
-        public void output(String msg){
+        public void outputLine(String msg){
+        }
+
+        @Override
+        public void output (String msg, OutputListener list) {
         }
 
         @Override

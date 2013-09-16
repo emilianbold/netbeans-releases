@@ -229,19 +229,19 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 private void log (Map<String, GitTransportUpdate> updates) {
                     OutputLogger logger = getLogger();
                     if (updates.isEmpty()) {
-                        logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.noChange")); //NOI18N
+                        logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.noChange")); //NOI18N
                     } else {
                         for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                             GitTransportUpdate update = e.getValue();
                             if (update.getType() == Type.BRANCH) {
-                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateBranch", new Object[] { //NOI18N
+                                logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateBranch", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getOldObjectId(),
                                     update.getNewObjectId(),
                                     update.getResult(),
                                 }));
                             } else {
-                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateTag", new Object[] { //NOI18N
+                                logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateTag", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getResult(),
                                 }));

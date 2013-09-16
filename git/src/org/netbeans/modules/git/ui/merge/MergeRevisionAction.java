@@ -67,6 +67,7 @@ import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.git.utils.LogUtils;
 import org.netbeans.modules.git.utils.ResultProcessor;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDisplayer;
@@ -142,9 +143,11 @@ public class MergeRevisionAction extends SingleRepositoryAction {
 
         private final OutputLogger logger;
         private final String revision;
+        private final GitBranch current;
         
         public MergeResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
             super(client, repository, revision, pm);
+            this.current = RepositoryInfo.getInstance(repository).getActiveBranch();
             this.revision = revision;
             this.logger = logger;
         }
@@ -159,17 +162,20 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }
             }
+            boolean logActions = false;
             switch (result.getMergeStatus()) {
                 case ALREADY_UP_TO_DATE:
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.alreadyUpToDate", revision)); //NOI18N
                     break;
                 case FAST_FORWARD:
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.fastForward", revision)); //NOI18N
-                    GitUtils.printInfo(sb, info);
+                    GitUtils.printInfo(sb, info, false);
+                    logActions = true;
                     break;
                 case MERGED:
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.merged", revision)); //NOI18N
-                    GitUtils.printInfo(sb, info);
+                    GitUtils.printInfo(sb, info, false);
+                    logActions = true;
                     break;
                 case CONFLICTING:
                     sb.append(NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.conflict", revision)); //NOI18N
@@ -201,7 +207,11 @@ public class MergeRevisionAction extends SingleRepositoryAction {
                             NbBundle.getMessage(MergeRevisionAction.class, "MSG_MergeRevisionAction.result.unsupported"), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
             }
-            logger.output(sb.toString());
+            logger.outputLine(sb.toString());
+            if (logActions) {
+                LogUtils.logBranchUpdateReview(repository, current.getName(),
+                        current.getId(), result.getNewHead(), logger);
+            }
         }
     }
 }

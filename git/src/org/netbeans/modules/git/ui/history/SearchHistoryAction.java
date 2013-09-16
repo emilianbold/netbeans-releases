@@ -94,7 +94,8 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
         });
     }
     
-    public static void openSearch (final File repository, final File root, final String contextName, final String commitId) {
+    public static void openSearch (final File repository, final File root, final String contextName,
+            final String commitIdFrom, final String commitIdTo) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -103,7 +104,8 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
-                tc.setSearchCommitId(commitId);
+                tc.setSearchCommitFrom(commitIdFrom);
+                tc.setSearchCommitTo(commitIdTo);
                 tc.search(true);
             }
         });

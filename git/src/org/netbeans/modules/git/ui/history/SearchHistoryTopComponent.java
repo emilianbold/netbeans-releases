@@ -85,9 +85,14 @@ public class SearchHistoryTopComponent extends TopComponent {
         shp.setSearchCriteria(showCriteria);
     }
 
-    void setSearchCommitId (String commitId) {
+    void setSearchCommitFrom (String commitId) {
         if (commitId != null) {
             scp.tfFrom.setText(commitId);
+        }
+    }
+    
+    void setSearchCommitTo (String commitId) {
+        if (commitId != null) {
             scp.tfTo.setText(commitId);
         }
     }

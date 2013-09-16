@@ -521,7 +521,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             showCommitMenu.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    SearchHistoryAction.openSearch(repositoryRoot, file, file.getName(), revisionPerLine.getRevision());
+                    SearchHistoryAction.openSearch(repositoryRoot, file, file.getName(),
+                            revisionPerLine.getRevision(), revisionPerLine.getRevision());
                 }
             });
             popupMenu.add(showCommitMenu);
