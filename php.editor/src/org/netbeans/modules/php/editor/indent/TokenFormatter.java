@@ -1419,7 +1419,9 @@ public class TokenFormatter {
                                                 newLines = docOptions.blankLinesAfterOpenPHPTagInHTML + 1;
                                             } else {
                                                 newLines = docOptions.blankLinesAfterOpenPHPTag;
-                                                if (newLines > 0) {
+                                                if (!isRightBeforeNamespaceDeclaration(formatTokens, index)) {
+                                                    newLines++;
+                                                } else if (newLines > 0) {
                                                     newLines++;
                                                 }
                                             }
@@ -1791,6 +1793,21 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
                 }
+            }
+
+            private boolean isRightBeforeNamespaceDeclaration(List<FormatToken> formatTokens, int index) {
+                boolean result = false;
+                int i = index + 1;
+                if (formatTokens.size() >= i) {
+                    while (formatTokens.get(i).isWhitespace()) {
+                        if (formatTokens.get(i).getId() == FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE) {
+                            result = true;
+                            break;
+                        }
+                        i++;
+                    }
+                }
+                return result;
             }
 
             private boolean isEmptyArray(List<FormatToken> formatTokens, int index) {
