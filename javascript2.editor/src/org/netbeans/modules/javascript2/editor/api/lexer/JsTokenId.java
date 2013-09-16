@@ -110,7 +110,7 @@ public enum JsTokenId implements TokenId {
     OPERATOR_NOT("!", "operator"), // NOI18N
     OPERATOR_BITWISE_NOT("~", "operator"), // NOI18N
     OPERATOR_TERNARY("?", "operator"), // NOI18N
-    OPERATOR_COLON(":", "operator"), // NOI18N
+    OPERATOR_COLON(":", "separator"), // NOI18N
     OPERATOR_EQUALS("==", "operator"), // NOI18N
     OPERATOR_EQUALS_EXACTLY("===", "operator"), // NOI18N
     OPERATOR_LOWER_EQUALS("<=", "operator"), // NOI18N
