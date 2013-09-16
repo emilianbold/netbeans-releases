@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.tomcat5.j2ee;
 
-import org.netbeans.modules.tomcat5.j2ee.JaxWsStack;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
@@ -61,8 +60,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager;
-import org.netbeans.modules.tomcat5.j2ee.EjbSupportImpl;
-import org.netbeans.modules.tomcat5.j2ee.JpaSupportImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
