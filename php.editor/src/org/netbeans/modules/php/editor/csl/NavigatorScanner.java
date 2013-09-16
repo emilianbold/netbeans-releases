@@ -300,7 +300,7 @@ public final class NavigatorScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfaces(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
             boolean first = true;
             for (InterfaceScope interfaceScope : interfaes) {
                 if (interfaceScope != null) {
@@ -561,10 +561,10 @@ public final class NavigatorScanner {
                 formatter.appendText(superCalssName);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaceScopes();
-            if (interfaes != null && interfaes.size() > 0) {
+            Collection<? extends InterfaceScope> interfaces = getClassScope().getSuperInterfaceScopes();
+            if (interfaces != null && interfaces.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                appendInterfeas(interfaes, formatter);
+                appendInterfaces(interfaces, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
             Collection<? extends TraitScope> usedTraits = getClassScope().getTraits();
@@ -676,7 +676,7 @@ public final class NavigatorScanner {
             Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaceScopes();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
-                appendInterfeas(interfaes, formatter);
+                appendInterfaces(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
             return formatter.getText();
