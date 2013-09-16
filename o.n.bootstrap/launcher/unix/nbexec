@@ -227,7 +227,7 @@ if [ -z "$cachedirspecified" ]; then
    cachedir="${userdir}/var/cache"
 fi
 
-if [ -z "$nosplash" -a -f "${cachedir}/splash.png" -a ! -f "${userdir}/lock" ]; then
+if [ `uname` != Darwin -a -z "$nosplash" -a -f "${cachedir}/splash.png" -a ! -f "${userdir}/lock" ]; then
    jargs="$jargs -splash:\"${cachedir}/splash.png\""
 fi
 
