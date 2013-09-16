@@ -54,6 +54,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -107,9 +108,14 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     public static PlatformConvertor createProvider(FileObject reg) {
         return new PlatformConvertor();
     }
-    
+
+    @Override
     public Lookup getEnvironment(DataObject obj) {
-        return new PlatformConvertor((XMLDataObject)obj).getLookup();
+        if (obj instanceof XMLDataObject) {
+            return new PlatformConvertor((XMLDataObject)obj).getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
     }
     
     InstanceContent cookies = new InstanceContent();
@@ -126,7 +132,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     private LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<PropertyChangeEvent>();
     
-    private PlatformConvertor(XMLDataObject  object) {
+    private PlatformConvertor(@NonNull final XMLDataObject  object) {
+        Parameters.notNull("object", object);
         this.holder = object;
         this.holder.getPrimaryFile().addFileChangeListener( new FileChangeAdapter () {
             public void fileDeleted (final FileEvent fe) {
