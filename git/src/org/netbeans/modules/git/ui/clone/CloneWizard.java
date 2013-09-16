@@ -48,6 +48,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
@@ -58,6 +59,7 @@ import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -72,6 +74,7 @@ class CloneWizard  implements ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private final String forPath;
     private final PasswordAuthentication pa;
+    static final List<String> ALL_BRANCHES = new ArrayList(0);
 
     public CloneWizard (PasswordAuthentication pa, String forPath) { 
         this.forPath = forPath;
@@ -143,24 +146,44 @@ class CloneWizard  implements ChangeListener {
         return wizardIterator.repositoryStep.getURI();
     }
 
-    List<? extends GitBranch> getBranches() {
-        return wizardIterator.fetchBranchesStep.getSelectedBranches();
-    }
-
     List<String> getBranchNames () {
-        return wizardIterator.fetchBranchesStep.getSelectedBranchNames();
+        if (wizardIterator.current() == wizardIterator.cloneDestinationStep) {
+            return wizardIterator.fetchBranchesStep.getSelectedBranchNames();
+        } else {
+            return CloneWizard.ALL_BRANCHES;
+        }
     }
     
     File getDestination() {
-        return wizardIterator.cloneDestinationStep.getDestination();
+        return wizardIterator.current() == wizardIterator.cloneDestinationStep
+                ? wizardIterator.cloneDestinationStep.getDestination()
+                : wizardIterator.repositoryStep.getDestination();
     }
 
     String getRemoteName() {
-        return wizardIterator.cloneDestinationStep.getRemoteName();
+        if (wizardIterator.current() == wizardIterator.cloneDestinationStep) {
+            return wizardIterator.cloneDestinationStep.getRemoteName();
+        } else {
+            return GitUtils.REMOTE_ORIGIN;
+        }
     }
 
     GitBranch getBranch() {
-        return wizardIterator.cloneDestinationStep.getBranch();
+        if (wizardIterator.current() == wizardIterator.cloneDestinationStep) {
+            return wizardIterator.cloneDestinationStep.getBranch();
+        } else {
+            Map<String, GitBranch> branches = wizardIterator.repositoryStep.getBranches();
+            GitBranch activeBranch = null;
+            for (GitBranch b : branches.values()) {
+                if (b.isActive()) {
+                    activeBranch = b;
+                    break;
+                } else if (activeBranch == null) {
+                    activeBranch = b;
+                }
+            }
+            return activeBranch;
+        }
     }
     
     boolean scanForProjects() {
@@ -171,6 +194,10 @@ class CloneWizard  implements ChangeListener {
         String targetFolderPath = getDestination().getParentFile().getAbsolutePath();
         GitModuleConfig.getDefault().getPreferences().put(CloneDestinationStep.CLONE_TARGET_DIRECTORY, targetFolderPath);
     }
+
+    boolean isFinishing () {
+        return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
+    }
     
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         private RepositoryStep repositoryStep;
@@ -180,7 +207,7 @@ class CloneWizard  implements ChangeListener {
         @Override
         @SuppressWarnings("unchecked")
         protected Panel<WizardDescriptor>[] initializePanels () {
-            repositoryStep = new RepositoryStep(pa, forPath);
+            repositoryStep = new RepositoryStep(CloneWizard.this, pa, forPath);
             repositoryStep.addChangeListener(CloneWizard.this);
             fetchBranchesStep = new FetchBranchesStep();
             fetchBranchesStep.addChangeListener(CloneWizard.this);
@@ -218,6 +245,7 @@ class CloneWizard  implements ChangeListener {
             if (current() == repositoryStep) {
                 Map<String, GitBranch> branches = repositoryStep.getBranches();
                 fetchBranchesStep.fillRemoteBranches(branches.values());
+                cloneDestinationStep.setDestinationFolder(repositoryStep.getDestinationFolder());
                 repositoryStep.store();
             } else if (current() == fetchBranchesStep) {
                 cloneDestinationStep.setBranches(fetchBranchesStep.getSelectedBranches());

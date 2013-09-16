@@ -138,7 +138,8 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
             "# {0} - group display name", "Delete_Confirm=Do you want to delete group \"{0}\"?",
             "GroupsMenu_more=&More groups...",
             "GroupsMenu_select=Select",
-            "GroupsMenu_moreTitle=Select Project Group"
+            "GroupsMenu_moreTitle=Select Project Group",
+            "GroupsMenu.remove_groups=Remove &Group(s)..."
         })
         @Override public JComponent[] getMenuPresenters() {
             // XXX can it wait to add menu items until it is posted?
@@ -256,6 +257,18 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 }
             });
             add(mi);
+            if(Group.allGroups().size() > 0) {
+                addSeparator();
+                mi = new JMenuItem();
+                Mnemonics.setLocalizedText(mi, GroupsMenu_remove_groups());
+                mi.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        removeGroup();
+                    }
+                });
+                add(mi);
+            }
             if (active != null) {
                 mi = new JMenuItem();
                 Mnemonics.setLocalizedText(mi, GroupsMenu_properties(active.getName()));
@@ -336,6 +349,59 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 public void run() {
                     Group g = NewGroupPanel.create(type, name, autoSync, useOpen, masterProject, directory);
                     Group.setActiveGroup(g, true);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Create (and open) a new group.
+     */
+    @Messages({
+        "GroupsMenu.remove_title=Remove Group(s)",
+        "GroupsMenu.remove_remove=Remove",
+        "GroupsMenu.remove_cancel=Cancel"
+    })
+    private static void removeGroup() {
+        final RemoveGroupPanel panel = new RemoveGroupPanel();
+        DialogDescriptor dd = new DialogDescriptor(panel, GroupsMenu_remove_title());
+        dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        dd.setModal(true);
+        dd.setHelpCtx(new HelpCtx(HELPCTX));
+        final JButton remove = new JButton(GroupsMenu_remove_remove());
+        PropertyChangeListener listener = new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(evt.getPropertyName().equals("selection")) {
+                    if(panel.isAtLeastOneGroupSelected()) {
+                        remove.setEnabled(true);
+                    } else {
+                        remove.setEnabled(false);
+                    }
+                }
+            }
+        };
+        panel.addChangeListener(listener);
+        remove.setDefaultCapable(true);
+        remove.setEnabled(panel.isAtLeastOneGroupSelected());
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NewGroupPanel.PROP_READY.equals(evt.getPropertyName())) {
+                    remove.setEnabled(panel.isReady());
+                }
+            }
+        });
+        JButton cancel = new JButton(GroupsMenu_new_cancel());
+        dd.setOptions(new Object[] {remove, cancel});
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if (result.equals(remove)) {
+            assert panel.isReady();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    panel.remove();
                 }
             });
         }

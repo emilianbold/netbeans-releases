@@ -76,7 +76,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private CloneDestinationPanel panel;
+    private final CloneDestinationPanel panel;
 
     public CloneDestinationStep() {
         panel = new CloneDestinationPanel();
@@ -198,6 +198,10 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
         if(activeBranch != null) {
             panel.branchesComboBox.setSelectedItem(activeBranch);
         }
+    }
+    
+    void setDestinationFolder (String folder) {
+        panel.setDirectory(folder);
     }
 
     File getDestination() {
