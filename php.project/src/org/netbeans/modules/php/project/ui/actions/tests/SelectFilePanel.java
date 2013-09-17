@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
@@ -68,23 +69,26 @@ import org.openide.util.NbBundle;
 public final class SelectFilePanel extends JPanel {
     private static final long serialVersionUID = 8464321687132132L;
 
-    final FileObject sourceRoot;
+    // @GuardedBy("EDT")
+    final List<FileObject> sourceRoots;
     private final DefaultListModel<FileObject> model;
 
     private DialogDescriptor dialogDescriptor;
     private NotificationLineSupport notificationLineSupport;
 
-    private SelectFilePanel(FileObject sourceRoot, List<FileObject> files) {
-        assert sourceRoot != null;
+    private SelectFilePanel(List<FileObject> sourceRoots, List<FileObject> files) {
+        assert EventQueue.isDispatchThread();
+        assert sourceRoots != null;
+        assert !sourceRoots.isEmpty();
         assert files.size() > 1;
 
-        this.sourceRoot = sourceRoot;
+        this.sourceRoots = sourceRoots;
 
         initComponents();
 
         model = new DefaultListModel<>();
         for (FileObject fo : files) {
-            assert FileUtil.isParentOf(sourceRoot, fo);
+            assert isParentOf(sourceRoots, fo) : fo + " not underneath " + sourceRoots;
             model.addElement(fo);
         }
 
@@ -99,8 +103,8 @@ public final class SelectFilePanel extends JPanel {
         });
     }
 
-    public static FileObject open(FileObject sourceRoot, List<FileObject> files) {
-        final SelectFilePanel panel = new SelectFilePanel(sourceRoot, files);
+    public static FileObject open(List<FileObject> sourceRoots, List<FileObject> files) {
+        final SelectFilePanel panel = new SelectFilePanel(sourceRoots, files);
         panel.dialogDescriptor = new DialogDescriptor(
                 panel,
                 NbBundle.getMessage(SelectFilePanel.class, "LBL_SelectFile"),
@@ -114,6 +118,15 @@ public final class SelectFilePanel extends JPanel {
             return panel.getSelectedFile();
         }
         return null;
+    }
+
+    private boolean isParentOf(List<FileObject> folders, FileObject file) {
+        for (FileObject folder : folders) {
+            if (FileUtil.isParentOf(folder, file)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private FileObject getSelectedFile() {
@@ -193,7 +206,9 @@ public final class SelectFilePanel extends JPanel {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
-            String relativePath = FileUtil.getRelativePath(sourceRoot, value);
+            assert EventQueue.isDispatchThread();
+            String relativePath = getRelativePath(sourceRoots, value);
+            assert relativePath != null : value + " not underneath any of: " + sourceRoots;
             setText(relativePath);
             setToolTipText(relativePath);
 
@@ -212,7 +227,18 @@ public final class SelectFilePanel extends JPanel {
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name;  // NOI18N
-
         }
+
+        private String getRelativePath(List<FileObject> folders, FileObject file) {
+            for (FileObject folder : folders) {
+                String relativePath = FileUtil.getRelativePath(folder, file);
+                if (relativePath != null) {
+                    return folder.getNameExt() + "/" + relativePath; // NOI18N
+                }
+            }
+            return null;
+        }
+
     }
+
 }

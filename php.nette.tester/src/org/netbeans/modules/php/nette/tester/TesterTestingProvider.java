@@ -96,9 +96,12 @@ public final class TesterTestingProvider implements PhpTestingProvider {
         if (!FileUtils.isPhpFile(fileObj)) {
             return false;
         }
-        FileObject testDirectory = phpModule.getTestDirectory();
-        return testDirectory != null
-                && FileUtil.isParentOf(testDirectory, fileObj);
+        for (FileObject testDirectory : phpModule.getTestDirectories()) {
+            if (FileUtil.isParentOf(testDirectory, fileObj)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

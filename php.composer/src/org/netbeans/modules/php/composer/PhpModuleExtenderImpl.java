@@ -63,6 +63,7 @@ import org.netbeans.modules.php.composer.ui.PhpModuleExtenderPanel;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -99,8 +100,13 @@ public class PhpModuleExtenderImpl implements PhpModuleExtender {
     @Override
     public PhpModuleExtenderPanel getComponent() {
         if (panel == null) {
-            assert EventQueue.isDispatchThread();
-            panel = new PhpModuleExtenderPanel();
+            // #236069
+            panel = Mutex.EVENT.readAccess(new Mutex.Action<PhpModuleExtenderPanel>() {
+                @Override
+                public PhpModuleExtenderPanel run() {
+                    return new PhpModuleExtenderPanel();
+                }
+            });
         }
         return panel;
     }

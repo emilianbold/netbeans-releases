@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.openide.filesystems.FileObject;
@@ -58,8 +60,12 @@ class ConfigActionSelenium extends ConfigActionTest {
     }
 
     @Override
-    protected FileObject getTestDirectory(boolean showCustomizer) {
-        return ProjectPropertiesSupport.getSeleniumDirectory(project, showCustomizer);
+    protected List<FileObject> getTestDirectories(boolean showCustomizer) {
+        FileObject seleniumDirectory = ProjectPropertiesSupport.getSeleniumDirectory(project, showCustomizer);
+        if (seleniumDirectory == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(seleniumDirectory);
     }
 
 }

@@ -141,6 +141,7 @@ public final class PhpUnit {
     // suite file
     private static final String SUITE_NAME = "NetBeansSuite"; // NOI18N
     private static final String SUITE_RUN = "--run=%s"; // NOI18N
+    private static final String SUITE_PATH_DELIMITER = ";"; // NOI18N
     private static final String SUITE_REL_PATH = "phpunit/" + SUITE_NAME + ".php"; // NOI18N
 
     // generating files
@@ -286,7 +287,7 @@ public final class PhpUnit {
                 testGroups = savedGroups;
             } else {
                 // ask user
-                List<String> allTestGroups = getTestGroups(phpModule, runInfo);
+                List<String> allTestGroups = getTestGroups(phpModule);
                 if (allTestGroups == null) {
                     // some error
                     return null;
@@ -332,16 +333,18 @@ public final class PhpUnit {
             // #218607 - hotfix
             //params.add(SUITE_NAME)
             params.add(getNbSuite().getAbsolutePath());
-            params.add(String.format(SUITE_RUN, FileUtil.toFile(runInfo.getStartFile()).getAbsolutePath()));
+            params.add(String.format(SUITE_RUN, joinPaths(runInfo.getStartFiles(), SUITE_PATH_DELIMITER)));
         }
 
-        phpUnit.workDir(getWorkingDirectory(phpModule, runInfo.getWorkingDirectory()))
+        phpUnit.workDir(getWorkingDirectory(phpModule))
                 .additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return phpUnit.runAndWait(getDescriptor(), "Running PhpUnit tests..."); // NOI18N
             }
-            return phpUnit.debug(runInfo.getStartFile(), getDescriptor(), null);
+            List<FileObject> startFiles = runInfo.getStartFiles();
+            assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
+            return phpUnit.debug(startFiles.get(0), getDescriptor(), null);
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
@@ -355,11 +358,11 @@ public final class PhpUnit {
 
     @NbBundle.Messages("PhpUnit.fetch.testGroups=PHPUnit (test-groups)")
     @CheckForNull
-    private List<String> getTestGroups(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
+    private List<String> getTestGroups(PhpModule phpModule) throws TestRunException {
         PhpExecutable phpUnit = getExecutable(phpModule, Bundle.PhpUnit_fetch_testGroups());
         assert phpUnit != null;
 
-        phpUnit.workDir(FileUtil.toFile(runInfo.getWorkingDirectory()));
+        phpUnit.workDir(getWorkingDirectory(phpModule));
 
         List<String> params = createParams(true);
         addBootstrap(phpModule, params);
@@ -441,11 +444,12 @@ public final class PhpUnit {
     }
 
     // #170120
-    private File getWorkingDirectory(PhpModule phpModule, FileObject defaultWorkDir) {
+    private File getWorkingDirectory(PhpModule phpModule) {
         if (PhpUnitPreferences.isConfigurationEnabled(phpModule)) {
             return new File(PhpUnitPreferences.getConfigurationPath(phpModule)).getParentFile();
         }
-        return FileUtil.toFile(defaultWorkDir);
+        // backward compatibility, simply return the first test directory
+        return FileUtil.toFile(phpModule.getTestDirectory(null));
     }
 
     @NbBundle.Messages({
@@ -497,6 +501,17 @@ public final class PhpUnit {
                 LOGGER.log(Level.INFO, "Cannot delete code coverage log {0}", PhpUnit.COVERAGE_LOG);
             }
         }
+    }
+
+    private String joinPaths(List<FileObject> startFiles, String delimiter) {
+        StringBuilder builder = new StringBuilder(200);
+        for (FileObject startFile : startFiles) {
+            if (builder.length() > 0) {
+                builder.append(delimiter);
+            }
+            builder.append(FileUtil.toFile(startFile).getAbsolutePath());
+        }
+        return builder.toString();
     }
 
     //~ Static helper methods
@@ -558,8 +573,9 @@ public final class PhpUnit {
     }
 
     public static File createBootstrapFile(final PhpModule phpModule) {
-        FileObject testDirectory = phpModule.getTestDirectory();
-        assert testDirectory != null : "Test directory must already be set";
+        // simply get the first test directory
+        assert !phpModule.getTestDirectories().isEmpty() : "Test directory must already be set";
+        FileObject testDirectory = phpModule.getTestDirectories().get(0);
 
         final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/Tests/PHPUnitBootstrap.php"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);
@@ -642,8 +658,9 @@ public final class PhpUnit {
     }
 
     public static File createConfigurationFile(PhpModule phpModule) {
-        FileObject testDirectory = phpModule.getTestDirectory();
-        assert testDirectory != null : "Test directory must already be set";
+        // simply get the first test directory
+        assert !phpModule.getTestDirectories().isEmpty() : "Test directory must already be set";
+        FileObject testDirectory = phpModule.getTestDirectories().get(0);
 
         final FileObject configFile = FileUtil.getConfigFile("Templates/Scripting/Tests/PHPUnitConfiguration.xml"); // NOI18N
         final DataFolder dataFolder = DataFolder.findFolder(testDirectory);

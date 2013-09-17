@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -233,7 +234,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
     /** Move to the next panel.
      * I.e. increment its index, need not actually change any GUI itself.
-     * @exception NoSuchElementException if the panel does not exist
+     * @throws NoSuchElementException if the panel does not exist
      */
     @Override
     public void nextPanel() {
@@ -245,7 +246,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
     /** Move to the previous panel.
      * I.e. decrement its index, need not actually change any GUI itself.
-     * @exception NoSuchElementException if the panel does not exist
+     * @throws NoSuchElementException if the panel does not exist
      */
     @Override
     public void previousPanel() {
@@ -280,7 +281,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
             if (groups.length == 0 && !PhpProjectValidator.isFatallyBroken(phpProject)) {
                 // sources found but no source roots?!
                 FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-                FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+                List<FileObject> tests = ProjectPropertiesSupport.getTestDirectories(phpProject, false);
                 FileObject selenium = ProjectPropertiesSupport.getSeleniumDirectory(phpProject, false);
                 SourceRoots sourceRoots = phpProject.getSourceRoots();
                 SourceRoots testRoots = phpProject.getTestRoots();
@@ -293,9 +294,9 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
                         new IllegalStateException("No source roots found (attach your IDE log to https://netbeans.org/bugzilla/show_bug.cgi?id=218437)"));
 
                 // try to recover...
-                sourceRoots.fireChange();
-                testRoots.fireChange();
-                seleniumRoots.fireChange();
+                sourceRoots.refresh();
+                testRoots.refresh();
+                seleniumRoots.refresh();
                 sb = new StringBuilder(200);
                 addDiagnosticForRoots(sb, sourceRoots, testRoots, seleniumRoots);
                 LOGGER.log(Level.WARNING, sb.toString(),
@@ -346,7 +347,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
         return null;
     }
 
-    private void addDiagnosticForDirs(StringBuilder sb, PhpProject project, FileObject sources, FileObject tests, FileObject selenium) {
+    private void addDiagnosticForDirs(StringBuilder sb, PhpProject project, FileObject sources, List<FileObject> tests, FileObject selenium) {
         sb.append("project directory equals sources: "); // NOI18N
         sb.append(project.getProjectDirectory().equals(sources));
         sb.append(";\n sources (not null, valid): "); // NOI18N
@@ -354,9 +355,13 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
         sb.append(", "); // NOI18N
         sb.append(sources != null && sources.isValid());
         sb.append(";\n tests (not null, valid): "); // NOI18N
-        sb.append(tests != null);
-        sb.append(", "); // NOI18N
-        sb.append(tests != null && tests.isValid());
+        for (FileObject test : tests) {
+            sb.append("["); // NOI18N
+            sb.append(test != null); // NOI18N
+            sb.append(", "); // NOI18N
+            sb.append(test != null && test.isValid());
+            sb.append("]"); // NOI18N
+        }
         sb.append(";\n selenium (not null, valid): "); // NOI18N
         sb.append(selenium != null);
         sb.append(", "); // NOI18N

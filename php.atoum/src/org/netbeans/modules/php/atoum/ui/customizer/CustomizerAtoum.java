@@ -182,7 +182,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
 
     private File getDefaultDirectory() {
         File defaultDirectory;
-        FileObject testDirectory = phpModule.getTestDirectory();
+        FileObject testDirectory = phpModule.getTestDirectory(null);
         if (testDirectory != null) {
             defaultDirectory = FileUtil.toFile(testDirectory);
         } else {
@@ -196,7 +196,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
 
     @NbBundle.Messages("CustomizerAtoum.error.noTestDir=Test directory is not set yet. Set it in Sources category and save this dialog.")
     private boolean checkTestDirectory() {
-        if (phpModule.getTestDirectory() == null) {
+        if (phpModule.getTestDirectory(null) == null) {
             informUser(Bundle.CustomizerAtoum_error_noTestDir());
             return false;
         }

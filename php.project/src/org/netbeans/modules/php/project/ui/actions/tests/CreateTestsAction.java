@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -120,7 +121,7 @@ public final class CreateTestsAction extends NodeAction {
         final PhpProject phpProject = PhpProjectUtils.getPhpProject(activatedNodes[0]);
         assert phpProject != null : "PHP project must be found for " + activatedNodes[0];
 
-        if (ProjectPropertiesSupport.getTestDirectory(phpProject, true) == null) {
+        if (ProjectPropertiesSupport.getTestDirectories(phpProject, true).isEmpty()) {
             return;
         }
         List<PhpTestingProvider> testingProviders = phpProject.getTestingProviders();
@@ -227,7 +228,7 @@ public final class CreateTestsAction extends NodeAction {
         showFailures(failed);
         reformat(succeeded);
         open(succeeded);
-        refreshTests(ProjectPropertiesSupport.getTestDirectory(phpProject, false));
+        refreshTests(ProjectPropertiesSupport.getTestDirectories(phpProject, false));
     }
 
     private void sanitizeFiles(List<FileObject> sanitizedFiles, List<FileObject> files, PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery) {
@@ -276,11 +277,14 @@ public final class CreateTestsAction extends NodeAction {
         }
     }
 
-    private void refreshTests(final FileObject testDir) {
+    private void refreshTests(List<FileObject> testDirs) {
+        final List<FileObject> dirs = new CopyOnWriteArrayList<>(testDirs);
         RP.post(new Runnable() {
             @Override
             public void run() {
-                FileUtil.refreshFor(FileUtil.toFile(testDir));
+                for (FileObject dir : dirs) {
+                    FileUtil.refreshFor(FileUtil.toFile(dir));
+                }
             }
         });
     }

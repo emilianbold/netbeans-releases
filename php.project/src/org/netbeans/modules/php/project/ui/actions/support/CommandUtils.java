@@ -184,8 +184,15 @@ public final class CommandUtils {
     public static boolean isUnderTests(PhpProject project, FileObject fileObj, boolean showFileChooser) {
         assert project != null;
         assert fileObj != null;
-        FileObject tests = ProjectPropertiesSupport.getTestDirectory(project, showFileChooser);
-        return tests != null && (tests.equals(fileObj) || FileUtil.isParentOf(tests, fileObj));
+        List<FileObject> testDirectories = ProjectPropertiesSupport.getTestDirectories(project, showFileChooser);
+        for (FileObject testDir : testDirectories) {
+            assert testDir != null;
+            if (fileObj.equals(testDir)
+                    || FileUtil.isParentOf(testDir, fileObj)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

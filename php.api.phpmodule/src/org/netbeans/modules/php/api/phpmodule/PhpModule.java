@@ -43,9 +43,12 @@
 package org.netbeans.modules.php.api.phpmodule;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -97,18 +100,34 @@ public abstract class PhpModule implements Lookup.Provider {
     public abstract FileObject getProjectDirectory();
 
     /**
-     * Get the source directory for this PHP module.
+     * Get the source directory of this PHP module.
      * @return the source directory, <b>can be <code>null</code> or {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
     @CheckForNull
     public abstract FileObject getSourceDirectory();
 
     /**
-     * Get the test directory for this PHP module.
-     * @return the test directory, can be <code>null</code> if not set yet
+     * Get the test directory of this PHP module for the given file.
+     * @param file file to get test directory for, can be {@code null} (in such case,
+     *        simply the first test directory is returned)
+     * @return the test directory, can be {@code null} if no test directory set yet
+     * @see #getTestDirectories()
+     * @since 2.30
      */
     @CheckForNull
-    public abstract FileObject getTestDirectory();
+    public FileObject getTestDirectory(@NullAllowed FileObject file) {
+        return getTestDirectory();
+    }
+
+    /**
+     * Get all test directories of this PHP module.
+     * @return list of test directories, can be empty but never {@code null}
+     * @see #getTestDirectory(FileObject)
+     * @since 2.30
+     */
+    public List<FileObject> getTestDirectories() {
+        return Collections.emptyList();
+    }
 
     /**
      * Get any optional abilities of this PHP module.
@@ -137,6 +156,17 @@ public abstract class PhpModule implements Lookup.Provider {
      * @see #PROPERTY_FRAMEWORKS
      */
     public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * <b>Deprecated, use {@link #getTestDirectories()} or {@link #getTestDirectory(FileObject)}.
+     * This method will be removed after NB 8.0.</b>
+     * <p>
+     * Get the test directory for this PHP module.
+     * @return the test directory, can be <code>null</code> if not set yet
+     */
+    @Deprecated
+    @CheckForNull
+    public abstract FileObject getTestDirectory();
 
     /**
      * <b>Deprecated, {@link #getLookup() lookup} its {@link PhpModuleProperties.Factory factory} class.
