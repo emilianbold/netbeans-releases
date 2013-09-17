@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
 import org.netbeans.modules.maven.j2ee.ui.util.CopyStaticResourcesOnSaveCheckBoxUpdater;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -78,6 +79,8 @@ import org.openide.util.NbBundle;
 public class CustomizerRunWeb extends BaseRunCustomizer {
 
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
+
+    private final boolean noServer;
 
     private BrowserComboBoxModel browserModel;
 
@@ -103,6 +106,8 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         if (module != null) {
             contextPathTField.setText(module.getContextPath());
         }
+
+        noServer = ExecutionChecker.DEV_NULL.equals(ServerUtils.findServer(project).getServerID());
 
         initValues();
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
@@ -403,10 +408,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             if (contextPathTField.isEnabled()) {
                 contextPathTField.setEnabled(false);
                 oldContextPath = contextPathTField.getText();
-                contextPathTField.setText(NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.contextPathDisabled"));
+                if (!noServer) {
+                    contextPathTField.setText(NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.contextPathDisabled"));
+                } else {
+                    contextPathTField.setText(NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.contextPathDisabledConfirm"));
+                }
             }
         } else {
-            if (!contextPathTField.isEnabled()) {
+            if (!contextPathTField.isEnabled() && !noServer) {
                 contextPathTField.setEnabled(true);
                 if (oldContextPath != null) {
                     contextPathTField.setText(oldContextPath);
