@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
@@ -60,10 +62,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JEditorPane;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.editor.EditorUI;
 
 import org.openide.text.Line;
 
@@ -126,9 +130,19 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.OutlineView;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -2211,7 +2225,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /* 
      * balloonEval stuff 
      */
-    public void balloonEvaluate(int pos, String text) {
+    /*public void balloonEvaluate(int pos, String text) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
         if (gdb == null || !gdb.connected()) {
@@ -2259,6 +2273,177 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             send(command.toString());
         }
         send("-gdb-set unwindonsignal off"); //NOI18N
+    }*/
+    
+    static Map<Variable, VariableNode> map = new HashMap<Variable, VariableNode>();
+    
+    public void balloonEvaluate(int pos, String text) {
+        // balloonEvaluate() requests come from the editor completely
+        // independently of debugger startup and shutdown.
+        if (gdb == null || !gdb.connected()) {
+            return;
+        }
+        if (state().isProcess && state().isRunning) {
+            return;
+        }
+        String expr;
+        if (pos == -1) {
+            expr = text;
+        } else {
+            expr = EvalAnnotation.extractExpr(pos, text);
+        }
+        
+        if (expr == null || expr.isEmpty()) {
+            return;
+        }
+
+        final OutlineView ov = new OutlineView();
+        ov.setPropertyColumns(
+                "value", "Value"); //NOI18N
+        ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
+        ov.getOutline().setRootVisible(true);
+        
+        
+        ModelChangeDelegator mcd = new ModelChangeDelegator();
+        mcd.setListener(new ModelListener() {
+
+            @Override
+            public void modelChanged(ModelEvent event) {
+                if (event instanceof ModelEvent.NodeChanged) {
+                    ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
+                    final Variable var = ((Variable) nodeChanged.getNode());
+                    
+                    final VariableNode node = map.get(var);
+                    if (node != null) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                node.refreshChildren(var.getChildren());
+                            }
+                        });
+                    }
+                }
+
+            }
+        });
+
+        final GdbVariable watch = new GdbWatch(this, mcd, expr);
+        createMIVar(watch, false);
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
+
+        TooltipView myView = new TooltipView();
+        myView.add(ov, BorderLayout.CENTER);
+        myView.getExplorerManager().setRootContext(VariableNode.getVariableNodeForVariable(watch));
+
+        eui.getToolTipSupport().setToolTip(myView);
+
+    }
+    
+    private static final class VariableNode extends AbstractNode {
+      
+        private static final class VariableNodeChildren extends Children.Keys<Variable> {
+
+            public VariableNodeChildren(Variable v) {
+                ((GdbDebuggerImpl)v.getDebugger()).getMIChildren((GdbVariable)v, ((GdbVariable) v).getMIName(), 0);
+            }
+
+            @Override
+            protected Node[] createNodes(Variable key) {
+                List<Node> list = new ArrayList<Node>();
+                for (Variable variable : key.getChildren()) {
+                    list.add(getVariableNodeForVariable(variable));
+                }
+                return list.toArray(new VariableNode[0]);
+            }
+            
+            /*package*/ void refreshChildren(Variable[] vars) {
+                setKeys(vars);
+            }
+        }
+
+        private Variable v;
+        private VariableNodeChildren nodeChildren;
+        
+        /*package*/ static VariableNode getVariableNodeForVariable(Variable variable) {
+            VariableNode node = new VariableNode(variable, new VariableNodeChildren(variable));
+            map.put(variable, node);
+            
+            return node;
+        }
+
+        private VariableNode(Variable v, VariableNodeChildren children) {
+            super(children);
+            this.v = v;
+            this.nodeChildren = children;
+        }
+        
+        /*package*/ void refreshChildren(Variable[] vars) {
+            nodeChildren.refreshChildren(vars);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return v.getVariableName();
+        }
+
+        @Override
+        public PropertySet[] getPropertySets() {
+            return new PropertySet[]{new MyPropertySet(v)};
+        }
+
+        private final class MyPropertySet extends PropertySet {
+
+            private Variable v;
+
+            public MyPropertySet(Variable v) {
+                this.v = v;
+            }
+            
+            @Override
+            public Property<?>[] getProperties() {
+
+                Property<?>[] ps = new Property<?>[]{new Property<String>(String.class) {
+                        @Override
+                        public String getName() {
+                            return "value"; //NOI18N
+                        }
+
+                        @Override
+                        public boolean canRead() {
+                            return true;
+                        }
+
+                        @Override
+                        public String getValue() throws IllegalAccessException, InvocationTargetException {
+                            return v.getAsText();
+                        }
+
+                        @Override
+                        public boolean canWrite() {
+                            return false;
+                        }
+
+                        @Override
+                        public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                        }
+                    }};
+                return ps;
+            }
+        }
+    }
+
+    private static final class TooltipView extends TopComponent implements ExplorerManager.Provider {
+        private final ExplorerManager manager = new ExplorerManager();
+        public TooltipView() {
+            setLayout (new BorderLayout());
+        }
+
+        @Override
+        public ExplorerManager getExplorerManager() {
+            return manager;
+        }
     }
 
     @Override
