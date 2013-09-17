@@ -140,7 +140,7 @@ public final class UsingResolverImpl extends CsmUsingResolver implements CsmProg
                     Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDeclarations(
                             ns, CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.USING_DECLARATION));
                     while (it.hasNext()) {
-                        final CsmUsingDeclaration usindDecl = (CsmUsingDeclaration) udecls.next();
+                        final CsmUsingDeclaration usindDecl = (CsmUsingDeclaration) it.next();
                         CharSequence n = usindDecl.getName();
                         int lastIndex = CharSequenceUtils.lastIndexOf(n, "::"); //NOI18N
                         if (lastIndex >= 0) {

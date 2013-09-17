@@ -398,7 +398,7 @@ public final class Resolver3 implements Resolver {
     
     private CsmObject resolveInUsingDeclarations(CsmObject result, CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
-            Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS);//, nameToken);
+            Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS, nameToken);//, nameToken);
             for (CsmDeclaration decl : decls) {
                 if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
                     if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
