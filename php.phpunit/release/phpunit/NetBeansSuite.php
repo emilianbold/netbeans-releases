@@ -109,12 +109,17 @@ class NetBeansSuite extends PHPUnit_Framework_TestSuite {
         if ($run === null) {
             throw new Exception(sprintf("No argument to run (%s) found.", self::RUN));
         }
-        if (is_dir($run)) {
-            return self::rglob("*[Tt]est.php", $run.DIRECTORY_SEPARATOR);
-        } elseif (is_file($run)) {
-            return array($run);
+        $result = array();
+        foreach (explode(";", $run) as $part) {
+            if (is_dir($part)) {
+                $result = array_merge($result, self::rglob("*[Tt]est.php", $part.DIRECTORY_SEPARATOR));
+            } elseif (is_file($part)) {
+                $result[] = $part;
+            } else {
+                throw new Exception(sprintf("Argument '%s' neither file nor directory.", $part));
+            }
         }
-        throw new Exception(sprintf("Argument '%s' neither file nor directory.", $run));
+        return $result;
     }
 
     /**
