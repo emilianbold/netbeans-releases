@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -79,6 +78,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import static org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver3.LOGGER;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -93,9 +93,9 @@ public final class FileMapsCollector {
     private CsmCacheMap filesCollectorCache;
     private boolean collectedDependencies;
 
-    private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces = new LinkedHashMap<>();
-    private final Map<CharSequence, CsmNamespace> namespaceAliases = new HashMap<>();
-    private final Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<>();
+    private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDirective*/> usedNamespaces = new LinkedHashMap<>();
+    private final Map<CharSequence, CsmObject/*CsmNamespace or CsmNamespaceAlias*/> namespaceAliases = new HashMap<>();
+    private final Map<CharSequence, List<CsmObject/*CsmDeclaration or CsmUsingDeclaration*/>> usingDeclarations = new HashMap<>();
 
     private final Set<CsmFile> visitedFiles = new HashSet<>();
     
@@ -116,11 +116,46 @@ public final class FileMapsCollector {
     }
 
     CsmDeclaration getUsingDeclaration(CharSequence name) {
-        return usingDeclarations.get(CharSequences.create(name));
+        final CharSequence s = CharSequences.create(name);
+        final List<CsmObject> list = usingDeclarations.get(s);
+        if (list == null) {
+            return null;
+        }
+        List<CsmObject> newList = new ArrayList<CsmObject>(list.size());
+        boolean converted = false;
+        for(CsmObject obj : list) {
+            if (CsmKindUtilities.isUsingDeclaration(obj)) {
+                CsmDeclaration decl = ((CsmUsingDeclaration)obj).getReferencedDeclaration();
+                newList.add(decl);
+                converted = true;
+            } else {
+                newList.add(obj);
+            }
+        }
+        if (converted) {
+            usingDeclarations.put(s, newList);
+        }
+        CsmDeclaration res = null;
+        for(CsmObject obj : newList) {
+            if (CsmKindUtilities.isDeclaration(obj)) {
+                res = (CsmDeclaration) obj;
+            }
+        }
+        return res;
     }
 
     Object getNamespaceAlias(CharSequence name) {
-        return namespaceAliases.get(CharSequences.create(name));
+        final CharSequence s = CharSequences.create(name);
+        CsmObject obj = namespaceAliases.get(s);
+        CsmNamespace ns = null;
+        if (CsmKindUtilities.isNamespaceAlias(obj)) {
+            CsmNamespaceAlias alias = (CsmNamespaceAlias) obj;
+            ns = alias.getReferencedNamespace();
+            namespaceAliases.put(s, ns);
+        } else if (CsmKindUtilities.isNamespace(obj)) {
+            ns = (CsmNamespace) obj;
+        }
+        return ns;
     }
 
     Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> getUsedNamespaces() {
@@ -238,16 +273,16 @@ public final class FileMapsCollector {
 
         final boolean needClassifiers;
         private final Set<CsmFile> antiLoop;
-        private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces;
-        private final Map<CharSequence, CsmNamespace> namespaceAliases;
-        private final Map<CharSequence, CsmDeclaration> usingDeclarations;
+        private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDirective*/> usedNamespaces;
+        private final Map<CharSequence, CsmObject/*CsmNamespace or CsmNamespaceAlias*/> namespaceAliases;
+        private final Map<CharSequence, List<CsmObject/*CsmDeclaration or CsmUsingDeclaration*/>> usingDeclarations;
         private final Callback callback;
 
         public MapsCollection(Callback cb, boolean needClassifiers,
                 Set<CsmFile> antiLoop,
                 Map<CharSequence, CsmObject> usedNamespaces,
-                Map<CharSequence, CsmNamespace> namespaceAliases,
-                Map<CharSequence, CsmDeclaration> usingDeclarations) {
+                Map<CharSequence, CsmObject> namespaceAliases,
+                Map<CharSequence, List<CsmObject>> usingDeclarations) {
             this.callback = cb;
             this.needClassifiers = needClassifiers;
             this.antiLoop = antiLoop;
@@ -391,25 +426,38 @@ public final class FileMapsCollector {
                 }
                 case NAMESPACE_ALIAS: {
                     CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
-                    out.namespaceAliases.put(alias.getAlias(), alias.getReferencedNamespace());
+                    out.namespaceAliases.put(alias.getAlias(), (CsmNamespaceAlias) element);//alias.getReferencedNamespace());
                     return;
                 }
                 case USING_DECLARATION: {
-                    CsmDeclaration decl = ((CsmUsingDeclaration) element).getReferencedDeclaration();
-                    if (decl != null) {
-                        CharSequence id;
-                        if (decl.getKind() == CsmDeclaration.Kind.FUNCTION
-                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION
-                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA
-                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND
-                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
-                            // TODO: decide how to resolve functions
-                            id = ((CsmFunction) decl).getSignature();
-                        } else {
-                            id = decl.getName();
-                        }
-                        out.usingDeclarations.put(id, decl);
+                    final CsmUsingDeclaration usingDecl = (CsmUsingDeclaration) element;
+                    CharSequence name = usingDecl.getName();
+                    int lastIndex = CharSequenceUtils.lastIndexOf(name, "::");//NOI18N
+                    if (lastIndex >= 0) {
+                        name = name.subSequence(lastIndex+2, name.length());
                     }
+                    name = CharSequences.create(name);
+                    List<CsmObject> list = out.usingDeclarations.get(name);
+                    if (list == null) {
+                        list = new ArrayList<CsmObject>();
+                        out.usingDeclarations.put(name, list);
+                    }
+                    list.add(usingDecl);
+//                    CsmDeclaration decl = (usingDecl).getReferencedDeclaration();
+//                    if (decl != null) {
+//                        CharSequence id;
+//                        if (decl.getKind() == CsmDeclaration.Kind.FUNCTION
+//                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION
+//                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_LAMBDA
+//                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND
+//                                || decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) {
+//                            // TODO: decide how to resolve functions
+//                            id = ((CsmFunction) decl).getSignature();
+//                        } else {
+//                            id = decl.getName();
+//                        }
+//                        out.usingDeclarations.put(id, decl);
+//                    }
                     return;
                 }
                 case USING_DIRECTIVE: {
@@ -513,8 +561,8 @@ public final class FileMapsCollector {
     private static final class FileMapsCacheValue implements CsmCacheMap.TraceValue {
 
         private final Map<CharSequence, CsmObject/*CsmNamespace or CsmUsingDeclaration*/> usedNamespaces;
-        private final Map<CharSequence, CsmNamespace> namespaceAliases;
-        private final Map<CharSequence, CsmDeclaration> usingDeclarations;
+        private final Map<CharSequence, CsmObject/*CsmNamespace or CsmNamespaceAlias*/> namespaceAliases;
+        private final Map<CharSequence, List<CsmObject/*CsmDeclaration or CsmUsingDeclaration*/>> usingDeclarations;
         private final Set<CsmFile> antiLoop;
 
         final long resolveTime;
