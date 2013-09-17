@@ -87,7 +87,11 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
     
     private String getLeftText() {
-        return CodeTemplateApiPackageAccessor.get().getSingleLineText(codeTemplate).trim();
+        String description = codeTemplate.getDescription();
+        if (description == null) {
+            description = CodeTemplateApiPackageAccessor.get().getSingleLineText(codeTemplate);
+        }
+        return description.trim();
     }
     
     private String getRightText() {
