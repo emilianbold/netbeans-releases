@@ -99,6 +99,17 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
         descriptor.putProperty(HtmlPanel.HTML_FILE, getCreatedFilePath());
     }
     
+    void read( WizardDescriptor descriptor ) {
+        Project project = Templates.getProject(descriptor);
+        FileObject projectDirectory = project.getProjectDirectory();
+        FileObject documentBase = (FileObject)myPanel.getDescriptor().getProperty(HtmlPanel.PROP_DOCUMENT_BASE);
+        if (documentBase != null) {
+            myFolder.setText(FileUtil.getRelativePath(projectDirectory, documentBase));
+        } else {
+            myFolder.setText(HtmlPanel.PUBLIC_HTML);
+        }
+    }
+        
     boolean valid() {
         myPanel.getDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                 null);
@@ -152,7 +163,6 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
             }
         }
         myName.setText(name);
-        myFolder.setText("public_html");        // NOI18N
     }
 
     /**
