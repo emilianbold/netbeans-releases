@@ -44,7 +44,10 @@
 
 package org.netbeans.modules.tomcat5;
 
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -59,12 +62,16 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.openide.util.NbBundle;
 
 /** 
@@ -76,7 +83,7 @@ import org.openide.util.NbBundle;
  * <PRE><CODE>tomcat:http://localhost:8080/manager/</CODE></PRE>
  * where paths values will be used as CATALINA_HOME and CATALINA_BASE properties and manager_app_url
  * denotes URL of manager application configured on this server and has to start with <CODE>http:</CODE>.
- * @author Radim Kubacki
+ * @author Petr Hejl, Radim Kubacki
  */
 public final class TomcatFactory implements DeploymentFactory {
     
@@ -94,6 +101,8 @@ public final class TomcatFactory implements DeploymentFactory {
     
     public static final String TOMCAT_URI_HOME_PREFIX = "home=";    // NOI18N
     public static final String TOMCAT_URI_BASE_PREFIX = ":base=";   // NOI18N
+
+    private static final Pattern TOMEE_JAR_PATTERN = Pattern.compile("tomee-common-(\\d+\\.\\d+\\.\\d+)\\.jar"); // NOI18N
 
     private static final String GENERIC_DISCONNECTED_URI_PREFIX = "tomcat-any:"; // NOI18N
     private static final String GENERIC_DISCONNECTED_URI =
@@ -140,8 +149,8 @@ public final class TomcatFactory implements DeploymentFactory {
      * @throws DeploymentManagerCreationException
      * @return {@link TomcatManager}
      */
-    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd) 
-    throws DeploymentManagerCreationException {
+    public DeploymentManager getDeploymentManager(String uri, String uname, String passwd)
+            throws DeploymentManagerCreationException {
         if (!handlesURI (uri)) {
             throw new DeploymentManagerCreationException ("Invalid URI:" + uri); // NOI18N
         }
@@ -325,7 +334,83 @@ public final class TomcatFactory implements DeploymentFactory {
         }
         return TomcatVersion.TOMCAT_50;
     }
-    
+
+    public static TomEEVersion getTomEEVersion(File catalinaHome, File catalinaBase) throws IllegalStateException {
+        File tomee = getTomEEJar(catalinaHome);
+        if (tomee == null) {
+            tomee = getTomEEWebAppJar(catalinaHome, catalinaBase);
+        }
+        if (tomee != null) {
+            Matcher matcher = TOMEE_JAR_PATTERN.matcher(tomee.getName());
+            if (matcher.matches()) {
+                String versionString = matcher.group(1);
+                return getTomEEVersion(versionString, null);
+            }
+        }
+
+        return null;
+    }
+
+    @CheckForNull
+    public static File getTomEEWebAppJar(File catalinaHome, File catalinaBase) {
+        // XXX this is not really accurate as when using basedir
+        // webapp from home may not be linked there we would have to check xml files
+        File ret = getTomEEWebAppJar(catalinaHome);
+        if (ret != null) {
+            return ret;
+        }
+        if (catalinaBase != null) {
+            return getTomEEWebAppJar(catalinaBase);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    public static File getTomEEWebAppJar(File parent) {
+        File webApps = new File(parent, "webapps"); // NOI18N
+        File[] children = webApps.listFiles(new FileFilter() {
+
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        });
+        if (children != null) {
+            for (File child : children) {
+                File jar = getTomEEJar(child);
+                if (jar != null) {
+                    return jar;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static File getTomEEJar(File parentDir) throws IllegalStateException {
+        File libDir = new File(parentDir, "lib"); // NOI18N
+        String[] names = libDir.list(new FilenameFilter() {
+
+            @Override
+            public boolean accept(File dir, String name) {
+                return TOMEE_JAR_PATTERN.matcher(name).matches();
+            }
+        });
+        if (names != null && names.length > 0) {
+            // XXX based on filename we may improve it later
+            return new File(libDir, names[0]);
+        }
+        return null;
+    }
+
+    private static TomEEVersion getTomEEVersion(String version, TomEEVersion defaultVersion) throws IllegalStateException {
+        if (version.startsWith("1.5.")) { // NOI18N
+            return TomcatManager.TomEEVersion.TOMEE_15;
+        } else if (version.startsWith("1.6.")) { // NOI18N
+            return TomcatManager.TomEEVersion.TOMEE_16;
+        }
+        return defaultVersion;
+    }
+
     private static String stripUriPrefix(String uri, TomcatVersion tomcatVersion) {
         if (uri.startsWith(GENERIC_DISCONNECTED_URI_PREFIX)) {
             return uri.substring(GENERIC_DISCONNECTED_URI_PREFIX.length());

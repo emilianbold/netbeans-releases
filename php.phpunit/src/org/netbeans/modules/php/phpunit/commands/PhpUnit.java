@@ -71,6 +71,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -86,6 +87,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo.TestInfo;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -208,7 +210,7 @@ public final class PhpUnit {
             }
         } catch (InvalidPhpExecutableException ex) {
             if (showCustomizer) {
-                phpModule.openCustomizer(PhpTesting.CUSTOMIZER_IDENT);
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpTesting.CUSTOMIZER_IDENT, null);
                 defaultPhpUnitExc = null;
             }
         }
@@ -596,7 +598,7 @@ public final class PhpUnit {
                         // comment about %INCLUDE_PATH%, let's skip it
                         continue;
                     }
-                    List<String> includePath = phpModule.getProperties().getIncludePath();
+                    List<String> includePath = phpModule.getLookup().lookup(PhpModuleProperties.class).getIncludePath();
                     assert includePath != null : "Include path should be always present";
                     line = processIncludePath(
                             finalBootstrap,

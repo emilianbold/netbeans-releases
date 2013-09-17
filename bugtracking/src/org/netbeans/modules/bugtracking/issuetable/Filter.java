@@ -143,7 +143,7 @@ public abstract class Filter {
         }
         @Override
         public boolean accept(IssueNode node) {
-            return node.getIssue().getStatus() == IssueStatusProvider.Status.NEW;
+            return node.getIssue().getStatus() == IssueStatusProvider.Status.INCOMING_NEW;
         }
     }
     private static class ObsoleteDateFilter extends Filter {

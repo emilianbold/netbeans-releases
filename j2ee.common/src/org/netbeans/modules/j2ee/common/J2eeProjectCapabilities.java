@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.common;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -204,8 +205,10 @@ public final class J2eeProjectCapabilities {
             return false;
         }
 
-        Set<Profile> profiles = platform.getSupportedProfiles(provider.getJ2eeModule().getType());
-        if (!profiles.contains(Profile.JAVA_EE_5) && !profiles.contains(Profile.JAVA_EE_6_FULL)) {
+        Set<Profile> profiles = new HashSet<Profile>(platform.getSupportedProfiles(provider.getJ2eeModule().getType()));
+        profiles.remove(Profile.J2EE_13);
+        profiles.remove(Profile.J2EE_14);
+        if (profiles.isEmpty()) {
             return false;
         }
         JpaSupport support = JpaSupport.getInstance(platform);

@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
-    private Preferences preferences;
+    private final Preferences preferences;
 
     /** Creates new form ReleaseVersionErrorCustomizer */
     public JavaNetRepositoryErrorCustomizer(Preferences prefs) {

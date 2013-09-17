@@ -73,7 +73,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     private PropertyChangeListener projectListener;
     
     private static final String MANIFEST_PATH = "src/main/nbm/manifest.mf"; //NOI18N
-    private static final String ATTR_PUBLIC_PACKAGE = "OpenIDE-Module-Public-Packages"; //NOI18N
+    static final String ATTR_PUBLIC_PACKAGE = "OpenIDE-Module-Public-Packages"; //NOI18N
     
     public AccessQueryImpl(Project prj) {
         project = prj;
@@ -99,7 +99,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
         return null;
     }
     
-    private boolean check(List<Pattern> patt, String value) {
+    static boolean check(List<Pattern> patt, String value) {
         boolean matches = false;
         for (Pattern pattern : patt) {
             matches = pattern.matcher(value).matches();

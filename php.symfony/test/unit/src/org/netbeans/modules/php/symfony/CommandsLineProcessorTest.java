@@ -51,6 +51,7 @@ import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * @author Tomas Mysik
@@ -170,11 +171,6 @@ public class CommandsLineProcessorTest extends NbTestCase {
         }
 
         @Override
-        public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public void openCustomizer(String category) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -182,6 +178,11 @@ public class CommandsLineProcessorTest extends NbTestCase {
         @Override
         public void notifyPropertyChanged(PropertyChangeEvent propertyChangeEvent) {
             throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Lookup getLookup() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
     }

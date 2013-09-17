@@ -44,7 +44,7 @@ package org.netbeans.modules.php.api.executable;
 
 import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.modules.php.api.phpmodule.PhpOptions;
+import org.netbeans.modules.php.api.PhpOptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

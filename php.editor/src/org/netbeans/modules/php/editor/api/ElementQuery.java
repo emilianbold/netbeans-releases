@@ -177,6 +177,8 @@ public interface ElementQuery {
 
         Set<MethodElement> getAccessibleMagicMethods(TypeElement type);
 
+        Set<TypeConstantElement> getAccessibleMagicConstants(TypeElement type);
+
         Set<TypeMemberElement> getDeclaredTypeMembers(TypeElement typeElement);
 
         Set<MethodElement> getDeclaredMethods(TypeElement typeElement);

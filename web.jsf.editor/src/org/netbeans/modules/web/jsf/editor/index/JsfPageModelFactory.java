@@ -56,6 +56,7 @@ public abstract class JsfPageModelFactory {
     private static final Collection<JsfPageModelFactory> FACTORIES = new ArrayList<>();
     static {
         FACTORIES.add(new CompositeComponentModel.Factory());
+        FACTORIES.add(new ResourcesMappingModel.Factory());
     }
 
     public static Collection<JsfPageModel> getModels(HtmlParserResult result) {

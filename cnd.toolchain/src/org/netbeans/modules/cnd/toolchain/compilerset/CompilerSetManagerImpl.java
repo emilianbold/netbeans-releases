@@ -332,7 +332,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             }
         };
 
-        if (CndUtils.isStandalone()) { // this means we run in tests or standalone application
+        if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) { // this means we run in tests or standalone application
             runnable.run();
         } else {
             ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);

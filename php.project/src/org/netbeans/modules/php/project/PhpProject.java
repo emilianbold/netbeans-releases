@@ -115,6 +115,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -1300,6 +1301,12 @@ public final class PhpProject implements Project {
 
         @Override
         public FileObject fromServer(int projectContext, URL serverURL) {
+            // #219339 - strip down query and/or fragment:
+            serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+            if (serverURL == null) {
+                return null;
+            }
+
             initProjectUrl();
             if (projectRootUrl == null) {
                 return null;

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.latte.completion;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,15 +51,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
@@ -74,9 +79,18 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteCompletionHandler implements CodeCompletionHandler {
+public class LatteCompletionHandler implements CodeCompletionHandler2 {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
             Arrays.asList('=', ';', '+', '-', '*', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
+    private static final Logger LOGGER = Logger.getLogger(LatteCompletionHandler.class.getName());
+    private static URL documentationUrl = null;
+    static {
+        try {
+            documentationUrl = new URL("http://doc.nette.org/"); //NOI18N
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+    }
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.MacroFactory.create("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
@@ -244,12 +258,17 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
     }
 
     @Override
-    public String document(ParserResult info, ElementHandle element) {
-        String result = null;
+    public Documentation documentElement(ParserResult info, ElementHandle element) {
+        Documentation result = null;
         if (element instanceof LatteElement) {
-            result = ((LatteElement) element).getDocumentationText();
+            result = Documentation.create(((LatteElement) element).getDocumentationText(), documentationUrl);
         }
         return result;
+    }
+
+    @Override
+    public String document(ParserResult info, ElementHandle element) {
+        return null;
     }
 
     @Override

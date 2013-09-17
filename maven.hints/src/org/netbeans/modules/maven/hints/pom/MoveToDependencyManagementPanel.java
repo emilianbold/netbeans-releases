@@ -73,9 +73,9 @@ import org.openide.util.lookup.Lookups;
  */
 public final class MoveToDependencyManagementPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
 
-    private BeanTreeView treeView;
-    private transient ExplorerManager explorerManager = new ExplorerManager();
-    private File current;
+    private final BeanTreeView treeView;
+    private final transient ExplorerManager explorerManager = new ExplorerManager();
+    private final File current;
     private final Project currentProject;
 
     /** Creates new form MoveToDependencyManagementPanel */
@@ -183,7 +183,7 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
 
     private static class POMNode extends AbstractNode {
 
-        private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
+        private final Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
         private POMNode(File key, MavenEmbedder.ModelDescription mdl, Lookup lkp) {
             super( Children.LEAF, lkp);

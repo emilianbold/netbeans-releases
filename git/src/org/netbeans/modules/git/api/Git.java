@@ -56,6 +56,7 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitURI;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClient;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.clone.CloneAction;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
@@ -91,15 +92,15 @@ public final class Git {
 
     public static void openSearchHistory (File file, String commitId) {
         SearchHistoryAction.openSearch(org.netbeans.modules.git.Git.getInstance().getRepositoryRoot(file), 
-                file, file.getName(), commitId);
+                file, file.getName(), commitId, commitId);
     }
 
-    public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException, URISyntaxException {
+    public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws URISyntaxException {
         GitClient client = null;
         try {
             client = org.netbeans.modules.git.Git.getInstance().getClient(localFolder);
             client.init(GitUtils.NULL_PROGRESS_MONITOR);
-            String remoteName = "origin"; //NOI18N
+            String remoteName = GitUtils.REMOTE_ORIGIN;
             client.setRemote(new GitRemoteConfig(remoteName, Arrays.asList(repositoryUrl),
                     Collections.<String>emptyList(),
                     Arrays.asList(GitUtils.getRefSpec("*", remoteName)),
@@ -121,7 +122,9 @@ public final class Git {
             createBranchRef(GitUtils.getGitFolderForRoot(localFolder), GitUtils.MASTER, remoteName);
             org.netbeans.modules.git.Git.getInstance().versionedFilesChanged();                       
         } catch (GitException ex) {
-            throw new IOException(ex);
+            GitClientExceptionHandler.notifyException(ex, true);
+        } catch (IOException ex) {
+            GitClientExceptionHandler.notifyException(ex, true);
         } finally {
             if (client != null) {
                 client.release();

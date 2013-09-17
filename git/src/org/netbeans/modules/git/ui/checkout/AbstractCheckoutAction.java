@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -65,17 +66,21 @@ import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
  * @author ondra
  */
 public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
+    
+    public static final String PREF_KEY_RECENT_BRANCHES = "recentlySwitchedBranches"; //NOI18N
     
     protected AbstractCheckoutAction () {
         this(null);
@@ -143,6 +148,9 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                             LOG.log(Level.FINE, "Checking out commit: {0}", revision); //NOI18N
                             try {
                                 client.checkoutRevision(revision, true, getProgressMonitor());
+                                if (!isCanceled() && isBranch(revision, client.getBranches(true, GitUtils.NULL_PROGRESS_MONITOR))) {
+                                    Utils.insert(NbPreferences.forModule(AbstractCheckoutAction.class), PREF_KEY_RECENT_BRANCHES + repository.getAbsolutePath(), revision, 5);
+                                }
                             } catch (GitException.CheckoutConflictException ex) {
                                 if (LOG.isLoggable(Level.FINE)) {
                                     LOG.log(Level.FINE, "Conflicts during checkout: {0} - {1}", new Object[] { repository, Arrays.asList(ex.getConflicts()) }); //NOI18N
@@ -164,9 +172,14 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
                 }
             }
 
+            private boolean isBranch (String revision, Map<String, GitBranch> branches) {
+                GitBranch b = branches.get(revision);
+                return b != null && b.getName() != GitBranch.NO_BRANCH;
+            }
+
             private void log (String revision, GitBranch branch) {
                 OutputLogger logger = getLogger();
-                logger.output(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
+                logger.outputLine(NbBundle.getMessage(CheckoutRevisionAction.class, "MSG_CheckoutRevisionAction.branchCreated", new Object[] { branch.getName(), revision, branch.getId() })); //NOI18N
             }
 
             private void resolveConflicts (File[] conflicts) throws GitException {

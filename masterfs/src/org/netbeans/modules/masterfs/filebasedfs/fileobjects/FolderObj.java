@@ -89,7 +89,7 @@ public final class FolderObj extends BaseFileObj {
     private static final Logger LOG = Logger.getLogger(FolderObj.class.getName());
 
     private FolderChildrenCache folderChildren;
-    boolean valid = true;
+    volatile boolean valid = true;
     private volatile FileObjectKeeper keeper;
 
     /**

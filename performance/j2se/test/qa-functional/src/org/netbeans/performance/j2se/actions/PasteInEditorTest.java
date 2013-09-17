@@ -41,138 +41,107 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.actions;
 
 import java.awt.event.KeyEvent;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
-import javax.swing.JEditorPane;
-import org.netbeans.api.java.source.SourceUtils;
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.j2se.setup.J2SESetup;
-
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.EditorWindowOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.Action.Shortcut;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.Utilities;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  * Test of Paste text to opened source editor.
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author anebuzelsky@netbeans.org, mmirilovic@netbeans.org
  */
 public class PasteInEditorTest extends PerformanceTestCase {
-    
+
     private EditorOperator editorOperator1, editorOperator2;
-    
-    /** Creates a new instance of PasteInEditor */
+    /**
+     * After jump in editor QuietEditorPane is refreshed by events from
+     * breadcrumbs, annotations, code folding and editor status panel. For
+     * editors without such effects is expected time set individually.
+     */
+    private static final long EXPECTED_TIME = 800;
+
+    /**
+     * Creates a new instance of PasteInEditor
+     *
+     * @param testName test name
+     */
     public PasteInEditorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN=200;
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 1000;
     }
-    
-    /** Creates a new instance of PasteInEditor */
+
+    /**
+     * Creates a new instance of PasteInEditor
+     *
+     * @param testName test name
+     * @param performanceDataName perf name
+     */
     public PasteInEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN=200;
+        expectedTime = EXPECTED_TIME;
+        WAIT_AFTER_OPEN = 1000;
     }
 
-    public static NbTestSuite suite() {
-        CountingSecurityManager.initialize("non-existing");
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(J2SESetup.class)
-             .addTest(PasteInEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(J2SESetup.class).addTest(PasteInEditorTest.class)
+                .reuseUserDir(true)
+                .suite();
     }
 
-    public void testPasteInEditor(){
+    public void testPasteInEditor() {
         doMeasurement();
-    }    
-    
+    }
+
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
+        SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("PerformanceTestData");
+        new OpenAction().performAPI(new Node(sourcePackagesNode, "org.netbeans.test.performance|TestClassForCopyPaste.java"));
+        editorOperator1 = new EditorOperator("TestClassForCopyPaste.java");
+        editorOperator1.makeComponentVisible();
+        int start = editorOperator1.txtEditorPane().getPositionByText("private int newField1;");
+        int end = editorOperator1.txtEditorPane().getPositionByText("private int newField10;");
+        editorOperator1.txtEditorPane().select(start, end);
+        editorOperator1.txtEditorPane().copy();
+    }
+
+    @Override
+    public void prepare() {
         SourcePackagesNode sourcePackagesNode = new SourcePackagesNode("PerformanceTestData");
         new OpenAction().performAPI(new Node(sourcePackagesNode, "org.netbeans.test.performance|Main20kB.java"));
-        editorOperator1 = EditorWindowOperator.getEditor("Main20kB.java");
-        new OpenAction().performAPI(new Node(sourcePackagesNode, "org.netbeans.test.performance|TestClassForCopyPaste.java"));
-        editorOperator2 = EditorWindowOperator.getEditor("TestClassForCopyPaste.java");
+        editorOperator2 = new EditorOperator("Main20kB.java");
+        editorOperator2.setCaretPosition("Main20kB {", false);
+        waitScanFinished();
     }
-    
-    public void prepare() {
-        editorOperator1.makeComponentVisible();
-        editorOperator1.select(53,443);
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_C, KeyEvent.CTRL_MASK)).perform(editorOperator1);
-        editorOperator2.makeComponentVisible();
-        editorOperator2.setCaretPositionToLine(29);
-        EditorCookie ec = Utilities.actionsGlobalContext().lookup(EditorCookie.class);
-        assertNotNull("Editor is selected", ec);
-        int len = ec.getDocument().getLength();
-        JEditorPane[] arr = ec.getOpenedPanes();
-        assertNotNull("Pane opened", arr);
-        assertEquals("One Pane opened", 1, arr.length);
-        arr[0].setCaretPosition(len);
-        try {
-            SourceUtils.waitScanFinished();
-        } catch (InterruptedException ex) {
-            fail("No interrupts please");
-        }
 
-        FileObject fo = Utilities.actionsGlobalContext().lookup(FileObject.class);
-        assertNotNull("File object found", fo);
-        assertEquals("Correct name", "TestClassForCopyPaste.java", fo.getNameExt());
-        File dir = FileUtil.toFile(fo.getParent());
-        assertNotNull("Directory is backed by java.io.File", dir);
-
-        try {
-            ec.saveDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        assertFalse("not modified yet", ec.isModified());
-        AtomicLong l = new AtomicLong();
-        editorOperator2.pushKey(KeyEvent.VK_ENTER);
-        assertTrue("modified now", ec.isModified());
-        CountingSecurityManager.initialize(dir.getPath());
-        editorOperator2.pushKey(KeyEvent.VK_ENTER);
-        CountingSecurityManager.assertCounts("The file is touched twice in our current state, could be zero if we tried more, see issue 171330", 4, l);
-        assertTrue("still modified", ec.isModified());
-        try {
-            ec.saveDocument();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        assertFalse("no longer modified", ec.isModified());
-   }
-    
-    public ComponentOperator open(){
-        new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
+    @Override
+    public ComponentOperator open() {
+        new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.CTRL_MASK)).perform(editorOperator2);
         return null;
     }
-    
+
+    @Override
+    public void close() {
+        editorOperator2.closeDiscard();
+    }
+
     @Override
     public void shutdown() {
-        editorOperator2.closeDiscard();
         editorOperator1.closeDiscard();
         repaintManager().resetRegionFilters();
     }
-    
 }

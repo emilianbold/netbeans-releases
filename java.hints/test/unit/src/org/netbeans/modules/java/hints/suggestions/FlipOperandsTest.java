@@ -64,7 +64,7 @@ public class FlipOperandsTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(FlipOperands.class)
-                .findWarning("3:18-3:18:hint:" + Bundle.ERR_FlipOperands())
+                .findWarning("3:18-3:18:hint:" + Bundle.DESC_FlipOperands())
                 .applyFix()
                 .assertCompilable()
                 .assertOutput("package test;\n" +

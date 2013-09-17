@@ -46,15 +46,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -69,20 +68,15 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
-import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
-import org.netbeans.modules.maven.model.ModelOperation;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.Dependency;
-import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -289,46 +283,35 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
     private Profile getProfileFromPOM(final Project project) {
-        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        final Profile[] result = new Profile[1];
+        final NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (nbMavenProject != null) {
+            MavenProject mavenProject = nbMavenProject.getMavenProject();
+            List<Dependency> dependencies = mavenProject.getDependencies();
 
-        try {
-            pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-
-                @Override
-                public void run() throws IOException {
-                    Utilities.performPOMModelOperations(pom, Collections.singletonList(new ModelOperation<POMModel>() {
-
-                        @Override
-                        public void performOperation(POMModel model) {
-                            for (Map.Entry<Profile, List<DependencyDesc>> entry : javaEEMap.entrySet()) {
-                                for (DependencyDesc dependencyDesc : entry.getValue()) {
-                                    Dependency dependency = ModelUtils.checkModelDependency(model, dependencyDesc.groupID, dependencyDesc.artifactID, false);
-                                    if (dependency != null) {
-                                        String version = dependency.getVersion();
-                                        if (dependencyDesc.version == null || (version != null && version.startsWith(dependencyDesc.version))) {
-                                            result[0] = entry.getKey();
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
+            for (Map.Entry<Profile, List<DependencyDesc>> entry : javaEEMap.entrySet()) {
+                for (DependencyDesc dependencyDesc : entry.getValue()) {
+                    Dependency dependency = checkForDependency(dependencies, dependencyDesc);
+                    if (dependency != null) {
+                        String version = dependency.getVersion();
+                        if (dependencyDesc.version == null || (version != null && version.startsWith(dependencyDesc.version))) {
+                            return entry.getKey();
                         }
-                    }));
-                }
-            });
-
-            if (result[0] == null) {
-                // Nothing was found, try to take a look at parent pom if such exists - see #234423
-                Project parentProject = ProjectManager.getDefault().findProject(project.getProjectDirectory().getParent());
-                if (parentProject != null) {
-                    result[0] = getProfileFromPOM(parentProject);
+                    }
                 }
             }
-        } catch (IOException ex) {
-            // Simply do nothing and return null
         }
-        return result[0];
+        return null;
+    }
+
+    private Dependency checkForDependency(List<Dependency> dependencies, DependencyDesc dependencyDesc) {
+        if (dependencies != null) {
+            for (Dependency dependency : dependencies) {
+                if (dependency.getArtifactId().equals(dependencyDesc.artifactID) && dependency.getGroupId().equals(dependencyDesc.groupID)) {
+                    return dependency;
+                }
+            }
+        }
+        return null;
     }
 
     @Override

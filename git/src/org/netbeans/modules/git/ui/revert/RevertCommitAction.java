@@ -183,7 +183,7 @@ public class RevertCommitAction extends SingleRepositoryAction {
                             NbBundle.getMessage(RevertCommit.class, "MSG_RevertCommitAction.result.failed", revision), NotifyDescriptor.ERROR_MESSAGE)); //NOI18N
                     break;
             }
-            logger.output(sb.toString());
+            logger.outputLine(sb.toString());
         }
     }
 }

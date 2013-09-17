@@ -374,7 +374,9 @@ class TypingCompletion {
         while (ts.offset() < rowEnd) {
             switch (ts.token().id()) {
                 case SEMICOLON:
-                    return ts.offset() + 1;
+                    if (!isForLoopOrTryWithResourcesSemicolon(ts)) {
+                        return ts.offset() + 1;
+                    }
                 case LPAREN:
                     parenBalance++;
                     break;

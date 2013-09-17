@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.glassfish.common;
 
-import java.awt.Dialog;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -79,8 +78,6 @@ import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -212,33 +209,23 @@ public class StartTask extends BasicTask<TaskState> {
     public TaskState call() {
         // Save the current time so that we can deduct that the startup
         // Failed due to timeout
-        LOGGER.log(Level.FINEST, "StartTask.call() called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
+        LOGGER.log(Level.FINEST, "StartTask.call() called on thread \"{0}\"",
+                Thread.currentThread().getName());
         final long start = System.currentTimeMillis();
 
-        final String adminHost;
-        final int adminPort;
-
-        adminHost = instance.getProperty(GlassfishModule.HOSTNAME_ATTR);
-        if (adminHost == null || adminHost.length() == 0) {
-            return fireOperationStateChanged(TaskState.FAILED,
-                    TaskEvent.CMD_FAILED,
-                    "MSG_START_SERVER_FAILED_NOHOST", instanceName);
-        }
-
-        adminPort = Integer.valueOf(instance.getProperty(
-                GlassfishModule.ADMINPORT_ATTR));
-        if (adminPort < 0 || adminPort > 65535) {
-            return fireOperationStateChanged(TaskState.FAILED,
-                    TaskEvent.CMD_FAILED,
-                    "MSG_START_SERVER_FAILED_BADPORT", instanceName);
+        final String host = instance.getHost();
+        final int adminPort = instance.getAdminPort();
+        StateChange change;
+        if ((change = validateAdminHostAndPort(host, adminPort)) != null) {
+                return change.fireOperationStateChanged();
         }
         // Remote server.
         if (support.isRemote()) {
             if (GlassFishState.isOnline(instance)) {
                 if (Util.isDefaultOrServerTarget(instance.getProperties())) {
-                    return restartDAS(adminHost, adminPort, start);
+                    return restartDAS(host, adminPort, start);
                 } else {
-                    return startClusterOrInstance(adminHost, adminPort);
+                    return startClusterOrInstance(host, adminPort);
                 }
             } else {
                 return fireOperationStateChanged(TaskState.FAILED,
@@ -265,7 +252,7 @@ public class StartTask extends BasicTask<TaskState> {
                                 TaskEvent.CMD_COMPLETED,
                                 "StartTask.call.matchVersion",
                                 version.getValue());
-                        return startClusterOrInstance(adminHost, adminPort);
+                        return startClusterOrInstance(host, adminPort);
                     // There is server with non matching version.
                     } else {
                         if (!version.isAuth()) {
@@ -287,17 +274,38 @@ public class StartTask extends BasicTask<TaskState> {
                             "StartTask.call.unknownVersion", instanceName);
                 }
             } else {
-                return startDAS(adminHost, adminPort);
+                return startDAS(host, adminPort);
             }
             // Our server is online.
         } else {
-            return startClusterOrInstance(adminHost, adminPort);
+            return startClusterOrInstance(host, adminPort);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validate <code>host</code> and <code>port</code> values
+     * for DAS listener.
+     * <p/>
+     * @return State change request data when server shall not be started
+     *          and listeners should be notified about it or <code>null</code>
+     *          otherwise.
+     */
+    private StateChange validateAdminHostAndPort(
+            final String host, final int adminPort) {
+        if (host == null || host.length() == 0) {
+            return new StateChange(this, TaskState.FAILED, TaskEvent.CMD_FAILED,
+                    "MSG_START_SERVER_FAILED_NOHOST", instanceName);
+        }
+        if (adminPort < 0 || adminPort > 65535) {
+            return new StateChange(this, TaskState.FAILED, TaskEvent.CMD_FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName);
+        }
+        return null;
+    }
 
     private TaskState restartDAS(String adminHost, int adminPort, final long start) {
         // deal with the remote case here...
@@ -452,7 +460,14 @@ public class StartTask extends BasicTask<TaskState> {
                         "StartTask.startDAS.alreadyRunning");
             case OFFLINE:
                 if (ServerUtils.isDASRunning(instance)) {
-                    msgKey = "StartTask.startDAS.portOccupied";
+                    msgKey = "StartTask.startDAS.adminPortOccupied";
+                } else {
+                    final int httpPort = instance.getPort();
+                    if (httpPort >= 0 && httpPort <= 65535
+                            && ServerUtils.isRunningLocal(
+                            instance.getHost(), httpPort)) {
+                        msgKey = "StartTask.startDAS.httpPortOccupied";
+                    }
                 }
                 break;
             case SHUTDOWN:
@@ -463,7 +478,7 @@ public class StartTask extends BasicTask<TaskState> {
         }
         return msgKey != null
                 ? new StateChange(this, TaskState.FAILED,
-                TaskEvent.CMD_FAILED, msgKey)
+                TaskEvent.CMD_FAILED, msgKey, this.instance.getDisplayName())
                 : null;
     }
 
@@ -578,7 +593,6 @@ public class StartTask extends BasicTask<TaskState> {
             LOGGER.log(Level.INFO,
                     "Caught InterruptedException while waiting for {0} to start: {1}",
                     new Object[] {instance.getName(), ie.getLocalizedMessage()});
-            
         } finally {
             GlassFishStatus.removeListener(instance, listener);
         }
@@ -723,7 +737,6 @@ public class StartTask extends BasicTask<TaskState> {
                 }
             }
         }
-        //try {
         if (null == debugPortString
                 || "0".equals(debugPortString) || "".equals(debugPortString)) {
             if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
@@ -739,18 +752,6 @@ public class StartTask extends BasicTask<TaskState> {
                             "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
                 }
             }
-            DialogDescriptor note =
-                    new DialogDescriptor(
-                    NbBundle.getMessage(StartTask.class, "MSG_SELECTED_PORT", debugPortString),
-                    NbBundle.getMessage(StartTask.class, "TITLE_MESSAGE"),
-                    false,
-                    new Object[]{DialogDescriptor.OK_OPTION},
-                    DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    null,
-                    null);
-            Dialog d = DialogDisplayer.getDefault().createDialog(note);
-            d.setVisible(true);
         }
         support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
         optList.add("-Xdebug");

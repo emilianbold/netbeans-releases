@@ -3,3 +3,4 @@ echo static::|LETTER."\n";
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     testStatic()                    [STATIC]   AA
 CONSTANT   LETTER 'a'                      [PUBLIC]   AA
+CONSTANT   class \AA                       [PUBLIC]   Magic Constant

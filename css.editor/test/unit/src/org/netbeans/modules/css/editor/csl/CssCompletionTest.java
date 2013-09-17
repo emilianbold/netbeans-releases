@@ -481,4 +481,40 @@ public class CssCompletionTest extends CssModuleTestBase {
         
     }
     
+    public void testURIValueCompletion() throws ParseException {
+        FileObject cssFile = getTestFile("testfiles/testHtmlApplication/public_html/style.css");
+        Document document = getDocumentForFileObject(cssFile);
+        
+        setDocumentContent(document, ".clz { background: url(|); }");
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, ".clz { background: url(\"|\"); }");
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, ".clz { background: url('|'); }");
+        assertCompletion(document, Match.CONTAINS, "folder", "style.css");
+        
+        setDocumentContent(document, ".clz { background: url(st|); }");
+        assertCompletion(document, Match.EXACT, "style.css");
+        
+        setDocumentContent(document, ".clz { background: url(\"st|\"); }");
+        assertCompletion(document, Match.EXACT, "style.css");
+        
+        setDocumentContent(document, ".clz { background: url('st|'); }");
+        assertCompletion(document, Match.EXACT, "style.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/|); }");
+        assertCompletion(document, Match.CONTAINS, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/st|); }");
+        assertCompletion(document, Match.EXACT, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/|); }");
+        assertCompletion(document, Match.CONTAINS, "style2.css");
+        
+        setDocumentContent(document, ".clz { background: url(folder/st|); }");
+        assertCompletion(document, Match.EXACT, "style2.css");
+        
+    }
+    
 }

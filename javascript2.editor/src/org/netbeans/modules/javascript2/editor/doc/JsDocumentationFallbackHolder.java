@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -73,8 +74,8 @@ public final class JsDocumentationFallbackHolder extends JsDocumentationHolder {
     }
 
     @Override
-    public String getDocumentation(Node node) {
-        return "";
+    public Documentation getDocumentation(Node node) {
+        return null;
     }
 
     @Override

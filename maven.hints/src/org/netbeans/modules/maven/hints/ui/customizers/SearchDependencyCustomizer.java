@@ -50,7 +50,7 @@ import org.netbeans.modules.maven.hints.errors.SearchClassDependencyHint;
  */
 public class SearchDependencyCustomizer extends javax.swing.JPanel {
 
-    private Preferences p;
+    private final Preferences p;
 
     /** Creates new form SearchDependencyCustomizer */
     public SearchDependencyCustomizer(Preferences p) {

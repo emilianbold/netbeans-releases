@@ -109,6 +109,7 @@ public class TokenFormatter {
         public boolean spaceBeforeSwitchLeftBrace;
         public boolean spaceBeforeTryLeftBrace;
         public boolean spaceBeforeCatchLeftBrace;
+        public boolean spaceBeforeFinallyLeftBrace;
         public boolean spaceBeforeUseTraitBodyLeftBrace;
         public boolean spaceBeforeMethodDeclParen;
         public boolean spaceBeforeMethodCallParen;
@@ -121,6 +122,7 @@ public class TokenFormatter {
         public boolean spaceBeforeWhile;
         public boolean spaceBeforeElse;
         public boolean spaceBeforeCatch;
+        public boolean spaceBeforeFinally;
         public boolean spaceAroundObjectOp;
         public boolean spaceAroundStringConcatOp;
         public boolean spaceAroundUnaryOps;
@@ -148,6 +150,7 @@ public class TokenFormatter {
         public boolean placeElseOnNewLine;
         public boolean placeWhileOnNewLine;
         public boolean placeCatchOnNewLine;
+        public boolean placeFinallyOnNewLine;
         public boolean placeNewLineAfterModifiers;
         public int blankLinesBeforeNamespace;
         public int blankLinesAfterNamespace;
@@ -234,6 +237,7 @@ public class TokenFormatter {
             spaceBeforeSwitchLeftBrace = codeStyle.spaceBeforeSwitchLeftBrace();
             spaceBeforeTryLeftBrace = codeStyle.spaceBeforeTryLeftBrace();
             spaceBeforeCatchLeftBrace = codeStyle.spaceBeforeCatchLeftBrace();
+            spaceBeforeFinallyLeftBrace = codeStyle.spaceBeforeFinallyLeftBrace();
             spaceBeforeUseTraitBodyLeftBrace = codeStyle.spaceBeforeUseTraitBodyLeftBrace();
 
             spaceBeforeMethodDeclParen = codeStyle.spaceBeforeMethodDeclParen();
@@ -248,6 +252,7 @@ public class TokenFormatter {
             spaceBeforeWhile = codeStyle.spaceBeforeWhile();
             spaceBeforeElse = codeStyle.spaceBeforeElse();
             spaceBeforeCatch = codeStyle.spaceBeforeCatch();
+            spaceBeforeFinally = codeStyle.spaceBeforeFinally();
 
             spaceAroundObjectOp = codeStyle.spaceAroundObjectOps();
             spaceAroundStringConcatOp = codeStyle.spaceAroundStringConcatOps();
@@ -279,6 +284,7 @@ public class TokenFormatter {
             placeElseOnNewLine = codeStyle.placeElseOnNewLine();
             placeWhileOnNewLine = codeStyle.placeWhileOnNewLine();
             placeCatchOnNewLine = codeStyle.placeCatchOnNewLine();
+            placeFinallyOnNewLine = codeStyle.placeFinallyOnNewLine();
             placeNewLineAfterModifiers = codeStyle.placeNewLineAfterModifiers();
 
             blankLinesBeforeNamespace = codeStyle.getBlankLinesBeforeNamespace();
@@ -517,6 +523,12 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_FINALLY_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.catchBracePlacement, docOptions.spaceBeforeFinallyLeftBrace, oldText, indent, 0);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(docOptions.useTraitBodyBracePlacement, docOptions.spaceBeforeUseTraitBodyLeftBrace, oldText, indent, 0);
@@ -682,8 +694,15 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesBeforeNamespace + 1 > newLines ? docOptions.blankLinesBeforeNamespace + 1 : newLines;
-                                        countSpaces = Math.max(indent, countSpaces);
+                                        if (docOptions.blankLinesBeforeNamespace != 0 && docOptions.blankLinesBeforeNamespace + 1 > newLines) {
+                                            newLines = docOptions.blankLinesBeforeNamespace + 1;
+                                            countSpaces = indent;
+                                        } else {
+                                            if (newLines == 0) {
+                                                countSpaces = 1; // one space before OPEN_TAG and NS_DECLARATION - probably in one line
+                                            }
+                                            countSpaces = Math.max(indent, countSpaces);
+                                        }
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
                                         indentRule = true;
@@ -1283,6 +1302,12 @@ public class TokenFormatter {
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
+                                    case WHITESPACE_BEFORE_FINALLY:
+                                        indentRule = true;
+                                        ws = countWSBeforeKeyword(docOptions.placeFinallyOnNewLine, docOptions.spaceBeforeFinally, indent, formatTokens, index);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
                                     case WHITESPACE_BEFORE_WHILE:
                                         indentRule = true;
                                         ws = countWSBeforeKeyword(docOptions.placeWhileOnNewLine, docOptions.spaceBeforeWhile, indent, formatTokens, index);
@@ -1390,9 +1415,16 @@ public class TokenFormatter {
                                         indentRule = true;
                                         indent = Math.max(lastPHPIndent, indent);
                                         if (!isOpenAndCloseTagOnOneLine(formatTokens, index)) {
-                                            newLines = ((FormatToken.InitToken) formatTokens.get(0)).hasHTML()
-                                                    ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
-                                                    : docOptions.blankLinesAfterOpenPHPTag + 1;
+                                            if (((FormatToken.InitToken) formatTokens.get(0)).hasHTML()) {
+                                                newLines = docOptions.blankLinesAfterOpenPHPTagInHTML + 1;
+                                            } else {
+                                                newLines = docOptions.blankLinesAfterOpenPHPTag;
+                                                if (!isRightBeforeNamespaceDeclaration(formatTokens, index)) {
+                                                    newLines++;
+                                                } else if (newLines > 0) {
+                                                    newLines++;
+                                                }
+                                            }
                                             suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
                                             if (suggestedLineIndents != null) {
                                                 try {
@@ -1761,6 +1793,21 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
                 }
+            }
+
+            private boolean isRightBeforeNamespaceDeclaration(List<FormatToken> formatTokens, int index) {
+                boolean result = false;
+                int i = index + 1;
+                if (formatTokens.size() >= i) {
+                    while (formatTokens.get(i).isWhitespace()) {
+                        if (formatTokens.get(i).getId() == FormatToken.Kind.WHITESPACE_BEFORE_NAMESPACE) {
+                            result = true;
+                            break;
+                        }
+                        i++;
+                    }
+                }
+                return result;
             }
 
             private boolean isEmptyArray(List<FormatToken> formatTokens, int index) {

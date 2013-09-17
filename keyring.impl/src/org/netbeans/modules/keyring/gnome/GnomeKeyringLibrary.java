@@ -51,9 +51,7 @@ import com.sun.jna.Structure;
 import com.sun.jna.ToNativeContext;
 import com.sun.jna.TypeConverter;
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 
@@ -144,16 +142,6 @@ public interface GnomeKeyringLibrary extends Library {
         public int item_id;
         public /*GnomeKeyringAttributeList*/Pointer attributes;
         public String secret;
-
-        @Override
-        protected List getFieldOrder() {
-            return Arrays.asList( new String[] {
-                "keyring",
-                "item_id",
-                "attributes",
-                "secret",
-            } );
-        }
     }
 
     /** http://library.gnome.org/devel/glib/2.6/glib-Miscellaneous-Utility-Functions.html#g-set-application-name */

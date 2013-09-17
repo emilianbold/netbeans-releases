@@ -41,16 +41,13 @@
  */
 package org.netbeans.modules.odcs.git;
 
-import com.tasktop.c2c.server.scm.domain.ScmType;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.modules.git.api.Git;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,12 +55,17 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ondrej Vrabec
  */
-@ServiceProvider(service=ApiProvider.class)
-public class GitApiProviderImpl implements ApiProvider {
+@ServiceProvider(service=VCSProvider.class)
+public class GitApiProviderImpl implements VCSProvider {
 
     @Override
-    public boolean accepts (String type) {
-        return ScmType.GIT.name().equals(type);
+    public Type getType() {
+        return Type.GIT;
+    }
+    
+    @Override
+    public boolean providesSources(String url) {
+        return true;
     }
     
     @Override
@@ -82,40 +84,38 @@ public class GitApiProviderImpl implements ApiProvider {
     }
 
     @Override
-    public String getName () {
+    public String getDisplayName () {
         return "Git"; //NOI18N
     }
 
     @Override
-    public Action createOpenHistoryAction (final File workdir, final String commitId) {
-        Action action = null;
-        if (Git.isOwner(workdir)) {
-            action = new AbstractAction () {
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    Git.openSearchHistory(workdir, commitId);
-                }
-            };
+    public boolean providesOpenHistory(File workdir) {
+        return Git.isOwner(workdir);
+    }
+    
+    @Override
+    public boolean openHistory (final File workdir, final String commitId) {
+        assert Git.isOwner(workdir);
+        if(!Git.isOwner(workdir)) {
+            return false;
         }
-        return action;
+        Git.openSearchHistory(workdir, commitId);
+        return true;
     }
 
     @Override
-    public LocalRepositoryInitializer getRepositoryInitializer () {
-        return new LocalRepositoryInitializerImpl();
+    public boolean providesLocalInit(String repositoryUrl) {
+        return true;
     }
-
-    private static class LocalRepositoryInitializerImpl implements LocalRepositoryInitializer {
-
-        @Override
-        public void initLocalRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException {
-            try {
-                Git.initializeRepository(localFolder, repositoryUrl, credentials);
-            } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
+    
+    @Override
+    public boolean localInit(File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws MalformedURLException {
+        try {
+            Git.initializeRepository(localFolder, repositoryUrl, credentials);
+            return true;
+        } catch (URISyntaxException ex) {
+            throw new MalformedURLException(repositoryUrl);
+        } 
     }
     
 }

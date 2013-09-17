@@ -122,7 +122,9 @@ class ModelElementFactory {
         
         parentObject.addProperty(result.getDeclarationName().getName(), result);
         if (property != null) {
-            result.addOccurrence(property.getDeclarationName().getOffsetRange());
+            if (property.getDeclarationName() != null) {
+                result.addOccurrence(property.getDeclarationName().getOffsetRange());
+            }
             for(Occurrence occurrence : property.getOccurrences()) {
                 result.addOccurrence(occurrence.getOffsetRange());
             }

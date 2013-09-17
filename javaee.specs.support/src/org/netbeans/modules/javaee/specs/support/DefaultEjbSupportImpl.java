@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.javaee.specs.support;
 
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.spi.EjbSupportImplementation;
 
@@ -59,8 +58,12 @@ public class DefaultEjbSupportImpl implements EjbSupportImplementation {
 
     @Override
     public boolean isEjb31LiteSupported(J2eePlatform j2eePlatform) {
-        Set<Profile> profiles = j2eePlatform.getSupportedProfiles();
-        return profiles.contains(Profile.JAVA_EE_6_FULL) || (profiles.contains(Profile.JAVA_EE_6_WEB));
+        Set<Profile> profiles = new HashSet<Profile>(j2eePlatform.getSupportedProfiles());
+        profiles.remove(Profile.J2EE_13);
+        profiles.remove(Profile.J2EE_14);
+        profiles.remove(Profile.JAVA_EE_5);
+        // we assume higher specs include it
+        return !profiles.isEmpty();
     }
 
 }

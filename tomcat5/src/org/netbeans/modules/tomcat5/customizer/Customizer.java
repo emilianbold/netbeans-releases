@@ -47,7 +47,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 
 /**
  * Tomcat instance customizer which is accessible from server manager.

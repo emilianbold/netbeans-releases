@@ -260,6 +260,10 @@ public final class CodeStyle {
         return preferences.getBoolean(SPACE_BEFORE_CATCH, getDefaultAsBoolean(SPACE_BEFORE_CATCH));
     }
 
+    public boolean spaceBeforeFinally() {
+        return preferences.getBoolean(SPACE_BEFORE_FINALLY, getDefaultAsBoolean(SPACE_BEFORE_FINALLY));
+    }
+
     public boolean spaceBeforeMethodDeclParen() {
         return preferences.getBoolean(SPACE_BEFORE_METHOD_DECL_PAREN, getDefaultAsBoolean(SPACE_BEFORE_METHOD_DECL_PAREN));
     }
@@ -358,6 +362,10 @@ public final class CodeStyle {
 
     public boolean spaceBeforeCatchLeftBrace() {
         return preferences.getBoolean(SPACE_BEFORE_CATCH_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_CATCH_LEFT_BRACE));
+    }
+
+    public boolean spaceBeforeFinallyLeftBrace() {
+        return preferences.getBoolean(SPACE_BEFORE_FINALLY_LEFT_BRACE, getDefaultAsBoolean(SPACE_BEFORE_FINALLY_LEFT_BRACE));
     }
 
     public boolean spaceBeforeUseTraitBodyLeftBrace() {
@@ -484,6 +492,10 @@ public final class CodeStyle {
 
     public boolean placeCatchOnNewLine() {
         return preferences.getBoolean(PLACE_CATCH_ON_NEW_LINE, getDefaultAsBoolean(PLACE_CATCH_ON_NEW_LINE));
+    }
+
+    public boolean placeFinallyOnNewLine() {
+        return preferences.getBoolean(PLACE_FINALLY_ON_NEW_LINE, getDefaultAsBoolean(PLACE_FINALLY_ON_NEW_LINE));
     }
 
     public boolean placeNewLineAfterModifiers() {

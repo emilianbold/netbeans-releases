@@ -95,7 +95,6 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssEditorModule.class)
 public class DefaultCssEditorModule extends CssEditorModule {
 
-    private static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     private static final String MODULE_PATH_BASE = "org/netbeans/modules/css/editor/module/main/properties/"; //NOI18N    
     private static final CssModule[] MODULE_PROPERTY_DEFINITION_FILE_NAMES = new CssModule[]{
         module("default_module", "http://www.w3.org/TR/CSS2"),
@@ -429,14 +428,24 @@ public class DefaultCssEditorModule extends CssEditorModule {
                 }
 
                 Token<CssTokenId> token = ts.token();
-                int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
-                OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
-                if (token.id() == CssTokenId.STRING || token.id() == CssTokenId.URI) {
-                    //check if there is @import token before
-                    if (LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
-                        //gotcha!
+                switch (token.id()) {
+                    case STRING:
+                        //check if there is @import token before
+                        if (LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                        int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
+                        OffsetRange range = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
                         result.set(range);
                     }
+                        break;
+                    case URI:
+                        Matcher m = Css3Utils.URI_PATTERN.matcher(ts.token().text());
+                        if (m.matches()) {
+                            int groupIndex = 1;
+                            String value = m.group(groupIndex);
+                            int quotesDiff = WebUtils.isValueQuoted(value) ? 1 : 0;
+                            result.set(new OffsetRange(ts.offset() + m.start(groupIndex) + quotesDiff, ts.offset() + m.end(groupIndex) - quotesDiff));
+                        }
+
                 }
             }
 
@@ -467,7 +476,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                         //adjust the value if a part of an URI
                         if (valueToken.id() == CssTokenId.URI) {
-                            Matcher m = URI_PATTERN.matcher(valueToken.text());
+                            Matcher m = Css3Utils.URI_PATTERN.matcher(valueToken.text());
                             if (m.matches()) {
                                 int groupIndex = 1;
                                 valueText = m.group(groupIndex);
@@ -477,9 +486,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                         valueText = WebUtils.unquotedValue(valueText);
 
                         FileObject resolved = WebUtils.resolve(context.getSource().getFileObject(), valueText);
-                        if (resolved != null) {
-                            result.set(new DeclarationLocation(resolved, 0));
-                        }
+                        result.set(resolved != null ? new DeclarationLocation(resolved, 0) : DeclarationLocation.NONE);
                     }
                 });
                 return result.get();

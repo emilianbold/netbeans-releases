@@ -349,7 +349,7 @@ public class CommitAction extends SingleRepositoryAction {
         private void printInfo (GitRevisionInfo info) {
             StringBuilder sb = new StringBuilder('\n');
             GitUtils.printInfo(sb, info);
-            getLogger().output(sb.toString());
+            getLogger().outputLine(sb.toString());
         }
     }    
 

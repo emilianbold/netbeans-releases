@@ -3469,42 +3469,36 @@ public class Reformatter implements ReformatTask {
                 switch (wrapStyle) {
                     case WRAP_ALWAYS:
                         int old = indent;
-                        boolean oldContinuationIndent = continuationIndent;
                         try {
                             if (alignIndent >= 0) {
-                                indent = alignIndent;
-                                continuationIndent = false;
+                                indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                             }
                             newline();
+                            ret = col;
+                            scan(tree, null);
                         } finally {
                             indent = old;
-                            continuationIndent = oldContinuationIndent;
                         }
-                        ret = col;
-                        scan(tree, null);
                         break;
                     case WRAP_IF_LONG:
                         int index = tokens.index();
                         int c = col;
                         Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                         old = indent;
-                        oldContinuationIndent = continuationIndent;
                         WrapAbort oldCheckWrap = checkWrap;
                         int o = tokens.offset();
                         checkWrap = new WrapAbort(tokens.offset());
                         try {
                             try {
                                 if (alignIndent >= 0) {
-                                    indent = alignIndent;
-                                    continuationIndent = false;
+                                    indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                                 }
                                 spaces(spacesCnt, true);
+                                ret = col;
+                                scan(tree, null);
                             } finally {
                                 indent = old;
-                                continuationIndent = oldContinuationIndent;
                             }
-                            ret = col;
-                            scan(tree, null);
                         } catch (WrapAbort wa) {
                         } finally {
                             checkWrap = oldCheckWrap;
@@ -3513,36 +3507,30 @@ public class Reformatter implements ReformatTask {
                             rollback(index, c, d);
                             try {
                                 if (alignIndent >= 0) {
-                                    indent = alignIndent;
-                                    continuationIndent = false;
+                                    indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                                 } else {
                                     indent = old;
-                                    continuationIndent = oldContinuationIndent;
                                 }
                                 newline();
+                                ret = col;
+                                scan(tree, null);
                             } finally {
                                 indent = old;
-                                continuationIndent = oldContinuationIndent;
                             }
-                            ret = col;
-                            scan(tree, null);
                         }
                         break;
                     case WRAP_NEVER:
                         old = indent;
-                        oldContinuationIndent = continuationIndent;
                         try {
                             if (alignIndent >= 0) {
-                                indent = alignIndent;
-                                continuationIndent = false;
+                                indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                             }
                             spaces(spacesCnt, true);
+                            ret = col;
+                            scan(tree, null);
                         } finally {
                             indent = old;
-                            continuationIndent = oldContinuationIndent;
                         }
-                        ret = col;
-                        scan(tree, null);
                         break;
                 }
             } finally {
@@ -3564,14 +3552,12 @@ public class Reformatter implements ReformatTask {
                     boolean oldContinuationIndent = continuationIndent;
                     try {
                         if (alignIndent >= 0) {
-                            indent = alignIndent;
-                            continuationIndent = false;
+                            indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                         }
                         newline();
                     } finally {
                         indent = old;
                         lastIndent = oldLast;
-                        continuationIndent = oldContinuationIndent;
                     }
                     ret = col;
                     if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
@@ -3580,7 +3566,6 @@ public class Reformatter implements ReformatTask {
                         lastBlankLinesTokenIndex = -1;
                         tokens.moveNext();
                     }
-                    oldContinuationIndent = continuationIndent;
                     try {
                         if (tree.getKind() != Tree.Kind.BLOCK
                                 && (tree.getKind() != Tree.Kind.NEW_ARRAY
@@ -3608,14 +3593,13 @@ public class Reformatter implements ReformatTask {
                     try {
                         try {
                             if (alignIndent >= 0) {
+                                indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                                 indent = alignIndent;
-                                continuationIndent = false;
                             }
                             spaces(spacesCntBeforeOp, true);
                         } finally {
                             indent = old;
                             lastIndent = oldLast;
-                            continuationIndent = oldContinuationIndent;
                         }
                         ret = col;
                         if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
@@ -3645,8 +3629,7 @@ public class Reformatter implements ReformatTask {
                         rollback(index, c, d);
                         try {
                             if (alignIndent >= 0) {
-                                indent = alignIndent;
-                                continuationIndent = false;
+                                indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                             } else {
                                 indent = old;
                                 lastIndent = oldLast;
@@ -3689,14 +3672,12 @@ public class Reformatter implements ReformatTask {
                     oldContinuationIndent = continuationIndent;
                     try {
                         if (alignIndent >= 0) {
-                            indent = alignIndent;
-                            continuationIndent = false;
+                            indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                         }
                         spaces(spacesCntBeforeOp, true);
                     } finally {
                         indent = old;
                         lastIndent = oldLast;
-                        continuationIndent = oldContinuationIndent;
                     }
                     ret = col;
                     if (OPERATOR.equals(tokens.token().id().primaryCategory())) {
@@ -3714,17 +3695,14 @@ public class Reformatter implements ReformatTask {
                                 rollback(index, c, d);
                                 old = indent;
                                 oldLast = lastIndent;
-                                oldContinuationIndent = continuationIndent;
                                 try {
                                     if (alignIndent >= 0) {
-                                        indent = alignIndent;
-                                        continuationIndent = false;
+                                        indent = continuationIndent ? alignIndent - continuationIndentSize : alignIndent;
                                     }
                                     newline();
                                 } finally {
                                     indent = old;
                                     lastIndent = oldLast;
-                                    continuationIndent = oldContinuationIndent;
                                 }
                                 ret = col;
                                 if (OPERATOR.equals(tokens.token().id().primaryCategory())) {

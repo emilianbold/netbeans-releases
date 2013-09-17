@@ -58,8 +58,8 @@ import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
+import org.netbeans.modules.maven.j2ee.ui.util.CopyStaticResourcesOnSaveCheckBoxUpdater;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -108,6 +108,8 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
         initVersionModel(javaeeVersionCBox, javaeeVersionLabel, J2eeModule.Type.WAR);
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
+
+        CopyStaticResourcesOnSaveCheckBoxUpdater.create(project, jCheckBoxCopyStaticResources);
     }
     
     @Override
@@ -133,7 +135,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     public void applyChanges() {
         changeServer(serverCBox);
         changeContextPath();
-        
+
         JavaEEProjectSettings.setBrowserID(project, browserModel.getSelectedBrowserId());
     }
     
@@ -277,6 +279,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         javaeeVersionCBox = new javax.swing.JComboBox();
         browserLabel = new javax.swing.JLabel();
         browserCBox = createBrowserComboBox();
+        jCheckBoxCopyStaticResources = new javax.swing.JCheckBox();
 
         serverLabel.setLabelFor(serverCBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
@@ -312,6 +315,9 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
         org.openide.awt.Mnemonics.setLocalizedText(browserLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.browserLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCopyStaticResources, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.text")); // NOI18N
+        jCheckBoxCopyStaticResources.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.toolTipText")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -341,7 +347,9 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                         .addComponent(jCheckBoxDeployOnSave)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(showBrowserCheckBox)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(showBrowserCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jCheckBoxCopyStaticResources, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -371,6 +379,8 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                     .addComponent(browserCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(showBrowserCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jCheckBoxCopyStaticResources)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jCheckBoxDeployOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -413,6 +423,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     private javax.swing.JLabel contextPathLabel;
     private javax.swing.JTextField contextPathTField;
     private javax.swing.JLabel dosDescription;
+    private javax.swing.JCheckBox jCheckBoxCopyStaticResources;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JComboBox javaeeVersionCBox;
     private javax.swing.JLabel javaeeVersionLabel;

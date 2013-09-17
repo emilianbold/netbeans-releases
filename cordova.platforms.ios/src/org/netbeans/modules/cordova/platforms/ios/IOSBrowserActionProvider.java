@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
@@ -73,9 +75,18 @@ public class IOSBrowserActionProvider implements ActionProvider {
     }
 
     @Override
-    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-        WebKitDebuggingSupport.getDefault().stopDebugging(true);
-        IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browserId), project, browserSupport);
+    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
+        try {
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    WebKitDebuggingSupport.getDefault().stopDebugging(true);
+                    IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browserId), project, browserSupport);
+                }
+            }, IOSBrowser.Kind.valueOf(browserId) == IOSBrowser.Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), true);
+        } catch (IllegalStateException ise) {
+            WebKitDebuggingSupport.getDefault().stopDebugging(true);
+        }
     }
 
     @Override

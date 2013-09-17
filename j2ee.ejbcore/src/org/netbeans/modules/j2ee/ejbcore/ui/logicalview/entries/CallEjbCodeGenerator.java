@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -159,7 +160,8 @@ public class CallEjbCodeGenerator implements CodeGenerator {
             if (platform == null) {
                 return true;
             }
-            if (!platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
+            if (!EjbSupport.getInstance(platform).isEjb31LiteSupported(platform)
+                    && !platform.getSupportedTypes().contains(J2eeModule.Type.EJB)) {
                 return false;
             }
         } else {

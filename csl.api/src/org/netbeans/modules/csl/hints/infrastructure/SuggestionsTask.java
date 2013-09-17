@@ -162,7 +162,7 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
                             return;
                         }
                         // #224654 - suggestions may be returned for text unrelated to caret position
-                        if (linerange != OffsetRange.NONE && !hint.getRange().overlaps(linerange)) {
+                        if (linerange != OffsetRange.NONE && !overlaps(linerange, hint.getRange())) {
                             continue;
                         }
                         ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
@@ -179,6 +179,11 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
         } catch (ParseException e) {
             LOG.log(Level.WARNING, null, e);
         }
+    }
+    
+    private static boolean overlaps(OffsetRange line, OffsetRange hint) {
+        //rule w/ empty hint range should still be shown at the very line beginning / end
+        return hint.overlaps(line) || hint.isEmpty() && line.containsInclusive(hint.getStart());
     }
     
     private static OffsetRange findLineBoundaries(CharSequence s, int position) {

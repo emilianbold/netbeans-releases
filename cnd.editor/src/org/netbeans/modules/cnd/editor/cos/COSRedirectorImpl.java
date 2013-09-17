@@ -46,6 +46,22 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
     private static final boolean ENABLED;
     private static final int L1_CACHE_SIZE = 10;
 
+    private static final Method getDataObjectMethod;
+
+    static {
+        Method m = null;
+        try {
+           m = OpenSupport.Env.class.getDeclaredMethod("getDataObject", new Class[0]); //NOI18N
+           m.setAccessible(true);
+        } catch (NoSuchMethodException ex) {
+            // ignoring
+        } catch (SecurityException ex) {
+            // ignoring
+        } finally {
+            getDataObjectMethod = m;
+        }
+    }
+
     static {
         String prop = System.getProperty("nb.cosredirector", "true");
         boolean enabled = true;
@@ -152,24 +168,16 @@ public class COSRedirectorImpl extends CloneableOpenSupportRedirector {
             return null;
         }
         DataObject dobj = null;
-        try {
-            Class clazz = env.getClass();
-            while (!clazz.equals(OpenSupport.Env.class)) {
-                clazz = clazz.getSuperclass();
+        if (getDataObjectMethod != null) {
+            try {
+                dobj = (DataObject) getDataObjectMethod.invoke(env);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            Method m = clazz.getDeclaredMethod("getDataObject", new Class[0]); //NOI18N          
-            m.setAccessible(true);
-            dobj = (DataObject) m.invoke(env);
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
         }
         if (dobj == null) { // See CR#7117235
             return null;

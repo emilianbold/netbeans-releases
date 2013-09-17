@@ -78,7 +78,7 @@ import org.openide.util.NbBundle.Messages;
  * @author mkleint
  */
 public class ParentVersionError implements POMErrorFixProvider {
-    private Configuration configuration;
+    private final Configuration configuration;
     static final String PROP_SOURCES = "sources";//NOI18N
     static final String PROP_SNAPSHOT = "snapshot";//NOI18N
 
@@ -190,9 +190,9 @@ public class ParentVersionError implements POMErrorFixProvider {
     }
 
     private static class SynchronizeFix implements Fix, Runnable {
-        private Parent parent;
-        private String version;
-        private String message;
+        private final Parent parent;
+        private final String version;
+        private final String message;
 
         @Messages({
             "# {0} - parent artifact version",

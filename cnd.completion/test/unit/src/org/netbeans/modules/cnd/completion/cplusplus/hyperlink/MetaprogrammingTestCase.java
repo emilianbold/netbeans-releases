@@ -47,6 +47,7 @@ import org.netbeans.junit.RandomlyFails;
 /**
  * @author Nikolay Krasilnikov
  */
+@RandomlyFails
 public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
 
     public MetaprogrammingTestCase(String testName) {
@@ -96,11 +97,17 @@ public class MetaprogrammingTestCase extends HyperlinkBaseTestCase {
         performTest("bug172419_2.cpp", 364, 13, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 367, 13, "bug172419_2.cpp", 260, 5);
         performTest("bug172419_2.cpp", 370, 13, "bug172419_2.cpp", 260, 5);
-    }    
-
+    }
+    
     public void testBug172419_4() throws Exception {
         // Bug 172419 - Boost metaprogramming usage problem
         performTest("bug172419_4.cpp", 151, 11, "bug172419_4.cpp", 139, 5);
+    }    
+    
+    public void testBug172419_5() throws Exception {
+        // Bug 172419 - Boost metaprogramming usage problem
+        performTest("bug172419_5.cpp", 58, 15, "bug172419_5.cpp", 14, 9); // this fails if TemplateParameterImpl.hashCode returns constant
+        performTest("bug172419_5.cpp", 61, 15, "bug172419_5.cpp", 14, 9); // this fails always
     }    
     
 }

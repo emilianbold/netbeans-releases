@@ -97,11 +97,6 @@ public class MissingIdRule extends HtmlRule {
     }
 
     @Override
-    public boolean getDefaultEnabled() {
-        return false;
-    }
-
-    @Override
     public String getDescription() {
         return MSG_MISSING_CSS_ID_DESC;
     }
@@ -118,7 +113,7 @@ public class MissingIdRule extends HtmlRule {
 
     @Override
     public HintSeverity getDefaultSeverity() {
-        return HintSeverity.INFO;
+        return HintSeverity.CURRENT_LINE_WARNING;
     }
     
 }

@@ -46,7 +46,6 @@ import java.util.logging.Logger;
 import org.glassfish.tools.ide.TaskEvent;
 import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.TaskStateListener;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 
 /**
@@ -98,26 +97,22 @@ public class KillTask extends BasicTask<TaskState> {
         LOGGER.log(Level.FINEST,
                 "[0] GlassFish server termination task started",
                 taskThread.getName());
-        if (WarnPanel.gfKillWarning(instanceName)) {
-            Process process = instance.getProcess();
-            if (process == null) {
-                return fireOperationStateChanged(
-                        TaskState.FAILED, TaskEvent.PROCESS_NOT_EXISTS,
-                        "KillTask.call.noProcess", instanceName);
-            }
-            if (!ServerUtils.isProcessRunning(process)) {
-                // Clear process stored in instance when already finished.
-                return fireOperationStateChanged(
-                        TaskState.FAILED, TaskEvent.PROCESS_NOT_RUNNING,
-                        "KillTask.call.finished", instanceName);
-            }
-            fireOperationStateChanged(
-                    TaskState.RUNNING, TaskEvent.CMD_RUNNING,
-                    "KillTask.call.running", instanceName);
-            state = kill(process);
-        } else {
-            state = null;
+        Process process = instance.getProcess();
+        if (process == null) {
+            return fireOperationStateChanged(
+                    TaskState.FAILED, TaskEvent.PROCESS_NOT_EXISTS,
+                    "KillTask.call.noProcess", instanceName);
         }
+        if (!ServerUtils.isProcessRunning(process)) {
+            // Clear process stored in instance when already finished.
+            return fireOperationStateChanged(
+                    TaskState.FAILED, TaskEvent.PROCESS_NOT_RUNNING,
+                    "KillTask.call.finished", instanceName);
+        }
+        fireOperationStateChanged(
+                TaskState.RUNNING, TaskEvent.CMD_RUNNING,
+                "KillTask.call.running", instanceName);
+        state = kill(process);
         clearTaskThread();
         return state;
     }

@@ -193,6 +193,7 @@ public class SelectorsLoader extends DefaultHandler {
         private boolean inTag;
         private String interestedInTypeTag;
         private String elementName;
+        private String elementNameWithPrefix;
         private File file;
         private List<Tag> tagPath;
         
@@ -216,6 +217,7 @@ public class SelectorsLoader extends DefaultHandler {
             try {
                 long start = System.currentTimeMillis();
                 elementName = name;
+                elementNameWithPrefix = "jQuery." + name; //NOI18N
                 interestedInTypeTag = METHOD;
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 SAXParser parser = factory.newSAXParser();
@@ -281,8 +283,7 @@ public class SelectorsLoader extends DefaultHandler {
                 String type = attributes.getValue(TYPE);
                 if (type.equals(interestedInTypeTag)) {
                     String name = attributes.getValue(NAME);
-                    
-                    if (name.equals(elementName)) {
+                    if (name.equals(elementName) || name.equals(elementNameWithPrefix)) {
                         tagPath.add(Tag.entry);
                         returns = attributes.getValue(RETURN);
                         inTag = true;
@@ -556,6 +557,9 @@ public class SelectorsLoader extends DefaultHandler {
                     }
                     if (isMethod || isProperty) {
                         name = attributes.getValue(NAME);
+                        if (name.startsWith("jQuery.")) {
+                            name = name.substring(7);
+                        }
                         returns = attributes.getValue(RETURN);
                     }
                     break;

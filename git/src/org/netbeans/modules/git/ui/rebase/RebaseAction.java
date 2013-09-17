@@ -77,6 +77,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.ResultProcessor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.LogUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
@@ -288,13 +289,19 @@ public class RebaseAction extends SingleRepositoryAction {
             nextAction = null;
             StringBuilder sb = new StringBuilder(Bundle.MSG_RebaseAction_result(result.getRebaseStatus().toString()));
             GitRevisionInfo info;
+            String base = null;
             try {
                 info = client.log(GitUtils.HEAD, GitUtils.NULL_PROGRESS_MONITOR);
+                if (origHead != null && onto != null) {
+                    GitRevisionInfo i = client.getCommonAncestor(new String[] { origHead, onto }, pm);
+                    base = i.getRevision();
+                }
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
                 return;
             }
             persistNBConfig();
+            boolean logActions = false;
             switch (result.getRebaseStatus()) {
                 case ABORTED:
                     sb.append(Bundle.MSG_RebaseAction_result_aborted(info.getRevision()));
@@ -319,7 +326,8 @@ public class RebaseAction extends SingleRepositoryAction {
                 case FAST_FORWARD:
                 case OK:
                     sb.append(Bundle.MSG_RebaseAction_result_ok(info.getRevision()));
-                    GitUtils.printInfo(sb, info);
+                    GitUtils.printInfo(sb, info, false);
+                    logActions = true;
                     updatePushHooks();
                     break;
                 case STOPPED:
@@ -331,7 +339,10 @@ public class RebaseAction extends SingleRepositoryAction {
                     sb.append(Bundle.MSG_RebaseAction_result_alreadyUpToDate(onto));
                     break;
             }
-            logger.output(sb.toString());
+            logger.outputLine(sb.toString());
+            if (logActions) {
+                logRebaseResult(info.getRevision(), base);
+            }
         }
 
         public RebaseOperationType getNextAction () {
@@ -423,6 +434,15 @@ public class RebaseAction extends SingleRepositoryAction {
             }
         }
 
+        private void logRebaseResult (String newHeadId, String base) {
+            if (base != null && newHeadId != null) {
+                String oldId = base;
+                String newId = newHeadId;
+                String branchName = RepositoryInfo.getInstance(repository).getActiveBranch().getName();
+                LogUtils.logBranchUpdateReview(repository, branchName, oldId, newId, logger);
+            }
+        }
+        
         @NbBundle.Messages("MSG_RebaseAction.updatingHooks=Updating push hooks")
         private void updatePushHooks () {
             if (onto != null && upstream != null && origHead != null) {

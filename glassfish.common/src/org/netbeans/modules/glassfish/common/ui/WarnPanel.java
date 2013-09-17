@@ -106,7 +106,7 @@ public class WarnPanel extends javax.swing.JPanel {
      *         warning next time</i> check box was turned on.
      */
     public static boolean gfKillWarning(final String serverName) {
-        boolean showAgain = GlassFishSettings.getGf312WarningShowAgain();
+        boolean showAgain = GlassFishSettings.getGfKillWarningShowAgain();
         if (showAgain) {
             String warning = NbBundle.getMessage(
                     WarnPanel.class, "WarnPanel.GfKillWarning", serverName);

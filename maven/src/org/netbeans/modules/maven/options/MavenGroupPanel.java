@@ -183,7 +183,9 @@ public class MavenGroupPanel extends javax.swing.JPanel {
         }
 
         @Override
-        @NbBundle.Messages("LBL_Global_selection={0} [Global selection]")
+        @NbBundle.Messages({
+            "# {0} - global maven selection",
+            "LBL_Global_selection={0} [Global selection]"})
         public Component getListCellRendererComponent(JList list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             if (SEPARATOR.equals(value)) {

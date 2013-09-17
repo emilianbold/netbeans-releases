@@ -173,15 +173,15 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
 
     protected void startProgress () {
         getProgressHandle().start();
-        getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
+        getLogger().outputLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
     }
 
     protected void finishProgress () {
         getProgressHandle().finish();
         if (isCanceled() == false) {
-            getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
+            getLogger().outputLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
         } else {
-            getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Canceled")); // NOI18N
+            getLogger().outputLine("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Canceled")); // NOI18N
         }
     }
 
@@ -221,7 +221,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     
     public void output(String message) {
         LOG.log(Level.FINE, message); //NOI18N
-        getLogger().output(message);
+        getLogger().outputLine(message);
     }
     
     private void setProgressMessage (ProgressHandle progressHandle, String message) {
@@ -250,7 +250,7 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         @Override
         public void started (String command) {
             LOG.log(Level.FINE, "command started: {0}", command); //NOI18N
-            getLogger().output(command);
+            getLogger().outputLine(command);
         }
 
         @Override
@@ -261,19 +261,19 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         @Override
         public void preparationsFailed (String message) {
             LOG.log(Level.FINE, "command could not start: {0}", message); //NOI18N
-            getLogger().output("command could not start: " + message);
+            getLogger().outputLine("command could not start: " + message);
         }
 
         @Override
         public void notifyError(String message) {
             LOG.log(Level.FINE, "error: {0}", message); //NOI18N
-            getLogger().output("error: " + message);
+            getLogger().outputLine("error: " + message);
         }
 
         @Override
         public void notifyWarning(String message) {
             LOG.log(Level.FINE, "warning: {0}", message); //NOI18N
-            getLogger().output("warning: " + message);
+            getLogger().outputLine("warning: " + message);
         }
     }
 

@@ -213,7 +213,7 @@ public class ODCSTaskTestCase extends NbTestSuite {
     
      private class MidairTestCase extends TaskTestCase {
         public MidairTestCase() {
-            super("MidairTestCase");
+            super("testMidair");
         }
         @Override
         public void runTest() throws Throwable {
@@ -241,8 +241,12 @@ public class ODCSTaskTestCase extends NbTestSuite {
             try {
                 RepositoryResponse rr2 = ODCSUtil.postTaskData(rc, taskRepository, midAirTaskData2);
             } catch (Throwable t) {
-                if(t.getMessage().contains("Mid-air collision occurred. Synchronize task and re-submit changes")) {
-                    catched = t;
+                catched = t;
+                String msg = t.getMessage().toLowerCase();
+                if( msg.contains("mid-air collision") ||
+                    (msg.contains("db version") && msg.contains("version provided")) ) 
+                {
+                    return;
                 }
             }
             assertNotNull("expected a midair exception to be raised", catched);

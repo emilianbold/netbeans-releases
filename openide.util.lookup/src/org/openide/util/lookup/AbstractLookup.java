@@ -549,9 +549,7 @@ public class AbstractLookup extends Lookup implements Serializable {
 
     /**
      * Call resultChanged on all listeners.
-     * @param listeners array of listeners in the format used by
-     *        javax.swing.EventListenerList. It means that there are Class
-     *        objects on even positions and the listeners on odd positions
+     * @param listeners array of listeners
      * @param ev the event to fire
      */
     static void notifyListeners(Object[] listeners, LookupEvent ev, Collection<Object> evAndListeners) {

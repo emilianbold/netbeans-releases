@@ -95,7 +95,7 @@ public class CreateTagAction extends SingleRepositoryAction {
 
                 private void log (GitTag tag) {
                     OutputLogger logger = getLogger();
-                    logger.output(NbBundle.getMessage(CreateTagAction.class, "MSG_CreateTagAction.tagCreated", new Object[] { tag.getTagName(), //NOI18N
+                    logger.outputLine(NbBundle.getMessage(CreateTagAction.class, "MSG_CreateTagAction.tagCreated", new Object[] { tag.getTagName(), //NOI18N
                         tag.getTaggedObjectId(),
                         tag.getTagId(),
                         tag.getTagger().toString(),

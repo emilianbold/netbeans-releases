@@ -103,6 +103,10 @@ public class EjbRefactoringPlugin implements RefactoringPlugin {
                             public void run(CompilationController info) throws Exception {
                                 info.toPhase(JavaSource.Phase.RESOLVED);
                                 Element el = tph.resolveElement(info);
+                                if (el == null) {
+                                    return;
+                                }
+
                                 if (el.getModifiers().contains(Modifier.PRIVATE)) {
                                     result[0] = null;
                                 } else {

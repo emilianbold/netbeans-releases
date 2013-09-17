@@ -155,7 +155,7 @@ public class ShowClassMembersInNavigatorTest extends PerformanceTestCase {
         anotherFileName = "Main.java";
         menuItem = OPEN;
 
-        TIMER=Logger.getLogger(org.netbeans.modules.java.navigation.ClassMemberPanelUI.class.getName()+".perf");
+        TIMER=Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
         TIMER.setLevel(Level.FINE);
         TIMER.addHandler(phaseHandler);
         openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);

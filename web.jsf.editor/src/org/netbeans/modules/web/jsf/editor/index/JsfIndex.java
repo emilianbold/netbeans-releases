@@ -349,4 +349,19 @@ public class JsfIndex {
     }
 
 
+    public Collection<ResourcesMappingModel.Resource> getAllStaticResources() {
+        Collection<ResourcesMappingModel.Resource> resources = new ArrayList<>();
+        try {
+            QuerySupport index = createEmbeddingIndex();
+            Collection<? extends IndexResult> results = index.query(ResourcesMappingModel.STATIC_RESOURCES_KEY, "", QuerySupport.Kind.PREFIX, ResourcesMappingModel.STATIC_RESOURCES_KEY);
+            for (IndexResult result : results) {
+                String resourceString = result.getValue(ResourcesMappingModel.STATIC_RESOURCES_KEY);
+                resources.addAll(ResourcesMappingModel.parseResourcesFromString(resourceString));
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return resources;
+    }
+
 }

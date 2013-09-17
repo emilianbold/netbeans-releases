@@ -503,6 +503,9 @@ public final class Utils {
             case ASTPHP5Symbols.T_INSTEADOF:
                 name = "T_INSTEADOF"; //NOI18N
                 break;
+            case ASTPHP5Symbols.T_FINALLY:
+                name = "T_FINALLY"; //NOI18N
+                break;
             default:
                 name = "unknown"; //NOI18N
         }

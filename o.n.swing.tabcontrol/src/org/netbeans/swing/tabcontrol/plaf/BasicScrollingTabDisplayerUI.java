@@ -75,11 +75,33 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
     private TabControlButton btnDropDown;
     private TabControlButton btnMaximizeRestore;
 
+    private final Autoscroller autoscroll = new Autoscroller();
+
     /**
      * Creates a new instance of BasicScrollingTabDisplayerUI
      */
     public BasicScrollingTabDisplayerUI(TabDisplayer displayer) {
         super(displayer);
+    }
+
+    @Override
+    public Insets getAutoscrollInsets() {
+        return new Insets( 0, 30, 0, 30 );
+    }
+
+    @Override
+    public void autoscroll( Point location ) {
+        if( !displayer.getBounds().contains( location ) ) {
+            autoscroll.stop();
+            return;
+        }
+        if( location.x < 30) {
+            autoscroll.start( true );
+        } else if( location.x > displayer.getWidth() - 30 - getTabAreaInsets().right ) {
+            autoscroll.start( false );
+        } else {
+            autoscroll.stop();
+        }
     }
 
     @Override
@@ -454,6 +476,51 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
 
         @Override
         public void removeLayoutComponent(java.awt.Component comp) {
+        }
+    }
+
+    private class Autoscroller implements ActionListener {
+
+        private int direction = 0;
+        private Timer timer;
+
+        public void start( boolean scrollLeft ) {
+            int newDirection = scrollLeft ? -1 : 1;
+            if( null == timer || !timer.isRunning() || direction != newDirection ) {
+                if( null == timer ) {
+                    timer = new Timer( 300, this );
+                    timer.setRepeats( true );
+                }
+                this.direction = newDirection;
+                timer.start();
+            }
+        }
+
+        public void stop() {
+            if( null != timer ) {
+                timer.stop();
+            }
+            direction = 0;
+        }
+
+        @Override
+        public void actionPerformed( ActionEvent e ) {
+            if( direction < 0 ) {
+                int offset = scroll().getOffset();
+                if( offset >= 0 ) {
+                    scroll().setOffset( offset-1 );
+                } else {
+                    timer.stop();
+                }
+            } else if( direction > 0 ) {
+                int offset = scroll().getOffset();
+                if (offset < displayer.getModel().size() - 1 && scroll().isLastTabClipped()) {
+                    scroll().setOffset(offset + 1);
+                } else {
+                    timer.stop();
+                }
+            }
+            displayer.repaint();
         }
     }
 }

@@ -51,10 +51,12 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik
@@ -102,65 +104,19 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
+    public Lookup getLookup() {
+        // XXX cache it?
+        Lookup projectLookup = phpProject.getLookup();
+        return Lookups.fixed(
+                projectLookup.lookup(CustomizerProvider2.class),
+                projectLookup.lookup(org.netbeans.modules.php.api.queries.PhpVisibilityQuery.class),
+                new PhpModulePropertiesFactory(phpProject)
+        );
+    }
+
+    @Override
     public PhpModuleProperties getProperties() {
-        PhpModuleProperties properties = new PhpModuleProperties();
-        properties = setEncoding(properties);
-        properties = setWebRoot(properties);
-        properties = setTests(properties);
-        properties = setUrl(properties);
-        properties = setIndexFile(properties);
-        properties = setIncludePath(properties);
-        return properties;
-    }
-
-    private PhpModuleProperties setEncoding(PhpModuleProperties properties) {
-        return properties.setEncoding(ProjectPropertiesSupport.getEncoding(phpProject));
-    }
-
-    private PhpModuleProperties setWebRoot(PhpModuleProperties properties) {
-        return properties.setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
-    }
-
-    private PhpModuleProperties setTests(PhpModuleProperties properties) {
-        FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
-        if (tests != null) {
-            properties = properties.setTests(tests);
-        }
-        return properties;
-    }
-
-    private PhpModuleProperties setUrl(PhpModuleProperties properties) {
-        String url = ProjectPropertiesSupport.getUrl(phpProject);
-        if (url != null) {
-            properties = properties.setUrl(url);
-        }
-        return properties;
-    }
-
-    private PhpModuleProperties setIndexFile(PhpModuleProperties properties) {
-        String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
-        FileObject sourceDirectory = getSourceDirectory();
-        if (indexFile != null && sourceDirectory != null) {
-            FileObject index = sourceDirectory.getFileObject(indexFile);
-            if (index != null
-                    && index.isData()
-                    && index.isValid()) {
-                properties = properties.setIndexFile(index);
-            }
-        }
-        return properties;
-    }
-
-    private PhpModuleProperties setIncludePath(PhpModuleProperties properties) {
-        String includePath = ProjectPropertiesSupport.getPropertyEvaluator(phpProject).getProperty(PhpProjectProperties.INCLUDE_PATH);
-        List<String> paths;
-        if (includePath == null) {
-            paths = Collections.emptyList();
-        } else {
-            paths = Arrays.asList(PropertyUtils.tokenizePath(includePath));
-        }
-        properties = properties.setIncludePath(paths);
-        return properties;
+        return getLookup().lookup(PhpModuleProperties.class);
     }
 
     @Override
@@ -174,11 +130,6 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
-    public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
-        notifyPropertyChanged(propertyChangeEvent);
-    }
-
-    @Override
     public void notifyPropertyChanged(PropertyChangeEvent propertyChangeEvent) {
         if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
             phpProject.resetFrameworks();
@@ -187,7 +138,83 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public void openCustomizer(String category) {
-        PhpProjectUtils.openCustomizer(phpProject, category);
+        getLookup().lookup(CustomizerProvider2.class).showCustomizer(category, null);
+    }
+
+    //~ Inner classes
+
+    private static final class PhpModulePropertiesFactory implements PhpModuleProperties.Factory {
+
+        private final PhpProject phpProject;
+
+
+        public PhpModulePropertiesFactory(PhpProject phpProject) {
+            assert phpProject != null;
+            this.phpProject = phpProject;
+        }
+
+        @Override
+        public PhpModuleProperties create() {
+            PhpModuleProperties properties = new PhpModuleProperties();
+            properties = setEncoding(properties);
+            properties = setWebRoot(properties);
+            properties = setTests(properties);
+            properties = setUrl(properties);
+            properties = setIndexFile(properties);
+            properties = setIncludePath(properties);
+            return properties;
+        }
+
+        private PhpModuleProperties setEncoding(PhpModuleProperties properties) {
+            return properties.setEncoding(ProjectPropertiesSupport.getEncoding(phpProject));
+        }
+
+        private PhpModuleProperties setWebRoot(PhpModuleProperties properties) {
+            return properties.setWebRoot(ProjectPropertiesSupport.getWebRootDirectory(phpProject));
+        }
+
+        private PhpModuleProperties setTests(PhpModuleProperties properties) {
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+            if (tests != null) {
+                properties = properties.setTests(tests);
+            }
+            return properties;
+        }
+
+        private PhpModuleProperties setUrl(PhpModuleProperties properties) {
+            String url = ProjectPropertiesSupport.getUrl(phpProject);
+            if (url != null) {
+                properties = properties.setUrl(url);
+            }
+            return properties;
+        }
+
+        private PhpModuleProperties setIndexFile(PhpModuleProperties properties) {
+            String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
+            FileObject sourceDirectory = phpProject.getSourcesDirectory();
+            if (indexFile != null && sourceDirectory != null) {
+                FileObject index = sourceDirectory.getFileObject(indexFile);
+                if (index != null
+                        && index.isData()
+                        && index.isValid()) {
+                    properties = properties.setIndexFile(index);
+                }
+            }
+            return properties;
+        }
+
+        private PhpModuleProperties setIncludePath(PhpModuleProperties properties) {
+            String includePath = ProjectPropertiesSupport.getPropertyEvaluator(phpProject).getProperty(PhpProjectProperties.INCLUDE_PATH);
+            List<String> paths;
+            if (includePath == null) {
+                paths = Collections.emptyList();
+            } else {
+                paths = Arrays.asList(PropertyUtils.tokenizePath(includePath));
+            }
+            properties = properties.setIncludePath(paths);
+            return properties;
+        }
+
     }
 
 }

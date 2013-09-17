@@ -268,12 +268,12 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         }
         if (allOpened) {
             if (closeRepositoryAction == null) {
-                closeRepositoryAction = new CloseRepositoryNodeAction(this);
+                closeRepositoryAction = new CloseRepositoryNodeAction(repositoryNodes);
             }
             return closeRepositoryAction;
         } else if (allClosed) {
             if (openRepositoryAction == null) {
-                openRepositoryAction = new OpenRepositoryNodeAction(this);
+                openRepositoryAction = new OpenRepositoryNodeAction(repositoryNodes);
             }
             return openRepositoryAction;
         }
