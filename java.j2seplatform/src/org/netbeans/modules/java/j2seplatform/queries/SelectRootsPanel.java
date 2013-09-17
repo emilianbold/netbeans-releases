@@ -503,29 +503,32 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
                 final boolean isSelected,
                 final boolean cellHasFocus) {
             if (value instanceof URI) {
-                try {
-                    URL url = ((URI)value).toURL();
-                    String offset = null;
-                    if ("jar".equals(url.getProtocol())) {  //NOI18N
-                        final String surl = url.toExternalForm();
-                        int offsetPos = surl.lastIndexOf("!/"); //NOI18N
-                        if (offsetPos > 0 && offsetPos < surl.length()-3) {
-                            offset = surl.substring(offsetPos+2);
+                final URI uri = (URI) value;
+                if (uri.isAbsolute()) {
+                    try {
+                        URL url = uri.toURL();
+                        String offset = null;
+                        if ("jar".equals(url.getProtocol())) {  //NOI18N
+                            final String surl = url.toExternalForm();
+                            int offsetPos = surl.lastIndexOf("!/"); //NOI18N
+                            if (offsetPos > 0 && offsetPos < surl.length()-3) {
+                                offset = surl.substring(offsetPos+2);
+                            }
+                            url = FileUtil.getArchiveFile(url);
                         }
-                        url = FileUtil.getArchiveFile(url);
+                        if ("file".equals(url.getProtocol())) { //NOI18N
+                            final File file = Utilities.toFile(url.toURI());
+                            value = offset == null ?
+                                file.getAbsolutePath() :
+                                NbBundle.getMessage(
+                                    SelectRootsPanel.class,
+                                    "PATTERN_RELPATH_IN_FILE",
+                                    offset,
+                                    file.getAbsolutePath());
+                        }
+                    } catch (MalformedURLException | URISyntaxException ex) {
+                        //pass - value unchanged
                     }
-                    if ("file".equals(url.getProtocol())) { //NOI18N
-                        final File file = Utilities.toFile(url.toURI());
-                        value = offset == null ?
-                            file.getAbsolutePath() :
-                            NbBundle.getMessage(
-                                SelectRootsPanel.class,
-                                "PATTERN_RELPATH_IN_FILE",
-                                offset,
-                                file.getAbsolutePath());
-                    }
-                } catch (MalformedURLException | URISyntaxException ex) {
-                    //pass - value unchanged
                 }
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
