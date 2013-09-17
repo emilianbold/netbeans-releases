@@ -68,7 +68,7 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht
  */
-public class TabbedImpl extends AbstractTabbedImpl {
+public final class TabbedImpl extends AbstractTabbedImpl {
 
     private final TabContainer container;
     private final Controller controller;

@@ -45,8 +45,6 @@ package org.netbeans.core.multitabs;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
