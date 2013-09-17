@@ -51,11 +51,19 @@ import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.openide.util.Lookup;
 
 /**
+ * Factory to create TabDisplayer instances. Third-parties can register their
+ * own factory in the global Lookup to override the default TabDisplayer implementations.
  *
  * @author S. Aubrecht
+ *
+ * @see TabDisplayer
+ * @see Lookup
  */
 public abstract class TabDisplayerFactory {
 
+    /**
+     * @return TabDisplayerFactory from the global Lookup or the default implementation.
+     */
     public static TabDisplayerFactory getDefault() {
         TabDisplayerFactory res = Lookup.getDefault().lookup( TabDisplayerFactory.class );
         if( null == res )
@@ -63,6 +71,12 @@ public abstract class TabDisplayerFactory {
         return res;
     }
 
+    /**
+     * Creates a new TabDisplayer instance from the given tab model.
+     * @param tabModel Tab model.
+     * @param orientation Tab placement.
+     * @return New tab displayer.
+     */
     public abstract TabDisplayer createTabDisplayer( TabDataModel tabModel, int orientation );
 
 
