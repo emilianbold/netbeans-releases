@@ -490,4 +490,8 @@ public final class CodeUtils {
 
         return paramName.length() == 0 ? null : paramName.toString();
     }
+
+    public static boolean isConstructor(MethodDeclaration node) {
+        return "__construct".equals(extractMethodName(node)); //NOI18N
+    }
 }

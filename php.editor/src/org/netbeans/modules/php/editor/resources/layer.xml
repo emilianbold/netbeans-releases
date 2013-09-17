@@ -363,6 +363,7 @@
                     <file name="org-netbeans-modules-php-editor-verification-AddUseImportSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-AssignVariableSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-IdenticalComparisonSuggestion.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-InitializeFieldSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-IntroduceSuggestion.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-VarDocSuggestion.instance"/>
                 </folder>
