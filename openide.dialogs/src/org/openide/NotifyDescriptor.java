@@ -110,6 +110,12 @@ public class NotifyDescriptor extends Object {
     /** Name of property for the OK button validation. */
     public static final String PROP_VALID = "valid"; // NOI18N
 
+    /**
+     * Name of property for toggling the ESC key and title frame button closing.
+     * @since 7.35
+     */
+    public static final String PROP_NO_DEFAULT_CLOSE = "noDefaultClose"; // NOI18N
+
     /** Name of property for the error message at the bottom of the wizard.
      * To set such message use {@link #createNotificationLineSupport}
      *
@@ -230,6 +236,12 @@ public class NotifyDescriptor extends Object {
 
     /** Property change support. */
     private PropertyChangeSupport changeSupport;
+
+    /**
+     * When true the dialog can be closed only using one of its closing options,
+     * ESC key and the close button in its frame will not work.
+     */
+    private boolean noDefaultClose = false;
 
     /**
     * Creates a new notify descriptor with specified information to report.
@@ -767,6 +779,29 @@ public class NotifyDescriptor extends Object {
         if (changeSupport != null) {
             changeSupport.firePropertyChange(propertyName, oldValue, newValue);
         }
+    }
+
+    /**
+     * Disable or enabled the closing of dialog window using ESC and the close button
+     * in dialog's title bar.
+     * @param noDefaultClose True to disabled ESC closing and to disable the close
+     * button in dialog's title bar.
+     * @since 7.35
+     * @see javax.swing.JDialog#DO_NOTHING_ON_CLOSE
+     */
+    public void setNoDefaultClose( boolean noDefaultClose ) {
+        boolean oldValue = this.noDefaultClose;
+        this.noDefaultClose = noDefaultClose;
+        firePropertyChange(PROP_NO_DEFAULT_CLOSE, oldValue, noDefaultClose);
+    }
+
+    /**
+     * @return True if ESC key closing and close button in dialog's title bar are disabled,
+     * false otherwise.
+     * @since 7.35
+     */
+    public boolean isNoDefaultClose() {
+        return noDefaultClose;
     }
 
     /**
