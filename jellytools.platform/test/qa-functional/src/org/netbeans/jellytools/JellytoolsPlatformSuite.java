@@ -55,7 +55,7 @@ public class JellytoolsPlatformSuite {
                 addTest(OptionsOperatorTest.class, OptionsOperatorTest.tests).
                 addTest(OutputOperatorTest.class, OutputOperatorTest.tests).
                 addTest(OutputTabOperatorTest.class, OutputTabOperatorTest.tests).
-                addTest(PluginsOperatorTest.class, PluginsOperatorTest.tests).
+//                addTest(PluginsOperatorTest.class, PluginsOperatorTest.tests).
                 addTest(QuestionDialogOperatorTest.class, QuestionDialogOperatorTest.tests).
                 addTest(SaveAsTemplateOperatorTest.class, SaveAsTemplateOperatorTest.tests).
                 suite();
