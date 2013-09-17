@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.watcher.solaris;
+package org.netbeans.modules.masterfs.watcher.nio2;
 
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
