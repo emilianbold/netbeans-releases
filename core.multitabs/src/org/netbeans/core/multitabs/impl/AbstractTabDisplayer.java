@@ -134,8 +134,8 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         configureScrollPane( scrollPane );
         scrollLeft = new ScrollAction( scrollPane, tabsLocation, true );
         scrollRight = new ScrollAction( scrollPane, tabsLocation, false );
-        controls.add( ButtonFactory.createScrollLeftButton( tabModel, scrollLeft ) );
-        controls.add( ButtonFactory.createScrollRightButton( tabModel, scrollRight ) );
+        controls.add( ButtonFactory.createScrollLeftButton( scrollLeft ) );
+        controls.add( ButtonFactory.createScrollRightButton( scrollRight ) );
         addMouseWheelListener( this );
 
         ProjectSupport.getDefault().addPropertyChangeListener( new PropertyChangeListener() {

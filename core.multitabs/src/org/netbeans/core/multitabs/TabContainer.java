@@ -56,7 +56,9 @@ import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.openide.windows.TopComponent;
 
 /**
- *
+ * Visual component that has a TabDisplayer component and the actual document
+ * tab components arranged in StackLayout.
+ * 
  * @author S. Aubrecht
  */
 public final class TabContainer extends JPanel implements Tabbed.Accessor, ChangeListener {

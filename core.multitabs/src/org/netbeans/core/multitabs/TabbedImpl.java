@@ -65,6 +65,10 @@ import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.openide.windows.TopComponent;
 
 /**
+ * The default Tabbed implementation. The actual visual tab container is TabContainer
+ * class and most of its logic is wired in Controller class.
+ *
+ * @see org.netbeans.swing.tabcontrol.customtabs.Tabbed
  *
  * @author S. Aubrecht
  */
