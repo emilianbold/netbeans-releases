@@ -72,6 +72,7 @@ import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -93,6 +94,7 @@ public class SrcNode extends FilterNode {
     static final String WEB_ROOT_BADGE_IMAGE = "org/netbeans/modules/php/project/ui/resources/webRootBadge.gif"; // NOI18N
     private final PhpProject project;
     private final boolean isTest;
+    private final FileObject fo;
 
     /**
      * creates source root node based on specified DataFolder.
@@ -112,9 +114,15 @@ public class SrcNode extends FilterNode {
 
         this.project = project;
         this.isTest = isTest;
+        fo = folder.getPrimaryFile();
 
         disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_GET_ACTIONS);
         setDisplayName(name);
+    }
+
+    @Override
+    public String getShortDescription() {
+        return FileUtil.getFileDisplayName(fo);
     }
 
     @Override

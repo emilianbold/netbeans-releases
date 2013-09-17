@@ -772,13 +772,13 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                         for (PhpModuleCustomizerExtender.Change change : changes) {
                             switch (change) {
                                 case SOURCES_CHANGE:
-                                    project.getSourceRoots().fireChange();
+                                    project.getSourceRoots().refresh();
                                     break;
                                 case TESTS_CHANGE:
-                                    project.getTestRoots().fireChange();
+                                    project.getTestRoots().refresh();
                                     break;
                                 case SELENIUM_CHANGE:
-                                    project.getSeleniumRoots().fireChange();
+                                    project.getSeleniumRoots().refresh();
                                     break;
                                 case IGNORED_FILES_CHANGE:
                                     project.fireIgnoredFilesChange();

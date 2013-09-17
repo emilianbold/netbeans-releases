@@ -77,11 +77,12 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     // set would be better but it is fine to use a list for small number of items
     static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
-            PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
             PhpProjectProperties.WEB_ROOT,
             PhpProjectProperties.INCLUDE_PATH,
             PhpProjectProperties.PRIVATE_INCLUDE_PATH));
+    static final List<String> WATCHED_PROPERTY_PREFIXES = new CopyOnWriteArrayList<>(Arrays.asList(
+            PhpProjectProperties.TEST_SRC_DIR));
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final PhpProject project;
@@ -120,7 +121,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 checkSrcDir(currentProblems);
                 if (currentProblems.isEmpty()) {
                     // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
-                    checkTestDir(currentProblems);
+                    checkTestDirs(currentProblems);
                     checkSeleniumDir(currentProblems);
                     checkWebRoot(currentProblems);
                     checkIncludePath(currentProblems);
@@ -153,14 +154,18 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         "# {0} - test dir path",
         "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" does not exist and cannot be used for Test Files."
     })
-    void checkTestDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getTestDirectory(project, false), PhpProjectProperties.TEST_SRC_DIR);
-        if (invalidDirectory != null) {
-            ProjectProblem problem = ProjectProblem.createError(
-                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
-                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.TEST_SRC_DIR));
-            currentProblems.add(problem);
+    void checkTestDirs(Collection<ProjectProblem> currentProblems) {
+        SourceRoots testRoots = project.getTestRoots();
+        String[] rootProperties = testRoots.getRootProperties();
+        for (String property : rootProperties) {
+            File invalidDirectory = getInvalidDirectory(null, property);
+            if (invalidDirectory != null) {
+                ProjectProblem problem = ProjectProblem.createError(
+                        Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
+                        Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
+                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.TESTING, property));
+                currentProblems.add(problem);
+            }
         }
     }
 
@@ -242,7 +247,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     }
 
     private File getInvalidDirectory(FileObject directory, String propertyName) {
-        assert WATCHED_PROPERTIES.contains(propertyName) : "Property '" + propertyName + "' should be watched for changes";
+        assert isWatchedProperty(propertyName) : "Property '" + propertyName + "' should be watched for changes";
         if (directory != null) {
             if (directory.isValid()) {
                 // ok
@@ -304,6 +309,18 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         }
     }
 
+    boolean isWatchedProperty(String propertyName) {
+        if (WATCHED_PROPERTIES.contains(propertyName)) {
+            return true;
+        }
+        for (String prefix : WATCHED_PROPERTY_PREFIXES) {
+            if (propertyName.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void propertiesChanged() {
         // release the current listener
         fileChangesListener = new FileChangesListener();
@@ -316,7 +333,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
+            if (isWatchedProperty(evt.getPropertyName())) {
                 problemsProviderSupport.fireProblemsChange();
                 propertiesChanged();
             }

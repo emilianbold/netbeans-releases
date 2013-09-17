@@ -333,14 +333,14 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     }
 
     /**
-     * @return {@code true} if copying finished or user wants to continue
+     * @return {@literal true} if copying finished or user wants to continue
      */
     public boolean waitFinished() {
         return waitFinished(NbBundle.getMessage(CopySupport.class, "MSG_CopySupportRunning"), 200);
     }
 
     /**
-     * @return {@code true} if copying finished or user wants to continue
+     * @return {@literal true} if copying finished or user wants to continue
      */
     public boolean waitFinished(String message, long timeout, Object... additionalOptions) {
         try {
@@ -457,7 +457,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 }
             }
             // need to get file object once more since the current one is invalid
-            project.getSourceRoots().fireChange();
+            project.getSourceRoots().refresh();
             if (ignoreEvent) {
                 LOGGER.log(Level.INFO, "Previously invalid source root restored for project {0} -> to avoid copying all files to the server ignoring FS event {1}",
                         new Object[] {project.getName(), fileEvent});
