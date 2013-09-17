@@ -232,7 +232,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         if( null == controller )
             return;
         int selIndex = controller.getSelectedIndex();
-        if( selIndex < 0 )
+        if( selIndex < 0 || selIndex >= controller.getTabModel().size() )
             return;
         Rectangle rect = getTabBounds( selIndex );
         if( null == rect )
