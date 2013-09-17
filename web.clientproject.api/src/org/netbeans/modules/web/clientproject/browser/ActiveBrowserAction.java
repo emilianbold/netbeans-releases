@@ -260,7 +260,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         private WebBrowser wb;
 
         public SelectBrowserAction(ProjectBrowserProvider pbp, WebBrowser wb) {
-            super(wb.getName(), new ImageIcon(wb.getIconImage(isSmallToolbarIcon())));
+            super(BrowserUISupport.getLongDisplayName(wb), new ImageIcon(wb.getIconImage(isSmallToolbarIcon())));
             this.pbp = pbp;
             this.wb = wb;
         }
