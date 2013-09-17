@@ -122,7 +122,7 @@ public final class FileMapsCollector {
         if (list == null) {
             return null;
         }
-        ListIterator<CsmObject> listIterator = list.listIterator();
+        ListIterator<CsmObject> listIterator = list.listIterator(list.size());
         while(listIterator.hasPrevious()) {
             CsmObject obj = listIterator.previous();
             if (CsmKindUtilities.isUsingDeclaration(obj)) {
