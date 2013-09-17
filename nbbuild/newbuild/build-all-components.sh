@@ -45,6 +45,13 @@ cd ${DIRNAME}
 SCRIPT_DIR=`pwd`
 source init.sh
 
+if [ -n $JDEV_BUILD ]; then
+    echo "building limited subset of the modules for jdev"
+    CLUSTER_CONFIG="-Dcluster.config=java"
+else
+    CLUSTER_CONFIG=
+fi
+
 #Clean old tests results
 if [ -n $WORKSPACE ]; then
     rm -rf $WORKSPACE/results
@@ -61,7 +68,7 @@ cd  $NB_ALL
 mkdir -p nbbuild/netbeans
 
 #Build source packages
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml -Dmerge.dependent.modules=false -Dcluster.config=full build-source-config
+ant ${CLUSTER_CONFIG:--Dcluster.config=full} -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml -Dmerge.dependent.modules=false build-source-config
 ERROR_CODE=$?
 
 create_test_result "build.source.package" "Build Source package" $ERROR_CODE
@@ -84,7 +91,7 @@ else
 fi
 
 #Build the NB IDE first - no validation tests!
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nozip -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
 ERROR_CODE=$?
 
 create_test_result "build.IDE" "Build IDE" $ERROR_CODE
@@ -124,7 +131,7 @@ fi
 rm -rf $NB_ALL/nbbuild/netbeans/nb/servicetag
 rm -rf $NB_ALL/nbbuild/netbeans/enterprise/config/GlassFishEE6
 
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-test-dist -Dtest.fail.on.error=false
 ERROR_CODE=$?
 
 create_test_result "build.test.dist" "Build Test Distribution" $ERROR_CODE
@@ -141,7 +148,7 @@ mv $NB_ALL/nbbuild/netbeans-vanilla $NB_ALL/nbbuild/netbeans
 cd $NB_ALL
 
 #Build all NBMs for stable UC - IDE + UC-only
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nbms -Dcluster.config=stableuc -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
+ant ${CLUSTER_CONFIG:--Dcluster.config=stableuc} -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f nbbuild/build.xml build-nbms -Dbase.nbm.target.dir=${DIST}/uc2 -Dkeystore=$KEYSTORE -Dstorepass=$STOREPASS -Dbuild.compiler.debuglevel=${DEBUGLEVEL}
 ERROR_CODE=$?
 
 create_test_result "build.NBMs" "Build all NBMs" $ERROR_CODE
@@ -151,7 +158,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 # Separate IDE nbms from stableuc nbms.
-ant -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc
+ant $CLUSTER_CONFIG -f nbbuild/build.xml move-ide-nbms -Dnbms.source.location=${DIST}/uc2 -Dnbms.target.location=${DIST}/uc
 ERROR_CODE=$?
 
 create_test_result "get.ide.NBMs" "Extract IDE NBMs from all the built NBMs" $ERROR_CODE
@@ -162,7 +169,7 @@ fi
 
 
 #Build 110n kit for HG files
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml hg-l10n-kit -Dl10n.kit=${DIST}/zip/hg-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.hg.l10n" "Build 110n kit for HG files" $ERROR_CODE
@@ -172,7 +179,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build l10n kit for IDE modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml l10n-kit -Dnbms.location=${DIST}/uc -Dl10n.kit=${DIST}/zip/ide-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.modules.l10n" "Build l10n kit for IDE modules" $ERROR_CODE
@@ -182,7 +189,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build l10n kit for stable uc modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stableuc-l10n-$BUILDNUMBER.zip
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -Dlocales=$LOCALES -f build.xml l10n-kit -Dnbms.location=${DIST}/uc2 -Dl10n.kit=${DIST}/zip/stableuc-l10n-$BUILDNUMBER.zip
 ERROR_CODE=$?
 
 create_test_result "build.modules.l10n" "Build l10n kit for stable uc modules" $ERROR_CODE
@@ -193,7 +200,7 @@ fi
 
 cd nbbuild
 #Build catalog for IDE NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc -Dcatalog.file=${DIST}/uc/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.ide.catalog" "Build UC catalog for IDE modules" $ERROR_CODE
@@ -203,7 +210,7 @@ if [ $ERROR_CODE != 0 ]; then
 fi
 
 #Build catalog for Stable UC NBMs
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
+ant $CLUSTER_CONFIG -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f build.xml generate-uc-catalog -Dnbms.location=${DIST}/uc2 -Dcatalog.file=${DIST}/uc2/catalog.xml
 ERROR_CODE=$?
 
 create_test_result "build.stableuc.catalog" "Build UC catalog for stable UC modules" $ERROR_CODE
