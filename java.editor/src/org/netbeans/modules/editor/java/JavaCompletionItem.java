@@ -647,7 +647,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return smartType ? 600 - SMART_TYPE : 600;
+            return smartType ? 670 - SMART_TYPE : 670;
         }
 
         @Override

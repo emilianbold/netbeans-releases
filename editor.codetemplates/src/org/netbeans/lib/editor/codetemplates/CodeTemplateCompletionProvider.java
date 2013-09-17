@@ -182,13 +182,17 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
                 }
             }
             
+            if (identifierBeforeCursor == null) {
+                identifierBeforeCursor = ""; //NOI18N
+            }
+            
             if (langPath == null) {
                 langPath = NbEditorUtilities.getMimeType(doc);
             }
 
             queryCaretOffset = caretOffset;
-            queryAnchorOffset = (identifierBeforeCursor != null) ? caretOffset - identifierBeforeCursor.length() : caretOffset;
-            if (langPath != null && identifierBeforeCursor != null) {
+            queryAnchorOffset = caretOffset - identifierBeforeCursor.length();
+            if (langPath != null) {
                 String mimeType = DocumentUtilities.getMimeType(component);
                 MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.get(mimeType);
                 Preferences prefs = MimeLookup.getLookup(mimePath).lookup(Preferences.class);
