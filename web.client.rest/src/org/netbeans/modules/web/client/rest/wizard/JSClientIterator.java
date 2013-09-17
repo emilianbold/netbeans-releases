@@ -178,13 +178,14 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             if (documentBase != null) {
                 Templates.setTargetFolder(myWizard, documentBase);
                 myWizard.putProperty(HtmlPanel.PROP_DOCUMENT_BASE, documentBase);
-            } else {
-                FileObject publicHtml = getRootFolder(project);
-                if (publicHtml != null) {
-                    Templates.setTargetFolder(myWizard, publicHtml);
-                }
+            }
+        } else {
+            FileObject publicHtml = getRootFolder(project);
+            if (publicHtml != null) {
+                Templates.setTargetFolder(myWizard, publicHtml);
             }
         }
+        
         myPanels = new WizardDescriptor.Panel[]{new FinishPanelDelegate(
                 Templates.buildSimpleTargetChooser(project, 
                 sources.getSourceGroups(Sources.TYPE_GENERIC)).
