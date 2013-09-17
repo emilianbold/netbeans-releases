@@ -50,7 +50,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
@@ -444,9 +443,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         try {
             instance = new GlassfishInstance(ip, version, gip);
             tagUnderConstruction(deployerUri);
-            CommonServerSupport commonSupport = new CommonServerSupport(instance);
             if (!instance.isPublicAccess()) {
-                instance.ic.add(commonSupport);
+                instance.ic.add(instance.commonSupport);
                 instance.allowPublicAccess();
             }
             if (updateNow) {
@@ -737,7 +735,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      *  is not running at all. */
     private transient volatile Process process;
 
-    //private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
     private transient Lookup localLookup;
     private transient Lookup full;
@@ -747,6 +744,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     private transient Collection<? extends GlassfishModuleFactory>
             currentFactories = Collections.emptyList();
     
+    /** GlassFish server support API for this instance. */
+    private transient final CommonServerSupport commonSupport;
     // API instance
     private ServerInstance commonInstance;
     private GlassfishInstanceProvider instanceProvider;
@@ -758,7 +757,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @SuppressWarnings("LeakingThisInConstructor")
     private GlassfishInstance(Map<String, String> ip, GlassFishVersion version,
             GlassfishInstanceProvider instanceProvider) {
-        String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         this.version = version;
         this.process = null;
         ic = new InstanceContent();
@@ -794,6 +792,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     "GlassfishInstance.init.versionNull",
                     new String[] {displayName, installroot}));
         }
+        this.commonSupport = new CommonServerSupport(this);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -1357,36 +1356,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return <code>CommonServerSupport</code> instance associated with
      * this object.
      */
-    @Deprecated
     public final CommonServerSupport getCommonSupport() {
-        return localLookup.lookup(CommonServerSupport.class);
+        return commonSupport;
     }
 
-    /**
-     * Add change event listener to <code>CommonServerSupport</code> instance.
-     * <p/>
-     * @param listener Change event listener to be added.
-     * @deprecated GlassfishInstance class should not be dependent
-     *             on CommonServerSupport.
-     */
-    @Deprecated
-    public final void addChangeListener(final ChangeListener listener) {
-        getCommonSupport().addChangeListener(listener);
-    }
-
-    /**
-     * Remove change event listener from <code>CommonServerSupport</code>
-     * instance.
-     * <p/>
-     * @param listener Change event listener to be removed.
-     * @deprecated GlassfishInstance class should not be dependent
-     *             on CommonServerSupport.
-     */
-    @Deprecated
-    public final void removeChangeListener(final ChangeListener listener) {
-        getCommonSupport().removeChangeListener(listener);
-    }
-    
     /**
      * Get GlassFish server state.
      * <p/>
@@ -1410,7 +1383,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     @Deprecated
     final void stopIfStartedByIde(long timeout) {
-        CommonServerSupport commonSupport = getCommonSupport();
         if(commonSupport.isStartedByIde()) {
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
