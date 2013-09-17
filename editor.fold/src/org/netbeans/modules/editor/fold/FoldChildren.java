@@ -259,14 +259,17 @@ public final class FoldChildren extends GapList {
         if (folds.length > 0) {
             int ps = parent.getStartOffset();
             int pe = parent.getEndOffset();
-            int fs = folds[0].getStartOffset();
-            int fe = folds[folds.length - 1].getEndOffset();
-            if (fs < ps || fe > pe) {
-                LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, folds to be inserted: {1}, " +
-                        "at index {2}", new Object[] {
-                    parent, Arrays.asList(folds), index
-                });
-                LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+            for (Fold f : folds) {
+                int fs = f.getStartOffset();
+                int fe = f.getEndOffset();
+                if (fs < ps || fe > pe) {
+                    LOG.log(Level.WARNING, "Illegal attempt to insert fold. Parent fold: {0}, folds to be inserted: {1}, " +
+                            "at index {2}", new Object[] {
+                        parent, Arrays.asList(folds), index
+                    });
+                    LOG.log(Level.WARNING, "Dumping hierarchy: " + parent.getHierarchy(), new Throwable());
+                    break;
+                }
             }
         }
 
