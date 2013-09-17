@@ -51,8 +51,12 @@ import org.netbeans.test.java.editor.codegeneration.CreateConstructorTest;
 import org.netbeans.test.java.editor.codegeneration.CreateEqualsHashcodeTest;
 import org.netbeans.test.java.editor.codegeneration.CreateGetterSetterTest;
 import org.netbeans.test.java.editor.codegeneration.ImplementMethodTest;
+import org.netbeans.test.java.editor.codetemplates.CodeTemplatesTest;
+import org.netbeans.test.java.editor.completiongui.GuiTest;
 import org.netbeans.test.java.editor.folding.JavaFoldsNavigationTest;
 import org.netbeans.test.java.editor.folding.JavaFoldsTest;
+import org.netbeans.test.java.editor.formatting.BasicTest;
+import org.netbeans.test.java.editor.semantic.SemanticHighlightTest;
 import org.netbeans.test.java.editor.smart_bracket.JavaSmartBracketTest;
 import org.netbeans.test.java.editor.smart_enter.SmartEnterTest;
 
@@ -65,7 +69,7 @@ public class StableSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)                
-                //.addTest(MarkOccurrencesTest.class)
+                .addTest(MarkOccurrencesTest.class)
                 .addTest(JavaEditActionsTest.class)
                 .addTest(JavaNavigationActionsTest.class)
                 .addTest(JavaSmartBracketTest.class)
@@ -74,8 +78,12 @@ public class StableSuite {
                 .addTest(CreateEqualsHashcodeTest.class)
                 .addTest(CreateGetterSetterTest.class)
                 .addTest(ImplementMethodTest.class)
-                //.addTest(JavaFoldsNavigationTest.class)
+                .addTest(JavaFoldsNavigationTest.class)
                 .addTest(JavaFoldsTest.class)
+                .addTest(GuiTest.class)
+                .addTest(BasicTest.class)
+                .addTest(CodeTemplatesTest.class)
+                .addTest(SemanticHighlightTest.class)
                 .enableModules(".*")
                 .clusters(".*")
                 );
