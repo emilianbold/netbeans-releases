@@ -62,6 +62,9 @@ public class HtmlPanel implements Panel<WizardDescriptor> {
     
     public static final String HTML_FILE = "html-file";     // NOI18N
     
+    final static String PROP_DOCUMENT_BASE ="document_base"; // NOI18N
+    final static String PUBLIC_HTML ="public_html"; // NOI18N
+    
     HtmlPanel(WizardDescriptor descriptor){
         myDescriptor = descriptor;
     }
@@ -109,6 +112,7 @@ public class HtmlPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public void readSettings( WizardDescriptor descriptor ) {
+        myComponent.read( descriptor );
     }
 
     /* (non-Javadoc)
@@ -138,7 +142,7 @@ public class HtmlPanel implements Panel<WizardDescriptor> {
     }
     
     
-    private List<ChangeListener> myListeners = new CopyOnWriteArrayList<ChangeListener>();
+    private final List<ChangeListener> myListeners = new CopyOnWriteArrayList<ChangeListener>();
     private HtmlPanelVisual myComponent;
-    private WizardDescriptor myDescriptor;
+    private final WizardDescriptor myDescriptor;
 }

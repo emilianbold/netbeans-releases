@@ -55,6 +55,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -397,7 +398,7 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             if (value instanceof TableRow) {
                 TableRow item = (TableRow) value;
-                String s = item.getBrowser().getName();
+                String s = BrowserUISupport.getLongDisplayName(item.getBrowser());
                 return super.getTableCellRendererComponent(table, s, isSelected, false, row, column);
             }
             return super.getTableCellRendererComponent(table, value, isSelected, false, row, column);
