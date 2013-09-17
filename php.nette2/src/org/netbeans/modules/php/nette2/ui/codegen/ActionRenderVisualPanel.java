@@ -287,7 +287,7 @@ public final class ActionRenderVisualPanel extends JPanel {
         warningLabel.setText(" "); //NOI18N
     }
 
-    public final class Action {
+    public static final class Action {
         private final String name;
         private final boolean generateAction;
         private final boolean generateRender;

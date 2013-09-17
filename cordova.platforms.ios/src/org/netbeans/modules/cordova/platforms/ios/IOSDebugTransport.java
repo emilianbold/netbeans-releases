@@ -370,12 +370,14 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             return map.entrySet().iterator().next().getKey();
         }
 
+        private String lastTab = null;
+        
         private String getTabForUrl() {
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
                 if (urlFromBrowser.startsWith("file:/")) { // NOI18N
                     //phonegap
-                    return "1"; // NOI18N
+                    return lastTab="1"; // NOI18N
                 }
                 int hash = urlFromBrowser.indexOf("#"); // NOI18N
                 if (hash != -1) {
@@ -385,8 +387,13 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                     urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length()-1); 
                 }
                 if (getConnectionURL().toString().equals(urlFromBrowser.replaceAll("file:///", "file:/"))) {
-                    return entry.getKey();
-                }                        
+                    return lastTab=entry.getKey();
+                }
+            }
+            for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
+                if (entry.getValue().getIdentifier().equals(lastTab)) {
+                    return lastTab;
+                }
             }
             return null;
         }

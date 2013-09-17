@@ -126,6 +126,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case KEYWORD_TYPEOF:
             // end of line
             case EOL:
+            case OPERATOR_SEMICOLON:
+            case OPERATOR_COMMA:
+            case OPERATOR_DOT:
+            case OPERATOR_COLON:
                 return true;
         }
         return false;

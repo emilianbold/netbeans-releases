@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -50,11 +49,11 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.GlassFishToolsConfig;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
@@ -83,7 +82,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
-    private volatile static GlassfishInstanceProvider ee6Provider;
+    private volatile static GlassfishInstanceProvider glassFishProvider;
 
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
     public static final String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
@@ -100,27 +99,16 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         GlassFishSettings.toolingLibraryconfig();
     }
 
-    public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
-        List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
-        if(initialize) {
-            getProvider();
-        }
-        if(ee6Provider != null) {
-            providerList.add(ee6Provider);
-        }
-        return providerList;
-    }
-
     public static GlassfishInstanceProvider getProvider() {
-        if (ee6Provider != null) {
-            return ee6Provider;
+        if (glassFishProvider != null) {
+            return glassFishProvider;
         }
         else {
             boolean runInit = false;
             synchronized(GlassfishInstanceProvider.class) {
-                if (ee6Provider == null) {
+                if (glassFishProvider == null) {
                     runInit = true;
-                    ee6Provider = new GlassfishInstanceProvider(
+                    glassFishProvider = new GlassfishInstanceProvider(
                             new String[]{EE6_DEPLOYER_FRAGMENT, EE6WC_DEPLOYER_FRAGMENT},
                             new String[]{EE6_INSTANCES_PATH, EE6WC_INSTANCES_PATH},
                             null,
@@ -139,9 +127,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
             }
             if (runInit) {
-                ee6Provider.init();                
+                glassFishProvider.init();                
             }
-            return ee6Provider;
+            return glassFishProvider;
         }
     }
 
@@ -200,7 +188,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      *         is initialized or <code>false</code> otherwise.
      */
     public static synchronized boolean initialized() {
-        return ee6Provider != null;
+        return glassFishProvider != null;
     }
 
     private static RegisteredDDCatalog getDDCatalog() {
@@ -214,6 +202,31 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
+    /**
+     * Get API representation of GlassFish server instance matching
+     * provided internal server URI.
+     * <p/>
+     * @param uri Internal server URI used as key to find
+     *            {@link ServerInstance}.
+     * @return {@link ServerInstance} matching given URI.
+     */
+    public static ServerInstance getInstanceByUri(String uri) {
+        return getProvider().getInstance(uri);
+    }
+        
+    /**
+     * Get {@link GlassfishInstance} matching provided internal
+     * server URI.
+     * <p/>
+     * @param uri Internal server URI used as key to find
+     *            {@link GlassfishInstance}.
+     * @return {@link GlassfishInstance} matching provided internal server URI
+     *         or <code>null</code> when no matching object was found.
+     */
+    public static GlassfishInstance getGlassFishInstanceByUri(String uri) {
+        return getProvider().getGlassfishInstance(uri);
+    }
+
     private GlassfishInstance getFirstServerInstance() {
         if (!instanceMap.isEmpty()) {
             return instanceMap.values().iterator().next();
@@ -222,7 +235,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     }
 
     /**
-     * Retrieve {@link GlassfishInstance} matching provided internal server URI.
+     * Retrieve {@link GlassfishInstance} matching provided
+     * internal server URI.
      * <p/>
      * @param uri Internal server URI used as key to find
      *            {@link GlassfishInstance}.
