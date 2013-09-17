@@ -65,11 +65,17 @@ public class TesterTestLocator implements TestLocator {
     @Override
     public Set<Locations.Offset> findSources(FileObject testFile) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
-        FileObject testDirectory = phpModule.getTestDirectory();
         assert sourceDirectory != null : "Source directory must exist";
-        assert testDirectory != null : "Test directory must exist";
-        String relativePath = FileUtil.getRelativePath(testDirectory, testFile);
-        assert relativePath != null : "File " + testFile + "must be found underneath " + testDirectory;
+        List<FileObject> testDirectories = phpModule.getTestDirectories();
+        assert !testDirectories.isEmpty();
+        String relativePath = null;
+        for (FileObject testDirectory : testDirectories) {
+            relativePath = FileUtil.getRelativePath(testDirectory, testFile);
+            if (relativePath != null) {
+                break;
+            }
+        }
+        assert relativePath != null : "File " + testFile + "must be found underneath " + testDirectories;
         List<String> extensions = FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE);
         Set<Locations.Offset> result = new HashSet<>();
         for (;;) {
@@ -92,12 +98,18 @@ public class TesterTestLocator implements TestLocator {
     @Override
     public Set<Locations.Offset> findTests(FileObject testedFile) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
-        FileObject testDirectory = phpModule.getTestDirectory();
         assert sourceDirectory != null : "Source directory must exist";
-        assert testDirectory != null : "Test directory must exist";
+        List<FileObject> testDirectories = phpModule.getTestDirectories();
+        assert !testDirectories.isEmpty();
         String relativePath = FileUtil.getRelativePath(sourceDirectory, testedFile.getParent());
         assert relativePath != null : "File " + testedFile.getParent() + "must be found underneath " + sourceDirectory;
-        FileObject parentTestFolder = testDirectory.getFileObject(relativePath);
+        FileObject parentTestFolder = null;
+        for (FileObject testDirectory : testDirectories) {
+            parentTestFolder = testDirectory.getFileObject(relativePath);
+            if (parentTestFolder != null) {
+                break;
+            }
+        }
         if (parentTestFolder == null) {
             return Collections.emptySet();
         }
