@@ -60,6 +60,7 @@
 #endif
 #include <errno.h>
 #include <sys/stat.h>
+#include <spawn.h>
 
 #ifdef TRACE
 #define LOG(args...) fprintf(stderr, ## args)
@@ -266,7 +267,29 @@ static const interpose_t interposers[]
             {(void*)my_execlp, (void*)execlp},
             {(void*)my_execle, (void*)execle}
         };
-#endif        
+#endif
+
+int posix_spawn(
+	pid_t * pid,
+	const char * path,
+	const posix_spawn_file_actions_t *file_actions,
+	const posix_spawnattr_t * attrp,
+	char *const *argv,
+	char *const *envp) {
+    LOG("BuildTrace: posix_spawn\n");
+    static int (* _orig_posix_spawn)(pid_t *,
+	const char *,
+	const posix_spawn_file_actions_t *,
+	const posix_spawnattr_t *,
+	char *const*,
+	char *const*) = 0;
+    if (!_orig_posix_spawn) {
+        _orig_posix_spawn = (typeof ( _orig_posix_spawn))dlsym((void*) - 1, "posix_spawn");
+    }
+    __logprint(path, argv, envp);
+    return _orig_posix_spawn(pid, path, file_actions, attrp, argv, envp);   
+}
+
 
 static void
 __attribute((constructor))
