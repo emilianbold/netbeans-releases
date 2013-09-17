@@ -206,8 +206,8 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
         // sources
         sourceFolderTextField.setText(FileUtil.getFileDisplayName(ProjectPropertiesSupport.getSourcesDirectory(properties.getProject())));
-        // tests
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(properties.getProject(), false);
+        // XXX tests
+        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(properties.getProject(), null, false);
         if (testDirectory != null) {
             testFolderTextField.setText(FileUtil.toFile(testDirectory).getAbsolutePath());
         } else {

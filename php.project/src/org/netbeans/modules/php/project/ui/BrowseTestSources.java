@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.GroupLayout;
@@ -68,14 +69,24 @@ public class BrowseTestSources extends JPanel {
     private static final long serialVersionUID = 1463321897654268L;
 
     private final PhpProject phpProject;
-    private DialogDescriptor dialogDescriptor;
-    private NotificationLineSupport notificationLineSupport;
+    private final String info;
+
+    private volatile DialogDescriptor dialogDescriptor;
+    private volatile NotificationLineSupport notificationLineSupport;
+    private volatile String testSources = null;
+
 
     public BrowseTestSources(PhpProject phpProject, String title) {
+        this(phpProject, title, null);
+    }
+
+    public BrowseTestSources(PhpProject phpProject, String title, String info) {
+        assert EventQueue.isDispatchThread();
         assert phpProject != null;
         assert title != null;
 
         this.phpProject = phpProject;
+        this.info = info;
 
         initComponents();
         infoLabel.setText(title);
@@ -96,6 +107,7 @@ public class BrowseTestSources extends JPanel {
             }
 
             private void processUpdate() {
+                testSources = testSourcesTextField.getText();
                 validateTestSources();
             }
         });
@@ -113,19 +125,22 @@ public class BrowseTestSources extends JPanel {
                 DialogDescriptor.OK_OPTION,
                 null);
         notificationLineSupport = dialogDescriptor.createNotificationLineSupport();
+        if (info != null) {
+            notificationLineSupport.setInformationMessage(info);
+        }
         dialogDescriptor.setValid(false);
         return DialogDisplayer.getDefault().notify(dialogDescriptor) == DialogDescriptor.OK_OPTION;
     }
 
     public String getTestSources() {
-        return testSourcesTextField.getText();
+        return testSources;
     }
 
     @NbBundle.Messages("BrowseTestSources.includePath.info=Add testing provider classes (e.g. PHPUnit) to Global Include Path (Tools > Options > PHP).")
     void validateTestSources() {
         assert notificationLineSupport != null;
 
-        String testSources = testSourcesTextField.getText();
+        assert testSources.equals(testSourcesTextField.getText()) : testSources + " != " + testSourcesTextField.getText();
         String error = Utils.validateTestSources(phpProject, testSources);
         if (error != null) {
             notificationLineSupport.setErrorMessage(error);

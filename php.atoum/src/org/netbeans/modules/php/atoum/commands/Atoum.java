@@ -158,7 +158,7 @@ public final class Atoum {
 
     @CheckForNull
     public static File getDefaultBootstrap(PhpModule phpModule) {
-        FileObject testDirectory = phpModule.getTestDirectory();
+        FileObject testDirectory = phpModule.getTestDirectory(null);
         if (testDirectory == null) {
             return null;
         }
@@ -169,7 +169,7 @@ public final class Atoum {
 
     @CheckForNull
     public static File getDefaultConfiguration(PhpModule phpModule) {
-        FileObject testDirectory = phpModule.getTestDirectory();
+        FileObject testDirectory = phpModule.getTestDirectory(null);
         if (testDirectory == null) {
             return null;
         }
@@ -211,19 +211,22 @@ public final class Atoum {
             params.add(XDEBUG_CONFIG_PARAM);
             params.add(String.format(IDE_KEY_PARAM, Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()));
         }
-        File startFile = FileUtil.toFile(runInfo.getStartFile());
-        if (startFile.isFile()) {
-            params.add(FILE_PARAM);
-        } else {
-            params.add(DIRECTORY_PARAM);
+        for (FileObject startFile : runInfo.getStartFiles()) {
+            if (startFile.isData()) {
+                params.add(FILE_PARAM);
+            } else {
+                params.add(DIRECTORY_PARAM);
+            }
+            params.add(FileUtil.toFile(startFile).getAbsolutePath());
         }
-        params.add(startFile.getAbsolutePath());
         atoum.additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
             }
-            return atoum.debug(runInfo.getStartFile(), getDescriptor(), new ParsingFactory(testSession));
+            List<FileObject> startFiles = runInfo.getStartFiles();
+            assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
+            return atoum.debug(startFiles.get(0), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Test creating cancelled", ex);
@@ -262,7 +265,8 @@ public final class Atoum {
     }
 
     private PhpExecutable getExecutable(PhpModule phpModule, String title) {
-        FileObject testDirectory = phpModule.getTestDirectory();
+        // backward compatibility, simply return the first test directory
+        FileObject testDirectory = phpModule.getTestDirectory(null);
         assert testDirectory != null : "Test directory not found for " + phpModule.getName();
         return new PhpExecutable(atoumPath)
                 .optionsSubcategory(AtoumOptionsPanelController.OPTIONS_SUB_PATH)

@@ -96,10 +96,10 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
         if (!PhpUnit.isTestFile(fileObj.getNameExt())) {
             return false;
         }
-        FileObject testDirectory = phpModule.getTestDirectory();
-        if (testDirectory != null
-                && FileUtil.isParentOf(testDirectory, fileObj)) {
-            return true;
+        for (FileObject testDirectory : phpModule.getTestDirectories()) {
+            if (FileUtil.isParentOf(testDirectory, fileObj)) {
+                return true;
+            }
         }
         if (!PhpUnitPreferences.getRunAllTestFiles(phpModule)) {
             return false;

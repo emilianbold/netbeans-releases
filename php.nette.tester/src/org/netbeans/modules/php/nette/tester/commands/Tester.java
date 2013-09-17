@@ -151,8 +151,9 @@ public final class Tester {
         // custom tests
         List<TestRunInfo.TestInfo> customTests = runInfo.getCustomTests();
         if (customTests.isEmpty()) {
-            File startFile = FileUtil.toFile(runInfo.getStartFile());
-            params.add(startFile.getAbsolutePath());
+            for (FileObject startFile : runInfo.getStartFiles()) {
+                params.add(FileUtil.toFile(startFile).getAbsolutePath());
+            }
         } else {
             for (TestRunInfo.TestInfo testInfo : customTests) {
                 String location = testInfo.getLocation();
@@ -166,7 +167,9 @@ public final class Tester {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return tester.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running tester tests..."); // NOI18N
             }
-            return tester.debug(runInfo.getStartFile(), getDescriptor(), new ParsingFactory(testSession));
+            List<FileObject> startFiles = runInfo.getStartFiles();
+            assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
+            return tester.debug(startFiles.get(0), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
             // canceled
             LOGGER.log(Level.FINE, "Test running cancelled", ex);
@@ -179,7 +182,8 @@ public final class Tester {
     }
 
     private PhpExecutable getExecutable(PhpModule phpModule, String title) {
-        FileObject testDirectory = phpModule.getTestDirectory();
+        // backward compatibility, simply return the first test directory
+        FileObject testDirectory = phpModule.getTestDirectory(null);
         assert testDirectory != null : "Test directory not found for " + phpModule.getName();
         return new PhpExecutable(testerPath)
                 .optionsSubcategory(TesterOptionsPanelController.OPTIONS_SUB_PATH)

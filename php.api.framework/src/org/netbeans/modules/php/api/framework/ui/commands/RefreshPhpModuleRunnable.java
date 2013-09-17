@@ -62,7 +62,9 @@ public class RefreshPhpModuleRunnable implements Runnable {
     @Override
     public void run() {
         refresh(phpModule.getSourceDirectory());
-        refresh(phpModule.getTestDirectory());
+        for (FileObject dir : phpModule.getTestDirectories()) {
+            refresh(dir);
+        }
     }
 
     private void refresh(FileObject fo) {

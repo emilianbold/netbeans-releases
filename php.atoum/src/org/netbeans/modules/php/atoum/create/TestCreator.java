@@ -73,12 +73,12 @@ public class TestCreator {
 
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         assert sourceDirectory != null : "Source directory should exist for " + phpModule;
-        FileObject testDirectory = phpModule.getTestDirectory();
-        assert testDirectory != null : "Test directory should exist for " + phpModule;
+        FileObject template = FileUtil.getConfigFile("Templates/Scripting/Tests/AtoumTest.php"); // NOI18N
+        assert template != null;
 
         for (FileObject fo : files) {
             try {
-                generateTest(sourceDirectory, testDirectory, fo, succeeded);
+                generateTest(sourceDirectory, template, fo, succeeded);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 failed.add(fo);
@@ -87,8 +87,8 @@ public class TestCreator {
         return new CreateTestsResult(succeeded, failed);
     }
 
-    private void generateTest(FileObject sourceDirectory, FileObject testDirectory, FileObject fo, Set<FileObject> succeeded) throws IOException {
-        FileObject template = FileUtil.getConfigFile("Templates/Scripting/Tests/AtoumTest.php"); // NOI18N
+    private void generateTest(FileObject sourceDirectory, FileObject template, FileObject fo, Set<FileObject> succeeded) throws IOException {
+        FileObject testDirectory = phpModule.getTestDirectory(fo);
         FileObject dir = getTargetFolder(sourceDirectory, testDirectory, fo);
         String name = fo.getName();
 
