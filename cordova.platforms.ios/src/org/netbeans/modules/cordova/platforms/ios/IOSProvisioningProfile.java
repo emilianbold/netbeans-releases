@@ -46,6 +46,7 @@ import com.dd.plist.NSObject;
 import com.dd.plist.PropertyListParser;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
@@ -64,7 +65,7 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
         displayName = "Error"; // NOI18N
         try {
             this.path = path;
-            String xml = ProcessUtilities.callProcess("security", true, IOSPlatform.DEFAULT_TIMEOUT, "cms", "-D", "-i", path); // NOI18N
+            String xml = ProcessUtilities.callProcess("security", true, 2 * IOSPlatform.DEFAULT_TIMEOUT, "cms", "-D", "-i", path); // NOI18N
             try {
                 NSObject root = PropertyListParser.parse(xml.getBytes());
                 if (root instanceof NSDictionary) {
@@ -72,8 +73,8 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
                 }
             } catch (Exception e) {
                 Logger log = Logger.getLogger(IOSProvisioningProfile.class.getName());
-                log.fine("Failed to parse:\n" + xml);
-                throw e;
+                log.log(Level.INFO, "Failed to parse:\n{0}", xml);
+                displayName = "Profile"; //NOI18N
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
