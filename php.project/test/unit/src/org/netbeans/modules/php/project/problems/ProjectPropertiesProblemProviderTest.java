@@ -41,18 +41,23 @@
  */
 package org.netbeans.modules.php.project.problems;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
+import org.openide.filesystems.FileUtil;
 
 public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
 
@@ -87,6 +92,38 @@ public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
         assertEquals(1, problemsProvider.getProblems().size());
         ProjectProblem projectProblem = problemsProvider.getProblems().iterator().next();
         assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(), projectProblem.getDisplayName());
+    }
+
+    public void testProjectProblemsTestRoots() throws Exception {
+        PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        ProjectProblemsProvider problemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull(problemsProvider);
+        assertTrue(problemsProvider.getProblems().isEmpty());
+        String projectDir = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)).getAbsolutePath();
+        final String testDir1 = "nondir";
+        final String testDir2 = projectDir + File.separatorChar + "nbproject" + File.separatorChar + "private";
+        final String testDir3 = projectDir;
+        Map<String, String> testDirs = new HashMap<>();
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "2", testDir1);
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "3", testDir2);
+        testDirs.put(PhpProjectProperties.TEST_SRC_DIR + "100", testDir3);
+        PhpProjectProperties.save(project, testDirs, Collections.<String, String>emptyMap());
+        assertEquals(3, problemsProvider.getProblems().size());
+        Set<String> contained = new HashSet<>();
+        for (ProjectProblem projectProblem : problemsProvider.getProblems()) {
+            assertEquals(Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(), projectProblem.getDisplayName());
+            String description = projectProblem.getDescription();
+            if (description.contains(testDir1 + "\"")) {
+                assertTrue(description, contained.add(testDir1));
+            }
+            if (description.contains("\"" + testDir2 + "\"")) {
+                assertTrue(description, contained.add(testDir2));
+            }
+            if (description.contains("\"" + testDir3 + "\"")) {
+                assertTrue(description, contained.add(testDir3));
+            }
+        }
+        assertEquals(contained.toString(), 3, contained.size());
     }
 
     public void testProjectProblemsSeleniumRoot() throws Exception {
