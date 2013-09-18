@@ -47,7 +47,11 @@ import org.netbeans.modules.languages.neon.parser.NeonParser.NeonParserResult;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NeonCompletionContextFinder {
+public final class NeonCompletionContextFinder {
+
+    private NeonCompletionContextFinder() {
+    }
+
     //TODO: contexts should be resolved ;)
     public static NeonCompletionContext find(NeonParserResult parserResult, int caretOffset) {
         return NeonCompletionContext.ALL;
