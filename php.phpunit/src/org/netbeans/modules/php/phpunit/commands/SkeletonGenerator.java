@@ -114,11 +114,15 @@ public final class SkeletonGenerator {
         "SkeletonGenerator.test.generating=Creating test file for {0}"
     })
     public FileObject generateTest(PhpModule phpModule, FileObject sourceClassFile, String sourceClassName) throws ExecutionException {
+        FileObject sourceDir = phpModule.getSourceDirectory();
+        assert sourceDir != null;
         FileObject testDir = phpModule.getTestDirectory(sourceClassFile);
         assert testDir != null;
         FileObject commonRoot = FileUtils.getCommonRoot(sourceClassFile, testDir);
-        if (commonRoot == null) {
-            commonRoot = phpModule.getSourceDirectory();
+        if (commonRoot == null
+                || FileUtil.isParentOf(commonRoot, sourceDir)) {
+            // look only inside project source dir
+            commonRoot = sourceDir;
         }
         assert commonRoot != null;
         String relativePath = PropertyUtils.relativizeFile(FileUtil.toFile(commonRoot), FileUtil.toFile(sourceClassFile));
