@@ -60,7 +60,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.PhpVersion;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
@@ -152,7 +151,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ChangeListener defaultChangeListener = new DefaultChangeListener();
         copyFilesVisual.addChangeListener(defaultChangeListener);
-        testFolderTextField.getDocument().addDocumentListener(defaultDocumentListener);
         webRootTextField.getDocument().addDocumentListener(defaultDocumentListener);
         phpVersionComboBox.addItemListener(new DefaultComboBoxItemListener());
         ItemListener defaultCheckBoxItemListener = new DefaultCheckBoxItemListener();
@@ -206,20 +204,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
         // sources
         sourceFolderTextField.setText(FileUtil.getFileDisplayName(ProjectPropertiesSupport.getSourcesDirectory(properties.getProject())));
-        // XXX tests
-        FileObject testDirectory = ProjectPropertiesSupport.getTestDirectory(properties.getProject(), null, false);
-        if (testDirectory != null) {
-            testFolderTextField.setText(FileUtil.toFile(testDirectory).getAbsolutePath());
-        } else {
-            // XXX check invalid test files
-            String testsProperty = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.TEST_SRC_DIR);
-            if (testsProperty != null) {
-                // invalid test dir
-                File tests = ProjectPropertiesSupport.getSourceSubdirectory(project, testsProperty);
-                // directory can be valid - e.g. if one renames it directly in the file chooser
-                testFolderTextField.setText(tests.getAbsolutePath());
-            }
-        }
     }
 
     private void initPhpVersion() {
@@ -300,15 +284,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
             category.setValid(false);
             return;
         }
-        File testDir = getTestDir();
-        if (testDir != null) {
-            err = Utils.validateTestSources(properties.getProject(), testDir.getAbsolutePath());
-            if (err != null) {
-                category.setErrorMessage(err);
-                category.setValid(false);
-                return;
-            }
-        }
 
         File webRootDir = getWebRootDir();
         if (!webRootDir.exists()) {
@@ -354,20 +329,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         properties.setCopySrcOnOpen(copyFilesVisual.isCopyOnOpen());
-        // tests - relativize path
-        File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
-
-        if (testDir != null) {
-            String testPath = PropertyUtils.relativizeFile(projectDirectory, testDir);
-            if (testPath == null) {
-                // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
-                testPath = testDir.getAbsolutePath();
-            }
-            properties.setTestDir(testPath);
-        } else {
-            // test dir removed
-            properties.testDirRemoved();
-        }
         String webRoot = PropertyUtils.relativizeFile(srcDir, webRootDir);
         assert webRoot != null && !webRoot.startsWith("../") : "WebRoot must be underneath Sources";
         properties.setWebRoot(webRoot);
@@ -378,14 +339,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
     private File getSrcDir() {
         return new File(sourceFolderTextField.getText()); // file already normalized
-    }
-
-    private File getTestDir() {
-        String tests = testFolderTextField.getText();
-        if (!StringUtils.hasText(tests)) {
-            return null;
-        }
-        return FileUtil.normalizeFile(new File(tests));
     }
 
     private File getWebRootDir() {
@@ -435,9 +388,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         projectFolderTextField = new javax.swing.JTextField();
         sourceFolderLabel = new javax.swing.JLabel();
         sourceFolderTextField = new javax.swing.JTextField();
-        testFolderLabel = new javax.swing.JLabel();
-        testFolderTextField = new javax.swing.JTextField();
-        testFolderButton = new javax.swing.JButton();
         webRootLabel = new javax.swing.JLabel();
         webRootTextField = new javax.swing.JTextField();
         webRootButton = new javax.swing.JButton();
@@ -460,16 +410,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("LBL_SourceFolder")); // NOI18N
 
         sourceFolderTextField.setEditable(false);
-
-        testFolderLabel.setLabelFor(testFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(testFolderLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(testFolderButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderButton.text")); // NOI18N
-        testFolderButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testFolderButtonActionPerformed(evt);
-            }
-        });
 
         webRootLabel.setLabelFor(webRootTextField);
         org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
@@ -514,27 +454,21 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                         .addComponent(projectFolderTextField)
                         .addComponent(sourceFolderTextField)
                         .addGroup(layout.createSequentialGroup()
-                            .addComponent(testFolderTextField)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(testFolderButton))
-                        .addGroup(layout.createSequentialGroup()
                             .addComponent(webRootTextField)
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(webRootButton))
                         .addComponent(encodingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(phpVersionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(phpVersionInfoLabel)))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(phpVersionInfoLabel)
+                            .addGap(0, 0, Short.MAX_VALUE))))
                 .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(aspTagsCheckBox)
-                    .addComponent(testFolderLabel)
                     .addComponent(shortTagsCheckBox))
                 .addContainerGap())
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {testFolderButton, webRootButton});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -545,11 +479,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(sourceFolderLabel)
                     .addComponent(sourceFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(testFolderLabel)
-                    .addComponent(testFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(testFolderButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(webRootLabel)
@@ -581,12 +510,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         sourceFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
         sourceFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleName")); // NOI18N
         sourceFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        testFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.AccessibleContext.accessibleName")); // NOI18N
-        testFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        testFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleName")); // NOI18N
-        testFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        testFolderButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderButton.AccessibleContext.accessibleName")); // NOI18N
-        testFolderButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.testFolderButton.AccessibleContext.accessibleDescription")); // NOI18N
         webRootLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleName")); // NOI18N
         webRootLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleDescription")); // NOI18N
         webRootTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -622,10 +545,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         webRootTextField.setText(selected);
     }//GEN-LAST:event_webRootButtonActionPerformed
 
-    private void testFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testFolderButtonActionPerformed
-        Utils.browseTestSources(testFolderTextField, properties.getProject());
-    }//GEN-LAST:event_testFolderButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox aspTagsCheckBox;
@@ -640,9 +559,6 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     private javax.swing.JCheckBox shortTagsCheckBox;
     private javax.swing.JLabel sourceFolderLabel;
     private javax.swing.JTextField sourceFolderTextField;
-    private javax.swing.JButton testFolderButton;
-    private javax.swing.JLabel testFolderLabel;
-    private javax.swing.JTextField testFolderTextField;
     private javax.swing.JButton webRootButton;
     private javax.swing.JLabel webRootLabel;
     private javax.swing.JTextField webRootTextField;
