@@ -51,6 +51,28 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+    <change id="NoDefaultClose">
+        <api name="dialogs"/>
+        <summary>Added an option to disable the closing of a dialog with ESC key
+            and title bar close button.</summary>
+        <version major="7" minor="35"/>
+        <date day="17" month="9" year="2013"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added method <code>setNoDefaultClose(boolean)</code> to
+                <code>NotifyDescriptor</code> class which disables ESC key closing
+                of dialog window and also disables close button in dialogs title
+                bar. When the method is invoked with true parameter then the dialog
+                window can be closed only by pressing one of its Ok/Yes/No/Cancel buttons
+                (depending on the specified closing options).
+            </p>
+        </description>
+        <class package="org.openide" name="NotifyDescriptor"/>
+        <issue number="196200"/>
+    </change>
+
     <change id="ExtendedAsynchronousValidatingPanel">
         <api name="dialogs"/>
         <summary>Added <code>ExtendedAsynchronousValidatingPanel</code></summary>

@@ -303,6 +303,8 @@ final public class PersistenceHandler implements PersistenceObserver {
 
     /** Implements <code>WindowSystem</code> interface method. */
     public synchronized void save() {
+        if( !loaded )
+            return; //nothing to save
         if(DEBUG) {
             debugLog("## PersistenceHandler.save"); // NOI18N
         }

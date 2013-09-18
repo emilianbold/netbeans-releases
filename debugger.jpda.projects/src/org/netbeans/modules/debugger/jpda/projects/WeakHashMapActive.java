@@ -135,6 +135,9 @@ public class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
             KeyReference kr = (KeyReference) obj;
             K k1 = get();
             Object k2 = kr.get();
+            if (k1 == null && k2 == null) {
+                return hash == kr.hash;
+            }
             return (k1 == k2 || (k1 != null && k1.equals(k2)));
         }
 

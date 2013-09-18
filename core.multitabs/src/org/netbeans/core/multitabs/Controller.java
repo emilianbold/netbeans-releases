@@ -66,9 +66,6 @@ import org.netbeans.swing.tabcontrol.event.TabActionEvent;
  */
 public final class Controller implements MouseListener {
 
-    /**
-     * Utility field holding list of ActionListeners.
-     */
     private List<ActionListener> actionListenerList;
 
     private final SingleSelectionModel selectionModel = new DefaultSingleSelectionModel();

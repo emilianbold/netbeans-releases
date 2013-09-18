@@ -49,6 +49,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Manager;
@@ -366,7 +367,7 @@ public class MainMenuTest extends JellyTestCase {
         // when sub-menu has time out exception problems. It can Helps.
         if (preInitSubMenu) {
             String firstSubMenuItem = testedSubMenuItem.getSubmenu().get(0).getName();
-            MainWindowOperator.getDefault().menuBar().showMenuItem(submenuPath + "|" + firstSubMenuItem);
+            MainWindowOperator.getDefault().menuBar().showMenuItem(submenuPath + "|" + firstSubMenuItem, new Operator.DefaultStringComparator(true, true));
         }
 
         PrintStream ideFileStream = null;
