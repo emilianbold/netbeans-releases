@@ -47,7 +47,7 @@ package org.netbeans.modules.php.twig.editor.completion;
  */
 public interface TwigDocumentation {
 
-    public String asText();
+    String asText();
 
     public static final class TwigDocumentationImpl implements TwigDocumentation {
         private final String documentation;

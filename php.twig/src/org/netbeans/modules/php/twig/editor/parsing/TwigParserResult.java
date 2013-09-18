@@ -51,8 +51,8 @@ import org.openide.filesystems.FileObject;
 public class TwigParserResult extends ParserResult {
 
     boolean valid = true;
-    List<Error> errorList = new ArrayList<Error>();
-    List<Block> blockList = new ArrayList<Block>();
+    List<Error> errorList = new ArrayList<>();
+    List<Block> blockList = new ArrayList<>();
 
     TwigParserResult(Snapshot snapshot) {
         super(snapshot);

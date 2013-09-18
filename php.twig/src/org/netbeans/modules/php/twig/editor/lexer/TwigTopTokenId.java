@@ -63,7 +63,7 @@ public enum TwigTopTokenId implements TokenId {
     T_ERROR(null, "twig_error"), //NOI18N
     T_TWIG(null, "twig"), //NOI18N
     T_TWIG_RAW(null, "twig_raw"); //NOI18N
-    
+
     private String fixedText;
     private String primaryCategory;
 
@@ -80,7 +80,7 @@ public enum TwigTopTokenId implements TokenId {
     public String primaryCategory() {
         return primaryCategory;
     }
-    private static final Language<TwigTopTokenId> language =
+    private static final Language<TwigTopTokenId> LANGUAGE =
             new LanguageHierarchy<TwigTopTokenId>() {
                 @Override
                 protected Collection<TwigTopTokenId> createTokenIds() {
@@ -89,7 +89,7 @@ public enum TwigTopTokenId implements TokenId {
 
                 @Override
                 protected Map<String, Collection<TwigTopTokenId>> createTokenCategories() {
-                    Map<String, Collection<TwigTopTokenId>> cats = new HashMap<String, Collection<TwigTopTokenId>>();
+                    Map<String, Collection<TwigTopTokenId>> cats = new HashMap<>();
                     return cats;
                 }
 
@@ -120,6 +120,6 @@ public enum TwigTopTokenId implements TokenId {
             }.language();
 
     public static Language<TwigTopTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 }

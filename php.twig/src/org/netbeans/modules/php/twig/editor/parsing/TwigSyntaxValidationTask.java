@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,13 +62,14 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 
 public class TwigSyntaxValidationTask extends ParserResultTask {
+    private static final Logger LOGGER = Logger.getLogger(TwigSyntaxValidationTask.class.getName());
 
     @Override
     public void run(Result r, SchedulerEvent se) {
         TwigParserResult result = (TwigParserResult) r;
         Document document = result.getSnapshot().getSource().getDocument(false);
         if (document != null) {
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+            List<ErrorDescription> errors = new ArrayList<>();
             for (TwigParserResult.Error error : result.getErrors()) {
                 try {
                     String description = error.getDescription();
@@ -78,6 +81,7 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
                             document.createPosition(error.getOffset() + error.getLength())));
 
                 } catch (BadLocationException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
                 }
 
             }
@@ -99,7 +103,7 @@ public class TwigSyntaxValidationTask extends ParserResultTask {
     public void cancel() {
     }
 
-    static public class Factory extends TaskFactory {
+    public static class Factory extends TaskFactory {
 
         @Override
         public Collection<? extends SchedulerTask> create(Snapshot snpsht) {

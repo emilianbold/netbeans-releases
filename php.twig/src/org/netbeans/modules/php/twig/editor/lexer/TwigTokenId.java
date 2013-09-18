@@ -85,7 +85,7 @@ public enum TwigTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<TwigTokenId> language =
+    private static final Language<TwigTokenId> LANGUAGE =
             new LanguageHierarchy<TwigTokenId>() {
                 @Override
                 protected Collection<TwigTokenId> createTokenIds() {
@@ -94,7 +94,7 @@ public enum TwigTokenId implements TokenId {
 
                 @Override
                 protected Map<String, Collection<TwigTokenId>> createTokenCategories() {
-                    Map<String, Collection<TwigTokenId>> cats = new HashMap<String, Collection<TwigTokenId>>();
+                    Map<String, Collection<TwigTokenId>> cats = new HashMap<>();
                     return cats;
                 }
 
@@ -116,6 +116,6 @@ public enum TwigTokenId implements TokenId {
             }.language();
 
     public static Language<TwigTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 }

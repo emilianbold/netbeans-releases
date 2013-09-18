@@ -53,7 +53,7 @@ import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.php.twig.editor.gsf.TwigLanguage;
 import org.netbeans.modules.php.twig.editor.lexer.TwigTopTokenId;
 
-@EmbeddingProvider.Registration(mimeType=TwigLanguage.TWIG_MIME_TYPE, targetMimeType=TwigHtmlEmbeddingProvider.TARGET_MIME_TYPE)
+@EmbeddingProvider.Registration(mimeType = TwigLanguage.TWIG_MIME_TYPE, targetMimeType = TwigHtmlEmbeddingProvider.TARGET_MIME_TYPE)
 public class TwigHtmlEmbeddingProvider extends EmbeddingProvider {
 
     public static final String TARGET_MIME_TYPE = "text/html"; //NOI18N
