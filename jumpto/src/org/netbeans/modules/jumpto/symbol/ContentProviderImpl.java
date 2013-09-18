@@ -75,6 +75,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -511,8 +512,12 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 LOG.log(
                     Level.FINE,
                     "Calling SymbolProvider: {0}", //NOI18N
-                    provider);                
-                final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, getSearchType(text, exact, isCaseSensitive));
+                    provider);
+                final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
+                if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
+                    text = Utils.removeNonNeededWildCards(text);
+                }
+                final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
                 final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
                 provider.computeSymbolNames(context, result);
                 current = null;
@@ -533,39 +538,16 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             @NonNull final String text,
             final boolean exact,
             final boolean isCaseSensitive) {
-        int wildcard = containsWildCard(text);
+        int wildcard = Utils.containsWildCard(text);
         if (exact) {
             //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
             return SearchType.EXACT_NAME;
-        } else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
             return SearchType.CAMEL_CASE;
         } else if (wildcard != -1) {
             return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
         } else {
             return isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
         }
-    }
-
-    private static boolean isAllUpper( String text ) {
-    for( int i = 0; i < text.length(); i++ ) {
-        if ( !Character.isUpperCase( text.charAt( i ) ) ) {
-            return false;
-        }
-    }
-
-    return true;
-    }
-
-    private static int containsWildCard( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
     }
 }
