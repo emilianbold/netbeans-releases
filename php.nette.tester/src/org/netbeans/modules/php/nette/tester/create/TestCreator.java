@@ -99,7 +99,7 @@ public class TestCreator {
     private FileObject getTargetFolder(FileObject sourceDirectory, FileObject testDirectory, FileObject fo) throws IOException {
         FileObject commonRoot = FileUtils.getCommonRoot(fo, testDirectory);
         if (commonRoot == null
-                || FileUtil.isParentOf(commonRoot, sourceDirectory)) {
+                || !FileUtil.isParentOf(sourceDirectory, commonRoot)) {
             // look only inside project source dir
             commonRoot = sourceDirectory;
         }
