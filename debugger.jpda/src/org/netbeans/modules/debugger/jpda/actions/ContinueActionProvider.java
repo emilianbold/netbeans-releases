@@ -101,6 +101,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     protected void checkEnabled (int debuggerState) {
         setEnabled (
             ActionsManager.ACTION_CONTINUE,
+            getDebuggerImpl().isVMSuspended() ||
             threadsCollector.isSomeThreadSuspended()
         );
     }
