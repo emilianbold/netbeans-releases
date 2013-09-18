@@ -57,8 +57,8 @@ public class TwigStructureScanner implements StructureScanner {
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
         TwigParserResult result = (TwigParserResult) info;
-        List<TwigParserResult.Block> blocks = new ArrayList<TwigParserResult.Block>();
-        List<TwigStructureItem> items = new ArrayList<TwigStructureItem>();
+        List<TwigParserResult.Block> blocks = new ArrayList<>();
+        List<TwigStructureItem> items = new ArrayList<>();
         for (TwigParserResult.Block item : result.getBlocks()) {
             if (CharSequenceUtilities.equals(item.getDescription(), "block") || CharSequenceUtilities.equals(item.getDescription(), "*inline-block")) { //NOI18N
                 blocks.add(item);
@@ -85,7 +85,7 @@ public class TwigStructureScanner implements StructureScanner {
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         TwigParserResult result = (TwigParserResult) info;
-        List<OffsetRange> ranges = new ArrayList<OffsetRange>();
+        List<OffsetRange> ranges = new ArrayList<>();
         for (TwigParserResult.Block block : result.getBlocks()) {
             ranges.add(new OffsetRange(
                     block.getOffset(), block.getOffset() + block.getLength()));

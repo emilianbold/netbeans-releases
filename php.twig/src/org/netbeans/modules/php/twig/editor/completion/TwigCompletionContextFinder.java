@@ -53,7 +53,7 @@ import org.netbeans.modules.php.twig.editor.parsing.TwigParserResult;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TwigCompletionContextFinder {
+public final class TwigCompletionContextFinder {
 
     public static enum CompletionContext {
         VARIABLE,
@@ -92,6 +92,9 @@ public class TwigCompletionContextFinder {
             new Object[]{ValuedTokenId.FILTER_TAG_TOKEN, TwigTokenId.T_TWIG_WHITESPACE},
             new Object[]{ValuedTokenId.FILTER_TAG_TOKEN, TwigTokenId.T_TWIG_WHITESPACE, TwigTokenId.T_TWIG_NAME}
     );
+
+    private TwigCompletionContextFinder() {
+    }
 
     public static CompletionContext find(final TwigParserResult parserResult, final int offset) {
         assert parserResult != null;
