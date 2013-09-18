@@ -371,7 +371,7 @@ import org.openide.util.Utilities;
         }
         if (os == HostInfo.OSFamily.MACOSX) {
             return true;
-        } else if (os == HostInfo.OSFamily.MACOSX) {
+        } else if (os == HostInfo.OSFamily.UNKNOWN) {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "uname"); // NOI18N
             if (res.isOK()) {
                 if (res.output.equals("FreeBSD")) { // NOI18N
