@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -224,12 +225,11 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private final PhpProject project;
     private final IncludePathSupport includePathSupport;
     private final IgnorePathSupport ignorePathSupport;
+    private final TestDirectoriesPathSupport testDirectoriesPathSupport;
 
     // all these fields don't have to be volatile - this ensures request processor
     // CustomizerSources
     private String srcDir;
-    private String testDir;
-    private boolean testDirRemoved = false;
     private String copySrcFiles;
     private String copySrcTarget;
     private Boolean copySrcOnOpen;
@@ -260,6 +260,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private DefaultListModel<BasePathSupport.Item> codeAnalysisExcludesListModel = null;
     private ListCellRenderer<BasePathSupport.Item> codeAnalysisExcludesListRenderer = null;
 
+    // Testing
+    private DefaultListModel<BasePathSupport.Item> testDirectoriesListModel = null;
+    private ListCellRenderer<BasePathSupport.Item> testDirectoriesListRenderer = null;
+
     // license
     private String licenseNameValue;
     private boolean licenseNameChanged = false;
@@ -269,15 +273,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
 
     public PhpProjectProperties(PhpProject project) {
-        this(project, null, null);
+        this(project, null, null, null);
     }
 
-    public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport, IgnorePathSupport ignorePathSupport) {
+    public PhpProjectProperties(PhpProject project, IncludePathSupport includePathSupport, IgnorePathSupport ignorePathSupport,
+            TestDirectoriesPathSupport testDirectoriesPathSupport) {
         assert project != null;
 
         this.project = project;
         this.includePathSupport = includePathSupport;
         this.ignorePathSupport = ignorePathSupport;
+        this.testDirectoriesPathSupport = testDirectoriesPathSupport;
 
         runConfigs = readRunConfigs();
         String currentConfig = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty("config"); // NOI18N
@@ -400,16 +406,6 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         return srcDir;
     }
 
-    // getter not needed
-    public void setTestDir(String testDir) {
-        testDirRemoved = false;
-        this.testDir = testDir;
-    }
-
-    public void testDirRemoved() {
-        testDirRemoved = true;
-    }
-
     public String getUrl() {
         if (url == null) {
             url = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(URL);
@@ -490,6 +486,27 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 project.getProjectDirectory());
         }
         return codeAnalysisExcludesListRenderer;
+    }
+
+    public DefaultListModel<BasePathSupport.Item> getTestDirectoriesListModel() {
+        if (testDirectoriesListModel == null) {
+            List<String> values = new ArrayList<>();
+            EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            for (String property : project.getTestRoots().getRootProperties()) {
+                values.add(properties.getProperty(property));
+            }
+            testDirectoriesListModel = PathUiSupport.createListModel(testDirectoriesPathSupport.itemsIterator(
+                    values.toArray(new String[values.size()])));
+        }
+        return testDirectoriesListModel;
+    }
+
+    public ListCellRenderer<BasePathSupport.Item> getTestDirectoriesListRenderer() {
+        if (testDirectoriesListRenderer == null) {
+            testDirectoriesListRenderer = new PathUiSupport.ClassPathListCellRenderer(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getProjectDirectory());
+        }
+        return testDirectoriesListRenderer;
     }
 
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
@@ -625,16 +642,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             codeAnalysisExcludes = ignorePathSupport.encodeToStrings(PathUiSupport.getIterator(codeAnalysisExcludesListModel));
         }
 
+        // testing
+        String[] testDirs = null;
+        if (testDirectoriesListModel != null) {
+            testDirs = testDirectoriesPathSupport.encodeToStrings(PathUiSupport.getIterator(testDirectoriesListModel), true, false);
+        }
+
         // get properties
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         EditableProperties privateProperties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         // sources
-        if (testDirRemoved) {
-            projectProperties.remove(TEST_SRC_DIR);
-        } else if (testDir != null) {
-            projectProperties.setProperty(TEST_SRC_DIR, testDir);
-        }
         if (copySrcFiles != null) {
             privateProperties.setProperty(COPY_SRC_FILES, copySrcFiles);
         }
@@ -680,6 +698,25 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (codeAnalysisExcludes != null) {
             projectProperties.setProperty(CODE_ANALYSIS_EXCLUDES, codeAnalysisExcludes);
+        }
+
+        // testing
+        if (testDirs != null) {
+            // first, remove all current test dirs
+            for (String property : project.getTestRoots().getRootProperties()) {
+                projectProperties.remove(property);
+            }
+            // set new ones
+            int i = 1;
+            for (String testDir : testDirs) {
+                String propertyName = TEST_SRC_DIR;
+                if (i > 1) {
+                    // backward compatibility
+                    propertyName += i;
+                }
+                projectProperties.setProperty(propertyName, testDir);
+                i++;
+            }
         }
 
         // license

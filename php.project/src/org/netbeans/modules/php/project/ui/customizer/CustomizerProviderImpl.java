@@ -103,7 +103,9 @@ public class CustomizerProviderImpl implements CustomizerProvider2 {
                         project.getRefHelper(), project.getHelper());
                 IgnorePathSupport ignorePathSupport = new IgnorePathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
                         project.getRefHelper(), project.getHelper());
-                PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport, ignorePathSupport);
+                TestDirectoriesPathSupport testDirectoriesPathSupport = new TestDirectoriesPathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                        project.getRefHelper(), project.getHelper());
+                PhpProjectProperties uiProperties = new PhpProjectProperties(project, includePathSupport, ignorePathSupport, testDirectoriesPathSupport);
                 Lookup context = Lookups.fixed(project, uiProperties);
 
                 OptionListener optionListener = new OptionListener(project);

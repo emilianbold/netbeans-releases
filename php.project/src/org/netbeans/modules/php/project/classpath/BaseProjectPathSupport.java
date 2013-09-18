@@ -78,10 +78,18 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
         return itemsList(propertyValue).iterator();
     }
 
+    public Iterator<Item> itemsIterator(String... propertyValues) {
+        // XXX more performance friendly impl. would return a lazzy iterator
+        return itemsList(propertyValues).iterator();
+    }
+
     public List<Item> itemsList(String propertyValue) {
-        String[] pe = PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue);
-        List<Item> items = new ArrayList<>(pe.length);
-        for (String p : pe) {
+        return itemsList(PropertyUtils.tokenizePath(propertyValue == null ? "" : propertyValue)); // NOI18N
+    }
+
+    public List<Item> itemsList(String... values) {
+        List<Item> items = new ArrayList<>(values.length);
+        for (String p : values) {
             Item item;
             if (isWellKnownPath(p)) {
                 // some well know classpath
@@ -111,6 +119,10 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
     }
 
     public String[] encodeToStrings(Iterator<Item> classpath, boolean createReferences) {
+        return encodeToStrings(classpath, createReferences, true);
+    }
+
+    public String[] encodeToStrings(Iterator<Item> classpath, boolean createReferences, boolean withPathSeparator) {
         List<String> result = new ArrayList<>();
         while (classpath.hasNext()) {
             Item item = classpath.next();
@@ -143,9 +155,10 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
 
         String[] items = new String[result.size()];
         for (int i = 0; i < result.size(); i++) {
-            if (i < result.size() - 1) {
+            if (withPathSeparator
+                    && i < result.size() - 1) {
                 items[i] = result.get(i) + ":"; // NOI18N
-            } else  {
+            } else {
                 items[i] = result.get(i);
             }
         }
