@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.TestDirectoriesPathSupport;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -152,20 +154,29 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     @NbBundle.Messages({
         "ProjectPropertiesProblemProvider.invalidTestDir.title=Invalid Test Files",
         "# {0} - test dir path",
-        "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" does not exist and cannot be used for Test Files."
+        "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" cannot be used for Test Files."
     })
     void checkTestDirs(Collection<ProjectProblem> currentProblems) {
-        SourceRoots testRoots = project.getTestRoots();
-        String[] rootProperties = testRoots.getRootProperties();
-        for (String property : rootProperties) {
-            File invalidDirectory = getInvalidDirectory(null, property);
-            if (invalidDirectory != null) {
-                ProjectProblem problem = ProjectProblem.createError(
-                        Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
-                        Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
-                        new CustomizerProblemResolver(project, CompositePanelProviderImpl.TESTING, property));
-                currentProblems.add(problem);
+        TestDirectoriesPathSupport testDirectoriesPathSupport = new TestDirectoriesPathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
+        Enumeration<BasePathSupport.Item> items = new PhpProjectProperties(project, null, null, testDirectoriesPathSupport)
+                .getTestDirectoriesListModel()
+                .elements();
+        int i = 0;
+        while (items.hasMoreElements()) {
+            BasePathSupport.Item item = items.nextElement();
+            ValidationResult result = new TestDirectoriesPathSupport.Validator()
+                    .validatePath(project, item)
+                    .getResult();
+            if (!result.hasErrors()) {
+                continue;
             }
+            ProjectProblem problem = ProjectProblem.createError(
+                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
+                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(item.getAbsoluteFilePath(project.getProjectDirectory())),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.TESTING, PhpProjectProperties.TEST_SRC_DIR + i));
+            currentProblems.add(problem);
+            i++;
         }
     }
 
