@@ -75,17 +75,23 @@ public final class TestDirectoriesPathSupport extends BaseProjectPathSupport {
             return new ValidationResult(result);
         }
 
+        public Validator validatePaths(PhpProject project, List<BasePathSupport.Item> items) {
+            for (Item item : items) {
+                validatePath(project, item);
+            }
+            return this;
+        }
+
         @NbBundle.Messages({
             "# {0} - file path",
             "# {1} - error message",
             "TestDirectoriesPathSupport.Validator.error={0}: {1}",
         })
-        public Validator validatePaths(PhpProject project, List<BasePathSupport.Item> items) {
-            for (Item item : items) {
-                String error = Utils.validateTestSources(project, item.getAbsoluteFilePath(project.getProjectDirectory()));
-                if (error != null) {
-                    result.addError(new ValidationResult.Message(item, Bundle.TestDirectoriesPathSupport_Validator_error(item.getFilePath(), error)));
-                }
+        public Validator validatePath(PhpProject project, BasePathSupport.Item item) {
+            String error = Utils.validateTestSources(project, item.getAbsoluteFilePath(project.getProjectDirectory()));
+            if (error != null) {
+                String filePath = item.getFilePath();
+                result.addError(new ValidationResult.Message(filePath, Bundle.TestDirectoriesPathSupport_Validator_error(filePath, error)));
             }
             return this;
         }
