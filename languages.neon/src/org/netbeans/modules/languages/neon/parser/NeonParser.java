@@ -76,7 +76,7 @@ public class NeonParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
-    public static class NeonParserResult extends ParserResult {
+    public static final class NeonParserResult extends ParserResult {
 
         private NeonParserResult(Snapshot s) {
             super(s);

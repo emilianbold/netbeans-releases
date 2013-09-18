@@ -52,7 +52,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CompletionProviders {
+public final class CompletionProviders {
     public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
     private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
 
