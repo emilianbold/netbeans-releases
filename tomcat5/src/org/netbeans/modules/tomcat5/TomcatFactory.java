@@ -335,13 +335,18 @@ public final class TomcatFactory implements DeploymentFactory {
         return TomcatVersion.TOMCAT_50;
     }
 
-    public static TomEEVersion getTomEEVersion(File catalinaHome, File catalinaBase) throws IllegalStateException {
+    public static TomEEVersion getTomEEVersion(File catalinaHome, File catalinaBase, boolean noWebApp)
+            throws IllegalStateException {
         File tomee = getTomEEJar(catalinaHome);
-        if (tomee == null) {
+        if (tomee == null && !noWebApp) {
             tomee = getTomEEWebAppJar(catalinaHome, catalinaBase);
         }
-        if (tomee != null) {
-            Matcher matcher = TOMEE_JAR_PATTERN.matcher(tomee.getName());
+        return getTomEEVersion(tomee);
+    }
+
+    public static TomEEVersion getTomEEVersion(File tomeeJar) throws IllegalStateException {
+        if (tomeeJar != null) {
+            Matcher matcher = TOMEE_JAR_PATTERN.matcher(tomeeJar.getName());
             if (matcher.matches()) {
                 String versionString = matcher.group(1);
                 return getTomEEVersion(versionString, null);
