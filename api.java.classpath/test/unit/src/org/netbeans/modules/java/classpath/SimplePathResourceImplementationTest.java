@@ -45,6 +45,7 @@ package org.netbeans.modules.java.classpath;
 import java.io.File;
 import java.net.URL;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -105,6 +106,23 @@ public class SimplePathResourceImplementationTest extends NbTestCase {
             SimplePathResourceImplementation.verify(Utilities.toURI(strangeFolder).toURL(),null);
         } catch (IllegalArgumentException e) {
             assertTrue("Verify should not fail for .jar folder",false);
+        }
+        try {
+            final File wd = getWorkDir();
+            final File strangeFile = new File(wd,".jar");
+            final URL url = FileUtil.urlForArchiveOrDir(strangeFile);
+            SimplePathResourceImplementation.verify(url, null);
+        } catch (IllegalArgumentException e) {
+            assertTrue("Verify should not fail for .jar folder",false);
+        }
+
+        try {
+            final File wd = getWorkDir();
+            final File strangeFile = new File(wd,".jar");
+            strangeFile.createNewFile();
+            SimplePathResourceImplementation.verify(Utilities.toURI(strangeFile).toURL(), null);
+            assertTrue("Verify should fail for .jar file",false);
+        } catch (IllegalArgumentException e) {
         }
     }
 
