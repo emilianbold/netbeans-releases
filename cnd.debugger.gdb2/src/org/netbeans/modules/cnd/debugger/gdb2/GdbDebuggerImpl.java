@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -2275,8 +2276,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set unwindonsignal off"); //NOI18N
     }*/
     
-    static Map<Variable, VariableNode> map = new HashMap<Variable, VariableNode>();
+    private static RequestProcessor RP = new RequestProcessor(GdbDebuggerImpl.class.getName());
     
+    @Override
     public void balloonEvaluate(int pos, String text) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
@@ -2286,106 +2288,118 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (state().isProcess && state().isRunning) {
             return;
         }
-        String expr;
+        String exp;
         if (pos == -1) {
-            expr = text;
+            exp = text;
         } else {
-            expr = EvalAnnotation.extractExpr(pos, text);
+            exp = EvalAnnotation.extractExpr(pos, text);
         }
         
-        if (expr == null || expr.isEmpty()) {
+        if (exp == null || exp.isEmpty()) {
             return;
         }
-
-        final OutlineView ov = new OutlineView();
-        ov.setPropertyColumns(
-                "value", "Value"); //NOI18N
-        ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
-        ov.getOutline().setRootVisible(true);
-        
-        
-        ModelChangeDelegator mcd = new ModelChangeDelegator();
-        mcd.setListener(new ModelListener() {
+        final String expr = exp;
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
-            public void modelChanged(ModelEvent event) {
-                if (event instanceof ModelEvent.NodeChanged) {
-                    ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
-                    final Variable var = ((Variable) nodeChanged.getNode());
-                    
-                    final VariableNode node = map.get(var);
-                    if (node != null) {
-                        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                final OutlineView ov = new OutlineView();
+                ov.setPropertyColumns(
+                        "value", "Value"); //NOI18N
+                ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
+                ov.getOutline().setRootVisible(true);
 
-                            @Override
-                            public void run() {
-                                node.refreshChildren(var.getChildren());
-                            }
-                        });
-                    }
-                }
+                ModelChangeDelegator mcd = new ModelChangeDelegator();                
+                mcd.setListener(new ModelChangeListenerImpl());
+                final GdbVariable watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
+                createMIVar(watch, false);
+                final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+                final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
+
+                TooltipView myView = new TooltipView();
+                myView.add(ov, BorderLayout.CENTER);
+                myView.getExplorerManager().setRootContext(new VariableNode(watch));
+
+                eui.getToolTipSupport().setToolTip(myView);
 
             }
+
         });
-
-        final GdbVariable watch = new GdbWatch(this, mcd, expr);
-        createMIVar(watch, false);
-        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
-        final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
-
-        TooltipView myView = new TooltipView();
-        myView.add(ov, BorderLayout.CENTER);
-        myView.getExplorerManager().setRootContext(VariableNode.getVariableNodeForVariable(watch));
-
-        eui.getToolTipSupport().setToolTip(myView);
-
+        
     }
     
-    private static final class VariableNode extends AbstractNode {
-      
-        private static final class VariableNodeChildren extends Children.Keys<Variable> {
-
-            public VariableNodeChildren(Variable v) {
-                ((GdbDebuggerImpl)v.getDebugger()).getMIChildren((GdbVariable)v, ((GdbVariable) v).getMIName(), 0);
-            }
-
-            @Override
-            protected Node[] createNodes(Variable key) {
-                List<Node> list = new ArrayList<Node>();
-                for (Variable variable : key.getChildren()) {
-                    list.add(getVariableNodeForVariable(variable));
+    private final class ModelChangeListenerImpl implements ModelListener {
+        @Override
+        public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged) {
+               ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
+               final Variable variable = ((Variable) nodeChanged.getNode());
+                VariableNode v = VariableNode.variables.get(variable);
+                if (v != null) {
+                    v.propertyChanged();
                 }
-                return list.toArray(new VariableNode[0]);
-            }
-            
-            /*package*/ void refreshChildren(Variable[] vars) {
-                setKeys(vars);
             }
         }
+                
+    }
+    
+    private static final class VariableNodeChildren extends Children.Keys<Variable> {
+        private final Variable var;
 
-        private Variable v;
-        private VariableNodeChildren nodeChildren;
-        
-        /*package*/ static VariableNode getVariableNodeForVariable(Variable variable) {
-            VariableNode node = new VariableNode(variable, new VariableNodeChildren(variable));
-            map.put(variable, node);
+        public VariableNodeChildren(Variable v) {
+            ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+            this.var = v;
             
-            return node;
         }
 
-        private VariableNode(Variable v, VariableNodeChildren children) {
-            super(children);
-            this.v = v;
-            this.nodeChildren = children;
-        }
-        
-        /*package*/ void refreshChildren(Variable[] vars) {
-            nodeChildren.refreshChildren(vars);
+        private void updateKeys() {
+            // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
+            // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
+            // since this method might be called under ProjectManager.mutex() write access
+            // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
+            // deadlock is here, so preventing it... (also got this under read access)
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setKeys(var.getChildren());
+                        }
+                    });
+                }
+            });
         }
 
         @Override
+        protected Node[] createNodes(Variable key) {
+            return new Node[]{new VariableNode(key)};
+        }
+        
+
+    }    
+        
+    
+    private static final class VariableNode extends AbstractNode {
+        private Variable v;
+        private static final Map<Variable, VariableNode> variables = new HashMap<Variable, VariableNode>();
+
+        private VariableNode(Variable v) {
+            super(new VariableNodeChildren(v));
+            this.v = v;
+            variables.put(v, this);
+        }
+                                           
+        @Override
         public String getDisplayName() {
             return v.getVariableName();
+        }
+        
+        void propertyChanged() {
+            if (!(getChildren() instanceof VariableNodeChildren)) {
+                return;
+            }
+            ((VariableNodeChildren)getChildren()).updateKeys();
         }
 
         @Override
