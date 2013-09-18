@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -24,6 +25,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
 
     public static final String NAME = "launcher.properties"; //NOI18N
+    private static final String USG_CND_LAUNCHERS = "USG_CND_LAUNCHERS"; //NOI18N
 
     @Override
     public void read(FileObject projectDir) {
@@ -87,6 +89,7 @@ public class LaunchersProjectMetadataFactory implements ProjectMetadataFactory {
             //Exceptions.printStackTrace(ex);
         }
         launchersRegistry.load(properties);
+        UIGesturesSupport.submit(USG_CND_LAUNCHERS, launchersRegistry.getLaunchers().size());
     }
 
     private class FileChangeListenerImpl implements FileChangeListener {

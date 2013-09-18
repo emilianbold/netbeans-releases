@@ -21,6 +21,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -40,6 +41,8 @@ public final class LauncherExecutor {
     private final ExecutionListener listener;
     private enum State{RUNNING, STOPPED};
     private State state = State.STOPPED;
+    
+    private static final String USG_CND_LAUNCHER_EXECUTOR = "USG_CND_LAUNCHER_EXECUTOR";    //NOI18N
 
     /**
      * Creates launcher for the project to be executed as project action of
@@ -259,6 +262,7 @@ public final class LauncherExecutor {
                 }
             }
         });
+        UIGesturesSupport.submit(USG_CND_LAUNCHER_EXECUTOR, actionType);
     }
     
     public boolean isRunning() {

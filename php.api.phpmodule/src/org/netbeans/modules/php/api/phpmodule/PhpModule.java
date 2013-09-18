@@ -43,9 +43,12 @@
 package org.netbeans.modules.php.api.phpmodule;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -62,7 +65,7 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
-public abstract class PhpModule {
+public abstract class PhpModule implements Lookup.Provider {
 
     /**
      * Property for frameworks.
@@ -97,27 +100,42 @@ public abstract class PhpModule {
     public abstract FileObject getProjectDirectory();
 
     /**
-     * Get the source directory for this PHP module.
+     * Get the source directory of this PHP module.
      * @return the source directory, <b>can be <code>null</code> or {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
     @CheckForNull
     public abstract FileObject getSourceDirectory();
 
     /**
-     * Get the test directory for this PHP module.
-     * @return the test directory, can be <code>null</code> if not set yet
+     * Get the test directory of this PHP module for the given file.
+     * @param file file to get test directory for, can be {@code null} (in such case,
+     *        simply the first test directory is returned)
+     * @return the test directory, can be {@code null} if no test directory set yet
+     * @see #getTestDirectories()
+     * @since 2.30
      */
     @CheckForNull
-    public abstract FileObject getTestDirectory();
+    public FileObject getTestDirectory(@NullAllowed FileObject file) {
+        return getTestDirectory();
+    }
 
     /**
-     * Get the current {@link PhpModuleProperties properties} of this PHP module.
-     * Please note that caller should not hold this properties because they can
-     * change very often (if user changes Run Configuration).
-     * @return the current {@link PhpModuleProperties properties}
+     * Get all test directories of this PHP module.
+     * @return list of test directories, can be empty but never {@code null}
+     * @see #getTestDirectory(FileObject)
+     * @since 2.30
      */
-    @NonNull
-    public abstract PhpModuleProperties getProperties();
+    public List<FileObject> getTestDirectories() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Get any optional abilities of this PHP module.
+     * @return a set of abilities
+     * @since 2.28
+     */
+    @Override
+    public abstract Lookup getLookup();
 
     /**
      * Get {@link Preferences} of this PHP module.
@@ -132,31 +150,49 @@ public abstract class PhpModule {
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
-     * Open Project Properties dialog for this PHP module with the given category.
-     * @param category category to be preselected
-     * @since 2.12
-     */
-    public abstract void openCustomizer(String category);
-
-    /**
-     * <b>Deprecated, use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}. This
-     * method will be removed after NB 7.4.</b>
-     * A way for informing PHP module that something has changed.
-     * @param propertyChangeEvent property change event
-     * @since 2.4
-     * @see #PROPERTY_FRAMEWORKS
-     * @deprecated use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}
-     */
-    @Deprecated
-    public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
-
-    /**
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
      * @since 2.18
      * @see #PROPERTY_FRAMEWORKS
      */
     public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * <b>Deprecated, use {@link #getTestDirectories()} or {@link #getTestDirectory(FileObject)}.
+     * This method will be removed after NB 8.0.</b>
+     * <p>
+     * Get the test directory for this PHP module.
+     * @return the test directory, can be <code>null</code> if not set yet
+     */
+    @Deprecated
+    @CheckForNull
+    public abstract FileObject getTestDirectory();
+
+    /**
+     * <b>Deprecated, {@link #getLookup() lookup} its {@link PhpModuleProperties.Factory factory} class.
+     * This method will be removed after NB 8.0.</b>
+     * <p>
+     * Get the current {@link PhpModuleProperties properties} of this PHP module.
+     * Please note that caller should not hold this properties because they can
+     * change very often (if user changes Run Configuration).
+     * @return the current {@link PhpModuleProperties properties}
+     */
+    @Deprecated
+    @NonNull
+    public abstract PhpModuleProperties getProperties();
+
+    /**
+     * <b>Deprecated, {@link #getLookup() lookup} {@link org.netbeans.spi.project.ui.CustomizerProvider2} class
+     * and use its methods. This method will be removed after NB 8.0.</b>
+     * <p>
+     * Open Project Properties dialog for this PHP module with the given category.
+     * @param category category to be preselected
+     * @since 2.12
+     */
+    @Deprecated
+    public abstract void openCustomizer(String category);
+
+    //~ Factories
 
     /**
      * Gets PHP module for the given {@link FileObject}.
@@ -238,7 +274,7 @@ public abstract class PhpModule {
 
     /**
      * Get {@link PhpModule PHP module} from the given lookup.
-     * @param project a PHP project where to look for a PHP module for
+     * @param lookup a lookup where to look for a PHP module for
      * @return PHP module or {@code null} if not found
      * @see 1.38
      */

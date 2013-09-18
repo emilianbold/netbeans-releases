@@ -44,11 +44,15 @@
 package org.openide.text;
 
 import java.lang.ref.Reference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import javax.swing.event.*;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableOpenSupportRedirector;
 
 
 /** Line set for an EditorSupport.
@@ -98,7 +102,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
         @Deprecated
         public void show(int kind, int column) {
-            CloneableEditorSupport support = pos.getCloneableEditorSupport();
+            CloneableEditorSupport support = getCloneableEditorSupport(pos);
 
             if ((kind == SHOW_TRY_SHOW) && !support.isDocumentLoaded()) {
                 return;
@@ -119,8 +123,8 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         
         @Override
         public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
-            CloneableEditorSupport support = pos.getCloneableEditorSupport();
-            
+            CloneableEditorSupport support = getCloneableEditorSupport(pos);
+
             if ((openType == ShowOpenType.NONE) && !support.isDocumentLoaded()) {
                 return;
             }
@@ -149,7 +153,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             DocumentLine.Part part = new DocumentLine.Part(
                     this,
                     new PositionRef(
-                        pos.getCloneableEditorSupport().getPositionManager(), pos.getOffset() + column,
+                            getCloneableEditorSupport(pos).getPositionManager(), pos.getOffset() + column,
                         Position.Bias.Forward
                     ), length
                 );
@@ -160,7 +164,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
         @Override
         public String getDisplayName() {
-            CloneableEditorSupport support = pos.getCloneableEditorSupport();
+            CloneableEditorSupport support = getCloneableEditorSupport(pos);
 
             return support.messageLine(this);
         }
@@ -169,6 +173,10 @@ final class EditorSupportLineSet extends DocumentLine.Set {
         public String toString() {
             return "SupportLine@" + Integer.toHexString(System.identityHashCode(this)) + " at line: " +
             getLineNumber(); // NOI18N
+        }
+
+        private static CloneableEditorSupport getCloneableEditorSupport(final PositionRef pos) {
+            return COSHack.getCloneableEditorSupport(pos);
         }
     }
 
@@ -263,4 +271,44 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             }
         }
     }
+
+// <editor-fold defaultstate="collapsed" desc="COSHack">
+    private static final class COSHack {
+
+        private static final Method redirectMethod;
+
+        static {
+            Method m = null;
+            try {
+                m = CloneableOpenSupportRedirector.class.getDeclaredMethod(
+                        "findRedirect", // NOI18N
+                        new Class[]{CloneableOpenSupport.class});
+                m.setAccessible(true);
+            } catch (NoSuchMethodException ex) {
+            } catch (SecurityException ex) {
+            } finally {
+                redirectMethod = m;
+            }
+        }
+
+        private static CloneableEditorSupport getCloneableEditorSupport(final PositionRef pos) {
+            final CloneableEditorSupport orig = pos.getCloneableEditorSupport();
+            if (orig == null || redirectMethod == null) {
+                return orig;
+            }
+            try {
+                Object result = redirectMethod.invoke(null, orig);
+                if (result instanceof CloneableEditorSupport) {
+                    return (CloneableEditorSupport) result;
+                }
+            } catch (IllegalAccessException ex) {
+            } catch (IllegalArgumentException ex) {
+            } catch (SecurityException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+
+            return orig;
+        }
+    }
+// </editor-fold>
 }

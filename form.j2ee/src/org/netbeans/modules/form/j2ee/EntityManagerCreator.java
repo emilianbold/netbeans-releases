@@ -56,11 +56,11 @@ import org.netbeans.modules.form.codestructure.CodeExpressionOrigin;
  */
 class EntityManagerCreator implements CreationDescriptor.Creator {
     /** Parameter types. */
-    private Class[] paramTypes = new Class[] {String.class};
+    private final Class[] paramTypes = new Class[] {String.class};
     /** Exception types. */
-    private Class[] exTypes = new Class[0];
+    private final Class[] exTypes = new Class[0];
     /** Property names. */
-    private String[] propNames = new String[] {"persistenceUnit"}; // NOI18N
+    private final String[] propertyNames = new String[] {"persistenceUnit"}; // NOI18N
     
     /**
      * Returns number of parameters of the creator.
@@ -99,7 +99,7 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      */
     @Override
     public String[] getPropertyNames() {
-        return propNames;
+        return propertyNames;
     }
     
     /**
@@ -128,12 +128,14 @@ class EntityManagerCreator implements CreationDescriptor.Creator {
      * Returns creation code according to given properties.
      *
      * @param props properties describing the instance whose creation code should be returned.
+     * @param propNames not used
+     * @param propCodes not used
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
     @Override
     public String getJavaCreationCode(FormProperty[] props, String[] propNames, String[] propCodes, Class expressionType, String genericTypes) {
-        assert (props.length == 1) && (props[0].getName().equals(propNames[0]));
+        assert (props.length == 1) && (props[0].getName().equals(propertyNames[0]));
         Object unitName = props[0].getJavaInitializationString();
         
         StringBuilder sb = new StringBuilder();

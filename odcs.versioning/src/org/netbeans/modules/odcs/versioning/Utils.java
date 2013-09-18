@@ -41,13 +41,28 @@
  */
 package org.netbeans.modules.odcs.versioning;
 
+import com.tasktop.c2c.server.scm.domain.ScmType;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
+
 /**
  *
  * @author Ondrej Vrabec
  */
-public class Utils {
+public final class Utils {
 
     private Utils () {
         
+    }
+    
+    public static boolean isVCSProviderOfType(ScmType type, VCSProvider p) {
+        switch(p.getType()) {
+            case GIT:
+                return type == ScmType.GIT;
+            case SVN:
+                return type == ScmType.SVN;
+            default:
+                assert false : "unsupported scm type";
+                return false;
+        }
     }
 }

@@ -378,7 +378,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         pnlCards.setLayout(new java.awt.CardLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text")); // NOI18N
+        lblCommandLine.setLabelFor(comMavenHome);
+        org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text"));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblOptions, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblOptions.text")); // NOI18N
 
@@ -800,7 +801,11 @@ public class SettingsPanel extends javax.swing.JPanel {
         }
     }
     
-    @Messages({"MAVEN_RUNTIME_Bundled=Bundled", "MAVEN_RUNTIME_External={0}", "MAVEN_RUNTIME_Browse=Browse..."})
+    @Messages({
+        "MAVEN_RUNTIME_Bundled=Bundled", 
+        "# {0} - external maven",
+        "MAVEN_RUNTIME_External={0}", 
+        "MAVEN_RUNTIME_Browse=Browse..."})
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
 

@@ -74,13 +74,9 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
     }
     
-    public SearchHistoryTopComponent(File[] files, String branchName) {
-        this(files, null, null, branchName);
-    }
-
-    public SearchHistoryTopComponent(File[] files, Date from, Date to, String branchName) {
+    public SearchHistoryTopComponent(File[] files, String branchName, String revision) {
         this();
-        initComponents(files, from, to, branchName);
+        initComponents(files, revision, revision, branchName);
     }
 
     /**
@@ -117,14 +113,14 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.activateDiffView(selectFirstRevision);
     }
 
-    private void initComponents(final File[] roots, Date from, Date to, String branchName) {
+    private void initComponents(final File[] roots, String from, String to, String branchName) {
         setLayout(new BorderLayout());
         scp = new SearchCriteriaPanel();
         if (from != null){ 
-            scp.setFrom(SearchExecutor.simpleDateFormat.format(from));
+            scp.setFrom(from);
         }
         if (to != null){
-            scp.setTo(SearchExecutor.simpleDateFormat.format(to));
+            scp.setTo(to);
         }
         shp = new SearchHistoryPanel(roots, scp);
         add(shp);

@@ -99,7 +99,7 @@ public class CssLanguage extends DefaultLanguageConfig {
         return Character.isJavaIdentifierPart(c)
                 || (c == '-') || (c == '@')
                 || (c == '&') || (c == '_')
-                || (c == '#');
+                || (c == '#') ;
     }
 
     @Override

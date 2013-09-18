@@ -93,11 +93,14 @@ public class NetBeansStartupArgs implements LateBoundPrerequisitesChecker {
             for (String arg : args) {
                 b.append("-J").append(arg).append(' ');
             }
-            String other = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
+            String other = config.getProperties().get(NetBeansRunParamsIDEChecker.OLD_PROPERTY);
             if (other != null) {
-                b.append(other);
+                config.setProperty(NetBeansRunParamsIDEChecker.OLD_PROPERTY, b.toString() + other);
             }
-            config.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, b.toString());
+            String newProp = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
+            if (newProp != null) {
+                config.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, b.toString() + newProp);
+            }
         }
         return true;
     }

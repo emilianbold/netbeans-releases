@@ -60,7 +60,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -139,97 +138,6 @@ public class TopLoggingTest extends NbTestCase {
         return w;
     }
 
-    @RandomlyFails // NB-Core-Build #3503; a few lines got reordered or dropped
-    public void testLog10000Lines() throws Exception {
-        Logger l = Logger.getLogger(TopLoggingTest.class.getName());
-        long time = System.currentTimeMillis();
-        for (int i = 0; i < 10000; i++) {
-            l.log(Level.INFO, "Count " + i);
-        }
-        long took = System.currentTimeMillis() - time;
-
-
-        Pattern p = Pattern.compile("INFO.*Count ([0-9]*)");
-        final String msg = getStream().toString();
-        Matcher m = p.matcher(msg);
-
-        for (int i = 0; i < 10000; i++) {
-            if (!m.find()) {
-                fail("Cannot find " + i + " in:\n" + msg);
-            }
-            if (i == Integer.parseInt(m.group(1))) {
-                continue;
-            }
-            assertEquals("Correct group:\n" + msg, "" + i, m.group(1));
-        }
-
-        if (took > 5000) {
-            // runs in ~500ms on my computer, used to take about 30s
-            fail("Printing of 10000 messages takes too long: " + took + " ms");
-        }
-    }
-
-    @RandomlyFails // see issue #229403
-    public void testLogOneLine() throws Exception {
-        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
-
-        Pattern p = Pattern.compile("INFO.*First visible message");
-        Matcher m = p.matcher(getStream().toString());
-
-        if (!m.find()) {
-            fail("msg shall be logged: " + getStream().toString());
-        }
-
-        String disk = readLog(true);
-        Matcher d = p.matcher(disk);
-
-        if (!d.find()) {
-            fail("msg shall be logged to file: " + disk);
-        }
-
-    }
-
-    @RandomlyFails // see issue #229403
-    public void testComposesMessagesAsynchronously() throws Exception {
-        LogRecord r = new LogRecord(Level.INFO, "First visible message: {0}");
-        ForbiddenToString f = new ForbiddenToString();
-        f.forbidden = Thread.currentThread();
-        try {
-            r.setParameters(new Object[] { f });
-            Logger.getLogger(TopLoggingTest.class.getName()).log(r);
-
-            Pattern p = Pattern.compile("INFO.*First visible message");
-            f.forbidden = null;
-            Matcher m = p.matcher(getStream().toString());
-
-            if (!m.find()) {
-                fail("msg shall be logged: " + getStream().toString());
-            }
-
-            String disk = readLog(true);
-            Matcher d = p.matcher(disk);
-
-            if (!d.find()) {
-                fail("msg shall be logged to file: " + disk);
-            }
-        } finally {
-            f.forbidden = null;
-        }
-    }
-
-    private static class ForbiddenToString {
-        private Thread forbidden;
-
-
-        @Override
-        public String toString() {
-            if (forbidden == Thread.currentThread()) {
-                fail("To string shall not be called immediatelly");
-            }
-            return super.toString();
-        }
-
-    }
 
 
     public void testLoggingAnnotateException() throws Exception {
@@ -255,23 +163,6 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
     
-    @RandomlyFails // see issue #229403
-    public void testLogMultiLineIsPrintedWithoutTheWarningPrefix() throws Exception {
-        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.WARNING, "Some info");
-        Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Second msg\nand its second line");
-
-        String p = "\nSecond msg\nand its second line";
-        if (getStream().toString().indexOf(p) == -1) {
-            fail("msg shall be logged: " + getStream().toString());
-        }
-
-        String disk = readLog(true);
-
-        if (disk.indexOf(p) == -1) {
-            fail("msg shall be logged to file: " + disk);
-        }
-
-    }
     public void testLogLoggingMessagesEndsUpInMultipleFiles() throws Exception {
         StringBuilder sb = new StringBuilder();
         while(sb.length() < 1024) {
@@ -452,42 +343,6 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #5167: m.find()
-    public void testSystemErrIsSentToLogWithoutFlush() throws Exception {
-        System.err.println("Ahoj");
-        System.err.println("Jardo");
-        new IllegalStateException("Hi").printStackTrace();
-        
-        String disk = "";
-        for (int i = 0; i < 100; i++) {
-            new IOException("More output").printStackTrace();
-            System.err.println("Line " + i);
-
-            Thread.sleep(100);
-            
-            disk = readLog(false);
-
-            Matcher m = Pattern.compile("^Ahoj(.*)Jardo", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
-            
-            if (m.find()) {
-                break;
-            }
-        }
-        Matcher m = Pattern.compile("^Ahoj(.*)Jardo", Pattern.MULTILINE | Pattern.DOTALL).matcher(disk);
-        assertTrue(disk, m.find());
-        assertEquals("One group found", 1, m.groupCount());
-        assertTrue("Non empty group: " + m.group(1) + "\n" + disk, m.group(1).length() > 0);
-        char next = m.group(1).charAt(0);
-        if (next != 10 && next != 13) {
-            fail("Expecting 'Ahoj': index: " + 0 + " next char: " + (int)next + "text:\n" + disk);
-        }
-        
-        Pattern p = Pattern.compile("IllegalStateException.*Hi");
-        Matcher d = p.matcher(disk);
-        if (!d.find()) {
-            fail("Expecting exception: " + disk);
-        }
-    }
     
     public void testSystemErrPrintLnIsSentToLog() throws Exception {
         System.err.println("BEGIN");
@@ -513,55 +368,6 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #6843: disk is "" at end
-    public void testFlushHappensAfterFewSeconds() throws Exception {
-        Logger l = Logger.getLogger(TopLoggingTest.class.getName());
-        l.log(Level.INFO, "First visible message");
-
-        Pattern p = Pattern.compile("INFO.*First visible message");
-        Matcher m = p.matcher(getStream().toString());
-
-        Matcher d = null;
-        String disk = null;
-        // at most in 10s the output should be flushed
-        for (int i = 0; i < 30; i++) {
-            disk = readLog(false);
-            d = p.matcher(disk);
-            if (!d.find()) {
-                Thread.sleep(300);
-            } else {
-                return;
-            }
-        }
-
-        fail("msg shall be logged to file: " + disk);
-    }
-    
-    @RandomlyFails // NB-Core-Build #7167, #7175
-    public void testLetsTryToReportToABugInAWT() throws Exception {
-        class R implements Runnable {
-            public RuntimeException ex;
-            public void run() {
-                if (ex != null) {
-                    throw ex;
-                }
-            }
-        }
-
-        R thrw = new R();
-        thrw.ex = new IllegalStateException();
-        
-        SwingUtilities.invokeLater(thrw);
-        
-        R wai = new R();
-        SwingUtilities.invokeAndWait(wai);
-        
-
-        String log = readLog(true);
-        if (log.indexOf("IllegalStateException") == -1) {
-            fail("There should be IllegalStateException:\n" + log);
-        }
-    }
     
     public void testLoggingFromRequestProcessor() throws Exception {
         Logger.getLogger("org.openide.util.RequestProcessor").setLevel(Level.ALL);

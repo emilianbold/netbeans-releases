@@ -49,14 +49,13 @@ import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.commit.CommitInformation;
 import org.netbeans.lib.cvsclient.command.commit.CommitCommand;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 import java.util.*;
-import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Executes a given 'commit' command and refreshes file statuses.
@@ -115,6 +114,8 @@ public class CommitExecutor extends ExecutorSupport {
             } else if (CommitInformation.REMOVED.equals(type) || CommitInformation.TO_ADD.equals(type)) {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
             }
+            Logger.getLogger(CommitExecutor.class.getName()).log(Level.FINE, "After commit refreshing {0}:::{1}",
+                    new Object[] { info.getFile(), repositoryStatus });
             cache.refreshCached(info.getFile(), repositoryStatus);
         }
 

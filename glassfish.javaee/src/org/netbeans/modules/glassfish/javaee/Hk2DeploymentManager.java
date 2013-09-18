@@ -66,6 +66,8 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
 import org.netbeans.modules.glassfish.javaee.ide.*;
 import org.netbeans.modules.glassfish.spi.*;
@@ -162,10 +164,9 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
                     "modules/org-netbeans-modules-schema2beans.jar");
-        } catch (IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
-        } catch (SAXException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state", ex);
+        } catch (IOException | SAXException ex) {
+            Logger.getLogger("glassfish-javaee").log(
+                    Level.WARNING, "http monitor state", ex);
         }
         ResourceRegistrationHelper.deployResources(moduleArchive,this);
         if (restart) {
@@ -233,12 +234,9 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
                     commonSupport.getInstanceProperties().get(GlassfishModule.DOMAIN_NAME_ATTR),
                     Boolean.parseBoolean(commonSupport.getInstanceProperties().get(GlassfishModule.HTTP_MONITOR_FLAG)),
                     "modules/org-netbeans-modules-schema2beans.jar");
-        } catch (IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state",
-                    ex);
-        } catch (SAXException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "http monitor state",
-                    ex);
+        } catch (IOException | SAXException ex) {
+            Logger.getLogger("glassfish-javaee").log(
+                    Level.WARNING, "http monitor state", ex);
         }
         ResourceRegistrationHelper.deployResources(moduleArchive,this);
         if (restart) {
@@ -434,7 +432,7 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     
     private TargetModuleID [] getDeployedModules(ModuleType moduleType, Target [] targetList) 
             throws TargetException, IllegalStateException {
-        List<TargetModuleID> moduleList = new ArrayList<TargetModuleID>();
+        List<TargetModuleID> moduleList = new ArrayList<>();
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
             AppDesc [] appList = commonSupport.getModuleList(GlassfishModule.WEB_CONTAINER);
@@ -597,14 +595,15 @@ public class Hk2DeploymentManager implements DeploymentManager2 {
     }
 
     /**
-     * Get a reference to the common support module for the server instance
-     * associated with this deployment manager.
+     * Get a reference to the GlassFish server support API for the
+     * server instance associated with this deployment manager URI.
      * 
-     * @return Reference to common server support impl.
+     * @return Reference to the GlassFish server support API.
      */
     public GlassfishModule getCommonServerSupport() {
-        ServerInstance si = getServerInstance();
-        return si.getBasicNode().getLookup().lookup(GlassfishModule.class);
+        GlassfishInstance instance
+                = GlassfishInstanceProvider.getGlassFishInstanceByUri(uri);
+        return instance != null ? instance.getCommonSupport() : null;
     }
     
     private String constructServerUri(String protocol, String host, String port, String path) {

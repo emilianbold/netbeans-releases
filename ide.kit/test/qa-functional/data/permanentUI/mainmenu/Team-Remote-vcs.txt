@@ -1,0 +1,15 @@
+Remote  >   Clone Other...                      R
+            Clone -                             C
+            ========================================
+            Pull Current Branch -               P
+            Pull All Branches -                 U
+            Pull...                             L
+            ========================================
+            Push Current Branch -               S
+            Push All Branches -                 A
+            Push...                             H
+            ========================================
+            Fetch -                             F
+            ========================================
+            Show Incoming                       I
+            Show Outgoing                       O

@@ -94,23 +94,23 @@ public enum JsTokenId implements TokenId {
     REGEXP(null, "mod-regexp"), // NOI18N
     REGEXP_END(null, "mod-regexp"), // NOI18N
 
-    BRACKET_LEFT_PAREN("(", "bracket"), // NOI18N
-    BRACKET_RIGHT_PAREN(")", "bracket"), // NOI18N
-    BRACKET_LEFT_CURLY("{", "bracket"), // NOI18N
-    BRACKET_RIGHT_CURLY("}", "bracket"), // NOI18N
-    BRACKET_LEFT_BRACKET("[", "bracket"), // NOI18N
-    BRACKET_RIGHT_BRACKET("]", "bracket"), // NOI18N
+    BRACKET_LEFT_PAREN("(", "separator"), // NOI18N
+    BRACKET_RIGHT_PAREN(")", "separator"), // NOI18N
+    BRACKET_LEFT_CURLY("{", "separator"), // NOI18N
+    BRACKET_RIGHT_CURLY("}", "separator"), // NOI18N
+    BRACKET_LEFT_BRACKET("[", "separator"), // NOI18N
+    BRACKET_RIGHT_BRACKET("]", "separator"), // NOI18N
 
-    OPERATOR_SEMICOLON(";", "operator"), // NOI18N
-    OPERATOR_COMMA(",", "operator"), // NOI18N
-    OPERATOR_DOT(".", "operator"), // NOI18N
+    OPERATOR_SEMICOLON(";", "separator"), // NOI18N
+    OPERATOR_COMMA(",", "separator"), // NOI18N
+    OPERATOR_DOT(".", "separator"), // NOI18N
     OPERATOR_ASSIGNMENT("=", "operator"), // NOI18N
     OPERATOR_GREATER(">", "operator"), // NOI18N
     OPERATOR_LOWER("<", "operator"), // NOI18N
     OPERATOR_NOT("!", "operator"), // NOI18N
     OPERATOR_BITWISE_NOT("~", "operator"), // NOI18N
     OPERATOR_TERNARY("?", "operator"), // NOI18N
-    OPERATOR_COLON(":", "operator"), // NOI18N
+    OPERATOR_COLON(":", "separator"), // NOI18N
     OPERATOR_EQUALS("==", "operator"), // NOI18N
     OPERATOR_EQUALS_EXACTLY("===", "operator"), // NOI18N
     OPERATOR_LOWER_EQUALS("<=", "operator"), // NOI18N

@@ -56,14 +56,13 @@ import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.repository.Revision;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
-import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-class Setup extends AbstractDiffSetup {
+public final class Setup extends AbstractDiffSetup {
 
     private final File      baseFile;
 
@@ -74,7 +73,7 @@ class Setup extends AbstractDiffSetup {
     private DiffStreamSource    secondSource;
 
     private DiffController      view;
-    private VCSStatusNode       node;
+    private DiffNode node;
 
     private String    title;
 
@@ -222,12 +221,12 @@ class Setup extends AbstractDiffSetup {
         return secondSource;
     }
 
-    void setNode (VCSStatusNode node) {
+    void setNode (DiffNode node) {
         assert this.node == null;
         this.node = node;
     }
 
-    VCSStatusNode getNode() {
+    DiffNode getNode() {
         return node;
     }
 

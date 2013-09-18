@@ -82,7 +82,7 @@ public interface EnhancedBrowserFactory {
     String getId();
 
     /**
-     * Is this factory producing browsers with tight NetBeans integration.
+     * Is this factory producing browsers with tight NetBeans integration (Connector).
      * @return
      */
     boolean hasNetBeansIntegration();

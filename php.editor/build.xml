@@ -15,17 +15,17 @@
         <jflex file="tools/Php5ColoringScanner.flex" destdir="src" skel="tools/skeleton.netbeans" />
     </target>-->
 
-    <!--<taskdef name="jflex"
+<!--    <taskdef name="jflex"
         classname="JFlex.anttask.JFlexTask"
         classpath="/usr/share/ant/lib/jflex.jar" />-->
 
-    <!--<target name="gen-lexer" >
+<!--    <target name="gen-lexer" >
         <jflex file="tools/Php5ColoringScanner.flex"
         destdir="src"
         skel="tools/skeleton.netbeans"/>
     </target>-->
 
-    <!--<target name="gen-astscanner" >
+<!--    <target name="gen-astscanner" >
         <jflex file="tools/ASTPHP5Scanner.flex"
         destdir="src"
         skel="tools/skeletonParser.netbeans"/>

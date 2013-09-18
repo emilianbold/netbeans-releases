@@ -69,7 +69,6 @@ class FetchWizard  implements ChangeListener {
     private PanelsIterator wizardIterator;
     private WizardDescriptor wizardDescriptor;
     private final File repository;
-    private static final String ORIGIN = "origin"; //NOI18N
 
     public FetchWizard (File repository, Map<String, GitRemoteConfig> remotes) {
         this.repository = repository;

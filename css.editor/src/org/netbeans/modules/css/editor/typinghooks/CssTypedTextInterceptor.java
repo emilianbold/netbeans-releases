@@ -68,7 +68,13 @@ public class CssTypedTextInterceptor implements TypedTextInterceptor {
 
     static boolean inTest;
     
-    private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}}; //NOI18N
+    private static final char[][] PAIRS = new char[][]{
+        {'{', '}'}, 
+        {'"', '"'}, 
+        {'\'', '\''}, 
+        {'(', ')'}, 
+        {'[', ']'}
+    }; //NOI18N
 
     static char justAddedPair;
     static int justAddedPairOffset = -1;

@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.repository.disk;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class MemoryCacheTest extends NbTestCase {
+public class MemoryCacheTest extends ModelImplBaseTestCase {
 
     private static final boolean TRACE = false;
     private static final int K = 1000;

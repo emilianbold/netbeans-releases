@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.DeclarationFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.util.Pair;
 
 /**
  *
@@ -192,5 +198,55 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
         assertPropertyValues("width", "calc(100%/3 - 2*1em - 2*1px)");
     }
     
+    public void testGetDeclarationForURIQuoted() {
+        BaseDocument document = getDocument("div { background: url(\"hello.png\"); } ");
+        //                                   0123456789012345678901 23456789012 34567890123456789
+        //                                   0         1         2         3
+        DefaultCssEditorModule dm = new DefaultCssEditorModule();
+        Pair<OffsetRange, FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext>> declaration = dm.getDeclaration(document, 25);
+        assertNotNull(declaration);
+        OffsetRange range = declaration.first();
+        assertNotNull(range);
+        assertEquals(23, range.getStart());
+        assertEquals(32, range.getEnd());
+        
+        FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext> task = declaration.second();
+        assertNotNull(task);
+        
+    }
+    
+    public void testGetDeclarationForURIUnquoted() {
+        BaseDocument document = getDocument("div { background: url(hello.png); } ");
+        //                                   01234567890123456789012345678901234567890123456789
+        //                                   0         1         2         3
+        DefaultCssEditorModule dm = new DefaultCssEditorModule();
+        Pair<OffsetRange, FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext>> declaration = dm.getDeclaration(document, 25);
+        assertNotNull(declaration);
+        OffsetRange range = declaration.first();
+        assertNotNull(range);
+        assertEquals(22, range.getStart());
+        assertEquals(31, range.getEnd());
+        
+        FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext> task = declaration.second();
+        assertNotNull(task);
+        
+    }
+    
+     public void testGetDeclarationForImport() {
+        BaseDocument document = getDocument("@import \"hello.css\"; ");
+        //                                   01234567 8901234567 8901
+        //                                   0         1         2         3
+        DefaultCssEditorModule dm = new DefaultCssEditorModule();
+        Pair<OffsetRange, FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext>> declaration = dm.getDeclaration(document, 10);
+        assertNotNull(declaration);
+        OffsetRange range = declaration.first();
+        assertNotNull(range);
+        assertEquals(9, range.getStart());
+        assertEquals(18, range.getEnd());
+        
+        FutureParamTask<DeclarationFinder.DeclarationLocation, EditorFeatureContext> task = declaration.second();
+        assertNotNull(task);
+        
+    }
     
 }

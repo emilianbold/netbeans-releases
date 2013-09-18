@@ -50,6 +50,7 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -63,6 +64,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
@@ -134,36 +136,65 @@ public final class ProjectPropertiesSupport {
         return project.getSourcesDirectory();
     }
 
-    /**
-     * @return test sources directory or <code>null</code> (if not set up yet e.g.)
-     */
-    public static FileObject getTestDirectory(PhpProject project, boolean showFileChooser) {
-        FileObject testsDirectory = project.getTestsDirectory();
+    @NbBundle.Messages({
+        "ProjectPropertiesSupport.browse.tests=Select a directory with project test files.",
+        "ProjectPropertiesSupport.browse.tests.info=More directories can be added in Project Properties.",
+    })
+    public static List<FileObject> getTestDirectories(final PhpProject project, boolean showFileChooser) {
+        List<FileObject> testDirs = filterValid(project.getTestsDirectories());
+        if (!testDirs.isEmpty()) {
+            return testDirs;
+        }
+        if (!showFileChooser) {
+            return Collections.emptyList();
+        }
+        // show ui
+        BrowseTestSources panel = Mutex.EVENT.readAccess(new Mutex.Action<BrowseTestSources>() {
+            @Override
+            public BrowseTestSources run() {
+                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_tests(),
+                        Bundle.ProjectPropertiesSupport_browse_tests_info());
+            }
+        });
+        if (!panel.open()) {
+            return Collections.emptyList();
+        }
+        File tests = new File(panel.getTestSources());
+        assert tests.isDirectory();
+        FileObject testsDirectory = FileUtil.toFileObject(tests);
+        saveTestSources(project, PhpProjectProperties.TEST_SRC_DIR, tests);
+        return Collections.singletonList(testsDirectory);
+    }
+
+    @CheckForNull
+    public static FileObject getTestDirectory(PhpProject project, FileObject file, boolean showFileChooser) {
+        List<FileObject> testDirectories = getTestDirectories(project, showFileChooser);
+        if (testDirectories.isEmpty()) {
+            return null;
+        }
+        // XXX find closest root
+        FileObject testsDirectory = testDirectories.get(0);
         if (testsDirectory != null && testsDirectory.isValid()) {
             return testsDirectory;
         }
-        if (showFileChooser) {
-            BrowseTestSources panel = new BrowseTestSources(project, NbBundle.getMessage(ProjectPropertiesSupport.class, "LBL_BrowseTests"));
-            if (panel.open()) {
-                File tests = new File(panel.getTestSources());
-                assert tests.isDirectory();
-                testsDirectory = FileUtil.toFileObject(tests);
-                saveTestSources(project, PhpProjectProperties.TEST_SRC_DIR, tests);
-            }
-        }
-        return testsDirectory;
+        return null;
     }
 
     /**
      * @return selenium test sources directory or <code>null</code> (if not set up yet e.g.)
      */
-    public static FileObject getSeleniumDirectory(PhpProject project, boolean showFileChooser) {
+    public static FileObject getSeleniumDirectory(final PhpProject project, boolean showFileChooser) {
         FileObject seleniumDirectory = project.getSeleniumDirectory();
         if (seleniumDirectory != null && seleniumDirectory.isValid()) {
             return seleniumDirectory;
         }
         if (showFileChooser) {
-            BrowseTestSources panel = new BrowseTestSources(project, NbBundle.getMessage(ProjectPropertiesSupport.class, "LBL_BrowseSelenium"));
+            BrowseTestSources panel = Mutex.EVENT.readAccess(new Mutex.Action<BrowseTestSources>() {
+                @Override
+                public BrowseTestSources run() {
+                    return new BrowseTestSources(project, NbBundle.getMessage(ProjectPropertiesSupport.class, "LBL_BrowseSelenium"));
+                }
+            });
             if (panel.open()) {
                 File selenium = new File(panel.getTestSources());
                 assert selenium.isDirectory();
@@ -260,19 +291,19 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.ASP_TAGS, PhpLanguageProperties.ASP_TAGS_ENABLED);
     }
 
-    public static PhpLanguageProperties.PhpVersion getPhpVersion(PhpProject project) {
+    public static PhpVersion getPhpVersion(PhpProject project) {
         return getPhpVersion(project.getEvaluator().getProperty(PhpProjectProperties.PHP_VERSION));
     }
 
-    public static PhpLanguageProperties.PhpVersion getPhpVersion(String value) {
+    public static PhpVersion getPhpVersion(String value) {
         if (value != null) {
             try {
-                return PhpLanguageProperties.PhpVersion.valueOf(value);
+                return PhpVersion.valueOf(value);
             } catch (IllegalArgumentException iae) {
                 // ignored
             }
         }
-        return PhpLanguageProperties.PhpVersion.getDefault();
+        return PhpVersion.getDefault();
     }
 
     /**
@@ -511,6 +542,16 @@ public final class ProjectPropertiesSupport {
                 PhpProjectProperties.save(project, Collections.singletonMap(propertyName, testPath), Collections.<String, String>emptyMap());
             }
         }, Bundle.ProjectPropertiesSupport_project_metadata_saving());
+    }
+
+    private static List<FileObject> filterValid(FileObject[] files) {
+        List<FileObject> validFiles = new ArrayList<>(files.length);
+        for (FileObject file : files) {
+            if (file.isValid()) {
+                validFiles.add(file);
+            }
+        }
+        return validFiles;
     }
 
 }

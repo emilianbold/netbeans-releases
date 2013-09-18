@@ -62,6 +62,11 @@ public class NotifyDescriptorTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
     public void testDefaultValue () {
         JButton defaultButton = new JButton ("Default");
         JButton customButton = new JButton ("Custom action");
@@ -101,4 +106,15 @@ public class NotifyDescriptorTest extends NbTestCase {
         assertNull("clearMessages doesn't work.", nls.getErrorMessage());
     }
 
+    public void testNoDefaultClose() {
+        DialogDescriptor dd = new DialogDescriptor("Test", "Test dialog");
+        JDialog dlg = ( JDialog ) DialogDisplayer.getDefault().createDialog( dd );
+        assertEquals( "default close operation is DISPOSE", JDialog.DISPOSE_ON_CLOSE, dlg.getDefaultCloseOperation() );
+
+        dd.setNoDefaultClose( true );
+        assertEquals( JDialog.DO_NOTHING_ON_CLOSE, dlg.getDefaultCloseOperation() );
+
+        dd.setNoDefaultClose( false );
+        assertEquals( JDialog.DISPOSE_ON_CLOSE, dlg.getDefaultCloseOperation() );
+}
 }

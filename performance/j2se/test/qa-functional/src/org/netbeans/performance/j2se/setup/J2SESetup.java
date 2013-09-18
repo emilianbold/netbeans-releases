@@ -43,17 +43,15 @@
  */
 package org.netbeans.performance.j2se.setup;
 
-import java.io.IOException;
-import org.netbeans.jellytools.MainWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.closeAllModal;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
-import org.openide.util.Exceptions;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
 public class J2SESetup extends PerformanceTestCase2 {
 
@@ -61,37 +59,20 @@ public class J2SESetup extends PerformanceTestCase2 {
         super(testName);
     }
 
-    public void testOpenDataProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public void testOpenDataProject() throws Exception {
+        this.openDataProjects("PerformanceTestData");
     }
 
-    public void testOpenFoldersProject() {
-
-        try {
-            this.openDataProjects("PerformanceTestFoldersData");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public void testOpenFoldersProject() throws Exception {
+        this.openDataProjects("PerformanceTestFoldersData");
     }
 
-   public void testOpenNBProject() {
-
-        try {
-            this.openDataProjects("SystemProperties");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }   
+    public void testOpenNBProject() throws Exception {
+        this.openDataProjects("SystemProperties");
+    }
 
     public void testCloseMemoryToolbar() {
         CommonUtilities.closeMemoryToolbar();
         closeAllModal();
-        //MainWindowOperator.getDefault().maximize();
     }
-
 }

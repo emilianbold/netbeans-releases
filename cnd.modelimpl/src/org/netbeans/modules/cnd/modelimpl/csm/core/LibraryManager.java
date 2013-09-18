@@ -67,9 +67,10 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 
 /**
  * Artificial libraries manager.
@@ -142,7 +143,7 @@ public final class LibraryManager {
 
     public Collection<ProjectBase> getProjectsByLibrary(LibProjectImpl library) {
         //getDependentProjects();
-        LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath().toString());
+        LibraryKey libraryKey = new LibraryKey(library.getFileSystem(), library.getPath());
         LibraryEntry entry = librariesEntries.get(libraryKey);
         if (entry == null) {
             return Collections.<ProjectBase>emptyList();
@@ -191,7 +192,6 @@ public final class LibraryManager {
      * Can return NULL !
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
-        String absPath = resolvedPath.getPath().toString();
         Set<ProjectBase> antiLoop = new HashSet<ProjectBase>();
         ProjectBase res = searchInProjectFiles(baseProject, resolvedPath, antiLoop);
         if (res != null) {
@@ -201,7 +201,8 @@ public final class LibraryManager {
             }
             return res;
         }
-        final String folder = resolvedPath.getFolder().toString(); // always normalized
+        final CharSequence absPath = resolvedPath.getPath();
+        final CharSequence folder = resolvedPath.getFolder(); // always normalized
         antiLoop.clear();
         res = searchInProjectRoots(baseProject, resolvedPath.getFileSystem(), getPathToFolder(folder, absPath), antiLoop);
         if (res != null) {
@@ -260,13 +261,13 @@ public final class LibraryManager {
         return res;
     }
 
-    private List<String> getPathToFolder(String folder, String path) {
-        List<String> res = new ArrayList<String>(3);
+    private List<CharSequence> getPathToFolder(CharSequence folder, CharSequence path) {
+        List<CharSequence> res = new ArrayList<CharSequence>(3);
         res.add(folder);
-        if (path.startsWith(folder)) {
+        if (CharSequenceUtils.startsWith(path, folder)) {
             while (true) {
-                String dir = CndPathUtilities.getDirName(path);
-                if (dir == null || folder.equals(dir) || !dir.startsWith(folder)) {
+                CharSequence dir = getDirName(path);
+                if (dir == null || folder.equals(dir) || !CharSequenceUtils.startsWith(dir, folder)) {
                     break;
                 }
                 res.add(dir);
@@ -277,6 +278,30 @@ public final class LibraryManager {
             }
         }
         return res;
+    }
+    
+    private static CharSequence getDirName(CharSequence path) {
+        if (path == null) {
+            return null;
+        }        
+        path = trimRightSlashes(path);
+        int sep = CharSequenceUtils.lastIndexOf(path, '/');
+        if (sep == -1) {
+            sep = CharSequenceUtils.lastIndexOf(path, '\\');
+        }
+        if (sep != -1) {
+            return trimRightSlashes(path.subSequence(0, sep));
+        }
+        return null;
+    }
+
+    private static CharSequence trimRightSlashes(CharSequence path) {
+        int length = path.length();
+        while (length > 0 && (path.charAt(length-1) == '\\' || path.charAt(length-1) == '/')) {
+            path = path.subSequence(0,length-1);
+            break;
+        }
+        return path;
     }
 
     private ProjectBase searchInProjectFiles(ProjectBase baseProject, ResolvedPath searchFor, Set<ProjectBase> set) {
@@ -317,13 +342,13 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
+    private ProjectBase searchInProjectRoots(ProjectBase baseProject, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
         if (set.contains(baseProject)) {
             return null;
         }
         set.add(baseProject);
         if (baseProject.getFileSystem() == fs) {
-            for (String folder : folders) {
+            for (CharSequence folder : folders) {
                 if (baseProject.isMySource(folder)) {
                     return baseProject;
                 }
@@ -342,7 +367,7 @@ public final class LibraryManager {
         return null;
     }
 
-    private ProjectBase searchInProjectRootsArtificial(List<CsmProject> libraries, FileSystem fs, List<String> folders, Set<ProjectBase> set) {
+    private ProjectBase searchInProjectRootsArtificial(List<CsmProject> libraries, FileSystem fs, List<CharSequence> folders, Set<ProjectBase> set) {
         ProjectBase candidate = null;
         for (CsmProject prj : libraries) {
             if (prj.isArtificial()) {
@@ -364,7 +389,7 @@ public final class LibraryManager {
         return candidate;
     }
 
-    private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, String folder) {
+    private LibProjectImpl getLibrary(ProjectImpl project, FileSystem fs, CharSequence folder) {
         CsmUID<CsmProject> projectUid = project.getUID();
         LibraryKey libraryKey = new LibraryKey(fs, folder);
         LibraryEntry entry = librariesEntries.get(libraryKey);
@@ -460,7 +485,7 @@ public final class LibraryManager {
     
     private void cleanLibrariesDataImpl(Collection<LibProjectImpl> libs) {
         for (LibProjectImpl entry : libs) {
-            librariesEntries.remove(new LibraryKey(entry.getFileSystem(), entry.getPath().toString()));
+            librariesEntries.remove(new LibraryKey(entry.getFileSystem(), entry.getPath()));
             entry.dispose(true);
         }
     }
@@ -510,21 +535,21 @@ public final class LibraryManager {
     private static final class LibraryKey {
 
         private final FileSystem fileSystem;
-        private final String folder;
+        private final CharSequence folder;
 
-        public LibraryKey(FileSystem fileSystem, String folder) {
+        public LibraryKey(FileSystem fileSystem, CharSequence folder) {
             this.fileSystem = fileSystem;
             this.folder = folder;
         }
 
         private LibraryKey(RepositoryDataInput input) throws IOException {
             this.fileSystem = PersistentUtils.readFileSystem(input);
-            this.folder = input.readUTF();
+            this.folder = CharSequences.create(input.readUTF());
         }
         
         private void write(RepositoryDataOutput out) throws IOException {
             PersistentUtils.writeFileSystem(fileSystem, out);
-            out.writeUTF(folder);
+            out.writeUTF(folder.toString());
         }
 
         @Override
@@ -565,7 +590,7 @@ public final class LibraryManager {
             dependentProjects = new ConcurrentHashMap<CsmUID<CsmProject>, Boolean>();
         }
 
-        private String getFolder() {
+        private CharSequence getFolder() {
             return key.folder;
         }
 

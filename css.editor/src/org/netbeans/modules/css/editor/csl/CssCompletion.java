@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -72,9 +73,11 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
@@ -101,6 +104,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -609,6 +613,36 @@ public class CssCompletion implements CodeCompletionHandler {
             case STRING:
                 skipPrefixChars = 1; //skip the leading quotation char
                 break;
+            case URI:
+                if (diff > 0) {
+                    //inside the URI value
+                    String text = ts.token().text().toString();
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(text);
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        //content of the url(...) function w/o ws prefix/postfix if there's any
+                        String value = m.group(groupIndex);
+                        int valueStart = m.start(groupIndex);
+                    
+                        //cut off everyhing after caret: fold|er/file.css
+                        int cutIndex = diff - valueStart;
+                        value = value.substring(0, cutIndex); 
+
+                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                        if(lastSeparatorIndex != -1) {
+                            //url(folder/xxx|)
+                            skipPrefixChars = valueStart + lastSeparatorIndex + 1;
+                        } else {
+                            //url(xx|)
+                            skipPrefixChars = valueStart;
+                             //is the value quoted?
+                            if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                                skipPrefixChars++;
+                            }
+                        }
+                    }
+            }
+            break;
         }
 
         return t.text().subSequence(skipPrefixChars, diff == 0 ? t.text().length() : diff).toString().trim();
@@ -713,6 +747,49 @@ public class CssCompletion implements CodeCompletionHandler {
                         int moveBack = addSemicolon ? 1 : 0;
                         return new CssFileCompletionResult(imports, moveBack);
 
+                    }
+                    break;
+                    
+                case URI:
+                    //url(...)
+                    String text = ts.token().text().toString();
+                    Matcher m = Css3Utils.URI_PATTERN.matcher(text);
+                    if (m.matches()) {
+                        int groupIndex = 1;
+                        //content of the url(...) function w/o ws prefix/postfix if there's any
+                        String value = m.group(groupIndex);
+                        int valueStart = m.start(groupIndex);
+                    
+                        if(tokenDiff > 0) {
+                            int cutIndex = tokenDiff - valueStart;
+                            value = value.substring(0, cutIndex); //cut off everyhing after caret: fold|er/file.css
+                        }
+                        
+                        //is the value quoted?
+                        if(!value.isEmpty() && (value.charAt(0) == '"' || value.charAt(0) == '\'')) {
+                            value = value.substring(1); //cut of the quote
+                        }
+                        
+                        //use prefix from last separator in the URL
+                        int lastSeparatorIndex = value.lastIndexOf(Css3Utils.FILE_SEPARATOR); 
+                        if(lastSeparatorIndex != -1) {
+                            //some folders already in the path, we also need to adjust the base file
+                            String valuePrefix = value.substring(0, lastSeparatorIndex);
+                            FileObject base = WebUtils.resolve(file, valuePrefix);
+                            if(base != null) {
+                                String prefix = value.substring(lastSeparatorIndex + 1);
+                                List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(base,
+                                caretOffset, prefix, false, false);
+                            return new CssFileCompletionResult(imports, 0);
+                            }
+                        } else {
+                            //no separator in the URL, prefix from the beginning
+                            List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
+                                    caretOffset, value, false, false);
+                            return new CssFileCompletionResult(imports, 0);
+                        }
+                        
+                       
                     }
                     break;
 
@@ -1609,7 +1686,9 @@ public class CssCompletion implements CodeCompletionHandler {
         @Override
         public void afterInsert(CompletionProposal item) {
             Caret c = EditorRegistry.lastFocusedComponent().getCaret();
-            c.setDot(c.getDot() - moveCaretBack);
+            if(moveCaretBack > 0) {
+                c.setDot(c.getDot() - moveCaretBack);
+            }
         }
     }
 

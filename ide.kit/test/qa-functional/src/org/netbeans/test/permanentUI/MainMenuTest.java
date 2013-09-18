@@ -49,6 +49,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Manager;
@@ -124,7 +125,7 @@ public class MainMenuTest extends JellyTestCase {
      */
     @Override
     public void setUp() {
-        System.out.println("########  " + ProjectContext.NONE.toString() + " CONTEXT - " + getName() + "  #######");
+        System.out.println("########  " + " CONTEXT -> " + ProjectContext.NONE.toString() + " - " + getName() + "  #######");
         try {
             clearWorkDir();
             getWorkDir();
@@ -297,6 +298,8 @@ public class MainMenuTest extends JellyTestCase {
      * @param menuName to be tested
      * @param goldenFileName to be tested
      * @return difference between menuName and goldenFileName
+     * 
+     * You shouldn't call directly this method.
      */
     private void oneMenuTest(String menuName, String goldenFileName) throws IllegalArgumentException {
         NbMenuItem testedMenu = Utilities.readMenuStructureFromFile(goldenFileName);
@@ -364,7 +367,7 @@ public class MainMenuTest extends JellyTestCase {
         // when sub-menu has time out exception problems. It can Helps.
         if (preInitSubMenu) {
             String firstSubMenuItem = testedSubMenuItem.getSubmenu().get(0).getName();
-            MainWindowOperator.getDefault().menuBar().showMenuItem(submenuPath + "|" + firstSubMenuItem);
+            MainWindowOperator.getDefault().menuBar().showMenuItem(submenuPath + "|" + firstSubMenuItem, new Operator.DefaultStringComparator(true, true));
         }
 
         PrintStream ideFileStream = null;

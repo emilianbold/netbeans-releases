@@ -374,6 +374,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         comScope.setSelectedItem(type);
     }
 
+    @Messages ({"MSG_Defined=Dependency with given groupId and artifactId is already defined in project."})
     private void checkValidState() {
         String gId = txtGroupId.getText().trim();
         if (gId.length() <= 0) {
@@ -388,10 +389,10 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             version = null;
         }
 
+        String warn = null;
         boolean dmDefined = tabPane.isEnabledAt(2);
         if (artifactList != null) {
             Color c = defaultVersionC;
-            String warn = null;
             if (dmDefined) {
                 if (findConflict(artifactList.getDMDeps(), gId, aId, version, null) == 1) {
                     c = Color.RED;
@@ -399,6 +400,18 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             txtVersion.setForeground(c);
+        }
+        
+        if (project.getDependencies() != null && gId != null && aId != null) {
+            for (Dependency dep : project.getDependencies()) {
+                if (gId.equals(dep.getGroupId()) && aId.equals(dep.getArtifactId())) {
+                    warn = Bundle.MSG_Defined();
+                }
+                    
+            }
+        }
+        
+        if (nls != null) {
             if (warn != null) {
                 nls.setWarningMessage(warn);
             } else {
@@ -1071,6 +1084,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         
 
         @Messages({"MSG_ClassesExcluded=Too general query. Class names excluded from the search.",
+                   "# {0} - number",
+                   "# {1} - total number",
                    "MSG_Narrow=Only {0} of {1} results shown. Consider narrowing your search."
                   })
         void find(String queryText) {

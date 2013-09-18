@@ -188,6 +188,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private static final int VIEW_MODE_TREE = 2;
     private int currentSetupDiffLengthChanged;
     private int lastDividerLoc;
+    private int requestedRightLine = -1;
+    private int requestedLeftLine = -1;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -246,19 +248,21 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * It hides All, Local, Remote toggles and file chooser combo.
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
-        this(file, rev1, rev2, new FileInformation(), forceNonEditable);
+        this(file, rev1, rev2, new FileInformation(), forceNonEditable, -1);
     }
 
     /**
      * Construct diff component showing just one file.
      * It hides All, Local, Remote toggles and file chooser combo.
      */
-    public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, FileInformation fi, boolean forceNonEditable) {
+    public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, FileInformation fi, boolean forceNonEditable,
+            int requestedRightLine) {
         context = null;
         contextName = file.getName();
         revisionOriginalLeft = rev1;
         revisionOriginalRight = rev2;
         fixedRevisions = true;
+        this.requestedRightLine = requestedRightLine;
         initComponents();
         initSelectionCombos();
         setAquaBackground();
@@ -1058,6 +1062,22 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 } else if (currentSetupDiffLengthChanged != -1) {
                     currentSetupDiffLengthChanged = currentSetup.getView().getDifferenceCount();
                 }
+                if (currentSetup.getView().getDifferenceCount() > 0 && requestedRightLine != -1) {
+                    final int leftLine = requestedLeftLine;
+                    final int rightLine = requestedRightLine;
+                    requestedRightLine = requestedLeftLine = -1;
+                    final DiffController view = currentSetup.getView();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.LineNumber, rightLine);
+                            if (leftLine != -1) {
+                                view.getJComponent().putClientProperty("diff.smartScrollDisabled", Boolean.TRUE);
+                                view.setLocation(DiffController.DiffPane.Base, DiffController.LocationType.LineNumber, leftLine);
+                            }
+                        }
+                    });
+                }
             }
             refreshComponents();
         } else if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
@@ -1300,6 +1320,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     }
                     StreamSource ss1 = s.getFirstSource();
                     StreamSource ss2 = s.getSecondSource();
+                    if (requestedRightLine != -1) {
+                        requestedLeftLine = getMatchingLine(ss2, ss1, requestedRightLine);
+                    }
                     final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
                     if (Thread.interrupted() || canceled) {
@@ -1356,6 +1379,28 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         @Override
         public boolean cancel() {
             return this.canceled = true;
+        }
+
+        private int getMatchingLine (StreamSource ss2, StreamSource ss1, int requestedRightLine) {
+            Reader currentReader = null, previousReader = null;
+            try {
+                currentReader = ss2.createReader();
+                previousReader = ss1.createReader();
+                return DiffUtils.getMatchingLine(currentReader, previousReader, requestedRightLine);
+            } catch (IOException ex) {
+                return -1;
+            } finally {
+                if (currentReader != null) {
+                    try {
+                        currentReader.close();
+                    } catch (IOException ex) {}
+                }
+                if (previousReader != null) {
+                    try {
+                        previousReader.close();
+                    } catch (IOException ex) {}
+                }
+            }
         }
     }
 

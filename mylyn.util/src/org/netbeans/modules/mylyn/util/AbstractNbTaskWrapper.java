@@ -225,20 +225,27 @@ public abstract class AbstractNbTaskWrapper {
             // mark as seen so no fields are highlighted
             setUpToDate(true, false);
         }
-        // clear upon close
-        synchronized (MODEL_LOCK) {
-            if (readPending) {
-                // make sure remote changes are not lost and still highlighted in the editor
-                setUpToDate(false, false);
-            }
-            model = task.getTaskDataModel();
-            if (model == null) {
-                if (!synchronizeTask()) {
-                    return false;
+        synchronized (getNbTask()) {
+            // clear upon close
+            synchronized (MODEL_LOCK) {
+                if (readPending) {
+                    // make sure remote changes are not lost and still highlighted in the editor
+                    setUpToDate(false, false);
                 }
                 model = task.getTaskDataModel();
+                if (model == null) {
+                    if (!synchronizeTask()) {
+                        return false;
+                    }
+                    model = task.getTaskDataModel();
+                }
+                model.addNbTaskDataModelListener(list);
             }
-            model.addNbTaskDataModelListener(list);
+            try {
+                MylynSupport.getInstance().editorOpened(task.getDelegate());
+            } catch (CoreException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
         }
         return true;
     }
@@ -262,6 +269,11 @@ public abstract class AbstractNbTaskWrapper {
                     } catch (CoreException ex) {
                         LOG.log(Level.WARNING, null, ex);
                     }
+                }
+                try {
+                    MylynSupport.getInstance().editorClosing(task.getDelegate(), m.getRepositoryTaskData());
+                } catch (CoreException ex) {
+                    LOG.log(Level.WARNING, null, ex);
                 }
                 synchronized (MODEL_LOCK) {
                     if (model == m) {
@@ -365,6 +377,7 @@ public abstract class AbstractNbTaskWrapper {
     protected final boolean updateModel () {
         try {
             model.refresh();
+            MylynSupport.getInstance().editorOpened(task.getDelegate());
             return true;
         } catch (CoreException ex) {
             LOG.log(Level.INFO, null, ex);
@@ -443,9 +456,9 @@ public abstract class AbstractNbTaskWrapper {
         switch (getSynchronizationState()) {
             case CONFLICT:
             case INCOMING:
-                return IssueStatusProvider.Status.MODIFIED;
+                return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case INCOMING_NEW:
-                return IssueStatusProvider.Status.NEW;
+                return IssueStatusProvider.Status.INCOMING_NEW;
             case OUTGOING:
             case OUTGOING_NEW:
             case SYNCHRONIZED:

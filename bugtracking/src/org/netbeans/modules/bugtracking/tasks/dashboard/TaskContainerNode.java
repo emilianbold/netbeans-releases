@@ -72,7 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
-    private List<TaskNode> taskNodes;
+    private List<TaskNode> taskNodes = Collections.emptyList();
     private List<TaskNode> filteredTaskNodes = Collections.emptyList();
     private TaskListener taskListener;
     private boolean refresh;
@@ -227,7 +227,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
                 taskListener = new TaskListener();
             }
             
-            if(taskNodes == null) {
+            if(taskNodes == null || taskNodes.isEmpty()) {
                 taskNodes = new ArrayList<TaskNode>(tasks.size());
             }
             
@@ -378,7 +378,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)
-                    || IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                    || IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 updateTask.schedule(1000);
             }
         }

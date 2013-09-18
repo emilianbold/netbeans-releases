@@ -110,10 +110,6 @@ public class CSSUpdater {
             try {
                 //need to convert file:///
                 URL url = new URL(header.getSourceURL());
-                if (url.getQuery() != null) {
-                    // Remove query string, see issue 223858
-                    url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getPath());
-                }
                 sheetsMap.put(url.toString(), header);
 
                 if (project != null) {

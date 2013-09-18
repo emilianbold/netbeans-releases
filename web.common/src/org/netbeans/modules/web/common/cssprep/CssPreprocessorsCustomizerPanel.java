@@ -110,6 +110,9 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
             mainTabbedPane.addTab(customizer.getDisplayName(), component);
             componentCustomizers.put(component, customizer);
         }
+        if (!customizers.isEmpty()) {
+            mainTabbedPane.setSelectedIndex(0);
+        }
         // store
         category.setStoreListener(new ActionListener() {
             @Override
@@ -231,13 +234,19 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
 
     @Override
     public HelpCtx getHelpCtx() {
-        CssPreprocessorImplementation.Customizer customizer = componentCustomizers.get(mainTabbedPane.getSelectedComponent());
+        HelpCtx generalHelp = new HelpCtx("org.netbeans.modules.web.common.api.ui.CssPreprocessorsCustomizerPanel"); // NOI18N
+        Component selectedComponent = mainTabbedPane.getSelectedComponent();
+        // #235917
+        if (selectedComponent == null) {
+            return generalHelp;
+        }
+        CssPreprocessorImplementation.Customizer customizer = componentCustomizers.get(selectedComponent);
         assert customizer != null : "Unknown tab: " + mainTabbedPane.getSelectedIndex();
         HelpCtx help = customizer.getHelp();
         if (help != null) {
             return help;
         }
-        return new HelpCtx("org.netbeans.modules.web.common.api.ui.CssPreprocessorsCustomizerPanel"); // NOI18N
+        return generalHelp;
     }
 
 }

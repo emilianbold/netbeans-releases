@@ -449,20 +449,23 @@ public final class CreateElement implements ErrorRule<Void> {
                                             }
                                         }
                                     }
+                                    // TODO: the field will be declared as non-final even though it may
+                                    // me actually initialized from all the relevant constructors. To fix that, Flow
+                                    // analysis should be executed on the class as a whole to get all final candidates.
                                     hasOtherConstructors = true;
                                     break;
                                 }
                             }
                             if (!hasOtherConstructors) {
                                 BlockTree constructorBody = ((MethodTree) firstMethod.getLeaf()).getBody();
-                                String constructorBodyText = info.getText().substring((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), constructorBody), (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), constructorBody));
-                                String withVariable = "{" + type.toString() + " " + simpleName + "; " + constructorBodyText + "}";
-                                BlockTree newBlock = (BlockTree) info.getTreeUtilities().parseStatement(withVariable, new SourcePositions[1]);
-                                Scope scope = info.getTrees().getScope(firstMethod);
-                                info.getTreeUtilities().attributeTree(newBlock, scope);
-                                VariableElement var = (VariableElement) info.getTrees().getElement(new TreePath(new TreePath(firstMethod, newBlock), newBlock.getStatements().get(0)));
-                                if (Flow.definitellyAssigned(info, var, Arrays.asList(new TreePath(new TreePath(firstMethod, newBlock), newBlock.getStatements().get(1))), new AtomicBoolean()))
+
+                                // FIXME: the check is insufficient; the symbol may be assigned in other parts of the code
+                                // despite it's undefined at the moment. The IDE will generate final field based on ctor analysis,
+                                // but then report errors on the field's assignments in regular methods.
+                                if (Flow.unknownSymbolFinalCandidate(info, 
+                                        e, source, Collections.singletonList(new TreePath(firstMethod, constructorBody)), new AtomicBoolean())) {
                                     modifiers.add(Modifier.FINAL);
+                                }
                             }
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {

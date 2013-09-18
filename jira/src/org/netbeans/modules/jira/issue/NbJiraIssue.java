@@ -236,7 +236,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             fireDataChanged();
         }
         if (syncStateChanged) {
-            fireSeenChanged(!seen, seen);
+            fireStatusChanged();
         }
     }
 
@@ -409,8 +409,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
     
-    private void fireSeenChanged(boolean wasSeen, boolean seen) {
-        support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
+    private void fireStatusChanged() {
+        support.firePropertyChange(IssueStatusProvider.EVENT_STATUS_CHANGED, null, null);
     }
     
     void opened() {
@@ -667,9 +667,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         IssueCache.Status status = getRepository().getIssueCache().getStatus(getKey());
         switch(status) {
             case ISSUE_STATUS_NEW:
-                return IssueStatusProvider.Status.NEW;
+                return IssueStatusProvider.Status.INCOMING_NEW;
             case ISSUE_STATUS_MODIFIED:
-                return IssueStatusProvider.Status.MODIFIED;
+                return IssueStatusProvider.Status.INCOMING_MODIFIED;
             case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }

@@ -43,6 +43,7 @@ package org.netbeans.modules.php.spi.testing.run;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -75,8 +76,7 @@ public final class TestRunInfo {
     }
 
     private final SessionType sessionType;
-    private final FileObject workingDirectory;
-    private final FileObject startFile;
+    private final List<FileObject> startFiles;
     private final String suiteName;
     private final boolean coverageEnabled;
     private final List<TestInfo> customTests = new CopyOnWriteArrayList<>();
@@ -96,12 +96,10 @@ public final class TestRunInfo {
     private TestRunInfo(Builder builder) {
         assert builder != null;
         assert builder.sessionType != null;
-        assert builder.workingDirectory != null;
-        assert builder.startFile != null;
+        assert builder.startFiles != null;
 
         this.sessionType = builder.sessionType;
-        this.workingDirectory = builder.workingDirectory;
-        this.startFile = builder.startFile;
+        this.startFiles = builder.startFiles;
         this.suiteName = builder.suiteName;
         this.coverageEnabled = builder.coverageEnabled;
     }
@@ -115,11 +113,12 @@ public final class TestRunInfo {
     }
 
     /**
-     * Get initial file or directory of test run.
-     * @return initial file or directory of test run
+     * Get files (or directories] of test run.
+     * @return files (or directories) of test run
+     * @since 0.11
      */
-    public FileObject getStartFile() {
-        return startFile;
+    public List<FileObject> getStartFiles() {
+        return startFiles;
     }
 
     /**
@@ -138,14 +137,6 @@ public final class TestRunInfo {
      */
     public boolean allTests() {
         return suiteName == null;
-    }
-
-    /**
-     * Get working directory of tests.
-     * @return working directory of tests
-     */
-    public FileObject getWorkingDirectory() {
-        return workingDirectory;
     }
 
     /**
@@ -245,8 +236,7 @@ public final class TestRunInfo {
     public static final class Builder {
 
         SessionType sessionType;
-        FileObject workingDirectory;
-        FileObject startFile;
+        List<FileObject> startFiles;
         String suiteName;
         boolean coverageEnabled;
 
@@ -262,22 +252,25 @@ public final class TestRunInfo {
         }
 
         /**
-         * Set working directory.
-         * @param workingDirectory working directory
+         * Set start file (can be directory).
+         * @param startFile start file (can be directory)
          * @return this instance
+         * @see #setStartFiles(java.util.List)
          */
-        public Builder setWorkingDirectory(@NonNull FileObject workingDirectory) {
-            this.workingDirectory = workingDirectory;
+        public Builder setStartFile(@NonNull FileObject startFile) {
+            setStartFiles(Collections.singletonList(startFile));
             return this;
         }
 
         /**
-         * Set start file (can be directory).
-         * @param startFile start file (can be directory)
+         * Set start files (can be directories).
+         * @param startFiles start files (can be directories), cannot be empty list
          * @return this instance
+         * @see #setStartFile(org.openide.filesystems.FileObject)
+         * @since 0.11
          */
-        public Builder setStartFile(@NonNull FileObject startFile) {
-            this.startFile = startFile;
+        public Builder setStartFiles(@NonNull List<FileObject> startFiles) {
+            this.startFiles = startFiles;
             return this;
         }
 
@@ -307,8 +300,10 @@ public final class TestRunInfo {
          */
         public TestRunInfo build() {
             Parameters.notNull("sessionType", sessionType); // NOI18N
-            Parameters.notNull("workingDirectory", workingDirectory); // NOI18N
-            Parameters.notNull("startFile", startFile); // NOI18N
+            Parameters.notNull("startFiles", startFiles); // NOI18N
+            if (startFiles.isEmpty()) {
+                throw new IllegalArgumentException("Start files cannot be empty");
+            }
             return new TestRunInfo(this);
         }
 

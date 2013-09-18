@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;

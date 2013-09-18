@@ -61,6 +61,7 @@ import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -71,32 +72,34 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class CssStylesPanel extends javax.swing.JPanel {
 
-     static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
-    
-     private final RuleEditorController controller;
-     private final Collection<CssStylesPanelProvider> providers;
-     private final ActionListener toolbarListener;
-     
-     /* Lookup for CssStylesPanelProviders. The content mutates based on changed file context.*/
-     private final ModifiableLookup providersLookup;
-     
-     /* Lookup for the CssStylesTC. Content got from the CssStylesPanelProvider's lookup */
-     private final ModifiableLookup tcLookup;
-     
-     private final JToolBar toolBar;
-     
-     private CssStylesPanelProvider active;
-     private JComponent activePanel;
-     
-     /**
-      * Remember last selected tab per mimetype.
-      * 
-      * Note: this is not exactly correct as the panel's activity is no more
-      * driven purely by the file context mimetype. 
-      * See {@link CssStylesPanelProvider#providesContentFor(org.openide.filesystems.FileObject) }.
-      */
-     private Map<String, CssStylesPanelProvider> selectedTabs = new HashMap<String, CssStylesPanelProvider>();
-     
+    private static final RequestProcessor RP = new RequestProcessor(CssStylesPanel.class);
+
+    static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
+
+    private final RuleEditorController controller;
+    private final Collection<CssStylesPanelProvider> providers;
+    private final ActionListener toolbarListener;
+
+    /* Lookup for CssStylesPanelProviders. The content mutates based on changed file context.*/
+    private final ModifiableLookup providersLookup;
+
+    /* Lookup for the CssStylesTC. Content got from the CssStylesPanelProvider's lookup */
+    private final ModifiableLookup tcLookup;
+
+    private final JToolBar toolBar;
+
+    private CssStylesPanelProvider active;
+    private JComponent activePanel;
+
+    /**
+     * Remember last selected tab per mimetype.
+     *
+     * Note: this is not exactly correct as the panel's activity is no more
+     * driven purely by the file context mimetype. See {@link CssStylesPanelProvider#providesContentFor(org.openide.filesystems.FileObject)
+     * }.
+     */
+    private Map<String, CssStylesPanelProvider> selectedTabs = new HashMap<String, CssStylesPanelProvider>();
+
     /**
      * Creates new form CssStylesPanel
      */
@@ -107,13 +110,13 @@ public class CssStylesPanel extends javax.swing.JPanel {
         providersLookup = new ModifiableLookup();
         //assumption: should not change in time, otherwise we need to listen
         providers = new ArrayList<CssStylesPanelProvider>();
-        for(CssStylesPanelProvider provider : Lookup.getDefault().lookupAll(CssStylesPanelProvider.class)) {
+        for (CssStylesPanelProvider provider : Lookup.getDefault().lookupAll(CssStylesPanelProvider.class)) {
             providers.add(new ProxyCssStylesPanelProvider(provider));
         }
-        
+
         //the bottom component
         controller = RuleEditorController.createInstance();
-        
+
         //put of the rule editor component initialization so the whole css styles panel
         //initialization is not done in one chunk
         EventQueue.invokeLater(new Runnable() {
@@ -122,7 +125,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
                 splitPane.setBottomComponent(controller.getRuleEditorComponent());
             }
         });
-        
+
         //toolbar
         toolbarListener = new ActionListener() {
 
@@ -130,8 +133,8 @@ public class CssStylesPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent ae) {
                 String command = ae.getActionCommand();
                 //linear search, but should be at most 2 or 3 items
-                for(CssStylesPanelProvider provider : providers) {
-                    if(provider.getPanelID().equals(command)) {
+                for (CssStylesPanelProvider provider : providers) {
+                    if (provider.getPanelID().equals(command)) {
                         FileObject file = providersLookup.lookup(FileObject.class);
                         selectedTabs.put(file.getMIMEType(), provider);
                         setActiveProvider(provider);
@@ -139,38 +142,39 @@ public class CssStylesPanel extends javax.swing.JPanel {
                 }
             }
         };
-        
+
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        
+
         //copied from org.netbeans.core.multiview.TabsComponent to make the look 
         //similar to the editor tabs
-        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+        Border b = (Border) UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
         toolBar.setBorder(b);
         toolBar.setFocusable(true);
-        if( "Windows".equals( UIManager.getLookAndFeel().getID()) 
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())
                 && !isXPTheme()) {
             toolBar.setRollover(true);
-        } else if( AQUA ) {
+        } else if (AQUA) {
             toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
         }
-        
+
         splitPane.setResizeWeight(0.66);
     }
-    
+
     private Border buttonBorder = null;
+
     private Border getButtonBorder() {
         if (buttonBorder == null) {
             //For some lf's, core will supply one
-            buttonBorder = UIManager.getBorder ("nb.tabbutton.border"); //NOI18N
+            buttonBorder = UIManager.getBorder("nb.tabbutton.border"); //NOI18N
         }
-        
+
         return buttonBorder;
     }
-    
-    private static boolean isXPTheme () {
-        Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
-                        getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
+
+    private static boolean isXPTheme() {
+        Boolean isXP = (Boolean) Toolkit.getDefaultToolkit().
+                getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
         return isXP == null ? false : isXP.booleanValue();
     }
 
@@ -179,14 +183,15 @@ public class CssStylesPanel extends javax.swing.JPanel {
 
             @Override
             public String getUIClassID() {
-                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) //NOI18N
+                if (AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null) //NOI18N
+                {
                     return "Nb.SplitPaneUI.clean"; //NOI18N
+                }
                 return super.getUIClassID();
             }
         };
     }
-        
-    
+
     /**
      * Returns lookup which content changes based on the lookups of the active
      * CssStylesPanelProvider.
@@ -194,51 +199,71 @@ public class CssStylesPanel extends javax.swing.JPanel {
     public Lookup getLookup() {
         return tcLookup;
     }
-    
+
     private Collection<CssStylesPanelProvider> getActiveProviders(FileObject file) {
         Collection<CssStylesPanelProvider> active = new ArrayList<CssStylesPanelProvider>();
-         for(CssStylesPanelProvider provider : providers) {
-            if(provider.providesContentFor(file)) {
+        for (CssStylesPanelProvider provider : providers) {
+            if (provider.providesContentFor(file)) {
                 active.add(provider);
             }
-         }
-         return active;
+        }
+        return active;
     }
-    
+
     private void addToolbar() {
-        if (toolBar.getParent() == null) { 
+        if (toolBar.getParent() == null) {
             //not added in the hierarchy, add it
             topPanel.add(toolBar, BorderLayout.PAGE_START);
         }
     }
-    
+
     private void removeToolbar() {
-        if(toolBar.getParent() != null) {
+        if (toolBar.getParent() != null) {
             //preset in the hierarchy, remove it
             topPanel.remove(toolBar);
         }
     }
-    
-    private void updateToolbar(FileObject file) {
+
+    private void updateToolbar(final FileObject file) {
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                //getActiveProviders() must not be called in EDT as it might do some I/Os
+                final Collection<CssStylesPanelProvider> activeProviders = getActiveProviders(file);
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        updateToolbar(file, activeProviders);
+                    }
+
+                });
+            }
+
+        });
+    }
+
+    private void updateToolbar(FileObject file, Collection<CssStylesPanelProvider> activeProviders) {
+
         toolBar.removeAll();
-        Collection<CssStylesPanelProvider> activeProviders = getActiveProviders(file);
-        if(activeProviders.size() <= 1) {
+        if (activeProviders.size() <= 1) {
             //remove the whole toolbar, if there's one or zero providers
             removeToolbar();
         } else {
             addToolbar();
         }
-        
+
         // Button group for document and source buttons
         ButtonGroup buttonGroup = new ButtonGroup();
-        
+
         boolean first = true;
-        
+
         CssStylesPanelProvider selected = (file == null) ? null : selectedTabs.get(file.getMIMEType());
-        
+
         //do the active providers contain the pre-selected provider for this mimetype?
         boolean containsPreselected = selected == null ? false : activeProviders.contains(selected);
-        
+
         for (CssStylesPanelProvider provider : activeProviders) {
             JToggleButton button = new JToggleButton();
             button.setText(provider.getPanelDisplayName());
@@ -248,25 +273,24 @@ public class CssStylesPanel extends javax.swing.JPanel {
             button.setFocusable(true);
             button.setFocusPainted(false);
             button.setRolloverEnabled(true);
-            
+
             //copied from org.netbeans.core.multiview.TabsComponent.createButton to make the look 
             //similar to the editor tabs
             Border b = (getButtonBorder());
             if (b != null) {
-               button.setBorder(b);
+                button.setBorder(b);
             }
-            if( AQUA ) {
+            if (AQUA) {
                 button.putClientProperty("JButton.buttonType", "square"); //NOI18N
                 button.putClientProperty("JComponent.sizeVariant", "small"); //NOI18N
             }
-            
-            
+
             buttonGroup.add(button);
             toolBar.add(button);
-            
-            if(containsPreselected) {
+
+            if (containsPreselected) {
                 //one of the active providers is already pre-selected by user
-                if(provider == selected) {
+                if (provider == selected) {
                     //the selected one - activate it
                     button.setSelected(true);
                     setActiveProvider(provider);
@@ -282,11 +306,11 @@ public class CssStylesPanel extends javax.swing.JPanel {
                 }
             }
         }
-        
+
         revalidate();
         repaint();
     }
-    
+
     public void setContext(FileObject file) {
         InstanceContent ic = new InstanceContent();
         if (file != null) {
@@ -294,41 +318,41 @@ public class CssStylesPanel extends javax.swing.JPanel {
         }
         ic.add(getRuleEditorController());
         providersLookup.updateLookup(new AbstractLookup(ic));
-        
+
         updateToolbar(file);
     }
-    
+
     private void setActiveProvider(CssStylesPanelProvider provider) {
-        if(active == provider) {
+        if (active == provider) {
             return; //no change
         }
-        
-        if(active != null) {
+
+        if (active != null) {
             topPanel.remove(activePanel);
             active.deactivated();
         }
-        
+
         active = provider;
         activePanel = provider.getContent(providersLookup);
-        
-        topPanel.add(activePanel, BorderLayout.CENTER);        
+
+        topPanel.add(activePanel, BorderLayout.CENTER);
         active.activated();
 
         //propagate the provider's lookup to the lookup of the CssStylesTC.
         tcLookup.updateLookup(active.getLookup());
-        
+
         revalidate();
         repaint();
     }
-    
-     /**
+
+    /**
      * Returns the default {@link RuleEditorController} associated with this
      * rule editor top component.
      */
     public RuleEditorController getRuleEditorController() {
         return controller;
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -358,6 +382,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private static class ModifiableLookup extends ProxyLookup {
+
         protected final void updateLookup(Lookup lookup) {
             if (lookup == null) {
                 setLookups();
@@ -366,12 +391,12 @@ public class CssStylesPanel extends javax.swing.JPanel {
             }
         }
     }
-    
+
     /**
      * Caches the content panel so the real provider is asked for it just once.
      */
     private static class ProxyCssStylesPanelProvider implements CssStylesPanelProvider {
-        
+
         private final CssStylesPanelProvider delegate;
         private JComponent content;
 
@@ -391,7 +416,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
 
         @Override
         public JComponent getContent(Lookup lookup) {
-            if(content == null) {
+            if (content == null) {
                 content = delegate.getContent(lookup);
             }
             return content;

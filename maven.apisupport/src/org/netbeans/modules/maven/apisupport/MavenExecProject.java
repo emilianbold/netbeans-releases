@@ -48,8 +48,6 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Task;
@@ -81,7 +79,13 @@ public class MavenExecProject implements ExecProject {
             }
             argsS.append(arg);
         }
-        cfg.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, argsS.toString());
+        NbMavenProject appPrj = app.getLookup().lookup(NbMavenProject.class);
+        if (NetBeansRunParamsIDEChecker.usingNbmPlugin311(appPrj.getMavenProject())) {
+            cfg.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, argsS.toString());
+        } else {
+            cfg.setProperty(NetBeansRunParamsIDEChecker.OLD_PROPERTY, argsS.toString());
+        }
+            
         return RunUtils.run(cfg);
     }
 

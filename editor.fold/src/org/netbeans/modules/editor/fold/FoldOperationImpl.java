@@ -602,7 +602,13 @@ public final class FoldOperationImpl {
             if (next == null) {
                 return true;
             }
-            return next.getStart() != f.getStartOffset() || next.getEnd() != f.getEndOffset();
+            // do not attempt to resize non-leaf folds; the shifting feature is
+            // intentionally used only in import and include - like blocks, they are
+            // both leaf. If non-leaf folds should update/resize, checks must be put
+            // that they still fit into the parent's hierarchy and if not, all parent's
+            // deep-children have to be re-inserted (folds might cross after update)
+            return next.getStart() > i.getEnd();
+
         }
         
         private boolean containsSame(FoldInfo i, Fold f) {
@@ -649,7 +655,6 @@ public final class FoldOperationImpl {
                         continue;
                     }
 
-                    update(f, i);
                     currentFolds.put(i, f);
                     i = ni();
                     f = foldIt.hasNext() ? foldIt.next() : null;
@@ -664,6 +669,11 @@ public final class FoldOperationImpl {
                     if (fold.getParent() != null) {
                         removeFromHierarchy(fold, tran);
                     }
+                }
+                for (Map.Entry<FoldInfo, Fold> updateEntry : currentFolds.entrySet()) {
+                    FoldInfo fi = updateEntry.getKey();
+                    Fold ff = updateEntry.getValue();
+                    update(ff, fi);
                 }
                 for (FoldInfo info : toAdd) {
                     try {
@@ -717,6 +727,7 @@ public final class FoldOperationImpl {
         public Fold update(Fold f, FoldInfo info) throws BadLocationException {
             this.fsch = null;
             int soffs = f.getStartOffset();
+            int origStart = soffs;
             ApiPackageAccessor acc = getAccessor();
             int len = getDocument().getLength();
             if (info.getStart() > len || info.getEnd() > len) {
@@ -734,6 +745,7 @@ public final class FoldOperationImpl {
                 soffs = info.getStart();
             }
             int eoffs = f.getEndOffset();
+            int origEnd = eoffs;
             if (info.getEnd() != eoffs) {
                 FoldStateChange state = getFSCH(f);
                 if (state.getOriginalStartOffset()>= 0 && state.getOriginalStartOffset() > eoffs) {
@@ -751,6 +763,27 @@ public final class FoldOperationImpl {
             String desc = info.getDescriptionOverride();
             if (desc == null) {
                 desc = info.getTemplate().getDescription();
+            }
+            // sanity check
+            Fold p = f.getParent();
+            if (p != null) {
+                int index = p.getFoldIndex(f);
+                if (index != -1) {
+                    if (index > 0) {
+                        Fold prev = p.getFold(index - 1);
+                        if (prev.getEndOffset() > f.getStartOffset()) {
+                            LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
+                            LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + origStart + "-" + origEnd);
+                        }
+                    }
+                    if (index < p.getFoldCount() - 1) {
+                        Fold next = p.getFold(index + 1);
+                        if (next.getStartOffset() < f.getEndOffset()) {
+                            LOG.warning("Wrong fold nesting after update, hierarchy: " + execution);
+                            LOG.warning("FoldInfo: " + info + ", fold: " + f + " origStart-End" + origStart + "-" + origEnd);
+                        }
+                    }
+                }
             }
             if (!f.getDescription().equals(desc)) {
                 acc.foldSetDescription(f, desc);

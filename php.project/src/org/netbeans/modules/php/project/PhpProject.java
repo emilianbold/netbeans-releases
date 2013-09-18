@@ -115,6 +115,7 @@ import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.api.UsageLogger;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -260,6 +261,11 @@ public final class PhpProject implements Project {
     };
 
 
+    @NbBundle.Messages({
+        "PhpProject.sourceRoots.sources=Source Files",
+        "PhpProject.sourceRoots.tests=Test Files",
+        "PhpProject.sourceRoots.selenium=Selenium Test Files",
+    })
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
 
@@ -268,9 +274,17 @@ public final class PhpProject implements Project {
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
-        sourceRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SOURCES);
-        testRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.TESTS);
-        seleniumRoots = SourceRoots.create(updateHelper, eval, refHelper, SourceRoots.Type.SELENIUM);
+        sourceRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_sources())
+                .setProperties(PhpProjectProperties.SRC_DIR)
+                .build();
+        testRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_tests())
+                .setPropertyPrefix(PhpProjectProperties.TEST_SRC_DIR)
+                .setTests(true)
+                .build();
+        seleniumRoots = SourceRoots.Builder.create(updateHelper, eval, Bundle.PhpProject_sourceRoots_selenium())
+                .setProperties(PhpProjectProperties.SELENIUM_SRC_DIR)
+                .setTests(true)
+                .build();
 
         PhpModuleImpl phpModule = new PhpModuleImpl(this);
         frameworks = new Frameworks(phpModule);
@@ -391,12 +405,8 @@ public final class PhpProject implements Project {
     /**
      * @return tests directory or <code>null</code>
      */
-    FileObject getTestsDirectory() {
-        for (FileObject root : testRoots.getRoots()) {
-            // return the first one
-            return root;
-        }
-        return null;
+    FileObject[] getTestsDirectories() {
+        return testRoots.getRoots();
     }
 
     /**
@@ -1300,6 +1310,12 @@ public final class PhpProject implements Project {
 
         @Override
         public FileObject fromServer(int projectContext, URL serverURL) {
+            // #219339 - strip down query and/or fragment:
+            serverURL = WebUtils.stringToUrl(WebUtils.urlToString(serverURL, true));
+            if (serverURL == null) {
+                return null;
+            }
+
             initProjectUrl();
             if (projectRootUrl == null) {
                 return null;

@@ -192,7 +192,11 @@ public final class NbMavenProject {
     }
     
 
-    @Messages({"Progress_Download=Downloading Maven dependencies", "MSG_Failed=Failed to download - {0}", "MSG_Done=Finished retrieving dependencies from remote repositories."})
+    @Messages({
+        "Progress_Download=Downloading Maven dependencies", 
+        "# {0} - error message",
+        "MSG_Failed=Failed to download - {0}", 
+        "MSG_Done=Finished retrieving dependencies from remote repositories."})
     private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {
         return rp.create(new Runnable() {
             @Override
@@ -454,7 +458,11 @@ public final class NbMavenProject {
     }
 
 
-    @Messages({"MSG_Checking_Javadoc=Checking Javadoc for {0}", "MSG_Checking_Sources=Checking Sources for {0}"})
+    @Messages({
+        "# {0} - artifact id",
+        "MSG_Checking_Javadoc=Checking Javadoc for {0}", 
+        "# {0} - artifact id",
+        "MSG_Checking_Sources=Checking Sources for {0}"})
     private static void downloadOneJavadocSources(ProgressContributor progress,
                                                NbMavenProjectImpl project, Artifact art, boolean isjavadoc) {
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();

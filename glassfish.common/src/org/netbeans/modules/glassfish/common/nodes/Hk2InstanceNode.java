@@ -114,7 +114,8 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         setIconBaseWithExtension(ICON_BASE);
         
         if(isFullNode) {
-            serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
+            serverInstance.getCommonSupport().addChangeListener(
+                    WeakListeners.change(this, serverInstance));
             instanceContent.add(new RefreshModulesCookie() {
                 @Override
                 public RequestProcessor.Task refresh() {
@@ -177,8 +178,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
             SystemAction.get(ProfileAction.class),
             SystemAction.get(RestartAction.class),
             SystemAction.get(StopServerAction.class),
-// Disabled: Not finished
-//            SystemAction.get(KillServerAction.class),
+            SystemAction.get(KillServerAction.class),
             SystemAction.get(RefreshModulesAction.class),
             null,
             SystemAction.get(RemoveServerAction.class),

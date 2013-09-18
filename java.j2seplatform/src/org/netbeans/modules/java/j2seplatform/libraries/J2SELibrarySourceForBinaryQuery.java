@@ -62,6 +62,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -216,7 +217,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             if (this.cache == null) {
                 // entry is not resolved so directly volume content can be searched for it:
                 final Library _lib = this.lib;
-                if (_lib.getURIContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
+                if (getResolvedURIContent(_lib, manager, J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
                     List<FileObject> result = new ArrayList<FileObject>();
                     for (URL u : _lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
                         FileObject sourceRoot = URLMapper.findFileObject(u);
@@ -293,6 +294,34 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         @Override
         public boolean preferSources() {
             return false;
+        }
+
+        private static List<? extends URI> getResolvedURIContent(
+            @NonNull final Library lib,
+            @NonNull final LibraryManager manager,
+            @NonNull final String type) {
+            final List<? extends URI> content = lib.getURIContent(type);
+            final URL location = manager.getLocation();
+            if (location == null) {
+                return content;
+            } else {
+                final List<URI> res = new ArrayList<>(content.size());
+                for (URI toResolve : content) {
+                    final URI resolved = LibrariesSupport.resolveLibraryEntryURI(location, toResolve);
+                    if (resolved != null) {
+                        res.add(resolved);
+                    } else {
+                        LOG.log(
+                            Level.WARNING,
+                            "Cannot resolve: {0} in: {1}",  //NOI18N
+                            new Object[]{
+                                toResolve,
+                                location
+                            });
+                    }
+                }
+                return res;
+            }
         }
         
     }

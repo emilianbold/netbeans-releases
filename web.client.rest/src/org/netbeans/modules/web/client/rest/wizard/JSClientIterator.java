@@ -60,6 +60,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.client.rest.wizard.RestPanel.JsUi;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
@@ -170,6 +171,21 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                     "TXT_HtmlFile");        // NOI18N
         Panel panel = new HtmlPanel( descriptor );
         panel.getComponent().setName(htmlPanelName);
+        FileObject projectDirectory = project.getProjectDirectory();
+        WebModule webModule = WebModule.getWebModule(projectDirectory);
+        if (webModule != null) {
+            FileObject documentBase = webModule.getDocumentBase();
+            if (documentBase != null) {
+                Templates.setTargetFolder(myWizard, documentBase);
+                myWizard.putProperty(HtmlPanel.PROP_DOCUMENT_BASE, documentBase);
+            }
+        } else {
+            FileObject publicHtml = getRootFolder(project);
+            if (publicHtml != null) {
+                Templates.setTargetFolder(myWizard, publicHtml);
+            }
+        }
+        
         myPanels = new WizardDescriptor.Panel[]{new FinishPanelDelegate(
                 Templates.buildSimpleTargetChooser(project, 
                 sources.getSourceGroups(Sources.TYPE_GENERIC)).
@@ -197,10 +213,11 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                 RestPanel.EXISTED_JQUERY);
         
         JsUi ui = (JsUi)myWizard.getProperty(RestPanel.UI);
-        
-        if ( existedBackbone == null ){
-            if ( addBackbone!=null && addBackbone ){
-                FileObject libs = FileUtil.createFolder(getRootFolder(project),
+
+        if ( existedBackbone == null ) {
+            if ( addBackbone!=null && addBackbone ) {
+                FileObject documentRoot = (FileObject)myWizard.getProperty(HtmlPanel.PROP_DOCUMENT_BASE);
+                FileObject libs = FileUtil.createFolder((documentRoot == null ? getRootFolder(project) : documentRoot),
                         WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                         "TXT_CreateLibs"));                                 // NOI18N

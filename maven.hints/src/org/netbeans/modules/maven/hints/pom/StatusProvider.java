@@ -122,10 +122,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
     }
 
     static class StatusProviderImpl extends UpToDateStatusProvider {
-        private Document document;
+        private final Document document;
         private @NullAllowed POMModel model;
         private Project project;
-        private FileChangeListener listener;
+        private final FileChangeListener listener;
 
         StatusProviderImpl(Document doc) {
             this.document = doc;

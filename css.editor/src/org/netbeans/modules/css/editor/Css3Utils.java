@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.editor;
 
+import java.util.regex.Pattern;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
@@ -56,6 +57,10 @@ import org.openide.filesystems.FileObject;
  * @author mfukala@netbeans.org
  */
 public final class Css3Utils {
+    
+    public static char FILE_SEPARATOR = System.getProperty("file.separator").charAt(0); //NOI18N
+    
+    public static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     
     public static OffsetRange getOffsetRange(Node node) {
         int from = node.from();

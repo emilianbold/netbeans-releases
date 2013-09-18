@@ -70,7 +70,7 @@ import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
-import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
 import org.netbeans.modules.tomcat5.util.LogSupport.LineInfo;
 import org.openide.util.Exceptions;
 

@@ -190,11 +190,11 @@ public class PullAction extends SingleRepositoryAction {
                     public Void call () throws Exception {
                         for (String branch : toDelete) {
                             client.deleteBranch(branch, true, getProgressMonitor());
-                            getLogger().output(Bundle.MSG_PullAction_branchDeleted(branch));
+                            getLogger().outputLine(Bundle.MSG_PullAction_branchDeleted(branch));
                         }
                         setProgress(Bundle.MSG_PullAction_fetching());
                         Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
-                        FetchUtils.log(fetchResult, getLogger());
+                        FetchUtils.log(repository, fetchResult, getLogger());
                         if (isCanceled() || branchToMerge == null) {
                             return null;
                         }

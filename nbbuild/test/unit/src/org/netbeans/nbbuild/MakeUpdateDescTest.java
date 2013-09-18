@@ -87,6 +87,10 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "javax.xml.rpc &gt; 1.1.0' " +
                 "OpenIDE-Module-Name='My Bundle' " +
                 "OpenIDE-Module-Needs='org.netbeans.Netbinox' " +
+                "OpenIDE-Module-Recommends='cnb.org.netbeans.api.progress, "
+                + "cnb.org.netbeans.modules.options.api, cnb.com.jcraft.jsch, "
+                + "cnb.com.jcraft.jzlib, cnb.org.openide.actions, "
+                + "cnb.javax.xml.rpc, cnb.org.apache.xerces, cnb.org.eclipse.osgi' " +
                 "OpenIDE-Module-Short-Description='Hello there!' " +
                 "OpenIDE-Module-Specification-Version='0'/> " +
                 "</module> ", baos.toString().replace('"', '\'').replaceAll("\\s+", " "));

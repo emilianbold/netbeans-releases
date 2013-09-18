@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
- * adds -J-Dnetbeans.patches.%cnb%=%path% to netbeans.run.params execution parameter, links up the module Compile on Save outputs.
+ * adds -J-Dnetbeans.patches.%cnb%=%path% to netbeans.run.params.debug execution parameter, links up the module Compile on Save outputs.
  * @author mkleint
  */
 @ProjectServiceProvider(service=LateBoundPrerequisitesChecker.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM_APPLICATION)
@@ -78,8 +78,11 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
             return true;
         }
         DependencyProjectsProvider dpp = config.getProject().getLookup().lookup(DependencyProjectsProvider.class);
+        
+        //only one of these properties should ever be coming down from PrerequisitesCheckers
         String params = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
-        StringBuilder sb = new StringBuilder(params != null ? params : "");
+        String oldparams = config.getProperties().get(NetBeansRunParamsIDEChecker.OLD_PROPERTY);
+        StringBuilder sb = new StringBuilder(params != null ? params : oldparams != null ? oldparams : "");
         final List<DependencyProjectsProvider.Pair> nonModules = new ArrayList<DependencyProjectsProvider.Pair>();
         final Map<String, List<DependencyProjectsProvider.Pair>> extraCP = new HashMap<String, List<DependencyProjectsProvider.Pair>>();
         final Map<String, DependencyProjectsProvider.Pair> modules = new HashMap<String, DependencyProjectsProvider.Pair>();
@@ -150,8 +153,10 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
                 }            
             
         }
+        //hard to decide what prop to set if none was set before, we need to recheck the version and act accordingly
+        String prop = NetBeansRunParamsIDEChecker.usingNbmPlugin311(config.getMavenProject()) ? NetBeansRunParamsIDEChecker.PROPERTY : NetBeansRunParamsIDEChecker.OLD_PROPERTY;
         if (sb.length() > 0) {
-            config.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, sb.toString());
+            config.setProperty(prop, sb.toString());
         }
         return true;
     }

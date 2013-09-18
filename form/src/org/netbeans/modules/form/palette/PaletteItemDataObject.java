@@ -243,9 +243,9 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
             buff.append("\" name=\""); // NOI18N
             buff.append(entry.getPicklingName());
             buff.append("\" />\n"); // NOI18N
-            buff.append("  </classpath>\n"); // NOI18N
-            buff.append("</palette_item>\n"); // NOI18N
         }
+        buff.append("  </classpath>\n"); // NOI18N
+        buff.append("</palette_item>\n"); // NOI18N
 
         FileLock lock = itemFile.lock();
         OutputStream os = itemFile.getOutputStream(lock);

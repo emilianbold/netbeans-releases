@@ -169,7 +169,7 @@ class Matcher {
     Matcher(String pattern) {
         List<Item> list = new ArrayList<Item>();
         boolean unmatched = false; // Default for no items.
-        if (pattern != null) {
+        if (pattern != null && !pattern.contains("${")) {
             String[] strItems = pattern.split(",");
             for (String strItem : strItems) {
 

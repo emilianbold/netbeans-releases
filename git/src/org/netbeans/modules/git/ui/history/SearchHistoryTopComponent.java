@@ -50,6 +50,7 @@ import org.openide.util.HelpCtx;
 import java.io.File;
 import java.awt.BorderLayout;
 import java.util.List;
+import org.netbeans.modules.git.GitModuleConfig;
 
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchHistoryTopComponent")
 public class SearchHistoryTopComponent extends TopComponent {
@@ -84,10 +85,24 @@ public class SearchHistoryTopComponent extends TopComponent {
         shp.setSearchCriteria(showCriteria);
     }
 
-    void setSearchCommitId (String commitId) {
+    void setSearchCommitFrom (String commitId) {
         if (commitId != null) {
             scp.tfFrom.setText(commitId);
+        }
+    }
+    
+    void setSearchCommitTo (String commitId) {
+        if (commitId != null) {
             scp.tfTo.setText(commitId);
+        }
+    }
+    
+    void setBranch (String branch) {
+        if (branch != null) {
+            shp.setBranch(branch);
+            if (GitModuleConfig.getDefault().isSearchOnlyCurrentBranchEnabled()) {
+                scp.setBranch(branch);
+            }
         }
     }
 

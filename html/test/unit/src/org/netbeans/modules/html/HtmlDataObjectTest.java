@@ -46,8 +46,13 @@ package org.netbeans.modules.html;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.MockServices;
@@ -70,6 +75,8 @@ import org.openide.util.RequestProcessor;
  * @author Jaroslav Tulach
  */
 public class HtmlDataObjectTest extends CslTestBase {
+
+    private static final Logger LOGGER = Logger.getLogger(HtmlDataObjectTest.class.getName());
 
     @SuppressWarnings("deprecation")
     private static void init() {
@@ -127,7 +134,7 @@ public class HtmlDataObjectTest extends CslTestBase {
     }
 
     public void testModifySave() throws IOException, BadLocationException {
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test.html");
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test1.html");
         assertNotNull(fo);
         final DataObject obj = DataObject.find(fo);
 
@@ -138,7 +145,6 @@ public class HtmlDataObjectTest extends CslTestBase {
         assertTrue(doc instanceof BaseDocument);
 
         //listen on DO's lookup for the savecookie
-        final Object lock = new Object();
         final Lookup.Result<SaveCookie> saveCookieResult = obj.getLookup().lookupResult(SaveCookie.class);
         saveCookieResult.addLookupListener(new LookupListener() {
 
@@ -152,50 +158,37 @@ public class HtmlDataObjectTest extends CslTestBase {
                 //remove the listener
                 saveCookieResult.removeLookupListener(this);
 
-                synchronized (lock) {
-                    lock.notifyAll();
+                assertTrue(obj.isModified());
+                SaveCookie sc = allInstances.iterator().next();
+                try {
+                    sc.save();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
+                assertFalse(obj.isModified());
+
+                assertNull(obj.getLookup().lookup(SaveCookie.class));
+
             }
 
         });
 
-        EventQueue.invokeLater(new Runnable() {
-
+        ((BaseDocument) doc).runAtomic(new Runnable() {
             @Override
             public void run() {
-                ((BaseDocument) doc).runAtomic(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            doc.insertString(0, "hello", null);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
+                try {
+                    //the document modification synchronously triggers the DataObject's lookup change  - SaveCookie added
+                    doc.insertString(0, "hello", null);
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-
         });
 
-        //wait for some time until the savecookie is asynchronously added
-        synchronized (lock) {
-            try {
-                lock.wait(2000);
-            } catch (InterruptedException ex) {
-                throw new AssertionError("No SaveCookie added to DataObject's lookup upon bound document instance change!");
-            }
-        }
-
-        assertNotNull(obj.getLookup().lookup(SaveCookie.class));
-
-        obj.getLookup().lookup(SaveCookie.class).save();
-
-        assertFalse(obj.isModified());
-        assertNull(obj.getLookup().lookup(SaveCookie.class));
     }
 
     public void testUnmodifyViaSetModified() throws IOException, BadLocationException {
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test.html");
+        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test2.html");
         assertNotNull(fo);
         final DataObject obj = DataObject.find(fo);
 

@@ -62,7 +62,7 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
 
     private final Project prj;
     private WeakReference<List<Pattern>> ref;
-    private static String DEFAULT_IMP = "*";
+    private static final String DEFAULT_IMP = "*";
     
     public AccessQueryImpl(Project prj) {
         this.prj = prj;

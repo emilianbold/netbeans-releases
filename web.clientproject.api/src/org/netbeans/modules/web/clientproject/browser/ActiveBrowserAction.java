@@ -65,7 +65,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
-import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
@@ -76,6 +75,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserPickerPopup;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -120,7 +120,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private Lookup.Result<ProjectBrowserProvider> resultPBP;
     private LookupListener lookupListener;
     private WebBrowser lastWebBrowser = null;
-    
+
     private ChangeListener ideBrowserChangeListener = new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent e) {
@@ -132,7 +132,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
             updateButton(pbp);
         }
     };
-    
+
     private static final RequestProcessor RP = new RequestProcessor(ActiveBrowserAction.class);
 
     public ActiveBrowserAction() {
@@ -260,7 +260,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         private WebBrowser wb;
 
         public SelectBrowserAction(ProjectBrowserProvider pbp, WebBrowser wb) {
-            super(wb.getName(), new ImageIcon(wb.getIconImage(isSmallToolbarIcon())));
+            super(BrowserUISupport.getLongDisplayName(wb), new ImageIcon(wb.getIconImage(isSmallToolbarIcon())));
             this.pbp = pbp;
             this.wb = wb;
         }
@@ -381,7 +381,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 Image im;
                 if (wb != null) {
                     im = wb.getIconImage(isSmallToolbarIcon());
-                    tb.setToolTipText(wb.getName());
+                    tb.setToolTipText(BrowserUISupport.getLongDisplayName(wb));
                     wb.addChangeListener(ideBrowserChangeListener);
                 } else {
                     im = ImageUtilities.loadImage(isSmallToolbarIcon() ? GENERIC_SMALL : GENERIC_LARGE); // NOI18N
@@ -400,7 +400,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     private Image badgeImageWithArrow(Image im) {
         return ImageUtilities.mergeImages(im,
-            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 
+            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"),
             isSmallToolbarIcon() ? 20 : 28, isSmallToolbarIcon() ? 6 : 10); // NOI18N
     }
 

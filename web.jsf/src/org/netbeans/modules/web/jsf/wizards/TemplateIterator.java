@@ -51,7 +51,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -247,10 +249,12 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     }
 
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wiz) {
-        Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
+        Sources sources = (Sources) ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups1 = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         SourceGroup[] sourceGroups;
-        if (sourceGroups1.length < 2) {
+        if (sourceGroups1.length == 0) {
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else if (sourceGroups1.length == 1) {
             sourceGroups = new SourceGroup[]{sourceGroups1[0], sourceGroups1[0]};
         } else {
             sourceGroups = sourceGroups1;

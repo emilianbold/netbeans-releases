@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
@@ -71,6 +72,7 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         scanForProjectsCheckBox.setSelected(GitModuleConfig.getDefault().getShowCloneCompleted());
     }
     
+    @Override
     public String getName() {
         if (destinationDirectoryPanel == null) {
             return null;
@@ -80,6 +82,10 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
     
     public String getDirectory() {
         return directoryField.getText();
+    }
+    
+    void setDirectory (String parentFolder) {
+        directoryField.setText(parentFolder);
     }
 
     public String getCloneName() {
@@ -140,7 +146,7 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CloneDestinationPanel.class, "CloneDestinationPanel.jLabel3.text")); // NOI18N
 
-        remoteTextField.setText("origin");
+        remoteTextField.setText(GitUtils.REMOTE_ORIGIN);
         remoteTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 remoteTextFieldActionPerformed(evt);
@@ -151,32 +157,30 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         destinationDirectoryPanel.setLayout(destinationDirectoryPanelLayout);
         destinationDirectoryPanelLayout.setHorizontalGroup(
             destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(destinationDirectoryPanelLayout.createSequentialGroup()
+                    .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(nameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(directoryLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(nameField)
+                        .addComponent(directoryField))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(directoryBrowseButton)))
             .addGroup(destinationDirectoryPanelLayout.createSequentialGroup()
                 .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scanForProjectsCheckBox)
                     .addGroup(destinationDirectoryPanelLayout.createSequentialGroup()
-                        .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(nameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(directoryLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                            .addComponent(directoryField, javax.swing.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(directoryBrowseButton)))
-                .addGap(0, 0, 0))
-            .addGroup(destinationDirectoryPanelLayout.createSequentialGroup()
-                .addComponent(scanForProjectsCheckBox)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(remoteTextField)
+                            .addComponent(branchesComboBox, 0, 260, Short.MAX_VALUE))))
                 .addContainerGap())
-            .addGroup(destinationDirectoryPanelLayout.createSequentialGroup()
-                .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(remoteTextField)
-                    .addComponent(branchesComboBox, 0, 260, Short.MAX_VALUE))
-                .addGap(222, 222, 222))
         );
         destinationDirectoryPanelLayout.setVerticalGroup(
             destinationDirectoryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -232,6 +236,7 @@ public final class CloneDestinationPanel extends JPanel implements ActionListene
         // TODO add your handling code here:
     }//GEN-LAST:event_remoteTextFieldActionPerformed
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() == directoryBrowseButton) {
             onBrowseClick();

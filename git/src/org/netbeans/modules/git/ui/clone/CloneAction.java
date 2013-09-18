@@ -171,9 +171,15 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();
             List<String> branches = wiz.getBranchNames();
-            final List<String> refSpecs = new ArrayList<String>(branches.size());
-            for (String branchName : branches) {
-                refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
+            final List<String> refSpecs;
+            if (branches == CloneWizard.ALL_BRANCHES) {
+                // all branches to fetch
+                refSpecs = Collections.<String>singletonList(GitUtils.getGlobalRefSpec(remoteName));
+            } else {
+                refSpecs = new ArrayList<String>(branches.size());
+                for (String branchName : branches) {
+                    refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
+                }
             }
             final GitBranch branch = wiz.getBranch();
             final boolean scan = wiz.scanForProjects();
@@ -223,19 +229,19 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 private void log (Map<String, GitTransportUpdate> updates) {
                     OutputLogger logger = getLogger();
                     if (updates.isEmpty()) {
-                        logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.noChange")); //NOI18N
+                        logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.noChange")); //NOI18N
                     } else {
                         for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                             GitTransportUpdate update = e.getValue();
                             if (update.getType() == Type.BRANCH) {
-                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateBranch", new Object[] { //NOI18N
+                                logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateBranch", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getOldObjectId(),
                                     update.getNewObjectId(),
                                     update.getResult(),
                                 }));
                             } else {
-                                logger.output(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateTag", new Object[] { //NOI18N
+                                logger.outputLine(NbBundle.getMessage(CloneAction.class, "MSG_CloneAction.updates.updateTag", new Object[] { //NOI18N
                                     update.getLocalName(), 
                                     update.getResult(),
                                 }));

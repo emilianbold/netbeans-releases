@@ -77,7 +77,9 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -376,6 +378,7 @@ class SummaryView extends AbstractSummaryView {
         boolean revisionsSelected = false;
         boolean missingFile = false;   
         boolean viewEnabled = false;
+        boolean revertEnabled = false;
         final boolean singleSelection = selection.length == 1;
         
         for (Object o : selection) {
@@ -390,6 +393,7 @@ class SummaryView extends AbstractSummaryView {
         } else {
             drev = new RepositoryRevision.Event[selection.length];
 
+            revertEnabled = true;
             for(int i = 0; i < selection.length; i++) {
                 if (!(selection[i] instanceof GitLogEvent)) {
                     return;
@@ -402,6 +406,12 @@ class SummaryView extends AbstractSummaryView {
                 if (drev[i].getFile() != null && drev[i].getAction() != 'D') {
                     // we have something to view
                     viewEnabled = true;
+                } else {
+                    revertEnabled = false;
+                }
+                // only one revision can be selected
+                if (i > 0) {
+                    revertEnabled &= drev[i].getLogInfoHeader() == drev[i - 1].getLogInfoHeader();
                 }
             }                
             container = drev[0].getLogInfoHeader();
@@ -487,6 +497,27 @@ class SummaryView extends AbstractSummaryView {
                                     if (getProgressMonitor().isCanceled()) {
                                         return;
                                     }
+                                }
+                            }
+                        }
+                    }.start(Git.getInstance().getRequestProcessor(), master.getRepository(), NbBundle.getMessage(SummaryView.class, "MSG_SummaryView.openingFilesFromHistory")); //NOI18N
+                }
+            }));
+            if (revertEnabled) {
+                menu.add(new JMenuItem(drev[0].getRevertAction(null).createAction(master.getRepository(), drev)));
+            }
+            menu.add(new JMenuItem(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                {
+                    setEnabled(canAnnotate);
+                }
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    new GitProgressSupport() {
+                        @Override
+                        protected void perform () {
+                            for (RepositoryRevision.Event evt : drev) {
+                                if (evt.getFile() != null && evt.getAction() != 'D') {
+                                    Utils.openFile(FileUtil.normalizeFile(evt.getFile()));
                                 }
                             }
                         }

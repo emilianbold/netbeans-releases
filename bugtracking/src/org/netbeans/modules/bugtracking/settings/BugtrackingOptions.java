@@ -50,7 +50,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import javax.swing.JComponent;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.settings.DashboardOptions;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -88,7 +90,13 @@ public class BugtrackingOptions extends OptionsPanelController {
             while (it.hasNext()) {
                 AdvancedOption option = it.next();
                 String category = option.getDisplayName();
-                OptionsPanelController controller = option.create();
+                OptionsPanelController controller = null;
+                try {
+                    controller = option.create();
+                } catch (Throwable t) {
+                    BugtrackingManager.LOG.log(Level.WARNING, "Problems while creating option category : " + category, t);
+                    continue;
+                }
                 categoryToController.put(category, controller);
             }
         }

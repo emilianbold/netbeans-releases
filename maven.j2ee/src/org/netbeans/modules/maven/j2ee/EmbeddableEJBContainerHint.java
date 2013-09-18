@@ -266,7 +266,7 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                 }
                 if (systemDep != null) {
                     Properties props = model.getProject().getProperties();
-                    if (props.getProperty(PROP_GF_EMBEDDED_JAR) == null) {
+                    if (props != null && props.getProperty(PROP_GF_EMBEDDED_JAR) == null) {
                         props.setProperty(PROP_GF_EMBEDDED_JAR, systemDep.getAbsolutePath());
                     }
                     dep.setSystemPath("${"+PROP_GF_EMBEDDED_JAR+ "}");

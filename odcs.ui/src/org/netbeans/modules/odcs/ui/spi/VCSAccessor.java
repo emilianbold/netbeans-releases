@@ -69,9 +69,10 @@ public abstract class VCSAccessor extends SourceAccessor<ODCSProject> {
             String repositoryName,
             String commitId);
     
-    public abstract RepositoryInitializer getRepositoryInitializer (String repositoryKind);
     
     public abstract Action getOpenSourcesAction(ODCSUiServer server);
+    
+    public abstract RepositoryInitializer getRepositoryInitializer (String repositoryKind, String repositoryUrl);
     
     public static interface RepositoryInitializer {
         

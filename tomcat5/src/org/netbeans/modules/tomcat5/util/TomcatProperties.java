@@ -64,8 +64,8 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManager.TomcatVersion;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.customizer.CustomizerSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -629,7 +629,15 @@ public class TomcatProperties {
         // tomcat libs
         List<URL> retValue = new ArrayList<URL>();
         retValue.addAll(listUrls(new File(homeDir, tm.libFolder()), nbFilter));
-        
+
+        // TOMEE as webapp
+        if (tm.isTomEE()) {
+            File tomee = TomcatFactory.getTomEEWebAppJar(homeDir, baseDir);
+            if (tomee != null) {
+                retValue.addAll(listUrls(tomee.getParentFile(), nbFilter));
+            }
+        }
+
         if (tm.isTomcat60()) {
             try {
                 retValue.add(new File(homeDir, "bin/tomcat-juli.jar").toURI().toURL()); // NOI18N

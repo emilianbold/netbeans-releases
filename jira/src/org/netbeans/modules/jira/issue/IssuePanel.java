@@ -1227,7 +1227,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (evt.getSource() != issue) {
                 return;
             }
-            if (IssueStatusProvider.EVENT_SEEN_CHANGED.equals(evt.getPropertyName())) {
+            if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
                 updateFieldStatuses();
             }
         }

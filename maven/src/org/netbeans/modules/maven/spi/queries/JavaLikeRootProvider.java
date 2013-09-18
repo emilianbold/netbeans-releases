@@ -51,6 +51,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  * Generally these roots (under {@code src/test/KIND/} also) will get the same classpath information as Java.
  * Creation of {@link SourceGroup}s (or their nodes) is not automatic, as this requires display labels
  * and might merit further customization.
+ * Related/similar to {@link OtherSourcesExclude}
+ * 
+ * Note: the api is a bit simplistic for performance reasons, eg. if user reconfigures the src/main/groovy content to a different location in pom.xml we silently assume that
+ * src/main/groovy doesn't exist then.
  * @see ProjectServiceProvider
  * @since 2.36
  */

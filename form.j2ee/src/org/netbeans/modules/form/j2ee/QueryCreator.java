@@ -56,11 +56,11 @@ import org.netbeans.modules.form.codestructure.CodeExpressionOrigin;
  */
 class QueryCreator implements CreationDescriptor.Creator {
     /** Parameter types. */
-    private Class[] paramTypes = new Class[] {Object.class/*EntityManager.class*/, String.class, int.class, int.class};
+    private final Class[] paramTypes = new Class[] {Object.class/*EntityManager.class*/, String.class, int.class, int.class};
     /** Exception types. */
-    private Class[] exTypes = new Class[0];
+    private final Class[] exTypes = new Class[0];
     /** Property names. */
-    private String[] propNames = new String[] {"entityManager", "query", "firstResult", "maxResults"}; // NOI18N
+    private final String[] propertyNames = new String[] {"entityManager", "query", "firstResult", "maxResults"}; // NOI18N
     
     /**
      * Returns number of parameters of the creator.
@@ -99,7 +99,7 @@ class QueryCreator implements CreationDescriptor.Creator {
      */
     @Override
     public String[] getPropertyNames() {
-        return propNames;
+        return propertyNames;
     }
     
     /**
@@ -128,6 +128,8 @@ class QueryCreator implements CreationDescriptor.Creator {
      * Returns creation code according to given properties.
      *
      * @param props properties describing the instance whose creation code should be returned.
+     * @param propNames not used
+     * @param propCodes not used
      * @param expressionType type of the expression to create.
      * @return creation code that reflects values of the given properties.
      */
@@ -141,15 +143,15 @@ class QueryCreator implements CreationDescriptor.Creator {
         String maxResults = null;
         for (int i=0; i<props.length; i++) {
             String propName = props[i].getName();
-            if (propNames[0].equals(propName)) {
+            if (propertyNames[0].equals(propName)) {
                 entityManager = props[i].getJavaInitializationString();
-            } else if (propNames[1].equals(propName)) {
+            } else if (propertyNames[1].equals(propName)) {
                 query = props[i].getJavaInitializationString();
-            } else if (propNames[2].equals(propName)) {
+            } else if (propertyNames[2].equals(propName)) {
                 if (props[i].isChanged()) {
                     firstResult = props[i].getJavaInitializationString();
                 }
-            } else if (propNames[3].equals(propName)) {
+            } else if (propertyNames[3].equals(propName)) {
                 if (props[i].isChanged()) {
                     maxResults = props[i].getJavaInitializationString();
                 }

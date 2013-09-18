@@ -905,9 +905,9 @@ public class BugzillaRepository {
             BugzillaIssue issue = getIssue(id);
             if (issue != null) {
                 switch (issue.getStatus()) {
-                    case MODIFIED:
+                    case INCOMING_MODIFIED:
                         return Status.ISSUE_STATUS_MODIFIED;
-                    case NEW:
+                    case INCOMING_NEW:
                         return Status.ISSUE_STATUS_NEW;
                     case SEEN:
                         return Status.ISSUE_STATUS_SEEN;

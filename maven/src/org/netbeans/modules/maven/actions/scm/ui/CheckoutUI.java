@@ -68,14 +68,17 @@ import org.openide.util.NbBundle.Messages;
  */
 public class CheckoutUI extends javax.swing.JPanel {
 
-    private static File lastFolder = new File(System.getProperty("user.home")); //NOI18N
+    private static final File lastFolder = new File(System.getProperty("user.home")); //NOI18N
 
     private final JButton checkoutButton;
-    private Scm scm;
-    private MavenProject project;
+    private final Scm scm;
+    private final MavenProject project;
 
     /** Creates new form CheckoutUI */
-    @Messages({"LBL_Description=<html>Check out {0} sources from repository</html>", "BTN_Checkout=Check Out"})
+    @Messages({
+        "# {0} - project name",
+        "LBL_Description=<html>Check out {0} sources from repository</html>", 
+        "BTN_Checkout=Check Out"})
     public CheckoutUI(MavenProject proj) {
         this.project = proj;
         this.scm = proj.getScm();

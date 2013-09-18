@@ -43,15 +43,13 @@
 package org.netbeans.modules.maven.apisupport;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.Arrays;
+import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.settings.Settings;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
@@ -64,14 +62,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.modules.maven.model.pom.Build;
-import org.netbeans.modules.maven.model.pom.Configuration;
-import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.Plugin;
-import org.netbeans.modules.maven.model.pom.PluginManagement;
 
 /**
  * Ensures that {@code netbeans.run.params.ide} will be interpolated into {@code netbeans.run.params}.
@@ -83,112 +77,110 @@ import org.netbeans.modules.maven.model.pom.PluginManagement;
 public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
 
     private static final String MASTER_PROPERTY = "netbeans.run.params"; // NOI18N
-    static final String PROPERTY = "netbeans.run.params.ide"; // NOI18N
-    private static final String ADDITIONAL_ARGUMENTS = "additionalArguments"; // NOI18N
+    static final String OLD_PROPERTY = "netbeans.run.params.ide"; // NOI18N
+    static final String PROPERTY = "netbeans.run.params.debug"; // NOI18N - since nbm-maven-plugin 3.11.1
 
     public @Override boolean checkRunConfig(RunConfig config) {
-        String val = config.getProperties().get(PROPERTY);
-        if (val == null) {
-            return true;
-        }
+        String val = config.getProperties().get(OLD_PROPERTY);
         MavenProject prj = config.getMavenProject();
-        String eval;
-        try {
-            eval = (String) new NBPluginParameterExpressionEvaluator(prj, new Settings(), config.getProperties()).evaluate(val);
-        } catch (ExpressionEvaluationException ex) {
-            Exceptions.printStackTrace(ex);
+        boolean usingNew = usingNbmPlugin311(prj);
+        if (usingNew) {
+            if (val == null) {
+                return true;
+            }
+            //modified nbactions.xml file? just adjust to new property
+            config.setProperty(PROPERTY, val);
+            config.setProperty(OLD_PROPERTY, null);
             return true;
         }
-        String text = null;
-        for (String goal : config.getGoals()) {
-            text = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, ADDITIONAL_ARGUMENTS, goal, "netbeans.run.params");
-            if (text != null) {
-                break;
+        if (val == null) { //!usingNew
+            val = config.getProperties().get(PROPERTY);
+            if (val == null) {
+                //using old version of nbm plugin but also not using the old or new property, so it should be save to continue.
+                return true;
             }
+            config.setProperty(OLD_PROPERTY, val);
         }
-        if (text == null) {
-            text = prj.getProperties().getProperty(MASTER_PROPERTY);
-        }
-        if (text == null || !text.contains(eval)) {
-            missingInterpolation(prj.getFile());
-            return false;
-        }
-        return true;
+        //offer upgrade to new version.
+        return removeInterpolation(prj.getFile());
+        
     }
 
     @Messages({
-        "# {0} - property name", "# {1} - pom.xml file", "NetBeansRunParamsIDEChecker.msg_confirm=<html>The IDE needs to define <code>$'{'{0}}</code> in order to run this action.<br>Currently your project''s plugin configuration does not interpret this variable.<br>Adjust <code>{1}</code> to use it if defined?",
-        "NetBeansRunParamsIDEChecker.title_confirm=Missing Variable in POM"
+        "# {0} - property name", "# {1} - pom.xml file", 
+        "NetBeansRunParamsIDEChecker.msg_confirm=<html>New version of nbm-maven-plugin is available that doesn''t require pom.xml modification to debug or profile your project.<br>Upgrade to the new version of nbm-maven-plugin and remove the netbeans.run.params.ide property?",
+        "NetBeansRunParamsIDEChecker.title_confirm=Upgrade nbm-maven-plugin to newer version",
+        "NetBeansRunParamsIDEChecker.upgradeButton=Upgrade nbm-maven-plugin"
     })
-    private static void missingInterpolation(File pom) {
-        if (DialogDisplayer.getDefault().notify(new Confirmation(NetBeansRunParamsIDEChecker_msg_confirm(PROPERTY, pom), NetBeansRunParamsIDEChecker_title_confirm(), NotifyDescriptor.OK_CANCEL_OPTION)) != NotifyDescriptor.OK_OPTION) {
-            return;
+    private static boolean removeInterpolation(File pom) {
+        Object upgrade = NetBeansRunParamsIDEChecker_upgradeButton();
+        Confirmation dd = new Confirmation(NetBeansRunParamsIDEChecker_msg_confirm(OLD_PROPERTY, pom), NetBeansRunParamsIDEChecker_title_confirm());
+        dd.setOptions(new Object[] {upgrade, NotifyDescriptor.CANCEL_OPTION} );
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (ret != upgrade) {
+            return true;
         }
-        Utilities.performPOMModelOperations(FileUtil.toFileObject(pom), Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
-            public @Override void performOperation(POMModel model) {
-                POMComponentFactory factory = model.getFactory();
-                Project project = model.getProject();
-                //find and remove value from additionaParameters mojo paramerer
-                String val = findAndRemoveAdditionalParameters(model);
-                Properties properties = project.getProperties();
-                if (properties == null) {
-                    properties = factory.createProperties();
-                    project.setProperties(properties);
-                }
-                if (properties.getProperty(PROPERTY) == null) {
-                    properties.setProperty(PROPERTY, "");
-                }
-                String args = properties.getProperty(MASTER_PROPERTY);
-                String ref = "${" + PROPERTY + "}"; // NOI18N
-                if (args == null) {
-                    args = ref;
-                } else if (!args.contains(ref)) {
-                    args += " " + ref;
-                }
-                if (val != null) {
-                    args = args + " " + val;
-                }
-                properties.setProperty(MASTER_PROPERTY, args);
-            }
-
-            private String findAndRemoveAdditionalParameters(POMModel model) {
-                Project project = model.getProject();
-                Build bld = project.getBuild();
-                if (bld != null) {
-                    Plugin plg = bld.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
-                    if (plg != null) {
-                        Configuration conf = plg.getConfiguration();
-                        if (conf != null) {
-                            for (POMExtensibilityElement ex : conf.getConfigurationElements()) {
-                                if ("additionalArguments".equals(ex.getQName().getLocalPart())) {
-                                    String s = ex.getElementText();
-                                    conf.removeExtensibilityElement(ex);
-                                    return s;
-                                }
-                            }
-                        }
-                    }
-                    PluginManagement pm = bld.getPluginManagement();
-                    if (pm != null) {
-                        plg = pm.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
-                        if (plg != null) {
-                            Configuration conf = plg.getConfiguration();
-                            if (conf != null) {
-                                for (POMExtensibilityElement ex : conf.getConfigurationElements()) {
-                                    if ("additionalArguments".equals(ex.getQName().getLocalPart())) {
-                                        String s = ex.getElementText();
-                                        conf.removeExtensibilityElement(ex);
-                                        return s;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                //we could also check profiles content but that would be a bit messy already..
-                return null;
-            }
-        }));
+        if (ret == upgrade) {
+            Utilities.performPOMModelOperations(FileUtil.toFileObject(pom), 
+                    Arrays.<ModelOperation<POMModel>>asList(new ModelOperation[] { createUpgradePluginOperation(), createRemoveIdePropertyOperation()}));
+            return false;
+        }
+        return false;
     }
 
+    private static ModelOperation<POMModel> createUpgradePluginOperation() {
+        return new ModelOperation<POMModel>() {
+            public @Override
+            void performOperation(POMModel model) {
+                POMComponentFactory factory = model.getFactory();
+                Project project = model.getProject();
+                Build bld = project.getBuild();
+                if (bld == null) {
+                    bld = factory.createBuild();
+                    project.setBuild(bld);
+                }
+                Plugin plg = bld.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
+                if (plg == null) {
+                    plg = factory.createPlugin();
+                    plg.setGroupId(MavenNbModuleImpl.GROUPID_MOJO);
+                    plg.setArtifactId(MavenNbModuleImpl.NBM_PLUGIN);
+                    plg.setExtensions(Boolean.TRUE);
+                    bld.addPlugin(plg);
+                }
+                plg.setVersion(MavenNbModuleImpl.LATEST_NBM_PLUGIN_VERSION); //
+            }
+        };
+    }
+    
+    private static ModelOperation<POMModel> createRemoveIdePropertyOperation() {
+      return new ModelOperation<POMModel>() {
+            public @Override void performOperation(POMModel model) {
+                Project project = model.getProject();
+                Properties properties = project.getProperties();
+                if (properties != null) {
+                    if (properties.getProperty(OLD_PROPERTY) != null) {
+                        properties.setProperty(OLD_PROPERTY, null);
+                    }
+                    String args = properties.getProperty(MASTER_PROPERTY);
+                    if (args != null) {
+                        String ref = "${" + OLD_PROPERTY + "}"; // NOI18N
+                        if (args.contains(ref)) {
+                            args = args.replace(ref, "");
+                            if (args.trim().length() == 0) {
+                                args = null;
+                            }
+                            properties.setProperty(MASTER_PROPERTY, args);
+                        }
+                    }
+                }
+            }
+      };
+    }
+
+    
+    static boolean usingNbmPlugin311(MavenProject prj) {
+        String v = PluginPropertyUtils.getPluginVersion(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
+        return v != null && new ComparableVersion(v).compareTo(new ComparableVersion("3.11.1")) >= 0;
+    } 
+    
 }

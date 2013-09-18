@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -62,14 +63,14 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
-import org.netbeans.modules.odcs.versioning.spi.ApiProvider.LocalRepositoryInitializer;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.server.ui.spi.SourceHandle;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -145,7 +146,7 @@ public class SourceAccessorImpl extends VCSAccessor {
     }
 
     @Override
-    public Action getOpenHistoryAction (ProjectHandle<ODCSProject> prjHandle, String repositoryName, String commitId) {
+    public Action getOpenHistoryAction (ProjectHandle<ODCSProject> prjHandle, String repositoryName, final String commitId) {
         assert !EventQueue.isDispatchThread();
         List<SourceHandle> sources = getSources(prjHandle, repositoryName, true);
         Action action = null;
@@ -153,9 +154,16 @@ public class SourceAccessorImpl extends VCSAccessor {
             SourceHandleImpl sourceHandle = (SourceHandleImpl) sources.get(0);
             final File workdir = sourceHandle.getWorkingDirectory();
             if (workdir != null) {
-                ApiProvider[] providers = getProvidersFor(ScmType.GIT); // support only git for now
-                for (ApiProvider p : providers) {
-                    action = p.createOpenHistoryAction(workdir, commitId);
+                VCSProvider[] providers = getProvidersFor(ScmType.GIT); // support only git for now
+                for (final VCSProvider p : providers) {
+                    if(p.providesOpenHistory(workdir)) {
+                        action = new AbstractAction() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                p.openHistory(workdir, commitId);
+                            }
+                        };
+                    }
                     if (action != null) {
                         break;
                     }
@@ -166,15 +174,18 @@ public class SourceAccessorImpl extends VCSAccessor {
     }
 
     @Override
-    public RepositoryInitializer getRepositoryInitializer (String repositoryKind) {
+    public RepositoryInitializer getRepositoryInitializer (String repositoryKind, String repositoryUrl) {
         RepositoryInitializer initializer = null;
         ScmType type = ScmType.valueOf(repositoryKind);
-        ApiProvider[] providers = getProvidersFor(type);
+        VCSProvider[] providers = getProvidersFor(type);
         if (providers.length > 0) {
-            ApiProvider provider = providers[0];
-            LocalRepositoryInitializer localRepoInitializer = provider.getRepositoryInitializer();
-            if (localRepoInitializer != null) {
-                initializer = new RepositoryInitImpl(localRepoInitializer);
+            VCSProvider provider = providers[0];
+            try {
+                if (provider.providesLocalInit(repositoryUrl)) {
+                    initializer = new RepositoryInitImpl(provider);
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         return initializer;
@@ -236,34 +247,35 @@ public class SourceAccessorImpl extends VCSAccessor {
     static boolean isSupported (ScmType type) {
         boolean supported;
         if (type == null) {
-            supported = Lookup.getDefault().lookup(ApiProvider.class) != null;
+            supported = Lookup.getDefault().lookup(VCSProvider.class) != null;
         } else {
             supported = getProvidersFor(type).length > 0;
         }
         return supported;
     }
 
-    static ApiProvider[] getProvidersFor (ScmType type) {
-        Collection<? extends ApiProvider> allProviders = Lookup.getDefault().lookupAll(ApiProvider.class);
-        List<ApiProvider> providers = new ArrayList<ApiProvider>(allProviders.size());
-        for (ApiProvider prov : allProviders) {
-            if (type == null || prov.accepts(type.name())) {
+    static VCSProvider[] getProvidersFor (ScmType type) {
+        Collection<? extends VCSProvider> allProviders = Lookup.getDefault().lookupAll(VCSProvider.class);
+        List<VCSProvider> providers = new ArrayList<VCSProvider>(allProviders.size());
+        for (VCSProvider prov : allProviders) {
+            if (type == null || // XXX if is external ???
+                Utils.isVCSProviderOfType(type, prov)) {
                 providers.add(prov);
             }
         }
-        return providers.toArray(new ApiProvider[providers.size()]);
+        return providers.toArray(new VCSProvider[providers.size()]);
     }
     
     private static class RepositoryInitImpl implements RepositoryInitializer {
-        private final LocalRepositoryInitializer delegate;
+        private final VCSProvider provider;
 
-        private RepositoryInitImpl (LocalRepositoryInitializer delegate) {
-            this.delegate = delegate;
+        private RepositoryInitImpl (VCSProvider provider) {
+            this.provider = provider;
         }
 
         @Override
         public void initialize (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException {
-            delegate.initLocalRepository(localFolder, repositoryUrl, credentials);
+            provider.localInit(localFolder, repositoryUrl, credentials);
         }
         
     }

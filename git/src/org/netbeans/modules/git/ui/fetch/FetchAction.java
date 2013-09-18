@@ -128,7 +128,7 @@ public class FetchAction extends SingleRepositoryAction {
         "# {0} - repository name", "LBL_FetchAction.progressName=Fetching - {0}",
         "# {0} - branch name", "MSG_FetchAction.branchDeleted=Branch {0} deleted."
     })
-    public Task fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
+    public Task fetch (final File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -145,7 +145,7 @@ public class FetchAction extends SingleRepositoryAction {
                     GitClient client = getClient();
                     for (String branch : toDelete) {
                         client.deleteBranch(branch, true, getProgressMonitor());
-                        getLogger().output(Bundle.MSG_FetchAction_branchDeleted(branch));
+                        getLogger().outputLine(Bundle.MSG_FetchAction_branchDeleted(branch));
                     }
                     if (!fetchRefSpecs.isEmpty() && !isCanceled()) {
                         if (remoteNameToUpdate != null) {
@@ -160,7 +160,7 @@ public class FetchAction extends SingleRepositoryAction {
                             }
                         }
                         Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
-                        FetchUtils.log(updates, getLogger());
+                        FetchUtils.log(repository, updates, getLogger());
                     }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);

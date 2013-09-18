@@ -349,22 +349,42 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     private static boolean ignoreRandomFailures() {
         return Boolean.getBoolean("ignore.random.failures");
     }
+    
+    private static boolean randomFailsOnly() {
+        return Boolean.getBoolean("random.failures.only");
+    }
+    
+    private boolean isRandomFail() {
+        if (getClass().isAnnotationPresent(RandomlyFails.class)) {
+            return true;
+        }
+        try {
+            if (getClass().getMethod(super.getName()).isAnnotationPresent(RandomlyFails.class)) {
+                return true;
+            }
+        } catch (NoSuchMethodException x) {
+            // Specially named methods; let it pass.
+        }
+        return false;
+    }
 
     @Override
     public boolean canRun() {
-        boolean res = super.canRun();
+        boolean res = true;
+        // Random Failures Only mode
+        if (randomFailsOnly()) {
+            return isRandomFail();
+        }
+        
+        res = res && super.canRun();
         if (!res) {
             return false;
         }
         // Our own check for random failures
         if (ignoreRandomFailures() && getTestExecutionEnvironment() != null) {
-            try {
-                if (getClass().getMethod(super.getName()).isAnnotationPresent(RandomlyFails.class)) {
-                    System.err.println("Skipping " + getClass().getName() + "." + getName());
-                    return false;
-                }
-            } catch (NoSuchMethodException x) {
-                // Specially named methods; let it pass.
+            if (isRandomFail()) {
+                System.err.println("Skipping " + getClass().getName() + "." + getName());
+                return false;
             }
         }
         return res;

@@ -247,4 +247,20 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ParentConstructorCallHint(), "testIssue234983.php");
     }
 
+    public void testInitializeFieldSuggestion_01() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_01.php", "function __construct(\\Bar\\Baz $f^oo) {");
+    }
+
+    public void testInitializeFieldSuggestion_02() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_02.php", "function __construct(\\Bar\\Baz $f^oo) {");
+    }
+
+    public void testInitializeFieldSuggestion_03() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_03.php", "function __construct(\\Bar\\Baz $f^oo) {");
+    }
+
+    public void testInitializeFieldSuggestion_04() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testInitializeFieldSuggestion_04.php", "function __construct(\\Bar\\Baz $f^oo) {");
+    }
+
 }

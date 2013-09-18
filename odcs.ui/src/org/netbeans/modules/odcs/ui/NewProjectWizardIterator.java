@@ -129,14 +129,6 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
 
         List<SharedItem> sharedItems = (List<SharedItem>) wizard.getProperty(PROP_FOLDERS_TO_SHARE);
 
-        VCSAccessor.RepositoryInitializer repoInitializer = VCSAccessor.getDefault().getRepositoryInitializer(newPrjScmType);
-        if (repoInitializer == null) {
-            // git unavailable
-            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
-                    NewProjectWizardIterator_NoGitClient());
-            throw new IOException("Git client is not available"); //NOI18N
-        }
-
         // Create project
         ODCSProject project = null;
         try {
@@ -152,6 +144,26 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             throw new IOException(errorMessage, ex);
         }
 
+        String repositoryUrl = null;
+        Collection<ScmRepository> repositories = project.getRepositories();
+        VCSAccessor.RepositoryInitializer repoInitializer = null;
+        if (repositories != null && !repositories.isEmpty()) {
+            for (ScmRepository repo : repositories) {
+                repositoryUrl = repo.getUrl();
+                repoInitializer = VCSAccessor.getDefault().getRepositoryInitializer(newPrjScmType, repositoryUrl);
+                if(repoInitializer != null) {
+                    break;
+                }
+            }
+        }
+         
+        if (repoInitializer == null) {
+            // git unavailable
+            ((JComponent) current().getComponent()).putClientProperty(PROP_EXC_ERR_MSG,
+                    NewProjectWizardIterator_NoGitClient());
+            throw new IOException("Git client is not available"); //NOI18N
+        }
+        
         // Create feature - SCM repository
         boolean repoCreated = project != null;
         
@@ -170,11 +182,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         // After the repository is created it must be checked out
         if (repoCreated) {
             try {
-                String repositoryUrl = null;
-                Collection<ScmRepository> repositories = project.getRepositories();
-                if (repositories != null && !repositories.isEmpty()) {
-                    repositoryUrl = repositories.iterator().next().getUrl();
-                }
+
                 if (repositoryUrl != null) {
                     handle.progress(NewProject_progress_repositoryCheckout(), 3);
                     logger.log(Level.FINE, "Checking out repository - Repository URL: {0}, Local Folder: {1}, Service: Git", //NOI18N

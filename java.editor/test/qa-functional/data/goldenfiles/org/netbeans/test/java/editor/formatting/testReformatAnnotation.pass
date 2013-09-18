@@ -20,4 +20,5 @@ public @interface testReformatAnnotation {
     Modifier modifier() default Modifier.ABSTRACT;
 
     Deprecated d();
+
 }

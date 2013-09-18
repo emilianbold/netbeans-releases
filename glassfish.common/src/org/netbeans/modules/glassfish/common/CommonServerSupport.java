@@ -58,11 +58,11 @@ import org.glassfish.tools.ide.GlassFishStatus;
 import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.common.utils.Util;
@@ -78,7 +78,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * GlassFish server support API.
+ * <p/>
  * @author Peter Williams, Tomas Kraus
  */
 public class CommonServerSupport
@@ -175,6 +176,66 @@ public class CommonServerSupport
             }
         }
     }
+
+    class StartOperationStateListener implements TaskStateListener {
+        private ServerState endState;
+
+        StartOperationStateListener(ServerState endState) {
+            this.endState = endState;
+        }
+
+        @Override
+        public void operationStateChanged(TaskState newState, TaskEvent event,
+                String... args) {
+            if(newState == TaskState.RUNNING) {
+                setServerState(ServerState.STARTING);
+            } else if(newState == TaskState.COMPLETED) {
+                startedByIde = isRemote
+                        ? false : GlassFishState.isOnline(instance);
+                setServerState(endState);
+            } else if(newState == TaskState.FAILED) {
+                setServerState(ServerState.STOPPED);
+                // Open a warning dialog here...
+                NotifyDescriptor nd = new NotifyDescriptor.Message(Utils.concatenate(args));
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
+        }
+    }
+    class StopOperationStateListener implements TaskStateListener {
+
+        @Override
+        public void operationStateChanged(
+                TaskState newState, TaskEvent event, String... args) {
+            if (newState == TaskState.RUNNING) {
+                setServerState(ServerState.STOPPING);
+            } else if (newState == TaskState.COMPLETED) {
+                setServerState(ServerState.STOPPED);
+            } else if (newState == TaskState.FAILED) {
+                // Possible bug: What if server was started in other mode
+                // than RUNNING.
+                setServerState(ServerState.RUNNING);
+            }
+        }
+    };
+
+    class KillOperationStateListener implements TaskStateListener {
+
+        @Override
+        public void operationStateChanged(final TaskState newState,
+                final TaskEvent event, final String... args) {
+            if (newState == TaskState.RUNNING) {
+                setServerState(ServerState.STOPPING);
+            } else if (newState == TaskState.COMPLETED) {
+                setServerState(ServerState.STOPPED);
+            } else if (newState == TaskState.FAILED) {
+                // Registered process has already finished.
+                if (event == TaskEvent.PROCESS_NOT_RUNNING) {
+                    setServerState(ServerState.STOPPED);
+                }
+                // Otherwise do nothing for TaskEvent.PROCESS_NOT_EXISTS.
+            }
+        }
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -435,20 +496,7 @@ public class CommonServerSupport
     @Override
     public Future<TaskState> stopServer(final TaskStateListener stateListener) {
         LOGGER.log(Level.FINEST, "CSS.stopServer called on thread \"{0}\"", Thread.currentThread().getName()); // NOI18N
-        TaskStateListener stopServerListener = new TaskStateListener() {
-            @Override
-            public void operationStateChanged(
-                    TaskState newState, TaskEvent event, String... args) {
-                if(newState == TaskState.RUNNING) {
-                    setServerState(ServerState.STOPPING);
-                } else if(newState == TaskState.COMPLETED) {
-                    setServerState(ServerState.STOPPED);
-                } else if(newState == TaskState.FAILED) {
-                    // possible bug - what if server was started in other mode than RUNNING
-                    setServerState(ServerState.RUNNING);
-                }
-            }
-        };
+        TaskStateListener stopServerListener = new StopOperationStateListener();
         FutureTask<TaskState> task;
         if (!isRemote() || !Util.isDefaultOrServerTarget(instance.getProperties())) {
             if (getServerState() == ServerState.STOPPED_JVM_PROFILER) {
@@ -476,38 +524,50 @@ public class CommonServerSupport
         return task;
     }
 
-    /**
+    /** Delay between checking task state while waiting it
+     *  to die [ms]. */
+    private static final int WAIT_TASK_TO_DIE_SLEEP = 300;
+
+    /** Maximum time to wait for task to die [ms]. */
+    private static final int WAIT_TASK_TO_DIE_MAX = 3000;
+
+     /**
      * Terminates local GlassFish server process when started from UI.
      * <p/>
      * @param stateListener External state listener to register.
      * @return Asynchronous GlassFish server termination task when 
      */
     @Override
+    @SuppressWarnings("SleepWhileInLoop")
     public Future<TaskState> killServer(final TaskStateListener stateListener) {
-        TaskStateListener killServerListener = new TaskStateListener() {
-            @Override
-            public void operationStateChanged(final TaskState newState,
-                    final TaskEvent event, final String... args) {
-                if (newState == TaskState.RUNNING) {
-                    setServerState(ServerState.STOPPING);
-                } else if(newState == TaskState.COMPLETED) {
-                    setServerState(ServerState.STOPPED);
-                } else if(newState == TaskState.FAILED) {
-                    // Registered process has already finished.
-                    if (event == TaskEvent.PROCESS_NOT_RUNNING) {
-                        setServerState(ServerState.STOPPED);
-                    }
-                    // Otherwise do nothing for TaskEvent.PROCESS_NOT_EXISTS.
-                }
-            }
-        };
+        TaskStateListener killServerListener = new KillOperationStateListener();
         FutureTask<TaskState> task;
         boolean isStateListener = stateListener != null;
         if (!isRemote() && instance.getProcess() != null) {
             FutureTask<TaskState> stTask = this.startTask;
-            // TODO: This may not be enough!
-            if (!stTask.isDone()) {
+            // Stop running StartTask and wait for it to die.
+            if (stTask != null && !stTask.isDone()) {
                 stTask.cancel(true);
+                long startTime = System.currentTimeMillis();
+                while(!stTask.isDone()
+                        && System.currentTimeMillis() - startTime
+                        < WAIT_TASK_TO_DIE_MAX) {
+                    try {
+                        Thread.sleep(WAIT_TASK_TO_DIE_SLEEP);
+                    } catch (InterruptedException ex) {
+                        LOGGER.log(Level.INFO,
+                                "Caught InterruptedException while waiting for "
+                                + "{0} start task to die.",
+                                instance.getName());
+                    }
+                }
+                if (!stTask.isDone()) {
+                        LOGGER.log(Level.INFO,
+                                "Start task for {0} did not finish within {1} ms.",
+                                new String[] {instance.getName(),
+                                    Integer.toString(WAIT_TASK_TO_DIE_MAX)});
+                    
+                }
             }
             TaskStateListener[] listeners
                     = new TaskStateListener[isStateListener ? 2 : 1];
@@ -958,31 +1018,6 @@ public class CommonServerSupport
 
     private void setLatestWarningDisplayTime(long currentTime) {
         latestWarningDisplayTime = currentTime;
-    }
-
-    class StartOperationStateListener implements TaskStateListener {
-        private ServerState endState;
-
-        StartOperationStateListener(ServerState endState) {
-            this.endState = endState;
-        }
-
-        @Override
-        public void operationStateChanged(TaskState newState, TaskEvent event,
-                String... args) {
-            if(newState == TaskState.RUNNING) {
-                setServerState(ServerState.STARTING);
-            } else if(newState == TaskState.COMPLETED) {
-                startedByIde = isRemote
-                        ? false : GlassFishState.isOnline(instance);
-                setServerState(endState);
-            } else if(newState == TaskState.FAILED) {
-                setServerState(ServerState.STOPPED);
-                // Open a warning dialog here...
-                NotifyDescriptor nd = new NotifyDescriptor.Message(Utils.concatenate(args));
-                DialogDisplayer.getDefault().notifyLater(nd);
-            }
-        }
     }
 
     /**

@@ -140,7 +140,6 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.odcs.git</friend>
-                <friend>org.netbeans.modules.odcs.mercurial</friend>
                 <friend>org.netbeans.modules.odcs.subversion</friend>
                 <friend>oracle.jdevimpl.nbteam.git</friend>
                 <package>org.netbeans.modules.odcs.versioning.spi</package>

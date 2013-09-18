@@ -72,6 +72,7 @@ import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMa
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.WeakListeners;
@@ -534,6 +535,20 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                             @Override
                             public void run() {
                                 drev[0].viewFile(true);
+                            }
+                        });
+                    }
+                }));
+                menu.add(new JMenuItem(new AbstractAction(Bundle.CTL_Action_ViewCurrent_name()) {
+                    {
+                        setEnabled(viewEnabled);
+                    }
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Utils.openFile(FileUtil.normalizeFile(drev[0].getFile()));
                             }
                         });
                     }

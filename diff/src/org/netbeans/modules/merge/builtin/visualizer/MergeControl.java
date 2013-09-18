@@ -241,7 +241,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
                 panel.copySource1ToResult(line1, endcopy, line3);
                 line3 += endcopy + 1 - line1;
             }
-            int length = Math.max(n2 - n1, n4 - n3);
+            int length = Math.max(n2 - n1, 0) + Math.max(n4 - n3, 0);
             //System.out.println("  length = "+length+", addEmptyLines3("+line3+", "+(length + 1)+")");
             panel.addEmptyLines3(line3, length + 1);
             panel.highlightRegion3(line3, line3 + length, colorUnresolvedConflict);
@@ -293,7 +293,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         AcceptKind acceptedAs = resolvedConflicts.get(diff);
         switch (acceptedAs) {
             case NONE:
-                rlength = Math.max(line2 - line1, line4 - line3);
+                rlength = Math.max(line2 - line1, 0) + Math.max(line4 - line3, 0);
                 break;
             case LEFT:
                 rlength = line2 - line1;
@@ -360,7 +360,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
         AcceptKind acceptedAs = resolvedConflicts.get(diff);
         switch (acceptedAs) {
             case NONE:
-                rlength = Math.max(line2 - line1, line4 - line3);
+                rlength = Math.max(line2 - line1, 0) + Math.max(line4 - line3, 0);
                 break;
             case LEFT:
                 rlength = line2 - line1;

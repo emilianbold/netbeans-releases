@@ -225,6 +225,10 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    }
 	    split.open();
 	    split.requestActive();
+            split.invalidate();
+            split.revalidate();
+            split.repaint();
+            split.requestFocusInWindow();
 	}
     }
 
@@ -238,6 +242,10 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    }
 	    original.open();
 	    original.requestActive();
+            original.invalidate();
+            original.revalidate();
+            original.repaint();
+            original.requestFocusInWindow();
 	}
     }
 }

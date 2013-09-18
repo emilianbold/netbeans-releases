@@ -383,6 +383,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
+    @RandomlyFails
     public void testLogIntCmdAfterUnlock () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();

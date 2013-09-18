@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor.completion;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -54,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -111,15 +114,15 @@ class DocRenderer {
     private static final String TABLE_STYLE = "style=\"border: 0px; width: 100%;\""; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
 
-    static String document(ParserResult info, ElementHandle element) {
+    static Documentation document(ParserResult info, ElementHandle element) {
         if (element instanceof PHPDOCTagElement) {
             PHPDOCTagElement pHPDOCTagElement = (PHPDOCTagElement) element;
-            return pHPDOCTagElement.getDoc();
+            return Documentation.create(pHPDOCTagElement.getDoc());
         }
 
         if (element instanceof PredefinedSymbolElement) {
             PredefinedSymbolElement predefinedSymbolElement = (PredefinedSymbolElement) element;
-            return predefinedSymbolElement.getDoc();
+            return Documentation.create(predefinedSymbolElement.getDoc());
         }
 
         if (element instanceof PhpElement) {
@@ -134,59 +137,56 @@ class DocRenderer {
         return null;
     }
 
-    private static String documentIndexedElement(final PhpElement indexedElement) {
-        final StringBuilder description = new StringBuilder();
+    private static Documentation documentIndexedElement(final PhpElement indexedElement) {
+        PhpDocumentation phpDocumentation = PhpDocumentation.NONE;
         final CCDocHtmlFormatter locationHeader = new CCDocHtmlFormatter();
         CCDocHtmlFormatter header = new CCDocHtmlFormatter();
         final String location = getLocation(indexedElement);
-        final StringBuilder phpDoc = new StringBuilder();
         final ElementQuery elementQuery = indexedElement.getElementQuery();
         if (location != null) {
             locationHeader.appendHtml(String.format("<div align=\"right\"><font size=-1>%s</font></div>", location));  //NOI18N
         }
         if (canBeProcessed(indexedElement)) {
-            if (getPhpDoc(indexedElement, header, phpDoc).length() == 0) {
+            phpDocumentation = getPhpDocumentation(indexedElement, header);
+            if (phpDocumentation == PhpDocumentation.NONE) {
                 if (indexedElement instanceof MethodElement) {
                     ElementFilter forName = ElementFilter.forName(NameKind.exact(indexedElement.getName()));
                     ElementQuery.Index index = elementQuery.getQueryScope().isIndexScope() ? (Index) elementQuery
                             : ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(indexedElement.getFileObject()));
                     final Set<TypeElement> inheritedTypes = index.getInheritedTypes(((MethodElement) indexedElement).getType());
-                    for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDoc.length() == 0 && typeIt.hasNext();) {
+                    for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDocumentation == PhpDocumentation.NONE && typeIt.hasNext();) {
                         final Set<MethodElement> inheritedMethods = forName.filter(index.getDeclaredMethods(typeIt.next()));
-                        for (Iterator<MethodElement> methodIt = inheritedMethods.iterator(); phpDoc.length() == 0 && methodIt.hasNext();) {
+                        for (Iterator<MethodElement> methodIt = inheritedMethods.iterator(); phpDocumentation == PhpDocumentation.NONE && methodIt.hasNext();) {
                             header = new CCDocHtmlFormatter();
-                            getPhpDoc(methodIt.next(), header, phpDoc);
+                            phpDocumentation = getPhpDocumentation(methodIt.next(), header);
                         }
                     }
                 }
             }
         }
-        if (phpDoc.length() > 0) {
-            description.append(phpDoc);
-        } else {
-            description.append(Bundle.PHPDocNotFound());
-        }
-        return String.format("%s%s%s", locationHeader.getText(), header.getText(), description.toString());
-
+        return phpDocumentation.createDocumentation(locationHeader);
     }
 
     private static boolean canBeProcessed(PhpElement indexedElement) {
         return indexedElement != null && indexedElement.getOffset() > -1 && indexedElement.getFileObject() != null;
     }
 
-    private static StringBuilder getPhpDoc(final PhpElement indexedElement, final CCDocHtmlFormatter header, final StringBuilder phpDoc) {
+    private static PhpDocumentation getPhpDocumentation(final PhpElement indexedElement, final CCDocHtmlFormatter header) {
+        PhpDocumentation result = PhpDocumentation.NONE;
         if (canBeProcessed(indexedElement)) {
             FileObject nextFo = indexedElement.getFileObject();
             try {
                 Source source = Source.create(nextFo);
                 if (source != null) {
-                    ParserManager.parse(Collections.singleton(source), new PHPDocExtractor(header, phpDoc, indexedElement));
+                    PHPDocExtractor phpDocExtractor = new PHPDocExtractor(header, indexedElement);
+                    ParserManager.parse(Collections.singleton(source), phpDocExtractor);
+                    result = phpDocExtractor.getPhpDocumentation();
                 }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return phpDoc;
+        return result;
     }
 
     @NbBundle.Messages("PHPPlatform=PHP Platform")
@@ -239,13 +239,17 @@ class DocRenderer {
             LINK_TAGS.add("@use");
         }
         private CCDocHtmlFormatter header;
-        private StringBuilder phpDoc;
+        private StringBuilder phpDoc = new StringBuilder();;
         private PhpElement indexedElement;
+        private List<String> links = new ArrayList<>();
 
-        public PHPDocExtractor(CCDocHtmlFormatter header, StringBuilder phpDoc, PhpElement indexedElement) {
+        public PHPDocExtractor(CCDocHtmlFormatter header, PhpElement indexedElement) {
             this.header = header;
-            this.phpDoc = phpDoc;
             this.indexedElement = indexedElement;
+        }
+
+        public PhpDocumentation getPhpDocumentation() {
+            return PhpDocumentation.Factory.create(header, phpDoc, links);
         }
 
         public void cancel() {
@@ -297,6 +301,66 @@ class DocRenderer {
             header.parameters(false);
         }
 
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            ParserResult presult = (ParserResult) resultIterator.getParserResult();
+            if (presult != null) {
+                Program program = Utils.getRoot(presult);
+
+                if (program != null) {
+                    ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+
+                    if (node == null) { // issue #118222
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Could not find AST node for element {0} defined in {1}",
+                                new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
+                        return;
+                    }
+                    if (node instanceof FunctionDeclaration) {
+                        doFunctionDeclaration((FunctionDeclaration) node);
+                    } else {
+                        header.name(indexedElement.getKind(), true);
+                        header.appendText(indexedElement.getName());
+                        header.name(indexedElement.getKind(), false);
+                        String value = null;
+                        if (indexedElement instanceof ConstantElement) {
+                            ConstantElement constant = (ConstantElement) indexedElement;
+                            value = constant.getValue();
+                        } else if (indexedElement instanceof TypeConstantElement) {
+                            TypeConstantElement constant = (TypeConstantElement) indexedElement;
+                            value = constant.getValue();
+                        }
+                        if (value != null) {
+                            header.appendText(" = "); //NOI18N
+                            header.appendText(value);
+                        }
+                    }
+
+                    header.appendHtml("<br/><br/>"); //NOI18N
+                    if (node instanceof PHPDocTag) {
+                        if (node instanceof PHPDocMethodTag) {
+                            extractPHPDoc((PHPDocMethodTag) node);
+                        } else {
+                            if (node instanceof PHPDocVarTypeTag) {
+                                PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
+                                String type = composeType(varTypeTag.getTypes());
+                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
+                            } else {
+                                phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
+                            }
+                        }
+                    } else {
+                        Comment comment = Utils.getCommentForNode(program, node);
+
+                        if (comment instanceof PHPDocBlock) {
+                            extractPHPDoc((PHPDocBlock) comment);
+                        }
+                    }
+                }
+            }
+        }
+
         private void extractPHPDoc(PHPDocMethodTag methodTag) {
             StringBuilder params = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
@@ -314,12 +378,11 @@ class DocRenderer {
 
             returnValue.append(composeReturnValue(methodTag.getTypes(), null));
 
-            phpDoc.append(composeFunctionDoc(description, params.toString(), returnValue.toString(), null, null));
+            phpDoc.append(composeFunctionDoc(description, params.toString(), returnValue.toString(), null));
         }
 
         private void extractPHPDoc(PHPDocBlock pHPDocBlock) {
             StringBuilder params = new StringBuilder();
-            StringBuilder links = new StringBuilder();
             StringBuilder returnValue = new StringBuilder();
             StringBuilder others = new StringBuilder();
 
@@ -339,8 +402,7 @@ class DocRenderer {
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation(), "")); //NOI18N
                     others.append(oline);
                 } else if (kind instanceof LinkParsedLine) {
-                    String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
-                    links.append(line);
+                    links.add(kind.getDescription());
                 } else {
                     String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription(), "")); //NOI18N
@@ -352,7 +414,6 @@ class DocRenderer {
                     processPhpDoc(pHPDocBlock.getDescription(), "")), //NOI18N
                     params.toString(),
                     returnValue.toString(),
-                    links.toString(),
                     others.toString()));
         }
 
@@ -390,10 +451,9 @@ class DocRenderer {
 
         @NbBundle.Messages({
             "Parameters=Parameters:",
-            "ReturnValue=Returns:",
-            "OnlineDocs=Online Documentation"
+            "ReturnValue=Returns:"
         })
-        private String composeFunctionDoc(String description, String parameters, String returnValue, String links, String others) {
+        private String composeFunctionDoc(String description, String parameters, String returnValue, String others) {
             StringBuilder value = new StringBuilder();
 
             value.append(description);
@@ -411,12 +471,6 @@ class DocRenderer {
                 value.append("</h3>\n<table>\n"); //NOI18N
                 value.append(returnValue);
                 value.append("</table>");
-            }
-
-            if (links != null && links.length() > 0) {
-                value.append("<h3>"); //NOI18N
-                value.append(Bundle.OnlineDocs());
-                value.append("</h3>\n").append(links); //NOI18N
             }
 
             if (others != null && others.length() > 0) {
@@ -487,64 +541,67 @@ class DocRenderer {
             return result;
         }
 
-        @Override
-        public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult presult = (ParserResult) resultIterator.getParserResult();
-            if (presult != null) {
-                Program program = Utils.getRoot(presult);
+    }
 
-                if (program != null) {
-                    ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+    private interface PhpDocumentation {
+        PhpDocumentation NONE = new PhpDocumentation() {
 
-                    if (node == null) { // issue #118222
-                        LOGGER.log(
-                                Level.WARNING,
-                                "Could not find AST node for element {0} defined in {1}",
-                                new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
-                        return;
+            @Override
+            public Documentation createDocumentation(CCDocHtmlFormatter locationHeader) {
+                return Documentation.create(String.format("%s%s", locationHeader.getText(), Bundle.PHPDocNotFound())); //NOI18N
+            }
+        };
+
+        Documentation createDocumentation(CCDocHtmlFormatter locationHeader);
+
+        static final class Factory {
+
+            static PhpDocumentation create(CCDocHtmlFormatter header, StringBuilder body, List<String> links) {
+                URL url = null;
+                if (links.size() > 0) {
+                    try {
+                        url = new URL(links.get(0));
+                    } catch (MalformedURLException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
                     }
-                    if (node instanceof FunctionDeclaration) {
-                        doFunctionDeclaration((FunctionDeclaration) node);
-                    } else {
-                        header.name(indexedElement.getKind(), true);
-                        header.appendText(indexedElement.getName());
-                        header.name(indexedElement.getKind(), false);
-                        String value = null;
-                        if (indexedElement instanceof ConstantElement) {
-                            ConstantElement constant = (ConstantElement) indexedElement;
-                            value = constant.getValue();
-                        } else if (indexedElement instanceof TypeConstantElement) {
-                            TypeConstantElement constant = (TypeConstantElement) indexedElement;
-                            value = constant.getValue();
-                        }
-                        if (value != null) {
-                            header.appendText(" = "); //NOI18N
-                            header.appendText(value);
-                        }
-                    }
-
-                    header.appendHtml("<br/><br/>"); //NOI18N
-                    if (node instanceof PHPDocTag) {
-                        if (node instanceof PHPDocMethodTag) {
-                            extractPHPDoc((PHPDocMethodTag) node);
-                        } else {
-                            if (node instanceof PHPDocVarTypeTag) {
-                                PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
-                                String type = composeType(varTypeTag.getTypes());
-                                phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
-                            } else {
-                                phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
-                            }
-                        }
-                    } else {
-                        Comment comment = Utils.getCommentForNode(program, node);
-
-                        if (comment instanceof PHPDocBlock) {
-                            extractPHPDoc((PHPDocBlock) comment);
-                        }
+                    if (links.size() > 1) {
+                        attachLinks(body, links);
                     }
                 }
+                String description = String.format("%s%s", header.getText(), body.length() == 0 ? Bundle.PHPDocNotFound() : body); //NOI18N
+                return new PhpDocumentationImpl(description, url);
             }
+
+            @NbBundle.Messages("OnlineDocs=Online Documentation")
+            private static void attachLinks(StringBuilder body, List<String> links) {
+                assert links.size() > 1 : links.size();
+                body.append("<h3>"); //NOI18N
+                body.append(Bundle.OnlineDocs());
+                body.append("</h3>\n"); //NOI18N
+                for (String link : links) {
+                    String line = String.format("<a href=\"%s\">%s</a><br>%n", link, link); //NOI18N
+                    body.append(line);
+                }
+            }
+
+        }
+
+        static final class PhpDocumentationImpl implements PhpDocumentation {
+            private String description;
+            private URL url;
+
+            private PhpDocumentationImpl(String description, URL url) {
+                this.description = description;
+                this.url = url;
+            }
+
+            @Override
+            public Documentation createDocumentation(CCDocHtmlFormatter locationHeader) {
+                assert  locationHeader != null;
+                return Documentation.create(String.format("%s%s", locationHeader.getText(), description), url); //NOI18N
+            }
+
         }
     }
+
 }

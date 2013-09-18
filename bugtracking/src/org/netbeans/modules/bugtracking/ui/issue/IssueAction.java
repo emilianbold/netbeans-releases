@@ -95,7 +95,7 @@ public class IssueAction extends SystemAction {
         createIssue();
     }
 
-    public static void openIssue(final IssueImpl issue, final boolean refresh) {
+    public static void openIssue(final IssueImpl issue) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -103,22 +103,8 @@ public class IssueAction extends SystemAction {
                 IssueTopComponent tc = IssueTopComponent.find(issue);
                 tc.open();
                 tc.requestActive();
-                rp.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_REFRESING_ISSUE", new Object[]{issue.getID()}));
-                        try {
-                            handle.start();
-                            if (refresh && !issue.refresh()) {
-                                return;
-                            }
-                            issue.setSeen(true);
-                        } finally {
-                            UIUtils.setWaitCursor(false);
-                            if(handle != null) handle.finish();
-                        }
-                    }
-                });
+                issue.setSeen(true);
+                UIUtils.setWaitCursor(false); // do we need this?
             }
         });
     }

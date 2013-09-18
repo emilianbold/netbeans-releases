@@ -125,6 +125,7 @@ public final class GitUtils {
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
     public static final String MASTER = "master"; //NOI18N
     private static final Set<File> loggedRepositories = new HashSet<File>();
+    public static final String REMOTE_ORIGIN = "origin"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -649,6 +650,10 @@ public final class GitUtils {
     }
 
     public static void printInfo (StringBuilder sb, GitRevisionInfo info) {
+        printInfo(sb, info, true);
+    }
+    
+    public static void printInfo (StringBuilder sb, GitRevisionInfo info, boolean endWithNewLine) {
         String lbrevision = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.revision");   // NOI18N
         String lbauthor = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.author");      // NOI18N
         String lbcommitter = NbBundle.getMessage(CommitAction.class, "MSG_CommitAction.logCommit.committer");      // NOI18N
@@ -675,7 +680,9 @@ public final class GitUtils {
         sb.append(lbsummary);
         int prefixLen = lbsummary.length();
         sb.append(formatMultiLine(prefixLen, info.getFullMessage()));
-        sb.append('\n'); // NOI18N
+        if (endWithNewLine) {
+            sb.append('\n');
+        }
     }
     
     private static String formatMultiLine (int prefixLen, String message) {

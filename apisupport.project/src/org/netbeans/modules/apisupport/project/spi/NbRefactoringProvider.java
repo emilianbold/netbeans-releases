@@ -63,7 +63,7 @@ public interface NbRefactoringProvider {
     
     public abstract class ProjectFileRefactoring {
         
-        private FileObject parentFile;
+        private final FileObject parentFile;
 
         public ProjectFileRefactoring(FileObject parentFile) {
             this.parentFile = parentFile;

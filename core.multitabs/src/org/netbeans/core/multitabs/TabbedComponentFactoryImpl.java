@@ -51,8 +51,12 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * TabbedComponentFactory that overrides the default implementation in core.windows
+ * module.
  *
  * @author S. Aubrecht
+ *
+ * @see Settings#isEnabled()
  */
 @ServiceProvider(service=TabbedComponentFactory.class, position=151)
 public final class TabbedComponentFactoryImpl implements TabbedComponentFactory {

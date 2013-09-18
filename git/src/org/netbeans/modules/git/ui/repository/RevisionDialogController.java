@@ -42,12 +42,13 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -56,22 +57,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.libs.git.GitBranch;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.openide.awt.QuickSearch;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener, ItemListener {
+public class RevisionDialogController implements ActionListener, DocumentListener, PropertyChangeListener, ListSelectionListener {
     private final RevisionDialog panel;
     private final File repository;
     private final RevisionInfoPanelController infoPanelController;
@@ -84,15 +91,22 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private String revisionString;
     private String mergingInto;
     private Revision revisionInfo;
+    private DefaultListModel<Object> branchModel;
 
     public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         this(repository, roots);
         panel.revisionField.setText(initialRevision);
         panel.revisionField.setCaretPosition(panel.revisionField.getText().length());
         panel.revisionField.moveCaretPosition(0);
-        hideFields(new JComponent[] { panel.lblBranch, panel.cmbBranches });
+        hideFields(new JComponent[] { panel.lblBranch, panel.branchesPanel });
     }
 
+    /**
+     * 
+     * @param repository
+     * @param roots
+     * @param branches if this is an empty map, branches will be loaded in background
+     */
     public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches) {
         this(repository, roots);
         hideFields(new JComponent[] { panel.lblRevision, panel.revisionField, panel.btnSelectRevision });
@@ -140,7 +154,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private void attachListeners () {
         panel.btnSelectRevision.addActionListener(this);
         panel.revisionField.getDocument().addDocumentListener(this);
-        panel.cmbBranches.addItemListener(this);
+        panel.lstBranches.addListSelectionListener(this);
         infoPanelController.addPropertyChangeListener(this);
     }
 
@@ -155,8 +169,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
 
     @Override
-    public void itemStateChanged (ItemEvent e) {
-        if (e.getSource() == panel.cmbBranches) {
+    public void valueChanged (ListSelectionEvent e) {
+        if (!e.getValueIsAdjusting() && e.getSource() == panel.lstBranches) {
             selectedBranchChanged();
         }
     }
@@ -232,7 +246,14 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         }
     }
 
+    @NbBundle.Messages({
+        "MSG_RevisionDialog.selectBranch=Select Branch"
+    })
     private void setModel (Map<String, GitBranch> branches) {
+        if (branches.isEmpty()) {
+            loadBranches();
+            return;
+        }
         final List<Revision> branchList = new ArrayList<Revision>(branches.size());
         List<Revision> remoteBranchList = new ArrayList<Revision>(branches.size());
         Revision activeBranch = null;
@@ -258,28 +279,174 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         Collections.sort(remoteBranchList, comp);
         branchList.addAll(remoteBranchList);
         final Revision toSelect = activeBranch;
+        branchModel = new DefaultListModel<Object>();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                panel.cmbBranches.setModel(new DefaultComboBoxModel(branchList.isEmpty() ? new Object[] { NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch") } 
-                        : branchList.toArray(new Revision[branchList.size()])));//NOI18N
-                panel.cmbBranches.setRenderer(new DefaultListCellRenderer() {
+                if (branchList.isEmpty()) {
+                    branchModel.addElement(Bundle.MSG_RevisionDialog_selectBranch());
+                } else {
+                    for (Revision rev : branchList) {
+                        branchModel.addElement(rev);
+                    }
+                }
+                panel.lstBranches.setModel(branchModel);
+                panel.lstBranches.setCellRenderer(new DefaultListCellRenderer() {
                     @Override
                     public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                         return super.getListCellRendererComponent(list, value instanceof Revision ? ((Revision) value).getRevision() : value, index, isSelected, cellHasFocus);
                     }
                 });
                 if (toSelect != null) {
-                    panel.cmbBranches.setSelectedItem(toSelect);
+                    panel.lstBranches.setSelectedValue(toSelect, true);
                 }
                 selectedBranchChanged();
+                if (!branchList.isEmpty()) {
+                    attachQuickSearch(branchList);
+                }
             }
         });
     }
 
     private void selectedBranchChanged () {
-        Object activeBranch = panel.cmbBranches.getSelectedItem();
-        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
+        Object activeBranch = panel.lstBranches.getSelectedValue();
+        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : Bundle.MSG_RevisionDialog_selectBranch();
         updateRevision();
+    }
+    
+    private boolean quickSearchActive;
+    private void attachQuickSearch (final List<Revision> branchList) {
+        final QuickSearch qs = QuickSearch.attach(panel.branchesPanel, BorderLayout.SOUTH, new QuickSearch.Callback() {
+            
+            private int currentPosition = 0;
+            private final List<Revision> results = new ArrayList<Revision>(branchList);
+            
+            @Override
+            public void quickSearchUpdate (String searchText) {
+                quickSearchActive = true;
+                Revision selected = branchList.get(0);
+                if (currentPosition > -1) {
+                    selected = results.get(currentPosition);
+                }
+                results.clear();
+                results.addAll(branchList);
+                if (!searchText.isEmpty()) {
+                    for (ListIterator<Revision> it = results.listIterator(); it.hasNext(); ) {
+                        Revision rev = it.next();
+                        if (!rev.getRevision().contains(searchText)) {
+                            it.remove();
+                        }
+                    }
+                }
+                currentPosition = results.indexOf(selected);
+                if (currentPosition == -1 && !results.isEmpty()) {
+                    currentPosition = 0;
+                }
+                updateView();
+            }
+
+            @Override
+            public void showNextSelection (boolean forward) {
+                if (currentPosition != -1) {
+                    currentPosition += forward ? 1 : -1;
+                    if (currentPosition < 0) {
+                        currentPosition = results.size() - 1;
+                    } else if (currentPosition == results.size()) {
+                        currentPosition = 0;
+                    }
+                    updateSelection();
+                }
+            }
+
+            @Override
+            public String findMaxPrefix (String prefix) {
+                return prefix;
+            }
+
+            @Override
+            public void quickSearchConfirmed () {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        panel.lstBranches.requestFocusInWindow();
+                    }
+                });
+            }
+
+            @Override
+            public void quickSearchCanceled () {
+                quickSearchUpdate("");
+                quickSearchActive = false;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        panel.lstBranches.requestFocusInWindow();
+                    }
+                });
+            }
+
+            private void updateView () {
+                branchModel.removeAllElements();
+                for (Revision r : results) {
+                    branchModel.addElement(r);
+                }
+                updateSelection();
+            }
+
+            private void updateSelection () {
+                if (currentPosition > -1 && currentPosition < results.size()) {
+                    Revision rev = results.get(currentPosition);
+                    panel.lstBranches.setSelectedValue(rev, true);
+                }
+            }
+        });
+        qs.setAlwaysShown(true);
+        panel.lstBranches.addKeyListener(new KeyListener() {
+
+            @Override
+            public void keyTyped (KeyEvent e) {
+                qs.processKeyEvent(e);
+            }
+
+            @Override
+            public void keyPressed (KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER
+                        || e.getKeyCode() == KeyEvent.VK_ESCAPE && !quickSearchActive) {
+                    // leave events up to other components
+                } else {
+                    qs.processKeyEvent(e);
+                }
+            }
+
+            @Override
+            public void keyReleased (KeyEvent e) {
+                qs.processKeyEvent(e);
+            }
+        });
+    }
+
+    @NbBundle.Messages({
+        "RevisionDialogController.loadingBranches=Loading Branches..."
+    })
+    private void loadBranches () {
+        DefaultListModel model = new DefaultListModel();
+        model.addElement(Bundle.RevisionDialogController_loadingBranches());
+        panel.lstBranches.setModel(model);
+        panel.lstBranches.setEnabled(false);
+        new GitProgressSupport.NoOutputLogging() {
+            
+            @Override
+            protected void perform () {
+                final Map<String, GitBranch> branches = RepositoryInfo.getInstance(repository).getBranches();
+                EventQueue.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run () {
+                        panel.lstBranches.setEnabled(true);
+                        setModel(branches);
+                    }
+                });
+            }
+        }.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.RevisionDialogController_loadingBranches());
     }
 }

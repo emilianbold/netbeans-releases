@@ -58,11 +58,11 @@ import org.openide.filesystems.FileObject;
  */
 public interface TwigElement extends ElementHandle {
 
-    public String getTemplate();
+    String getTemplate();
 
-    public void formatParameters(HtmlFormatter formatter);
+    void formatParameters(HtmlFormatter formatter);
 
-    public TwigDocumentation getDocumentation();
+    TwigDocumentation getDocumentation();
 
     public static class Factory {
 

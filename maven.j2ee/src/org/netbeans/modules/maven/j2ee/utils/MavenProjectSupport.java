@@ -51,6 +51,7 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
@@ -68,7 +69,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
-import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -410,33 +410,16 @@ public class MavenProjectSupport {
     }
 
     private static String readSettingsFromPom(Project project, final String key) {
-        final String[] value = new String[1];
-        final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+        final NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (nbMavenProject != null) {
+            MavenProject mavenProject = nbMavenProject.getMavenProject();
+            java.util.Properties properties = mavenProject.getProperties();
 
-            @Override
-            public void performOperation(POMModel model) {
-                Properties props = model.getProject().getProperties();
-                if (props != null) {
-                    value[0] = props.getProperty(key);
-                }
-            }
-        };
-
-        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        if (pom != null) {
-            try {
-                pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    @Override
-                    public void run() throws IOException {
-                        Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-                    }
-                });
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            if (properties != null) {
+                return properties.getProperty(key);
             }
         }
-
-        return value[0];
+        return null;
     }
 
     public static boolean isDeployOnSave(Project project)  {
@@ -454,14 +437,17 @@ public class MavenProjectSupport {
         } else {
             getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
         }
-        
-        CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
-        if (copyOnSave != null) {
-            if (isDeployOnSave(project)) {
-                copyOnSave.initialize();
-            } else {
-                copyOnSave.cleanup();
-            }
+    }
+
+    public static boolean isCopyStaticResourcesOnSave(Project project) {
+        return getPreferences(project, true).getBoolean(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE, true);
+    }
+
+    public static void setCopyStaticResourcesOnSave(Project project, Boolean value) {
+        if (value == null || value == true) {
+            getPreferences(project, true).remove(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE);
+        } else {
+            getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE, value);
         }
     }
 

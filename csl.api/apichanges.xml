@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
 <apidef name="csl.api">Common Scripting Language API</apidef>
 </apidefs>
 <changes>
+    <change id="DocumentationUrl">
+        <api name="csl.api"/>
+        <summary>Provide a way to configure external documentation URL</summary>
+        <version major="2" minor="44"/>
+        <date day="10" month="9" year="2013"/>
+        <author login="phejl"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" source="compatible" deprecation="no"/>
+        <description>
+            <p>
+                Extending code completion hadler to provide a way client may
+                specify external documentation URL.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.csl.api" name="CodeCompletionHandler2"/>
+        <class package="org.netbeans.modules.csl.api" name="Documentation"/>
+        <issue number="229272"/>
+    </change>
     <change id="LanguageRegistration.useMultiview">
         <api name="csl.api"/>
         <summary>Add useMultiview to @LanguageRegistration</summary>

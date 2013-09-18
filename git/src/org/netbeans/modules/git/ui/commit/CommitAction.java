@@ -53,6 +53,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -61,6 +62,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -76,6 +79,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.commit.GitCommitPanel.GitCommitPanelMerged;
 import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
+import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
@@ -83,15 +87,22 @@ import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -349,7 +360,7 @@ public class CommitAction extends SingleRepositoryAction {
         private void printInfo (GitRevisionInfo info) {
             StringBuilder sb = new StringBuilder('\n');
             GitUtils.printInfo(sb, info);
-            getLogger().output(sb.toString());
+            getLogger().outputLine(sb.toString());
         }
     }    
 
@@ -422,6 +433,56 @@ public class CommitAction extends SingleRepositoryAction {
         protected boolean isFromGitView(VCSContext context) {
             return true;
         }
+    }
+    
+    @ActionID(id = "org.netbeans.modules.git.ui.commit.CommitProjectAction", category = "Git")
+    @ActionRegistration(displayName = "#LBL_CommitProjectAction_Name", lazy = true)
+    @NbBundle.Messages({
+        "LBL_CommitProjectAction_Name=Commit Project..."
+    })
+    public static class CommitProjectAction extends GitAction {
+
+        @Override
+        protected final void performContextAction (final Node[] nodes) {
+            Utils.postParallel(new Runnable () {
+                @Override
+                public void run() {
+                    VCSContext context = getCurrentContext(nodes);
+                    performAction(context);
+                }
+            }, 0);
+        }
+
+        private void performAction (VCSContext context) {
+            Set<File> rootFiles = context.getRootFiles();
+            Set<Project> projects = new HashSet<Project>();
+            for (File root : rootFiles) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(root));
+                if (fo != null) {
+                    Project owner = FileOwnerQuery.getOwner(fo);
+                    if (owner != null) {
+                        projects.add(owner);
+                    }
+                }
+            }
+            if (projects.isEmpty()) {
+                LOG.log(Level.FINE, "CommitProjectAction: no projects found for {0}", rootFiles); //NOI18N
+            } else {
+                List<Node> nodes = new ArrayList<Node>(projects.size());
+                for (final Project p : projects) {
+                    nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(p)) {
+
+                        @Override
+                        public String getName () {
+                            return p.getProjectDirectory().getName();
+                        }
+                        
+                    });
+                }
+                SystemAction.get(CommitAction.class).performAction(nodes.toArray(new Node[nodes.size()]));
+            }
+        }
+        
     }
 
 }

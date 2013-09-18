@@ -573,6 +573,8 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Once unmodified after save", 1, support.notifyUnmodified);
         
         propL.firePropertyChange (PROP_TIME, null, null);
+
+        Thread.sleep(200); // Wait until reload EDT preparation task gets scheduled
         waitEQ ();
 
         Object newDoc = support.openDocument ();

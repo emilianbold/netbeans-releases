@@ -76,6 +76,7 @@ import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.git.utils.LogUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
@@ -155,7 +156,7 @@ public class PushAction extends SingleRepositoryAction {
         "MSG_PushAction.updates.updateBranch=Branch Update : {0}\n"
             + "Old Id        : {1}\n"
             + "New Id        : {2}\n"
-            + "Result        : {3}\n",
+            + "Result        : {3}",
         "# {0} - local branch name", "# {1} - tracked branch name",
         "MSG_PushAction.trackingUpdated=Branch {0} set to track {1}"
     })
@@ -193,7 +194,7 @@ public class PushAction extends SingleRepositoryAction {
                     }
                     for (String branch : toDelete) {
                         client.deleteBranch(branch, true, getProgressMonitor());
-                        getLogger().output(Bundle.MSG_PushAction_branchDeleted(branch));
+                        getLogger().outputLine(Bundle.MSG_PushAction_branchDeleted(branch));
                     }
                     if (remoteNameToUpdate != null) {
                         GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
@@ -213,8 +214,10 @@ public class PushAction extends SingleRepositoryAction {
                     // push
                     GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
                     reportRemoteConflicts(result.getRemoteRepositoryUpdates());
-                    logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
-                    logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N
+                    logUpdates(getRepositoryRoot(), result.getRemoteRepositoryUpdates(),
+                            "MSG_PushAction.updates.remoteUpdates", true); //NOI18N
+                    logUpdates(getRepositoryRoot(), result.getLocalRepositoryUpdates(),
+                            "MSG_PushAction.updates.localUpdates", false); //NOI18N
                     if (remoteNameToUpdate != null && !newBranches.isEmpty()) {
                         for (Map.Entry<String, GitTransportUpdate> e : result.getLocalRepositoryUpdates().entrySet()) {
                             if (e.getValue().getResult() == GitRefUpdateResult.NEW) {
@@ -245,29 +248,37 @@ public class PushAction extends SingleRepositoryAction {
                 }
             }
             
-            protected void logUpdates (Map<String, GitTransportUpdate> updates, String titleBundleName) {
+            protected void logUpdates (File repository, Map<String, GitTransportUpdate> updates,
+                    String titleBundleName, boolean remote) {
                 OutputLogger logger = getLogger();
-                logger.output(NbBundle.getMessage(PushAction.class, titleBundleName));
+                logger.outputLine(NbBundle.getMessage(PushAction.class, titleBundleName));
                 if (updates.isEmpty()) {
-                    logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.noChange")); //NOI18N
+                    logger.outputLine(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.noChange")); //NOI18N
                 } else {
                     for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                         GitTransportUpdate update = e.getValue();
                         if (update.getType() == Type.BRANCH) {
                             if (update.getNewObjectId() == null && update.getOldObjectId() != null) {
                                 // delete
-                                logger.output(Bundle.MSG_PushAction_updates_deleteBranch(update.getRemoteName(),
+                                logger.outputLine(Bundle.MSG_PushAction_updates_deleteBranch(update.getRemoteName(),
                                         update.getOldObjectId(), update.getResult()));
                             } else if (update.getNewObjectId() != null && update.getOldObjectId() == null) {
                                 // add
-                                logger.output(Bundle.MSG_PushAction_updates_addBranch(update.getLocalName(),
+                                logger.outputLine(Bundle.MSG_PushAction_updates_addBranch(update.getLocalName(),
                                         update.getNewObjectId(), update.getResult()));
                             } else {
-                                logger.output(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
+                                logger.outputLine(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
                                         update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
+                                if (remote) {
+                                    LogUtils.logBranchUpdateReview(repository, update.getRemoteName(),
+                                            update.getOldObjectId(), update.getNewObjectId(), logger);
+                                } else {
+                                    LogUtils.logBranchUpdateReview(repository, update.getLocalName(),
+                                            update.getOldObjectId(), update.getNewObjectId(), logger);
+                                }
                             }
                         } else {
-                            logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateTag", new Object[] { //NOI18N
+                            logger.outputLine(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateTag", new Object[] { //NOI18N
                                 update.getLocalName(), 
                                 update.getResult(),
                             }));
@@ -279,8 +290,8 @@ public class PushAction extends SingleRepositoryAction {
             private void logTrackingUpdate (GitBranch b) {
                 if (b != null && b.getTrackedBranch() != null) {
                     OutputLogger logger = getLogger();
-                    logger.output(Bundle.MSG_PushAction_trackingUpdated(b.getName(), b.getTrackedBranch().getName()));
-                    logger.output(""); //NOI18N
+                    logger.outputLine(Bundle.MSG_PushAction_trackingUpdated(b.getName(), b.getTrackedBranch().getName()));
+                    logger.outputLine(""); //NOI18N
                 }
             }
 

@@ -47,6 +47,7 @@ import java.net.PasswordAuthentication;
 import javax.swing.Action;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
+import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -54,12 +55,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Ondrej Vrabec
  */
-@ServiceProvider(service=ApiProvider.class)
-public class HgApiProviderImpl implements ApiProvider {
+@ServiceProvider(service=VCSProvider.class)
+public class HgApiProviderImpl implements VCSProvider {
 
     @Override
-    public boolean accepts (String type) {
-        return "HG".equals(type); //NOI18N
+    public Type getType () {
+        return 
     }
     
     @Override

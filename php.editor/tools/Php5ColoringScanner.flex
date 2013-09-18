@@ -60,6 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_DOUBLE_QUOTES
 %state ST_PHP_BACKQUOTE
 %state ST_PHP_QUOTES_AFTER_VARIABLE
+%state ST_PHP_LOOKING_FOR_CLASS_CONST
 %state ST_PHP_HEREDOC
 %state ST_PHP_START_HEREDOC
 %state ST_PHP_END_HEREDOC
@@ -385,12 +386,20 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_RETURN;
 }
 
+<ST_PHP_IN_SCRIPTING>"yield" {
+    return PHPTokenId.PHP_YIELD;
+}
+
 <ST_PHP_IN_SCRIPTING>"try" {
     return PHPTokenId.PHP_TRY;
 }
 
 <ST_PHP_IN_SCRIPTING>"catch" {
     return PHPTokenId.PHP_CATCH;
+}
+
+<ST_PHP_IN_SCRIPTING>"finally" {
+    return PHPTokenId.PHP_FINALLY;
 }
 
 <ST_PHP_IN_SCRIPTING>"throw" {
@@ -557,7 +566,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"::" {
+    pushState(ST_PHP_LOOKING_FOR_CLASS_CONST);
     return PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM;
+}
+
+<ST_PHP_LOOKING_FOR_CLASS_CONST> {
+    "class" {
+        popState();
+        return PHPTokenId.PHP_STRING;
+    }
+    {ANY_CHAR} | "class"{LABEL} {
+        yypushback(yylength());
+        popState();
+    }
 }
 
 <ST_PHP_IN_SCRIPTING>"\\" {
