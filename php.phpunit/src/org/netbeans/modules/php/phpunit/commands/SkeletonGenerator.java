@@ -120,7 +120,7 @@ public final class SkeletonGenerator {
         assert testDir != null;
         FileObject commonRoot = FileUtils.getCommonRoot(sourceClassFile, testDir);
         if (commonRoot == null
-                || FileUtil.isParentOf(commonRoot, sourceDir)) {
+                || !FileUtil.isParentOf(sourceDir, commonRoot)) {
             // look only inside project source dir
             commonRoot = sourceDir;
         }
