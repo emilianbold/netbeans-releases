@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -99,8 +100,15 @@ public class TestCreator {
     }
 
     private FileObject getTargetFolder(FileObject sourceDirectory, FileObject testDirectory, FileObject fo) throws IOException {
-        String relativePath = FileUtil.getRelativePath(sourceDirectory, fo.getParent());
-        assert relativePath != null : "Dir " + sourceDirectory + " must be parent of " + fo;
+        FileObject commonRoot = FileUtils.getCommonRoot(fo, testDirectory);
+        if (commonRoot == null
+                || FileUtil.isParentOf(commonRoot, sourceDirectory)) {
+            // look only inside project source dir
+            commonRoot = sourceDirectory;
+        }
+        assert commonRoot != null;
+        String relativePath = FileUtil.getRelativePath(commonRoot, fo.getParent());
+        assert relativePath != null : "Dir " + commonRoot + " must be parent of " + fo;
         FileObject target = testDirectory.getFileObject(relativePath);
         if (target == null) {
             target = FileUtil.createFolder(testDirectory, relativePath);
