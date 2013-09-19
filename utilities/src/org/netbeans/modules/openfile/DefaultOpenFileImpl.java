@@ -92,48 +92,10 @@ import static org.openide.cookies.EditorCookie.Observable.PROP_OPENED_PANES;
  * @author Jaroslav Tulach, Jesse Glick, Marian Petras, David Konecny
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openfile.OpenFileImpl.class, position=100)
-public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
+public class DefaultOpenFileImpl implements OpenFileImpl {
     
     private final Logger log = Logger.getLogger(getClass().getName());
-    /**
-     * parameter of this <code>Runnable</code>
-     * - file to open
-     */
-    private final FileObject fileObject;
-    /**
-     * parameter of this <code>Runnable</code>
-     * - line number to open the {@link #fileObject file} at, or <code>-1</code>
-     *   to ignore
-     */
-    private final int line;
-    
-    /**
-     * Creates an instance of this class.
-     * It is used only as an instance of <code>Runnable</code>
-     * used for rescheduling to the AWT thread.
-     * The arguments are stored to local variables and when the
-     * <code>run()</code> method gets executed (in the AWT thread),
-     * they are passed to the <code>open(...)</code> method.
-     *
-     * @param  file  file to open (must exist)
-     * @param  line  line number to try to open to (starting at zero),
-     *               or <code>-1</code> to ignore
-     * @param  waiter  double-callback or <code>null</code>
-     */
-    private DefaultOpenFileImpl(FileObject fileObject,
-                                int line) {
-        this.fileObject = fileObject;
-        this.line = line;
-    }
 
-    /** Creates a new instance of OpenFileImpl */
-    public DefaultOpenFileImpl() {
-        
-        /* These fields are not used in the default instance. */
-        this.fileObject = null;
-        this.line = -1;
-    }
-    
     /**
      * Sets the specified text into the status line.
      *
@@ -502,41 +464,18 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     }
     
     /**
-     * This method is called when it is rescheduled to the AWT thread.
-     * (from a different thread). It is always run in the AWT thread.
-     */
-    @Override
-    public void run() {
-        assert EventQueue.isDispatchThread();
-        
-        open(fileObject, line);
-    }
-    
-    /**
      * Opens the <code>FileObject</code> either by calling {@link EditorCookie}
      * (or {@link OpenCookie} or {@link ViewCookie}),
      * or by showing it in the Explorer.
      */
     @Override
-    public boolean open(final FileObject fileObject, int line) {
+    public boolean open(final FileObject fileObject, final int line) {
         if (log.isLoggable(FINER)) {
             log.log(FINER, "open({0}, line={1}) called from thread {2}",//NOI18N
                     new Object[]{fileObject.getNameExt(),
                         line, Thread.currentThread().getName()});
         }
-        if (!EventQueue.isDispatchThread()) {
-            log.finest(" - rescheduling to EDT using invokeLater(...)");//NOI18N
-            EventQueue.invokeLater(
-                    new DefaultOpenFileImpl(fileObject, line));
-            return true;
-        }
-        
-        
-        assert EventQueue.isDispatchThread();
-        log.finest(" - yes, it is an EDT");                             //NOI18N
 
-        String fileName = fileObject.getNameExt();
-                  
         /* Find a DataObject for the FileObject: */
         final DataObject dataObject;
         try {
@@ -545,15 +484,28 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
             ErrorManager.getDefault().notify(ex);
             return false;
         }
+        Mutex.EVENT.writeAccess(new Runnable() {
 
+            @Override
+            public void run() {
+                openInEDT(fileObject, dataObject, line);
+            }
+        });
+        return true;
+    }
+
+    private void openInEDT(FileObject fileObject, DataObject dataObject, int line) {
         Class<? extends Node.Cookie> cookieClass;        
         Node.Cookie cookie;
         
         if ((line != -1)
             && (   ((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null)
                 || ((cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null) )) {
-            boolean ret = openByCookie(cookie,cookieClass, line);      
-            return ret;
+            boolean ret = openByCookie(cookie, cookieClass, line);
+            if (!ret) {
+                showNotPlainFileWarning(fileObject);
+            }
+            return;
         } 
                             
         /* try to open the object using the default action */
@@ -591,10 +543,9 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                     a.actionPerformed(new ActionEvent(n, 0, ""));
                 }
             });
-
-            return true;            
+            return;
         }             
-        
+        String fileName = fileObject.getNameExt();
         /* Try to grab an editor/open/edit/view cookie and open the object: */
         StatusDisplayer.getDefault().setStatusText(
                 NbBundle.getMessage(DefaultOpenFileImpl.class,
@@ -602,7 +553,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                                     fileName));
         boolean success = openDataObjectByCookie(dataObject, line);
         if (success) {
-            return true;
+            return;
         }        
         if (fileObject.isFolder() || FileUtil.isArchiveFile(fileObject)) {
             // select it in explorer:
@@ -615,13 +566,15 @@ public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
                         NodeOperation.getDefault().explore(node);
                     }
                 });
-                return true;
-            } else {
-                return false;
+                return;
             }
         }
-        
-        return false;
+        showNotPlainFileWarning(fileObject);
     }
     
+    private void showNotPlainFileWarning(FileObject fileObject) {
+        String msg = NbBundle.getMessage(OpenFile.class,
+                "MSG_FileIsNotPlainFile", fileObject); //NOI18N
+        DefaultExternalDropHandler.showWarningMessageFileNotOpened(msg);
+    }
 }

@@ -57,6 +57,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Box;
@@ -70,6 +75,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.ExternalDropHandler;
 import org.openide.windows.TopComponent;
 
@@ -82,6 +88,8 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
     
     private static final Logger LOG =
             Logger.getLogger(DefaultExternalDropHandler.class.getName());
+    private static final RequestProcessor RP
+            = new RequestProcessor(DefaultExternalDropHandler.class);
 
     public boolean canDrop(DropTargetDragEvent e) {
         return canDrop( e.getCurrentDataFlavors() );
@@ -164,13 +172,17 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
             }
         }
         if (errMsg != null) {
-            DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                            errMsg,
-                            NotifyDescriptor.WARNING_MESSAGE));
+            showWarningMessageFileNotOpened(errMsg);
             return false;
         }
         return true;
+    }
+
+    static void showWarningMessageFileNotOpened(Object errMsg) {
+        DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(
+                        errMsg,
+                        NotifyDescriptor.WARNING_MESSAGE));
     }
 
     List<File> getFileList( Transferable t ) {
@@ -199,16 +211,43 @@ public class DefaultExternalDropHandler extends ExternalDropHandler {
 
     /**
      * Opens the given file.
+     *
+     * If the file doesn't open in a reasonable time (2 seconds), let's assume
+     * it will open successfully later (return null).
+     *
      * @param  file  file to be opened
      * @return  {@code null} if the file was successfully opened;
      *          or a localized error message in case of failure
      */
-    String openFile( File file ) {
-        FileObject fo = FileUtil.toFileObject( FileUtil.normalizeFile( file ) );
-        if (fo == null) {
-            return NbBundle.getMessage(OpenFile.class, "MSG_FilePathTypeNotSupported", file.toString()); //NOI18N
+    String openFile(final File file) {
+
+        Callable<String> task = new Callable<String>() {
+            @Override
+            public String call() {
+                File normalized = FileUtil.normalizeFile(file);
+                FileObject fo = FileUtil.toFileObject(normalized);
+                if (fo == null) {
+                    return NbBundle.getMessage(OpenFile.class,
+                            "MSG_FilePathTypeNotSupported", //NOI18N
+                            file.toString());
+                }
+                return OpenFile.open(fo, -1);
+            }
+        };
+        Future<String> future = RP.submit(task);
+        try {
+            return future.get(2, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            // It seems the file is still opening, let's assume it'll succeed.
+            return null;
+        } catch (InterruptedException e) {
+            LOG.log(Level.WARNING, null, e);
+            return null;
+        } catch (ExecutionException e) {
+            // Should not happen, error message string should be returned.
+            LOG.log(Level.INFO, null, e);
+            return null;
         }
-        return OpenFile.open(fo, -1);
     }
 
     private static DataFlavor uriListDataFlavor;
