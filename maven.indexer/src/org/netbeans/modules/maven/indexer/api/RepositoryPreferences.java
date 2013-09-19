@@ -90,6 +90,7 @@ public final class RepositoryPreferences {
     private static final String KEY_REPO_URL = "url";//NOI18N
     /*index settings */
     public static final String PROP_INDEX_FREQ = "indexUpdateFrequency"; //NOI18N
+    public static final String PROP_INDEX = "createIndex"; //NOI18N
     public static final String PROP_LAST_INDEX_UPDATE = "lastIndexUpdate"; //NOI18N
     public static final int FREQ_ONCE_WEEK = 0;
     public static final int FREQ_ONCE_DAY = 1;
@@ -355,6 +356,14 @@ public final class RepositoryPreferences {
 
     public static int getIndexUpdateFrequency() {
         return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
+    }
+    
+    public static void setIndexRepositories(boolean bool) {
+        getPreferences().putBoolean(PROP_INDEX, bool);
+    }
+
+    public static boolean isIndexRepositories() {
+        return getPreferences().getBoolean(PROP_INDEX, true);
     }
 
     public static Date getLastIndexUpdate(String repoId) {
