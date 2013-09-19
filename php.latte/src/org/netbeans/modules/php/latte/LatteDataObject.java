@@ -52,7 +52,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.Children;
@@ -82,12 +81,13 @@ import org.openide.windows.TopComponent;
     @ActionReference(id =
     @ActionID(category = "System", id = "org.openide.actions.ToolsAction"), path = LatteDataObject.ACTIONS, position = 1300),
     @ActionReference(id =
-    @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = LatteDataObject.ACTIONS, position = 1400)})
+    @ActionID(category = "System", id = "org.openide.actions.PropertiesAction"), path = LatteDataObject.ACTIONS, position = 1400)
+})
 public class LatteDataObject extends MultiDataObject {
     static final String ACTIONS = "Loaders/" + LatteLanguage.LATTE_MIME_TYPE + "/Actions"; //NOI18N
     static final String LATTE_ICON = "org/netbeans/modules/php/latte/resources/latte_icon.png"; //NOI18N
 
-    public LatteDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public LatteDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
         super(pf, loader);
         registerEditor(LatteLanguage.LATTE_MIME_TYPE, true);
     }

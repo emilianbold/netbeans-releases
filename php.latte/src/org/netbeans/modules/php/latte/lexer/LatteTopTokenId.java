@@ -80,7 +80,7 @@ public enum LatteTopTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<LatteTopTokenId> language =
+    private static final Language<LatteTopTokenId> LANGUAGE =
             new LanguageHierarchy<LatteTopTokenId>() {
                 @Override
                 protected Collection<LatteTopTokenId> createTokenIds() {
@@ -117,7 +117,7 @@ public enum LatteTopTokenId implements TokenId {
             }.language();
 
     public static Language<LatteTopTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 
 }

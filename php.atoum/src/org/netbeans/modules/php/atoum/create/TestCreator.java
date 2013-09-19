@@ -90,6 +90,7 @@ public class TestCreator {
 
     private void generateTest(FileObject sourceDirectory, FileObject template, FileObject fo, Set<FileObject> succeeded) throws IOException {
         FileObject testDirectory = phpModule.getTestDirectory(fo);
+        assert testDirectory != null;
         FileObject dir = getTargetFolder(sourceDirectory, testDirectory, fo);
         String name = fo.getName();
 

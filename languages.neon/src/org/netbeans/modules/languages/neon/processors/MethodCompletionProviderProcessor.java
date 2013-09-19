@@ -39,62 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.parser;
+package org.netbeans.modules.languages.neon.processors;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.languages.neon.completion.CompletionProviders;
+import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteParser extends Parser {
-    private LatteParserResult parserResult;
-
-    public LatteParser() {
-    }
-
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        parserResult = new LatteParserResult(snapshot);
-    }
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedAnnotationTypes("org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider.Registration")
+public class MethodCompletionProviderProcessor extends LayerGeneratingProcessor {
 
     @Override
-    public Parser.Result getResult(Task task) throws ParseException {
-        return parserResult;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-
-    public static final class LatteParserResult extends ParserResult {
-
-        private LatteParserResult(Snapshot s) {
-            super(s);
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(MethodCompletionProvider.Registration.class)) {
+            layer(element)
+                    .instanceFile(CompletionProviders.METHOD_COMPLETION_PROVIDER_PATH, null, MethodCompletionProvider.class)
+                    .intvalue("position", element.getAnnotation(MethodCompletionProvider.Registration.class).position()) //NOI18N
+                    .write();
         }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        protected void invalidate() {
-        }
-
+        return true;
     }
 
 }

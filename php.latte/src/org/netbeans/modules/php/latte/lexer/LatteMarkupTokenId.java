@@ -83,7 +83,7 @@ public enum LatteMarkupTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<LatteMarkupTokenId> language =
+    private static final Language<LatteMarkupTokenId> LANGUAGE =
             new LanguageHierarchy<LatteMarkupTokenId>() {
                 @Override
                 protected Collection<LatteMarkupTokenId> createTokenIds() {
@@ -113,7 +113,7 @@ public enum LatteMarkupTokenId implements TokenId {
             }.language();
 
     public static Language<LatteMarkupTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 
 }

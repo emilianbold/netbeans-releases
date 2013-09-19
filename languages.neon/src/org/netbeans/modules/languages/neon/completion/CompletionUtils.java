@@ -39,62 +39,42 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.parser;
+package org.netbeans.modules.languages.neon.completion;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteParser extends Parser {
-    private LatteParserResult parserResult;
+public final class CompletionUtils {
+    private static final Pattern TYPE_NAME_PATTERN = Pattern.compile("([a-zA-Z0-9_\\\\]+)::[a-zA-Z0-9_]*");
+    private static final Pattern METHOD_PREFIX_PATTERN = Pattern.compile("[a-zA-Z0-9_\\\\]+::([a-zA-Z0-9_]*)");
 
-    public LatteParser() {
+    private CompletionUtils() {
     }
 
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        parserResult = new LatteParserResult(snapshot);
+    public static boolean startsWith(String theString, String prefix) {
+        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    @Override
-    public Parser.Result getResult(Task task) throws ParseException {
-        return parserResult;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-
-    public static final class LatteParserResult extends ParserResult {
-
-        private LatteParserResult(Snapshot s) {
-            super(s);
+    public static String extractTypeName(String prefix) {
+        String result = null;
+        Matcher matcher = TYPE_NAME_PATTERN.matcher(prefix);
+        if (matcher.matches()) {
+            result = matcher.group(1);
         }
+        return result;
+    }
 
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.emptyList();
+    public static String extractMethodPrefix(String prefix) {
+        String result = null;
+        Matcher matcher = METHOD_PREFIX_PATTERN.matcher(prefix);
+        if (matcher.matches()) {
+            result = matcher.group(1);
         }
-
-        @Override
-        protected void invalidate() {
-        }
-
+        return result;
     }
 
 }
