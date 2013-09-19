@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -88,6 +89,7 @@ final class Utilities {
     private static final String COS_DISABLE = "compile.on.save.unsupported.remote.platform"; //NOI18N
     private static final String DEBUG_TRANSPORT = "debug-transport";        //NOI18N
     private static final String EXTENSION_NAME = "remote-platform-1";       //NOI18N
+    private static final String[] OLD_EXTENSION_NAMES = {};
     private static final String BUILD_SCRIPT_PATH = "nbproject/remote-platform-impl.xml";   //NOI18N
     private static final String BUILD_SCRIPT_BACK_UP = "remote-platform-impl_backup";   //NOI18N
     private static final String BUILD_SCRIPT_PROTOTYPE = "/org/netbeans/modules/java/j2seembedded/resources/remote-platform-impl.xml";  //NOI18N
@@ -107,6 +109,8 @@ final class Utilities {
     }
 
     private static final Logger LOG = Logger.getLogger(RemotePlatformProjectSaver.class.getName());
+
+    private static volatile Long templateCRCCache;
 
     private Utilities() {
         throw new IllegalStateException();
@@ -237,6 +241,21 @@ final class Utilities {
         return extender.getExtension(EXTENSION_NAME) != null;
     }
 
+    static boolean removeOldRemoteExtensions(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        boolean result = false;
+        final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        if (extender != null) {
+            for (String oldExtensionName : OLD_EXTENSION_NAMES) {
+                if (extender.getExtension(oldExtensionName) != null) {
+                    extender.removeExtension(oldExtensionName);
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
     static void addRemoteExtension(@NonNull final Project project) throws IOException {
         final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         if (extender == null) {
@@ -283,10 +302,51 @@ final class Utilities {
         return rpBuildScript;
     }
 
-    static boolean isBuildScriptUpToDate(@NonNull final Project project) {
-        return false; //TODO
+    private static boolean isBuildScriptUpToDate(@NonNull final Project project) {
+        final FileObject prjDir = project.getProjectDirectory();
+        if (prjDir == null) {
+            return false;
+        }
+        final FileObject remoteBuildScript = prjDir.getFileObject(BUILD_SCRIPT_PATH);
+        if (remoteBuildScript == null) {
+            return false;
+        }
+        try {
+            final long scriptCRC;
+            try (final InputStream in = new BufferedInputStream(remoteBuildScript.getInputStream())) {
+                scriptCRC = calculateCRC(in);
+            }
+            Long templateCRC = templateCRCCache;
+            if (templateCRC == null) {
+                try (final InputStream in = new BufferedInputStream(
+                        RemotePlatformProjectSaver.class.getResourceAsStream(BUILD_SCRIPT_PROTOTYPE))) {
+                    templateCRCCache = templateCRC = calculateCRC(in);
+                }
+            }
+            return scriptCRC == templateCRC;
+        } catch (IOException ioe) {
+            return false;
+        }
     }
 
+    private static long calculateCRC(@NonNull final InputStream in) throws IOException {
+        final CRC32 crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = in.read()) != -1) {
+            if (curr != '\n' && last == '\r') { //NOI18N
+                crc.update('\n');               //NOI18N
+            }
+            if (curr != '\r') {                 //NOI18N
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {                     //NOI18N
+            crc.update('\n');                   //NOI18N
+        }
+        return crc.getValue();
+    }
 
     private static boolean configAlreadyUpdated(
         @NonNull final EditableProperties props,
