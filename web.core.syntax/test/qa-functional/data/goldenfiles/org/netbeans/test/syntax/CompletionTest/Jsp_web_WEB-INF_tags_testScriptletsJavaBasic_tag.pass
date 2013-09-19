@@ -30,7 +30,7 @@ void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
 End cursor position = 744
-[<% "Hello World !".| %>, int hashCode (), <% "Hello World !".hashCode(); %>, 868]
+[<% "Hello World !".| %>, int hashCode (), <% "Hello World !".hashCode() %>, 867]
 char charAt (int index )
 int codePointAt (int index )
 int codePointBefore (int index
@@ -89,4 +89,4 @@ String trim ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 898
+End cursor position = 897
