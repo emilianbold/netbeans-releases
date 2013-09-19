@@ -42,13 +42,10 @@
 package org.netbeans.modules.languages.neon.completion;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
@@ -71,9 +68,6 @@ import org.netbeans.modules.languages.neon.parser.NeonParser.NeonParserResult;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class NeonCompletionHandler implements CodeCompletionHandler {
-    private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
-
     static final Set<NeonElement> SERVICE_CONFIG_OPTS = new HashSet<>();
     static {
         SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("setup", "setup:")); //NOI18N

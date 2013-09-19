@@ -70,7 +70,7 @@ public class TwigStructureItem implements StructureItem {
 
     public TwigStructureItem(Snapshot snapshot, TwigParserResult.Block item, List<TwigParserResult.Block> blocks) {
         this.item = item;
-        this.blocks = new ArrayList<TwigStructureItem>();
+        this.blocks = new ArrayList<>();
         this.snapshot = snapshot;
         for (TwigParserResult.Block current : blocks) {
             if (item.getOffset() < current.getOffset()

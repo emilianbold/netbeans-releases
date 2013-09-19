@@ -47,6 +47,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -68,6 +70,7 @@ import org.openide.util.RequestProcessor;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class TwigCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
+    private static final Logger LOGGER = Logger.getLogger(TwigCodeTemplateFilter.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(TwigCodeTemplateFilter.class);
     private volatile boolean accept = true;
     private final Future<Future<Void>> future;
@@ -97,9 +100,8 @@ public class TwigCodeTemplateFilter extends UserTask implements CodeTemplateFilt
     public boolean accept(CodeTemplate template) {
         try {
             future.get(500, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ex) {
-        } catch (TimeoutException ex) {
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            LOGGER.log(Level.FINE, null, ex);
         }
         return accept;
     }

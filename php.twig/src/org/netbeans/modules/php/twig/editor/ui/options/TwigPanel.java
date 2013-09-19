@@ -45,7 +45,9 @@ import org.netbeans.modules.php.twig.editor.actions.ToggleBlockCommentAction;
 import org.netbeans.spi.options.OptionsPanelController;
 
 @OptionsPanelController.Keywords(
-    keywords = {"php", "twig"},
+    keywords = {
+        "php", "twig"
+    },
     location = TwigOptionsPanelController.OPTIONS_PATH,
     tabTitle = "#LBL_TwigOptionsName"
 )

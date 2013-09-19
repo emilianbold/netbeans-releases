@@ -88,7 +88,7 @@ public class TwigDataObject extends MultiDataObject {
 
     static final String ACTIONS = "Loaders/" + TwigLanguage.TWIG_MIME_TYPE + "/Actions";
 
-    public TwigDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public TwigDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
         super(pf, loader);
         registerEditor(TwigLanguage.TWIG_MIME_TYPE, true);
     }
