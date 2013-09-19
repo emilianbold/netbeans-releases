@@ -84,7 +84,8 @@ public class LatteStateStack {
     }
 
     public int clear() {
-        return lastIn = -1;
+        lastIn = -1;
+        return lastIn;
     }
 
     public int size() {

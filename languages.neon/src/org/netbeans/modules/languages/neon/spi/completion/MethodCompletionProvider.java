@@ -39,61 +39,32 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.parser;
+package org.netbeans.modules.languages.neon.spi.completion;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteParser extends Parser {
-    private LatteParserResult parserResult;
+public interface MethodCompletionProvider {
 
-    public LatteParser() {
-    }
+    Set<String> complete(@NonNull String prefix, @NonNull String typeName, @NonNull FileObject fileObject);
 
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        parserResult = new LatteParserResult(snapshot);
-    }
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({
+        ElementType.TYPE,
+        ElementType.METHOD
+    })
+    public @interface Registration {
 
-    @Override
-    public Parser.Result getResult(Task task) throws ParseException {
-        return parserResult;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-
-    public static final class LatteParserResult extends ParserResult {
-
-        private LatteParserResult(Snapshot s) {
-            super(s);
-        }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        protected void invalidate() {
-        }
+        int position() default Integer.MAX_VALUE;
 
     }
 

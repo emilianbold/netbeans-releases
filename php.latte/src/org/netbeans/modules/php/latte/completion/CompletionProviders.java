@@ -52,9 +52,10 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CompletionProviders {
+public final class CompletionProviders {
     public static final String VARIABLE_COMPLETION_PROVIDER_PATH = "Latte/Completion/Variables"; //NOI18N
-    private static final Lookup.Result<VariableCompletionProvider> VARIABLE_PROVIDERS = Lookups.forPath(VARIABLE_COMPLETION_PROVIDER_PATH).lookupResult(VariableCompletionProvider.class);
+    private static final Lookup.Result<VariableCompletionProvider> VARIABLE_PROVIDERS
+            = Lookups.forPath(VARIABLE_COMPLETION_PROVIDER_PATH).lookupResult(VariableCompletionProvider.class);
 
     private CompletionProviders() {
     }

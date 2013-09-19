@@ -43,6 +43,7 @@ package org.netbeans.modules.languages.neon.completion;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -54,7 +55,9 @@ import org.openide.util.lookup.Lookups;
  */
 public final class CompletionProviders {
     public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
+    public static final String METHOD_COMPLETION_PROVIDER_PATH = "Neon/completion/method"; //NOI18N
     private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
+    private static final Lookup.Result<MethodCompletionProvider> METHOD_PROVIDERS = Lookups.forPath(METHOD_COMPLETION_PROVIDER_PATH).lookupResult(MethodCompletionProvider.class);
 
     private CompletionProviders() {
     }
@@ -69,6 +72,18 @@ public final class CompletionProviders {
 
     public static void removeTypeProviderListener(LookupListener listener) {
         TYPE_PROVIDERS.removeLookupListener(listener);
+    }
+
+    public static List<MethodCompletionProvider> getMethodProviders() {
+        return new ArrayList<>(METHOD_PROVIDERS.allInstances());
+    }
+
+    public static void addMethodProviderListener(LookupListener listener) {
+        METHOD_PROVIDERS.addLookupListener(listener);
+    }
+
+    public static void removeMethodProviderListener(LookupListener listener) {
+        METHOD_PROVIDERS.removeLookupListener(listener);
     }
 
 }

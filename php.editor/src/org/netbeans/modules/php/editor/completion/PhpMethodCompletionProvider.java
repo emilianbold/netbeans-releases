@@ -39,62 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.parser;
+package org.netbeans.modules.php.editor.completion;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteParser extends Parser {
-    private LatteParserResult parserResult;
+public final class PhpMethodCompletionProvider implements MethodCompletionProvider {
+    private static final PhpMethodCompletionProvider INSTANCE = new PhpMethodCompletionProvider();
 
-    public LatteParser() {
+    @MethodCompletionProvider.Registration(position = 100)
+    public static PhpMethodCompletionProvider getInstance() {
+        return INSTANCE;
+    }
+
+    private PhpMethodCompletionProvider() {
     }
 
     @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        parserResult = new LatteParserResult(snapshot);
-    }
-
-    @Override
-    public Parser.Result getResult(Task task) throws ParseException {
-        return parserResult;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-
-    public static final class LatteParserResult extends ParserResult {
-
-        private LatteParserResult(Snapshot s) {
-            super(s);
+    public Set<String> complete(String prefix, String typeName, FileObject fileObject) {
+        Set<String> result = new HashSet<>();
+        if (typeName != null && !typeName.isEmpty()) {
+            ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+            Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(typeName));
+            for (TypeElement typeElement : types) {
+                Set<MethodElement> accessibleMethods = indexQuery.getAccessibleMethods(typeElement, typeElement);
+                Set<MethodElement> filteredMethods = ElementFilter.forName(NameKind.prefix(prefix)).filter(accessibleMethods);
+                for (MethodElement methodElement : filteredMethods) {
+                    result.add(methodElement.asString(BaseFunctionElement.PrintAs.NameAndParamsInvocation).trim());
+                }
+            }
         }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        protected void invalidate() {
-        }
-
+        return result;
     }
 
 }

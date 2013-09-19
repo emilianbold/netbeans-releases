@@ -58,6 +58,8 @@ public interface NeonElement extends ElementHandle {
 
     String getTemplate();
 
+    String getType();
+
     public static class Factory {
         private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
@@ -69,6 +71,10 @@ public interface NeonElement extends ElementHandle {
             String[] nameParts = typeName.split("\\" + NAMESPACE_SEPARATOR); //NOI18N
             String unqualifiedName = nameParts[nameParts.length - 1];
             return new NeonExtendedElement(unqualifiedName, typeName.startsWith(NAMESPACE_SEPARATOR) ? typeName.substring(1) : typeName);
+        }
+
+        public static NeonElement createMethod(String methodName, String typeName) {
+            return new NeonTypedElement(methodName, typeName, typeName + "::" + methodName); //NOI18N
         }
 
         public static NeonElement create(String name, String template) {
@@ -124,6 +130,11 @@ public interface NeonElement extends ElementHandle {
             return OffsetRange.NONE;
         }
 
+        @Override
+        public String getType() {
+            return getTemplate();
+        }
+
     }
 
     static final class NeonSimpleElement extends BaseNeonElementItem {
@@ -150,6 +161,28 @@ public interface NeonElement extends ElementHandle {
         public String getTemplate() {
             return template;
         }
+    }
+
+    static final class NeonTypedElement extends BaseNeonElementItem {
+        private final String template;
+        private final String type;
+
+        private NeonTypedElement(String name, String type, String template) {
+            super(name);
+            this.template = template;
+            this.type = type;
+        }
+
+        @Override
+        public String getTemplate() {
+            return template;
+        }
+
+        @Override
+        public String getType() {
+            return type;
+        }
+
     }
 
 }

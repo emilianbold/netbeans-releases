@@ -2,7 +2,7 @@
 
   TEMPLATE DESCRIPTION:
 
-  This is XHTML template for 'JSF ReadOnly Form From Entity' action. Templating
+  This is XHTML template for 'JSF Data Table From Entity' action. Templating
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
@@ -31,19 +31,24 @@
 
 <#assign htmlTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/html", "h")>
 <#assign coreTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/core", "f")>
+<#assign pfTagPrefix=prefixResolver.getPrefixForNS("http://primefaces.org/ui", "p")>
 
 <${htmlTagPrefix}:form>
-    <h1><${htmlTagPrefix}:outputText value="View"/></h1>
-    <${htmlTagPrefix}:panelGrid columns="2">
+    <h1><${htmlTagPrefix}:outputText value="List"/></h1>
+    <${pfTagPrefix}:dataTable value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}">
 <#list entityDescriptors as entityDescriptor>
-        <${htmlTagPrefix}:outputText value="${entityDescriptor.label}:"/>
+        <${pfTagPrefix}:column>
+            <${coreTagPrefix}:facet name="header">
+                <${htmlTagPrefix}:outputText value="${entityDescriptor.label}"/>
+            </${coreTagPrefix}:facet>
 <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
-        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}">
-            <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
-        </${htmlTagPrefix}:outputText>
+            <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">
+                <${coreTagPrefix}:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
+            </${htmlTagPrefix}:outputText>
 <#else>
-        <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
+            <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}"/>
 </#if>
+        </${pfTagPrefix}:column>
 </#list>
-    </${htmlTagPrefix}:panelGrid>
+    </${pfTagPrefix}:dataTable>
 </${htmlTagPrefix}:form>

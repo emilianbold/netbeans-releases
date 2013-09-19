@@ -39,62 +39,29 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.parser;
+package org.netbeans.modules.web.jsf.palette.items;
 
-import java.util.Collections;
-import java.util.List;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class LatteParser extends Parser {
-    private LatteParserResult parserResult;
+public class PrefixResolver {
 
-    public LatteParser() {
+    private final JsfLibrariesSupport jls;
+
+    public PrefixResolver(JsfLibrariesSupport jls) {
+        this.jls = jls;
     }
 
-    @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        parserResult = new LatteParserResult(snapshot);
-    }
-
-    @Override
-    public Parser.Result getResult(Task task) throws ParseException {
-        return parserResult;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
-    }
-
-    public static final class LatteParserResult extends ParserResult {
-
-        private LatteParserResult(Snapshot s) {
-            super(s);
+    public String getPrefixForNS(String namespace, String fallbackPrefix) {
+        for (DefaultLibraryInfo dli : DefaultLibraryInfo.values()) {
+            if (dli.getNamespace().equals(namespace) || (dli.getLegacyNamespace() != null && dli.getLegacyNamespace().equals(namespace))) {
+                return jls.getLibraryPrefix(dli);
+            }
         }
-
-        @Override
-        public List<? extends Error> getDiagnostics() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        protected void invalidate() {
-        }
-
+        return fallbackPrefix;
     }
 
 }

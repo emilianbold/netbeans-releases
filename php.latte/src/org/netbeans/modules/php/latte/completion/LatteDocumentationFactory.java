@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  */
 public interface LatteDocumentationFactory {
 
-    public LatteDocumentation create(String elementName);
+    LatteDocumentation create(String elementName);
 
     public abstract static class BaseDocumentationFactory implements LatteDocumentationFactory {
 
@@ -70,7 +70,7 @@ public interface LatteDocumentationFactory {
 
     }
 
-    public static class MacroDocumentationFactory extends BaseDocumentationFactory {
+    public static final class MacroDocumentationFactory extends BaseDocumentationFactory {
 
         private static final LatteDocumentationFactory INSTANCE = new MacroDocumentationFactory();
 
@@ -88,7 +88,7 @@ public interface LatteDocumentationFactory {
 
     }
 
-    public static class HelperDocumentationFactory extends BaseDocumentationFactory {
+    public static final class HelperDocumentationFactory extends BaseDocumentationFactory {
 
         private static final LatteDocumentationFactory INSTANCE = new HelperDocumentationFactory();
 
@@ -106,7 +106,7 @@ public interface LatteDocumentationFactory {
 
     }
 
-    public static class KeywordDocumentationFactory extends BaseDocumentationFactory {
+    public static final class KeywordDocumentationFactory extends BaseDocumentationFactory {
 
         private static final LatteDocumentationFactory INSTANCE = new KeywordDocumentationFactory();
 
@@ -124,7 +124,7 @@ public interface LatteDocumentationFactory {
 
     }
 
-    public static class IteratorItemDocumentationFactory extends BaseDocumentationFactory {
+    public static final class IteratorItemDocumentationFactory extends BaseDocumentationFactory {
 
         private static final LatteDocumentationFactory INSTANCE = new IteratorItemDocumentationFactory();
 
@@ -142,7 +142,7 @@ public interface LatteDocumentationFactory {
 
     }
 
-    public static class VariableDocumentationFactory extends BaseDocumentationFactory {
+    public static final class VariableDocumentationFactory extends BaseDocumentationFactory {
 
         private static final LatteDocumentationFactory INSTANCE = new VariableDocumentationFactory();
 

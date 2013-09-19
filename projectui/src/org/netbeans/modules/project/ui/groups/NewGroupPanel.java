@@ -46,7 +46,9 @@ package org.netbeans.modules.project.ui.groups;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -86,6 +88,7 @@ public class NewGroupPanel extends JPanel {
             @Override public void changedUpdate(DocumentEvent e) {}
         };
         directoryField.getDocument().addDocumentListener(l);
+        nameField.setText("Group " + new SimpleDateFormat("yyyyMMdd-hh:mm:ss").format(new Date()));
         nameField.getDocument().addDocumentListener(l);
         nameField.getDocument().addDocumentListener(new DocumentListener() {
 

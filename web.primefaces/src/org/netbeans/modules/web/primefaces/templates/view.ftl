@@ -31,10 +31,11 @@
 
 <#assign htmlTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/html", "h")>
 <#assign coreTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/core", "f")>
+<#assign pfTagPrefix=prefixResolver.getPrefixForNS("http://primefaces.org/ui", "p")>
 
 <${htmlTagPrefix}:form>
     <h1><${htmlTagPrefix}:outputText value="View"/></h1>
-    <${htmlTagPrefix}:panelGrid columns="2">
+    <${pfTagPrefix}:panelGrid columns="2">
 <#list entityDescriptors as entityDescriptor>
         <${htmlTagPrefix}:outputText value="${entityDescriptor.label}:"/>
 <#if entityDescriptor.dateTimeFormat?? && entityDescriptor.dateTimeFormat != "">
@@ -45,5 +46,5 @@
         <${htmlTagPrefix}:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${entityDescriptor.label}"/>
 </#if>
 </#list>
-    </${htmlTagPrefix}:panelGrid>
+    </${pfTagPrefix}:panelGrid>
 </${htmlTagPrefix}:form>
