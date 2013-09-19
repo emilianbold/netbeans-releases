@@ -45,7 +45,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -58,6 +60,7 @@ public enum NeonCompletionContext {
         public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
             completeServiceConfigOpts(completionProposals, request);
             completeTypes(completionProposals, request);
+            completeMethods(completionProposals, request);
         }
     },
     SERVICE_CONFIG_OPTS {
@@ -71,11 +74,17 @@ public enum NeonCompletionContext {
         public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
             completeTypes(completionProposals, request);
         }
+    },
+    METHODS {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+            completeMethods(completionProposals, request);
+        }
     };
 
     protected void completeServiceConfigOpts(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
         for (NeonElement serviceConfigOpts : NeonCompletionHandler.SERVICE_CONFIG_OPTS) {
-            if (startsWith(serviceConfigOpts.getName(), request.prefix)) {
+            if (CompletionUtils.startsWith(serviceConfigOpts.getName(), request.prefix)) {
                 completionProposals.add(new NeonCompletionProposal.ServiceConfigOptCompletionProposal(serviceConfigOpts, request));
             }
         }
@@ -91,10 +100,19 @@ public enum NeonCompletionContext {
         }
     }
 
-    public abstract void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request);
-
-    private static boolean startsWith(String theString, String prefix) {
-        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
+    protected void completeMethods(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+        Collection<? extends MethodCompletionProvider> methodCompletionProviders = CompletionProviders.getMethodProviders();
+        FileObject fileObject = request.parserResult.getSnapshot().getSource().getFileObject();
+        String typeName = CompletionUtils.extractTypeName(request.prefix);
+        String methodPrefix = CompletionUtils.extractMethodPrefix(request.prefix);
+        for (MethodCompletionProvider methodCompletionProvider : methodCompletionProviders) {
+            Set<String> methods = methodCompletionProvider.complete(methodPrefix, typeName, fileObject);
+            for (String methodName : methods) {
+                completionProposals.add(new NeonCompletionProposal.MethodCompletionProposal(NeonElement.Factory.create(methodName, typeName), request));
+            }
+        }
     }
+
+    public abstract void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request);
 
 }

@@ -166,4 +166,24 @@ public abstract class NeonCompletionProposal implements CompletionProposal {
 
     }
 
+    static class MethodCompletionProposal extends NeonCompletionProposal {
+
+        public MethodCompletionProposal(NeonElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            ElementHandle elementHandle = getElement();
+            assert elementHandle != null;
+            return ((NeonElement) elementHandle).getTemplate();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+    }
+
 }

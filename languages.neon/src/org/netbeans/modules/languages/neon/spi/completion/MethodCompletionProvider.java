@@ -39,51 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.completion;
+package org.netbeans.modules.languages.neon.spi.completion;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class CompletionProviders {
-    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
-    public static final String METHOD_COMPLETION_PROVIDER_PATH = "Neon/completion/method"; //NOI18N
-    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
-    private static final Lookup.Result<MethodCompletionProvider> METHOD_PROVIDERS = Lookups.forPath(METHOD_COMPLETION_PROVIDER_PATH).lookupResult(MethodCompletionProvider.class);
+public interface MethodCompletionProvider {
 
-    private CompletionProviders() {
-    }
+    Set<String> complete(@NonNull String prefix, @NonNull String typeName, @NonNull FileObject fileObject);
 
-    public static List<TypeCompletionProvider> getTypeProviders() {
-        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
-    }
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({
+        ElementType.TYPE,
+        ElementType.METHOD
+    })
+    public @interface Registration {
 
-    public static void addTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.addLookupListener(listener);
-    }
+        int position() default Integer.MAX_VALUE;
 
-    public static void removeTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.removeLookupListener(listener);
-    }
-
-    public static List<MethodCompletionProvider> getMethodProviders() {
-        return new ArrayList<>(METHOD_PROVIDERS.allInstances());
-    }
-
-    public static void addMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.removeLookupListener(listener);
     }
 
 }
