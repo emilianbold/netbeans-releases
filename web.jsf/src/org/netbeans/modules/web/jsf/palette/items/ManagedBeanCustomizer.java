@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -62,8 +64,12 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -87,6 +93,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -103,11 +110,12 @@ import org.openide.util.RequestProcessor;
 
 public class ManagedBeanCustomizer extends javax.swing.JPanel implements CancellableDialog {
 
+    private static final long serialVersionUID = 1L;
     private static final RequestProcessor RP = new RequestProcessor();
-    
-    public static final String VIEW_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/view.ftl"; // NOI18N
-    public static final String EDIT_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/edit.ftl"; // NOI18N
-    public static final String TABLE_TEMPLATE = "/Templates/JSF/JSF_From_Entity_Snippets/table.ftl"; // NOI18N
+
+    public static final String VIEW_TEMPLATE = "view.ftl"; // NOI18N
+    public static final String EDIT_TEMPLATE = "edit.ftl"; // NOI18N
+    public static final String TABLE_TEMPLATE = "table.ftl"; // NOI18N
 
     private Project project;
     private MetaModelSupport metaModelSupport;
@@ -161,6 +169,12 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 }
             });
         }
+
+        // templates comboBox
+        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getSnippetTemplates()) {
+            templatesStyleComboBox.addItem(template);
+        }
+        templatesStyleComboBox.setRenderer(new TemplateCellRenderer());
     }
 
     private void updateValidity(String text) {
@@ -196,6 +210,8 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         customizeTemplatesLabel = new javax.swing.JLabel();
         hint = new javax.swing.JLabel();
         scanningLabel = new javax.swing.JLabel();
+        templatesStyleLabel = new javax.swing.JLabel();
+        templatesStyleComboBox = new javax.swing.JComboBox();
 
         entityBeanLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.entityBeanLabel.text")); // NOI18N
 
@@ -229,6 +245,8 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
         scanningLabel.setForeground(new java.awt.Color(153, 153, 153));
         scanningLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.scanningLabel.text")); // NOI18N
 
+        templatesStyleLabel.setText(org.openide.util.NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.templatesStyleLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -247,10 +265,14 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                             .addComponent(readOnlyCheckBox)
                             .addComponent(hint, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(scanningLabel)
-                            .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(scanningLabel)
+                        .addGap(0, 350, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(templatesStyleLabel)
+                        .addGap(70, 70, 70)
+                        .addComponent(templatesStyleComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -268,8 +290,11 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 .addComponent(hint)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(readOnlyCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 67, Short.MAX_VALUE)
-                .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(customizeTemplatesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(templatesStyleLabel)
+                    .addComponent(templatesStyleComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scanningLabel)
                 .addContainerGap())
@@ -317,12 +342,15 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
     private void customizeTemplatesLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customizeTemplatesLabelMouseClicked
         if (collection) {
-            new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.tableTemplate"), TABLE_TEMPLATE).actionPerformed(null);
+            new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.tableTemplate"),
+                    JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), TABLE_TEMPLATE)).actionPerformed(null);
         } else {
             JPopupMenu menu = new JPopupMenu();
-            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.allTemplates"), VIEW_TEMPLATE, EDIT_TEMPLATE));
-            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.viewTemplate"), VIEW_TEMPLATE));
-            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.editTemplate"), EDIT_TEMPLATE));
+            String viewTemplatePath = JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), VIEW_TEMPLATE);
+            String editTemplatePath = JsfTemplateUtils.getSnippetTemplatePath(getTemplatesStyle(), EDIT_TEMPLATE);
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.allTemplates"), viewTemplatePath, editTemplatePath));
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.viewTemplate"), viewTemplatePath));
+            menu.add(new OpenTemplateAction(this, NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.editTemplate"), editTemplatePath));
             menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
         }
     }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
@@ -340,6 +368,10 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
 
     public boolean isCancelled() {
         return cancelled;
+    }
+
+    public String getTemplatesStyle() {
+        return ((JsfTemplateUtils.Template) templatesStyleComboBox.getSelectedItem()).getName();
     }
 
     public static class OpenTemplateAction extends AbstractAction {
@@ -384,6 +416,8 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
     private javax.swing.JLabel managedBeanLabel;
     private javax.swing.JCheckBox readOnlyCheckBox;
     private javax.swing.JLabel scanningLabel;
+    private javax.swing.JComboBox templatesStyleComboBox;
+    private javax.swing.JLabel templatesStyleLabel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -539,4 +573,18 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
             return (collectionTypeAsClass != null && Collection.class.isAssignableFrom(collectionTypeAsClass));
         }
     }
+
+    class TemplateCellRenderer implements ListCellRenderer {
+
+        protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel renderer = (JLabel) defaultRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (value instanceof JsfTemplateUtils.Template) {
+                renderer.setText(((JsfTemplateUtils.Template) value).getDisplayName());
+            }
+            return renderer;
+        }
+}
 }
