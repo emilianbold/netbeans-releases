@@ -58,7 +58,10 @@ public interface TypeCompletionProvider {
     Set<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
 
     @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Target({
+        ElementType.TYPE,
+        ElementType.METHOD
+    })
     public @interface Registration {
 
         int position() default Integer.MAX_VALUE;

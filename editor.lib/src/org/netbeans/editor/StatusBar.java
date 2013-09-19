@@ -86,12 +86,14 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -123,9 +125,9 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
 
     public static final String OVERWRITE_LOCALE = "status-bar-overwrite"; // NOI18N
 
-    private static final String[] POS_MAX_STRINGS = new String[] { "99999 | 999" }; // NOI18N
+    private static final String[] POS_MAX_STRINGS = new String[] { "99999:999/9999:9999" }; // NOI18N
 
-    private static final String[] POS_MAX_STRINGS_OFFSET = new String[] { "99999 | 999 <99999999>" }; // NOI18N
+    private static final String[] POS_MAX_STRINGS_OFFSET = new String[] { "99999:999/9999:9999 <99999999>" }; // NOI18N
 
     private static final Insets NULL_INSETS = new Insets(0, 0, 0, 0);
 
@@ -644,10 +646,24 @@ public class StatusBar implements PropertyChangeListener, DocumentListener {
                     BaseDocument doc = Utilities.getDocument(component);
                     if (doc != null && doc.getDefaultRootElement().getElementCount()>0) {
                         int pos = c.getDot();
-                        String s = Utilities.debugPosition(doc, pos, " | ");
+                        String s = Utilities.debugPosition(doc, pos, ":");
                         if (CARET_OFFSET_LOG.isLoggable(Level.FINE)) { // Possibly add caret offset info
                             s += " <" + pos + ">"; // NOI18N
                         }
+                        int countOfSelectedChars = component.getSelectionEnd() - component.getSelectionStart();
+                        final boolean hasSelection = countOfSelectedChars > 0;
+                        if (hasSelection) {
+                            try {
+                                //count of selected lines
+                                int lineEnd = Utilities.getLineOffset(doc, component.getSelectionEnd());
+                                int lineStart = Utilities.getLineOffset(doc, component.getSelectionStart());
+                                s += "/" + (lineEnd - lineStart + 1);
+                            } catch (BadLocationException ex) {
+                            }
+                            //count of selected characters
+                            s += ":" + countOfSelectedChars;
+                        }
+                        //rows:cols/countRows:countCols
                         setText(CELL_POSITION, s);
                     }
                 }

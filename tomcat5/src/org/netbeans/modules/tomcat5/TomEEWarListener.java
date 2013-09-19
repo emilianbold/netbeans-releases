@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.twig.editor.completion;
+package org.netbeans.modules.tomcat5;
+
+import java.io.File;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager;
+import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Petr Hejl
  */
-public interface TwigDocumentation {
+public class TomEEWarListener implements FileChangeListener {
 
-    String asText();
+    private final TomcatProperties tp;
 
-    public static final class TwigDocumentationImpl implements TwigDocumentation {
-        private final String documentation;
+    private final RefreshHook refresh;
 
-        public TwigDocumentationImpl(final String documentation) {
-            this.documentation = documentation;
+    private File currentTomEEJar;
+
+    public TomEEWarListener(TomcatProperties tp, RefreshHook refresh) {
+        this.tp = tp;
+        this.refresh = refresh;
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+        checkAndRefresh();
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        checkAndRefresh();
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        checkAndRefresh();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        checkAndRefresh();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        checkAndRefresh();
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    public void checkAndRefresh() {
+        File jar = TomcatFactory.getTomEEWebAppJar(tp.getCatalinaHome(), tp.getCatalinaBase());
+        if (this.currentTomEEJar != jar && (this.currentTomEEJar == null || !this.currentTomEEJar.equals(jar))) {
+            currentTomEEJar = jar;
+            refresh.refresh(TomcatFactory.getTomEEVersion(jar));
         }
+    }
 
-        @Override
-        public String asText() {
-            return documentation;
-        }
+    public static interface RefreshHook {
+        void refresh(TomcatManager.TomEEVersion version);
     }
 
 }

@@ -179,7 +179,7 @@ public final class SourceJavadocAttacherUtil {
                     chooser.putClientProperty("JFileChooser.packageIsTraversable", "always");   //NOI18N
                 }
                 chooser.setDialogTitle(title);
-                chooser.setFileFilter (new FileFilter() {
+                final FileFilter filter = new FileFilter() {
                     @Override
                     public boolean accept(File f) {
                         try {
@@ -194,7 +194,8 @@ public final class SourceJavadocAttacherUtil {
                     public String getDescription() {
                         return filterDescription;
                     }
-                });
+                };
+                chooser.setFileFilter (filter);
                 chooser.setApproveButtonText(Bundle.TXT_Select());
                 chooser.setApproveButtonMnemonic(Bundle.MNE_Select().charAt(0));
                 if (currentFolder[0] != null) {
@@ -202,7 +203,7 @@ public final class SourceJavadocAttacherUtil {
                 }
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     currentFolder[0] = chooser.getCurrentDirectory();
-                    final File[] files = chooser.getSelectedFiles();
+                    final File[] files = filter(chooser.getSelectedFiles(), filter);
                     final List<String> result = new ArrayList<String>(files.length);
                     for (File f : files) {
                         result.add(f.getAbsolutePath());
@@ -243,5 +244,17 @@ public final class SourceJavadocAttacherUtil {
 
     public static interface Function<P,R> {
         R call (P param) throws Exception;
+    }
+
+    private static File[] filter(
+        @NonNull final File[] files,
+        @NonNull final FileFilter filter) {
+        final List<File> result = new ArrayList<>();
+        for (File file : files) {
+            if (filter.accept(file)) {
+                result.add(file);
+            }
+        }
+        return result.toArray(new File[result.size()]);
     }
 }

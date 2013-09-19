@@ -216,7 +216,7 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
      * @param source classpath source type - "jar", "library", "project"
      * @param classpath names of classpath roots - e.g. JAR file paths
      */
-    public static void createFile(FileObject folder, ClassSource classSource)
+    public static FileObject createFile(FileObject folder, ClassSource classSource)
         throws IOException
     {
         String classname = classSource.getClassName();
@@ -256,6 +256,7 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
             os.close();
             lock.releaseLock();
         }
+        return itemFile;
     }
 
     // -------

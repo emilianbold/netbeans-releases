@@ -257,6 +257,7 @@ public final class FiltersManager {
         }
         
         private void addSortButtons(@NonNull final Iterable<? extends AbstractButton> buttons ) {
+            assert toolbar != null : "toolbar initialized"; //NOI18N
             if (!toggles.isEmpty()) {
                 toolbar.addSeparator();
             }
