@@ -237,9 +237,9 @@ public class ProjectProblemsProviders {
 
                     } else if (v.startsWith("${var")) { // NOI18N
                         problem = ProjectProblemsProvider.ProjectProblem.createError(
-                            getDisplayName(RefType.VARIABLE, val),
-                            getDescription(RefType.VARIABLE, val),
-                            new VariableResolver(RefType.VARIABLE, val));
+                            getDisplayName(RefType.VARIABLE, v),
+                            getDescription(RefType.VARIABLE, v),
+                            new VariableResolver(RefType.VARIABLE, v));
                     } else {
                         problem = ProjectProblemsProvider.ProjectProblem.createError(
                             getDisplayName(RefType.LIBRARY, val),
@@ -561,7 +561,7 @@ public class ProjectProblemsProviders {
             case PLATFORM:
                 return id;
             case VARIABLE:
-                return id.substring(4, id.indexOf('}')); // NOI18N
+                return id.substring(6, id.indexOf('}')); // NOI18N
             case VARIABLE_CONTENT:
                 return id.substring(6, id.indexOf('}')) + id.substring(id.indexOf('}')+1); // NOI18N
             default:

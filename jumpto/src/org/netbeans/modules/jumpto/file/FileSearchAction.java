@@ -312,6 +312,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         initSearchText = recentPane.getSelectedText();
                     }
                     if (initSearchText != null) {
+                        if (initSearchText.length() > 256) {
+                            initSearchText = initSearchText.substring(0, 256);
+                        }
                         panel.setInitialText(initSearchText);
                     } else {
                         FileObject fo = arr[0].getLookup().lookup(FileObject.class);

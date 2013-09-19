@@ -90,18 +90,23 @@ public final class SimplePathResourceImplementation  extends PathResourceBase {
         }
         final String rootS = root.toString();
         if (rootS.matches("file:.+[.]jar/?")) {
+            File f = null;
             boolean dir = false;
             try {
-                dir = Utilities.toFile(root.toURI()).isDirectory();
+                f = Utilities.toFile(root.toURI());
+                dir = f.isDirectory();
             } catch (URISyntaxException use) {
                 //pass - handle as non dir
             }
             if (!dir) {
-                final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
-                if (initiatedIn != null) {
-                    iae.initCause(initiatedIn);
+                //Special case for /tmp/build/.jar/ see issue #235695
+                if (f == null || f.exists() || !f.getName().equals(".jar")) {   //NOI18N
+                    final IllegalArgumentException iae = new IllegalArgumentException(rootS + " is not a valid classpath entry; use a jar-protocol URL." + context);
+                    if (initiatedIn != null) {
+                        iae.initCause(initiatedIn);
+                    }
+                    throw iae;
                 }
-                throw iae;
             }
         }
         if (!rootS.endsWith("/")) {

@@ -209,6 +209,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
     private boolean                     breakpointsActive = true;
     
     private InputOutput                 io;
+    
+    private PeriodicThreadsDump         ptd;
+    private boolean                     vmSuspended = false; // true after VM.suspend() was called.
 
     // init ....................................................................
 
@@ -1202,6 +1205,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             virtualMachine = vm;
             operator = o;
         }
+        if (logger.isLoggable(Level.FINEST)) {
+            ptd = new PeriodicThreadsDump(vm);
+        }
         synchronized (canBeModifiedLock) {
             canBeModified = null; // Reset the can be modified flag
         }
@@ -1394,6 +1400,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
                 virtualMachine = null;
             }
+            if (ptd != null) {
+                ptd.finish();
+            }
             setState (STATE_DISCONNECTED);
             if (jsr45EngineProviders != null) {
                 for (Iterator<JSR45DebuggerEngineProvider> i = jsr45EngineProviders.iterator(); i.hasNext();) {
@@ -1460,6 +1469,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         }
     }
+    
+    public boolean isVMSuspended() {
+        return vmSuspended;
+    }
 
     /**
      * Suspends the target virtual machine (if any).
@@ -1478,6 +1491,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 logger.fine("VM suspend");
                 try {
                     VirtualMachineWrapper.suspend (vm);
+                    vmSuspended = true;
                     // Check the suspended count
                     List<ThreadReference> threads = VirtualMachineWrapper.allThreads(vm);
                     for (ThreadReference t : threads) {
@@ -1614,33 +1628,35 @@ public class JPDADebuggerImpl extends JPDADebugger {
             // suspended threads.
             // But this looks like a reasonable trade-off considering the available functionality.
             
-            // Deal only with threads that are living
-            {
-                boolean modifiableAllThreads = false;
-                int n = allThreads.size();
-                for (int i = 0; i < n; i++) {
-                    JPDAThread t = allThreads.get(i);
-                    int status = t.getState();
-                    if (status == JPDAThread.STATE_ZOMBIE || status == JPDAThread.STATE_UNKNOWN ||
-                        t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN) && !t.isSuspended()) {
-                        if (!modifiableAllThreads) {
-                            allThreads = new ArrayList<JPDAThread>(allThreads);
-                            modifiableAllThreads = true;
+            List<JPDAThreadImpl> threadsToResume = null;
+            try {
+                // Deal only with threads that are living
+                {
+                    boolean modifiableAllThreads = false;
+                    int n = allThreads.size();
+                    for (int i = 0; i < n; i++) {
+                        JPDAThread t = allThreads.get(i);
+                        int status = t.getState();
+                        if (status == JPDAThread.STATE_ZOMBIE || status == JPDAThread.STATE_UNKNOWN ||
+                            t.getName().contains(ThreadsCache.THREAD_NAME_FILTER_PATTERN) && !t.isSuspended()) {
+                            if (!modifiableAllThreads) {
+                                allThreads = new ArrayList<JPDAThread>(allThreads);
+                                modifiableAllThreads = true;
+                            }
+                            allThreads.remove(i);
+                            n--;
+                            i--;
                         }
-                        allThreads.remove(i);
-                        n--;
-                        i--;
                     }
                 }
-            }
 
-            List<JPDAThreadImpl> threadsToResume = new ArrayList<JPDAThreadImpl>();
-            for (JPDAThread t : allThreads) {
-                if (t.isSuspended()) {
-                    threadsToResume.add((JPDAThreadImpl) t);
+                threadsToResume = new ArrayList<JPDAThreadImpl>();
+                for (JPDAThread t : allThreads) {
+                    if (t.isSuspended()) {
+                        threadsToResume.add((JPDAThreadImpl) t);
+                    }
                 }
-            }
-            try {
+
                 for (int i = 0; i < threadsToResume.size(); i++) {
                     JPDAThreadImpl t = threadsToResume.get(i);
                     boolean can = t.cleanBeforeResume();
@@ -1649,7 +1665,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         i--;
                     }
                 }
-                if (allThreads.size() == threadsToResume.size()) {
+                if (vmSuspended || allThreads.size() == threadsToResume.size()) {
                     // Resuming all
                     for (JPDAThreadImpl t : threadsToResume) {
                         t.setAsResumed(false);
@@ -1662,6 +1678,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     //logger.severe("Before VM.resume():");
                     //Operator.dumpThreadsStatus(vm, Level.SEVERE);
                     VirtualMachineWrapper.resume(vm);
+                    vmSuspended = false;
                     logger.finer("All threads resumed.");
                     //logger.severe("After VM.resume():");
                     //Operator.dumpThreadsStatus(vm, Level.SEVERE);
@@ -1679,13 +1696,15 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 if (stateChangeEvent != null) {
                     firePropertyChange(stateChangeEvent);
                 }
-                for (JPDAThreadImpl t : threadsToResume) {
-                    try {
-                        t.fireAfterResume();
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable th) {
-                        Exceptions.printStackTrace(th);
+                if (threadsToResume != null) {
+                    for (JPDAThreadImpl t : threadsToResume) {
+                        try {
+                            t.fireAfterResume();
+                        } catch (ThreadDeath td) {
+                            throw td;
+                        } catch (Throwable th) {
+                            Exceptions.printStackTrace(th);
+                        }
                     }
                 }
             }
@@ -2483,6 +2502,40 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
         }
 
+    }
+    
+    private static class PeriodicThreadsDump implements Runnable {
+        
+        private static final int INTERVAL = 5000;
+        private RequestProcessor rp = new RequestProcessor(PeriodicThreadsDump.class.getName());
+        private VirtualMachine vm;
+        private volatile boolean finish = false;
+        
+        public PeriodicThreadsDump(VirtualMachine vm) {
+            this.vm = vm;
+            rp.post(this, INTERVAL);
+        }
+        
+        public void finish() {
+            finish = true;
+        }
+
+        @Override
+        public void run() {
+            List<ThreadReference> allThreads = vm.allThreads();
+            System.err.println("All Threads:");
+            for (ThreadReference tr : allThreads) {
+                String name = tr.name();
+                boolean suspended = tr.isSuspended();
+                int suspendCount = tr.suspendCount();
+                int status = tr.status();
+                System.err.println(name+"\t SUSP = "+suspended+", COUNT = "+suspendCount+", STATUS = "+status);
+            }
+            System.err.println("");
+            if (!finish) {
+                rp.post(this, INTERVAL);
+            }
+        }
     }
 
 }

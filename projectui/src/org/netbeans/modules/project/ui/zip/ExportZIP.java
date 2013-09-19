@@ -279,7 +279,7 @@ public class ExportZIP extends JPanel {
         "ERR_no_root=Must select a root directory to package.",
         "# {0} - directory", "ERR_no_dir={0} does not exist.",
         "ERR_no_zip=Must select a ZIP to export to.",
-        "# {0} - file", "ERR_exists={0} already exists.",
+        "# {0} - file", "WRN_exists={0} already exists.",
         "ERR_hg=If using Mercurial, consider instead: hg bundle --all ..."
     })
     private boolean check(NotificationLineSupport notifications) {
@@ -302,8 +302,7 @@ public class ExportZIP extends JPanel {
             notifications.setInformationMessage(ERR_no_zip());
             return false;
         } else if (new File(t).exists()) {
-            notifications.setErrorMessage(ERR_exists(t));
-            return false;
+            notifications.setWarningMessage(WRN_exists(t));
         } else if (new File(t).getParentFile() == null) {
             notifications.setErrorMessage(ERR_no_dir(new File(t)));
             return false;

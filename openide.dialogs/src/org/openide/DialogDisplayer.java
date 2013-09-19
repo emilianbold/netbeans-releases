@@ -287,7 +287,9 @@ public abstract class DialogDisplayer {
                 this.closingOptions = closingOptions;
                 this.buttonListener = buttonListener;
                 getContentPane().setLayout(new BorderLayout());
-                setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                setDefaultCloseOperation(nd.isNoDefaultClose()
+                        ? WindowConstants.DO_NOTHING_ON_CLOSE
+                        : WindowConstants.DISPOSE_ON_CLOSE);
                 updateMessage();
                 buttonPanel = new JPanel();
                 buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -299,8 +301,10 @@ public abstract class DialogDisplayer {
                 getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(k, actionKey);
 
                 Action cancelAction = new AbstractAction() {
+                        @Override
                         public void actionPerformed(ActionEvent ev) {
-                            cancel();
+                            if( !StandardDialog.this.nd.isNoDefaultClose() )
+                                cancel();
                         }
                     };
 
@@ -548,6 +552,8 @@ public abstract class DialogDisplayer {
                 String pname = ev.getPropertyName();
                 if (NotifyDescriptor.PROP_TITLE.equals(pname)) {
                     dialog.setTitle(dd.getTitle());
+                } else if (NotifyDescriptor.PROP_NO_DEFAULT_CLOSE.equals(pname)) {
+                    dialog.setDefaultCloseOperation(dd.isNoDefaultClose() ? JDialog.DO_NOTHING_ON_CLOSE : JDialog.DISPOSE_ON_CLOSE);
                 } else
                     if (NotifyDescriptor.PROP_MESSAGE.equals(pname)) {
                         dialog.updateMessage();
