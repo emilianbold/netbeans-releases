@@ -357,6 +357,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                 fo = fo.getFileObject(path);
             }
         }
+        if (fo != null && !fo.isFolder()) {
+            fo = null;
+        }
         return fo;
     }
 

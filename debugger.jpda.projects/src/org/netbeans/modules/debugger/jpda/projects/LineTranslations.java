@@ -425,19 +425,29 @@ class LineTranslations {
             }
         }
         
-        public synchronized void attach() throws IOException {
-            LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
+        public void attach() throws IOException {
+            DataObject dobj;
+            synchronized (this) {
+                dobj = this.dataObject;
+            }
+            LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
             if (lc == null) {
                 return ;
             }
             lb.addPropertyChangeListener(this);
             try {
-                this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
-                line.addPropertyChangeListener(this);
+                final Line lineNew = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
+                synchronized (this) {
+                    if (line != null) {
+                        line.removePropertyChangeListener(this);
+                    }
+                    this.line = lineNew;
+                }
+                lineNew.addPropertyChangeListener(this);
                 StyledDocument document = NbDocument.getDocument(new Lookup.Provider() {
                                               @Override
                                               public Lookup getLookup() {
-                                                  return line.getLookup();
+                                                  return lineNew.getLookup();
                                               }
                                           });
                 if (document instanceof BaseDocument) {

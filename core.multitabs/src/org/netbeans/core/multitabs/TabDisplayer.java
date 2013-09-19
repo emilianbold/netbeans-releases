@@ -45,14 +45,13 @@ package org.netbeans.core.multitabs;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.MouseEvent;
 import javax.swing.JPanel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.openide.windows.TopComponent;
 
 /**
+ * Paints the tabs.
  *
  * @author S. Aubrecht
  */
@@ -60,25 +59,62 @@ public abstract class TabDisplayer extends JPanel {
 
     protected final TabDataModel tabModel;
 
+    /**
+     * C'tor
+     * @param tabModel 
+     */
     public TabDisplayer( TabDataModel tabModel ) {
         this.tabModel = tabModel;
     }
-    
+
+    /**
+     * @param tabIndex
+     * @return Bounds of the given tab or null if the index is out of bounds.
+     */
     public abstract Rectangle getTabBounds( int tabIndex );
 
+    /**
+     * @param p
+     * @return Tab at given point or null.
+     */
     public abstract TabData getTabAt( Point p );
 
+    /**
+     * Connect the displayer with given controller.
+     * @param controller
+     */
     public abstract void attach( Controller controller );
 
+    /**
+     * Make the given tab selected.
+     * @param index
+     */
     public abstract void setSelectedIndex( int index );
 
+    /**
+     * @return Tab model.
+     */
     public final TabDataModel getModel() {
         return tabModel;
     }
 
+    /**
+     * @param screenLocation
+     * @return Tab index where a new document would be added when dropped at given
+     * screen location or -1 if the location is outside the tab area.
+     */
     public abstract int dropIndexOfPoint( Point screenLocation );
 
+    /**
+     * @param draggedTC
+     * @param screenLocation
+     * @return Rectangle to provide drop feedback when a window is being dragged
+     * over this displayer.
+     */
     public abstract Rectangle dropIndication( TopComponent draggedTC, Point screenLocation );
 
+    /**
+     * @return The area where the tabs are being painted.
+     */
     public abstract Rectangle getTabsArea();
 }
