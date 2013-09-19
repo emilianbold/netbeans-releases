@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.jsf;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -57,6 +59,7 @@ import org.openide.util.NbBundle;
 public class JsfTemplateUtils {
 
     private static final String LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
+    private static final Comparator TEMPLATE_COMPARATOR = new TemplateComparator();
 
     public static final String TEMPLATE_SNIPET_BP = "/Templates/JSF/JSF_From_Entity_Snippets";
 
@@ -86,8 +89,14 @@ public class JsfTemplateUtils {
         Enumeration<? extends FileObject> children = templateRoot.getChildren(false);
         while (children.hasMoreElements()) {
             FileObject folder = children.nextElement();
-            result.add(new Template(folder.getName(), getLocalizedName(folder)));
+            Object position = folder.getAttribute("position");
+            if (position == null || !(position instanceof Integer)) {
+                result.add(new Template(folder.getName(), getLocalizedName(folder)));
+            } else {
+                result.add(new Template(folder.getName(), getLocalizedName(folder), (Integer) position));
+            }
         }
+        Collections.sort(result, TEMPLATE_COMPARATOR);
         return result;
     }
 
@@ -99,14 +108,27 @@ public class JsfTemplateUtils {
         return TEMPLATE_SNIPET_BP + "/" + templatesStyle + "/" + template; //NOI18N
     }
 
+    public static class TemplateComparator implements Comparator<Template> {
+        @Override
+        public int compare(Template o1, Template o2) {
+            return o1.getPosition() - o2.getPosition();
+        }
+    }
+
     public static class Template {
 
         private final String name;
         private final String displayName;
+        private final int position;
 
         public Template(String name, String displayName) {
+            this(name, displayName, Integer.MAX_VALUE);
+        }
+
+        public Template(String name, String displayName, int position) {
             this.name = name;
             this.displayName = displayName;
+            this.position = position;
         }
 
         public String getName() {
@@ -116,5 +138,10 @@ public class JsfTemplateUtils {
         public String getDisplayName() {
             return displayName;
         }
+
+        public int getPosition() {
+            return position;
+        }
+
     }
 }
