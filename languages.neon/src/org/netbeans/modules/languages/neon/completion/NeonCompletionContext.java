@@ -92,8 +92,9 @@ public enum NeonCompletionContext {
 
     protected void completeTypes(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
         Collection<? extends TypeCompletionProvider> typeCompletionProviders = CompletionProviders.getTypeProviders();
+        FileObject fileObject = request.parserResult.getSnapshot().getSource().getFileObject();
         for (TypeCompletionProvider typeCompletionProvider : typeCompletionProviders) {
-            Set<String> types = typeCompletionProvider.complete(request.prefix, request.parserResult.getSnapshot().getSource().getFileObject());
+            Set<String> types = typeCompletionProvider.complete(request.prefix, fileObject);
             for (String typeName : types) {
                 completionProposals.add(new NeonCompletionProposal.TypeCompletionProposal(NeonElement.Factory.createType(typeName), request));
             }
