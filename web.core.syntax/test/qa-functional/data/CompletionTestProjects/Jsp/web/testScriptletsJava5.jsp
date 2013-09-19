@@ -45,7 +45,7 @@ Boolean element ()
 <%--CC
 <% for (Boolean b : list)  b.|
 boolean booleanValue ()
-<% for (Boolean b : list)  b.booleanValue();
+<% for (Boolean b : list)  b.booleanValue()
 --%>
 
 <%--CC
