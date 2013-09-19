@@ -46,6 +46,7 @@ package org.netbeans.core.multitabs;
 import org.netbeans.core.multitabs.prefs.SettingsImpl;
 
 /**
+ * Read-only access to multi-tab settings.
  *
  * @author S. Aubrecht
  */
@@ -57,6 +58,9 @@ public final class Settings {
     private Settings() {
     }
 
+    /**
+     * @return The one and only instance.
+     */
     public static Settings getDefault() {
         synchronized( Settings.class ) {
             if( null == theInstance ) {
@@ -66,30 +70,52 @@ public final class Settings {
         return theInstance;
     }
 
+    /**
+     * @return True if multi-tabs are enabled, false otherwise.
+     */
     public boolean isEnabled() {
         return impl.isEnabled();
     }
 
+    /**
+     * @return One of JTabbedPane.TOP BOTTOM LEFT or RIGHT constants.
+     * @see javax.swing.JTabbedPane#getTabPlacement() 
+     */
     public int getTabsLocation() {
         return impl.getTabsLocation();
     }
 
+    /**
+     * @return True to show full file path of currently selected document.
+     */
     public boolean isShowFullPath() {
         return impl.isShowFullPath();
     }
 
+    /**
+     * @return True to use same color for all tabs from the same project.
+     */
     public boolean isSameProjectSameColor() {
         return impl.isSameProjectSameColor();
     }
 
+    /**
+     * @return True to sort drop-down document list by project.
+     */
     public boolean isSortDocumentListByProject() {
         return impl.isSortDocumentListByProject();
     }
 
+    /**
+     * @return True to show one row of tabs per project.
+     */
     public boolean isTabRowPerProject() {
         return impl.isTabRowPerProject();
     }
 
+    /**
+     * @return Maximum tab row count.
+     */
     public int getRowCount() {
         return impl.getRowCount();
     }

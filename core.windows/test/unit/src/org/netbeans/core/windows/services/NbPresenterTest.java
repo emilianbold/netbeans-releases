@@ -46,8 +46,10 @@ package org.netbeans.core.windows.services;
 
 import java.awt.Dialog;
 import java.awt.GraphicsEnvironment;
+import java.awt.Window;
 import java.util.Arrays;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import junit.framework.Test;
@@ -208,4 +210,16 @@ public class NbPresenterTest extends NbTestCase {
         System.out.println(".");
     }
     
+
+    public void testNoDefaultClose() {
+        DialogDescriptor dd = new DialogDescriptor("Test", "Test dialog");
+        NbPresenter dlg = new NbPresenter( dd, (Dialog)null, true );
+        assertEquals( "default close operation is DISPOSE", JDialog.DISPOSE_ON_CLOSE, dlg.getDefaultCloseOperation() );
+
+        dd.setNoDefaultClose( true );
+        assertEquals( JDialog.DO_NOTHING_ON_CLOSE, dlg.getDefaultCloseOperation() );
+
+        dd.setNoDefaultClose( false );
+        assertEquals( JDialog.DISPOSE_ON_CLOSE, dlg.getDefaultCloseOperation() );
+}
 }

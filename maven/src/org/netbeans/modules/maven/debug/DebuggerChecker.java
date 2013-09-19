@@ -42,9 +42,14 @@
 package org.netbeans.modules.maven.debug;
 
 import com.sun.jdi.VMOutOfMemoryException;
+import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
@@ -54,6 +59,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -64,12 +70,19 @@ import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.LifecycleManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbCollections;
+import org.openide.util.RequestProcessor;
+import org.openide.util.io.NullOutputStream;
+import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -82,10 +95,71 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
     private static final String MAVENSUREFIREDEBUG = "maven.surefire.debug"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(DebuggerChecker.class.getName());
 
-    public @Override boolean checkRunConfig(RunConfig config) {
+    public @Override boolean checkRunConfig(final RunConfig config) {
         if (config.getProject() == null) {
             //cannot act on execution without a project instance..
             return true;
+        }
+        
+        if ("debug.fix".equals(config.getActionName()) && RunUtils.isCompileOnSaveEnabled(config)) { //NOI18N
+            final String cname = config.getProperties().get("jpda.stopclass"); //NOI18N
+
+            if (cname != null) {
+                
+                //this is commented out because one day the apply changed icon was always enabled (even for the case of a non saved modified file). The code is handling that case.
+                // however today I cannot reproduce and the apply changes button is only enabled when the changed file is saved.
+                
+//                Set<DataObject> mods = DataObject.getRegistry().getModifiedSet();
+//                if (!mods.isEmpty()) {
+//                    //TODO compute is any of the files belong to the source roots of this project.
+//                    //if so, attach the listener and wait for the notification that the files were compiled
+//                    ClassPath[] cps = config.getProject().getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.SOURCE);
+//                    final Set<URL> urls = new HashSet<URL>();
+//                    for (DataObject mod : mods) {
+//                        for (ClassPath cp : cps) {
+//                            if (cp.contains(mod.getPrimaryFile())) {
+//                                FileObject root = cp.findOwnerRoot(mod.getPrimaryFile());
+//                                if (root != null) {
+//                                    urls.add(root.toURL());
+//                                }
+//                            }
+//                        }
+//                    }
+//                    LifecycleManager.getDefault().saveAll();
+//                    
+//                    if (!urls.isEmpty()) {
+//                        final int count = urls.size();
+//                        BuildArtifactMapper.ArtifactsUpdated listener = new BuildArtifactMapper.ArtifactsUpdated() {
+//                            private int countdown = count;
+//                            @Override
+//                            public void artifactsUpdated(Iterable<File> artifacts) {
+//                                //if there are multiple urls we are listening on, wait for the last one.
+//                                if (countdown > 0) {
+//                                    countdown = countdown - 1;
+//                                } else {
+//                                    //remove the listeners and then reload
+//                                    for (URL url : urls) {
+//                                        BuildArtifactMapper.removeArtifactsUpdatedListener(url, this);
+//                                    }
+//                                    doReload(config, cname);
+//                                }
+//                            }
+//                         };
+//                        for (URL url : urls) {
+//                            BuildArtifactMapper.addArtifactsUpdatedListener(url, listener);
+//                        }
+//                    } else {
+//                        doReload(config, cname);
+//                    }
+//                   
+//                    //TODO spawn a thread that will interrupt the listening after a timeout just to be sure?
+//                    //RequestProcessor.getDefault().post(null).cancel();
+//                    
+//                } else {
+                    doReload(config, cname);
+//                }
+                return false;
+            }
         }
         boolean debug = "true".equalsIgnoreCase(config.getProperties().get(Constants.ACTION_PROPERTY_JPDALISTEN));//NOI18N
         if (debug && ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(config.getActionName()) && config.getGoals().contains("surefire:test")) { //NOI18N - just a safeguard
@@ -116,6 +190,19 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             }
         }
         return true;
+    }
+
+    private void doReload(RunConfig config, String cname) {
+        reload(config.getProject(), new OutputWriter(new OutputStreamWriter(new NullOutputStream())) {
+            @Override
+            public void println(String s, OutputListener l) throws IOException {
+                StatusDisplayer.getDefault().setStatusText(s);
+            }
+            
+            @Override
+            public void reset() throws IOException {
+            }
+        }, cname);
     }
 
     public @Override boolean checkRunConfig(RunConfig config, ExecutionContext context) {
@@ -234,11 +321,12 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
                 ex.printStackTrace ();
             }
         }
-        
-        logger.println("NetBeans: classes to reload: "+map.keySet());
+                
         if (map.isEmpty()) {
             logger.println("NetBeans: No class to reload");
             return;
+        } else {
+            logger.println("NetBeans: classes to reload: " + map.keySet());
         }
         String error = null;
         try {

@@ -52,36 +52,40 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.Timer;
 import org.netbeans.core.multitabs.impl.TabListPopupAction;
-import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
+ * Factory that create buttons to be displayed next to document tabs. The buttons
+ * can maximize document window, show drop-down list of documents, scroll the documents left or right.
  *
  * @author S. Aubrecht
  */
 public final class ButtonFactory {
 
-    public static JButton createDropDownButton( final Controller controller ) {
+    /**
+     * Creates button to show drop-down list of documents from the given tab displayer.
+     * @param controller Tab displayer's controller.
+     * @return Drop-down list button.
+     */
+    public static JButton createDropDownButton( Controller controller ) {
         final JButton btn = new JButton( new TabListPopupAction(controller) );
         btn.setIcon( ImageUtilities.loadImageIcon( "org/netbeans/core/multitabs/resources/down.png", true) ); //NOI18N
         btn.setActionCommand( "pressed"); //NOI18N
         btn.setFocusable( false );
         btn.setToolTipText( NbBundle.getMessage(ButtonFactory.class, "Hint_DocumentList") );
-        btn.addActionListener( new ActionListener() {
-
-            @Override
-            public void actionPerformed( ActionEvent ae ) {
-
-            }
-        });
         return btn;
     }
 
+    /**
+     * Creates button to maximize currently selected document in the given tab displayer.
+     * @param controller Tab displayer's controller.
+     * @return Button to maximize selected document tab.
+     */
     public static JButton createMaximizeButton( final Controller controller ) {
-        final JButton btn = new JButton(); //TODO provide an image icon
+        final JButton btn = new JButton();
         btn.setIcon( ImageUtilities.loadImageIcon( "org/netbeans/core/multitabs/resources/maximize.png", true) ); //NOI18N
         btn.setToolTipText( NbBundle.getMessage(ButtonFactory.class, "Hint_MaximizeRestore") );
         btn.addActionListener( new ActionListener() {
@@ -95,7 +99,14 @@ public final class ButtonFactory {
         return btn;
     }
 
-    public static JButton createScrollLeftButton( TabDataModel tabModel, Action scrollAction ) {
+    /**
+     * Button to scroll tabs left/up. The button sets up a timer when pressed
+     * to call the scroll action repeatedly until released or until the action
+     * becomes disabled.
+     * @param scrollAction Action implementing the actual scrolling.
+     * @return Button to scroll left/up.
+     */
+    public static JButton createScrollLeftButton( Action scrollAction ) {
         JButton btn = new TimerButton( scrollAction );
         Icon icon = ImageUtilities.loadImageIcon( "org/netbeans/core/multitabs/resources/left.png", true); //NOI18N
         btn.setIcon( icon );
@@ -103,7 +114,14 @@ public final class ButtonFactory {
         return btn;
     }
 
-    public static JButton createScrollRightButton( TabDataModel tabModel, Action scrollAction ) {
+    /**
+     * Button to scroll tabs right/down. The button sets up a timer when pressed
+     * to call the scroll action repeatedly until released or until the action
+     * becomes disabled.
+     * @param scrollAction Action implementing the actual scrolling.
+     * @return Button to scroll right/down.
+     */
+    public static JButton createScrollRightButton( Action scrollAction ) {
         JButton btn = new TimerButton( scrollAction );
         Icon icon = ImageUtilities.loadImageIcon( "org/netbeans/core/multitabs/resources/right.png", true); //NOI18N
         btn.setIcon( icon );

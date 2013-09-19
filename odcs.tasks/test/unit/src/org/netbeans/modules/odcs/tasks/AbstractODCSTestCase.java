@@ -101,7 +101,10 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         if (passw == null) { // if it is still null, check the file in ~
             BufferedReader br;
             try {
-                br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+                
+                File config = new File(System.getProperty("user.home"), ".test-team");
+                System.out.println(" >>> reading test config: " + config);
+                br = new BufferedReader(new FileReader(config));
                 username = br.readLine(); // skip username
                 username = TEST_USER1;
                 passw = br.readLine();
@@ -111,8 +114,10 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
 
                 br.close();
                 
-                System.setProperty("http.proxyPort", proxyPort);
-                System.setProperty("http.proxyHost", proxyHost);
+                if(proxyPort != null && proxyHost != null) {
+                    System.setProperty("http.proxyPort", proxyPort);
+                    System.setProperty("http.proxyHost", proxyHost);
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } 

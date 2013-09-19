@@ -53,8 +53,11 @@ public abstract class TableEntry implements Comparable<TableEntry> {
     }
     @Override
     public int compareTo(TableEntry e) {
-        if(e == null) return 1;
-        return getDisplayValue().compareTo(e.getDisplayValue());                 
+        String d1 = getDisplayValue();
+        String d2 = e != null ? e.getDisplayValue() : "";
+        if(d1 == null) d1 = "";
+        if(d2 == null) d2 = "";
+        return d1.compareTo(d2);                 
     }
 
     @Override
