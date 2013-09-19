@@ -108,7 +108,7 @@ final class Utilities {
         CONFIG_PROPERTIES = Collections.unmodifiableMap(m);
     }
 
-    private static final Logger LOG = Logger.getLogger(RemotePlatformProjectSaver.class.getName());
+    private static final Logger LOG = Logger.getLogger(Utilities.class.getName());
 
     private static volatile Long templateCRCCache;
 
@@ -292,6 +292,15 @@ final class Utilities {
             rpBuildScript = null;
         }
         if (rpBuildScript == null) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "Updating remote build script in project {0} ({1})", //NOI18N
+                    new Object[]{
+                        ProjectUtils.getInformation(project).getDisplayName(),
+                        FileUtil.getFileDisplayName(projDir)
+                    });
+            }
             rpBuildScript = FileUtil.createData(project.getProjectDirectory(), BUILD_SCRIPT_PATH);
             try(
                 final InputStream in = new BufferedInputStream(RemotePlatformProjectSaver.class.getResourceAsStream(BUILD_SCRIPT_PROTOTYPE));
