@@ -41,49 +41,40 @@
  */
 package org.netbeans.modules.languages.neon.completion;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class CompletionProviders {
-    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
-    public static final String METHOD_COMPLETION_PROVIDER_PATH = "Neon/completion/method"; //NOI18N
-    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
-    private static final Lookup.Result<MethodCompletionProvider> METHOD_PROVIDERS = Lookups.forPath(METHOD_COMPLETION_PROVIDER_PATH).lookupResult(MethodCompletionProvider.class);
+public final class CompletionUtils {
+    private static final Pattern TYPE_NAME_PATTERN = Pattern.compile("([a-zA-Z0-9_\\\\]+)::[a-zA-Z0-9_]*");
+    private static final Pattern METHOD_PREFIX_PATTERN = Pattern.compile("[a-zA-Z0-9_\\\\]+::([a-zA-Z0-9_]*)");
 
-    private CompletionProviders() {
+    private CompletionUtils() {
     }
 
-    public static List<TypeCompletionProvider> getTypeProviders() {
-        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
+    public static boolean startsWith(String theString, String prefix) {
+        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    public static void addTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.addLookupListener(listener);
+    public static String extractTypeName(String prefix) {
+        String result = null;
+        Matcher matcher = TYPE_NAME_PATTERN.matcher(prefix);
+        if (matcher.matches()) {
+            result = matcher.group(1);
+        }
+        return result;
     }
 
-    public static void removeTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.removeLookupListener(listener);
-    }
-
-    public static List<MethodCompletionProvider> getMethodProviders() {
-        return new ArrayList<>(METHOD_PROVIDERS.allInstances());
-    }
-
-    public static void addMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.removeLookupListener(listener);
+    public static String extractMethodPrefix(String prefix) {
+        String result = null;
+        Matcher matcher = METHOD_PREFIX_PATTERN.matcher(prefix);
+        if (matcher.matches()) {
+            result = matcher.group(1);
+        }
+        return result;
     }
 
 }

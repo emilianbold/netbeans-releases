@@ -39,51 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.completion;
+package org.netbeans.modules.php.editor.completion;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class CompletionProviders {
-    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
-    public static final String METHOD_COMPLETION_PROVIDER_PATH = "Neon/completion/method"; //NOI18N
-    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
-    private static final Lookup.Result<MethodCompletionProvider> METHOD_PROVIDERS = Lookups.forPath(METHOD_COMPLETION_PROVIDER_PATH).lookupResult(MethodCompletionProvider.class);
+public class PhpMethodCompletionProvider implements MethodCompletionProvider {
+    private static final PhpMethodCompletionProvider INSTANCE = new PhpMethodCompletionProvider();
 
-    private CompletionProviders() {
+    @MethodCompletionProvider.Registration(position = 100)
+    public static PhpMethodCompletionProvider getInstance() {
+        return INSTANCE;
     }
 
-    public static List<TypeCompletionProvider> getTypeProviders() {
-        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
-    }
-
-    public static void addTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeTypeProviderListener(LookupListener listener) {
-        TYPE_PROVIDERS.removeLookupListener(listener);
-    }
-
-    public static List<MethodCompletionProvider> getMethodProviders() {
-        return new ArrayList<>(METHOD_PROVIDERS.allInstances());
-    }
-
-    public static void addMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeMethodProviderListener(LookupListener listener) {
-        METHOD_PROVIDERS.removeLookupListener(listener);
+    @Override
+    public Set<String> complete(String prefix, String typeName, FileObject fileObject) {
+        Set<String> result = new HashSet<>();
+        if (typeName != null && !typeName.isEmpty()) {
+            ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+            Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(typeName));
+            for (TypeElement typeElement : types) {
+                Set<MethodElement> accessibleMethods = indexQuery.getAccessibleMethods(typeElement, typeElement);
+                Set<MethodElement> filteredMethods = ElementFilter.forName(NameKind.prefix(prefix)).filter(accessibleMethods);
+                for (MethodElement methodElement : filteredMethods) {
+                    result.add(methodElement.asString(BaseFunctionElement.PrintAs.NameAndParamsInvocation).trim());
+                }
+            }
+        }
+        return result;
     }
 
 }
