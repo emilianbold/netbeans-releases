@@ -59,11 +59,11 @@ import org.openide.filesystems.FileObject;
  */
 public interface LatteElement extends ElementHandle {
 
-    public String getTemplate();
+    String getTemplate();
 
-    public void formatParameters(HtmlFormatter formatter);
+    void formatParameters(HtmlFormatter formatter);
 
-    public String getDocumentationText();
+    String getDocumentationText();
 
     public static class MacroFactory {
         private static final String END_MACRO_MARKER = "/"; //NOI18N

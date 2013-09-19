@@ -68,7 +68,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
+public final class LatteCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
     private static final Logger LOGGER = Logger.getLogger(LatteCodeTemplateFilter.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(LatteCodeTemplateFilter.class);
     private volatile boolean accept = true;
@@ -100,6 +100,7 @@ public class LatteCodeTemplateFilter extends UserTask implements CodeTemplateFil
         try {
             future.get(500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            LOGGER.log(Level.FINE, null, ex);
         }
         return accept;
     }
