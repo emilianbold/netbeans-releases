@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
@@ -38,8 +38,9 @@
                   </Group>
                   <Component id="directoryKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="adHocKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                  <Component id="subprojectsKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <EmptySpace min="17" pref="17" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="directoryLabel" min="-2" max="-2" attributes="0"/>
@@ -49,29 +50,19 @@
                               <Component id="directoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="directoryKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Component id="subprojectsKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" max="-2" attributes="0">
-                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="masterProjectLabel" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="masterProjectLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="masterProjectField" pref="495" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="subprojectsKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="masterProjectField" pref="495" max="32767" attributes="0"/>
+                              <Component id="masterProjectButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="subprojectsKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="masterProjectButton" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="17" pref="17" max="17" attributes="0"/>
-                      <Component id="adHocKindLabel" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="17" pref="17" max="17" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="adHocKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="autoSynchCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="useOpenCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
