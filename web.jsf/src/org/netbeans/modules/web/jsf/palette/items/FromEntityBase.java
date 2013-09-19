@@ -95,7 +95,7 @@ public abstract class FromEntityBase {
 
     protected abstract String getDialogTitle();
 
-    protected abstract String getTemplate();
+    protected abstract String getTemplate(String templatesStyle);
 
     protected final boolean isReadOnlyForm() {
         return readOnly;
@@ -140,7 +140,7 @@ public abstract class FromEntityBase {
                 }
                 Charset encoding = FileEncodingQuery.getEncoding(fo);
                 String body = expandTemplate(targetComponent, !containsFView, encoding,
-                        mbc.getBeanClass(), managedBean, mbc.getManagedBeanProperty());
+                        mbc.getBeanClass(), managedBean, mbc.getManagedBeanProperty(), mbc.getTemplatesStyle());
                 JSFPaletteUtilities.insert(body, targetComponent);
                 jsfLibrariesSupport.importLibraries(DefaultLibraryInfo.HTML, DefaultLibraryInfo.JSF_CORE);
             } catch (IOException ioe) {
@@ -175,7 +175,7 @@ public abstract class FromEntityBase {
 
     private String expandTemplate(JTextComponent target, boolean surroundWithFView,
             Charset encoding, final String entityClass, final String managedBean,
-            final String managedBeanProperty) throws IOException {
+            final String managedBeanProperty, String templatesStyle) throws IOException {
         final StringBuffer stringBuffer = new StringBuffer();
         if (surroundWithFView) {
             stringBuffer.append(PaletteUtils.createViewTag(jsfLibrariesSupport, target, false)).append("\n"); //NOI18N
@@ -185,7 +185,7 @@ public abstract class FromEntityBase {
                 managedBean, managedBeanProperty, isCollectionComponent(), false, jsfLibrariesSupport);
         params.put("bundle", "bundle"); // NOI18N
 
-        FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(getTemplate());
+        FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(getTemplate(templatesStyle));
         StringWriter w = new StringWriter();
         JSFPaletteUtilities.expandJSFTemplate(tableTemplate, params, encoding, w);
         stringBuffer.append(w.toString());
@@ -199,9 +199,10 @@ public abstract class FromEntityBase {
     public static Map<String, Object> createFieldParameters(FileObject targetJspFO, final String entityClass,
             final String managedBean, final String managedBeanProperty, final boolean collectionComponent,
             final boolean initValueGetters, JsfLibrariesSupport jls) throws IOException {
-        final Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<>();
         JavaSource javaSource = JavaSource.create(EntityClass.createClasspathInfo(targetJspFO));
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
@@ -216,8 +217,7 @@ public abstract class FromEntityBase {
         }
         params.put("entityName", entityName); // NOI18N
         if (jls != null) {
-            params.put("htmlTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.HTML));
-            params.put("coreTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
+            params.put("prefixResolver", new PrefixResolver(jls));
         }
 
         // namespace location
@@ -738,6 +738,16 @@ public abstract class FromEntityBase {
 
         public String getCodeToPopulate() {
             return codeToPopulate;
+        }
+    }
+
+    public static class Getter {
+
+        public Getter() {
+        }
+
+        public String getP() {
+            return "p";
         }
     }
 

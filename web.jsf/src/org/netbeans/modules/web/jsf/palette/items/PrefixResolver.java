@@ -39,51 +39,29 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.completion;
+package org.netbeans.modules.web.jsf.palette.items;
 
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class PhpMethodCompletionProvider implements MethodCompletionProvider {
-    private static final PhpMethodCompletionProvider INSTANCE = new PhpMethodCompletionProvider();
+public class PrefixResolver {
 
-    @MethodCompletionProvider.Registration(position = 100)
-    public static PhpMethodCompletionProvider getInstance() {
-        return INSTANCE;
+    private final JsfLibrariesSupport jls;
+
+    public PrefixResolver(JsfLibrariesSupport jls) {
+        this.jls = jls;
     }
 
-    private PhpMethodCompletionProvider() {
-    }
-
-    @Override
-    public Set<String> complete(String prefix, String typeName, FileObject fileObject) {
-        Set<String> result = new HashSet<>();
-        if (typeName != null && !typeName.isEmpty()) {
-            ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
-            Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(typeName));
-            for (TypeElement typeElement : types) {
-                Set<MethodElement> accessibleMethods = indexQuery.getAccessibleMethods(typeElement, typeElement);
-                Set<MethodElement> filteredMethods = ElementFilter.forName(NameKind.prefix(prefix)).filter(accessibleMethods);
-                for (MethodElement methodElement : filteredMethods) {
-                    result.add(methodElement.asString(BaseFunctionElement.PrintAs.NameAndParamsInvocation).trim());
-                }
+    public String getPrefixForNS(String namespace, String fallbackPrefix) {
+        for (DefaultLibraryInfo dli : DefaultLibraryInfo.values()) {
+            if (dli.getNamespace().equals(namespace) || (dli.getLegacyNamespace() != null && dli.getLegacyNamespace().equals(namespace))) {
+                return jls.getLibraryPrefix(dli);
             }
         }
-        return result;
+        return fallbackPrefix;
     }
 
 }

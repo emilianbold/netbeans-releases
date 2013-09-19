@@ -74,11 +74,7 @@ public class SassSyntaxTest extends GeneralCSSPrep{
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(SassSyntaxTest.PROJECT_NAME);
         evt.waitNoEvent(3000);
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(SassSyntaxTest.PROJECT_NAME);
-        Node sourceFiles = new Node(rootNode, "Site Root");
-        for (String file : sourceFiles.getChildren()) {
-            openFile(file, SassSyntaxTest.PROJECT_NAME);
-        }
+        openFile("sass_syntax.scss", LessSyntaxTest.PROJECT_NAME);
         endTest();
     }
     

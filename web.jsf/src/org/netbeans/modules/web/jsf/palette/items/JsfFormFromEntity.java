@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.jsf.palette.items;
 
+import org.netbeans.modules.web.jsf.JsfTemplateUtils;
 import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.NbBundle;
@@ -71,11 +72,11 @@ public final class JsfFormFromEntity extends FromEntityBase implements ActiveEdi
     }
 
     @Override
-    protected String getTemplate() {
+    protected String getTemplate(String templatesStyle) {
         if (isReadOnlyForm()) {
-            return ManagedBeanCustomizer.VIEW_TEMPLATE;
+            return JsfTemplateUtils.getSnippetTemplatePath(templatesStyle, ManagedBeanCustomizer.VIEW_TEMPLATE);
         } else {
-            return ManagedBeanCustomizer.EDIT_TEMPLATE;
+            return JsfTemplateUtils.getSnippetTemplatePath(templatesStyle, ManagedBeanCustomizer.EDIT_TEMPLATE);
         }
     }
 
