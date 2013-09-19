@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.palette.items;
 
-import org.netbeans.modules.web.jsf.JsfTemplateUtils;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
-import org.openide.text.ActiveEditorDrop;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 
-public final class JsfFormFromEntity extends FromEntityBase implements ActiveEditorDrop, PaletteItem {
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class PrefixResolver {
 
-    public JsfFormFromEntity() {
+    private final JsfLibrariesSupport jls;
+
+    public PrefixResolver(JsfLibrariesSupport jls) {
+        this.jls = jls;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfFormFromEntity"); // NOI18N
-    }
-
-    @Override
-    protected boolean isCollectionComponent() {
-        return false;
-    }
-
-    @Override
-    protected boolean showReadOnlyFormFlag() {
-        return true;
-    }
-
-    @Override
-    protected String getDialogTitle() {
-        return NbBundle.getMessage(JsfFormFromEntity.class, "JFFE_DialogTitle"); // NOI18N
-    }
-
-    @Override
-    protected String getTemplate(String templatesStyle) {
-        if (isReadOnlyForm()) {
-            return JsfTemplateUtils.getSnippetTemplatePath(templatesStyle, ManagedBeanCustomizer.VIEW_TEMPLATE);
-        } else {
-            return JsfTemplateUtils.getSnippetTemplatePath(templatesStyle, ManagedBeanCustomizer.EDIT_TEMPLATE);
+    public String getPrefixForNS(String namespace, String fallbackPrefix) {
+        for (DefaultLibraryInfo dli : DefaultLibraryInfo.values()) {
+            if (dli.getNamespace().equals(namespace) || (dli.getLegacyNamespace() != null && dli.getLegacyNamespace().equals(namespace))) {
+                return jls.getLibraryPrefix(dli);
+            }
         }
+        return fallbackPrefix;
     }
 
 }
