@@ -443,7 +443,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }        
         if (!CndPathUtilities.isPathAbsolute(path)) {
-            ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path);
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path); // NOI18N
             if (res.isOK()) {
                 path = res.output;
             } else {

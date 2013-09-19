@@ -62,7 +62,7 @@ import org.netbeans.modules.php.twig.editor.lexer.TwigTokenId;
 public class TwigParser extends Parser {
 
     private TwigParserResult result;
-    private static final List<String> PARSE_ELEMENTS = new ArrayList<String>();
+    private static final List<String> PARSE_ELEMENTS = new ArrayList<>();
 
     static {
         PARSE_ELEMENTS.add("for"); //NOI18N
@@ -119,7 +119,7 @@ public class TwigParser extends Parser {
         if (twigPath != null) {
 
             List<TokenSequence<?>> tokenSequenceList = tokenHierarchy.tokenSequenceList(twigPath, 0, Integer.MAX_VALUE);
-            List<Block> blockList = new ArrayList<Block>();
+            List<Block> blockList = new ArrayList<>();
 
             for (TokenSequence<?> sequence : tokenSequenceList) {
 
@@ -236,7 +236,7 @@ public class TwigParser extends Parser {
 
             /* Analyse block structure */
 
-            Stack<Block> blockStack = new Stack<Block>();
+            Stack<Block> blockStack = new Stack<>();
 
             for (Block block : blockList) {
 

@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface NeonElement extends ElementHandle {
 
-    public String getTemplate();
+    String getTemplate();
 
     public static class Factory {
         private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
@@ -126,7 +126,7 @@ public interface NeonElement extends ElementHandle {
 
     }
 
-    static class NeonSimpleElement extends BaseNeonElementItem {
+    static final class NeonSimpleElement extends BaseNeonElementItem {
 
         private NeonSimpleElement(String name) {
             super(name);
@@ -138,7 +138,7 @@ public interface NeonElement extends ElementHandle {
         }
     }
 
-    static class NeonExtendedElement extends BaseNeonElementItem {
+    static final class NeonExtendedElement extends BaseNeonElementItem {
         private final String template;
 
         private NeonExtendedElement(String name, String template) {

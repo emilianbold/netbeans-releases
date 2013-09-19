@@ -54,16 +54,19 @@ import org.netbeans.api.lexer.TokenSequence;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NeonLexerUtils {
+public final class NeonLexerUtils {
+
+    private NeonLexerUtils() {
+    }
 
     public static <T extends TokenId> TokenSequence<T> seqForText(String text, Language<T> language) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
         return hi.tokenSequence(language);
     }
 
-    public static String getFileContent(File file) throws Exception{
+    public static String getFileContent(File file) throws Exception {
         StringBuilder sb = new StringBuilder();
-        String lineSep = "\n";//NOI18N
+        String lineSep = "\n"; //NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); //NOI18N
         String line = br.readLine();
         while (line != null) {
@@ -77,9 +80,9 @@ public class NeonLexerUtils {
 
     public static String replaceLinesAndTabs(String input) {
         String escapedString = input;
-        escapedString = escapedString.replaceAll("\n","\\\\n"); //NOI18N
-        escapedString = escapedString.replaceAll("\r","\\\\r"); //NOI18N
-        escapedString = escapedString.replaceAll("\t","\\\\t"); //NOI18N
+        escapedString = escapedString.replaceAll("\n", "\\\\n"); //NOI18N
+        escapedString = escapedString.replaceAll("\r", "\\\\r"); //NOI18N
+        escapedString = escapedString.replaceAll("\t", "\\\\t"); //NOI18N
         return escapedString;
     }
 

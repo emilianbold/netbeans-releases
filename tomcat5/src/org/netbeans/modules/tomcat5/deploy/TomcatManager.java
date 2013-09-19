@@ -78,6 +78,7 @@ import org.netbeans.modules.tomcat5.optional.StartTomcat;
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
+import org.netbeans.modules.tomcat5.TomEEWarListener;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.progress.MultiProgressObjectWrapper;
 import org.netbeans.modules.tomcat5.util.*;
@@ -134,7 +135,14 @@ public class TomcatManager implements DeploymentManager {
 
     private final TomcatVersion tomcatVersion;
 
-    private final TomEEVersion tomEEVersion;
+    /* GuardedBy(this) */
+    private boolean tomEEChecked;
+
+    /* GuardedBy(this) */
+    private TomEEWarListener tomEEWarListener;
+
+    /* GuardedBy(this) */
+    private TomEEVersion tomEEVersion;
 
     private final InstanceProperties ip;
 
@@ -158,8 +166,6 @@ public class TomcatManager implements DeploymentManager {
         assert ip != null;
 
         this.tp = new TomcatProperties(this);
-        // XXX this may be slow
-        this.tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase());
     }
 
     public InstanceProperties getInstanceProperties() {
@@ -427,8 +433,39 @@ public class TomcatManager implements DeploymentManager {
         return tomcatVersion == TomcatVersion.TOMCAT_50;
     }
 
-    public boolean isTomEE() {
-        return tomEEVersion != null || Boolean.getBoolean(TomcatManager.class.getName() + "tomee");
+    public synchronized boolean isTomEE() {
+        if (tomEEChecked) {
+            LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
+            return tomEEVersion != null;
+        }
+        assert tomEEWarListener == null;
+
+        tomEEChecked = true;
+        tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase(), true);
+        if (tomEEVersion == null) {
+            tomEEWarListener = new TomEEWarListener(tp, new TomEEWarListener.RefreshHook() {
+
+                @Override
+                public void refresh(TomEEVersion version) {
+                    synchronized (TomcatManager.this) {
+                        tomEEVersion = version;
+                    }
+                    getTomcatPlatform().notifyLibrariesChanged();
+                }
+            });
+            File listenFile;
+            if (tp.getCatalinaBase() != null) {
+                listenFile = new File(tp.getCatalinaBase(), "webapps"); // NOI18N
+            } else {
+                listenFile = new File(tp.getCatalinaHome(), "webapps"); // NOI18N
+            }
+
+            FileUtil.addFileChangeListener(tomEEWarListener, listenFile);
+            tomEEWarListener.checkAndRefresh();
+        }
+
+        LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
+        return tomEEVersion != null;
     }
 
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */

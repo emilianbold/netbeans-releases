@@ -50,19 +50,19 @@ import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
-public class TwigTopLexer implements Lexer<TwigTopTokenId> {
+public final class TwigTopLexer implements Lexer<TwigTopTokenId> {
 
     protected TwigTopLexerState state;
     protected final TokenFactory<TwigTopTokenId> tokenFactory;
     protected final LexerInput input;
-    static String OPEN_BLOCK = "{%"; //NOI18N
-    static String OPEN_VAR = "{{"; //NOI18N
+    static final String OPEN_BLOCK = "{%"; //NOI18N
+    static final String OPEN_VAR = "{{"; //NOI18N
     public static final String OPEN_COMMENT = "{#"; //NOI18N
-    static String CLOSE_BLOCK = "%}"; //NOI18N
-    static String CLOSE_VAR = "}}"; //NOI18N
+    static final String CLOSE_BLOCK = "%}"; //NOI18N
+    static final String CLOSE_VAR = "}}"; //NOI18N
     public static final String CLOSE_COMMENT = "#}"; //NOI18N
-    static Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
-    static Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
+    static final Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
+    static final Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
 
     private TwigTopLexer(LexerRestartInfo<TwigTopTokenId> info) {
         tokenFactory = info.tokenFactory();
@@ -215,7 +215,8 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
                         return TwigTopTokenId.T_TWIG;
                     }
                     break;
-
+                default:
+                    // no-op
             }
 
             c = input.read();
@@ -229,6 +230,8 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
                 return TwigTopTokenId.T_TWIG;
             case HTML:
                 return TwigTopTokenId.T_HTML;
+            default:
+                // no-op
         }
 
         return TwigTopTokenId.T_HTML;

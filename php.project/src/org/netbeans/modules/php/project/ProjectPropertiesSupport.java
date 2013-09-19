@@ -173,11 +173,9 @@ public final class ProjectPropertiesSupport {
             return null;
         }
         // XXX find closest root
-        FileObject testsDirectory = testDirectories.get(0);
-        if (testsDirectory != null && testsDirectory.isValid()) {
-            return testsDirectory;
-        }
-        return null;
+        FileObject testsDirectory = findClosestDir(testDirectories, file);
+        assert testsDirectory != null && testsDirectory.isValid() : testsDirectory;
+        return testsDirectory;
     }
 
     /**
@@ -552,6 +550,54 @@ public final class ProjectPropertiesSupport {
             }
         }
         return validFiles;
+    }
+
+    static FileObject findClosestDir(List<FileObject> directories, FileObject fo) {
+        assert !directories.isEmpty();
+        if (fo == null) {
+            return directories.get(0);
+        }
+        File file = FileUtil.toFile(fo);
+        int idx = 0;
+        String bestRelPath = null;
+        for (int i = 0; i < directories.size(); i++) {
+            File dir = FileUtil.toFile(directories.get(i));
+            String relPath = PropertyUtils.relativizeFile(dir, file);
+            if (relPath == null) {
+                // no relative path possible
+                continue;
+            }
+            if (bestRelPath == null) {
+                bestRelPath = relPath;
+                idx = i;
+            } else {
+                assert bestRelPath != null;
+                if (".".equals(relPath)) { // NOI18N
+                    // the folder itself
+                    idx = i;
+                    break;
+                } else if (!relPath.startsWith("../") // NOI18N
+                        && bestRelPath.startsWith("../")) { // NOI18N
+                    // subdir
+                    bestRelPath = relPath;
+                    idx = i;
+                } else {
+                    int relPathLength = relPath.length() - relPath.replace("../", "").length(); // NOI18N
+                    int bestRelPathLength = bestRelPath.length() - bestRelPath.replace("../", "").length(); // NOI18N
+                    if (relPathLength < bestRelPathLength) {
+                        bestRelPath = relPath;
+                        idx = i;
+                    } else if (relPathLength == bestRelPathLength) {
+                        // same number of "../" => compare length
+                        if (relPath.length() < bestRelPath.length()) {
+                            bestRelPath = relPath;
+                            idx = i;
+                        }
+                    }
+                }
+            }
+        }
+        return directories.get(idx);
     }
 
 }
