@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpTypeCompletionProvider implements TypeCompletionProvider {
+public final class PhpTypeCompletionProvider implements TypeCompletionProvider {
     private static final PhpTypeCompletionProvider INSTANCE = new PhpTypeCompletionProvider();
     //@GuardedBy("this")
     private Set<TypeElement> cachedElements;

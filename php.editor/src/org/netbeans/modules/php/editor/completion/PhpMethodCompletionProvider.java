@@ -58,12 +58,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpMethodCompletionProvider implements MethodCompletionProvider {
+public final class PhpMethodCompletionProvider implements MethodCompletionProvider {
     private static final PhpMethodCompletionProvider INSTANCE = new PhpMethodCompletionProvider();
 
     @MethodCompletionProvider.Registration(position = 100)
     public static PhpMethodCompletionProvider getInstance() {
         return INSTANCE;
+    }
+
+    private PhpMethodCompletionProvider() {
     }
 
     @Override
