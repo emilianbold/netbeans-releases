@@ -156,7 +156,7 @@ public abstract class NeonCompletionProposal implements CompletionProposal {
         public String getRhsHtml(HtmlFormatter formatter) {
             ElementHandle elementHandle = getElement();
             assert elementHandle != null;
-            return ((NeonElement) elementHandle).getTemplate();
+            return ((NeonElement) elementHandle).getType();
         }
 
         @Override
@@ -176,7 +176,7 @@ public abstract class NeonCompletionProposal implements CompletionProposal {
         public String getRhsHtml(HtmlFormatter formatter) {
             ElementHandle elementHandle = getElement();
             assert elementHandle != null;
-            return ((NeonElement) elementHandle).getTemplate();
+            return ((NeonElement) elementHandle).getType();
         }
 
         @Override

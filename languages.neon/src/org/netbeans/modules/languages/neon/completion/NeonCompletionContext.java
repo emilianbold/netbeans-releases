@@ -109,7 +109,7 @@ public enum NeonCompletionContext {
         for (MethodCompletionProvider methodCompletionProvider : methodCompletionProviders) {
             Set<String> methods = methodCompletionProvider.complete(methodPrefix, typeName, fileObject);
             for (String methodName : methods) {
-                completionProposals.add(new NeonCompletionProposal.MethodCompletionProposal(NeonElement.Factory.create(methodName, typeName), request));
+                completionProposals.add(new NeonCompletionProposal.MethodCompletionProposal(NeonElement.Factory.createMethod(methodName, typeName), request));
             }
         }
     }
