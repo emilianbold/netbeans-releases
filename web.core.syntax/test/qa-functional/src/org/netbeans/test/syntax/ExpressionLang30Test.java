@@ -102,7 +102,7 @@ public class ExpressionLang30Test extends GeneralJSP {
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(2000);
         String t = eo.getText(eo.getLineNumber());
-        assertTrue("Incorrect autocompletion", t.indexOf("${[1,2].stream()}") > -1);
+        assertTrue("Incorrect autocompletion", t.indexOf("${[1,2].stream()") > -1);
         this.clearLine(eo);
         endTest();
     }
@@ -139,7 +139,9 @@ public class ExpressionLang30Test extends GeneralJSP {
         startTest();
         EditorOperator eo = new EditorOperator("el30.jsp");
         eo.setCaretPositionToEndOfLine(12);
-        type(eo, "\n  ${v = {\"one\":1, \"two\":2, \"three\":3}; v.");
+        type(eo, "\n  ${v = {\"one\":1, \"two\":2, \"three\":3}}");
+        eo.pressKey(java.awt.event.KeyEvent.VK_LEFT);
+        type(eo, "; v.");
         eo.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
