@@ -199,9 +199,10 @@ public abstract class FromEntityBase {
     public static Map<String, Object> createFieldParameters(FileObject targetJspFO, final String entityClass,
             final String managedBean, final String managedBeanProperty, final boolean collectionComponent,
             final boolean initValueGetters, JsfLibrariesSupport jls) throws IOException {
-        final Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<>();
         JavaSource javaSource = JavaSource.create(EntityClass.createClasspathInfo(targetJspFO));
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
@@ -216,8 +217,7 @@ public abstract class FromEntityBase {
         }
         params.put("entityName", entityName); // NOI18N
         if (jls != null) {
-            params.put("htmlTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.HTML));
-            params.put("coreTagPrefix", jls.getLibraryPrefix(DefaultLibraryInfo.JSF_CORE));
+            params.put("prefixResolver", new PrefixResolver(jls));
         }
 
         // namespace location
@@ -738,6 +738,16 @@ public abstract class FromEntityBase {
 
         public String getCodeToPopulate() {
             return codeToPopulate;
+        }
+    }
+
+    public static class Getter {
+
+        public Getter() {
+        }
+
+        public String getP() {
+            return "p";
         }
     }
 

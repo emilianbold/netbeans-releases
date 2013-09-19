@@ -6,8 +6,7 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    htmlTagPrefix - prefix of facelet's html tags
-    coreTagPrefix - prefix of facelet's core tags
+    prefixResolver - helps resolve prefix for given template (call prefixForNS(namespace, fallbackPrefix) method)
     entityName - name of entity being modified (type: String)
     managedBean - name of managed choosen in UI (type: String)
     managedBeanProperty - name of managed bean property choosen in UI (type: String)
@@ -29,6 +28,10 @@
   be found in category JavaServer Faces->JSF Data/Form from Entity.
 
 </#if>
+
+<#assign htmlTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/html", "h")>
+<#assign coreTagPrefix=prefixResolver.getPrefixForNS("http://xmlns.jcp.org/jsf/core", "f")>
+
 <${htmlTagPrefix}:form>
     <h1><${htmlTagPrefix}:outputText value="List"/></h1>
     <${htmlTagPrefix}:dataTable value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}">

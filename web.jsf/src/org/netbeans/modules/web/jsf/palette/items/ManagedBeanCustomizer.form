@@ -20,28 +20,30 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="entityBeanLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="managedBeanLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="entityBeanCombo" alignment="0" max="32767" attributes="0"/>
-                          <Component id="managedBeanCombo" alignment="0" max="32767" attributes="0"/>
-                          <Component id="readOnlyCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="hint" alignment="0" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                  <Group type="102" attributes="0">
                       <Component id="scanningLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="350" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="templatesStyleLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="70" max="-2" attributes="0"/>
-                      <Component id="templatesStyleComboBox" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="entityBeanLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="managedBeanLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="templatesStyleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="customizeTemplatesLabel" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="templatesStyleComboBox" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="customizeTemplatesLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="entityBeanCombo" alignment="0" max="32767" attributes="0"/>
+                          <Component id="managedBeanCombo" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="readOnlyCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="hint" alignment="0" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>

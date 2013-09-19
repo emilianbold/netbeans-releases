@@ -175,6 +175,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="97"/>
                 <attr name="templateCategory" stringvalue="always-hidden"/>
                 <folder name="JSF">
+                    <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                     <file name="table.ftl" url="../palette/items/resources/table.ftl">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
