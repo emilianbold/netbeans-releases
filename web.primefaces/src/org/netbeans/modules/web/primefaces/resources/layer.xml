@@ -21,6 +21,27 @@
     </folder>
 
     <folder name="Templates">
+        <folder name="JSF">
+            <folder name="JSF_From_Entity_Snippets">
+                <folder name="PrimeFaces">
+                    <attr name="position" intvalue="200"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
+                    <file name="table.ftl" url="../templates/table.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="view.ftl" url="../templates/view.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="edit.ftl" url="../templates/edit.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+
         <folder name="Other">
             <file name="welcomePrimefaces.xhtml" url="welcomePrimefaces.template">
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
