@@ -114,6 +114,7 @@ import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
+import org.netbeans.modules.maven.spi.nodes.DependencyTypeIconBadge;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -625,6 +626,16 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 Image ann = ImageUtilities.loadImage(MANAGED_BADGE_ICON); //NOI18N
                 ann = ImageUtilities.addToolTipToImage(ann, toolTipManaged);
                 retValue = ImageUtilities.mergeImages(retValue, ann, 0, 8);//NOI18N
+            }
+            FileObject fo = fileObject.get();
+            if (fo != null && fo.isValid()) {
+                for (DependencyTypeIconBadge badge : Lookup.getDefault().lookupAll(DependencyTypeIconBadge.class)) {
+                    Image ann = badge.getBadgeIcon(fo, art);
+                    if (ann != null) {
+                        retValue = ImageUtilities.mergeImages(retValue, ann, 0, 0);//NOI18N
+                        break;
+                    }
+                }
             }
             return retValue;
         } else if (!isIconProjectBased()) {
