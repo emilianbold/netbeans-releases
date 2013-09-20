@@ -47,10 +47,6 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -61,9 +57,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.actions.Openable;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -82,18 +76,13 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
-import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
-import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -325,41 +314,11 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 if (jEditorPane == null) {
                     return;
                 }
-                Document doc = jEditorPane.getDocument();
-                if (BreadcrumbsController.areBreadCrumsEnabled(doc)) {
-                    LinkedList<Node> list = new LinkedList<Node>();
-                    while(true) {
-                        list.addFirst(node);
-                        node = node.getParentNode();
-                        if (node == null) {
-                            break;
-                        }
-                    }
-                    BreadcrumbsElementImpl breadcrumbsElement = new BreadcrumbsElementImpl(null, list.removeFirst());
-                    breadcrumbsElement.setParent(new BreadcrumbsRoot(cdo, breadcrumbsElement));
-                    while(true) {
-                        if (list.isEmpty()) {
-                            break;
-                        }
-                        boolean found = false;
-                        node = list.removeFirst();
-                        for(BreadcrumbsElement b : breadcrumbsElement.getChildren()) {
-                            if (((BreadcrumbsElementImpl)b).getNode() == node) {
-                                breadcrumbsElement = (BreadcrumbsElementImpl) b;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            break;
-                        }
-                    }
-                    BreadcrumbsController.setBreadcrumbs(doc, breadcrumbsElement);
-                }
+                BreadCrumbsFactory.createBreadCrumbs(caretLineNo, node, jEditorPane, cdo);
             }
         }
     }
-    
+
     private JEditorPane findCurrentJEditorPane() {
         if (cdo != null) {
             JTextComponent comp = EditorRegistry.lastFocusedComponent();
@@ -889,128 +848,6 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         @Override
         public Action getPreferredAction() {
             return new EnableCodeAssistanceAction(project);
-        }
-    }
-
-    private static final class BreadcrumbsRoot implements BreadcrumbsElement {
-        private final DataObject cdo;
-        private final BreadcrumbsElementImpl root;
-        
-        private BreadcrumbsRoot(DataObject cdo, BreadcrumbsElementImpl root) {
-            this.cdo = cdo;
-            this.root = root;
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            return "";
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            return cdo.getNodeDelegate().getIcon(type);
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return cdo.getNodeDelegate().getOpenedIcon(type);
-        }
-
-        @Override
-        public List<BreadcrumbsElement> getChildren() {
-            return Collections.<BreadcrumbsElement>singletonList(root);
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public BreadcrumbsElement getParent() {
-            return null;
-        }
-    
-    }
-    
-    private static class BreadcrumbsElementImpl implements BreadcrumbsElement {
-
-        private final Node node;
-        private final Lookup lookup;
-        private BreadcrumbsElement parent;
-        private List<BreadcrumbsElement> children;
-
-        public BreadcrumbsElementImpl(BreadcrumbsElement parent, Node node) {
-            lookup =  Lookups.fixed(new OpenableImpl(node));
-            this.parent = parent;
-            this.node = node;
-        }
-
-        @Override
-        public String getHtmlDisplayName() {
-            String htmlDisplayName = node.getHtmlDisplayName();
-            if (htmlDisplayName == null) {
-                return node.getDisplayName();
-            }
-            return htmlDisplayName;
-        }
-
-        @Override
-        public Image getIcon(int type) {
-            return node.getIcon(type);
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return node.getOpenedIcon(type);
-        }
-
-        @Override
-        public List<BreadcrumbsElement> getChildren() {
-            if (children == null) {
-                children = new ArrayList<BreadcrumbsElement>();
-                for(Node n : node.getChildren().getNodes()) {
-                    children.add(new BreadcrumbsElementImpl(this, n));
-                }
-            }
-            return children;
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return lookup;
-        }
-
-        @Override
-        public BreadcrumbsElement getParent() {
-            return parent;
-        }
-        
-        private Node getNode() {
-            return node;
-        }
-
-        private void setParent(BreadcrumbsRoot root) {
-            parent = root;
-        }
-    }
-    
-    private static final class OpenableImpl implements Openable, OpenCookie {
-
-        private final Node node;
-
-        public OpenableImpl(Node node) {
-            this.node = node;
-        }
-        
-        @Override
-        public void open() {
-            if (node instanceof CppDeclarationNode) {
-                Action preferredAction = ((CppDeclarationNode)node).getPreferredAction();
-                if (preferredAction instanceof AbstractAction) {
-                    ((AbstractAction)preferredAction).actionPerformed(null);
-                }
-            }
         }
     }
 }
