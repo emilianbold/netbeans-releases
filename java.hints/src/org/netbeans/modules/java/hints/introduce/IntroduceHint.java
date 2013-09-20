@@ -156,6 +156,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Union2;
 
+import static org.netbeans.modules.java.hints.introduce.Bundle.*;
+
 /**
  *
  * @author Jan Lahoda
@@ -2605,6 +2607,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             return "[IntroduceExpressionBasedMethodFix]"; // NOI18N
         }
 
+        @NbBundle.Messages({
+            "MSG_ExpressionContainsLocalReferences=Could not move the expression that references local classes"
+        })
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
@@ -2625,6 +2630,18 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     copy.toPhase(Phase.RESOLVED);
 
                     TreePath expression = IntroduceExpressionBasedMethodFix.this.expression.resolve(copy);
+                    
+                    InstanceRefFinder finder = new InstanceRefFinder(copy, expression);
+                    finder.process();
+                    
+                    if (finder.containsLocalReferences()) {
+                        NotifyDescriptor dd = new NotifyDescriptor.Message(
+                            MSG_ExpressionContainsLocalReferences(), NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(dd);
+                        return;
+                    }
+                    
+                    boolean referencesInstances = finder.containsInstanceReferences();
                     TypeMirror returnType = expression != null ? resolveType(copy, expression) : null;
 
                     if (expression == null || returnType == null) {
@@ -2668,7 +2685,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     assert pathToClass != null;
 
-                    boolean isStatic = needsStaticRelativeTo(copy, pathToClass, expression);
+                    boolean isStatic = !referencesInstances || needsStaticRelativeTo(copy, pathToClass, expression);
 
                     Tree parentTree = expression.getParentPath().getLeaf();
                     Tree nueParent = copy.getTreeUtilities().translate(parentTree, Collections.singletonMap(expression.getLeaf(), invocation));
@@ -2708,7 +2725,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         introduceBag(doc).clear();
                         //handle duplicates end
                     }
-
+                    
                     Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
 
                     if (isStatic) {
