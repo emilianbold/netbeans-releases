@@ -44,8 +44,13 @@
 
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -56,7 +61,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.Timer;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
@@ -75,13 +82,18 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
+import org.openide.cookies.OpenCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -101,7 +113,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private Timer checkModifiedTimer;
     private long lastModified = 0;
     private long lastDocVersion = 0;
-    private Timer checkCursorTimer;
+    private final Timer checkCursorTimer;
     private long lastCursorPos = -1;
     private long lastCursorPosWhenChecked = 0;
     private final static class Lock {}
@@ -123,6 +135,12 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             public Action[] getActions(boolean context) {
                 return actions;
             }
+
+            @Override
+            public Image getIcon(int type) {
+                return NavigatorModel.this.cdo.getNodeDelegate().getIcon(type);
+            }
+            
         };
         fileModel = new CsmFileModel(new CsmFileFilter(), actions);
         update(getCsmFile());
@@ -290,7 +308,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (caret.getDot() != lastCursorPos && caret.getDot() == lastCursorPosWhenChecked) {
                 lastCursorPos = caret.getDot();
                 lastCursorPosWhenChecked = lastCursorPos;
-                setSelection(lastCursorPos);
+                setSelection(lastCursorPos, jEditorPane);
             }
             lastCursorPosWhenChecked = caret.getDot();
         }
@@ -299,11 +317,45 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
 
-    private void setSelection(long caretLineNo) {
+    private void setSelection(long caretLineNo, JEditorPane jEditorPane) {
         synchronized(lock) {
             Node node = fileModel.setSelection(caretLineNo);
             if (node != null) {
                 ui.selectNodes(new Node[]{node});
+                if (jEditorPane == null) {
+                    return;
+                }
+                Document doc = jEditorPane.getDocument();
+                if (BreadcrumbsController.areBreadCrumsEnabled(doc)) {
+                    LinkedList<Node> list = new LinkedList<Node>();
+                    while(true) {
+                        list.addFirst(node);
+                        node = node.getParentNode();
+                        if (node == null) {
+                            break;
+                        }
+                    }
+                    BreadcrumbsElementImpl breadcrumbsElement = new BreadcrumbsElementImpl(null, list.removeFirst());
+                    breadcrumbsElement.setParent(new BreadcrumbsRoot(cdo, breadcrumbsElement));
+                    while(true) {
+                        if (list.isEmpty()) {
+                            break;
+                        }
+                        boolean found = false;
+                        node = list.removeFirst();
+                        for(BreadcrumbsElement b : breadcrumbsElement.getChildren()) {
+                            if (((BreadcrumbsElementImpl)b).getNode() == node) {
+                                breadcrumbsElement = (BreadcrumbsElementImpl) b;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            break;
+                        }
+                    }
+                    BreadcrumbsController.setBreadcrumbs(doc, breadcrumbsElement);
+                }
             }
         }
     }
@@ -447,7 +499,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowForwardFunctionDeclarationsAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowForwardFunctionDeclarationsAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowForwardFunctionDeclarationsText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -460,7 +512,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -472,7 +524,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowForwardClassDeclarationsAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowForwardClassDeclarationsAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowForwardClassDeclarationsText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -485,7 +537,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -498,7 +550,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
 
 
     private class ShowMacroAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowMacroAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowMacroText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -511,7 +563,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -523,7 +575,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowIncludeAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowIncludeAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowIncludeText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -536,7 +588,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -548,7 +600,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowTypedefAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowTypedefAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowTypedefText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -561,7 +613,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -573,7 +625,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowVariableAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowVariableAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowVariableText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -586,7 +638,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -598,7 +650,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowFieldAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowFieldAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowFieldText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -611,7 +663,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -623,7 +675,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ShowUsingAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ShowUsingAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowUsingText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -636,7 +688,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile());
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -647,7 +699,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
     private class SortByNameAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public SortByNameAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortByNameText")); // NOI18N
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/qnavigator/resources/sortAlpha.png", false)); // NOI18N
@@ -663,7 +715,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 int selection = storeSelection();
                 update(getCsmFile(), true);
                 if (selection >= 0) {
-                    setSelection(selection);
+                    setSelection(selection, null);
                 }
             }
         }
@@ -676,7 +728,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class SortBySourceAction extends AbstractAction implements Presenter.Popup {
-        private JRadioButtonMenuItem menuItem;
+        private final JRadioButtonMenuItem menuItem;
         public SortBySourceAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "SortBySourceText")); // NOI18N
             putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/qnavigator/resources/sortPosition.png", false)); // NOI18N
@@ -692,7 +744,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 int selection = storeSelection();
                 update(getCsmFile(), true);
                 if (selection >= 0) {
-                    setSelection(selection);
+                    setSelection(selection, null);
                 }
             }
         }
@@ -705,7 +757,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class GroupByKindAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public GroupByKindAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "GroupByKindText")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -718,7 +770,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             int selection = storeSelection();
             update(getCsmFile(), true);
             if (selection >= 0) {
-                setSelection(selection);
+                setSelection(selection, null);
             }
         }
 
@@ -730,7 +782,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class ExpandAllAction extends AbstractAction implements Presenter.Popup {
-        private JCheckBoxMenuItem menuItem;
+        private final JCheckBoxMenuItem menuItem;
         public ExpandAllAction() {
             putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ExpandAll")); // NOI18N
             menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME));
@@ -750,7 +802,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     }
 
     private class FilterSubmenuAction extends AbstractAction implements Presenter.Popup {
-        private String mimeType;
+        private final String mimeType;
 
         public FilterSubmenuAction(String mimeType) {
             this.mimeType = mimeType;
@@ -837,6 +889,128 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         @Override
         public Action getPreferredAction() {
             return new EnableCodeAssistanceAction(project);
+        }
+    }
+
+    private static final class BreadcrumbsRoot implements BreadcrumbsElement {
+        private final DataObject cdo;
+        private final BreadcrumbsElementImpl root;
+        
+        private BreadcrumbsRoot(DataObject cdo, BreadcrumbsElementImpl root) {
+            this.cdo = cdo;
+            this.root = root;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return "";
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return cdo.getNodeDelegate().getIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return cdo.getNodeDelegate().getOpenedIcon(type);
+        }
+
+        @Override
+        public List<BreadcrumbsElement> getChildren() {
+            return Collections.<BreadcrumbsElement>singletonList(root);
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public BreadcrumbsElement getParent() {
+            return null;
+        }
+    
+    }
+    
+    private static class BreadcrumbsElementImpl implements BreadcrumbsElement {
+
+        private final Node node;
+        private final Lookup lookup;
+        private BreadcrumbsElement parent;
+        private List<BreadcrumbsElement> children;
+
+        public BreadcrumbsElementImpl(BreadcrumbsElement parent, Node node) {
+            lookup =  Lookups.fixed(new OpenableImpl(node));
+            this.parent = parent;
+            this.node = node;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String htmlDisplayName = node.getHtmlDisplayName();
+            if (htmlDisplayName == null) {
+                return node.getDisplayName();
+            }
+            return htmlDisplayName;
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return node.getIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return node.getOpenedIcon(type);
+        }
+
+        @Override
+        public List<BreadcrumbsElement> getChildren() {
+            if (children == null) {
+                children = new ArrayList<BreadcrumbsElement>();
+                for(Node n : node.getChildren().getNodes()) {
+                    children.add(new BreadcrumbsElementImpl(this, n));
+                }
+            }
+            return children;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return lookup;
+        }
+
+        @Override
+        public BreadcrumbsElement getParent() {
+            return parent;
+        }
+        
+        private Node getNode() {
+            return node;
+        }
+
+        private void setParent(BreadcrumbsRoot root) {
+            parent = root;
+        }
+    }
+    
+    private static final class OpenableImpl implements Openable, OpenCookie {
+
+        private final Node node;
+
+        public OpenableImpl(Node node) {
+            this.node = node;
+        }
+        
+        @Override
+        public void open() {
+            if (node instanceof CppDeclarationNode) {
+                Action preferredAction = ((CppDeclarationNode)node).getPreferredAction();
+                if (preferredAction instanceof AbstractAction) {
+                    ((AbstractAction)preferredAction).actionPerformed(null);
+                }
+            }
         }
     }
 }
