@@ -202,7 +202,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         project.getCopyOnSaveResources().opened();
 
         //only check for the updates of index, if the indexing was already used.
-        if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
+        if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation() && RepositoryPreferences.isIndexRepositories()) {
             final int freq = RepositoryPreferences.getIndexUpdateFrequency();
             new RequestProcessor("Maven Repo Index Transfer/Scan").post(new Runnable() { // #138102
                 public @Override void run() {

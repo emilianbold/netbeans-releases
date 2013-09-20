@@ -92,7 +92,7 @@ public abstract class BaseAction extends AbstractAction implements HelpCtx.Provi
      */
     @Override
     public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
+        PhpModule phpModule = PhpModule.Factory.inferPhpModule();
         if (phpModule == null) {
             return;
         }

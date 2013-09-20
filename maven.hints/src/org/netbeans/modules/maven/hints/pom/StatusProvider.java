@@ -72,6 +72,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -224,7 +225,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private void initializeModel() {
             FileObject fo = NbEditorUtilities.getFileObject(document);
             if (fo != null) {
-                ModelSource ms = Utilities.createModelSource(fo);
+                //#236116 passing document protects from looking it up later and causing a deadlock.
+                ModelSource ms = Utilities.createModelSource(fo, null, document instanceof BaseDocument ? (BaseDocument)document : null);
                 model = POMModelFactory.getDefault().createFreshModel(ms);
                 project = FileOwnerQuery.getOwner(fo);
                 fo.addFileChangeListener(FileUtil.weakFileChangeListener(listener, fo));
