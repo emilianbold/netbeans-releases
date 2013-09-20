@@ -250,7 +250,7 @@ public final class CodeSniffer {
     }
 
     private void addIgnoredFiles(List<String> params, FileObject file) {
-        Collection<FileObject> ignoredFiles = Queries.getVisibilityQuery(PhpModule.forFileObject(file)).getCodeAnalysisExcludeFiles();
+        Collection<FileObject> ignoredFiles = Queries.getVisibilityQuery(PhpModule.Factory.forFileObject(file)).getCodeAnalysisExcludeFiles();
         if (ignoredFiles.isEmpty()) {
             return;
         }
