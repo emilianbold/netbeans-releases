@@ -65,7 +65,7 @@ public class PhpDocCustomizer implements ProjectCustomizer.CompositeCategoryProv
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.lookupPhpModule(context);
+        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
         return new PhpDocPanel(category, phpModule);
     }
 

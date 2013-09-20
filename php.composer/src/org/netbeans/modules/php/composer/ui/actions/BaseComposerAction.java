@@ -66,7 +66,7 @@ abstract class BaseComposerAction extends AbstractAction {
     @NbBundle.Messages("BaseComposerAction.error.composer.notValid=Composer is not valid.")
     @Override
     public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.inferPhpModule();
+        PhpModule phpModule = PhpModule.Factory.inferPhpModule();
         if (phpModule == null) {
             return;
         }
