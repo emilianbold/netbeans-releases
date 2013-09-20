@@ -122,6 +122,9 @@ public class ModuleJarAccessibilityQueryImpl implements AccessibilityQueryImplem
 
     @Override
     public Image getBadgeIcon(FileObject jarFile, Artifact art) {
+        if ("nbm-file".equals(art.getType())) {
+            return getIcon();
+        }
         if (jarFile != null) {
             FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
             synchronized (cache) {
