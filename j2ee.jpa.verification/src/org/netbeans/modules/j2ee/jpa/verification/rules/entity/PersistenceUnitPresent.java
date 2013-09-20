@@ -41,27 +41,24 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
+import com.sun.source.tree.Tree;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.logging.Level;
-import javax.lang.model.element.TypeElement;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.api.JPAVerificationWarningIds;
 import org.netbeans.modules.j2ee.jpa.verification.api.VerificationWarningOverrider;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreatePersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -69,16 +66,25 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class PersistenceUnitPresent extends JPAClassRule {
+@Hint(id = "o.n.m.j2ee.jpa.verification.PersistenceUnitPresent",
+        displayName = "#PersistenceUnitPresent.display.name",
+        description = "#PersistenceUnitPresent.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        suppressWarnings = "PersistenceUnitPresent")
+@NbBundle.Messages({
+    "PersistenceUnitPresent.display.name=Presece of persistence.xml",
+    "PersistenceUnitPresent.desc=Check if project with jpa usage contain persistence.xml with persistence unit"
+})
+public class PersistenceUnitPresent{
 
-    /** Creates a new instance of PersistenceUnitPresent */
-    public PersistenceUnitPresent() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY));
-    }
-
-    @Override
-    public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
-        Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+    @TriggerPattern(value = "javax.persistence.Entity")
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if entity is an annotation
+        }
+        
+        Project project = FileOwnerQuery.getOwner(hc.getInfo().getFileObject());
 
         if (project == null) {
             // Can't perform this check for a file that does not belong to a project
@@ -88,7 +94,7 @@ public class PersistenceUnitPresent extends JPAClassRule {
         PersistenceScope[] scopes = PersistenceUtils.getPersistenceScopes(project);
 
         for (PersistenceScope scope : scopes) {
-            if (scope.getClassPath().contains(ctx.getFileObject())) {
+            if (scope.getClassPath().contains(hc.getInfo().getFileObject())) {
 
                 try {
                     FileObject persistenceXML = scope.getPersistenceXml();
@@ -101,9 +107,7 @@ public class PersistenceUnitPresent extends JPAClassRule {
                             return null;
                         }
                     }
-                } catch (IOException e) {
-                    JPAProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
-                } catch (RuntimeException e) {
+                } catch (        IOException | RuntimeException e) {
                     JPAProblemFinder.LOG.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
@@ -118,9 +122,10 @@ public class PersistenceUnitPresent extends JPAClassRule {
             }
         }
 
-        return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_MissingPersistenceUnitHint"),
-                    Severity.WARNING, new CreatePersistenceUnit(project))
-                };
+        return ErrorDescriptionFactory.forTree(
+                    hc,
+                    hc.getPath().getParentPath(),
+                    NbBundle.getMessage(PersistenceUnitPresent.class, "MSG_MissingPersistenceUnitHint"),
+                    new CreatePersistenceUnit(project));
     }
 }

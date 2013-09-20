@@ -41,20 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
-import java.util.Arrays;
+import com.sun.source.tree.Tree;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,42 +67,63 @@ import org.openide.util.NbBundle;
  * @author Sanjeeb.Sahoo@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
-public class HasNoArgConstructor extends JPAClassRule {
-    
-    /** Creates a new instance of HasNoArgConstructor */
-    public HasNoArgConstructor() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
-                ClassConstraints.EMBEDDABLE, ClassConstraints.IDCLASS));
-    }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+@Hint(id = "o.n.m.j2ee.jpa.verification.HasNoArgConstructor",
+        displayName = "#HasNoArgConstructor.display.name",
+        description = "#HasNoArgConstructor.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        suppressWarnings = "HasNoArgConstructor")
+@NbBundle.Messages({
+    "HasNoArgConstructor.display.name=Default public/protected constructor",
+    "HasNoArgConstructor.desc=JPA classes need to have default public/protected no arg constructor",})
+public class HasNoArgConstructor {
+
+
+    @TriggerPatterns(value = {
+        @TriggerPattern(value = "javax.persistence.Entity"),
+        @TriggerPattern(value = "javax.persistence.Embeddable"),
+        @TriggerPattern(value = "javax.persistence.IdClass")})
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+        
+        JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+
+        TypeElement subject = ctx.getJavaClass();
         
         // If the class is not public, no need to give this warning, yet. 
         // See issue 110170
-        if(!subject.getModifiers().contains(Modifier.PUBLIC)) {
+        if (!subject.getModifiers().contains(Modifier.PUBLIC)) {
             return null;
         }
-        
+
         boolean hasDefaultContructor = true;
-        
-        for (ExecutableElement constr : ElementFilter.constructorsIn(subject.getEnclosedElements())){
+
+        for (ExecutableElement constr : ElementFilter.constructorsIn(subject.getEnclosedElements())) {
             hasDefaultContructor = false;
-            
-            if (constr.getParameters().size() == 0
+
+            if (constr.getParameters().isEmpty()
                     && (constr.getModifiers().contains(Modifier.PUBLIC)
-                    || constr.getModifiers().contains(Modifier.PROTECTED))){
+                    || constr.getModifiers().contains(Modifier.PROTECTED))) {
                 return null; // found appropriate constructor
             }
         }
-        
-        if (hasDefaultContructor){
+
+        if (hasDefaultContructor) {
             return null; // OK
         }
-        
-        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(), 
+
+        Fix fix = new CreateDefaultConstructor(ctx.getFileObject(),
                 ElementHandle.create(ctx.getJavaClass()));
-        
-        return new ErrorDescription[]{createProblem(subject, ctx,
-                NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"), fix)};
+
+        return ErrorDescriptionFactory.forTree(
+                    hc,
+                    hc.getPath().getParentPath(),
+                    NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"),
+                    fix);
     }
 }
