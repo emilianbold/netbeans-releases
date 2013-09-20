@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.project.connections.transfer;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
@@ -80,6 +79,5 @@ public final class RemoteClient implements RemoteClientImplementation {
     public List<TransferFile> listRemoteFiles(TransferFile file) throws RemoteException {
         return Collections.emptyList();
     }
-
 
 }
