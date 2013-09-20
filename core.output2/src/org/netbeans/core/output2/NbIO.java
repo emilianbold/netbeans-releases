@@ -109,13 +109,17 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (Controller.LOG) {
             Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);    //NOI18N
         }
+        final NbWriter currentOut;
         synchronized (this) {
-            if (out != null) {
-                if (Controller.LOG) {
-                    Controller.log(" - Its output is non null, calling close() on " + out); //NOI18N
-                }
-                out.close();
+            currentOut = out;
+        }
+        if (currentOut != null) {
+            if (Controller.LOG) {
+                Controller.log(
+                        " - Its output is non null, calling close() on "//NOI18N
+                        + currentOut);
             }
+            currentOut.close();
         }
         post (this, IOEvent.CMD_CLOSE, true);
     }
@@ -140,19 +144,27 @@ class NbIO implements InputOutput, Lookup.Provider {
         if (Controller.LOG) {
             Controller.log(this + ": IO " + getName() + " is being disposed"); //NOI18N
         }
+        OutWriter currentOut = null;
+        IOReader currentIn = null;
         synchronized (this) {
             if (out != null) {
                 if (Controller.LOG) {
                     Controller.log(this + ": Still has an OutWriter.  Disposing it"); //NOI18N
                 }
-                out().dispose();
+                currentOut = out();
                 out = null;
                 if (in != null) {
-                    in.eof();
+                    currentIn = in;
                     in = null;
                 }
                 focusTaken = null;
             }
+        }
+        if (currentOut != null) {
+            currentOut.dispose();
+        }
+        if (currentIn != null) {
+            currentIn.eof();
         }
         NbIOProvider.dispose(this);
     }
@@ -241,11 +253,13 @@ class NbIO implements InputOutput, Lookup.Provider {
         closed = false;
         streamClosed = false;
 
+        final IOReader currentIn;
         synchronized (this) {
-            if (in != null) {
-                in.eof();
-                in.reuse();
-            }
+            currentIn = in;
+        }
+        if (currentIn != null) {
+            currentIn.eof();
+            currentIn.reuse();
         }
         post (this, IOEvent.CMD_RESET, true);
     }
