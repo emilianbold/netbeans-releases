@@ -76,7 +76,7 @@ public class JREProbe {
     private static final String BOM_KEY_TARGET = "target";  //NOI18N
     private static final String BOM_KEY_VM = "vm";  //NOI18N
     private static final String BOM_KEY_EXTENSION = "extension";    //NOI18N
-    private static final String BOM_KEY_COMMAND = "command";   //NOI18N
+    private static final String BOM_KEY_DEBUG = "debug";   //NOI18N
 
     public static void main(String[] args) {
         final Properties p = new Properties();
@@ -148,14 +148,8 @@ public class JREProbe {
                             props.put(NB_PROP_VM, value);
                         } else if (BOM_KEY_EXTENSION.equals(key)) {
                             props.put(NB_PROP_EXTENSIONS, parseExtensions(value));
-                        } else if (BOM_KEY_COMMAND.equals(key)) {
-                            //Workaroung for missing debug key, fix when available.
-                            final boolean debug = value.indexOf(" --debug ") >= 0 || value.indexOf(" -g ") >=0; //NOI18N
-                            props.put(
-                                NB_PROP_DEBUG,
-                                debug ?
-                                    Boolean.TRUE.toString() :
-                                    Boolean.FALSE.toString());
+                        } else if (BOM_KEY_DEBUG.equals(key)) {
+                            props.put(NB_PROP_DEBUG, value);
                         }
                     }
                 } finally {
