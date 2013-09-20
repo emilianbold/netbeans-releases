@@ -61,7 +61,7 @@ void wait (long timeout )
 void wait (long timeout , int 
 new
 End cursor position = 1068
-[<% for (Boolean b : list)  b.|, boolean booleanValue (), <% for (Boolean b : list)  b.booleanValue();, 1187]
+[<% for (Boolean b : list)  b.|, boolean booleanValue (), <% for (Boolean b : list)  b.booleanValue(), 1186]
 boolean booleanValue ()
 int compareTo (Boolean b )
 boolean equals (Object obj )
@@ -73,8 +73,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1231
-[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1272]
+End cursor position = 1230
+[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1271]
 int length
 Object clone ()
 boolean equals (Object obj )
@@ -86,8 +86,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1305
-[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1342]
+End cursor position = 1304
+[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1341]
 Suit CLUBS
 Suit DIAMONDS
 Suit HEARTS
@@ -105,18 +105,18 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1359
-[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1455]
+End cursor position = 1358
+[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1454]
 RequestForEnhancement
 Second
-End cursor position = 1486
-[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date = )%>, 1576]
+End cursor position = 1485
+[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date = )%>, 1577]
 String date = "[unimplemented]
 String engineer = "[unassigned
 int id
 String synopsis
-End cursor position = 1617
-[<% D| %>, int DECEMBER, <% DECEMBER %>, 1628]
+End cursor position = 1616
+[<% D| %>, int DECEMBER, <% DECEMBER %>, 1627]
 int DATE
 int DAY_OF_MONTH
 int DAY_OF_WEEK
@@ -137,8 +137,8 @@ double
 Deprecated
 DispatcherType
 Double
-End cursor position = 1640
-[<% get| %>, Calendar getInstance, <% getInstance() %>, 1693]
+End cursor position = 1639
+[<% get| %>, Calendar getInstance, <% getInstance() %>, 1692]
 Locale[] getAvailableLocales (
 Class  getClass ()
 String getInitParameter (Strin
@@ -152,11 +152,11 @@ ServletConfig getServletConfig
 ServletContext getServletConte
 String getServletInfo ()
 String getServletName ()
-End cursor position = 1710
-[<jsp:useBean id="bean" scope="application" class="B|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1910]
+End cursor position = 1709
+[<jsp:useBean id="bean" scope="application" class="B|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1909]
 boolean
 byte
 Boolean
 BootstrapMethodError
 Byte
-End cursor position = 1968
+End cursor position = 1967

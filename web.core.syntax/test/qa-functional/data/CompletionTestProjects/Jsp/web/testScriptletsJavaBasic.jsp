@@ -39,7 +39,7 @@ void setName
 <%--CC
 <% "Hello World !".| %>
 int indexOf (String str )
-<% "Hello World !".indexOf(str); %>
+<% "Hello World !".indexOf(str) %>
 --%>
 
 <%-- issue 90741: [cc] imported classes should be visible in Ctrl+Space cc --%>
@@ -60,7 +60,7 @@ Card
 <%--CC
 <% LinkedList l = new LinkedList();l.| %>
 void clear ()
-<% LinkedList l = new LinkedList();l.clear() %>
+<% LinkedList l = new LinkedList();l.clear(); %>
 --%>
 
 <%-- issue 91026: [cc] Object methods code completion doesn't work in scriptlets for imported classes --%>
