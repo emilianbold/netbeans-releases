@@ -77,6 +77,7 @@ import org.openide.util.lookup.Lookups;
 public final class StatementNode implements BreadcrumbsElement {
     private final List<CsmStatement> statements;
     private final List<List<CsmStatement>> bodies;
+    private final List<String> decorations;
     private List<BreadcrumbsElement> children;
     private final BreadcrumbsElement parent;
     private final CharSequence displayName;
@@ -85,16 +86,16 @@ public final class StatementNode implements BreadcrumbsElement {
     private final Lookup lookup;
     private final DataObject cdo;
 
-    static StatementNode createStatementNode(CsmStatement statement, BreadcrumbsElement parent, DataObject cdo) {
+    static StatementNode createStatementNode(CsmStatement statement, String decoration, BreadcrumbsElement parent, DataObject cdo) {
         switch (statement.getKind()) {
             case COMPOUND:
-                return createBodyNode((CsmCompoundStatement) statement, parent, cdo);
+                return createBodyNode((CsmCompoundStatement) statement, decoration, parent, cdo);
             case IF:
                 return createIfNode((CsmIfStatement) statement, parent, cdo);
             case TRY_CATCH:
                 return createTryNode((CsmTryCatchStatement) statement, parent, cdo);
             case CATCH:
-                return createBodyNode((CsmExceptionHandler) statement, parent, cdo);
+                return createBodyNode((CsmExceptionHandler) statement, decoration, parent, cdo);
             case DECLARATION:
                 return createDeclarationNode((CsmDeclarationStatement) statement, parent, cdo);
             case WHILE:
@@ -122,19 +123,22 @@ public final class StatementNode implements BreadcrumbsElement {
         }
     }
 
-    private static StatementNode createBodyNode(CsmCompoundStatement body, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(body, body.getStatements(), null, parent, cdo);
+    private static StatementNode createBodyNode(CsmCompoundStatement body, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        return new StatementNode(body, decoration, body.getStatements(), null, null, parent, cdo);
     }
 
     private static StatementNode createIfNode(CsmIfStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
         List<CsmStatement> st = new ArrayList<CsmStatement>();
+        List<String> decorations = new ArrayList<String>();
         if (stmt.getThen() != null) {
             st.add(stmt.getThen());
+            decorations.add("");
         }
         if (stmt.getElse() != null) {
             st.add(stmt.getElse());
+            decorations.add("else ");//NOI18N
         }
-        return new StatementNode(stmt, st, null, parent, cdo);
+        return new StatementNode(stmt, null, st, null, decorations, parent, cdo);
     }
 
     private static StatementNode createTryNode(CsmTryCatchStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
@@ -145,7 +149,7 @@ public final class StatementNode implements BreadcrumbsElement {
         for (CsmExceptionHandler handler : stmt.getHandlers()) {
             st.add(handler);
         }
-        return new StatementNode(stmt, st, null, parent, cdo);
+        return new StatementNode(stmt, null, st, null, null, parent, cdo);
     }
 
     private static StatementNode createLoopNode(CsmLoopStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
@@ -156,7 +160,7 @@ public final class StatementNode implements BreadcrumbsElement {
         } else if (body != null) {
             st.add(body);
         }
-        return new StatementNode(stmt, st, null, parent, cdo);
+        return new StatementNode(stmt, null, st, null, null, parent, cdo);
     }
 
     private static StatementNode createForNode(CsmForStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
@@ -167,7 +171,7 @@ public final class StatementNode implements BreadcrumbsElement {
         } else if (body != null) {
             st.add(body);
         }
-        return new StatementNode(stmt, st, null, parent, cdo);
+        return new StatementNode(stmt, null, st, null, null, parent, cdo);
     }
 
     private static StatementNode createRangeForNode(CsmRangeForStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
@@ -178,21 +182,27 @@ public final class StatementNode implements BreadcrumbsElement {
         if (stmt.getBody() != null) {
             st.add(stmt.getBody());
         }
-        return new StatementNode(stmt, st, null, parent, cdo);
+        return new StatementNode(stmt, null, st, null, null, parent, cdo);
     }
 
     private static StatementNode createSwitchNode(CsmSwitchStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
         List<CsmStatement> st = new ArrayList<CsmStatement>();
         List<List<CsmStatement>> bodies = new ArrayList<List<CsmStatement>>();
+        List<String> decorations = new ArrayList<String>();
         final CsmStatement body = stmt.getBody();
         if (CsmKindUtilities.isCompoundStatement(body)) {
             CsmStatement currentCase = null;
             List<CsmStatement> currentCaseList = null;
-            for(CsmStatement c : ((CsmCompoundStatement)body).getStatements()) {
-                if(c.getKind() == CsmStatement.Kind.CASE || c.getKind() == CsmStatement.Kind.DEFAULT) {
+            for (CsmStatement c : ((CsmCompoundStatement) body).getStatements()) {
+                if (c.getKind() == CsmStatement.Kind.CASE || c.getKind() == CsmStatement.Kind.DEFAULT) {
                     if (currentCase != null) {
                         st.add(currentCase);
                         bodies.add(currentCaseList);
+                        if (currentCase.getKind() == CsmStatement.Kind.CASE) {
+                            decorations.add("case "); //NOI18N
+                        } else {
+                            decorations.add("default "); //NOI18N
+                        }
                     }
                     currentCase = c;
                     currentCaseList = new ArrayList<CsmStatement>();
@@ -205,39 +215,40 @@ public final class StatementNode implements BreadcrumbsElement {
             if (currentCase != null) {
                 st.add(currentCase);
                 bodies.add(currentCaseList);
+                if (currentCase.getKind() == CsmStatement.Kind.CASE) {
+                    decorations.add("case "); //NOI18N
+                } else {
+                    decorations.add("default "); //NOI18N
+                }
             }
         }
-        return new StatementNode(stmt, st, bodies, parent, cdo);
+        return new StatementNode(stmt, null, st, bodies, decorations, parent, cdo);
     }
 
     private static StatementNode createExpressionNode(CsmExpressionStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, Collections.<CsmStatement>emptyList(), null, parent, cdo);
+        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
     }
 
     private static StatementNode createReturnNode(CsmReturnStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, Collections.<CsmStatement>emptyList(), null, parent, cdo);
+        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
     }
 
     private static StatementNode createDeclarationNode(CsmDeclarationStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, Collections.<CsmStatement>emptyList(), null, parent, cdo);
+        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
     }
 
     private static StatementNode createCaseNode(CsmCaseStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, Collections.<CsmStatement>emptyList(), null, parent, cdo);
+        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
     }
 
-    private StatementNode(CsmStatement owner, List<CsmStatement> statements, List<List<CsmStatement>> bodies, BreadcrumbsElement parent, DataObject cdo) {
+    private StatementNode(CsmStatement owner, String decoration, List<CsmStatement> statements, List<List<CsmStatement>> bodies, List<String> decorations, BreadcrumbsElement parent, DataObject cdo) {
         this.statements = statements;
+        this.decorations = decorations;
         this.bodies = bodies;
         this.parent = parent;
         StringBuilder buf = new StringBuilder();
-        switch(owner.getKind()) {
-            case CASE:
-                buf.append("case "); //NOI18N
-                break;
-            case DEFAULT:
-                buf.append("default "); //NOI18N
-                break;
+        if (decoration != null) {
+            buf.append(decoration);
         }
         CharSequence text = owner.getText();
         loop: for(int i = 0; i < text.length(); i++) {
@@ -300,16 +311,22 @@ public final class StatementNode implements BreadcrumbsElement {
     public List<BreadcrumbsElement> getChildren() {
         if (children == null) {
             children = new ArrayList<BreadcrumbsElement>();
-            if (bodies == null) {
-                for(CsmStatement st : statements) {
-                    final StatementNode node = createStatementNode(st, this, cdo);
-                    if (node != null) {
-                        children.add(node);
-                    }
+            for(int i = 0; i < statements.size(); i++) {
+                List<CsmStatement> body = null;
+                if (bodies != null) {
+                    body = bodies.get(i);
                 }
-            } else {
-                for(int i = 0; i < statements.size(); i++) {
-                    final StatementNode node = new StatementNode(statements.get(i), bodies.get(i), null, this, cdo);
+                String decoration = null;
+                if (decorations != null) {
+                    decoration = decorations.get(i);
+                }
+                StatementNode node;
+                if (body != null) {
+                    node = new StatementNode(statements.get(i), decoration, body, null, null, this, cdo);
+                } else {
+                    node = createStatementNode(statements.get(i), decoration, this, cdo);
+                }
+                if (node != null) {
                     children.add(node);
                 }
             }
