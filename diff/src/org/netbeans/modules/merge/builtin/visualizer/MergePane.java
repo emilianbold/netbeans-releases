@@ -109,7 +109,7 @@ public final class MergePane extends DEditorPane implements HighlightsContainer,
     }
 
     void addHighlight (StyledDocument doc, int line1, int line2, final java.awt.Color color) {
-        if (line1 >= 0) {
+        if (line1 > 0) {
             --line1;
         }
         SimpleAttributeSet attrs = new SimpleAttributeSet();
@@ -136,7 +136,7 @@ public final class MergePane extends DEditorPane implements HighlightsContainer,
     }
 
     void removeHighlight (StyledDocument doc, int line1, int line2) {
-        if (line1 >= 0) {
+        if (line1 > 0) {
             --line1;
         }
         int startOffset = getRowStartFromLineOffset(doc, line1);

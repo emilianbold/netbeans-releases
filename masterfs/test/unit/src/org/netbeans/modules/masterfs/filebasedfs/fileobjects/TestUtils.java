@@ -68,12 +68,17 @@ public class TestUtils {
         LOG.info("doing gcAll");
         List<Reference<Object>> refs = new ArrayList<Reference<Object>>();
         for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
-            for (Object obj : fbs.allIBaseFileObjects.values()) {
-                if (obj instanceof Reference<?>) {
-                    refs.add((Reference<Object>)obj);
-                } else {
-                    refs.addAll((List<Reference<Object>>) obj);
+            fbs.allIBaseLock.readLock().lock();
+            try {
+                for (Object obj : fbs.allIBaseFileObjects.values()) {
+                    if (obj instanceof Reference<?>) {
+                        refs.add((Reference<Object>) obj);
+                    } else {
+                        refs.addAll((List<Reference<Object>>) obj);
+                    }
                 }
+            } finally {
+                fbs.allIBaseLock.readLock().unlock();
             }
         }
 
@@ -95,12 +100,17 @@ public class TestUtils {
         LOG.info("all existing file objects");
         List<Reference<Object>> refs = new ArrayList<Reference<Object>>();
         for (FileObjectFactory fbs : FileObjectFactory.getInstances()) {
-            for (Object obj : fbs.allIBaseFileObjects.values()) {
-                if (obj instanceof Reference<?>) {
-                    refs.add((Reference<Object>)obj);
-                } else {
-                    refs.addAll((List<Reference<Object>>) obj);
+            fbs.allIBaseLock.readLock().lock();
+            try {
+                for (Object obj : fbs.allIBaseFileObjects.values()) {
+                    if (obj instanceof Reference<?>) {
+                        refs.add((Reference<Object>) obj);
+                    } else {
+                        refs.addAll((List<Reference<Object>>) obj);
+                    }
                 }
+            } finally {
+                fbs.allIBaseLock.readLock().unlock();
             }
         }
 

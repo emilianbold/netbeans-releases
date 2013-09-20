@@ -778,10 +778,14 @@ public class MergePanel extends javax.swing.JPanel implements java.awt.event.Act
             p2.y = ypos;
             setViewPosition(p1, p2);
         }
-        off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line);
-        off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line);
-        jEditorPane1.setCaretPosition(off1);
-        jEditorPane2.setCaretPosition(off2);
+        try {
+            off1 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane1.getDocument(), line);
+            jEditorPane1.setCaretPosition(off1);
+        } catch (IndexOutOfBoundsException ex) { }
+        try {
+            off2 = org.openide.text.NbDocument.findLineOffset((StyledDocument) jEditorPane2.getDocument(), line);
+            jEditorPane2.setCaretPosition(off2);
+        } catch (IndexOutOfBoundsException ex) { }
         //D.deb("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
         //System.out.println("off1 = "+off1+", off2 = "+off2+", totalHeight = "+totalHeight+", totalLines = "+totalLines+", ypos = "+ypos);
     }
