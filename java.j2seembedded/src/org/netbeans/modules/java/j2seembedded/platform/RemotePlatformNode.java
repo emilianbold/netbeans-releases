@@ -263,22 +263,6 @@ final class RemotePlatformNode extends AbstractNode {
         };
         setPlatform.put(property);
 
-        property = new PropertySupport.ReadOnly<String>(
-                "profile",  //NOI18N
-                String.class,
-                NbBundle.getMessage(RemotePlatformNode.class, "LBL_Profile"),
-                NbBundle.getMessage(RemotePlatformNode.class, "DESC_Profile")) {
-            @Override
-            public String getValue() throws IllegalAccessException, InvocationTargetException {
-                SourceLevelQuery.Profile profile = Profile.forName(getPlatform().getProperties().get(RemotePlatform.PROP_PROFILE));
-                if (profile == null) {
-                    profile = SourceLevelQuery.Profile.DEFAULT;
-                }
-                return profile.getDisplayName();
-            }
-        };
-        setPlatform.put(property);
-
         property = new PropertySupport.ReadWrite<String>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_Workdir"), //NOI18N
                 String.class,
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_Workdir"), //NOI18N
@@ -304,6 +288,73 @@ final class RemotePlatformNode extends AbstractNode {
             }
         };
         setPlatform.put(property);
+
+        property = new PropertySupport.ReadOnly<String>(
+                "profile",  //NOI18N
+                String.class,
+                NbBundle.getMessage(RemotePlatformNode.class, "LBL_Profile"),
+                NbBundle.getMessage(RemotePlatformNode.class, "DESC_Profile")) {
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                final SourceLevelQuery.Profile profile = getPlatform().getProfile();
+                return profile.getDisplayName();
+            }
+        };
+        setPlatform.put(property);
+
+        if (getPlatform().getExtensions() != null) {
+            property = new PropertySupport.ReadOnly<String>(
+                    "vm-extensions",  //NOI18N
+                    String.class,
+                    NbBundle.getMessage(RemotePlatformNode.class, "LBL_VmExtensions"),
+                    NbBundle.getMessage(RemotePlatformNode.class, "DESC_VmExtensions")) {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return getPlatform().getExtensions();
+                }
+            };
+            setPlatform.put(property);
+        }
+
+        property = new PropertySupport.ReadOnly<Boolean>(
+                "vm-debug",  //NOI18N
+                Boolean.class,
+                NbBundle.getMessage(RemotePlatformNode.class, "LBL_VmDebug"),
+                NbBundle.getMessage(RemotePlatformNode.class, "DESC_VmDebug")) {
+            @Override
+            public Boolean getValue() throws IllegalAccessException, InvocationTargetException {
+                return getPlatform().canDebug();
+            }
+        };
+        setPlatform.put(property);
+
+        if (getPlatform().getVMType() != null) {
+            property = new PropertySupport.ReadOnly<String>(
+                    "vm-type",  //NOI18N
+                    String.class,
+                    NbBundle.getMessage(RemotePlatformNode.class, "LBL_VmType"),
+                    NbBundle.getMessage(RemotePlatformNode.class, "DESC_VmType")) {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return getPlatform().getVMType();
+                }
+            };
+            setPlatform.put(property);
+        }
+
+        if (getPlatform().getVMTarget() != null) {
+            property = new PropertySupport.ReadOnly<String>(
+                    "vm-target",  //NOI18N
+                    String.class,
+                    NbBundle.getMessage(RemotePlatformNode.class, "LBL_VmTarget"),
+                    NbBundle.getMessage(RemotePlatformNode.class, "DESC_VmTarget")) {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return getPlatform().getVMTarget();
+                }
+            };
+            setPlatform.put(property);
+        }
         sheet.put(setPlatform);
 
         Sheet.Set setSysProperties = Sheet.createPropertiesSet();

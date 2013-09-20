@@ -53,11 +53,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
@@ -72,10 +74,14 @@ public final class RemotePlatform extends JavaPlatform {
 
     public static final String SPEC_NAME = "j2se-remote";  //NOI18N
     public static final String PROP_PROPERTIES="properties";                            //NOI18N
-    public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N
+    public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N    
+    private static final String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
+    private static final String PLAT_PROP_WORK_FOLDER = "platform.work.folder";         //NOI18N
     public static final String PROP_PROFILE = "netbeans.java.profile";                 //NOI18N
-    private final static String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
-    private final static String PLAT_PROP_WORK_FOLDER = "platform.work.folder";   //NOI18N
+    private static final String PROP_VM_TYPE = "netbeans.jvm.type";                     //NOI18N
+    private static final String PROP_VM_TARGET = "netbeans.jvm.target";                 //NOI18N
+    private static final String PROP_VM_EXTENSIONS = "netbeans.java.extensions";        //NOI18N
+    private static final String PROP_VM_DEBUG = "netbeans.jvm.debug";                   //NOI18N
     
     private static final Logger LOG = Logger.getLogger(RemotePlatform.class.getName());
 
@@ -272,6 +278,39 @@ public final class RemotePlatform extends JavaPlatform {
         result.addAll(getConnectionMethod().getBuildProperties());
         return Collections.unmodifiableSet(result);
     }
+
+    @NonNull
+    SourceLevelQuery.Profile getProfile() {
+        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(
+            getProperties().get(PROP_PROFILE));
+        if (profile == null) {
+            profile = SourceLevelQuery.Profile.DEFAULT;
+        }
+        return profile;
+    }
+
+    @CheckForNull
+    String getVMType() {
+        return getProperties().get(PROP_VM_TYPE);
+    }
+
+    @CheckForNull
+    String getVMTarget() {
+        return getProperties().get(PROP_VM_TARGET);
+    }
+
+    @CheckForNull
+    String getExtensions() {
+        return getProperties().get(PROP_VM_EXTENSIONS);
+    }
+
+    boolean canDebug() {
+        final String prop = getProperties().get(PROP_VM_DEBUG);
+        return prop == null ?
+            true :
+            Boolean.parseBoolean(prop);
+    }
+
 
     //Utility methods
     @NonNull
