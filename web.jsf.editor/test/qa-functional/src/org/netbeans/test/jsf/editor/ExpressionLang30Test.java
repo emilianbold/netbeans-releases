@@ -66,11 +66,11 @@ public class ExpressionLang30Test extends GeneralJSF {
         return NbModuleSuite.create(
                 conf.addTest(
                 "testOpenProject",
-//                "testNoErrors",
-                "testCollection"
-//                "testChainedCall",
-//                "testCollectionDetailed",
-//                "testCollectionConstructor"
+                "testNoErrors",
+                "testCollection",
+                "testChainedCall",
+                "testCollectionDetailed",
+                "testCollectionConstructor"
                 ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
