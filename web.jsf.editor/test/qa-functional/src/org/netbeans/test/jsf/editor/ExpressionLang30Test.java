@@ -66,11 +66,12 @@ public class ExpressionLang30Test extends GeneralJSF {
         return NbModuleSuite.create(
                 conf.addTest(
                 "testOpenProject",
-                "testNoErrors",
-                "testCollection",
-                "testChainedCall",
-                "testCollectionDetailed",
-                "testCollectionConstructor").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+//                "testNoErrors",
+                "testCollection"
+//                "testChainedCall",
+//                "testCollectionDetailed",
+//                "testCollectionConstructor"
+                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void testOpenProject() throws Exception {
@@ -98,6 +99,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         EditorOperator eo = new EditorOperator("el30.xhtml");
         eo.setCaretPositionToEndOfLine(9);
         type(eo, "\n #{[1,2].");
+        evt.waitNoEvent(500);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(2000);
         String t = eo.getText(eo.getLineNumber());
