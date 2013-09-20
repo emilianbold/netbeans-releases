@@ -90,10 +90,10 @@ import org.openide.util.NbBundle;
 /**
  * Verify content of
  *
- * @NamedQuery query TODO: good to move warning to query level instead of class
- * level
+ * @NamedQuery query 
+ * 
  */
-@Hint(id = "o.n.m.j2ee.ejbverification.JPQLValidation",
+@Hint(id = "o.n.m.j2ee.jpa.verification.JPQLValidation",
         displayName = "#JPQLValidation.display.name",
         description = "#JPQLValidation.desc",
         category = "javaee/jpa",
@@ -102,7 +102,6 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "JPQLValidation.display.name=JPQL validation",
     "JPQLValidation.desc=Parse and find errors in a jpql query",
-    "JPQLValidation.error=JPQL need to be valid to work properly"
 })
 public class JPQLValidation {
 

@@ -77,7 +77,7 @@ public class JPARulesEngine extends RulesEngine {
     private static final List<Rule<TypeElement>> classRules = new LinkedList<Rule<TypeElement>>();
     
     static{
-        classRules.add(new PersistenceUnitPresent());
+        //classRules.add(new PersistenceUnitPresent());
         classRules.add(new ConsistentAccessType());
         classRules.add(new IdDefinedInHierarchy());
         classRules.add(new HasNoArgConstructor());
