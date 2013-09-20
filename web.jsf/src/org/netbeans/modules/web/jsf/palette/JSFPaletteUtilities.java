@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.web.jsf.palette;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -65,8 +66,11 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.web.jsf.palette.items.PrefixResolver;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
@@ -258,6 +262,11 @@ public final class JSFPaletteUtilities {
             synchronized (JSFPaletteUtilities.class) {
                 if (manager == null) {
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
+                    try {
+                        loader.loadClass(PrefixResolver.class.getName());
+                    } catch (ClassNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     manager = new ScriptEngineManager(loader != null ? loader : Thread.currentThread().getContextClassLoader());
                 }
             }

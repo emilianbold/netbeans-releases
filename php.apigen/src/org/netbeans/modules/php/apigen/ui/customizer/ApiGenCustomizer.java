@@ -73,7 +73,7 @@ public final class ApiGenCustomizer implements ProjectCustomizer.CompositeCatego
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.lookupPhpModule(context);
+        PhpModule phpModule = PhpModule.Factory.lookupPhpModule(context);
         return new ApiGenPanel(category, phpModule);
     }
 

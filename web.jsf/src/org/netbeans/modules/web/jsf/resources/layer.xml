@@ -174,18 +174,22 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                 <attr name="position" intvalue="97"/>
                 <attr name="templateCategory" stringvalue="always-hidden"/>
-                <file name="table.ftl" url="../palette/items/resources/table.ftl">
+                <folder name="JSF">
+                    <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="view.ftl" url="../palette/items/resources/view.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="edit.ftl" url="../palette/items/resources/edit.ftl">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
+                    <file name="table.ftl" url="../palette/items/resources/table.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="view.ftl" url="../palette/items/resources/view.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                    <file name="edit.ftl" url="../palette/items/resources/edit.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
+                </folder>
             </folder>
             <!-- JSP Page -->
             <file name="JSP.jsp" url="templates/JSP.template">

@@ -43,9 +43,17 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListResourceBundle;
 import java.util.Locale;
@@ -58,19 +66,26 @@ import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.verification.CancelListener;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.tools.DefaultJPQLQueryHelper;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.openide.util.NbBundle;
 
 /**
  * Verify content of
@@ -78,35 +93,113 @@ import org.netbeans.spi.editor.hints.Severity;
  * @NamedQuery query TODO: good to move warning to query level instead of class
  * level
  */
-public class JPQLValidation extends JPAClassRule implements CancelListener {
-
-    private ManagedTypeProvider mtp;//need to store as jpql validation may be too long and need to be cancelled if required
-    private DefaultJPQLQueryHelper helper;
+@Hint(id = "o.n.m.j2ee.ejbverification.JPQLValidation",
+        displayName = "#JPQLValidation.display.name",
+        description = "#JPQLValidation.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        suppressWarnings = "JPQLValidation")
+@NbBundle.Messages({
+    "JPQLValidation.display.name=JPQL validation",
+    "JPQLValidation.desc=Parse and find errors in a jpql query",
+    "JPQLValidation.error=JPQL need to be valid to work properly"
+})
+public class JPQLValidation {
 
     /**
      * Creates a new instance of NonFinalClass
      */
-    public JPQLValidation() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
-                ClassConstraints.EMBEDDABLE,
-                ClassConstraints.MAPPED_SUPERCLASS));
-    }
+    @TriggerPatterns(value = {
+        @TriggerPattern(value = "javax.persistence.NamedQuery"),
+        @TriggerPattern(
+                value = "$em.createQuery",
+                constraints =
+                @ConstraintVariableType(
+                variable = "$em",
+                type = "javax.persistence.EntityManager"))
+    })
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || ((hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION) && hc.getVariables().get("$em") == null)) {//NOI18N
+            return null;
+        }
+        boolean emCreate = hc.getVariables().get("$em") != null;
+        Iterator<Tree> it1 = hc.getPath().iterator();
+        int count = 0;
+        //find nq
+        String query = null;
+        TreePath queryPath = null;
+        if (emCreate) {
+            queryPath = hc.getPath();
+            it1.next();
+            Tree tr = it1.next();
+            if (tr instanceof MethodInvocationTree) {
+                for(ExpressionTree et:((MethodInvocationTree )tr).getArguments()) {
 
-    @Override
-    public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx) {
-        JPAProblemContext jpaCtx = (JPAProblemContext) ctx;
-        jpaCtx.addCancelListener(this);
-        Object modEl = ctx.getModelElement();
-        Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
-        helper = new DefaultJPQLQueryHelper (DefaultJPQLGrammar.instance());
-        Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-        HashMap<String,List<JPQLQueryProblem>> problems = new HashMap<String,List<JPQLQueryProblem>>();
-        mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData(), jpaCtx.getCompilationInfo().getElements());
-        int numProblems=0;
-        if (entity != null) {
-            for (NamedQuery nq : entity.getNamedQuery()) {
-                if(nq!=null && nq.getQuery()!=null){
-                    helper.setQuery(new Query(nq, nq.getQuery(), mtp));
+                        if (et instanceof LiteralTree) {
+                            query = ((LiteralTree) et).getValue().toString();
+                            break;
+                        } else if (et instanceof BinaryTree) {
+                            query = queryFromBinaryTree((BinaryTree) et);
+                            break;
+                        } else {
+                            query = null;//can't parse, smth unknown
+                        }
+
+                        if (count++ > 2) {
+                            break;
+                        }
+                }
+            }
+        } else {
+            while (it1.hasNext()) {
+                Tree tr = it1.next();
+                it1.next();
+                if (tr instanceof AnnotationTree) {
+                    AnnotationTree at = (AnnotationTree) tr;
+                    for (ExpressionTree exp : at.getArguments()) {
+                        if (exp instanceof AssignmentTree) {
+                            AssignmentTree ast = (AssignmentTree) exp;
+                            if ("query".equals(ast.getVariable().toString())) { //NOI18N
+                                ExpressionTree et = ast.getExpression();
+                                hc.getInfo().getCompilationUnit().getPackageAnnotations();
+                                queryPath = TreePath.getPath(hc.getInfo().getCompilationUnit(), ast.getVariable());//let's underline queryattribute name only
+                                if (et instanceof LiteralTree) {
+                                    query = ((LiteralTree) et).getValue().toString();
+                                } else if (et instanceof BinaryTree) {
+                                    query = queryFromBinaryTree((BinaryTree) et);
+                                } else {
+                                    query = null;//can't parse, smth unknown
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                if (count++ > 2) {
+                    break;
+                }
+            }
+        }
+        if (query == null || hc.isCanceled()) {
+            return null;
+        }
+        queryPath = queryPath != null ? queryPath : hc.getPath().getParentPath();
+        JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+        final DefaultJPQLQueryHelper helper = new DefaultJPQLQueryHelper(DefaultJPQLGrammar.instance());
+        Project project = FileOwnerQuery.getOwner(hc.getInfo().getFileObject());
+        final List<JPQLQueryProblem> problems = new ArrayList<>();
+        ManagedTypeProvider mtp = ModelUtils.getOrCreateCachedMTP(hc, project, ctx.getMetaData(), ctx.getCompilationInfo().getElements());
+        helper.setQuery(new Query(null, query, mtp));
+
+        try {
+            MetadataModel<EntityMappingsMetadata> model = ModelUtils.getModel(hc.getInfo().getFileObject());
+            model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+                @Override
+                public Void run(EntityMappingsMetadata metadata) {
                     List<JPQLQueryProblem> tmp = null;
                     try {
                         tmp = helper.validate();
@@ -116,58 +209,65 @@ public class JPQLValidation extends JPAClassRule implements CancelListener {
                         JPAProblemFinder.LOG.log(Level.INFO, "NPE in jpql validation: " + ex.getMessage(), ex);
                     }
                     if (tmp != null && tmp.size() > 0) {
-                        numProblems += tmp.size();
-                        String nm = nq.getName();
-                        List<JPQLQueryProblem> existList = problems.get(nm);
-                        if(existList == null) {
-                            existList = new ArrayList<JPQLQueryProblem>();
-                            problems.put(nm, existList);
-                        }
-                        existList.addAll(tmp);
+                        problems.addAll(tmp);
                     }
-                    helper.dispose();
+                    return null;
                 }
-            }
+            });
+        } catch (IOException ex) {
         }
-        ErrorDescription[] ret = null;
-        if (!ctx.isCancelled() && problems != null && problems.size() > 0 && numProblems>0) {
-            ret = new ErrorDescription[numProblems];
+
+        helper.dispose();
+        ErrorDescription ret = null;
+        if (!hc.isCanceled() && problems.size() > 0) {
             ListResourceBundle msgBundle;
             try {
                 msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName());//NOI18N
             } catch (MissingResourceException ex) {//default en
                 msgBundle = (ListResourceBundle) ResourceBundle.getBundle(JPQLQueryProblemResourceBundle.class.getName(), Locale.ENGLISH);//NOI18N
             }
-            int i=0;
-            for(String nm:problems.keySet()){
-                for (JPQLQueryProblem problem:problems.get(nm)) {
-
-                    String message = java.text.MessageFormat.format(msgBundle.getString(problem.getMessageKey()), (Object[]) problem.getMessageArguments());
-                    String pos = "[" + problem.getStartPosition() + ";" + problem.getEndPosition() + "]";
-                    if (nm != null) {
-                        pos = nm + pos;
-                    }
-                    ret[i++] = createProblem(subject, ctx, pos + ": " + message, Severity.WARNING);
-                }
+            StringBuilder sb = new StringBuilder("");
+            for (JPQLQueryProblem problem : problems) {
+                sb.append("[").append(problem.getStartPosition()).append(";").append(problem.getEndPosition()).append("]: ");
+                sb.append(java.text.MessageFormat.format(msgBundle.getString(problem.getMessageKey()), (Object[]) problem.getMessageArguments())).append("\n");
             }
+            ret = ErrorDescriptionFactory.forTree(
+                    hc,
+                    queryPath,
+                    sb.substring(0, sb.length() - 1),
+                    (Fix) null);
         }
-        jpaCtx.removeCancelListener(this);
-        mtp = null;
-        helper = null;
         return ret;
     }
 
-    @Override
+    private static String queryFromBinaryTree(BinaryTree bt) {
+        String query = "";
+        while (bt.getLeftOperand() instanceof BinaryTree) {
+            if (bt.getRightOperand() instanceof LiteralTree) {
+                query = ((LiteralTree) bt.getRightOperand()).getValue().toString() + query;
+            } else {
+                query = null;
+                return query;
+            }
+            bt = (BinaryTree) bt.getLeftOperand();
+        }
+        if (bt.getRightOperand() instanceof LiteralTree) {
+            query = ((LiteralTree) bt.getRightOperand()).getValue().toString() + query;
+        } else {
+            query = null;
+        }
+        if (bt.getLeftOperand() instanceof LiteralTree) {
+            query = ((LiteralTree) bt.getLeftOperand()).getValue().toString() + query;
+        } else {
+            query = null;
+
+        }
+        return query;
+    }
+
     protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
         JPAProblemContext jpaCtx = (JPAProblemContext) ctx;
 
         return (jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
-    }
-
-    @Override
-    public void cancelled() {
-        if (mtp != null) {
-            mtp.invalidate();
-        }
     }
 }

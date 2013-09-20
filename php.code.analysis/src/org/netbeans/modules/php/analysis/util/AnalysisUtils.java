@@ -82,14 +82,14 @@ public final class AnalysisUtils {
     public static Map<FileObject, Integer> countPhpFiles(Scope scope) {
         Map<FileObject, Integer> counts = new HashMap<>();
         for (FileObject root : scope.getSourceRoots()) {
-            counts.put(root, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(root)), root, true));
+            counts.put(root, countPhpFiles(Queries.getVisibilityQuery(PhpModule.Factory.forFileObject(root)), root, true));
         }
         for (FileObject file : scope.getFiles()) {
-            counts.put(file, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(file)), file, true));
+            counts.put(file, countPhpFiles(Queries.getVisibilityQuery(PhpModule.Factory.forFileObject(file)), file, true));
         }
         for (NonRecursiveFolder nonRecursiveFolder : scope.getFolders()) {
             FileObject folder = nonRecursiveFolder.getFolder();
-            counts.put(folder, countPhpFiles(Queries.getVisibilityQuery(PhpModule.forFileObject(folder)), folder, false));
+            counts.put(folder, countPhpFiles(Queries.getVisibilityQuery(PhpModule.Factory.forFileObject(folder)), folder, false));
         }
         return counts;
     }

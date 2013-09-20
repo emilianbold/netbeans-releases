@@ -76,11 +76,7 @@ public class LessSyntaxTest extends GeneralCSSPrep{
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(LessSyntaxTest.PROJECT_NAME);
         evt.waitNoEvent(3000);
-        Node rootNode = new ProjectsTabOperator().getProjectRootNode(LessSyntaxTest.PROJECT_NAME);
-        Node sourceFiles = new Node(rootNode, "Site Root");
-        for (String file : sourceFiles.getChildren()) {
-            openFile(file, LessSyntaxTest.PROJECT_NAME);
-        }
+        openFile("less_syntax.less", LessSyntaxTest.PROJECT_NAME);
         endTest();
     }
     

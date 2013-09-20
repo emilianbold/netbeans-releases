@@ -128,7 +128,7 @@ public class CommandsLineProcessorTest extends NbTestCase {
         return commands;
     }
 
-    private static final class PhpModuleImpl extends PhpModule {
+    private static final class PhpModuleImpl implements PhpModule {
 
         @Override
         public String getName() {
@@ -182,8 +182,19 @@ public class CommandsLineProcessorTest extends NbTestCase {
 
         @Override
         public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public FileObject getTestDirectory(FileObject file) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<FileObject> getTestDirectories() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
+
 }
