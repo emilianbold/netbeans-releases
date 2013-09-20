@@ -256,13 +256,13 @@ public final class StatementNode implements BreadcrumbsElement {
                 case '\n':
                     break loop;
                 case '<':
-                    buf.append("&lt;");
+                    buf.append("&lt;"); //NOI18N
                     break;
                 case '>':
-                    buf.append("&gt;");
+                    buf.append("&gt;"); //NOI18N
                     break;
                 case '&':
-                    buf.append("&amp;");
+                    buf.append("&amp;"); //NOI18N
                     break;
                 default:
                     buf.append(c);
