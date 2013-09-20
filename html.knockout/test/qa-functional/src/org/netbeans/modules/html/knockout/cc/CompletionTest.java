@@ -65,7 +65,9 @@ public class CompletionTest extends GeneralKnockout {
                     "createApplication",
                     "testBindingAttr",
                     "testBindingModel",
-                    "testUsedVariable"
+                    "testUsedVariable",
+                    "testMultipleBindings",
+                    "testMultipleModel"
             ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
   }
 
@@ -90,7 +92,8 @@ public class CompletionTest extends GeneralKnockout {
     startTest();
     EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
     eo.setCaretPositionToEndOfLine(6);
-    eo.insert("\n<div data-bind=\"\"></div>");
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"\"></div>");
     eo.setCaretPosition("\"\"", 0, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
 
@@ -107,11 +110,67 @@ public class CompletionTest extends GeneralKnockout {
     endTest();
   }
 
+  public void testMultipleBindings() {
+    startTest();
+    EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: newVariable, \"></div>");
+    eo.setCaretPosition("le,", 0, true);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+    checkCompletionItems(getBindingTypes(), new String[]{"text", "visible"});
+    eo.pressKey(KeyEvent.VK_ESCAPE);
+
+    type(eo, "v");
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+    assertFalse("Completion contains non-matching item", getBindingTypes().contains("text"));
+    checkCompletionItems(getBindingTypes(), new String[]{"visible"});
+    eo.pressKey(KeyEvent.VK_ESCAPE);
+    cleanLine(eo);
+    endTest();
+  }
+
+  public void testMultipleModel() {
+    startTest();
+    EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: newVariable, visible: \"></div>");
+    eo.setCaretPosition("sble,", 0, true);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    type(eo, " ");
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"gamesToPlay", "gamesCount", "name", "log", "printLastname", "printName", "window", "Math"});
+    completion.listItself.hideAll();
+
+    type(eo, "p");
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+    completion = getCompletion();
+    cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"printLastname", "printName"});
+    checkCompletionDoesntContainItems(cjo, new String[]{"log", "name"});
+    completion.listItself.hideAll();
+    cleanLine(eo);
+    endTest();
+  }
+
   public void testBindingModel() {
     startTest();
     EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
     eo.setCaretPositionToEndOfLine(6);
-    eo.insert("\n<div data-bind=\"text: \"></div>");
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: \"></div>");
     eo.setCaretPosition("t: ", 0, true);
 
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -126,6 +185,7 @@ public class CompletionTest extends GeneralKnockout {
 
     type(eo, "p");
     eo.typeKey(' ', InputEvent.CTRL_MASK);
+    completion = getCompletion();
     cjo = completion.listItself;
     checkCompletionItems(cjo, new String[]{"printLastname", "printName"});
     checkCompletionDoesntContainItems(cjo, new String[]{"log", "name"});
@@ -139,7 +199,8 @@ public class CompletionTest extends GeneralKnockout {
     startTest();
     EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
     eo.setCaretPositionToEndOfLine(6);
-    eo.insert("\n<div data-bind=\"text: newVariable\"></div>");
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: newVariable\"></div>");
     eo.insert("<div data-bind=\"text: \"></div>");
     eo.setCaretPosition("t: ", 1, true);
     eo.pressKey(KeyEvent.VK_RIGHT);

@@ -342,6 +342,7 @@ public class GeneralKnockout extends JellyTestCase {
   }
 
   public final void cleanLine(EditorOperator eo) {
+    eo.setCaretPositionToEndOfLine(eo.getLineNumber());
     String l = eo.getText(eo.getLineNumber());
     for (int i = 0; i < l.length() - 1; i++) {
       eo.pressKey(KeyEvent.VK_BACK_SPACE);
@@ -366,7 +367,9 @@ public class GeneralKnockout extends JellyTestCase {
     JTextComponentOperator jtName = new JTextComponentOperator(jdNew, 2);
 
     jtName.setText(projectName);
+    evt.waitNoEvent(200);
     opNewProjectWizard.finish();
+    evt.waitNoEvent(200);
     waitScanFinished();
 
   }
