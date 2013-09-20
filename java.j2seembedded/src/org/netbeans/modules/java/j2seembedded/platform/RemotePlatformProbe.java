@@ -71,6 +71,7 @@ import org.openide.util.Pair;
 public final class RemotePlatformProbe {
 
     private static final String NB_PROP_PREFIX = "netbeans.";   //NOI18N
+    private static final String PLATFROM_PROP_PREFIX = "platform.";  //NOI18N
 
     private RemotePlatformProbe() {
         throw new IllegalStateException();
@@ -169,7 +170,12 @@ public final class RemotePlatformProbe {
             String key = (String) e.getKey();
             String value = (String) e.getValue();
             if (key.startsWith(NB_PROP_PREFIX)) {
-                properties.put(key, value);
+                properties.put(
+                    String.format(
+                        "%s%s", //NOI18N
+                        PLATFROM_PROP_PREFIX,
+                        key.substring(NB_PROP_PREFIX.length())),
+                    value);
             } else {
                 sysProps.put(key, value);
             }

@@ -316,9 +316,12 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
                     final String antPlatformName = props.get(RemotePlatform.PLAT_PROP_ANT_NAME);
                     final EditableProperties ep = PropertyUtils.getGlobalProperties();                    
                     for (String key : platform.getBuildProperties()) {
-                        ep.setProperty(
-                            createPropertyName(antPlatformName, key),
-                            props.get(key));
+                        final String value = props.get(key);
+                        if (value != null) {
+                            ep.setProperty(
+                                createPropertyName(antPlatformName, key),
+                                value);
+                        }
                     }
                     PropertyUtils.putGlobalProperties(ep);
                     return null;

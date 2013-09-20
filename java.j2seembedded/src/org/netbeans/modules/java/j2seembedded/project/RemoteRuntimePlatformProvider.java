@@ -84,7 +84,7 @@ public class RemoteRuntimePlatformProvider implements J2SERuntimePlatformProvide
         @NonNull final SpecificationVersion targetLevel,
         @NonNull final SourceLevelQuery.Profile profile) {
         final SpecificationVersion platformSpec = jp.getSpecification().getVersion();
-        final String profileName = jp.getProperties().get(RemotePlatform.PROP_PROFILE);
+        final String profileName = jp.getProperties().get(RemotePlatform.PROP_VM_PROFILE);
         SourceLevelQuery.Profile platformProfile = SourceLevelQuery.Profile.forName(profileName);
         if (platformProfile == null) {
             platformProfile = SourceLevelQuery.Profile.DEFAULT;

@@ -77,11 +77,11 @@ public final class RemotePlatform extends JavaPlatform {
     public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N    
     private static final String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
     private static final String PLAT_PROP_WORK_FOLDER = "platform.work.folder";         //NOI18N
-    public static final String PROP_PROFILE = "netbeans.java.profile";                 //NOI18N
-    private static final String PROP_VM_TYPE = "netbeans.jvm.type";                     //NOI18N
-    private static final String PROP_VM_TARGET = "netbeans.jvm.target";                 //NOI18N
-    private static final String PROP_VM_EXTENSIONS = "netbeans.java.extensions";        //NOI18N
-    private static final String PROP_VM_DEBUG = "netbeans.jvm.debug";                   //NOI18N
+    public static final String PROP_VM_PROFILE = "platform.java.profile";                 //NOI18N
+    private static final String PROP_VM_EXTENSIONS = "platform.java.extensions";        //NOI18N
+    private static final String PROP_VM_TYPE = "platform.jvm.type";                     //NOI18N
+    private static final String PROP_VM_TARGET = "platform.jvm.target";                 //NOI18N
+    private static final String PROP_VM_DEBUG = "platform.jvm.debug";                   //NOI18N
     
     private static final Logger LOG = Logger.getLogger(RemotePlatform.class.getName());
 
@@ -275,6 +275,7 @@ public final class RemotePlatform extends JavaPlatform {
         final Set<String> result = new HashSet<>();
         result.add(PLAT_PROP_INSTALL_FOLDER);
         result.add(PLAT_PROP_WORK_FOLDER);
+        result.add(PROP_VM_DEBUG);
         result.addAll(getConnectionMethod().getBuildProperties());
         return Collections.unmodifiableSet(result);
     }
@@ -282,7 +283,7 @@ public final class RemotePlatform extends JavaPlatform {
     @NonNull
     SourceLevelQuery.Profile getProfile() {
         SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(
-            getProperties().get(PROP_PROFILE));
+            getProperties().get(PROP_VM_PROFILE));
         if (profile == null) {
             profile = SourceLevelQuery.Profile.DEFAULT;
         }

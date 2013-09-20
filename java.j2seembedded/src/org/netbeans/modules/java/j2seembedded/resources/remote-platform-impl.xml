@@ -67,6 +67,17 @@
         </macrodef>
     </target>
 
+    <target name="-check-vm-debug" depends="init, -init-remote-platform-properties">
+        <j2seproject1:property name="remote.platform.jvm.debug" value="platforms.${platform.runtime}.platform.jvm.debug"/>
+        <condition property="remote.platform.jvm.debug.available" value="true">
+            <or>
+                <contains string="${remote.platform.jvm.debug}" substring="$${platforms."/>
+                <istrue value="${remote.platform.jvm.debug}"/>
+            </or>
+        </condition>
+        <fail unless="remote.platform.jvm.debug.available" message="The Runtime JVM ${remote.platform.host}:${remote.platform.home.dir} does not support debugging."/>
+    </target>
+
     <target name="-ask-password" unless="remote.platform.password" if="remote.platform.auth.passwd">
         <input message="Password ${remote.platform.user}@${remote.platform.host}:" addproperty="remote.platform.password">
             <handler type="secure"/>
@@ -108,5 +119,5 @@
     </target>
 
     <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -run-remote-passwd, -run-remote-key"/>
-    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -debug-remote-passwd, -debug-remote-key"/>
+    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
 </project>
