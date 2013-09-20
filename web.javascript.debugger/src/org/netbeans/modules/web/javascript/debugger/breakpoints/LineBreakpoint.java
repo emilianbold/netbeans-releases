@@ -47,6 +47,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -135,7 +136,19 @@ public class LineBreakpoint extends AbstractBreakpoint {
             return ;
         }
         LineCookie lineCookie = myLine.getLookup().lookup(LineCookie.class);
-        Line line = lineCookie.getLineSet().getCurrent(lineNumber);
+        Line.Set lineSet = lineCookie.getLineSet();
+        List<? extends Line> lines = lineSet.getLines();
+        if (lines.size() > 0) {
+            int lastLineNumber = lines.get(lines.size() - 1).getLineNumber();
+            if (lineNumber > lastLineNumber) {
+                lineNumber = lastLineNumber;
+            }
+        } else {
+            if (lineNumber > 0) {
+                lineNumber = 0;
+            }
+        }
+        Line line = lineSet.getCurrent(lineNumber);
         setLine(line);
     }
     
