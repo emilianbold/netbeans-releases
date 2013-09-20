@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.commit;
 
+import java.io.File;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.command.Command;
@@ -103,6 +104,7 @@ public class CommitExecutor extends ExecutorSupport {
     protected void commandFinished(ClientRuntime.Result result) {
         
         CommitCommand xcmd = (CommitCommand) cmd;
+        Set<File> committedFiles = new HashSet<File>(Arrays.asList(xcmd.getFiles()));
         
         for (Iterator i = toRefresh.iterator(); i.hasNext();) {
             CommitInformation info = (CommitInformation) i.next();
@@ -114,9 +116,14 @@ public class CommitExecutor extends ExecutorSupport {
             } else if (CommitInformation.REMOVED.equals(type) || CommitInformation.TO_ADD.equals(type)) {
                 repositoryStatus = FileStatusCache.REPOSITORY_STATUS_UNKNOWN;
             }
-            Logger.getLogger(CommitExecutor.class.getName()).log(Level.FINE, "After commit refreshing {0}:::{1}",
-                    new Object[] { info.getFile(), repositoryStatus });
-            cache.refreshCached(info.getFile(), repositoryStatus);
+            File file = info.getFile();
+            committedFiles.remove(file);
+            cache.refreshCached(file, repositoryStatus);
+        }
+        
+        // no the rest oof the files not actually modified on server - meaning they must be up to date ?
+        for (File file : committedFiles) {
+            cache.refreshCached(file, FileStatusCache.REPOSITORY_STATUS_UPTODATE);
         }
 
         if (cmd.hasFailed()) return;
