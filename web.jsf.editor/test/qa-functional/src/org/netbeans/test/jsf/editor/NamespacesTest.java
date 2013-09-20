@@ -170,6 +170,7 @@ public class NamespacesTest extends GeneralJSF {
         eo.setCaretPositionToEndOfLine(9);
         type(eo, ">");
         this.insertElementAndNS(eo, "</div>", "xmlns:jsf=http://xmlns.jcp.org/jsf\"");
+        eo.setCaretPositionToEndOfLine(13);
         int modified = (getAnnotations(eo, 0)).length;
         assertEquals("Unexpected number of annotations", original, modified);
         endTest();
@@ -189,6 +190,7 @@ public class NamespacesTest extends GeneralJSF {
         EditorOperator eo = new EditorOperator("ns.xhtml");
         int original = (getAnnotations(eo, 0)).length;
         this.insertElementAndNS(eo, "<f:view></f:view>", "xmlns:f=http://java.sun.com/jsf/core\"");
+        eo.setCaretPositionToEndOfLine(13);
         int modified = (getAnnotations(eo, 0)).length;
         assertEquals("Unexpected number of annotations", original, modified);
         endTest();
