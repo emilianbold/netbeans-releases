@@ -74,13 +74,13 @@ import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidPrimaryTable
  * @author Tomasz.Slota@Sun.COM
  */
 public class JPARulesEngine extends RulesEngine {
-    private static final List<Rule<TypeElement>> classRules = new LinkedList<Rule<TypeElement>>();
+    private static final List<Rule<TypeElement>> classRules = new LinkedList<>();
     
     static{
-        classRules.add(new PersistenceUnitPresent());
+        //classRules.add(new PersistenceUnitPresent());
         classRules.add(new ConsistentAccessType());
         classRules.add(new IdDefinedInHierarchy());
-        classRules.add(new HasNoArgConstructor());
+        //classRules.add(new HasNoArgConstructor());
         classRules.add(new ValidPrimaryTableName());
         classRules.add(new SerializableClass());
         classRules.add(new PublicClass());
