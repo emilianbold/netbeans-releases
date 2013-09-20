@@ -60,7 +60,7 @@ public final class TplUtils {
         SmartyFramework.Version version = SmartyOptions.getInstance().getSmartyVersion();
 
         if (fo != null) {
-            PhpModule phpModule = PhpModule.forFileObject(fo);
+            PhpModule phpModule = PhpModule.Factory.forFileObject(fo);
 
             // file outside of any PHP project
             if (phpModule != null) {

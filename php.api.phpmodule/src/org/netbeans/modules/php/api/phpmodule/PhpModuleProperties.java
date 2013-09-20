@@ -277,10 +277,11 @@ public final class PhpModuleProperties {
      */
     public interface Factory {
         /**
-         * Create new PHP module properties.
-         * @return new PHP module properties
+         * Get PHP module properties.
+         * @return get PHP module properties
+         * @since 2.31
          */
-        PhpModuleProperties create();
+        PhpModuleProperties getProperties();
     }
 
 }
