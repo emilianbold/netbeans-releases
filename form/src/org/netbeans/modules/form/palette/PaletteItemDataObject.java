@@ -216,7 +216,7 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
      * @param source classpath source type - "jar", "library", "project"
      * @param classpath names of classpath roots - e.g. JAR file paths
      */
-    public static void createFile(FileObject folder, ClassSource classSource)
+    public static FileObject createFile(FileObject folder, ClassSource classSource)
         throws IOException
     {
         String classname = classSource.getClassName();
@@ -243,9 +243,9 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
             buff.append("\" name=\""); // NOI18N
             buff.append(entry.getPicklingName());
             buff.append("\" />\n"); // NOI18N
-            buff.append("  </classpath>\n"); // NOI18N
-            buff.append("</palette_item>\n"); // NOI18N
         }
+        buff.append("  </classpath>\n"); // NOI18N
+        buff.append("</palette_item>\n"); // NOI18N
 
         FileLock lock = itemFile.lock();
         OutputStream os = itemFile.getOutputStream(lock);
@@ -256,6 +256,7 @@ public class PaletteItemDataObject extends MultiDataObject implements CookieSet.
             os.close();
             lock.releaseLock();
         }
+        return itemFile;
     }
 
     // -------

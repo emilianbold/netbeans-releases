@@ -74,7 +74,7 @@ public class LatteLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') ||(c == '_');
+        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '_');
     }
 
     @Override

@@ -81,7 +81,7 @@ import org.openide.util.WeakSet;
 public final class FileObjectFactory {
     public static final Map<File, FileObjectFactory> AllFactories = new HashMap<File, FileObjectFactory>();
     public static boolean WARNINGS = true;
-    final Map<Integer, Object> allIBaseFileObjects = Collections.synchronizedMap(new WeakHashMap<Integer, Object>());
+    final Map<Integer, Object> allIBaseFileObjects = new WeakHashMap<Integer, Object>();
     private BaseFileObj root;
     private static final Logger LOG_REFRESH = Logger.getLogger("org.netbeans.modules.masterfs.REFRESH"); // NOI18N
 
@@ -653,8 +653,9 @@ public final class FileObjectFactory {
     }
     public final BaseFileObj getCachedOnly(final File file, boolean checkExtension) {
         BaseFileObj retval;
+        final Integer id = NamingFactory.createID(file);
         synchronized (allIBaseFileObjects) {
-            final Object value = allIBaseFileObjects.get(NamingFactory.createID(file));
+            final Object value = allIBaseFileObjects.get(id);
             if (value instanceof Reference<?>) {
                 retval = getReference(Collections.nCopies(1, value), file);
             } else {

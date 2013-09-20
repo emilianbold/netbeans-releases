@@ -44,10 +44,12 @@ package org.netbeans.modules.ide.ergonomics.fod;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -117,7 +119,7 @@ public final class FeatureInfo {
             if (key.startsWith(prefXPath)) {
                 try {
                     String xpaths = p.getProperty(key);
-                    for (String xp : xpaths.split(",")) {
+                    for (String xp : safeXPathSplit(xpaths)) {
                         info.projectFile(key.substring(prefXPath.length()), xp, "");
                     }
                 } catch (XPathExpressionException ex) {
@@ -315,6 +317,32 @@ public final class FeatureInfo {
             }
         }
         return map;
+    }
+
+    private static String[] safeXPathSplit(String xpathList) {
+        List<String> xpaths = new ArrayList<String>();
+        boolean inSelector = false;
+        int start = 0, i=0;
+        for (i=0; i<xpathList.length(); i++) {
+            char c = xpathList.charAt(i);
+            switch (c) {
+                case '[':   //NOI18N
+                    inSelector = true;
+                    break;
+                case ']':   //NOI18N
+                    inSelector = false;
+                    break;
+                case ',':   //NOI18N
+                    if (!inSelector) {
+                        String xpath = xpathList.substring(0, i);
+                        start = i + 1;
+                        xpaths.add(xpath);
+                    }
+                    break;
+            }
+        }
+        xpaths.add(xpathList.substring(start, i));
+        return xpaths.toArray(new String[xpaths.size()]);
     }
 
 }

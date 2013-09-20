@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.php.project.ui.actions.support;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -82,8 +84,8 @@ class ConfigActionTest extends ConfigAction {
         return project.getLookup().lookup(PhpCoverageProvider.class);
     }
 
-    protected FileObject getTestDirectory(boolean showCustomizer) {
-        return ProjectPropertiesSupport.getTestDirectory(project, showCustomizer);
+    protected List<FileObject> getTestDirectories(boolean showCustomizer) {
+        return ProjectPropertiesSupport.getTestDirectories(project, showCustomizer);
     }
 
     @Override
@@ -148,11 +150,11 @@ class ConfigActionTest extends ConfigAction {
     @Override
     public void runProject() {
         // first, let user select test directory
-        FileObject testDirectory = getTestDirectory(true);
-        if (testDirectory == null) {
+        List<FileObject> testDirs = getTestDirectories(true);
+        if (testDirs.isEmpty()) {
             return;
         }
-        TestRunInfo testRunInfo = getTestRunInfoForDir(testDirectory, false);
+        TestRunInfo testRunInfo = getTestRunInfoForDirs(testDirs, false);
         assert testRunInfo != null;
         run(testRunInfo);
     }
@@ -215,19 +217,24 @@ class ConfigActionTest extends ConfigAction {
     }
 
     @CheckForNull
-    private TestRunInfo getTestRunInfoForDir(FileObject dir, boolean debug) {
-        assert dir != null;
-        assert dir.isFolder() : dir;
-
-        if (!dir.isValid()) {
-            return null;
-        }
+    private TestRunInfo getTestRunInfoForDirs(List<FileObject> dirs, boolean debug) {
+        assert dirs != null;
         return new TestRunInfo.Builder()
                 .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
-                .setWorkingDirectory(dir)
-                .setStartFile(dir)
+                .setStartFiles(getValidFolders(dirs))
                 .setCoverageEnabled(getCoverageProvider().isEnabled())
                 .build();
+    }
+
+    private List<FileObject> getValidFolders(List<FileObject> dirs) {
+        List<FileObject> validDirs = new ArrayList<>(dirs.size());
+        for (FileObject dir : dirs) {
+            assert dir.isFolder() : dir;
+            if (dir.isValid()) {
+                validDirs.add(dir);
+            }
+        }
+        return validDirs;
     }
 
     @CheckForNull
@@ -238,19 +245,15 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        final FileObject workDir;
         final String name;
         if (fileObj.isFolder()) {
             // #195525 - run tests in folder
-            workDir = fileObj;
             name = fileObj.getNameExt();
         } else {
-            workDir = fileObj.getParent();
             name = fileObj.getName();
         }
         return new TestRunInfo.Builder()
                 .setSessionType(debug ? TestRunInfo.SessionType.DEBUG : TestRunInfo.SessionType.TEST)
-                .setWorkingDirectory(workDir)
                 .setStartFile(fileObj)
                 .setSuiteName(name)
                 .setCoverageEnabled(getCoverageProvider().isEnabled())

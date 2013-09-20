@@ -78,7 +78,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
+ * GlassFish server support API.
+ * <p/>
  * @author Peter Williams, Tomas Kraus
  */
 public class CommonServerSupport

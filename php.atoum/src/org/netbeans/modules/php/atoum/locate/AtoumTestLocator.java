@@ -43,6 +43,7 @@ package org.netbeans.modules.php.atoum.locate;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -71,16 +72,16 @@ public class AtoumTestLocator implements TestLocator {
     @Override
     public Set<Locations.Offset> findSources(FileObject testFile) {
         assert phpModule.getSourceDirectory() != null : "Source directory must exist";
-        return find(phpModule.getSourceDirectory(), testFile);
+        return find(Collections.singletonList(phpModule.getSourceDirectory()), testFile);
     }
 
     @Override
     public Set<Locations.Offset> findTests(FileObject testedFile) {
-        assert phpModule.getTestDirectory() != null : "Test directory must exist";
-        return find(phpModule.getTestDirectory(), testedFile);
+        assert !phpModule.getTestDirectories().isEmpty() : "Test directory must exist";
+        return find(phpModule.getTestDirectories(), testedFile);
     }
 
-    private Set<Locations.Offset> find(FileObject sourceRoot, FileObject file) {
+    private Set<Locations.Offset> find(List<FileObject> sourceRoots, FileObject file) {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
 
@@ -90,18 +91,24 @@ public class AtoumTestLocator implements TestLocator {
                 return o1.getFile().getPath().compareTo(o2.getFile().getPath());
             }
         });
+        List<Locations.Offset> results = new ArrayList<>();
         for (PhpClass phpClass : editorSupport.getClasses(file)) {
+            results.clear();
             // prefer FQN
-            Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, phpClass);
-            List<Locations.Offset> results = filterPhpFiles(sourceRoot, files);
+            for (FileObject sourceRoot : sourceRoots) {
+                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, phpClass);
+                results.addAll(filterPhpFiles(sourceRoot, files));
+            }
             if (!results.isEmpty()) {
                 phpFiles.addAll(results);
                 continue;
             }
             // #221816 - search only by class name
-            files = editorSupport.filesForClass(sourceRoot, new PhpClass(phpClass.getName(), null, -1));
-            results = filterPhpFiles(sourceRoot, files);
-            phpFiles.addAll(results);
+            for (FileObject sourceRoot : sourceRoots) {
+                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(phpClass.getName(), null, -1));
+                results = filterPhpFiles(sourceRoot, files);
+                phpFiles.addAll(results);
+            }
         }
         return phpFiles;
     }

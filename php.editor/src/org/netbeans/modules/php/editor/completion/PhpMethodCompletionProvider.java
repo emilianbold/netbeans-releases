@@ -39,77 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.masterfs.watcher.solaris;
+package org.netbeans.modules.php.editor.completion;
 
-import java.io.IOException;
-import java.nio.file.ClosedWatchServiceException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
-import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
-import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
-import org.netbeans.modules.masterfs.providers.Notifier;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Egor Ushakov <gorrus@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service=Notifier.class, position=1010)
-public class NioNotifier extends Notifier<WatchKey> {
-    private final WatchService watcher;
+public final class PhpMethodCompletionProvider implements MethodCompletionProvider {
+    private static final PhpMethodCompletionProvider INSTANCE = new PhpMethodCompletionProvider();
 
-    public NioNotifier() throws IOException {
-        this.watcher = FileSystems.getDefault().newWatchService();
+    @MethodCompletionProvider.Registration(position = 100)
+    public static PhpMethodCompletionProvider getInstance() {
+        return INSTANCE;
     }
-    
-    @Override
-    protected WatchKey addWatch(String pathStr) throws IOException {
-        Path path = Paths.get(pathStr);
-        try {
-            WatchKey key = path.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-            return key;
-        } catch (ClosedWatchServiceException ex) {
-            throw new IOException(ex);
-        }
+
+    private PhpMethodCompletionProvider() {
     }
 
     @Override
-    protected void removeWatch(WatchKey key) throws IOException {
-        try {
-            key.cancel();
-        } catch (ClosedWatchServiceException ex) {
-            throw new IOException(ex);
-        }
-    }
-
-    @Override
-    protected String nextEvent() throws IOException, InterruptedException {
-        WatchKey key = watcher.take();
-        Path dir = (Path)key.watchable();
-               
-        String res = dir.toAbsolutePath().toString();
-        for (WatchEvent<?> event: key.pollEvents()) {
-            if (event.kind() == OVERFLOW) {
-                // full rescan
-                res = null;
+    public Set<String> complete(String prefix, String typeName, FileObject fileObject) {
+        Set<String> result = new HashSet<>();
+        if (typeName != null && !typeName.isEmpty()) {
+            ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+            Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(typeName));
+            for (TypeElement typeElement : types) {
+                Set<MethodElement> accessibleMethods = indexQuery.getAccessibleMethods(typeElement, typeElement);
+                Set<MethodElement> filteredMethods = ElementFilter.forName(NameKind.prefix(prefix)).filter(accessibleMethods);
+                for (MethodElement methodElement : filteredMethods) {
+                    result.add(methodElement.asString(BaseFunctionElement.PrintAs.NameAndParamsInvocation).trim());
+                }
             }
         }
-        key.reset();
-        return res;
+        return result;
     }
 
-    @Override
-    protected void start() throws IOException {
-    }
-
-    @Override
-    protected void stop() throws IOException {
-        watcher.close();
-    }
 }

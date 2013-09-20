@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  */
 public interface TwigDocumentationFactory {
 
-    public TwigDocumentation create(String elementName);
+    TwigDocumentation create(String elementName);
 
     public abstract static class BaseDocumentationFactory implements TwigDocumentationFactory {
 
@@ -71,7 +71,7 @@ public interface TwigDocumentationFactory {
 
     }
 
-    public static class TagDocumentationFactory extends BaseDocumentationFactory {
+    public static final class TagDocumentationFactory extends BaseDocumentationFactory {
 
         private static final TwigDocumentationFactory INSTANCE = new TagDocumentationFactory();
 
@@ -89,7 +89,7 @@ public interface TwigDocumentationFactory {
 
     }
 
-    public static class FilterDocumentationFactory extends BaseDocumentationFactory {
+    public static final class FilterDocumentationFactory extends BaseDocumentationFactory {
 
         private static final TwigDocumentationFactory INSTANCE = new FilterDocumentationFactory();
 
@@ -107,7 +107,7 @@ public interface TwigDocumentationFactory {
 
     }
 
-    public static class FunctionDocumentationFactory extends BaseDocumentationFactory {
+    public static final class FunctionDocumentationFactory extends BaseDocumentationFactory {
 
         private static final TwigDocumentationFactory INSTANCE = new FunctionDocumentationFactory();
 
@@ -125,7 +125,7 @@ public interface TwigDocumentationFactory {
 
     }
 
-    public static class TestDocumentationFactory extends BaseDocumentationFactory {
+    public static final class TestDocumentationFactory extends BaseDocumentationFactory {
 
         private static final TwigDocumentationFactory INSTANCE = new TestDocumentationFactory();
 
@@ -143,7 +143,7 @@ public interface TwigDocumentationFactory {
 
     }
 
-    public static class OperatorDocumentationFactory extends BaseDocumentationFactory {
+    public static final class OperatorDocumentationFactory extends BaseDocumentationFactory {
 
         private static final TwigDocumentationFactory INSTANCE = new OperatorDocumentationFactory();
 

@@ -109,8 +109,8 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Factory;
-import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -221,7 +221,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             return;
         }
 
-        int wildcard = GoToTypeAction.containsWildCard(text);
+        int wildcard = Utils.containsWildCard(text);
         QuerySupport.Kind nameKind;
 
         if (exact) {
@@ -230,8 +230,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
         else if (wildcard != -1) {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+            text = Utils.removeNonNeededWildCards(text);
         }
-        else if ((GoToTypeAction.isAllUpper(text) && text.length() > 1) || GoToTypeAction.isCamelCase(text)) {
+        else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
             nameKind = QuerySupport.Kind.CAMEL_CASE;
         }
         else {
@@ -312,6 +313,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         initSearchText = recentPane.getSelectedText();
                     }
                     if (initSearchText != null) {
+                        if (initSearchText.length() > 256) {
+                            initSearchText = initSearchText.substring(0, 256);
+                        }
                         panel.setInitialText(initSearchText);
                     } else {
                         FileObject fo = arr[0].getLookup().lookup(FileObject.class);
@@ -418,7 +422,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             // Clean caches
             dialog.dispose();
             this.dialog = null;
-            //GoToTypeAction.this.cache = null;
             FileSearchOptions.flush();
         }
     }

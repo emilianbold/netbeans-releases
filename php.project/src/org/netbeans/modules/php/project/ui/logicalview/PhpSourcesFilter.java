@@ -98,7 +98,12 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         }
 
         private boolean isTestDirectory(FileObject file) {
-            return isDirectory(file, ProjectPropertiesSupport.getTestDirectory(project, false));
+            for (FileObject root : ProjectPropertiesSupport.getTestDirectories(project, false)) {
+                if (isDirectory(file, root)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private boolean isSeleniumDirectory(FileObject file) {

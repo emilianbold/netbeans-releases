@@ -54,7 +54,7 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteCompletionContextFinder {
+public final class LatteCompletionContextFinder {
     private static final List<Object[]> FILTER_TOKEN_CHAINS = Arrays.asList(
             new Object[]{ValuedTokenId.HELPER_TOKEN},
             new Object[]{ValuedTokenId.HELPER_TOKEN, LatteMarkupTokenId.T_SYMBOL}
@@ -72,6 +72,9 @@ public class LatteCompletionContextFinder {
             new Object[]{LatteMarkupTokenId.T_MACRO_END, LatteMarkupTokenId.T_SYMBOL}
     );
 
+    private LatteCompletionContextFinder() {
+    }
+
     public static LatteCompletionContext find(LatteParserResult parserResult, int caretOffset) {
         LatteCompletionContext result = LatteCompletionContext.NONE;
         TokenSequence<? extends LatteMarkupTokenId> ts = LatteLexerUtils.getLatteMarkupTokenSequence(parserResult.getSnapshot(), caretOffset);
@@ -81,7 +84,10 @@ public class LatteCompletionContextFinder {
                 result = findContext(ts);
             }
         } else {
-            TokenSequence<? extends LatteTopTokenId> tts = LatteLexerUtils.getTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), caretOffset, LatteTopTokenId.language());
+            TokenSequence<? extends LatteTopTokenId> tts = LatteLexerUtils.getTokenSequence(
+                    parserResult.getSnapshot().getTokenHierarchy(),
+                    caretOffset,
+                    LatteTopTokenId.language());
             if (tts != null) {
                 result = LatteCompletionContext.EMPTY_DELIMITERS;
             }

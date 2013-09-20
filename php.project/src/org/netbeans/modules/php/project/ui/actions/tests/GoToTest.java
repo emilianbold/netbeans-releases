@@ -43,10 +43,12 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -62,6 +64,7 @@ import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.gototest.TestLocator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -157,8 +160,8 @@ public class GoToTest implements TestLocator {
     }
 
     private static LocationResult findFile(PhpProject project, FileObject file, boolean searchTest) {
-        final FileObject sourceRoot = searchTest ? getTests(project) : getSources(project);
-        if (sourceRoot == null) {
+        List<FileObject> sourceRoots = searchTest ? getTests(project) : getSources(project);
+        if (sourceRoots.isEmpty()) {
             return null;
         }
         List<PhpTestingProvider> testingProviders = project.getTestingProviders();
@@ -194,7 +197,14 @@ public class GoToTest implements TestLocator {
         for (Locations.Offset location : phpFiles.values()) {
             files.add(location.getFile());
         }
-        FileObject selected = SelectFilePanel.open(sourceRoot, files);
+        final List<FileObject> sourceRootsCopy = new CopyOnWriteArrayList<>(sourceRoots);
+        final List<FileObject> filesCopy = new CopyOnWriteArrayList<>(files);
+        FileObject selected = Mutex.EVENT.readAccess(new Mutex.Action<FileObject>() {
+            @Override
+            public FileObject run() {
+                return SelectFilePanel.open(sourceRootsCopy, filesCopy);
+            }
+        });
         if (selected != null) {
             int offset = -1;
             for (Locations.Offset location : phpFiles.values()) {
@@ -208,13 +218,14 @@ public class GoToTest implements TestLocator {
         return null;
     }
 
-    private static FileObject getSources(PhpProject project) {
+    private static List<FileObject> getSources(PhpProject project) {
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
         assert sources != null : "Project sources must be found for " + project;
-        return sources;
+        return Collections.singletonList(sources);
     }
 
-    private static FileObject getTests(PhpProject project) {
-        return ProjectPropertiesSupport.getTestDirectory(project, false);
+    private static List<FileObject> getTests(PhpProject project) {
+        return ProjectPropertiesSupport.getTestDirectories(project, false);
     }
+
 }

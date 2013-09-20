@@ -61,7 +61,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl extends PhpModule {
+public class PhpModuleImpl implements PhpModule {
     private final PhpProject phpProject;
 
     public PhpModuleImpl(PhpProject phpProject) {
@@ -94,8 +94,18 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
+    public List<FileObject> getTestDirectories() {
+        return ProjectPropertiesSupport.getTestDirectories(phpProject, false);
+    }
+
+    @Override
+    public FileObject getTestDirectory(FileObject file) {
+        return ProjectPropertiesSupport.getTestDirectory(phpProject, file, false);
+    }
+
+    @Override
     public FileObject getTestDirectory() {
-        return ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+        return getTestDirectory(null);
     }
 
     @Override
@@ -154,7 +164,7 @@ public class PhpModuleImpl extends PhpModule {
         }
 
         @Override
-        public PhpModuleProperties create() {
+        public PhpModuleProperties getProperties() {
             PhpModuleProperties properties = new PhpModuleProperties();
             properties = setEncoding(properties);
             properties = setWebRoot(properties);
@@ -174,7 +184,8 @@ public class PhpModuleImpl extends PhpModule {
         }
 
         private PhpModuleProperties setTests(PhpModuleProperties properties) {
-            FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, false);
+            // XXX
+            FileObject tests = ProjectPropertiesSupport.getTestDirectory(phpProject, null, false);
             if (tests != null) {
                 properties = properties.setTests(tests);
             }

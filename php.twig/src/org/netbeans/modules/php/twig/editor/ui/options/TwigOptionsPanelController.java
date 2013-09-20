@@ -49,10 +49,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location=TwigOptionsPanelController.OPTIONS_PATH,
-    id=TwigOptionsPanelController.OPTIONS_SUB_PATH,
-    displayName="#LBL_TwigOptionsName",
-    position=1000
+    location = TwigOptionsPanelController.OPTIONS_PATH,
+    id = TwigOptionsPanelController.OPTIONS_SUB_PATH,
+    displayName = "#LBL_TwigOptionsName",
+    position = 1000
 )
 public final class TwigOptionsPanelController extends OptionsPanelController {
     /**

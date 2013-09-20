@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
         </goals>
         <properties>
             <jpda.listen>true</jpda.listen>
-            <netbeans.run.params.ide>-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=${jpda.address}</netbeans.run.params.ide>
+            <netbeans.run.params.debug>-J-Xdebug -J-Xrunjdwp:transport=dt_socket,suspend=n,server=n,address=${jpda.address}</netbeans.run.params.debug>
         </properties>
     </action>
     <action>
@@ -78,9 +78,6 @@ made subject to such option by the copyright holder.
             <goal>nbm:cluster-app</goal>
             <goal>nbm:run-platform</goal>
         </goals>
-        <properties>
-            <netbeans.run.params.ide/>
-        </properties>
     </action>
     <action>
         <actionName>nbmreload</actionName>
@@ -100,7 +97,7 @@ made subject to such option by the copyright holder.
             <goal>nbm:run-platform</goal>
         </goals>
         <properties>
-            <netbeans.run.params>--reload ${module}</netbeans.run.params>
+            <netbeans.run.params.debug>--reload ${module}</netbeans.run.params.debug>
         </properties>
     </action>
     <action>

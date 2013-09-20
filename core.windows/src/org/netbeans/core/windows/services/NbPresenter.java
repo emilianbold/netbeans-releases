@@ -249,7 +249,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         //opaque.
         getRootPane().setOpaque(true);
         
-        if (d instanceof WizardDescriptor) {
+        if (d instanceof WizardDescriptor || d.isNoDefaultClose() ) {
             // #81938: wizard close button shouln't work during finish progress
             setDefaultCloseOperation (WindowConstants.DO_NOTHING_ON_CLOSE);
         } else {
@@ -1155,6 +1155,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
             update = true;
         } else if (DialogDescriptor.PROP_TITLE.equals(evt.getPropertyName())) {
             setTitle(descriptor.getTitle());
+        } else if (DialogDescriptor.PROP_NO_DEFAULT_CLOSE.equals(evt.getPropertyName())) {
+            setDefaultCloseOperation( descriptor instanceof WizardDescriptor || descriptor.isNoDefaultClose()
+                    ? JDialog.DO_NOTHING_ON_CLOSE : JDialog.DISPOSE_ON_CLOSE );
         } else if (DialogDescriptor.PROP_HELP_CTX.equals(evt.getPropertyName())) {
             // bugfix #40057, restore focus owner after help update
             Component fo = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getFocusOwner ();
@@ -1283,6 +1286,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action<Void>, Comparato
         }
 
         public void actionPerformed(ActionEvent e) {
+            if( !descriptor.isNoDefaultClose() )
             buttonListener.actionPerformed(e);
         }
         

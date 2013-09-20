@@ -139,10 +139,12 @@ public class LatteHtmlExtension extends HtmlExtension {
                     OpenTag ot = (OpenTag) element;
                     String name = ot.unqualifiedName().toString();
                     Collection<CustomAttribute> customAttributes = getCustomAttributes(name);
-                    for(CustomAttribute ca : customAttributes) {
+                    for (CustomAttribute ca : customAttributes) {
                         items.add(new LatteAttributeCompletionItem(ca, context.getCCItemStartOffset()));
                     }
                     break;
+                default:
+                    // no-op
             }
         }
         if (context.getPrefix().length() > 0) {
@@ -150,7 +152,7 @@ public class LatteHtmlExtension extends HtmlExtension {
             Iterator<CompletionItem> itr = items.iterator();
             while (itr.hasNext()) {
                 CharSequence insertPrefix = itr.next().getInsertPrefix();
-                if(insertPrefix != null) {
+                if (insertPrefix != null) {
                     if (!LexerUtils.startsWith(insertPrefix, context.getPrefix(), true, false)) {
                         itr.remove();
                     }

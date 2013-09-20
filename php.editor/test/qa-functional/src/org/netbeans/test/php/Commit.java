@@ -43,9 +43,7 @@
  */
 package org.netbeans.test.php;
 
-import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -228,12 +226,6 @@ public class Commit extends GeneralPHP {
             int iAnnotations,
             int iWarningsExpected) {
         waitScanFinished();
-        // Check file in tree
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(
-                sProjectName + "|" + NbBundle.getBundle("org.netbeans.modules.php.project.Bundle").getString("LBL_Node_Sources") + "|" + sFileName);
-        prn.select();
-
         // Check file opened
         EditorOperator eoPHP = new EditorOperator(sFileName);
 

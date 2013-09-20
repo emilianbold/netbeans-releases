@@ -80,7 +80,7 @@ public class LatteParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
     }
 
-    public static class LatteParserResult extends ParserResult {
+    public static final class LatteParserResult extends ParserResult {
 
         private LatteParserResult(Snapshot s) {
             super(s);

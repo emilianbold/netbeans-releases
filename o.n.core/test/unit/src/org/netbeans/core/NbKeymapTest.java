@@ -47,9 +47,13 @@ package org.netbeans.core;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.spi.FileSystemProvider;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -76,7 +80,22 @@ public class NbKeymapTest extends NbTestCase {
     }
 
     static {
+        initFileSystemProvider();
         System.setProperty("os.name", "Linux"); // just to standardize modifier key binding
+    }
+
+    /**
+     * Initialize the FileSystemProvider. This method should be called before
+     * system property os.name is set. See see bug 235739.
+     */
+    private static void initFileSystemProvider() {
+        try {
+            FileSystemProvider.installedProviders();
+            new File(".").isFile();
+        } catch (Exception e) {
+            Logger.getLogger(NbKeymapTest.class.getName()).log(
+                    Level.INFO, null, e);
+        }
     }
 
     protected @Override void setUp() throws Exception {

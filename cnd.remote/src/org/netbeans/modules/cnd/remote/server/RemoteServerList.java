@@ -43,11 +43,13 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -65,10 +67,14 @@ import org.netbeans.modules.cnd.spi.remote.ServerListImplementation;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -435,15 +441,26 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         }
         if (SwingUtilities.isEventDispatchThread()) {
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
+        }        
+        if (!CndPathUtilities.isPathAbsolute(path)) {
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(env, "/usr/bin/which", path); // NOI18N
+            if (res.isOK()) {
+                path = res.output;
+            } else {
+                return false;
+            }
         }
-        int exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", path); // NOI18N
-        if (exit_status != 0 && !CndPathUtilities.isPathAbsolute(path)) {
-            // Validate 'path' against user's PATH.
-            exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", "`/usr/bin/which " + path + "`"); // NOI18N
+        try {
+            FileInfoProvider.StatInfo info = FileInfoProvider.stat(env, path, new PrintWriter(System.err)).get();
+            return info.canExecute(env);
+        } catch (InterruptedException ex) {
+            return false;
+        } catch (ExecutionException ex) {
+            RemoteUtil.LOGGER.log(Level.FINE, ex.getMessage(), ex);
+            return false;
         }
-        return exit_status == 0;
     }
-
+    
     @Override
     public Collection<? extends ServerRecord> getRecords() {
         return new ArrayList<RemoteServerRecord>(items);

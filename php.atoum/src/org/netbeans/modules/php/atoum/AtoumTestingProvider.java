@@ -96,10 +96,10 @@ public class AtoumTestingProvider implements PhpTestingProvider {
         if (!FileUtils.isPhpFile(fileObj)) {
             return false;
         }
-        FileObject testDirectory = phpModule.getTestDirectory();
-        if (testDirectory != null
-                && FileUtil.isParentOf(testDirectory, fileObj)) {
-            return true;
+        for (FileObject testDirectory : phpModule.getTestDirectories()) {
+            if (FileUtil.isParentOf(testDirectory, fileObj)) {
+                return true;
+            }
         }
         return false;
     }

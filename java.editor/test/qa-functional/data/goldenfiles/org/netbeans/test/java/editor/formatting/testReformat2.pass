@@ -78,6 +78,7 @@ public class testReformat2<E> extends ArrayList<E> implements List<E> {
 
         public myButton() {
             this.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent arg0) {
                     //              a8888b.
                     //             d888888b.

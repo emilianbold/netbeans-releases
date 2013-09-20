@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,16 +47,15 @@ package org.netbeans.modules.glassfish.common.nodes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.glassfish.spi.PluggableNodeProvider;
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.spi.PluggableNodeProvider;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -73,14 +72,16 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
     
     private GlassfishInstance serverInstance;
     
+    @SuppressWarnings("LeakingThisInConstructor")
     Hk2InstanceChildren(GlassfishInstance instance) {
         serverInstance = instance;
-        serverInstance.addChangeListener(WeakListeners.change(this, serverInstance));
+        serverInstance.getCommonSupport().addChangeListener(
+                WeakListeners.change(this, serverInstance));
     }
 
     @Override
     public void updateKeys(){
-        Vector<Node> keys = new Vector<Node>();
+        List<Node> keys = new LinkedList<Node>();
         serverInstance.getCommonSupport().refresh();
         if(serverInstance.getServerState() == ServerState.RUNNING) {
             keys.add(new Hk2ItemNode(serverInstance.getLookup(), 
@@ -134,37 +135,36 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
 
     List<Node> getExtensionNodes() {
        List<Node> nodesList = new ArrayList<Node>();
-       CommonServerSupport serverSupport = serverInstance.getCommonSupport();
-       Iterator ps = Lookup.getDefault().lookupAll(PluggableNodeProvider.class).iterator();
-       while (ps.hasNext()) {
-           PluggableNodeProvider nep = (PluggableNodeProvider)ps.next();
-           if (nep != null) {
-               try {
-                   Node node = nep.getPluggableNode(serverSupport.getInstanceProperties());
-                   if (node != null) {
-                       nodesList.add(node);
-                   }
-               } catch (Exception ex) {
-                   Logger.getLogger("glassfish-common").log(Level.SEVERE,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()));
-                   Logger.getLogger("glassfish-common").log(Level.FINER,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()), ex);
-               } catch (AssertionError ae) {
-                   Logger.getLogger("glassfish-common").log(Level.SEVERE,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()+".")); // NOI18N
-                   Logger.getLogger("glassfish-common").log(Level.FINER,
-                           NbBundle.getMessage(Hk2InstanceChildren.class,
-                           "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
-                           nep.getClass().getName()), ae);
-               }
-            }
-       }
+        for (PluggableNodeProvider nep
+                : Lookup.getDefault().lookupAll(PluggableNodeProvider.class)) {
+            if (nep != null) {
+                try {
+                    Node node = nep.getPluggableNode(
+                            serverInstance.getProperties());
+                    if (node != null) {
+                        nodesList.add(node);
+                    }
+                } catch (Exception ex) {
+                    Logger.getLogger("glassfish-common").log(Level.SEVERE,
+                            NbBundle.getMessage(Hk2InstanceChildren.class,
+                            "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                            nep.getClass().getName()));
+                    Logger.getLogger("glassfish-common").log(Level.FINER,
+                            NbBundle.getMessage(Hk2InstanceChildren.class,
+                            "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                            nep.getClass().getName()), ex);
+                } catch (AssertionError ae) {
+                    Logger.getLogger("glassfish-common").log(Level.SEVERE,
+                            NbBundle.getMessage(Hk2InstanceChildren.class,
+                            "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                            nep.getClass().getName()+".")); // NOI18N
+                    Logger.getLogger("glassfish-common").log(Level.FINER,
+                            NbBundle.getMessage(Hk2InstanceChildren.class,
+                            "WARN_BOGUS_GET_EXTENSION_NODE_IMPL", // NOI18N
+                            nep.getClass().getName()), ae);
+                }
+             }
+        }
        return nodesList;
    }
 }

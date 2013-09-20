@@ -95,6 +95,7 @@ public class ExpressionLangTest extends GeneralJSP {
         EditorOperator eo = new EditorOperator("index.jsp");
         eo.setCaretPositionToLine(18);
         type(eo, "${");
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
         eo.pressKey(java.awt.event.KeyEvent.VK_LEFT);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);

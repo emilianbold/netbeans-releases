@@ -120,7 +120,7 @@ public class IndentCasesTest extends J2eeTestCase {
     }
 
     public void testJSPSmartEnter() throws Exception {
-        testJSP(22, 21, 23, 19);
+        testJSP(22, 21, 23, 17);
     }
 
     public void testJSPOpenTagIndent() throws Exception {
@@ -136,7 +136,7 @@ public class IndentCasesTest extends J2eeTestCase {
     }
 
     public void testJSPScriptletStart() throws Exception {
-        testJSP(29, 11, 30, 9);
+        testJSP(29, 11, 30, 11);
     }
 
     public void testJSPScriptletIfBlock() throws Exception {
@@ -168,7 +168,7 @@ public class IndentCasesTest extends J2eeTestCase {
     }
 
     public void testHTMLSmartEnter() throws Exception {
-        testHTML(14, 21, 15, 19);
+        testHTML(14, 21, 15, 17);
     }
 
     public void testHTMLOpenTagIndent() throws Exception {

@@ -43,9 +43,11 @@
 package org.netbeans.modules.php.api.phpmodule;
 
 import java.beans.PropertyChangeEvent;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -58,65 +60,78 @@ import org.openide.windows.WindowManager;
 
 /**
  * This class could be useful for extending a PHP project.
- * <p>
- * Note: For public API, this should likely be final class using accessor pattern.
- * @author Tomas Mysik
+ * @since 2.32
  */
-public abstract class PhpModule implements Lookup.Provider {
+public interface PhpModule extends Lookup.Provider {
 
     /**
      * Property for frameworks.
      * @see #propertyChanged(PropertyChangeEvent)
-     * @since 2.4
      */
-    public static final String PROPERTY_FRAMEWORKS = "PROPERTY_FRAMEWORKS"; // NOI18N
+    String PROPERTY_FRAMEWORKS = "PROPERTY_FRAMEWORKS"; // NOI18N
 
     /**
-     * See {@link org.netbeans.api.project.ProjectInformation#getName}.
+     * Get name (identifier) of the PHP module.
+     * @return name (identifier) of the PHP module
+     * @see #getDisplayName()
+     * @see org.netbeans.api.project.ProjectInformation#getName
      */
     @NonNull
-    public abstract String getName();
+    String getName();
 
     /**
-     * See {@link org.netbeans.api.project.ProjectInformation#getDisplayName}.
+     * Get display name of the PHP module.
+     * @return display name of the PHP module
+     * @see #getName()
+     * @see org.netbeans.api.project.ProjectInformation#getDisplayName
      */
     @NonNull
-    public abstract String getDisplayName();
+    String getDisplayName();
 
     /**
      * CHeck whether the PHP module is broken (e.g. missing Source Files).
      * @return {@code true} if the PHP module is broken, {@code false} otherwise
      */
-    public abstract boolean isBroken();
+    boolean isBroken();
 
     /**
      * Get the project directory for this PHP module.
      * @return the project directory, never <code>null</code>
      */
     @NonNull
-    public abstract FileObject getProjectDirectory();
+    FileObject getProjectDirectory();
 
     /**
-     * Get the source directory for this PHP module.
-     * @return the source directory, <b>can be <code>null</code> or {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
+     * Get the source directory of this PHP module.
+     * @return the source directory, <b>can be {@code null} or
+     *         {@link org.openide.filesystems.FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
     @CheckForNull
-    public abstract FileObject getSourceDirectory();
+    FileObject getSourceDirectory();
 
     /**
-     * Get the test directory for this PHP module.
-     * @return the test directory, can be <code>null</code> if not set yet
+     * Get the test directory of this PHP module for the given file.
+     * @param file file to get test directory for, can be {@code null} (in such case,
+     *        simply the first test directory is returned)
+     * @return the test directory, can be {@code null} if no test directory set yet
+     * @see #getTestDirectories()
      */
     @CheckForNull
-    public abstract FileObject getTestDirectory();
+    FileObject getTestDirectory(@NullAllowed FileObject file);
+
+    /**
+     * Get all test directories of this PHP module.
+     * @return list of test directories, can be empty but never {@code null}
+     * @see #getTestDirectory(FileObject)
+     */
+    List<FileObject> getTestDirectories();
 
     /**
      * Get any optional abilities of this PHP module.
      * @return a set of abilities
-     * @since 2.28
      */
     @Override
-    public abstract Lookup getLookup();
+    Lookup getLookup();
 
     /**
      * Get {@link Preferences} of this PHP module.
@@ -128,15 +143,25 @@ public abstract class PhpModule implements Lookup.Provider {
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
     @NonNull
-    public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
+    Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
-     * @since 2.18
      * @see #PROPERTY_FRAMEWORKS
      */
-    public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+    void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * <b>Deprecated, use {@link #getTestDirectories()} or {@link #getTestDirectory(FileObject)}.
+     * This method will be removed after NB 8.0.</b>
+     * <p>
+     * Get the test directory for this PHP module.
+     * @return the test directory, can be <code>null</code> if not set yet
+     */
+    @Deprecated
+    @CheckForNull
+    FileObject getTestDirectory();
 
     /**
      * <b>Deprecated, {@link #getLookup() lookup} its {@link PhpModuleProperties.Factory factory} class.
@@ -149,7 +174,7 @@ public abstract class PhpModule implements Lookup.Provider {
      */
     @Deprecated
     @NonNull
-    public abstract PhpModuleProperties getProperties();
+    PhpModuleProperties getProperties();
 
     /**
      * <b>Deprecated, {@link #getLookup() lookup} {@link org.netbeans.spi.project.ui.CustomizerProvider2} class
@@ -157,112 +182,118 @@ public abstract class PhpModule implements Lookup.Provider {
      * <p>
      * Open Project Properties dialog for this PHP module with the given category.
      * @param category category to be preselected
-     * @since 2.12
      */
     @Deprecated
-    public abstract void openCustomizer(String category);
+    void openCustomizer(String category);
 
     //~ Factories
 
     /**
-     * Gets PHP module for the given {@link FileObject}.
-     * @param fo {@link FileObject} to get PHP module for
-     * @return PHP module or <code>null</code> if not found
+     * Samoe useful factory methods for getting PHP module.
      */
-    @CheckForNull
-    public static PhpModule forFileObject(FileObject fo) {
-        Parameters.notNull("fo", fo); // NOI18N
-        Project project = FileOwnerQuery.getOwner(fo);
-        if (project == null) {
-            return null;
-        }
-        return lookupPhpModule(project);
-    }
+    public static final class Factory {
 
-    /**
-     * Infers PHP module - from the currently selected top component, open projects etc.
-     * @return PHP module or <code>null</code> if not found.
-     */
-    @CheckForNull
-    public static PhpModule inferPhpModule() {
-        // try current context firstly
-        Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        if (activatedNodes != null) {
-            for (Node n : activatedNodes) {
-                PhpModule result = lookupPhpModule(n.getLookup());
+        /**
+         * Gets PHP module for the given {@link FileObject}.
+         * @param fo {@link FileObject} to get PHP module for
+         * @return PHP module or <code>null</code> if not found
+         */
+        @CheckForNull
+        public static PhpModule forFileObject(FileObject fo) {
+            Parameters.notNull("fo", fo); // NOI18N
+            Project project = FileOwnerQuery.getOwner(fo);
+            if (project == null) {
+                return null;
+            }
+            return lookupPhpModule(project);
+        }
+
+        /**
+         * Infers PHP module - from the currently selected top component, open projects etc.
+         * @return PHP module or <code>null</code> if not found.
+         */
+        @CheckForNull
+        public static PhpModule inferPhpModule() {
+            // try current context firstly
+            Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
+            if (activatedNodes != null) {
+                for (Node n : activatedNodes) {
+                    PhpModule result = lookupPhpModule(n.getLookup());
+                    if (result != null) {
+                        return result;
+                    }
+                }
+            }
+
+            Lookup globalContext = Utilities.actionsGlobalContext();
+            PhpModule result = lookupPhpModule(globalContext);
+            if (result != null) {
+                return result;
+            }
+            FileObject fo = globalContext.lookup(FileObject.class);
+            if (fo != null) {
+                result = forFileObject(fo);
                 if (result != null) {
                     return result;
                 }
             }
-        }
 
-        Lookup globalContext = Utilities.actionsGlobalContext();
-        PhpModule result = lookupPhpModule(globalContext);
-        if (result != null) {
-            return result;
-        }
-        FileObject fo = globalContext.lookup(FileObject.class);
-        if (fo != null) {
-            result = forFileObject(fo);
-            if (result != null) {
-                return result;
+            // next try main project
+            OpenProjects projects = OpenProjects.getDefault();
+            Project mainProject = projects.getMainProject();
+            if (mainProject != null) {
+                result = lookupPhpModule(mainProject);
+                if (result != null) {
+                    return result;
+                }
             }
-        }
 
-        // next try main project
-        OpenProjects projects = OpenProjects.getDefault();
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            result = lookupPhpModule(mainProject);
-            if (result != null) {
-                return result;
+            // next try other opened projects
+            for (Project project : projects.getOpenProjects()) {
+                result = lookupPhpModule(project);
+                if (result != null) {
+                    return result;
+                }
             }
-        }
-
-        // next try other opened projects
-        for (Project project : projects.getOpenProjects()) {
-            result = lookupPhpModule(project);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Get {@link PhpModule PHP module} from the given project.
-     * @param project a PHP project where to look for a PHP module for
-     * @return PHP module or {@code null} if not found
-     * @see 1.38
-     */
-    @CheckForNull
-    public static PhpModule lookupPhpModule(Project project) {
-        Parameters.notNull("project", project);
-
-        return project.getLookup().lookup(PhpModule.class);
-    }
-
-    /**
-     * Get {@link PhpModule PHP module} from the given lookup.
-     * @param lookup a lookup where to look for a PHP module for
-     * @return PHP module or {@code null} if not found
-     * @see 1.38
-     */
-    @CheckForNull
-    public static PhpModule lookupPhpModule(Lookup lookup) {
-        Parameters.notNull("lookup", lookup);
-
-        // try directly
-        PhpModule result = lookup.lookup(PhpModule.class);
-        if (result != null) {
-            return result;
-        }
-        // try through Project instance
-        Project project = lookup.lookup(Project.class);
-        if (project == null) {
             return null;
         }
-        return lookupPhpModule(project);
+
+        /**
+         * Get {@link PhpModule PHP module} from the given project.
+         * @param project a PHP project where to look for a PHP module for
+         * @return PHP module or {@code null} if not found
+         * @see 1.38
+         */
+        @CheckForNull
+        public static PhpModule lookupPhpModule(Project project) {
+            Parameters.notNull("project", project);
+
+            return project.getLookup().lookup(PhpModule.class);
+        }
+
+        /**
+         * Get {@link PhpModule PHP module} from the given lookup.
+         * @param lookup a lookup where to look for a PHP module for
+         * @return PHP module or {@code null} if not found
+         * @see 1.38
+         */
+        @CheckForNull
+        public static PhpModule lookupPhpModule(Lookup lookup) {
+            Parameters.notNull("lookup", lookup);
+
+            // try directly
+            PhpModule result = lookup.lookup(PhpModule.class);
+            if (result != null) {
+                return result;
+            }
+            // try through Project instance
+            Project project = lookup.lookup(Project.class);
+            if (project == null) {
+                return null;
+            }
+            return lookupPhpModule(project);
+        }
+
     }
 
 }

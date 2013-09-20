@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
 )
 public class NeonDataObject extends MultiDataObject {
 
-    public NeonDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
+    public NeonDataObject(FileObject pf, MultiFileLoader loader) throws IOException {
         super(pf, loader);
         registerEditor(NeonLanguageConfig.MIME_TYPE, true);
     }

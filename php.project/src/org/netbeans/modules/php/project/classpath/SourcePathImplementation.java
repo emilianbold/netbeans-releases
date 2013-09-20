@@ -51,6 +51,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
@@ -151,6 +152,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         for (File file : project.getIgnoredFiles()) {
             String relPath = PropertyUtils.relativizeFile(root, file);
             if (isUnderneath(relPath)) {
+                assert relPath != null;
                 // #170570 & #185607 - no way to escape space in file path
                 String pattern = relPath.replace(" ", "*"); // NOI18N
                 if (file.isDirectory()) {
@@ -173,12 +175,12 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         if (tests == null) {
             return;
         }
-        assert tests.isTest() : "Not test source roots provided";
+        assert tests.isTest() : "Not test source roots provided: " + Arrays.toString(tests.getRoots());
 
         for (FileObject fo : tests.getRoots()) {
             File test = FileUtil.toFile(fo);
             if (test != null) {
-                assert test.isDirectory();
+                assert test.isDirectory() : test;
                 String relPath = PropertyUtils.relativizeFile(root, test);
                 if (isUnderneath(relPath)) {
                     String pattern = relPath + "/"; // NOI18N
@@ -248,7 +250,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
             if (prop == null
-                    || prop.equals(PhpProjectProperties.TEST_SRC_DIR)
+                    || prop.startsWith(PhpProjectProperties.TEST_SRC_DIR)
                     || prop.equals(PhpProjectProperties.SELENIUM_SRC_DIR)) {
                 fireChange(ev);
             }

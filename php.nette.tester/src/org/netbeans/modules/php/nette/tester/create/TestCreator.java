@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,12 +71,12 @@ public class TestCreator {
 
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         assert sourceDirectory != null : "Source directory should exist for " + phpModule;
-        FileObject testDirectory = phpModule.getTestDirectory();
-        assert testDirectory != null : "Test directory should exist for " + phpModule;
+        FileObject template = FileUtil.getConfigFile("Templates/Scripting/Tests/NetteTest.phpt"); // NOI18N
+        assert template != null;
 
         for (FileObject fo : files) {
             try {
-                generateTest(sourceDirectory, testDirectory, fo, succeeded);
+                generateTest(sourceDirectory, template, fo, succeeded);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 failed.add(fo);
@@ -84,8 +85,9 @@ public class TestCreator {
         return new CreateTestsResult(succeeded, failed);
     }
 
-    private void generateTest(FileObject sourceDirectory, FileObject testDirectory, FileObject fo, Set<FileObject> succeeded) throws IOException {
-        FileObject template = FileUtil.getConfigFile("Templates/Scripting/Tests/NetteTest.phpt"); // NOI18N
+    private void generateTest(FileObject sourceDirectory, FileObject template, FileObject fo, Set<FileObject> succeeded) throws IOException {
+        FileObject testDirectory = phpModule.getTestDirectory(fo);
+        assert testDirectory != null;
         FileObject dir = getTargetFolder(sourceDirectory, testDirectory, fo);
         String name = fo.getName();
 
@@ -96,8 +98,15 @@ public class TestCreator {
     }
 
     private FileObject getTargetFolder(FileObject sourceDirectory, FileObject testDirectory, FileObject fo) throws IOException {
-        String relativePath = FileUtil.getRelativePath(sourceDirectory, fo.getParent());
-        assert relativePath != null : "Dir " + sourceDirectory + " must be parent of " + fo;
+        FileObject commonRoot = FileUtils.getCommonRoot(fo, testDirectory);
+        if (commonRoot == null
+                || !FileUtil.isParentOf(sourceDirectory, commonRoot)) {
+            // look only inside project source dir
+            commonRoot = sourceDirectory;
+        }
+        assert commonRoot != null;
+        String relativePath = FileUtil.getRelativePath(commonRoot, fo.getParent());
+        assert relativePath != null : "Dir " + commonRoot + " must be parent of " + fo;
         FileObject target = testDirectory.getFileObject(relativePath);
         if (target == null) {
             target = FileUtil.createFolder(testDirectory, relativePath);

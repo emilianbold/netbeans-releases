@@ -482,7 +482,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     @Override
     public Set<Profile> getSupportedProfiles() {
         Set<Profile> profiles = new HashSet<Profile>(5);
-        if (!manager.isTomEE()) {
+        //if (!manager.isTomEE()) {
             // TomEE is new and it actually does not support older specs (classloading separation etc).
             // we will see if that's a problem for anybody
             profiles.add(Profile.J2EE_13);
@@ -490,7 +490,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
             if (manager.isTomcat60() || manager.isTomcat70() || manager.isTomcat80()) {
                 profiles.add(Profile.JAVA_EE_5);
             }
-        }
+        //}
         if (manager.isTomcat70() || manager.isTomcat80()) {
             profiles.add(Profile.JAVA_EE_6_WEB);
         }

@@ -51,12 +51,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,83 +80,53 @@ import org.openide.util.WeakListeners;
  */
 public final class SourceRoots {
 
-    public enum Type {
-        SOURCES,
-        TESTS,
-        SELENIUM
-    }
-
     /**
      * Property name of a event that is fired when project properties change.
      */
     public static final String PROP_ROOTS = SourceRoots.class.getName() + ".roots"; //NOI18N
 
-    /**
-     * Default label for sources node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
-     */
-    public static final String DEFAULT_SOURCE_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_src.dir");
-    /**
-     * Default label for tests node used in {@link org.netbeans.spi.project.ui.LogicalViewProvider}.
-     */
-    public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
-
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
-    private final ReferenceHelper refHelper;
-    // @GuardedBy("Collections.synchronizedList")
-    private final List<String> sourceRootProperties;
-    // @GuardedBy("Collections.synchronizedList")
-    private final List<String> sourceRootNames;
+    private final String displayName;
+    private final String propertyPrefix;
+    private final PropertyChangeSupport support;
+    private final ProjectMetadataListener listener;
+    private final boolean tests;
+    // #196060 - help to diagnose
+    private final AtomicLong firedChanges = new AtomicLong();
+
     // @GuardedBy("this")
     private List<FileObject> sourceRoots;
     // @GuardedBy("this")
-    private List<URL> sourceRootURLs;
-    private final PropertyChangeSupport support;
-    private final ProjectMetadataListener listener;
-    private final File projectDir;
-    private final Type type;
-
-    // #196060 - help to diagnose
-    private AtomicLong firedChanges = new AtomicLong();
+    private List<URL> sourceRootUrls;
+    // @GuardedBy("this")
+    private List<String> sourceRootProperties;
+    // @GuardedBy("this")
+    private List<String> sourceRootNames;
 
 
-    public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
-        assert helper != null;
-        assert evaluator != null;
-        assert refHelper != null;
-        assert type != null;
-        return new SourceRoots(helper, evaluator, refHelper, type);
-    }
+    private SourceRoots(Builder builder) {
+        assert builder.helper != null;
+        assert builder.evaluator != null;
+        assert builder.displayName != null;
 
-    private SourceRoots(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper, Type type) {
+        helper = builder.helper;
+        evaluator = builder.evaluator;
+        displayName = builder.displayName;
+        propertyPrefix = builder.propertyPrefix;
+        tests = builder.tests;
 
-        this.helper = helper;
-        this.evaluator = evaluator;
-        this.refHelper = refHelper;
-        this.type = type;
+        sourceRootProperties = builder.properties;
 
-        switch (type) {
-            case SOURCES:
-                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.SRC_DIR));
-                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Sources")));
-                break;
-            case TESTS:
-                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.TEST_SRC_DIR));
-                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_Tests")));
-                break;
-            case SELENIUM:
-                sourceRootProperties = Collections.synchronizedList(Arrays.asList(PhpProjectProperties.SELENIUM_SRC_DIR));
-                sourceRootNames = Collections.synchronizedList(Arrays.asList(NbBundle.getMessage(SourceRoots.class, "LBL_Node_SeleniumTests")));
-                break;
-            default:
-                throw new IllegalStateException("Unknow sources roots type: " + type);
-        }
-        projectDir = FileUtil.toFile(this.helper.getAntProjectHelper().getProjectDirectory());
         support = new PropertyChangeSupport(this);
         listener = new ProjectMetadataListener();
-        this.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this.listener, this.evaluator));
     }
 
+    static SourceRoots create(Builder builder) {
+        SourceRoots roots = new SourceRoots(builder);
+        roots.evaluator.addPropertyChangeListener(WeakListeners.propertyChange(roots.listener, roots.evaluator));
+        return roots;
+    }
 
     /**
      * Returns the display names of source roots.
@@ -162,8 +134,30 @@ public final class SourceRoots {
      * It may contain empty {@link String}s but not <code>null</code>.
      * @return an array of source roots names.
      */
-    public String[] getRootNames() {
-        return sourceRootNames.toArray(new String[sourceRootNames.size()]);
+    public synchronized String[] getRootNames() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+
+            @Override
+            public String[] run() {
+                synchronized (SourceRoots.this) {
+                    assert Thread.holdsLock(SourceRoots.this);
+                    if (sourceRootNames == null) {
+                        List<String> dirPaths = new ArrayList<>();
+                        for (String property : getRootProperties()) {
+                            String path = evaluator.getProperty(property);
+                            if (path == null) {
+                                dirPaths.add(null);
+                            } else {
+                                dirPaths.add(helper.getAntProjectHelper().resolvePath(path));
+                            }
+                        }
+                        sourceRootNames = getSourceRootsNames(dirPaths, displayName);
+                    }
+                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
+                }
+            }
+
+        });
     }
 
     /**
@@ -171,7 +165,27 @@ public final class SourceRoots {
      * @return an array of String.
      */
     public String[] getRootProperties() {
-        return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
+
+            @Override
+            public String[] run() {
+                synchronized (SourceRoots.this) {
+                    assert Thread.holdsLock(SourceRoots.this);
+                    if (sourceRootProperties == null) {
+                        assert propertyPrefix != null : displayName;
+                        sourceRootProperties = new ArrayList<>();
+                        EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                        for (String key : projectProperties.keySet()) {
+                            if (key.startsWith(propertyPrefix)) {
+                                sourceRootProperties.add(key);
+                            }
+                        }
+                    }
+                    return sourceRootProperties.toArray(new String[sourceRootProperties.size()]);
+                }
+            }
+
+        });
     }
 
     /**
@@ -184,6 +198,7 @@ public final class SourceRoots {
                 public FileObject[] run() {
                     synchronized (SourceRoots.this) {
                         // local caching
+                        assert Thread.holdsLock(SourceRoots.this);
                         if (sourceRoots == null) {
                             String[] srcProps = getRootProperties();
                             List<FileObject> result = new ArrayList<>();
@@ -217,8 +232,9 @@ public final class SourceRoots {
             @Override
             public URL[] run() {
                 synchronized (SourceRoots.this) {
+                    assert Thread.holdsLock(SourceRoots.this);
                     // local caching
-                    if (sourceRootURLs == null) {
+                    if (sourceRootUrls == null) {
                         List<URL> result = new ArrayList<>();
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
@@ -241,9 +257,9 @@ public final class SourceRoots {
                                 }
                             }
                         }
-                        sourceRootURLs = Collections.unmodifiableList(result);
+                        sourceRootUrls = Collections.unmodifiableList(result);
                     }
-                    return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
+                    return sourceRootUrls.toArray(new URL[sourceRootUrls.size()]);
                 }
             }
         });
@@ -274,50 +290,7 @@ public final class SourceRoots {
      * @return the label to be displayed.
      */
     public String getRootDisplayName(String rootName, String propName) {
-        if (rootName == null || rootName.length() == 0) {
-            // if the prop is src.dir use the default name
-            switch (type) {
-                case SOURCES:
-                    rootName = DEFAULT_SOURCE_LABEL;
-                    break;
-                case TESTS:
-                    rootName = DEFAULT_TEST_LABEL;
-                    break;
-                default:
-                    // if the name is not given, it should be either a relative path in the project dir
-                    // or absolute path when the root is not under the project dir
-                    String propValue = evaluator.getProperty(propName);
-                    File sourceRoot = propValue == null ? null : helper.getAntProjectHelper().resolveFile(propValue);
-                    rootName = createInitialDisplayName(sourceRoot);
-                    break;
-            }
-        }
-        return rootName;
-    }
-
-    /**
-     * Creates initial display name of source/test root.
-     * @param sourceRoot the source root.
-     * @return the label to be displayed.
-     */
-    public String createInitialDisplayName(File sourceRoot) {
-        return createInitialDisplayName(sourceRoot, projectDir, type);
-    }
-
-
-    public static String createInitialDisplayName(File sourceRoot, File projectDir, Type type) {
-        String rootName;
-        if (sourceRoot != null) {
-            String srPath = sourceRoot.getAbsolutePath();
-            String pdPath = projectDir.getAbsolutePath() + File.separatorChar;
-            if (srPath.startsWith(pdPath)) {
-                rootName = srPath.substring(pdPath.length());
-            } else {
-                rootName = sourceRoot.getAbsolutePath();
-            }
-        } else {
-            rootName = type.equals(Type.SOURCES) ? DEFAULT_SOURCE_LABEL : DEFAULT_TEST_LABEL;
-        }
+        assert StringUtils.hasText(rootName) : "No name for " + propName; // NOI18N
         return rootName;
     }
 
@@ -327,29 +300,23 @@ public final class SourceRoots {
      * @return boolean <code>true</code> if the instance belongs to the test compilation unit, false otherwise.
      */
     public boolean isTest() {
-        boolean isTest = false;
-        switch (type) {
-            case SOURCES:
-                isTest = false;
-                break;
-            case TESTS:
-            case SELENIUM:
-                isTest = true;
-                break;
-            default:
-                assert false : "Unknown source roots type: " + type;
-        }
-        return isTest;
+        return tests;
     }
 
     private void resetCache(String propName) {
         boolean fire = false;
         synchronized (this) {
+            assert Thread.holdsLock(this);
             // in case of change reset local cache
             if (propName == null
-                    || sourceRootProperties.contains(propName)) {
+                    || (sourceRootProperties != null && sourceRootProperties.contains(propName))
+                    || (propertyPrefix != null && propName.startsWith(propertyPrefix))) {
                 sourceRoots = null;
-                sourceRootURLs = null;
+                sourceRootUrls = null;
+                if (propertyPrefix != null) {
+                    sourceRootProperties = null;
+                }
+                sourceRootNames = null;
                 fire = true;
             }
         }
@@ -359,7 +326,7 @@ public final class SourceRoots {
         }
     }
 
-    public void fireChange() {
+    public void refresh() {
         resetCache(null);
     }
 
@@ -367,12 +334,145 @@ public final class SourceRoots {
         return firedChanges.get();
     }
 
+    @NbBundle.Messages({
+        "# {0} - display name of the source root",
+        "# {1} - directory of the source root",
+        "SourceRoots.displayName={0} ({1})",
+    })
+    static List<String> getSourceRootsNames(List<String> dirPaths, String displayName) {
+        if (dirPaths.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (dirPaths.size() == 1) {
+            return Collections.singletonList(displayName);
+        }
+        if (checkIncorrectValues(dirPaths)) {
+            // incorrect, duplicated values (should not happen)
+            List<String> names = new ArrayList<>(dirPaths.size());
+            for (String path : dirPaths) {
+                if (path == null) {
+                    names.add(displayName);
+                } else {
+                    names.add(Bundle.SourceRoots_displayName(displayName, path));
+                }
+            }
+            return names;
+        }
+        String[] names = new String[dirPaths.size()];
+        int lastIndex = 0;
+        List<Integer> duplicated = new ArrayList<>(dirPaths.size());
+        for (;;) {
+            duplicated.clear();
+            for (int i = 0; i < dirPaths.size(); i++) {
+                if (names[i] != null) {
+                    // already set
+                    continue;
+                }
+                String path = dirPaths.get(i);
+                if (path == null) {
+                    names[i] = displayName;
+                } else {
+                    List<String> segments = StringUtils.explode(path, File.separator);
+                    int index = segments.size() - 1 - lastIndex;
+                    if (index < 0) {
+                        index = 0;
+                    }
+                    String name = Bundle.SourceRoots_displayName(displayName, segments.get(index));
+                    int indexOf = Arrays.asList(names).indexOf(name);
+                    if (indexOf != -1
+                            && indexOf != i) {
+                        duplicated.add(indexOf);
+                    } else {
+                        names[i] = name;
+                    }
+                }
+            }
+            for (Integer index : duplicated) {
+                names[index] = null;
+            }
+            boolean finished = true;
+            for (String name : names) {
+                if (name == null) {
+                    finished = false;
+                    break;
+                }
+            }
+            if (finished) {
+                break;
+            }
+            lastIndex++;
+        }
+        return Arrays.asList(names);
+    }
+
+    private static boolean checkIncorrectValues(List<String> dirPaths) {
+        List<String> copy = new ArrayList<>(dirPaths);
+        copy.removeAll(Collections.singleton(null));
+        return new HashSet<>(copy).size() != copy.size();
+    }
+
+
     //~ Inner classes
 
+    public static final class Builder {
+
+        final UpdateHelper helper;
+        final PropertyEvaluator evaluator;
+        final String displayName;
+
+        List<String> properties;
+        String propertyPrefix;
+        boolean tests;
+
+
+        Builder(UpdateHelper helper, PropertyEvaluator evaluator, String displayName) {
+            this.helper = helper;
+            this.evaluator = evaluator;
+            this.displayName = displayName;
+        }
+
+        public Builder setProperties(List<String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public Builder setProperties(String... properties) {
+            this.properties = Arrays.asList(properties);
+            return this;
+        }
+
+        public Builder setPropertyPrefix(String propertyPrefix) {
+            this.propertyPrefix = propertyPrefix;
+            return this;
+        }
+
+        public Builder setTests(boolean tests) {
+            this.tests = tests;
+            return this;
+        }
+
+        public SourceRoots build() {
+            assert properties != null || propertyPrefix != null;
+            return SourceRoots.create(this);
+        }
+
+        //~ Factories
+
+        public static Builder create(UpdateHelper helper, PropertyEvaluator evaluator, String displayName) {
+            assert helper != null;
+            assert evaluator != null;
+            return new Builder(helper, evaluator, displayName);
+        }
+
+    }
+
     private final class ProjectMetadataListener implements PropertyChangeListener {
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             resetCache(evt.getPropertyName());
         }
+
     }
+
 }

@@ -74,7 +74,11 @@ public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
     }
 
     @Override
-    protected int getFormatStableStart(JoinedTokenSequence<LatteTopTokenId> ts, int startOffset, int endOffset, AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
+    protected int getFormatStableStart(
+            JoinedTokenSequence<LatteTopTokenId> ts,
+            int startOffset,
+            int endOffset,
+            AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
         return 0;
     }
 
@@ -307,7 +311,7 @@ public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
         BODY_FINISHED;
     }
 
-    private static class LatteStackItem {
+    private static final class LatteStackItem {
         private StackItemState state;
         private Boolean processed = false;
         private String macro;

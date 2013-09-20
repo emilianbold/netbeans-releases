@@ -166,11 +166,15 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
     static final Set<LatteElement> HELPERS = new HashSet<>();
     static {
         HELPERS.add(LatteElement.HelperFactory.create("truncate", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("append", "'…'")}))); //NOI18N
-        HELPERS.add(LatteElement.HelperFactory.create("substr", Arrays.asList(new Parameter[] {new HelperParameter("offset"), new HelperParameter("length", "stringLegth")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("substr", Arrays.asList(new Parameter[] {//NOI18N
+            new HelperParameter("offset"),  //NOI18N
+            new HelperParameter("length", "stringLegth")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("trim", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "' \\t\\n\\r\\0\\x0B\\xC2\\xA0'")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("striptags")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("strip")); //NOI18N
-        HELPERS.add(LatteElement.HelperFactory.create("webalize", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "NULL"), new HelperParameter("lower", "true")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("webalize", Arrays.asList(new Parameter[] {//NOI18N
+            new HelperParameter("charlist", "NULL"),  //NOI18N
+            new HelperParameter("lower", "true")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("toAscii")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("indent", Arrays.asList(new Parameter[] {new HelperParameter("level", "1"), new HelperParameter("char", "'\\t'")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("replace", Arrays.asList(new Parameter[] {new HelperParameter("search"), new HelperParameter("replace", "''")}))); //NOI18N
@@ -185,7 +189,9 @@ public class LatteCompletionHandler implements CodeCompletionHandler2 {
         HELPERS.add(LatteElement.HelperFactory.create("firstLower")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("capitalize")); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("date", Arrays.asList(new Parameter[] {new HelperParameter("'format'")}))); //NOI18N
-        HELPERS.add(LatteElement.HelperFactory.create("number", Arrays.asList(new Parameter[] {new HelperParameter("decimals", "0"), new HelperParameter("decPoint", "'.'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("number", Arrays.asList(new Parameter[] {//NOI18N
+            new HelperParameter("decimals", "0"), //NOI18N
+            new HelperParameter("decPoint", "'.'")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("bytes", Arrays.asList(new Parameter[] {new HelperParameter("precision", "2")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("dataStream", Arrays.asList(new Parameter[] {new HelperParameter("mimetype", "NULL")}))); //NOI18N
         HELPERS.add(LatteElement.HelperFactory.create("url")); //NOI18N

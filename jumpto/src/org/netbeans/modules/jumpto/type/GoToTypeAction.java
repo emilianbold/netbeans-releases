@@ -99,6 +99,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
@@ -285,14 +286,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return;
         }
         
-        int wildcard = containsWildCard(text);
+        int wildcard = Utils.containsWildCard(text);
                 
         if (exact) {
             nameKinds = Collections.singleton(
                 panel.isCaseSensitive() ?
                     SearchType.EXACT_NAME :
                     SearchType.CASE_INSENSITIVE_EXACT_NAME);
-        } else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
             nameKinds = Arrays.asList(
                 new SearchType[] {
                     SearchType.CAMEL_CASE,
@@ -304,6 +305,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 panel.isCaseSensitive() ?
                     SearchType.REGEXP :
                     SearchType.CASE_INSENSITIVE_REGEXP);
+            text = Utils.removeNonNeededWildCards(text);
         } else {
             nameKinds = Collections.singleton(
                 panel.isCaseSensitive() ?
@@ -334,33 +336,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return this.okButton != null && this.okButton.isEnabled();
     }
     
-    // Private methods ---------------------------------------------------------
-        
-    public static boolean isAllUpper( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    public static int containsWildCard( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
-                return i;                
-            }
-        }        
-        return -1;
-    }
-    
-    private static Pattern camelCasePattern = Pattern.compile("(?:\\p{javaUpperCase}(?:\\p{javaLowerCase}|\\p{Digit}|\\.|\\$)*){2,}"); // NOI18N
-    
-    public static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
-    }
-    
+    // Private methods ---------------------------------------------------------        
     
     /** Creates the dialog to show
      */

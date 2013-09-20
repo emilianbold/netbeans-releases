@@ -60,6 +60,7 @@ import java.util.zip.ZipFile;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -429,6 +430,28 @@ public final class FileUtils {
                 copyZipEntry(zipFile, zipEntry, destinationFile);
             }
         }
+    }
+
+    /**
+     * Get common root of the given file objects.
+     * @param fo1 first fileobject
+     * @param fo2 second fileobject
+     * @return common root of the given file objects, {@code null} if there is none
+     * @since 2.31
+     */
+    @CheckForNull
+    public static FileObject getCommonRoot(@NonNull FileObject fo1, @NonNull FileObject fo2) {
+        Parameters.notNull("fo1", fo1); // NOI18N
+        Parameters.notNull("fo2", fo2); // NOI18N
+        FileObject tmp = fo1;
+        while (tmp != null) {
+            if (tmp.equals(fo2)
+                    || FileUtil.isParentOf(tmp, fo2)) {
+                return tmp;
+            }
+            tmp = tmp.getParent();
+        }
+        return null;
     }
 
     private static void ensureParentExists(File file) throws IOException {

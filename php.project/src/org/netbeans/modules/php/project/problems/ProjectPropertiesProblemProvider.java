@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.project.classpath.BasePathSupport;
 import org.netbeans.modules.php.project.classpath.IncludePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.ui.customizer.TestDirectoriesPathSupport;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.filesystems.FileAttributeEvent;
@@ -77,11 +79,12 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     // set would be better but it is fine to use a list for small number of items
     static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
-            PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
             PhpProjectProperties.WEB_ROOT,
             PhpProjectProperties.INCLUDE_PATH,
             PhpProjectProperties.PRIVATE_INCLUDE_PATH));
+    static final List<String> WATCHED_PROPERTY_PREFIXES = new CopyOnWriteArrayList<>(Arrays.asList(
+            PhpProjectProperties.TEST_SRC_DIR));
 
     final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private final PhpProject project;
@@ -120,7 +123,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
                 checkSrcDir(currentProblems);
                 if (currentProblems.isEmpty()) {
                     // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)
-                    checkTestDir(currentProblems);
+                    checkTestDirs(currentProblems);
                     checkSeleniumDir(currentProblems);
                     checkWebRoot(currentProblems);
                     checkIncludePath(currentProblems);
@@ -151,16 +154,29 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     @NbBundle.Messages({
         "ProjectPropertiesProblemProvider.invalidTestDir.title=Invalid Test Files",
         "# {0} - test dir path",
-        "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" does not exist and cannot be used for Test Files."
+        "ProjectPropertiesProblemProvider.invalidTestDir.description=The directory \"{0}\" cannot be used for Test Files."
     })
-    void checkTestDir(Collection<ProjectProblem> currentProblems) {
-        File invalidDirectory = getInvalidDirectory(ProjectPropertiesSupport.getTestDirectory(project, false), PhpProjectProperties.TEST_SRC_DIR);
-        if (invalidDirectory != null) {
+    void checkTestDirs(Collection<ProjectProblem> currentProblems) {
+        TestDirectoriesPathSupport testDirectoriesPathSupport = new TestDirectoriesPathSupport(ProjectPropertiesSupport.getPropertyEvaluator(project),
+                project.getRefHelper(), project.getHelper());
+        Enumeration<BasePathSupport.Item> items = new PhpProjectProperties(project, null, null, testDirectoriesPathSupport)
+                .getTestDirectoriesListModel()
+                .elements();
+        int i = 0;
+        while (items.hasMoreElements()) {
+            BasePathSupport.Item item = items.nextElement();
+            ValidationResult result = new TestDirectoriesPathSupport.Validator()
+                    .validatePath(project, item)
+                    .getResult();
+            if (!result.hasErrors()) {
+                continue;
+            }
             ProjectProblem problem = ProjectProblem.createError(
                     Bundle.ProjectPropertiesProblemProvider_invalidTestDir_title(),
-                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(invalidDirectory.getAbsolutePath()),
-                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.SOURCES, PhpProjectProperties.TEST_SRC_DIR));
+                    Bundle.ProjectPropertiesProblemProvider_invalidTestDir_description(item.getAbsoluteFilePath(project.getProjectDirectory())),
+                    new CustomizerProblemResolver(project, CompositePanelProviderImpl.TESTING, PhpProjectProperties.TEST_SRC_DIR + i));
             currentProblems.add(problem);
+            i++;
         }
     }
 
@@ -242,7 +258,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
     }
 
     private File getInvalidDirectory(FileObject directory, String propertyName) {
-        assert WATCHED_PROPERTIES.contains(propertyName) : "Property '" + propertyName + "' should be watched for changes";
+        assert isWatchedProperty(propertyName) : "Property '" + propertyName + "' should be watched for changes";
         if (directory != null) {
             if (directory.isValid()) {
                 // ok
@@ -304,6 +320,18 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         }
     }
 
+    boolean isWatchedProperty(String propertyName) {
+        if (WATCHED_PROPERTIES.contains(propertyName)) {
+            return true;
+        }
+        for (String prefix : WATCHED_PROPERTY_PREFIXES) {
+            if (propertyName.startsWith(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void propertiesChanged() {
         // release the current listener
         fileChangesListener = new FileChangesListener();
@@ -316,7 +344,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (WATCHED_PROPERTIES.contains(evt.getPropertyName())) {
+            if (isWatchedProperty(evt.getPropertyName())) {
                 problemsProviderSupport.fireProblemsChange();
                 propertiesChanged();
             }

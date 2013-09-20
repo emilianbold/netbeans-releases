@@ -114,11 +114,22 @@ public final class SkeletonGenerator {
         "SkeletonGenerator.test.generating=Creating test file for {0}"
     })
     public FileObject generateTest(PhpModule phpModule, FileObject sourceClassFile, String sourceClassName) throws ExecutionException {
-        String relativePath = PropertyUtils.relativizeFile(FileUtil.toFile(phpModule.getSourceDirectory()), FileUtil.toFile(sourceClassFile));
+        FileObject sourceDir = phpModule.getSourceDirectory();
+        assert sourceDir != null;
+        FileObject testDir = phpModule.getTestDirectory(sourceClassFile);
+        assert testDir != null;
+        FileObject commonRoot = FileUtils.getCommonRoot(sourceClassFile, testDir);
+        if (commonRoot == null
+                || !FileUtil.isParentOf(sourceDir, commonRoot)) {
+            // look only inside project source dir
+            commonRoot = sourceDir;
+        }
+        assert commonRoot != null;
+        String relativePath = PropertyUtils.relativizeFile(FileUtil.toFile(commonRoot), FileUtil.toFile(sourceClassFile));
         assert relativePath != null;
-        assert !relativePath.startsWith("../") : "Unexpected relative path: " + relativePath + " for " + phpModule.getSourceDirectory() + " and " + sourceClassFile;
+        assert !relativePath.startsWith("../") : "Unexpected relative path: " + relativePath + " for " + commonRoot + " and " + sourceClassFile;
         String relativeTestPath = relativePath.substring(0, relativePath.length() - sourceClassFile.getExt().length() - 1);
-        File testFile = PropertyUtils.resolveFile(FileUtil.toFile(phpModule.getTestDirectory()), PhpUnit.makeTestFile(relativeTestPath));
+        File testFile = PropertyUtils.resolveFile(FileUtil.toFile(testDir), PhpUnit.makeTestFile(relativeTestPath));
         FileObject testFo = FileUtil.toFileObject(testFile);
         if (testFo != null && testFo.isValid()) {
             return testFo;
