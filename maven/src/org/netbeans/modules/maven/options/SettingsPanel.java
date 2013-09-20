@@ -372,6 +372,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblIndex = new javax.swing.JLabel();
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
+        comDisableIndex = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstCategory = new javax.swing.JList();
         lblCategory = new javax.swing.JLabel();
@@ -496,7 +497,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtProjectNodeNameCustomPattern)
-                            .addComponent(cbProjectNodeNameMode, 0, 302, Short.MAX_VALUE))))
+                            .addComponent(cbProjectNodeNameMode, 0, 331, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         pnlAppearanceLayout.setVerticalGroup(
@@ -538,7 +539,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlDependenciesLayout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 236, Short.MAX_VALUE))
+                        .addGap(0, 293, Short.MAX_VALUE))
                     .addGroup(pnlDependenciesLayout.createSequentialGroup()
                         .addComponent(lblJavadoc)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -551,7 +552,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addComponent(lblSource)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(comSource, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -593,17 +594,27 @@ public class SettingsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(comDisableIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.comDisableIndex.text")); // NOI18N
+        comDisableIndex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comDisableIndexActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlIndexLayout = new javax.swing.GroupLayout(pnlIndex);
         pnlIndex.setLayout(pnlIndexLayout);
         pnlIndexLayout.setHorizontalGroup(
             pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlIndexLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlIndexLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblIndex)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comIndex, 0, 192, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnIndex)
+                .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(comDisableIndex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnlIndexLayout.createSequentialGroup()
+                        .addComponent(lblIndex)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comIndex, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIndex)))
                 .addContainerGap())
         );
         pnlIndexLayout.setVerticalGroup(
@@ -614,7 +625,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
-                .addContainerGap(300, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(comDisableIndex)
+                .addContainerGap(259, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -722,6 +735,10 @@ public class SettingsPanel extends javax.swing.JPanel {
         CardLayout cl = (CardLayout) pnlCards.getLayout();
         cl.show(pnlCards, (String) lstCategory.getSelectedValue());
     }//GEN-LAST:event_lstCategoryValueChanged
+
+    private void comDisableIndexActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comDisableIndexActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comDisableIndexActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -734,6 +751,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comBinaries;
+    private javax.swing.JCheckBox comDisableIndex;
     private javax.swing.JComboBox comIndex;
     private javax.swing.JComboBox comJavadoc;
     private javax.swing.JComboBox comMavenHome;
@@ -862,6 +880,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         });
         
         comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
+        comDisableIndex.setSelected(!RepositoryPreferences.isIndexRepositories());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
         comJavadoc.setSelectedItem(MavenSettings.getDefault().getJavadocDownloadStrategy());
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
@@ -926,6 +945,7 @@ public class SettingsPanel extends javax.swing.JPanel {
             EmbedderFactory.setMavenHome(null);
         }
         RepositoryPreferences.setIndexUpdateFrequency(comIndex.getSelectedIndex());
+        RepositoryPreferences.setIndexRepositories(!comDisableIndex.isSelected());
         MavenSettings.getDefault().setBinaryDownloadStrategy((MavenSettings.DownloadStrategy) comBinaries.getSelectedItem());
         MavenSettings.getDefault().setJavadocDownloadStrategy((MavenSettings.DownloadStrategy) comJavadoc.getSelectedItem());
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());

@@ -45,6 +45,8 @@ import java.awt.event.ActionEvent;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -67,12 +69,16 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Union2;
 
 @ServicesTabNodeRegistration(name=M2RepositoryBrowser.NAME, displayName="#CTL_M2RepositoryBrowserTopComponent", shortDescription="#HINT_M2RepositoryBrowserTopComponent", iconResource=M2RepositoryBrowser.ICON_PATH, position=431)
 @Messages({
+    "# {0} - either empty string or CTL_M2RepositoriesDisabled",
+    "CTL_M2RepositoryBrowserTopComponent2=Maven Repositories{0}",
     "CTL_M2RepositoryBrowserTopComponent=Maven Repositories",
+    "CTL_M2RepositoriesDisabled= (Indexing disabled)",
     "LBL_Add_Repo=Add Repository",
     "ACT_Add_Repo=Add Repository...",
     "HINT_M2RepositoryBrowserTopComponent=Displays contents of local and remote Apache Maven repositories and permits them to be searched and indexed."
@@ -85,9 +91,18 @@ public final class M2RepositoryBrowser extends AbstractNode {
     private M2RepositoryBrowser() {
         super(Children.create(new RootNodes(), true));
         setName(NAME);
-        setDisplayName(CTL_M2RepositoryBrowserTopComponent());
+        setDisplayName(CTL_M2RepositoryBrowserTopComponent2(RepositoryPreferences.isIndexRepositories() ? "" : CTL_M2RepositoriesDisabled()));
         setShortDescription(HINT_M2RepositoryBrowserTopComponent());
         setIconBaseWithExtension(ICON_PATH);
+        NbPreferences.root().node("org/netbeans/modules/maven/nexus/indexing").addPreferenceChangeListener(new PreferenceChangeListener() {
+
+            @Override
+            public void preferenceChange(PreferenceChangeEvent evt) {
+                if (RepositoryPreferences.PROP_INDEX.equals(evt.getKey())) {
+                    setDisplayName(CTL_M2RepositoryBrowserTopComponent2(RepositoryPreferences.isIndexRepositories() ? "" : CTL_M2RepositoriesDisabled()));
+                }
+            }
+        });
     }
 
     @Override public Action[] getActions(boolean context) {
