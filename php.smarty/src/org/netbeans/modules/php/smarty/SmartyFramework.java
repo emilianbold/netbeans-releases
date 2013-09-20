@@ -102,7 +102,7 @@ public class SmartyFramework {
      * @return close delimiter of the project which is owning that file if any or global close delimiter from Options
      */
     public static String getCloseDelimiter(FileObject fileObject) {
-        PhpModule phpModule = PhpModule.forFileObject(fileObject);
+        PhpModule phpModule = PhpModule.Factory.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule).isEmpty()) {
             return SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule);
         } else {
@@ -116,7 +116,7 @@ public class SmartyFramework {
      * @return open delimiter of the project which is owning that file if any or global open delimiter from Options
      */
     public static String getOpenDelimiter(FileObject fileObject) {
-        PhpModule phpModule = PhpModule.forFileObject(fileObject);
+        PhpModule phpModule = PhpModule.Factory.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).isEmpty()) {
             return SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule);
         } else {

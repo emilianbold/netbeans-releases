@@ -551,6 +551,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         initIndexer();
                         assert indexer != null;
                         boolean noIndexExists = loadIndexingContext2(repo);
+                        //here we always index repo, no matter what RepositoryPreferences.isIndexRepositories() value
                         indexLoadedRepo(repo, !noIndexExists);
                     } catch (IOException x) {
                         LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), x);
@@ -657,12 +658,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public void updateIndexWithArtifacts(final RepositoryInfo repo, final Collection<Artifact> artifacts) {
+        if (!RepositoryPreferences.isIndexRepositories()) {
+            return;
+        }
         final ArtifactRepository repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
         try {
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                 public @Override Void run() throws Exception {
-                    boolean index = loadIndexingContext2(repo);
-                    if (index) {
+                    boolean index = loadIndexingContext2(repo);                    
+                    if (index) {                        
                         try {
                             NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
                         } catch (IOException ex) {
@@ -740,12 +744,15 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     
     @Override
     public void deleteArtifactFromIndex(final RepositoryInfo repo, final Artifact artifact) {
+        if (!RepositoryPreferences.isIndexRepositories()) {
+            return; 
+        }
         final ArtifactRepository repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
         try {
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
-                    if (index) {
+                    if (index) {                        
                         try {
                             indexLoadedRepo(repo, true); //TODO do we care here?
                         } catch (IOException ex) {
@@ -844,6 +851,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     try {
                         boolean index = loadIndexingContext2(repo);
                         if (skipUnIndexed && index) {
+                            if (!RepositoryPreferences.isIndexRepositories()) {
+                                return null;
+                            }
                             actionSkip.run(repo, null);
                             spawnIndexLoadedRepo(repo);
                             return null;

@@ -61,7 +61,7 @@ import org.openide.util.lookup.Lookups;
 /**
  * @author Tomas Mysik
  */
-public class PhpModuleImpl extends PhpModule {
+public class PhpModuleImpl implements PhpModule {
     private final PhpProject phpProject;
 
     public PhpModuleImpl(PhpProject phpProject) {
@@ -164,7 +164,7 @@ public class PhpModuleImpl extends PhpModule {
         }
 
         @Override
-        public PhpModuleProperties create() {
+        public PhpModuleProperties getProperties() {
             PhpModuleProperties properties = new PhpModuleProperties();
             properties = setEncoding(properties);
             properties = setWebRoot(properties);
