@@ -703,10 +703,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     @NbBundle.Messages({
         "SyncPanel.info.firstRun=<strong>First time for this project and configuration - more user actions may be needed.</strong><br>",
         "SyncPanel.info.individualFiles=<strong>Run synchronization on Source Files for more accurate result.</strong><br>",
-        "SyncPanel.info.experimental=Note that Remote Synchronization is experimental. Review all suggested operations before proceeding. Note that remote timestamps may not be correct."
+        "SyncPanel.info.warning=Review all suggested operations before proceeding. Note that remote timestamps may not be correct.",
     })
     private String getDefaultInfoMessage(boolean forProject, boolean firstRun) {
-        String msg = Bundle.SyncPanel_info_experimental();
+        String msg = Bundle.SyncPanel_info_warning();
         if (forProject) {
             if (firstRun) {
                 msg = Bundle.SyncPanel_info_firstRun() + msg;
