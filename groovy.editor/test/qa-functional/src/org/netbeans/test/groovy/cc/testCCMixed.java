@@ -42,6 +42,7 @@
 package org.netbeans.test.groovy.cc;
 
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
@@ -95,13 +96,14 @@ public class testCCMixed extends GeneralGroovy {
         type(file, "\n def BBB(int a){\n");
         file.setCaretPositionToLine(file.getLineNumber() + 2);
         type(file, "\n  def function1(){\n");
-
+        file.save();
         file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
         file.setCaretPosition("args) {", false);
         waitScanFinished();
+        evt.waitNoEvent(300);
         type(file, "\n BBB b = new BBB");
         file.typeKey(' ', InputEvent.CTRL_MASK);
-        new EventTool().waitNoEvent(1000);
+        evt.waitNoEvent(1000);
 
         CompletionInfo completion = getCompletion();
         String[] res = {"public BBB()", "public BBB(int a)"};
@@ -126,7 +128,7 @@ public class testCCMixed extends GeneralGroovy {
         type(file, "\n def BBBB(int a){\n");
         file.setCaretPositionToLine(file.getLineNumber() + 2);
         type(file, "\n  def function1(){\n");
-
+        file.save();
         file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
         file.setCaretPosition("args) {", false);
         waitScanFinished();
@@ -159,7 +161,7 @@ public class testCCMixed extends GeneralGroovy {
         type(file, "\n F");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
-
+        file.pressKey(KeyEvent.VK_BACK_SPACE);
         CompletionInfo completion = getCompletion();
         String[] res = {"FooBar"};
         checkCompletionItems(completion.listItself, res);
@@ -171,7 +173,7 @@ public class testCCMixed extends GeneralGroovy {
     public void GroovyClassesWithImportInJava() {
         startTest();
         EditorOperator file = new EditorOperator(TEST_BASE_NAME + (name_iterator - 1));
-        file.setCaretPositionToEndOfLine(6);
+        file.setCaretPositionToEndOfLine(8);
         type(file, "import foo.bar.test.*;");
         file.setCaretPosition("args) {", false);
         type(file, "\n F");
@@ -221,7 +223,8 @@ public class testCCMixed extends GeneralGroovy {
         file = new EditorOperator("EEE.groovy");
         file.setCaretPosition("package org.netbens.groovy", false);
         waitScanFinished();
-        type(file, "\n import o");
+        file.pressKey(KeyEvent.VK_ENTER);
+        type(file, "import o");
         file.typeKey(' ', InputEvent.CTRL_MASK);
         new EventTool().waitNoEvent(1000);
 
@@ -237,7 +240,7 @@ public class testCCMixed extends GeneralGroovy {
         startTest();
         EditorOperator file = new EditorOperator("EEE.groovy");
         file.setCaretPosition("import o", false);
-        type(file, "rg2.netbeans.groovy.*");
+        type(file, "rg2.netbeans.groovy.Foo");
 
         file.setCaretPosition("EEE {", false);
         type(file, "\n  def EEE(){\n");
