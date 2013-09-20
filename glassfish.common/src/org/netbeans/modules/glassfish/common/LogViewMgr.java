@@ -1007,12 +1007,7 @@ public class LogViewMgr {
     
     public static InputOutput getServerIO(String uri) {
 
-        ServerInstance si = null;
-        Iterator<GlassfishInstanceProvider> iterator = GlassfishInstanceProvider.getProviders(true).iterator();
-        while(si == null && iterator.hasNext()) {
-            GlassfishInstanceProvider provider = iterator.next();
-            si = provider.getInstance(uri);
-        }
+        ServerInstance si = GlassfishInstanceProvider.getInstanceByUri(uri);
         if(null == si) {
             return null;
         }

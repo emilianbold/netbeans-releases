@@ -123,7 +123,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private FileChangeListener fcl;
 
     /** Keep local Lookup instance to be returned by getLookup method. */
-    private volatile Lookup lkp;
+    private final Lookup lkp;
 
     /** Jersey Library support. */
     private Hk2LibraryProvider libraryProvider;
@@ -131,6 +131,26 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Constructor helper to initialize local Lookup instance.
+     * <p/>
+     * @return Local Lookup instance.
+     */
+    private Lookup initLocalLookup() {
+        String gfRootStr = dm.getProperties().getGlassfishRoot();
+        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
+                new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
+        WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
+                new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
+        Lookup baseLookup = Lookups.fixed(
+                gfRootStr, new JaxRsStackSupportImpl(), wsStack, rpcStack,
+                new Hk2JpaSupportImpl(
+                dm.getCommonServerSupport().getInstance()));
+        return LookupProviderSupport.createCompositeLookup(
+                baseLookup, lookupKey);
+    }
+
     /**
      * Map GlassFish tooling SDK JavaSE platforms to NetBeans JavaSE platforms.
      * <p/>
@@ -233,7 +253,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      */
     Set<String> platformsSetFromArray(String[] platforms) {
         int size = platforms != null ? platforms.length : 0;
-        Set<String> platformSet = new HashSet<String>(size);
+        Set<String> platformSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             platformSet.add(platforms[i]);
         }
@@ -248,7 +268,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
      */
     Set<Profile> profilesSetFromArray(Profile[] profiles) {
         int size = profiles != null ? profiles.length : 0;
-        Set<Profile> profileSet = new HashSet<Profile>(size);
+        Set<Profile> profileSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             profileSet.add(profiles[i]);
         }
@@ -265,7 +285,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     Set<J2eeModule.Type> moduleTypesSetFromArray(
             J2eeModule.Type[] moduleTypes) {
         int size = moduleTypes != null ? moduleTypes.length : 0;
-        Set<J2eeModule.Type> moduleTypeSet = new HashSet<J2eeModule.Type>(size);
+        Set<J2eeModule.Type> moduleTypeSet = new HashSet<>(size);
         for (int i = 0; i < size; i++) {
             moduleTypeSet.add(moduleTypes[i]);
         }
@@ -300,6 +320,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         this.displayName = displayName;
         this.libraryName = libraryName;
         this.lookupKey = lookupKey;
+        this.lkp = initLocalLookup();
         this.libraryProvider = Hk2LibraryProvider.getProvider(
                 dm.getCommonServerSupport().getInstance());
         addFcl();
@@ -473,7 +494,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                     "jaxb(|-osgi).jar", //NOI18N
                     "jaxb-api(|-osgi).jar", //NOI18N
                     "javax.activation.jar"}; //NOI18N
-                List<File> cPath = new ArrayList<File>();
+                List<File> cPath = new ArrayList<>();
 
                 for (String entry : entries) {
                     File f = ServerUtilities.getWsJarName(gfRootStr, entry);
@@ -486,7 +507,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
             if (TOOL_WSCOMPILE.equals(toolName)) {
                 String[] entries = new String[] {"webservices(|-osgi).jar"}; //NOI18N
-                List<File> cPath = new ArrayList<File>();
+                List<File> cPath = new ArrayList<>();
 
                 for (String entry : entries) {
                     File f = ServerUtilities.getWsJarName(gfRootStr, entry);
@@ -657,33 +678,12 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     }
 
     /**
-     * Return Java EE platform lookup instance or create a new one if no such instance exists.
-     *
-     * @return Platform lookup instance.
+     * Return Java EE platform lookup instance.
+     * <p/>
+     * @return Java EE platform lookup instance.
      */
     @Override
     public Lookup getLookup() {
-        // Avoid locking when instance already exists.
-        if (lkp != null)
-            return lkp;
-        // Create only one for the first time.
-        else {
-            synchronized (this) {
-                if (lkp == null) {
-                    String gfRootStr = dm.getProperties().getGlassfishRoot();
-                    WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
-                            new Hk2JaxWsStack(gfRootStr, this), WSStack.Source.SERVER);
-                    WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class,
-                            new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
-                    Lookup baseLookup = Lookups.fixed(gfRootStr,
-                            new JaxRsStackSupportImpl(), wsStack, rpcStack,
-                            new Hk2JpaSupportImpl(
-                            dm.getCommonServerSupport().getInstance()));
-                    lkp = LookupProviderSupport
-                            .createCompositeLookup(baseLookup, lookupKey);
-                }
-            }
-        }
         return lkp;
     }
 
@@ -834,9 +834,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                             : ClassPath.COMPILE;
                     return ProjectClassPathModifier.addLibraries(
                             new Library[] {library}, sourceRoot, classPathType);
-                } catch (UnsupportedOperationException ex) {
-                    return false;
-                } catch (IOException e) {
+                } catch (UnsupportedOperationException | IOException ex) {
                     return false;
                 }
             }
@@ -901,10 +899,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 return ProjectClassPathModifier.addLibraries(
                         new Library[] { library }, sourceRoot, classPathType);
             }
-            catch (UnsupportedOperationException ex) {
-                return false;
-            }
-            catch (IOException e) {
+            catch (UnsupportedOperationException | IOException ex) {
                 return false;
             }
             /*List<URL> urls = getJerseyLibraryURLs();
@@ -925,13 +920,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                         ProjectClassPathModifier.removeLibraries( new Library[]{
                                 library} ,sourceRoot, type);
                     }    
-                    catch(UnsupportedOperationException ex) {
-                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                    catch (UnsupportedOperationException | IOException ex) {
+                        Logger.getLogger(JaxRsStackSupportImpl.class.getName()).
                                 log (Level.INFO, null , ex );
-                    }
-                    catch( IOException e ){
-                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
-                                log(Level.INFO, null , e );
                     }
                 }     
             }
@@ -1011,7 +1002,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         private boolean addJars( Project project, Collection<URL> jars ){
-            List<URL> urls = new ArrayList<URL>();
+            List<URL> urls = new ArrayList<>();
             for (URL url : jars) {
                 if ( FileUtil.isArchiveFile( url)){
                     urls.add(FileUtil.getArchiveRoot(url));
@@ -1034,10 +1025,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 ProjectClassPathModifier.addRoots(urls.toArray( new URL[ urls.size()]), 
                         sourceRoot, classPathType );
             } 
-            catch(UnsupportedOperationException ex) {
-                return false;
-            }
-            catch ( IOException e ){
+            catch (UnsupportedOperationException | IOException ex) {
                 return false;
             }
             return true;

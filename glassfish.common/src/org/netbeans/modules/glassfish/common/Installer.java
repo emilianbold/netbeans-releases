@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,12 +56,9 @@ public class Installer extends ModuleInstall {
         super.close();
 
         // Send a shutdown message to any V3 server instances we started.
-        if (GlassfishInstanceProvider.initialized()) {
-            for(GlassfishInstanceProvider provider: GlassfishInstanceProvider.getProviders(false)) {
-                for (GlassfishInstance instance : provider.getInternalInstances()) {
-                    instance.stopIfStartedByIde(0L);
-                }
-            }
+        for (GlassfishInstance instance :
+                GlassfishInstanceProvider.getProvider().getInternalInstances()) {
+            instance.stopIfStartedByIde(0L);
         }
     }
 
