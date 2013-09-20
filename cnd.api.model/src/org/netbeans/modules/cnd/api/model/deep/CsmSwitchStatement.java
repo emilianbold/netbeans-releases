@@ -59,7 +59,7 @@ import java.util.List;
  *
  * @author Vladimir Kvashin
  */
-public interface CsmSwitchStatement extends CsmScope  {
+public interface CsmSwitchStatement extends CsmStatement, CsmScope  {
 
     /** gets switch condition */
     CsmCondition getCondition();
