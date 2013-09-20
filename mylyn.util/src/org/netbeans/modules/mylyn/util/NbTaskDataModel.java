@@ -142,6 +142,8 @@ public final class NbTaskDataModel {
 
     public void attributeChanged (TaskAttribute a) {
         synchronized (unsavedChangedAttributes) {
+            // replace the task attribute in unsaved changes
+            unsavedChangedAttributes.remove(a);
             unsavedChangedAttributes.add(a);
             delegateModel.attributeChanged(a);
         }
@@ -155,17 +157,30 @@ public final class NbTaskDataModel {
         return delegateModel.getChangedOldAttributes();
     }
 
+    /**
+     * Updates the model and all taskdata to keep track with external taskdata
+     * changes (such as a task refresh)
+     * @throws CoreException 
+     */
     public void refresh () throws CoreException {
+        // refresh reverts all taskdata to the state on disk
         delegateModel.refresh(null);
-        Set<TaskAttribute> changedAttributes = delegateModel.getChangedAttributes();
+        // also clear unsaved changes in the mylyn model
+        // this is needed because after refresh() the unsaved changes no longer
+        // belong to the local taskdata (they're reinstantiated)
+        delegateModel.revert();
+        Set<TaskAttribute> changedAttributes = unsavedChangedAttributes;
         for (TaskAttribute ta : changedAttributes) {
             // there are still local unsaved changes, keep them in local taskdata
             TaskAttribute attribute = getLocalTaskData().getRoot().getAttribute(ta.getId());
             if (attribute == null) {
                 getLocalTaskData().getRoot().deepAddCopy(ta);
+                attribute = getLocalTaskData().getRoot().getAttribute(ta.getId());
             } else {
                 attribute.setValues(ta.getValues());
             }
+            // now refill the unsaved changes so they belong to the correct local TD
+            attributeChanged(attribute);
         }
     }
 
