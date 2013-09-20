@@ -110,7 +110,7 @@ class BreadcrumbsElementImpl implements BreadcrumbsElement {
                         CsmCompoundStatement body = funDef.getBody();
                         if (body != null) {
                             for (CsmStatement st : body.getStatements()) {
-                                StatementNode statementNode = StatementNode.createStatementNode(st, this, cdo);
+                                StatementNode statementNode = StatementNode.createStatementNode(st, null, this, cdo);
                                 if (statementNode != null) {
                                     children.add(statementNode);
                                 }
