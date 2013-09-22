@@ -1249,8 +1249,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println();
             boolean fromLastRun = recs.size() > 0 && isAfterRestart;
             uploadMessagesLog(os, fromLastRun);
-            os.println();
-            os.println("\n----------konec<>bloku");
+            os.println("\n\n----------konec<>bloku");
         }
 
         if (slownData != null){
@@ -1260,8 +1259,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Type: x-application/nps");
             os.println();
             os.write(slownData.getNpsContent());
-            os.println();
-            os.println("\n----------konec<>bloku");
+            os.println("\n\n----------konec<>bloku");
         }
 
         if (dataType != DataType.DATA_METRICS) {
@@ -1294,8 +1292,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
             gzip.finish();
-            os.println();
-            os.println("\n----------konec<>bloku");
+            os.println("\n\n----------konec<>bloku");
 
             h.progress(1070);
         }
@@ -1305,8 +1302,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Type: x-application/log");
             os.println();
             uploadGZFile(os, deadlockFile);
-            os.println();
-            os.println("\n----------konec<>bloku");
+            os.println("\n\n----------konec<>bloku");
         }
 
         os.println("Content-Disposition: form-data; name=\"logs\"; filename=\"" + id + "\"");
@@ -1331,8 +1327,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
-        os.println();
-        os.println("----------konec<>bloku--");
+        os.println("\n\n----------konec<>bloku--");
         os.close();
 
         if (dataType != DataType.DATA_METRICS) {
