@@ -1461,6 +1461,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                                     continue;
                                 }
                             }
+                        } else if (ArtifactInfo.GROUP_ID.equals(fieldName)) {
+                            try {
+                                q = indexer.constructQuery(MAVEN.GROUP_ID, new StringSearchExpression(one));
+                            } catch (IllegalArgumentException iae) {
+                                //#204651 only escape when problems occur
+                                try {
+                                    q = indexer.constructQuery(MAVEN.GROUP_ID, new StringSearchExpression(QueryParser.escape(one)));
+                                } catch (IllegalArgumentException iae2) {
+                                    //#224088
+                                    continue;
+                                }
+                            }
                         } else {
                             if (field.getMatch() == QueryField.MATCH_EXACT) {
                                 q = new TermQuery(new Term(fieldName, one));
