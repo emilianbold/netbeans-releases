@@ -1153,7 +1153,8 @@ public final class VariousUtils {
         if (skippedOpenParenthesis) {
             boolean posibleMethodTokenNameExists = tokenSequence.movePrevious();
             if (posibleMethodTokenNameExists) {
-                if (isString(tokenSequence.token())) {
+                Token<PHPTokenId> token = tokenSequence.token();
+                if (isString(token) || isComma(token)) {
                     result = false;
                 }
                 tokenSequence.moveNext();
