@@ -172,13 +172,9 @@ public final class NbTaskDataModel {
         Set<TaskAttribute> changedAttributes = unsavedChangedAttributes;
         for (TaskAttribute ta : changedAttributes) {
             // there are still local unsaved changes, keep them in local taskdata
-            TaskAttribute attribute = getLocalTaskData().getRoot().getAttribute(ta.getId());
-            if (attribute == null) {
-                getLocalTaskData().getRoot().deepAddCopy(ta);
-                attribute = getLocalTaskData().getRoot().getAttribute(ta.getId());
-            } else {
-                attribute.setValues(ta.getValues());
-            }
+            TaskData td = getLocalTaskData();
+            td.getRoot().deepAddCopy(ta);
+            TaskAttribute attribute = td.getRoot().getAttribute(ta.getId());
             // now refill the unsaved changes so they belong to the correct local TD
             attributeChanged(attribute);
         }
