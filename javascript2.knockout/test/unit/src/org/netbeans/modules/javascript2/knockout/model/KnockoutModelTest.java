@@ -86,7 +86,7 @@ public class KnockoutModelTest extends ModelTestBase {
     }
 
     public void testKnockout() throws Exception {
-        String file = "testfiles/model/knockout-2.2.1.debug.js";
+        String file = "testfiles/model/knockout-3.0.0beta.debug.js";
         if (!new File(getDataDir(), file).canRead()) {
             return;
         }
@@ -131,6 +131,13 @@ public class KnockoutModelTest extends ModelTestBase {
             }
         }
 
+        // XXX remove additional (generated ?) objects - 3.0.0
+        List<String> names = new ArrayList<String>();
+        Collections.addAll(names, "$data", "$dataFn", "$parents", "$root", "_L3958");
+        for (String name : names) {
+            ko.getProperties().remove(name);
+        }
+
         final StringWriter sw = new StringWriter();
         Model.Printer p = new Model.Printer() {
 
@@ -138,11 +145,18 @@ public class KnockoutModelTest extends ModelTestBase {
             public void println(String str) {
                 // XXX hacks improving the model
                 String real = str;
-                real = real.replaceAll("_L21.ko", "ko");
+                real = real.replaceAll("_L28.ko", "ko");
                 sw.append(real).append("\n");
             }
         };
         model.writeObject(p, ko, true);
+//        model.writeModel(new Model.Printer() {
+//
+//            @Override
+//            public void println(String str) {
+//                sw.append(str).append("\n");
+//            }
+//        });
         assertDescriptionMatches(fo, sw.toString(), false, ".model", true);
     }
 
