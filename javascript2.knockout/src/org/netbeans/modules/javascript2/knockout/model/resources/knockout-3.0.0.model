@@ -2946,9 +2946,7 @@ utils                       : OBJECT utils [ANONYMOUS: false, DECLARED: true - u
                                                                    OBJECT value [ANONYMOUS: false, DECLARED: true - value, MODIFIERS: PUBLIC, PARAMETER]
                                                                    # PROPERTIES
                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-version                     : FUNCTION version [ANONYMOUS: false, DECLARED: true - version, MODIFIERS: PUBLIC, FUNCTION]
-                            # PROPERTIES
-                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+version                     : OBJECT version [ANONYMOUS: false, DECLARED: true - version, MODIFIERS: PUBLIC, PROPERTY]
 virtualElements             : OBJECT virtualElements [ANONYMOUS: false, DECLARED: true - virtualElements, MODIFIERS: PUBLIC, OBJECT]
                             # PROPERTIES
                             allowedBindings                     : OBJECT allowedBindings [ANONYMOUS: false, DECLARED: true - allowedBindings, MODIFIERS: PUBLIC, OBJECT]

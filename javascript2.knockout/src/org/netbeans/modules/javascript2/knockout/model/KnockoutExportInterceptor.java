@@ -173,7 +173,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                     JsObject value = getReference(scope, identifiers, false);
                     if (value != null) {
                         JsObject found = findJsObjectByAssignment(globalObject, value, offset);
-                        if (found != null) {
+                        if (found != null && found.isDeclared()) {
                             value = found;
                         } else {
                             int levelUp = identifiers.size() - 1;
