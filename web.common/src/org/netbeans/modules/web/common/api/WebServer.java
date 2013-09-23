@@ -54,6 +54,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
@@ -110,7 +111,18 @@ public final class WebServer {
                 "webContextRoot must start with slash character"; // NOI18N
         checkStartedServer();
         deployedApps.remove(p);
+        forgetAnyProjectWithThisContext(webContextRoot);
         deployedApps.put(p, new Pair(webContextRoot, siteRoot));
+    }
+
+    // #236293
+    private void forgetAnyProjectWithThisContext(String webContextRoot) {
+        for (Iterator<Entry<Project, Pair>> it = deployedApps.entrySet().iterator(); it.hasNext();) {
+            Entry<Project, Pair> entry = it.next();
+            if (webContextRoot.equals(entry.getValue().webContextRoot)) {
+                it.remove();
+            }
+        }
     }
 
     private static class Pair {
