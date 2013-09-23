@@ -61,7 +61,9 @@ public class WebServerTest extends NbTestCase {
     private FileObject siteRoot1;
     private FileObject fooHtml;
     private Project testProject2;
+    private Project testProject3;
     private FileObject siteRoot2;
+    private FileObject siteRoot3;
     private FileObject barHtml;
 
     public WebServerTest(String testName) {
@@ -86,8 +88,19 @@ public class WebServerTest extends NbTestCase {
         os.write("I'm bar_ley".getBytes());
         os.close();
         barHtml = siteRoot2.getFileObject("bar.html");
+        os = siteRoot2.createAndOpen("foo.html");
+        os.write("I'm fool number Dva".getBytes());
+        os.close();
         testProject1 = new TestProject(proj1);
         testProject2 = new TestProject(proj2);
+
+        FileObject proj3 = FileUtil.createFolder(fo, "proj3");
+        siteRoot3 = FileUtil.createFolder(proj2, "site_c");
+        os = siteRoot3.createAndOpen("foo.html");
+        os.write("I'm fool 3x3".getBytes());
+        os.close();
+        testProject3 = new TestProject(proj3);
+
         MockLookup.setInstances(new FileOwnerQueryImpl(testProject1, testProject2));
     }
 
@@ -108,34 +121,12 @@ public class WebServerTest extends NbTestCase {
         assertNull(ws.fromServer(new URL("http://localhost:8383/xxx/none.html")));
         assertEquals(barHtml, ws.fromServer(new URL("http://localhost:8383/xxx/bar.html")));
 
+        assertURLContent("http://localhost:8383/foo.html", "I'm foo_l");
+        assertURLContent("http://localhost:8383/xxx/bar.html", "I'm bar_ley");
+        assertURLContent("http://localhost:8383/xxx/foo.html", "I'm fool number Dva");
 
-        InputStream is = new URL("http://localhost:8383/foo.html").openStream();
-        byte[] b = new byte[30];
-        is.read(b);
-        is.close();
-        assertEquals("I'm foo_l", new String(b).trim());
-        is = new URL("http://localhost:8383/xxx/bar.html").openStream();
-        is.read(b);
-        is.close();
-        assertEquals("I'm bar_ley", new String(b).trim());
-
-        boolean ok = false;
-        try {
-            is = new URL("http://localhost:8383/xxx/none.html").openStream();
-            is.read(b);
-        } catch (IOException ex) {
-            ok = true;
-        }
-        assert(ok);
-
-        ok = false;
-        try {
-            is = new URL("http://localhost:8383/none/a.html").openStream();
-            is.read(b);
-        } catch (IOException ex) {
-            ok = true;
-        }
-        assert(ok);
+        assertURLDoesNotExist("http://localhost:8383/xxx/none.html");
+        assertURLDoesNotExist("http://localhost:8383/none/a.html");
 
         ws.stop(testProject1);
         assertNull(ws.toServer(fooHtml));
@@ -149,23 +140,60 @@ public class WebServerTest extends NbTestCase {
         assertNull(ws.toServer(barHtml));
         assertNull(ws.fromServer(new URL("http://localhost:8383/xxx/bar.html")));
 
-        ok = false;
-        try {
-            is = new URL("http://localhost:8383/foo.html").openStream();
-            is.read(b);
-        } catch (IOException ex) {
-            ok = true;
-        }
-        assert(ok);
+        assertURLDoesNotExist("http://localhost:8383/foo.html");
+        assertURLDoesNotExist("http://localhost:8383/xxx/bar.html");
+    }
 
-        ok = false;
+    public void testWebServer2() throws Exception {
+        WebServer ws = WebServer.getWebserver();
+
+        ws.start(testProject1, siteRoot1, "/app1");
+        assertURLContent("http://localhost:8383/app1/foo.html", "I'm foo_l");
+
+        ws.start(testProject2, siteRoot2, "/app2");
+        assertURLContent("http://localhost:8383/app2/foo.html", "I'm fool number Dva");
+
+        ws.start(testProject3, siteRoot3, "/app3");
+        assertURLContent("http://localhost:8383/app3/foo.html", "I'm fool 3x3");
+
+        ws.start(testProject1, siteRoot1, "/app");
+        assertURLContent("http://localhost:8383/app/foo.html", "I'm foo_l");
+        assertURLContent("http://localhost:8383/app3/foo.html", "I'm fool 3x3");
+        assertURLDoesNotExist("http://localhost:8383/app1/foo.html");
+
+        ws.start(testProject2, siteRoot2, "/app");
+        assertURLContent("http://localhost:8383/app/foo.html", "I'm fool number Dva");
+        assertURLContent("http://localhost:8383/app3/foo.html", "I'm fool 3x3");
+        assertURLDoesNotExist("http://localhost:8383/app2/foo.html");
+
+        ws.start(testProject1, siteRoot1, "/app");
+        assertURLContent("http://localhost:8383/app/foo.html", "I'm foo_l");
+        assertURLContent("http://localhost:8383/app3/foo.html", "I'm fool 3x3");
+
+        ws.start(testProject2, siteRoot2, "/app");
+        assertURLContent("http://localhost:8383/app/foo.html", "I'm fool number Dva");
+        assertURLContent("http://localhost:8383/app3/foo.html", "I'm fool 3x3");
+    }
+
+    private void assertURLContent(String url, String content) throws Exception {
+        InputStream is = new URL(url).openStream();
+        byte[] b = new byte[30];
+        is.read(b);
+        is.close();
+        assertEquals(content, new String(b).trim());
+    }
+
+    private void assertURLDoesNotExist(String url) throws Exception {
+        boolean ok = false;
         try {
-            is = new URL("http://localhost:8383/xxx/bar.html").openStream();
+            byte[] b = new byte[30];
+            InputStream is = new URL(url).openStream();
             is.read(b);
         } catch (IOException ex) {
             ok = true;
         }
-        assert(ok);
+        assertTrue(url, ok);
+
     }
 
     private static class TestProject implements Project {
