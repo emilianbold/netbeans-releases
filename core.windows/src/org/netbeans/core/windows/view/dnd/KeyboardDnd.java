@@ -66,13 +66,13 @@ import org.openide.windows.TopComponent;
  * Adds AWT event listener and paints drag and drop feedback over the main window
  * as if when dragging a window/mode using mouse. Performs the actual drop when
  * Enter key is pressed.
- * 
+ *
  * @author S. Aubrecht
  */
 final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
-    
+
     private static KeyboardDnd currentDnd;
-    
+
     private final WindowDnDManager dndManager;
     private final TopComponentDraggable draggable;
     private final WindowDnDManager.ViewAccessor viewAccessor;
@@ -80,13 +80,13 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
     private int currentIndex;
     private ComponentSide currentSide = new ComponentSide(Side.center);
     private DropTargetGlassPane lastGlass = null;
-    
+
     private KeyboardDnd( WindowDnDManager dndManager, TopComponentDraggable draggable, WindowDnDManager.ViewAccessor viewAccessor ) {
         this.dndManager = dndManager;
         this.draggable = draggable;
         this.viewAccessor = viewAccessor;
     }
-    
+
     static void start( WindowDnDManager dndManager, TopComponentDraggable draggable, WindowDnDManager.ViewAccessor viewAccessor ) {
         if( !SwingUtilities.isEventDispatchThread() ) {
             throw new IllegalStateException( "This method must be called from EDT."); //NOI18N
@@ -98,12 +98,12 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
         currentDnd = new KeyboardDnd( dndManager, draggable, viewAccessor );
         currentDnd.start();
     }
-    
+
     private void start() {
         Toolkit.getDefaultToolkit().addAWTEventListener( this, KeyEvent.KEY_EVENT_MASK );
         TopComponent.getRegistry().addPropertyChangeListener( this );
         dndManager.dragStarting( null, new Point(0,0), draggable );
-        
+
         for( Component c : viewAccessor.getModeComponents() ) {
             if( !(c instanceof ModeComponent && c instanceof TopComponentDroppable) )
                 continue;
@@ -127,6 +127,11 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
                     return 1;
                 if( !floating1 && floating2 )
                     return -1;
+                //#JDEV 13062386
+                if( !d1.getDropComponent().isShowing()
+                        || !d2.getDropComponent().isShowing() ) {
+                    return 0;
+                }
                 Point loc1 = d1.getDropComponent().getLocationOnScreen();
                 Point loc2 = d2.getDropComponent().getLocationOnScreen();
                 int res = loc1.x - loc2.x;
@@ -139,12 +144,12 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
         currentIndex = 0;
         refresh();
     }
-    
+
     static void abort() {
         if( null != currentDnd )
             currentDnd.stop( false );
     }
-    
+
     private void refresh() {
         TopComponentDroppable droppable = targets.get( currentIndex );
         DropTargetGlassPane glass = findGlassPane( droppable );
@@ -158,7 +163,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
         }
         lastGlass = glass;
     }
-    
+
     private DropTargetGlassPane findGlassPane( TopComponentDroppable droppable ) {
         Component dropC = droppable.getDropComponent();
         if( dropC instanceof JComponent ) {
@@ -175,7 +180,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             return;
         KeyEvent ke = ( KeyEvent ) e;
         ke.consume();
-        
+
         if( e.getID() == KeyEvent.KEY_PRESSED ) {
 
             switch( ke.getKeyCode() ) {
@@ -212,7 +217,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             }
         }
     }
-    
+
     @Override
     public void propertyChange( PropertyChangeEvent evt ) {
         if( TopComponent.Registry.PROP_ACTIVATED.equals( evt.getPropertyName() )
@@ -220,7 +225,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             abort();
         }
     }
-    
+
     private void stop( boolean commitChanges ) {
         Toolkit.getDefaultToolkit().removeAWTEventListener( this );
         TopComponent.getRegistry().removePropertyChangeListener( this );
@@ -239,7 +244,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
                 currentDnd = null;
         }
     }
-    
+
     private boolean checkDropLocation() {
         TopComponentDroppable droppable = targets.get( currentIndex );
         DropTargetGlassPane glass = findGlassPane( droppable );
@@ -250,35 +255,35 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             return false;
         return droppable.getIndicationForLocation( dropLocation ) != null;
     }
-    
+
     private void decrementIndex() {
         currentIndex--;
         if( currentIndex < 0 )
             currentIndex = targets.size()-1;
     }
-    
+
     private void incrementIndex() {
         currentIndex++;
         if( currentIndex > targets.size()-1 )
             currentIndex = 0;
     }
-    
+
     private boolean isCurrentDroppableFloating() {
         TopComponentDroppable droppable = targets.get( currentIndex );
         return isDroppableFloating( droppable );
     }
-    
+
     private static boolean isDroppableFloating( TopComponentDroppable droppable ) {
         return droppable instanceof JDialog;
     }
-    
+
     private class ComponentSide {
         private final Side side;
 
         public ComponentSide( Side side ) {
             this.side = side;
         }
-        
+
         ComponentSide moveLeft() {
             if( isCurrentDroppableFloating() ) {
                 decrementIndex();
@@ -293,7 +298,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             }
             return new ComponentSide( Side.left );
         }
-        
+
         ComponentSide moveRight() {
             if( isCurrentDroppableFloating() ) {
                 incrementIndex();
@@ -308,7 +313,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             }
             return new ComponentSide( Side.right );
         }
-        
+
         ComponentSide moveDown() {
             if( isCurrentDroppableFloating() ) {
                 incrementIndex();
@@ -323,7 +328,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             }
             return new ComponentSide( Side.bottom );
         }
-        
+
         ComponentSide moveUp() {
             if( isCurrentDroppableFloating() ) {
                 decrementIndex();
@@ -338,7 +343,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             }
             return new ComponentSide( Side.top );
         }
-        
+
         Point getDropLocation( TopComponentDroppable droppable ) {
             Point res = getDropLocation( droppable, 30 );
             Shape indication = droppable.getIndicationForLocation( res );
@@ -346,7 +351,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
                 res = getDropLocation( droppable, 5 );
             return res;
         }
-        
+
         Point getDropLocation( TopComponentDroppable droppable, int dropMargin ) {
             Dimension size = droppable.getDropComponent().getSize();
             Point res = new Point();
@@ -375,7 +380,7 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
             return res;
         }
     }
-    
+
     private enum Side {
         left,
         right,
