@@ -357,11 +357,18 @@ public final class RepositoryPreferences {
     public static int getIndexUpdateFrequency() {
         return getPreferences().getInt(PROP_INDEX_FREQ, Boolean.getBoolean("netbeans.full.hack") ? FREQ_NEVER : FREQ_ONCE_WEEK);
     }
-    
+    /**
+     * @since 2.27
+     * @param bool 
+     */
     public static void setIndexRepositories(boolean bool) {
         getPreferences().putBoolean(PROP_INDEX, bool);
     }
 
+    /**
+     * @since 2.27
+     * @return 
+     */
     public static boolean isIndexRepositories() {
         return getPreferences().getBoolean(PROP_INDEX, true);
     }
