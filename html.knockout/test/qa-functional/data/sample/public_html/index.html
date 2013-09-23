@@ -1,16 +1,9 @@
-<!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<html>
-  <head>
-    <title>TODO supply a title</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width">
-  </head>
-  <body>
-    <div>TODO write content</div>
-  </body>
-</html>
+<h4>People</h4>
+<ul data-bind="foreach: people">
+    <li>
+        Name at position <span data-bind="text: $index"> </span>:
+        <span data-bind="text: name"> </span>
+        <a href="#" data-bind="click: $parent.">Remove</a>
+    </li>
+</ul>
+<button data-bind="click: addPerson">Add</button>
