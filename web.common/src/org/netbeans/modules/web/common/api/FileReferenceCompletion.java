@@ -107,7 +107,7 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
             FileObject documentBase = ProjectWebRootQuery.getWebRoot(orig);
             // need to normalize fileNamePart with respect to orig
             String aaaa = orig.isFolder() ? orig.getPath() + "/" : orig.getPath(); 
-            String ctxPath = resolveRelativeURL(aaaa, path);  // NOI18N
+            String ctxPath = resolveRelativeURL("/"+aaaa, path);  // NOI18N
             //is this absolute path?
             if (path.startsWith("/")) {
                 if (documentBase == null) {
