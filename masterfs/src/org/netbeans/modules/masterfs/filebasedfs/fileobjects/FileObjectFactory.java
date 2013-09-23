@@ -510,7 +510,7 @@ public final class FileObjectFactory {
 
     private Set<BaseFileObj> collectForRefresh(boolean noRecListeners) {
         final Set<BaseFileObj> all2Refresh;
-        allIBaseLock.readLock().lock();
+        allIBaseLock.writeLock().lock();
         try {
             all2Refresh = new WeakSet<BaseFileObj>(allIBaseFileObjects.size() * 3 + 11);
             final Iterator<Object> it = allIBaseFileObjects.values().iterator();
@@ -539,7 +539,7 @@ public final class FileObjectFactory {
                 }
             }
         } finally {
-            allIBaseLock.readLock().unlock();
+            allIBaseLock.writeLock().unlock();
         }
         all2Refresh.remove(root); // #182793
         return all2Refresh;
