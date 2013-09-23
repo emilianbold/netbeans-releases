@@ -59,14 +59,18 @@ public abstract class TabDecorator {
      * @param tab
      * @return Text to use as tab title or null to use default value.
      */
-    public abstract String getText( TabData tab );
+    public String getText( TabData tab ) {
+        return null;
+    }
 
     /**
      *
      * @param tab
      * @return Icon for the given tab or null to use default value.
      */
-    public abstract Icon getIcon( TabData tab );
+    public Icon getIcon( TabData tab ) {
+        return null;
+    }
 
     /**
      *
@@ -74,7 +78,9 @@ public abstract class TabDecorator {
      * @param selected
      * @return Background color for the given tab or null to use default value.
      */
-    public abstract Color getBackground( TabData tab, boolean selected );
+    public Color getBackground( TabData tab, boolean selected ) {
+        return null;
+    }
 
     /**
      * 
@@ -82,7 +88,9 @@ public abstract class TabDecorator {
      * @param selected
      * @return Foreground color for the given tab or null to use default value.
      */
-    public abstract Color getForeground( TabData tab, boolean selected );
+    public Color getForeground( TabData tab, boolean selected ) {
+        return null;
+    }
 
     /**
      * Perform any additional painting into tab's rectangle.
@@ -90,5 +98,6 @@ public abstract class TabDecorator {
      * @param g
      * @param tabRect 
      */
-    public abstract void paintAfter( TabData tab, Graphics g, Rectangle tabRect, boolean isSelected );
+    public void paintAfter( TabData tab, Graphics g, Rectangle tabRect, boolean isSelected ) {
+    }
 }

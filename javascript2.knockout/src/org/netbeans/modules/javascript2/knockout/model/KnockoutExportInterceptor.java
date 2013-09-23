@@ -173,7 +173,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                     JsObject value = getReference(scope, identifiers, false);
                     if (value != null) {
                         JsObject found = findJsObjectByAssignment(globalObject, value, offset);
-                        if (found != null) {
+                        if (found != null && found.isDeclared()) {
                             value = found;
                         } else {
                             int levelUp = identifiers.size() - 1;
@@ -206,11 +206,16 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
                         OffsetRange offsetRange = new OffsetRange(offset, offset + name.length());
                         JsObject property = parent.getProperty(name);
                         if (property != null) {
-                            Map<String, JsObject> current = new HashMap<String, JsObject>(property.getProperties());
-                            current.keySet().removeAll(value.getProperties().keySet());
-                            for (Map.Entry<String, JsObject> entry : current.entrySet()) {
-                                // XXX reference ?
-                                value.addProperty(entry.getKey(), entry.getValue());
+                            // XXX is looks like value is artificial
+                            if ((property instanceof JsFunction) && !(value instanceof JsFunction)) {
+                                value = property;
+                            } else {
+                                Map<String, JsObject> current = new HashMap<String, JsObject>(property.getProperties());
+                                current.keySet().removeAll(value.getProperties().keySet());
+                                for (Map.Entry<String, JsObject> entry : current.entrySet()) {
+                                    // XXX reference ?
+                                    value.addProperty(entry.getKey(), entry.getValue());
+                                }
                             }
                         }
 

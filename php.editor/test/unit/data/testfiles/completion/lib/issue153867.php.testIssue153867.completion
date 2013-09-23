@@ -243,6 +243,7 @@ CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
 CLASS      MyClass                         [PUBLIC]   MyClass.php
 CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
+CLASS      MyCls                           [PUBLIC]   issue236184.php
 CLASS      MyIface                         [PUBLIC]   insideInterface.php
 CLASS      MyNewClass123                   [PUBLIC]   Foo
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php

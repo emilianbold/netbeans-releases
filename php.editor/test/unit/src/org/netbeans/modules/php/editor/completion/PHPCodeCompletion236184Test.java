@@ -39,52 +39,47 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.knockout.model;
+package org.netbeans.modules.php.editor.completion;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
+import java.io.File;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
-import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
-import org.openide.util.NbBundle;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Hejl
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ModelInterceptor.Registration(priority=200)
-public class KnockoutModelInterceptor implements ModelInterceptor {
+public class PHPCodeCompletion236184Test extends PHPCodeCompletionTestBase {
 
-    private static final Logger LOGGER = Logger.getLogger(KnockoutModelInterceptor.class.getName());
+    public PHPCodeCompletion236184Test(String testName) {
+        super(testName);
+    }
 
-    // for unit testing
-    static boolean disabled = false;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests236184/issue236184.php", "$myCls->fnc(\"\", new DateTime())->^ // CC here", false);
+    }
 
-    @NbBundle.Messages("label_knockout=Knockout")
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests236184/issue236184.php", "$myCls->fnc(new DateTime(), \"\")->^ // CC here", false);
+    }
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests236184/issue236184.php", "$myCls->fnc(new DateTime())->^ // CC here", false);
+    }
+
     @Override
-    public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
-        if (disabled) {
-            return Collections.emptySet();
-        }
-
-        InputStream is = getClass().getClassLoader().getResourceAsStream(
-                "org/netbeans/modules/javascript2/knockout/model/resources/knockout-3.0.0.model"); // NOI18N
-        try {
-            return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout()));
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return Collections.emptySet();
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.INFO, null, ex);
-            }
-        }
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests236184/"))
+            })
+        );
     }
 
 }

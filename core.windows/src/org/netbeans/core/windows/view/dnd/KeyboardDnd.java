@@ -127,6 +127,11 @@ final class KeyboardDnd implements AWTEventListener, PropertyChangeListener {
                     return 1;
                 if( !floating1 && floating2 )
                     return -1;
+                //#JDEV 13062386
+                if( !d1.getDropComponent().isShowing()
+                        || !d2.getDropComponent().isShowing() ) {
+                    return 0;
+                }
                 Point loc1 = d1.getDropComponent().getLocationOnScreen();
                 Point loc2 = d2.getDropComponent().getLocationOnScreen();
                 int res = loc1.x - loc2.x;
