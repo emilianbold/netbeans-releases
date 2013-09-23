@@ -666,13 +666,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);                    
-                    if (index) {                        
-                        try {
-                            NexusRepositoryIndexerImpl.this.indexLoadedRepo(repo, true);
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
-                            return null;
-                        }    
+                    if (index) {    
+                        //do not bother indexing
+                        return null; 
                     }
                     Map<String, IndexingContext> indexingContexts = getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -753,12 +749,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 public @Override Void run() throws Exception {
                     boolean index = loadIndexingContext2(repo);
                     if (index) {                        
-                        try {
-                            indexLoadedRepo(repo, true); //TODO do we care here?
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.INFO, "could not (re-)index " + repo.getId(), ex);
-                            return null;
-                        }
+                        return null; //do not bother indexing
                     }
                     Map<String, IndexingContext> indexingContexts = getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
