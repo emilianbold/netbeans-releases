@@ -44,6 +44,7 @@ package org.netbeans.modules.nativeexecution.api.util;
 import com.jcraft.jsch.Channel;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -215,17 +216,18 @@ public final class RemoteStatistics implements Callable<Boolean> {
         if (OUTPUT == null) {
             return System.out;
         }
-        File dir = new File(OUTPUT);
-        if (!dir.isDirectory()) {
-            throw new IllegalArgumentException(OUTPUT + " is not a directory!"); // NOI18N
-        }
-        if (!dir.canWrite()) {
-            throw new IllegalArgumentException(OUTPUT + " is not writable!"); // NOI18N
-        }
         try {
+            File dir = new File(OUTPUT);
+            if (!dir.isDirectory()) {
+                throw new IOException(OUTPUT + " is not a directory!"); // NOI18N
+            }
+            if (!dir.canWrite()) {
+                throw new IOException(OUTPUT + " is not writable!"); // NOI18N
+            }
             return new PrintStream(new File(dir, name));
-        } catch (FileNotFoundException ex) {
-            throw new IllegalArgumentException();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return System.out;
         }
     }
 
