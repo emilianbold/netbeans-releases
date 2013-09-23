@@ -141,13 +141,13 @@ public class StatisticsActions {
 
         @Override
         protected void performAction(final ExecutionEnvironment env, Node node) {
-            final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
+            final NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        RemoteStatistics.startTest(notifyDescriptor.getValue().toString(), null, 0, 10000);
+                        RemoteStatistics.startTest(notifyDescriptor.getInputText(), null, 0, 10000);
                     }
                 });
             }
