@@ -1,16 +1,19 @@
-function SimpleMode(){
-    this.name = "Test";
-    var lastName = "Simple";
+function AppViewModel() {
     var self = this;
-    this.log = function(){
-        return "log";
+ 
+    self.people = ko.observableArray([
+        { name: 'Bert' },
+        { name: 'Charles' },
+        { name: 'Denise' }
+    ]);
+ 
+    self.addPerson = function() {
+        self.people.push({ name: "New at " + new Date() });
     };
-    this.printName = ko.computed(function(){
-        return "<b>"+self.name+" "+lastName+"</b>";
-    });
-
-    self.skills = { "speak":1, "listen":2, "point": function(){}};
-    self.today = new Date();
-
+ 
+    self.removePerson = function() {
+        self.people.remove(this);
+    }
 }
-ko.applyBindings(new SimpleMode());
+ 
+ko.applyBindings(new AppViewModel());

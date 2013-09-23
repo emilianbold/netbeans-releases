@@ -47,11 +47,12 @@ import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.modules.html.knockout.GeneralKnockout;
 
 /**
  *
- * @author vriha
+ * @author Vladimir Riha (vriha)
  */
 public class CompletionTest extends GeneralKnockout {
 
@@ -67,7 +68,13 @@ public class CompletionTest extends GeneralKnockout {
                     "testBindingModel",
                     "testUsedVariable",
                     "testMultipleBindings",
-                    "testMultipleModel"
+                    "testMultipleModel",
+                    "testCustomBindingModel",
+                    "testBindingModelWith",
+                    "testBindingForEach",
+                    "testBindingForEachParent",
+                    "testBindingForEachRoot",
+                    "testBindingForEach2"
             ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
   }
 
@@ -140,7 +147,7 @@ public class CompletionTest extends GeneralKnockout {
     eo.setCaretPositionToEndOfLine(6);
     eo.pressKey(KeyEvent.VK_ENTER);
     eo.insert("<div data-bind=\"text: newVariable, visible: \"></div>");
-    eo.setCaretPosition("sble,", 0, true);
+    eo.setCaretPosition("ible:", 0, true);
     eo.pressKey(KeyEvent.VK_RIGHT);
     eo.pressKey(KeyEvent.VK_RIGHT);
     eo.pressKey(KeyEvent.VK_RIGHT);
@@ -192,6 +199,127 @@ public class CompletionTest extends GeneralKnockout {
     completion.listItself.hideAll();
 
     cleanLine(eo);
+    endTest();
+  }
+
+  public void testCustomBindingModel() {
+    startTest();
+    EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"mybinding: \"></div>");
+    eo.setCaretPosition("g: ", 0, true);
+
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"gamesToPlay", "gamesCount", "name", "log", "printLastname", "printName", "window", "Math"});
+    completion.listItself.hideAll();
+
+    type(eo, "p");
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+    completion = getCompletion();
+    cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"printLastname", "printName"});
+    checkCompletionDoesntContainItems(cjo, new String[]{"log", "name"});
+    completion.listItself.hideAll();
+
+    cleanLine(eo);
+    endTest();
+  }
+
+  public void testBindingModelWith() {
+    startTest();
+    EditorOperator eo = new EditorOperator("0-iteratingwithdivs.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"with: skills \"><span data-bind=\"text: \"></span></div></div>");
+    eo.setCaretPosition("t: ", 0, true);
+
+    eo.pressKey(KeyEvent.VK_RIGHT);
+    eo.pressKey(KeyEvent.VK_RIGHT);
+
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"speak", "listen", "point"});
+    completion.listItself.hideAll();
+
+    cleanLine(eo);
+    endTest();
+  }
+
+  public void testBindingForEach() throws Exception {
+    startTest();
+    JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
+    openDataProjects("sample");
+    openFile("index.html", "sample");
+    evt.waitNoEvent(2000);
+
+    EditorOperator eo = new EditorOperator("index.html");
+    eo.setCaretPosition("t.", false);
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"addPerson", "removePerson"});
+    completion.listItself.hideAll();
+    type(eo, "addPerson");
+    endTest();
+  }
+
+  public void testBindingForEachParent() throws Exception {
+    startTest();
+    EditorOperator eo = new EditorOperator("index.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: $parents[0].\"></div>");
+    eo.setCaretPosition("[0].", false);
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"addPerson", "removePerson"});
+    completion.listItself.hideAll();
+    type(eo, "addPerson");
+    endTest();
+  }
+
+  public void testBindingForEachRoot() throws Exception {
+    startTest();
+    EditorOperator eo = new EditorOperator("index.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"text: $root.\"></div>");
+    eo.setCaretPosition("ot.", false);
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"addPerson", "removePerson"});
+    completion.listItself.hideAll();
+    type(eo, "addPerson");
+    endTest();
+  }
+
+  public void testBindingForEach2() throws Exception {
+    startTest();
+    EditorOperator eo = new EditorOperator("index.html");
+    eo.setCaretPositionToEndOfLine(6);
+    eo.pressKey(KeyEvent.VK_ENTER);
+    eo.insert("<div data-bind=\"value: \"></div>");
+    eo.setCaretPosition("ue:", false);
+    eo.typeKey(' ', InputEvent.CTRL_MASK);
+
+    CompletionInfo completion = getCompletion();
+    CompletionJListOperator cjo = completion.listItself;
+    checkCompletionItems(cjo, new String[]{"$index", "$data", "$parents"});
+    completion.listItself.hideAll();
     endTest();
   }
 
