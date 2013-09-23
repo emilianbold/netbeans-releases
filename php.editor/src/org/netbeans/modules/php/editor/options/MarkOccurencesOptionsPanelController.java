@@ -59,12 +59,12 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
 
     @Override
     public void update() {
-        panel.load(this);
+        getPanel().load(this);
     }
 
     @Override
     public void applyChanges() {
-        panel.store();
+        getPanel().store();
     }
 
     @Override
@@ -79,7 +79,7 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
 
     @Override
     public boolean isChanged() {
-        return panel.changed();
+        return getPanel().changed();
     }
 
     @Override
@@ -89,6 +89,10 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
 
     @Override
     public synchronized JComponent getComponent(Lookup masterLookup) {
+        return getPanel();
+    }
+
+    public synchronized MarkOccurencesPanel getPanel() {
         if (panel == null) {
             panel = new MarkOccurencesPanel(this);
         }
