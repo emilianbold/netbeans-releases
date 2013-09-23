@@ -146,7 +146,9 @@ public final class RemoteStatistics implements Callable<Boolean> {
         while (true) {
             synchronized (trafficDetected) {
                 try {
-                    trafficDetected.wait(quietPrePeriodMillis);
+                    if (quietPrePeriodMillis > 0) {
+                        trafficDetected.wait(quietPrePeriodMillis);
+                    }
                     if (!trafficDetected.getAndSet(false)) {
                         break;
                     }
