@@ -45,7 +45,7 @@ cd ${DIRNAME}
 SCRIPT_DIR=`pwd`
 source init.sh
 
-if [ -n $JDEV_BUILD ]; then
+if [ -n "$JDEV_BUILD" ]; then
     echo "building limited subset of the modules for jdev"
     CLUSTER_CONFIG="-Dcluster.config=java"
 else

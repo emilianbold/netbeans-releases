@@ -441,9 +441,10 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void renameCategory(Category category, final String newName) {
-        CategoryNode node = mapCategoryToNode.get(category);
+        CategoryNode node = mapCategoryToNode.remove(category);
         final String oldName = category.getName();
         category.setName(newName);
+        mapCategoryToNode.put(category, node);
         model.contentChanged(node);
         REQUEST_PROCESSOR.post(new Runnable() {
             @Override
