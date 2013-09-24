@@ -488,45 +488,45 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         if (CsmKindUtilities.isTemplate(classifier)) {
             List<CsmTemplateParameter> templateParams = ((CsmTemplate) classifier).getTemplateParameters();
             if (params.size() == templateParams.size() && CsmKindUtilities.isClass(classifier)) {
-                CsmProject proj = contextFile.getProject();
-                if (proj instanceof ProjectBase) {
+                List<ProjectBase> projects = collectProjects(contextFile);
+                if (!projects.isEmpty()) {
                     // try to find full specialization of class
                     CsmClass cls = (CsmClass) classifier;
                     StringBuilder fqn = new StringBuilder(cls.getUniqueName());
                     fqn.append(Instantiation.getInstantiationCanonicalText(params));
-                    CsmDeclaration decl = ((ProjectBase) proj).findDeclaration(fqn.toString());
-                    if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
-                        specialization = (CsmClassifier) decl;
-                    }
-                    if (specialization == null && !proj.isArtificial()) {
-                        for(CsmProject lib : proj.getLibraries()) {
-                            if (lib instanceof ProjectBase) {
-                                decl = ((ProjectBase) lib).findDeclaration(fqn.toString());
-                                if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
-                                    specialization = (CsmClassifier) decl;
-                                    break;
-                                }
-                            }
+                    
+                    for (CsmProject proj : projects) {
+                        CsmDeclaration decl = proj.findDeclaration(fqn.toString());
+                        if(decl instanceof ClassImplSpecialization && CsmIncludeResolver.getDefault().isObjectVisible(contextFile, decl)) {
+                            specialization = (CsmClassifier) decl;
+                            break;
                         }
                     }
+                    
                     // try to find partial specialization of class
                     if (specialization == null) {
-                        fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
-                        fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                        fqn.append(cls.getQualifiedName());
-                        fqn.append('<'); // NOI18N
-                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
-                        fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
-                        fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
-                        fqn.append(cls.getQualifiedName());
-                        fqn.append('<'); // NOI18N
-                        specs.addAll(((ProjectBase) proj).findDeclarationsByPrefix(fqn.toString()));
+                        Collection<CsmOffsetableDeclaration> specs = new ArrayList<CsmOffsetableDeclaration>();
+                        
+                        for (ProjectBase proj : projects) {
+                            fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS));
+                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+                            fqn.append(cls.getQualifiedName());
+                            fqn.append('<'); // NOI18N
+                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+                            fqn = new StringBuilder(Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT));
+                            fqn.append(OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR);
+                            fqn.append(cls.getQualifiedName());
+                            fqn.append('<'); // NOI18N
+                            specs.addAll(proj.findDeclarationsByPrefix(fqn.toString()));
+                        }
+                        
                         Collection<CsmOffsetableDeclaration> visibleSpecs = new ArrayList<CsmOffsetableDeclaration>();
                         for (CsmOffsetableDeclaration spec : specs) {
                             if(CsmIncludeResolver.getDefault().isObjectVisible(contextFile, spec)) {
                                 visibleSpecs.add(spec);
                             }
                         }
+                        
                         specialization = findBestSpecialization(visibleSpecs, params, cls);
                     }
                 }
@@ -620,6 +620,33 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         LOG.log(Level.FINE, "CLASSIFIER\n{0}\nSPECIALIZED as {1}", new Object[] {classifier, specialization});
 
         return specialization != null ? specialization : classifier;
+    }
+    
+    /**
+     * Collects projects to find specialization in
+     * 
+     * @param contextFile - start file
+     * 
+     * @return list of projects. First element in the list is the project which contains start file
+     */
+    private List<ProjectBase> collectProjects(CsmFile contextFile) {
+        List<ProjectBase> projects = new ArrayList<>(4);
+        
+        CsmProject project = contextFile.getProject();
+        
+        if (project instanceof ProjectBase) {
+            projects.add((ProjectBase) project);
+        }
+        
+        if (project != null && !project.isArtificial()) {
+            for (CsmProject libProject : project.getLibraries()) {
+                if (libProject instanceof ProjectBase) {
+                    projects.add((ProjectBase) libProject);
+                }
+            }
+        }
+        
+        return projects;
     }
 
     private static CsmClassifier findBestSpecialization(Collection<CsmOffsetableDeclaration> specializations, List<CsmSpecializationParameter> params, CsmClassifier cls) {

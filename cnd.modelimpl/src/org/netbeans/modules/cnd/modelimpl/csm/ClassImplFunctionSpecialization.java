@@ -216,18 +216,18 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         return true;
     }
 
-    private static String getClassName(AST ast) {
+    private static CharSequence getClassName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-        return getClassNameFromFunctionSpecialicationName(funName.toString());
+        return getClassNameFromFunctionSpecialicationName(funName);
     }
 
-    private static String getClassNameFromFunctionSpecialicationName(CharSequence functionName) {
+    private static CharSequence getClassNameFromFunctionSpecialicationName(CharSequence functionName) {
         CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
         StringBuilder className = new StringBuilder("");
         for(int i = 0; i < nameParts.length - 1; i++) {
             className.append(nameParts[i]);
         }
-        return className.toString();
+        return className;
     }
 
     public static int getStartOffset(AST node) {

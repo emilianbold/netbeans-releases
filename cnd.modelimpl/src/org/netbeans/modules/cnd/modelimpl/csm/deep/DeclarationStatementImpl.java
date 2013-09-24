@@ -234,7 +234,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
             ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
-            ForwardClass fc = ForwardClass.createIfNeeded(cfdi.getName().toString(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
+            ForwardClass fc = ForwardClass.createIfNeeded(cfdi.getName(), getContainingFile(), ast, cfdi.getStartOffset(), cfdi.getEndOffset(), scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);
             }
