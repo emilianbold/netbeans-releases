@@ -83,6 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
@@ -240,8 +241,6 @@ public final class PhpCommentGenerator {
             super.visit(p);
         }
 
-
-
         @Override
         public void visit(GlobalStatement node) {
             for (Variable v : node.getVariables()) {
@@ -259,6 +258,11 @@ public final class PhpCommentGenerator {
             }
 
             super.visit(node);
+        }
+
+        @Override
+        public void visit(LambdaFunctionDeclaration declaration) {
+            // do not scan internal functions
         }
 
         @Override
