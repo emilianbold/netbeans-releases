@@ -157,7 +157,6 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
     }
     
     private void createHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
-        System.out.println("found "+expression+" "+expression.getText());
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(expression, doc, fo));
         String description = NbBundle.getMessage(LineFactoryTask.class, "HINT_AssignResultToVariable"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
@@ -251,7 +250,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 return null;
             }
             final String typeText = resolveType.getCanonicalText().toString();
-            if ("void".equals(typeText)) {
+            if ("void".equals(typeText)) { //NOI18N
                 return null;
             }
             final String aName = suggestName();
