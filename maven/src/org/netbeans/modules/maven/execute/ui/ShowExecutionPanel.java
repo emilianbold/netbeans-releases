@@ -53,8 +53,10 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import static javax.swing.Action.NAME;
+import static org.netbeans.modules.maven.execute.ui.Bundle.*;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.execution.ExecutionEvent;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.cmd.ExecutionEventObject;
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
@@ -67,6 +69,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.lookup.Lookups;
 
@@ -75,7 +78,11 @@ import org.openide.util.lookup.Lookups;
  * @author mkleint
  */
 public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
-
+        private static final @StaticResource String ERROR_ICON = "org/netbeans/modules/maven/execute/ui/error.png";
+        private static final @StaticResource String LIFECYCLE_ICON = "org/netbeans/modules/maven/execute/ui/lifecycle.png";
+        private static final @StaticResource String ICON_PHASE = "org/netbeans/modules/maven/execute/ui/phase.png"; 
+        private static final @StaticResource String ICON_MOJO = "org/netbeans/modules/maven/execute/ui/mojo.png";
+        
     private final ExplorerManager manager;
     private boolean showPhases = false;
     private boolean showOnlyErrors = false;
@@ -88,7 +95,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         initComponents();
         ((BeanTreeView)btvExec).setRootVisible(false);
         ((BeanTreeView)btvExec).setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        btnPhaseToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/phase.png", true));
+        btnPhaseToggle.setIcon(ImageUtilities.loadImageIcon(ICON_PHASE, true));
         btnPhaseToggle.addActionListener(new ActionListener() {
 
             @Override
@@ -100,7 +107,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
             }
         });
-        btnFailedToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/maven/execute/ui/error.png", true));
+        btnFailedToggle.setIcon(ImageUtilities.loadImageIcon(ERROR_ICON, true));
         btnFailedToggle.addActionListener(new ActionListener() {
 
             @Override
@@ -371,9 +378,10 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         AbstractNode nd = new AbstractNode(childs, Lookup.EMPTY);
         nd.setName(key.first());
         nd.setDisplayName(key.first());
-        nd.setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/phase.png");
+        nd.setIconBaseWithExtension(ICON_PHASE);
         return nd;
     }
+
     
     private void expandCollapseChildNodes(Node parent, boolean collapse, boolean recursive) {
         for (Node nd : parent.getChildren().getNodes(true)) {
@@ -400,9 +408,10 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             this.end = (ExecMojo) tree.getEndEvent();
             assert start != null && end != null;
             
-            setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/mojo.png");
+            setIconBaseWithExtension(ICON_MOJO);
             setDisplayName(start.goal);
         }
+
 
         @Override
         public String getHtmlDisplayName() {
@@ -429,15 +438,13 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         public Image getIcon(int type) {
             Image img =  super.getIcon(type);
             if (ExecutionEvent.Type.MojoFailed.equals(end.type)) {
-                Image ann = ImageUtilities.loadImage("org/netbeans/modules/maven/execute/ui/error.png"); //NOI18N
+                Image ann = ImageUtilities.loadImage(ERROR_ICON); //NOI18N
 //                ann = ImageUtilities.addToolTipToImage(ann, "Mojo execution failed");
                 return ImageUtilities.mergeImages(img, ann, 8, 0);//NOI18N
             }
             return img;
         }
 
-    
-        
     }
     private static class ProjectNode extends AbstractNode {
         private final ExecProject start;
@@ -449,9 +456,10 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             this.end = (ExecProject) lookup.lookup(ExecutionEventObject.Tree.class).getEndEvent();
             assert start != null && end != null;
 
-            setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/lifecycle.png");
+            setIconBaseWithExtension(LIFECYCLE_ICON);
             setDisplayName(start.gav.artifactId);
         }
+
 
         @Override
         public String getHtmlDisplayName() {
@@ -469,7 +477,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         public Image getIcon(int type) {
             Image img =  super.getIcon(type);
             if (ExecutionEvent.Type.ProjectFailed.equals(end.type)) {
-                Image ann = ImageUtilities.loadImage("org/netbeans/modules/maven/execute/ui/error.png"); //NOI18N
+                Image ann = ImageUtilities.loadImage(ERROR_ICON); //NOI18N
         //        ann = ImageUtilities.addToolTipToImage(ann, "Project build failed");
                 return ImageUtilities.mergeImages(img, ann, 8, 0);//NOI18N
             }
@@ -489,9 +497,9 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
     private static class GotoOutputAction extends AbstractAction {
         private final ExecutionEventObject.Tree item;
-
+        @NbBundle.Messages("ACT_GOTO_Output=Go to Build Output")
         public GotoOutputAction(ExecutionEventObject.Tree item) {
-            putValue(NAME, "Go to Build Output");
+            putValue(NAME, ACT_GOTO_Output());
             this.item = item;
         }
 
@@ -505,8 +513,9 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     private static class GotoSourceAction extends AbstractAction {
         private final ExecMojo mojo;
 
+        @NbBundle.Messages("ACT_GOTO_Exec=Go to Execution source")
         public GotoSourceAction(ExecMojo start) {
-            putValue(NAME, "Go to Execution source");
+            putValue(NAME, ACT_GOTO_Exec());
             setEnabled(start.getLocation() != null);
             this.mojo = start;
         }
