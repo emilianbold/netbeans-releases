@@ -135,6 +135,9 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStartManager;
 import org.netbeans.modules.cnd.debugger.common2.capture.ExternalStart;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
 
 // for rebuildOnNextDebug
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
@@ -147,6 +150,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.openide.nodes.Node;
 
 /**
  * A "service" for DebuggerEngine
@@ -179,6 +183,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private final static int RT_EVAL_AUTO = 3;
     private final static int RT_EVAL_AUTO_LAST = 4;
     private final static int RT_CHASE_AUTO = 5;
+    private final static int RT_EVAL_TOOLTIP = 6;
     final static int RT_EVAL_REGISTER = 7;
 
     public DbxDebuggerImpl(ContextProvider ctxProvider) {
@@ -1563,8 +1568,40 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	    autos.add(v);
 	    if (rt == RT_EVAL_AUTO_LAST) {
 		localUpdater.batchOffForce();
-	    }
-	}
+            }
+        } else if (rt == RT_EVAL_TOOLTIP) {
+            final DbxVariable v;
+            if (result.flags == 0) {
+                v = new DbxVariable(this, localUpdater, null,
+                        result.plain_lhs,
+                        result.plain_lhs,
+                        null,
+                        null,
+                        result.rhs,
+                        rt == RT_CHASE_WATCH);
+                // this will generate a open node list for this var
+                v.setRHS(result.rhs, result.rhs_vdl, rt == RT_CHASE_WATCH);
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ToolTipView.getDefault().setRootElement(new VariableNode(v, new DbxVariableNodeChildren(v))).showTooltip();
+                    }
+
+                });
+            }
+        }
+    }
+    private static final class DbxVariableNodeChildren extends VariableNodeChildren {
+        public DbxVariableNodeChildren(Variable v) {
+            super(v);
+            setKeys(v.getChildren());
+        }
+
+        @Override
+        protected Node[] createNodes(Variable key) {
+            return new Node[]{new VariableNode(key, new DbxVariableNodeChildren(key))};
+        }
     }
 
     /**
@@ -2943,11 +2980,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	}
 
         
+        String text = expr;
+        if (pos >= 0) {
+            text = EvalAnnotation.extractExpr(pos, expr);
+        }
         if (Disassembly.isInDisasm()) {
-            String text = expr;
-            if (pos >= 0) {
-                text = EvalAnnotation.extractExpr(pos, expr);
-            }
             // probably a register - append $ at the beginning
             if (text != null && !text.isEmpty()) {
                 if (Character.isLetter(text.charAt(0))) {
@@ -2957,11 +2994,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         } else {
             // remember to pathmap if file ever becomes non-null
-            dbx.expr_line_eval(0, 0, expr, pos, null, 0, GPDbxLineEval.COMBO_ALL);
+            dbx.expr_heval(RT_EVAL_TOOLTIP, text);
         }
 
-    // result will be sent to us asynchronously via expr_line_eval_result()
-    // which will call balloonResult() below.
+        // result will be sent to us asynchronously via expr_line_eval_result()
+        // which will call balloonResult() below.
     }
     private QualifiedExprListener qeListener;
 
