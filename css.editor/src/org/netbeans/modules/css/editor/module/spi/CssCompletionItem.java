@@ -641,8 +641,6 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
         private final String colorCode;
         private final boolean addQuotes;
 
-        private static final String FILE_SEPARATOR = System.getProperty("file.separator"); //NOI18N
-
         private FileCompletionItem(CssElement element,
                 String value,
                 int anchorOffset,
@@ -706,7 +704,7 @@ public abstract class CssCompletionItem extends DefaultCompletionProposal {
             b.append(getName());
             FileObject file = getElement().getFileObject();
             if (file != null && file.isFolder()) {
-                b.append(FILE_SEPARATOR); //NOI18N
+                b.append(Css3Utils.FILE_SEPARATOR); //NOI18N
             }
             if (addQuotes) {
                 b.append('"'); //NOI18N

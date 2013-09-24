@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.transfer;
+package org.netbeans.core.multiview;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
-import org.netbeans.modules.php.project.connections.RemoteException;
+import org.openide.windows.TopComponent;
 
 /**
- * Mock implementation of {@link RemoteClientImplementation}.
+ *
+ * @author S. Aubrecht
  */
-public final class RemoteClient implements RemoteClientImplementation {
+public interface Splitable {
 
-    private final String baseLocalDirectory;
-    private final String baseRemoteDirectory;
+    TopComponent splitComponent( int orientation );
 
+    TopComponent clearSplit();
 
-    public RemoteClient(String baseLocalDirectory, String baseRemoteDirectory) {
-        this.baseLocalDirectory = baseLocalDirectory;
-        this.baseRemoteDirectory = baseRemoteDirectory;
-    }
-
-    @Override
-    public String getBaseLocalDirectory() {
-        return baseLocalDirectory;
-    }
-
-    @Override
-    public String getBaseRemoteDirectory() {
-        return baseRemoteDirectory;
-    }
-
-    @Override
-    public List<TransferFile> listLocalFiles(TransferFile file) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<TransferFile> listRemoteFiles(TransferFile file) throws RemoteException {
-        return Collections.emptyList();
-    }
-
+    int getSplitOrientation();
 }

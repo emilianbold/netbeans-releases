@@ -197,6 +197,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         super.addNotify();
         if( null != controller )
             controller.addSelectionChangeListener( fullPathListener );
+        updateFullPath();
     }
 
     @Override

@@ -140,7 +140,7 @@ public class EditorOperatorTest extends JellyTestCase {
 
     /** Test of lblRowColumn method. */
     public void testLblRowColumn() {
-        assertEquals("1 | 1", eo.lblRowColumn().getText());
+        assertEquals("1:1", eo.lblRowColumn().getText());
     }
 
     /** Test of lblInputMode method. */
