@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.keyring.Keyring;
 import org.openide.util.Parameters;
 
@@ -76,7 +77,7 @@ public final class ConnectionMethod {
                     if (user == null) {
                         throw new IllegalStateException("No user"); //NOI18N
                     }
-                    char[] passwd = Keyring.read(createKeyringKey(
+                    char[] passwd = Keyring.read(RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         Password.PLAT_PROP_AUTH_PASSWD));
                     if (passwd == null) {
@@ -97,7 +98,7 @@ public final class ConnectionMethod {
                     if (keyStore == null) {
                         throw new IllegalStateException("No key store");    //NOI18N
                     }
-                    final char[] passPhrase = Keyring.read(createKeyringKey(
+                    final char[] passPhrase = Keyring.read(RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         Key.PLAT_PROP_AUTH_PASSPHRASE));
                     if (keyStore == null) {
@@ -132,20 +133,20 @@ public final class ConnectionMethod {
         public String getUserName() {
             return userName;
         }
-
+        
         void store(@NonNull final Map<String,String> props) {
             props.put(PLAT_PROP_AUTH_KIND, getKind().toString());
             props.put(PLAT_PROP_AUTH_USER, getUserName());
         }
 
         @NonNull
-        Collection<String> getBuildProperties() {
+        Collection<String> getGlobalPropertyNames() {
             final Set<String> result = new HashSet<>();
             result.add(PLAT_PROP_AUTH_KIND);
             result.add(PLAT_PROP_AUTH_USER);
             return Collections.unmodifiableSet(result);
         }
-
+        
         @NonNull
         static Authentification load(@NonNull final Map<String,String> props) {
             final String _kind = props.get(PLAT_PROP_AUTH_KIND);
@@ -159,18 +160,7 @@ public final class ConnectionMethod {
         static void clear(@NonNull final String antPlatformName) {
             Password.clear(antPlatformName);
             Key.clear(antPlatformName);
-        }
-
-        @NonNull
-        private static String createKeyringKey(
-            @NonNull String platformAntName,
-            @NonNull String key) {
-            return String.format(
-               "platforms.%s.%s",   //NOI18N
-               platformAntName,
-               key
-               );
-        }
+        }        
 
         public static final class Password extends Authentification {
 
@@ -196,7 +186,7 @@ public final class ConnectionMethod {
             void store(@NonNull final Map<String,String> props) {
                 super.store(props);
                 Keyring.save(
-                    createKeyringKey(
+                    RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         PLAT_PROP_AUTH_PASSWD),
                     getPassword().toCharArray(),
@@ -204,7 +194,7 @@ public final class ConnectionMethod {
             }
 
             static void clear(@NonNull final String antPlatformName) {
-                Keyring.delete(createKeyringKey(antPlatformName, PLAT_PROP_AUTH_PASSWD));
+                Keyring.delete(RemotePlatformProvider.createPropertyName(antPlatformName, PLAT_PROP_AUTH_PASSWD));
             }
         }
 
@@ -242,7 +232,7 @@ public final class ConnectionMethod {
                 super.store(props);
                 props.put(PLAT_PROP_AUTH_KEYSTORE, getKeyStore().getAbsolutePath());
                 Keyring.save(
-                    createKeyringKey(
+                    RemotePlatformProvider.createPropertyName(
                         props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
                         PLAT_PROP_AUTH_PASSPHRASE),
                     getPassPhrase().toCharArray(),
@@ -250,14 +240,14 @@ public final class ConnectionMethod {
             }
 
             static void clear(@NonNull final String antPlatformName) {
-                Keyring.delete(createKeyringKey(antPlatformName, PLAT_PROP_AUTH_PASSPHRASE));
+                Keyring.delete(RemotePlatformProvider.createPropertyName(antPlatformName, PLAT_PROP_AUTH_PASSPHRASE));
             }
 
             @NonNull
             @Override
-            Collection<String> getBuildProperties() {
+            Collection<String> getGlobalPropertyNames() {
                 final Set<String> result = new HashSet<>();
-                result.addAll(super.getBuildProperties());
+                result.addAll(super.getGlobalPropertyNames());
                 result.add(PLAT_PROP_AUTH_KEYSTORE);
                 return  Collections.unmodifiableSet(result);
             }
@@ -301,11 +291,11 @@ public final class ConnectionMethod {
     }
 
     @NonNull
-    Collection<String> getBuildProperties() {
+    Collection<String> getGlobalPropertyNames() {
         final Set<String> result = new HashSet<>();
         result.add(PLAT_PROP_HOST);
         result.add(PLAT_PROP_PORT);
-        result.addAll(auth.getBuildProperties());
+        result.addAll(auth.getGlobalPropertyNames());
         return Collections.unmodifiableSet(result);
     }
 

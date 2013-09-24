@@ -271,12 +271,12 @@ public final class RemotePlatform extends JavaPlatform {
     }
 
     @NonNull
-    Collection<String> getBuildProperties() {
+    Collection<String> getGlobalPropertyNames() {
         final Set<String> result = new HashSet<>();
         result.add(PLAT_PROP_INSTALL_FOLDER);
         result.add(PLAT_PROP_WORK_FOLDER);
         result.add(PROP_VM_DEBUG);
-        result.addAll(getConnectionMethod().getBuildProperties());
+        result.addAll(getConnectionMethod().getGlobalPropertyNames());
         return Collections.unmodifiableSet(result);
     }
 

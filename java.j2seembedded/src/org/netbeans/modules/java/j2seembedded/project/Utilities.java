@@ -97,7 +97,7 @@ final class Utilities {
     private static final Set<String> REMOVE_CONFIG_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(new String[] {TARGET_RUN, TARGET_DEBUG})));
 
-    static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
+    private static final String PLATFORM_RUNTIME = "platform.runtime"; //NOI18N
 
     static {
         Map<String,String> m = new HashMap<>();
@@ -147,25 +147,20 @@ final class Utilities {
     };
 
     @CheckForNull
-    static JavaPlatform findRemotePlatform(@NonNull final String platformId) {
-        Parameters.notNull("platformId", platformId);   //NOI18N
-        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
-                null,
-                new Specification(RemotePlatform.SPEC_NAME, null));
-        for (JavaPlatform platform : platforms) {
-            final String antPlatformName = platform.getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME);
-            if (platformId.equals(antPlatformName)) {
-                return platform;
-            }
+    static RemotePlatform getRemotePlatform(@NonNull final Project prj) {
+        final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();
+        final String rpid = eval.getProperty(PLATFORM_RUNTIME);
+        if (rpid == null || rpid.isEmpty()) {
+            return null;
         }
-        return null;
+        return findRemotePlatform(rpid);
     }
 
 
     static boolean hasRemotePlatform(@NonNull final Project prj) {
         final PropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class).evaluator();
         final String rpid = eval.getProperty(PLATFORM_RUNTIME);
-        if (rpid != null) {
+        if (rpid != null && !rpid.isEmpty()) {
             if (findRemotePlatform(rpid) != null) {
                 return true;
             }
@@ -309,6 +304,21 @@ final class Utilities {
             }
         }
         return rpBuildScript;
+    }
+
+
+    private static RemotePlatform findRemotePlatform(@NonNull final String platformId) {
+        Parameters.notNull("platformId", platformId);   //NOI18N
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
+                null,
+                new Specification(RemotePlatform.SPEC_NAME, null));
+        for (JavaPlatform platform : platforms) {
+            final String antPlatformName = platform.getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME);
+            if (platformId.equals(antPlatformName) && (platform instanceof RemotePlatform)) {
+                return (RemotePlatform) platform;
+            }
+        }
+        return null;
     }
 
     private static boolean isBuildScriptUpToDate(@NonNull final Project project) {

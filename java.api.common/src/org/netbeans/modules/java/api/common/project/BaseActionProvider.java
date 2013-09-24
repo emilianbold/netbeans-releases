@@ -596,6 +596,13 @@ public abstract class BaseActionProvider implements ActionProvider {
                 if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command)) {
                     p.put("nb.wait.for.caches", "true");
                 }
+                final Callback cb = getCallback();
+                final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
+                if (cb2 instanceof Callback3) {
+                    final Map<String,String> additionalProperties = ((Callback3)cb2).createAdditionalProperties(command, context);
+                    assert additionalProperties != null;
+                    p.putAll(additionalProperties);
+                }
                 if (p.keySet().isEmpty()) {
                     p = null;
                 }
@@ -605,11 +612,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         //The build.xml was deleted after the isActionEnabled was called
                         NotifyDescriptor nd = new NotifyDescriptor.Message(LBL_No_Build_XML_Found(), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
-                        final Callback cb = getCallback();
-                        final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
-
+                    } else {
                         if (cb2 != null) {
                             cb2.antTargetInvocationStarted(command, context);
                         }
@@ -2032,6 +2035,27 @@ public abstract class BaseActionProvider implements ActionProvider {
          */
         void antTargetInvocationFailed(final String command, final Lookup context);
 
+    }
+
+    /**
+     * Callback for accessing project private data and supporting
+     * ant invocation hooks.
+     *
+     * @since 1.58
+     */
+    public static interface Callback3 extends Callback2 {
+        /**
+         * Creates additional properties passed to the <i>ant</t>.
+         * Called before an <i>ant</i> target is invoked. Note that call to
+         * {@link #invokeAction(java.lang.String, org.openide.util.Lookup)} does
+         * not necessarily means call to ant.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         * @return the {@link Map} of additional properties.
+         */
+        @NonNull
+        Map<String,String> createAdditionalProperties(@NonNull String command, @NonNull Lookup context);
     }
 
     public static final class CallbackImpl implements Callback {

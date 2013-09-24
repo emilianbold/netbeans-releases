@@ -315,7 +315,7 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
                     final Map<String,String> props = platform.getProperties();
                     final String antPlatformName = props.get(RemotePlatform.PLAT_PROP_ANT_NAME);
                     final EditableProperties ep = PropertyUtils.getGlobalProperties();                    
-                    for (String key : platform.getBuildProperties()) {
+                    for (String key : platform.getGlobalPropertyNames()) {
                         final String value = props.get(key);
                         if (value != null) {
                             ep.setProperty(
@@ -337,7 +337,7 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
     }
 
     @NonNull
-    private static String createPropertyName(
+    static String createPropertyName(
             @NonNull final String antPlatformName,
             @NonNull final String propName) {
         return String.format(

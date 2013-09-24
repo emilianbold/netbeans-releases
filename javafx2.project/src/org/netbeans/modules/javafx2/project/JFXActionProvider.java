@@ -55,6 +55,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -70,6 +71,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.api.J2SEBuildPropertiesProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.ui.JFXApplicationClassChooser;
 import org.netbeans.modules.javafx2.project.ui.JFXRunPanel;
@@ -177,6 +179,7 @@ public class JFXActionProvider implements ActionProvider {
                     }
 
                     collectStartupExtenderArgs(props, command, context);
+                    collectAdditionalBuildProperties(props, command, context);
 
                     ActionUtils.runTarget(buildFo, targets.toArray(new String[targets.size()]), props).addTaskListener(new TaskListener() {
                         @Override public void taskFinished(Task task) {
@@ -272,6 +275,26 @@ public class JFXActionProvider implements ActionProvider {
         }
         if (b.length() > 0) {
             p.put("run.jvmargs.ide", b.toString()); // NOI18N
+        }
+    }
+
+    private void collectAdditionalBuildProperties(
+        @NonNull final Map<? super String, ? super String> p,
+        @NonNull final String command,
+        @NonNull final Lookup context) {
+        for (J2SEBuildPropertiesProvider pp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
+            final Map<String,String> contrib = pp.createAdditionalProperties(command, context);
+            assert contrib != null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "J2SEBuildPropertiesProvider: {0} added following build properties: {1}",   //NOI18N
+                    new Object[]{
+                        pp.getClass(),
+                        contrib
+                    });
+            }
+            p.putAll(contrib);
         }
     }
     
