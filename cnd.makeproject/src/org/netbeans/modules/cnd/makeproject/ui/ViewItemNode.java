@@ -140,6 +140,10 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         });
     }
 
+    static RequestProcessor getRP(){
+        return RP;
+    }
+    
     public Folder getFolder() {
         return folder;
     }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -142,7 +143,7 @@ final class NodeActionFactory {
     // and accessing MakeLogicalViewProvider.this would use wrong one!
     static class StandardNodeAction extends NodeAction {
 
-        private SystemAction systemAction;
+        private final SystemAction systemAction;
 
         public StandardNodeAction(SystemAction systemAction) {
             this.systemAction = systemAction;
@@ -150,28 +151,35 @@ final class NodeActionFactory {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            MakeConfigurationDescriptor mcd = null;
-            if (activatedNodes.length > 0) {
-                Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
-                if (folder == null) {
-                    // TODO: looking up for views is not a good technique, this should
-                    // be changed one day all other this class
-                    ViewItemNode vin = activatedNodes[0].getLookup().lookup(ViewItemNode.class);
-                    if (vin != null) {
-                        folder = vin.getFolder();
-                    }
+            if (activatedNodes.length == 0) {
+                return;
+            }
+            final List<MakeConfigurationDescriptor> projects = new ArrayList<MakeConfigurationDescriptor>();
+            for (Node activatedNode : activatedNodes) {
+                ViewItemNode vin = activatedNode.getLookup().lookup(ViewItemNode.class);
+                if (vin == null) {
+                    return;
                 }
-
-                if (folder != null) {
-                    mcd = folder.getConfigurationDescriptor();
-                    if (mcd != null && !mcd.okToChange()) {
-                        return;
-                    }
+                Folder folder = vin.getFolder();
+                if (folder == null) {
+                    return;
+                }
+                MakeConfigurationDescriptor mcd = folder.getConfigurationDescriptor();
+                if (mcd == null) {
+                    return;
+                }
+                if (!projects.contains(mcd)) {
+                    projects.add(mcd);
+                }
+            }
+            for(MakeConfigurationDescriptor mcd : projects) {
+                if (!mcd.okToChange()) {
+                    return;
                 }
             }
             InstanceContent ic = new InstanceContent();
-            for (int i = 0; i < activatedNodes.length; i++) {
-                ic.add(activatedNodes[i]);
+            for (Node activatedNode : activatedNodes) {
+                ic.add(activatedNode);
             }
             Lookup actionContext = new AbstractLookup(ic);
             final Action a;
@@ -180,17 +188,22 @@ final class NodeActionFactory {
             } else if (systemAction instanceof CallbackSystemAction) {
                 a = ((CallbackSystemAction) systemAction).createContextAwareInstance(actionContext);
             } else {
-                a = null;
                 assert false;
+                return;
             }
-            final MakeConfigurationDescriptor descriptor = mcd;
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
                     a.actionPerformed(new ActionEvent(StandardNodeAction.this, 0, null));
-                    if (descriptor != null && descriptor.okToChange()) {
-                        descriptor.save();
+                    for(final MakeConfigurationDescriptor mcd : projects) {
+                        ViewItemNode.getRP().post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                mcd.save();
+                            }
+                        });
                     }
                 }
             });
@@ -217,6 +230,11 @@ final class NodeActionFactory {
         public RenameNodeAction() {
             super(SystemAction.get(RenameAction.class));
         }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            return activatedNodes.length == 1;
+        }
     }
 
     static final class DeleteNodeAction extends StandardNodeAction {
@@ -225,6 +243,4 @@ final class NodeActionFactory {
             super(SystemAction.get(DeleteAction.class));
         }
     }
-
-
 }
