@@ -95,7 +95,7 @@ public abstract class SingleHostAction extends NodeAction {
     }
 
     @Override
-        protected void performAction(Node[] activatedNodes) {
+    protected void performAction(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             Node node = activatedNodes[0];
             ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
