@@ -405,7 +405,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usesNonStaticMembers = {0}", usesNonStaticMembers ); //NOI18N
         
-        TreePath superConstructorCall = findSuperConstructorCall(newClassToConvert);
+        TreePath superConstructorCall = findSuperConstructorCall(copy, newClassToConvert);
         
         Element currentElement = copy.getTrees().getElement(newClassToConvert);
 	boolean errorConstructor = currentElement == null || currentElement.asType() == null || currentElement.asType().getKind() == TypeKind.ERROR;
@@ -545,7 +545,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
     public void cancel() {
     }
 
-    private static TreePath findSuperConstructorCall(TreePath nct) {
+    private static TreePath findSuperConstructorCall(final CompilationInfo info, TreePath nct) {
         class FindSuperConstructorCall extends TreePathScanner<TreePath, Void> {
 
             private boolean stop;
@@ -558,6 +558,9 @@ public class ConvertAnonymousToInner extends AbstractHint {
             
             @Override
             public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
+                if (info.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                    return null;
+                }
                 if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
                     stop = true;
                     return getCurrentPath();

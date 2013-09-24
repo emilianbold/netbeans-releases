@@ -107,7 +107,7 @@ import org.openide.util.Union2;
  *
  * @author sdedic
  */
-final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
+public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
 
     static Fix computeIntroduceMethod(CompilationInfo info, int start, int end, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         int[] statements = new int[2];
