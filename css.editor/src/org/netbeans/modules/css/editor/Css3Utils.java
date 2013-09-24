@@ -58,7 +58,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class Css3Utils {
     
-    public static char FILE_SEPARATOR = System.getProperty("file.separator").charAt(0); //NOI18N
+    public static char FILE_SEPARATOR = '/'; //NOI18N
     
     public static final Pattern URI_PATTERN = Pattern.compile("url\\(\\s*(.*)\\s*\\)"); //NOI18N
     
