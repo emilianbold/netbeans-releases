@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
-import com.jcraft.jsch.Channel;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -68,7 +67,7 @@ public final class RemoteMeasurements {
         startWallTime = System.currentTimeMillis();
     }
 
-    public Object stratChannelActivity(CharSequence category, Channel channel, CharSequence... args) {
+    public Object startChannelActivity(CharSequence category, CharSequence... args) {
         Stat stat = new Stat(category, args);
         int hashCode = stat.hashCode();
         Stat prevStat = stats.putIfAbsent(hashCode, stat);

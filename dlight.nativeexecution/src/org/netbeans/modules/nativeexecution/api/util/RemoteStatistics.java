@@ -175,11 +175,11 @@ public final class RemoteStatistics implements Callable<Boolean> {
         return unnamed.equals(stopped);
     }
 
-    public static Object stratChannelActivity(CharSequence category, Channel channel, CharSequence... args) {
+    public static Object startChannelActivity(CharSequence category, CharSequence... args) {
         if (!COLLECT_STATISTICS) {
             return null;
         }
-        return currentStatRef.get().stat.stratChannelActivity(category, channel, args);
+        return currentStatRef.get().stat.startChannelActivity(category, args);
     }
 
     public static void stopChannelActivity(Object activityID) {
