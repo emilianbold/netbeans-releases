@@ -64,7 +64,7 @@ public final class RemoteMeasurements {
     private final long startWallTime;
 
     RemoteMeasurements(String name) {
-        this.name = name;
+        this.name = "'" + name + "'";
         startWallTime = System.currentTimeMillis();
     }
 
@@ -94,13 +94,13 @@ public final class RemoteMeasurements {
             dumpCategoriesArgsStatistics(out);
             dumpCategoriesStacksStatistics(out);
         } finally {
-            out.println("Total wall time '" + name + "' [ms]: " + (System.currentTimeMillis() - startWallTime)); // NOI18N
+            out.printf("Total wall time 20%s [ms]: %8d\n", name,  System.currentTimeMillis() - startWallTime); // NOI18N
         }
     }
 
     private void dumpTrafficStatistics(PrintStream out) {
-        out.println("Upload traffic '" + name + "' [bytes]: " + upTraffic.get()); // NOI18N
-        out.println("Download traffic '" + name + "' [bytes]: " + downTraffic.get()); // NOI18N
+        out.printf("Upload traffic   %20s [bytes]: %10d\n", name, upTraffic.get()); // NOI18N
+        out.printf("Download traffic %20s [bytes]: %10d\n", name, downTraffic.get()); // NOI18N
     }
 
     private void dumpCategoriesArgsStatistics(PrintStream out) {
@@ -118,8 +118,8 @@ public final class RemoteMeasurements {
             counters.cnt2.addAndGet(stat.deltaTime.get());
         }
 
-        out.println("== Arguments statistics start =="); // NOI18N
-        out.println("Category|Count|Time|Args"); // NOI18N
+        out.printf("== Arguments statistics start ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%s\n", "Category", "Count", "Time", "Args"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -128,10 +128,10 @@ public final class RemoteMeasurements {
             String cat = entry.getKey();
             int idx = cat.indexOf('%');
             Counters cnts = entry.getValue();
-            out.println(cat.substring(0, idx) + "|" + cnts.cnt1 + "|" + cnts.cnt2 + "|" + cat.substring(idx + 1)); // NOI18N
+            out.printf("%20s|%8d|%8d|%s\n",  cat.substring(0, idx), cnts.cnt1.get(), cnts.cnt2.get(), cat.substring(idx + 1)); // NOI18N
         }
 
-        out.println("== Arguments statistics end =="); // NOI18N
+        out.printf("== Arguments statistics end ==\n"); // NOI18N
     }
 
     private void dumpCategoriesStacksStatistics(PrintStream out) {
@@ -149,8 +149,8 @@ public final class RemoteMeasurements {
             counters.cnt2.addAndGet(stat.deltaTime.get());
         }
 
-        out.println("== Categories stacks statistics start =="); // NOI18N
-        out.println("Category|Count|Time|Stack"); // NOI18N
+        out.printf("== Categories stacks statistics start ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%s\n", "Category","Count","Time","Stack"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -161,10 +161,10 @@ public final class RemoteMeasurements {
             Counters cnts = entry.getValue();
             Integer stackID = Integer.valueOf(cat.substring(0, idx));
             String category = cat.substring(idx + 1);
-            out.println(category + "|" + cnts.cnt1 + "|" + cnts.cnt2 + "|" + stacks.get(stackID)); // NOI18N
+            out.printf("%20s|%8d|%8d|%s\n", category, cnts.cnt1.get(), cnts.cnt2.get(), stacks.get(stackID)); // NOI18N
         }
 
-        out.println("== Categories stacks statistics end =="); // NOI18N
+        out.printf("== Categories stacks statistics end ==\n"); // NOI18N
     }
 
     private void dumpCategoriesStatistics(PrintStream out) {
@@ -181,16 +181,16 @@ public final class RemoteMeasurements {
             counters.cnt3.add(Arrays.deepHashCode(stat.args));
         }
 
-        out.println("== Categories stat begin =="); // NOI18N
-        out.println("Category|Count|Time|Unique args"); // NOI18N
+        out.printf("== Categories stat begin ==\n"); // NOI18N
+        out.printf("%20s|%8s|%8s|%s\n", "Category", "Count", "Time", "Unique args"); // NOI18N
         for (Map.Entry<String, Counters> entry : map.entrySet()) {
             long dt = entry.getValue().cnt2.get();
-            out.println(entry.getKey() + "|" + entry.getValue().cnt1 + "|" + dt + "|" + entry.getValue().cnt3.size()); // NOI18N
+            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().cnt1.get(), dt, entry.getValue().cnt3.size()); // NOI18N
             totalTime += dt;
         }
-        out.println("== Categories stat end =="); // NOI18N
+        out.printf("== Categories stat end ==\n"); // NOI18N
 
-        out.println("Total time by all categories [ms]: " + totalTime); // NOI18N
+        out.printf("Total time by all categories [ms]: %20d\n", totalTime); // NOI18N
     }
 
     private static int getStackID() {
