@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.introduce.IntroduceHint;
+import org.netbeans.modules.java.hints.introduce.IntroduceMethodFix;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
@@ -1496,7 +1497,7 @@ public class CopyFinderTest extends NbTestCase {
         int[] statements = new int[2];
 
         int[] currentRegion = regions.get(0);
-        TreePathHandle tph = IntroduceHint.validateSelectionForIntroduceMethod(info, currentRegion[0], currentRegion[1], statements);
+        TreePathHandle tph = IntroduceMethodFix.validateSelectionForIntroduceMethod(info, currentRegion[0], currentRegion[1], statements);
 
         assertNotNull(tph);
 
@@ -1549,7 +1550,7 @@ public class CopyFinderTest extends NbTestCase {
             if (region == currentRegion) continue;
 
             int[] stmts = new int[2];
-            TreePathHandle gtph = IntroduceHint.validateSelectionForIntroduceMethod(info, region[0], region[1], stmts);
+            TreePathHandle gtph = IntroduceMethodFix.validateSelectionForIntroduceMethod(info, region[0], region[1], stmts);
 
             assertNotNull(gtph);
 
