@@ -81,7 +81,9 @@ public class CndParser extends Parser {
         this.snapshot = snapshot;
         CsmFile csmFile = CsmUtilities.getCsmFile(snapshot.getSource().getFileObject(), true, true);
         tus.clear();
-        tus.add(csmFile);
+        if (csmFile != null) {
+            tus.add(csmFile);
+        }
     }
     
     @Override
