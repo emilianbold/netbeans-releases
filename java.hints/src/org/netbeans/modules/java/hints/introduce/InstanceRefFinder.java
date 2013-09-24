@@ -76,7 +76,7 @@ final class InstanceRefFinder extends TreePathScanner {
     /**
      * The initial path for analysis
      */
-    private final TreePath          initPath;
+    private TreePath          initPath;
     
     /**
      * Compilation context
@@ -96,6 +96,8 @@ final class InstanceRefFinder extends TreePathScanner {
     private TypeElement             enclosingType;
     
     private Set<TypeElement>        superReferences = Collections.<TypeElement>emptySet();
+    
+    private Set<Element>            usedMembers = new HashSet<Element>();
     
     /**
      * Local class references.
@@ -185,6 +187,12 @@ final class InstanceRefFinder extends TreePathScanner {
         if (el.getModifiers().contains(Modifier.STATIC)) {
             return;
         }
+        TypeElement owner = findOwnerType(el);
+        addRequiredInstance(owner);
+        addUsedMember(el, owner);
+    }
+    
+    protected TypeElement findOwnerType(Element el) {
         Element t = el.getEnclosingElement();
         ElementKind k = t.getKind();
         TypeMirror declType = t.asType();
@@ -192,15 +200,17 @@ final class InstanceRefFinder extends TreePathScanner {
         for (TypeElement enclType = enclosingType; enclType != null; enclType = ci.getElementUtilities().enclosingTypeElement(enclType)) {
             if (ci.getTypes().isSubtype(enclType.asType(), declType)) {
                 if (k == ElementKind.CLASS) {
-                    addRequiredInstance(enclType);
+                    return enclType;
                 } else if (k == ElementKind.INTERFACE) {
                     if (t.getModifiers().contains(Modifier.DEFAULT)) {
-                        addRequiredInstance(enclType);
+                        return enclType;
                     }
                 }
                 break;
             }
         }
+        // PENDING - this is strange, report an error ??
+        return null;
     }
     
     private TypeElement findEnclosingType(Element el) {
@@ -235,6 +245,11 @@ final class InstanceRefFinder extends TreePathScanner {
     }
     
     public void process() {
+        process(initPath);
+    }
+    
+    public void process(TreePath path) {
+        this.initPath = path;
         findEnclosingElement();
         if (enclosingElement == null || enclosingElement.getModifiers().contains(Modifier.STATIC)) {
             // trees from static members may not reference instances, this or outer classes, bail out.
@@ -243,7 +258,7 @@ final class InstanceRefFinder extends TreePathScanner {
         scan(initPath, null);
     }
     
-    private boolean isEnclosingType(TypeElement el) {
+    protected boolean isEnclosingType(TypeElement el) {
         if (el == null) {
             return false;
         }
@@ -307,14 +322,38 @@ final class InstanceRefFinder extends TreePathScanner {
     private void addInstanceForType(TypeElement t) {
         addRequiredInstance(t);
     }
-
+    
+    private void addInstanceOfTypeParameter(Element el) {
+        Element parent = el.getEnclosingElement();
+        if (parent.getKind().isClass() || parent.getKind().isInterface()) {
+            addRequiredInstance(((TypeElement)parent));
+        }
+    }
+    
+    protected void addUsedMember(Element el, TypeElement owner) {
+        if (!isEnclosingType(owner)) {
+            return;
+        }
+        usedMembers.add(el);
+    }
+    
+    public Set<Element> getUsedMembers() {
+        return usedMembers;
+    }
+    
     @Override
     public Object visitIdentifier(IdentifierTree node, Object p) {
         Element el = ci.getTrees().getElement(getCurrentPath());
+        if (el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
+            return null;
+        }
         switch (el.getKind()) {
             case LOCAL_VARIABLE:
                 addLocalClassVariable(el);
+                addUsedMember(el, enclosingType);
                 break;
+            case TYPE_PARAMETER:
+                addInstanceOfTypeParameter(el);
             case FIELD:
             case METHOD:
                 addInstanceForMemberOf(el);
@@ -324,6 +363,10 @@ final class InstanceRefFinder extends TreePathScanner {
                     addInstanceForType(enclosingType);
                 }
                 break;
+            case PACKAGE:
+                break;
+            default:
+                addUsedMember(el, enclosingType);
         }
         return super.visitIdentifier(node, p);
     }
