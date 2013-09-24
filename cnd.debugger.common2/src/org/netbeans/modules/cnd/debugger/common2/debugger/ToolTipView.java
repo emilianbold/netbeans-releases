@@ -68,6 +68,7 @@ import javax.swing.text.Document;
 import static javax.swing.text.JTextComponent.addKeymap;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -120,7 +121,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
         final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
         final ToolTipSupport toolTipSupport = eui.getToolTipSupport();
-        toolTipSupport.setToolTip(this);
+        toolTipSupport.setToolTip(this, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
     }
 
     @Override
