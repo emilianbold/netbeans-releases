@@ -56,14 +56,18 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 @FunctionInterceptor.Registration(priority = 9)
 public class AngularModuleInterceptor implements FunctionInterceptor{
 
+    private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
+    
     @Override
     public Pattern getNamePattern() {
-        return Pattern.compile("angular\\.module");
+        return PATTERN;
     }
 
     @Override
     public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
-        System.out.println("nalezen controller");
+        System.out.print("nalezen controller: ");
+        System.out.println(name);
+        
     }
     
 }
