@@ -119,7 +119,7 @@ public final class TimeStamps {
     public void setSyncTimestamp(TransferFile transferFile, long timestamp) {
         assert transferFile != null;
         if (!transferFile.isDirectory()) {
-            LOGGER.log(Level.FINE, "Ignoring non-directory {0}", transferFile);
+            LOGGER.log(Level.FINE, "Ignoring non-directory {0}", transferFile.getRemoteAbsolutePath());
             return;
         }
         String path = getFullPath(transferFile.getRemoteAbsolutePath());

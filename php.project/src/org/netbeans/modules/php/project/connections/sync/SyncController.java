@@ -223,21 +223,7 @@ public final class SyncController implements Cancellable {
             // in fact, cannot happen here
             return;
         }
-        final Synchronizer synchronizer = new Synchronizer(syncItems, itemsToSynchronize, syncInfo, resultProcessor);
-        Runnable postSyncTask = null;
-        if (isForProject()) {
-            // set timestamp for project source dir itself
-            postSyncTask = new Runnable() {
-                @Override
-                public void run() {
-                    File sources = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject));
-                    TransferFile transferFile = TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sources.getAbsolutePath()),
-                            null, sources);
-                    synchronizer.setTimeStamp(transferFile);
-                }
-            };
-        }
-        synchronizer.sync(postSyncTask);
+        new Synchronizer(syncItems, itemsToSynchronize, syncInfo, resultProcessor).sync();
     }
 
     @Override
@@ -385,7 +371,7 @@ public final class SyncController implements Cancellable {
             progressPanel = new ProgressPanel(syncInfo);
         }
 
-        public void sync(final Runnable postSyncTask) {
+        public void sync() {
             assert SwingUtilities.isEventDispatchThread();
             progressPanel.createPanel(cancel);
             SYNC_RP.post(new Runnable() {
@@ -393,7 +379,7 @@ public final class SyncController implements Cancellable {
                 public void run() {
                     progressPanel.start(itemsToSynchronize);
                     try {
-                        doSync(postSyncTask);
+                        doSync();
                     } finally {
                         if (cancel.get()) {
                             progressPanel.cancel();
@@ -406,7 +392,7 @@ public final class SyncController implements Cancellable {
         }
 
         @NbBundle.Messages("SyncController.error.tmpFileCopyFailed=Failed to copy content of temporary file.")
-        void doSync(Runnable postSyncTask) {
+        void doSync() {
             assert !SwingUtilities.isEventDispatchThread();
 
             Set<TransferFile> remoteFilesForDelete = new HashSet<>();
@@ -485,15 +471,19 @@ public final class SyncController implements Cancellable {
             if (!cancel.get()) {
                 deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
             }
-            if (postSyncTask != null) {
-                postSyncTask.run();
+            if (isForProject()) {
+                // set timestamp for project source dir itself
+                File sources = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject));
+                TransferFile transferFile = TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sources.getAbsolutePath()),
+                        null, sources);
+                setTimeStamp(transferFile);
             }
             syncItems.cleanup();
             disconnect();
             resultProcessor.process(syncResult);
         }
 
-        public void setTimeStamp(TransferFile transferFile) {
+        private void setTimeStamp(TransferFile transferFile) {
             assert transferFile != null;
             timeStamps.setSyncTimestamp(transferFile, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
         }
