@@ -359,8 +359,11 @@ public class ConvertAnonymousToInner extends AbstractHint {
         boolean usesNonStaticMembers = new DetectUseOfNonStaticMembers(copy, newClassToConvert).scan(new TreePath(newClassToConvert, nct.getClassBody()), null) == Boolean.TRUE;
                 
         TreePath tp = newClassToConvert;
-
+        TreePath parentPath = null;
         while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
+            if (tp.getLeaf().getKind() == Tree.Kind.METHOD || tp.getLeaf().getKind() == Tree.Kind.BLOCK) {
+                parentPath = tp;
+            }
             tp = tp.getParentPath();
         }
         
@@ -448,6 +451,13 @@ public class ConvertAnonymousToInner extends AbstractHint {
             if (superConstructor != null && superConstructor.getKind() == ElementKind.CONSTRUCTOR) {
                 ExecutableElement ee = (ExecutableElement) superConstructor;
                 TypeMirror nctTypes = copy.getTrees().getTypeMirror(newClassToConvert);
+                
+                if (nctTypes.getKind() == TypeKind.ERROR) {
+                    // issue #236082: try again, but strip the parent statement; must reattribute the part of the tree
+                    TreePath skipPath = new TreePath(parentPath, newClassToConvert.getLeaf());
+                    copy.getTreeUtilities().attributeTree(newClassToConvert.getLeaf(), copy.getTrees().getScope(skipPath));
+                    nctTypes = copy.getTrees().getTypeMirror(skipPath);
+                }
                 
                 if (nctTypes.getKind() != TypeKind.DECLARED) {
                     StringBuilder debug = new StringBuilder();
@@ -558,7 +568,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
             
             @Override
             public TreePath visitMethodInvocation(MethodInvocationTree tree, Void v) {
-                if (info.getTreeUtilities().isSynthetic(getCurrentPath())) {
+                if (false && info.getTreeUtilities().isSynthetic(getCurrentPath())) {
                     return null;
                 }
                 if (tree.getMethodSelect().getKind() == Kind.IDENTIFIER && "super".equals(((IdentifierTree) tree.getMethodSelect()).getName().toString())) {
