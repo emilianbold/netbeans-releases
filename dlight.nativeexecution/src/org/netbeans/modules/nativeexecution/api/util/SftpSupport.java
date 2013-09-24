@@ -580,7 +580,7 @@ class SftpSupport {
             try {
                 for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
-                    Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
+                    Object activityID = RemoteStatistics.startChannelActivity("statload", path); // NOI18N
                     try {
                         SftpATTRS attrs = cftp.lstat(path);
                         String dirName, baseName;
@@ -660,7 +660,7 @@ class SftpSupport {
             try {
                 for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
-                    Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
+                    Object lsLoadID = RemoteStatistics.startChannelActivity("lsload", path); // NOI18N
                     try {
                         List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
                         result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
