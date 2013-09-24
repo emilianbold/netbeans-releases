@@ -169,7 +169,7 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
     }
 
     public IntroduceConstantFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int offset) {
-        super(handle, js, guessedName, numDuplicates, null, true, true, offset);
+        super(handle, js, guessedName, numDuplicates, null, true, true, offset, true);
     }
 
     @Override
@@ -189,7 +189,7 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
                 duplicatesCount, 
                 true,
                 handle.getKind() == Tree.Kind.VARIABLE, 
-                IntroduceFieldPanel.FIELD, "introduceField", btnOk);
+                IntroduceFieldPanel.CONSTANT, "introduceField", btnOk);
     }
 
     @Override

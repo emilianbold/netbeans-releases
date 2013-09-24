@@ -309,7 +309,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
 
-            field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end);
+            field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod, end, !variableRewrite);
 
             if (!variableRewrite) {
                 //introduce method based on expression:
@@ -614,6 +614,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 break;
             case CASE:
                 newParent = make.removeCaseStatement((CaseTree) parentTree, (StatementTree) original);
+                break;
+            case CLASS:
+                newParent = make.removeClassMember((ClassTree)parentTree, original);
                 break;
             default:
                 throw new IllegalAccessException(parentTree.getKind().toString());

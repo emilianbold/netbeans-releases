@@ -96,6 +96,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
     private final int[] initilizeIn;
     private final boolean statik;
     private final boolean allowFinalInCurrentMethod;
+    private final boolean permitDuplicates;
     
     /**
      * Initializes the fix
@@ -108,12 +109,19 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
      * @param allowFinalInCurrentMethod false, if the variable may not be declared final
      * @param offset caret offset
      */
-    public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset) {
+    public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, 
+            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset) {
+        this(handle, js, guessedName, numDuplicates, initilizeIn, statik, allowFinalInCurrentMethod, offset, false);
+    }
+    
+    public IntroduceFieldFix(TreePathHandle handle, JavaSource js, String guessedName, 
+            int numDuplicates, int[] initilizeIn, boolean statik, boolean allowFinalInCurrentMethod, int offset, boolean allowDuplicates) {
         super(js, handle, numDuplicates, offset);
         this.guessedName = guessedName;
         this.initilizeIn = initilizeIn;
         this.statik = statik;
         this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
+        this.permitDuplicates = allowDuplicates;
     }
 
     public String getText() {
@@ -128,7 +136,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
     protected IntroduceFieldPanel createPanel(JButton btnOk) {
         return new IntroduceFieldPanel(
                 guessedName, initilizeIn, 
-                duplicatesCount, 
+                permitDuplicates ? duplicatesCount : 1,
                 allowFinalInCurrentMethod, 
                 handle.getKind() == Tree.Kind.VARIABLE, 
                 IntroduceFieldPanel.FIELD, "introduceField", btnOk);
@@ -156,7 +164,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
-        js.runModificationTask(new Worker(panel.getFieldName(), panel.isReplaceAll(),
+        js.runModificationTask(new Worker(panel.getFieldName(), permitDuplicates && panel.isReplaceAll(),
                 panel.isDeclareFinal(), panel.getAccess(), panel.getInitializeIn())).commit();
         return null;
     }
@@ -289,7 +297,15 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
             }
             Tree original = resolved.getLeaf();
             variableRewrite = original.getKind() == Tree.Kind.VARIABLE;
-            ExpressionTree expression = !variableRewrite ? (ExpressionTree) resolved.getLeaf() : ((VariableTree) original).getInitializer();
+            final ExpressionTree expression;
+            final TreePath matchPath;
+            if (variableRewrite) {
+                expression = ((VariableTree) original).getInitializer();
+                matchPath = new TreePath(resolved, expression);
+            } else {
+                expression = (ExpressionTree) resolved.getLeaf();
+                matchPath = resolved;
+            }
             Set<Modifier> mods = declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class);
             if (statik) {
                 mods.add(Modifier.STATIC);
