@@ -54,6 +54,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.TypeKind;
 import javax.swing.JButton;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -123,6 +124,8 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
     }
 
     static boolean checkConstantExpression(final CompilationInfo info, TreePath path) {
+        boolean ok1 = true, ok2;
+        
         class NotConstant extends Error {
         }
         try {
@@ -163,9 +166,36 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
                 }
             }.scan(path, null);
         } catch (NotConstant n) {
-            return false;
+            ok1 = false;
         }
-        return true;
+        
+        InstanceRefFinder finder = new InstanceRefFinder(info, path) {
+            @Override
+            public Object visitIdentifier(IdentifierTree node, Object p) {
+                Element el = info.getTrees().getElement(getCurrentPath());
+                if (el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
+                    return null;
+                }
+                if (el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER) {
+                    throw new NotConstant();
+                } else if (el.getKind() == ElementKind.FIELD) {
+                    if (!el.getModifiers().contains(Modifier.FINAL)) {
+                        throw new NotConstant();
+                    }
+                }
+                return super.visitIdentifier(node, p);
+            }
+        };
+        try {
+            finder.process();
+            ok2 =  !(finder.containsInstanceReferences() || finder.containsLocalReferences() || finder.containsReferencesToSuper());
+        } catch (NotConstant e) {
+            ok2 = false;
+        }
+        if (ok1 != ok2) {
+            System.err.println(path.getLeaf());
+        }
+        return ok2;
     }
 
     public IntroduceConstantFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int offset) {

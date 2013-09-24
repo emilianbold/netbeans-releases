@@ -2212,6 +2212,45 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 2);
     }
     
+    /**
+     * Checks that expressions that instantiate member classes cannot form constant
+     * @throws Exception 
+     */
+    public void testConstantFix236187() throws Exception {
+        performConstantAccessTest("package test;\n" +
+                        "public class Test {\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = |new InnerClass()|;\n" +
+                        "  }\n" +
+                        "  class InnerClass{\n" +
+                        "  }\n" +
+                        "}", false);
+    }
+    
+    public void testConstantFix236187Static() throws Exception {
+        performFixTest("package test;\n" +
+                        "public class Test {\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = |new InnerClass()|;\n" +
+                        "  }\n" +
+                        "  static class InnerClass{\n" +
+                        "  }\n" +
+                        "}",
+                        (
+                        "package test;\n" +
+                        "public class Test {\n" +
+                        "  private static final InnerClass ZZ = new InnerClass();\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = ZZ;\n" +
+                        "  }\n" +
+                        "  static class InnerClass{\n" +
+                        "  }\n" +
+                        "}"
+                        ).replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("ZZ", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE), true, true),
+                       5, 1);
+    }
+    
     public void testFieldFix208072d() throws Exception {
         Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
         prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");

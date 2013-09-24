@@ -72,7 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
  *
  * @author sdedic
  */
-final class InstanceRefFinder extends TreePathScanner {
+class InstanceRefFinder extends TreePathScanner {
     /**
      * The initial path for analysis
      */
@@ -251,8 +251,7 @@ final class InstanceRefFinder extends TreePathScanner {
     public void process(TreePath path) {
         this.initPath = path;
         findEnclosingElement();
-        if (enclosingElement == null || enclosingElement.getModifiers().contains(Modifier.STATIC)) {
-            // trees from static members may not reference instances, this or outer classes, bail out.
+        if (enclosingElement == null) {
             return;
         }
         scan(initPath, null);
