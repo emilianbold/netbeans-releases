@@ -152,7 +152,6 @@ public class JPQLValidation {
         } else {
             while (it1.hasNext()) {
                 Tree tr = it1.next();
-                it1.next();
                 if (tr instanceof AnnotationTree) {
                     AnnotationTree at = (AnnotationTree) tr;
                     for (ExpressionTree exp : at.getArguments()) {
