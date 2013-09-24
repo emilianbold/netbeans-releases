@@ -76,10 +76,15 @@ public final class RemoteStatistics implements Callable<Boolean> {
     private static final AtomicBoolean trafficDetected = new AtomicBoolean();
 
     static {
-        if (COLLECT_STATISTICS) {
+        if (COLLECT_STATISTICS && COLLECT_TRAFFIC) {
             MeasurableSocketFactory.getInstance().addIOListener(listener);
         }
     }
+    
+    public static abstract class ActivityID {
+        /*package*/ ActivityID() {}
+    }
+
 
     public RemoteStatistics() {
     }
@@ -177,15 +182,18 @@ public final class RemoteStatistics implements Callable<Boolean> {
         return unnamed.equals(stopped);
     }
 
-    public static Object startChannelActivity(CharSequence category, CharSequence... args) {
+    public static ActivityID startChannelActivity(CharSequence category, CharSequence... args) {
         if (!COLLECT_STATISTICS) {
             return null;
         }
         return currentStatRef.get().stat.startChannelActivity(category, args);
     }
 
-    public static void stopChannelActivity(Object activityID) {
+    public static void stopChannelActivity(RemoteStatistics.ActivityID activityID) {
         if (!COLLECT_STATISTICS) {
+            return;
+        }
+        if (activityID == null) {
             return;
         }
         currentStatRef.get().stat.stopChannelActivity(activityID);

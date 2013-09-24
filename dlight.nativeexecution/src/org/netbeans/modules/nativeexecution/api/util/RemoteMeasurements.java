@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class RemoteMeasurements {
+/*package*/ final class RemoteMeasurements {
 
     private static final ConcurrentHashMap<Integer, String> stacks = new ConcurrentHashMap<Integer, String>();
     // [stackid-category-args]-to-statistics
@@ -61,13 +61,13 @@ public final class RemoteMeasurements {
     private final AtomicLong downTraffic = new AtomicLong();
     private final String name;
     private final long startWallTime;
-
+    
     RemoteMeasurements(String name) {
         this.name = "'" + name + "'"; // NOI18N
         startWallTime = System.currentTimeMillis();
     }
 
-    public Object startChannelActivity(CharSequence category, CharSequence... args) {
+    public RemoteStatistics.ActivityID startChannelActivity(CharSequence category, CharSequence... args) {
         Stat stat = new Stat(category, args);
         int hashCode = stat.hashCode();
         Stat prevStat = stats.putIfAbsent(hashCode, stat);
@@ -308,7 +308,7 @@ public final class RemoteMeasurements {
         }
     }
 
-    private static final class StatKey {
+    private static final class StatKey extends RemoteStatistics.ActivityID {
 
         private final int statID;
         private final long startTime;

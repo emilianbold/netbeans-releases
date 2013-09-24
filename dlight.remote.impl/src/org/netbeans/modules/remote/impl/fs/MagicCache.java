@@ -193,7 +193,7 @@ public class MagicCache {
         File od = new File(dir.getCache(), cacheName);
         OutputStream os = null;
         InputStream is = null;
-        Object activityID = RemoteStatistics.startChannelActivity("reading MIME", path);
+        RemoteStatistics.ActivityID activityID = RemoteStatistics.startChannelActivity("reading MIME", path);
         try {
             os = new FileOutputStream(od);
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(dir.getExecutionEnvironment());
@@ -220,9 +220,7 @@ public class MagicCache {
             is = process.getInputStream();
             FileUtil.copy(is, os);
         } finally {
-            if (activityID != null) {
-                RemoteStatistics.stopChannelActivity(activityID);
-            }            
+            RemoteStatistics.stopChannelActivity(activityID);
             if (os != null) {
                 try {
                     os.close();

@@ -279,7 +279,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         ChannelStreams login_shell_channels = null;
 
-        Object activityID = null;
+        RemoteStatistics.ActivityID activityID = null;
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
             activityID = RemoteStatistics.startChannelActivity("UnixHostInfoProvider", execEnv.getDisplayName()); // NOI18N
@@ -301,9 +301,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             }
             log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
-            if (activityID != null) {
-                RemoteStatistics.stopChannelActivity(activityID);
-            }
+            RemoteStatistics.stopChannelActivity(activityID);
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {
                     try {
