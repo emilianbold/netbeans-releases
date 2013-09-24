@@ -220,7 +220,6 @@ public class MagicCache {
             is = process.getInputStream();
             FileUtil.copy(is, os);
         } finally {
-            RemoteStatistics.stopChannelActivity(activityID);
             if (os != null) {
                 try {
                     os.close();
@@ -228,6 +227,7 @@ public class MagicCache {
                     ex.printStackTrace(System.err);
                 }
             }
+            RemoteStatistics.stopChannelActivity(activityID, od.length());
             if (is != null) {
                 try {
                     is.close();
