@@ -119,7 +119,7 @@ public class ModelVisitor extends PathNodeVisitor {
     private final Stack<Collection<JsObjectImpl>> functionArgumentStack = new Stack<Collection<JsObjectImpl>>();
     private Map<FunctionInterceptor, Collection<FunctionCall>> functionCalls = null;
     
-    private JsObjectImpl fromAN = null;
+//    private JsObjectImpl fromAN = null;
 
     public ModelVisitor(JsParserResult parserResult, OccurrenceBuilder occurrenceBuilder) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
@@ -165,108 +165,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(AccessNode accessNode) {
-        if (accessNode.getBase() instanceof IdentNode) {
-            IdentNode base = (IdentNode)accessNode.getBase();
-            if (!"this".equals(base.getName())) {
-                Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getBase());
-                if (name != null) {
-                    List<Identifier> fqname = new ArrayList<Identifier>();
-                    fqname.add(name); 
-                    if (!(modelBuilder.getCurrentObject() instanceof JsWith)) {
-                        Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
-                        fromAN = null;
-                        for(JsObject variable : variables) {
-                        if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
-                                fromAN = (JsObjectImpl)variable;
-                                break;
-                            }
-                        }
-                        if (fromAN == null) {
-                            JsObject global = modelBuilder.getGlobal();
-                            fromAN = (JsObjectImpl)global.getProperty(name.getName());
-                            if (fromAN == null) {
-                                fromAN = new JsObjectImpl(global, name, name.getOffsetRange(), false, global.getMimeType(), global.getSourceLabel());
-                                global.addProperty(name.getName(), fromAN);
-                            }
-                        } 
-                    } else {
-                        JsObject withObject = modelBuilder.getCurrentObject();
-                        fromAN = (JsObjectImpl)withObject.getProperty(name.getName());
-                        if (fromAN == null) {
-                            fromAN = new JsObjectImpl(withObject, name, name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
-                            withObject.addProperty(name.getName(), fromAN);
-                        }
-                    }
-                    
-                    fromAN.addOccurrence(name.getOffsetRange());
-                }
-            } else {
-                JsObject current = modelBuilder.getCurrentDeclarationFunction();
-                fromAN = (JsObjectImpl)resolveThis(current);
-            }
-        }
-        if (fromAN != null) {
-            JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
-            int pathSize = getPath().size();
-            Node lastVisited = getPath().get(pathSize - 2);
-            boolean onLeftSite = false;
-            if (lastVisited instanceof BinaryNode) {
-                BinaryNode bNode = (BinaryNode)lastVisited;
-                onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
-            }
-            if (property != null) {
-                OffsetRange range = new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish());
-                if(onLeftSite && !property.isDeclared()) {
-                    property.setDeclared(true);
-                    property.setDeclarationName(new IdentifierImpl(property.getName(), range));
-                }
-                property.addOccurrence(range);
-            } else {
-                Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
-                if (name != null) {
-                    if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
-                        CallNode cNode = (CallNode)getPath().get(pathSize - 2);
-                        if (!cNode.getArgs().contains(accessNode)) {
-                            property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
-                            //property.addOccurrence(name.getOffsetRange());
-                        } else {
-                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
-                            property.addOccurrence(name.getOffsetRange());
-                        }
-                    } else {
-                        boolean setDocumentation = false;
-                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
-                            // google style declaration of properties:  this.buildingID;    
-                            onLeftSite = true;
-                            setDocumentation = true;
-                        }
-                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
-                        property.addOccurrence(name.getOffsetRange());
-                        if (setDocumentation) {
-                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-                            if (docHolder != null) {    
-                                property.setDocumentation(docHolder.getDocumentation(accessNode));
-                                property.setDeprecated(docHolder.isDeprecated(accessNode));
-                                List<Type> returnTypes = docHolder.getReturnType(accessNode);
-                                if (!returnTypes.isEmpty()) {
-                                    for (Type type : returnTypes) {
-                                        property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
-                                    }
-                                }
-                                setModifiersFromDoc(property, docHolder.getModifiers(accessNode));
-                            }
-                        }
-                    }
-                    fromAN.addProperty(name.getName(), property);
-                }
-            }
-            if(property != null) {
-                fromAN = property;
-            }
-        }
-        if (!(getPath().get(getPath().size() - 1) instanceof AccessNode)) {
-            fromAN = null;
-        }
+        createJsObject(accessNode, parserResult, modelBuilder);
         return super.leave(accessNode);
     }
 
@@ -561,7 +460,7 @@ public class ModelVisitor extends PathNodeVisitor {
             Node base = indexNode.getBase();
             JsObjectImpl parent = null;
             if (base instanceof AccessNode) {
-                parent = fromAN;
+               parent = (JsObjectImpl)createJsObject((AccessNode)base, parserResult, modelBuilder);
             } else if (base instanceof IdentNode) {
                 IdentNode iNode = (IdentNode)base;
                 if (!"this".equals(iNode.getName())) {
@@ -572,10 +471,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
                         parent.addOccurrence(parentName.getOffsetRange());
                     }
-                } else {
+                }/* else {
                     JsObject current = modelBuilder.getCurrentDeclarationFunction();
                     fromAN = (JsObjectImpl)resolveThis(current);
-                }
+                }*/
             }
             if (parent != null && indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode literal = (LiteralNode)indexNode.getIndex();
@@ -682,6 +581,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 // follow the patter to create new objects via new anonymous function 
                 // exp: this.pro = new function () { this.field = "";}
                 parent = resolveThis(fncScope);
+            }
+            if ("this".equals(name.get(0).getName())) {
+                name.remove(0);
             }
             fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous, parent);
             if (fncScope != null) {
@@ -1438,24 +1340,149 @@ public class ModelVisitor extends PathNodeVisitor {
         List<Identifier> name = new ArrayList();
         name.add(new IdentifierImpl(aNode.getProperty().getName(),
                 new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
-        while (aNode.getBase() instanceof AccessNode) {
-            aNode = (AccessNode) aNode.getBase();
-            name.add(new IdentifierImpl(aNode.getProperty().getName(),
-                    new OffsetRange(aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
+        Node base = aNode.getBase();
+        while (base instanceof AccessNode || base instanceof CallNode || base instanceof IndexNode) {
+            if (base instanceof CallNode) {
+                CallNode cNode = (CallNode)base;
+                base = cNode.getFunction();
+            } else if (base instanceof IndexNode) {
+                IndexNode iNode = (IndexNode) base;
+                if (iNode.getIndex() instanceof LiteralNode) {
+                    LiteralNode lNode = (LiteralNode)iNode.getIndex();
+                    if (lNode.isString()) {
+                        name.add(new IdentifierImpl(lNode.getPropertyName(), 
+                                new OffsetRange(lNode.getStart(), lNode.getFinish())));
+                    }
+                } else {
+                    return null;
+                }
+                base = iNode.getBase();
+            }
+            if (base instanceof AccessNode) {
+                AccessNode aaNode = (AccessNode)base;
+                base = aaNode.getBase();
+                name.add(new IdentifierImpl(aaNode.getProperty().getName(),
+                        new OffsetRange(aaNode.getProperty().getStart(), aaNode.getProperty().getFinish())));
+            }
         }
-        if (aNode.getBase() instanceof IdentNode) {
-            if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
-                IdentNode ident = (IdentNode) aNode.getBase();
-                if (!"this".equals(ident.getName())) {
+        if (base instanceof IdentNode) {
+            if (name.size() > 0 && base instanceof IdentNode) {
+                IdentNode ident = (IdentNode) base;
+//                if (!"this".equals(ident.getName())) {
                     name.add(new IdentifierImpl(ident.getName(),
                             new OffsetRange(ident.getStart(), ident.getFinish())));
-                }
+//                }
             }
             Collections.reverse(name);
             return name;
         } else {
             return null;
         }
+    }
+    
+    private JsObject createJsObject(AccessNode accessNode, JsParserResult parserResult, ModelBuilder modelBuilder) {
+        List<Identifier> fqn = getName(accessNode, parserResult);
+        if (fqn == null) {
+            return null;
+        }
+        JsObject object = null;
+
+        Identifier name = fqn.get(0);
+        if (!"this".equals(fqn.get(0).getName())) { 
+            if (!(modelBuilder.getCurrentObject() instanceof JsWith)) {
+                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
+                for(JsObject variable : variables) {
+                    if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
+                        object = (JsObjectImpl)variable;
+                        break;
+                    }
+                }
+                if (object == null) {
+                    JsObject global = modelBuilder.getGlobal();
+                    object = (JsObjectImpl)global.getProperty(name.getName());
+                    if (object == null) {
+                        object = new JsObjectImpl(global, name, name.getOffsetRange(), false, global.getMimeType(), global.getSourceLabel());
+                        global.addProperty(name.getName(), object);
+                    }
+                } 
+            } else {
+                JsObject withObject = modelBuilder.getCurrentObject();
+                object = (JsObjectImpl)withObject.getProperty(name.getName());
+                if (object == null) {
+                    object = new JsObjectImpl(withObject, name, name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                    withObject.addProperty(name.getName(), object);
+                }
+            }       
+            object.addOccurrence(name.getOffsetRange());
+        } else {
+            JsObject current = modelBuilder.getCurrentDeclarationFunction();
+            object = (JsObjectImpl)resolveThis(current);
+        }
+        
+        if (object != null) {
+            JsObjectImpl property = null;
+            for (int i = 1; i < fqn.size(); i++) {
+                property = (JsObjectImpl)object.getProperty(fqn.get(i).getName());
+                if (property != null) {
+                    object = property;
+                }
+            }
+            int pathSize = getPath().size();
+            Node lastVisited = getPath().get(pathSize - 2);
+            boolean onLeftSite = false;
+            if (lastVisited instanceof BinaryNode) {
+                BinaryNode bNode = (BinaryNode)lastVisited;
+                onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
+            }
+            if (property != null) {
+                OffsetRange range = new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish());
+                if(onLeftSite && !property.isDeclared()) {
+                    property.setDeclared(true);
+                    property.setDeclarationName(new IdentifierImpl(property.getName(), range));
+                }
+                property.addOccurrence(range);
+            } else {
+                name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
+                if (name != null) {
+                    if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
+                        CallNode cNode = (CallNode)getPath().get(pathSize - 2);
+                        if (!cNode.getArgs().contains(accessNode)) {
+                            property = ModelElementFactory.createVirtualFunction(parserResult, object, name, cNode.getArgs().size());
+                            //property.addOccurrence(name.getOffsetRange());
+                        } else {
+                            property = new JsObjectImpl(object, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
+                            property.addOccurrence(name.getOffsetRange());
+                        }
+                    } else {
+                        boolean setDocumentation = false;
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                            // google style declaration of properties:  this.buildingID;    
+                            onLeftSite = true;
+                            setDocumentation = true;
+                        }
+                        property = new JsObjectImpl(object, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
+                        property.addOccurrence(name.getOffsetRange());
+                        if (setDocumentation) {
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {    
+                                property.setDocumentation(docHolder.getDocumentation(accessNode));
+                                property.setDeprecated(docHolder.isDeprecated(accessNode));
+                                List<Type> returnTypes = docHolder.getReturnType(accessNode);
+                                if (!returnTypes.isEmpty()) {
+                                    for (Type type : returnTypes) {
+                                        property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
+                                    }
+                                }
+                                setModifiersFromDoc(property, docHolder.getModifiers(accessNode));
+                            }
+                        }
+                    }
+                    object.addProperty(name.getName(), property);
+                    object = property;
+                }
+            }
+        }
+        return object;
     }
 
     /**
@@ -1798,6 +1825,9 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (bNode.tokenType() == TokenType.ASSIGN) {
                         if (bNode.lhs() instanceof AccessNode) {
                             List<Identifier> identifier = getName((AccessNode) bNode.lhs(), parserResult);
+                            if (identifier != null && !identifier.isEmpty() && "this".equals(identifier.get(0).getName())) {
+                                identifier.remove(0);
+                            }
                             if (identifier.size() == 1) {
                                 name = identifier.get(0).getName();
                             } else {

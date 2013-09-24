@@ -34,6 +34,6 @@ function |>METHOD:initialize<|() {
     }
 }
 
-$(|>GLOBAL:document<|).ready(function() {
+|>GLOBAL:$<|(|>GLOBAL:document<|).ready(function() {
     |>GLOBAL:google<|.setOnLoadCallback(initialize);
 });
