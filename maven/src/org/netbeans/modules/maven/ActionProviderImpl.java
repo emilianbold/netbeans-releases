@@ -148,6 +148,7 @@ public class ActionProviderImpl implements ActionProvider {
     };
     
     private static final RequestProcessor RP = new RequestProcessor(ActionProviderImpl.class.getName(), 3);
+    private static final Logger LOG = Logger.getLogger(ActionProviderImpl.class.getName());
 
     public ActionProviderImpl(Project proj) {
         this.proj = proj;
@@ -368,15 +369,19 @@ public class ActionProviderImpl implements ActionProvider {
             }
 
             if (!showUI) {
-                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
-                ModelRunConfig rc = createCustomRunConfig(conf);
-                RunUtils.run(rc);
-
+                final M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        ModelRunConfig rc = createCustomRunConfig(conf);
+                        RunUtils.run(rc);
+                    }
+                });
                 return;
             }
             RunGoalsPanel pnl = new RunGoalsPanel();
             DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Run_Maven());
-            ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(proj.getProjectDirectory());
+            final ActionToGoalMapping maps = ActionToGoalUtils.readMappingsFromFileAttributes(proj.getProjectDirectory());
             pnl.readMapping(mapping, proj.getLookup().lookup(NbMavenProjectImpl.class), maps);
             pnl.setShowDebug(MavenSettings.getDefault().isShowDebug());
             pnl.setOffline(MavenSettings.getDefault().isOffline() != null ? MavenSettings.getDefault().isOffline() : false);
@@ -388,28 +393,40 @@ public class ActionProviderImpl implements ActionProvider {
                     maps.getActions().remove(0);
                 }
                 maps.getActions().add(mapping);
-                M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
-                ActionToGoalUtils.writeMappingsToFileAttributes(proj.getProjectDirectory(), maps);
-                if (pnl.isRememberedAs() != null) {
-                    try {
+                final String remembered = pnl.isRememberedAs();
+                final Boolean offline = Boolean.valueOf(pnl.isOffline());
+                final boolean debug = pnl.isShowDebug();
+                final boolean recursive = pnl.isRecursive();
+                final boolean updateSnapshots = pnl.isUpdateSnapshots();
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        M2ConfigProvider conf = proj.getLookup().lookup(M2ConfigProvider.class);
+                        ActionToGoalUtils.writeMappingsToFileAttributes(proj.getProjectDirectory(), maps);
+                        if (remembered != null) {
+                            try {
 
-                        String tit = "CUSTOM-" + pnl.isRememberedAs(); //NOI18N
-                        mapping.setActionName(tit);
-                        mapping.setDisplayName(pnl.isRememberedAs());
-                        //TODO shall we write to configuration based files or not?
-                        ModelHandle2.putMapping(mapping, proj, conf.getDefaultConfig());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                                String tit = "CUSTOM-" + remembered; //NOI18N
+                                mapping.setActionName(tit);
+                                mapping.setDisplayName(remembered);
+                                //TODO shall we write to configuration based files or not?
+                                ModelHandle2.putMapping(mapping, proj, conf.getDefaultConfig());
+                            } catch (Exception ex) {
+                                LOG.log(Level.INFO, "Cannot write custom action mapping", ex);
+                            }
+                        }
+                        ModelRunConfig rc = createCustomRunConfig(conf);
+                        rc.setOffline(offline);
+                        rc.setShowDebug(debug);
+                        rc.setRecursive(recursive);
+                        rc.setUpdateSnapshots(updateSnapshots);
+
+                        setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
+                        RunUtils.run(rc);
                     }
-                }
-                ModelRunConfig rc = createCustomRunConfig(conf);
-                rc.setOffline(Boolean.valueOf(pnl.isOffline()));
-                rc.setShowDebug(pnl.isShowDebug());
-                rc.setRecursive(pnl.isRecursive());
-                rc.setUpdateSnapshots(pnl.isUpdateSnapshots());
+                    
+                });
                 
-                setupTaskName("custom", rc, Lookup.EMPTY); //NOI18N
-                RunUtils.run(rc);
 
             }
         }
