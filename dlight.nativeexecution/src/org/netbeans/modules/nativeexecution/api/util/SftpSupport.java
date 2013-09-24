@@ -46,6 +46,7 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -394,7 +395,7 @@ class SftpSupport {
                 throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
-                RemoteStatistics.stopChannelActivity(activityID);
+                RemoteStatistics.stopChannelActivity(activityID, parameters.srcFile.length());
             }
             uploadCount.incrementAndGet();
         }
@@ -514,7 +515,7 @@ class SftpSupport {
                 throw decorateSftpException(e, srcFileName);
             } finally {
                 releaseChannel(cftp);
-                RemoteStatistics.stopChannelActivity(activityID);
+                RemoteStatistics.stopChannelActivity(activityID, new File(dstFileName).length());
             }
         }
 

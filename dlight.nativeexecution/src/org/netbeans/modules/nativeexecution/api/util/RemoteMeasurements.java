@@ -80,10 +80,15 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     public void stopChannelActivity(Object activityID) {
+        stopChannelActivity(activityID, 0);
+    }
+
+    public void stopChannelActivity(Object activityID, long supposedTraffic) {
         StatKey key = (StatKey) activityID;
         Stat stat = stats.get(key.statID);
         assert stat != null;
         stat.deltaTime.addAndGet(System.currentTimeMillis() - key.startTime);
+        stat.supposedTraffic.addAndGet(supposedTraffic);
     }
 
     void dump(PrintStream out) {
@@ -113,12 +118,11 @@ import java.util.concurrent.atomic.AtomicLong;
                 data.put(id, counters);
             }
 
-            counters.count.addAndGet(stat.count.get());
-            counters.time.addAndGet(stat.deltaTime.get());
+            counters.add(stat);
         }
 
         out.printf("== Arguments statistics start ==\n"); // NOI18N
-        out.printf("%20s|%8s|%8s|%s\n", "Category", "Count", "Time", "Args"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -127,7 +131,7 @@ import java.util.concurrent.atomic.AtomicLong;
             String cat = entry.getKey();
             int idx = cat.indexOf('%');
             Counters cnts = entry.getValue();
-            out.printf("%20s|%8d|%8d|%s\n",  cat.substring(0, idx), cnts.count.get(), cnts.time.get(), cat.substring(idx + 1)); // NOI18N
+            out.printf("%20s|%8d|%8d|%10d|%s\n",  cat.substring(0, idx), cnts.count.get(), cnts.time.get(), cnts.supposedTraffic.get(), cat.substring(idx + 1)); // NOI18N
         }
 
         out.printf("== Arguments statistics end ==\n"); // NOI18N
@@ -144,12 +148,11 @@ import java.util.concurrent.atomic.AtomicLong;
                 data.put(id, counters);
             }
 
-            counters.count.addAndGet(stat.count.get());
-            counters.time.addAndGet(stat.deltaTime.get());
+            counters.add(stat);
         }
 
         out.printf("== Categories stacks statistics start ==\n"); // NOI18N
-        out.printf("%20s|%8s|%8s|%s\n", "Category","Count","Time","Stack"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
         LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
@@ -160,7 +163,7 @@ import java.util.concurrent.atomic.AtomicLong;
             Counters cnts = entry.getValue();
             Integer stackID = Integer.valueOf(cat.substring(0, idx));
             String category = cat.substring(idx + 1);
-            out.printf("%20s|%8d|%8d|%s\n", category, cnts.count.get(), cnts.time.get(), stacks.get(stackID)); // NOI18N
+            out.printf("%20s|%8d|%8d|%10d|%s\n", category, cnts.count.get(), cnts.time.get(), cnts.supposedTraffic.get(), stacks.get(stackID)); // NOI18N
         }
 
         out.printf("== Categories stacks statistics end ==\n"); // NOI18N
@@ -168,6 +171,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
     private void dumpCategoriesStatistics(PrintStream out) {
         long totalTime = 0;
+        long totalTraffic = 0;
         HashMap<String, Counters> map = new HashMap<String, Counters>();
         for (Stat stat : stats.values()) {
             Counters counters = map.get(stat.category);
@@ -175,21 +179,21 @@ import java.util.concurrent.atomic.AtomicLong;
                 counters = new Counters();
                 map.put(stat.category, counters);
             }
-            counters.count.addAndGet(stat.count.get());
-            counters.time.addAndGet(stat.deltaTime.get());
-            counters.args.add(Arrays.deepHashCode(stat.args));
+            counters.add(stat);
         }
 
         out.printf("== Categories stat begin ==\n"); // NOI18N
-        out.printf("%20s|%8s|%8s|%s\n", "Category", "Count", "Time", "Unique args"); // NOI18N
+        out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
         for (Map.Entry<String, Counters> entry : map.entrySet()) {
             long dt = entry.getValue().time.get();
-            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().count.get(), dt, entry.getValue().args.size()); // NOI18N
+            long supposedTraffic = entry.getValue().supposedTraffic.get();
+            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().count.get(), dt, supposedTraffic, entry.getValue().args.size()); // NOI18N
             totalTime += dt;
         }
         out.printf("== Categories stat end ==\n"); // NOI18N
 
-        out.printf("Total time by all categories [ms]: %20d\n", totalTime); // NOI18N
+        out.printf("Total time by all categories [ms]:                %20d\n", totalTime); // NOI18N
+        out.printf("Total supposed traffic by all categories [bytes]: %20d\n", totalTraffic); // NOI18N
     }
 
     private static int getStackID() {
@@ -237,6 +241,7 @@ import java.util.concurrent.atomic.AtomicLong;
         private final int stackID;
         private final AtomicLong deltaTime = new AtomicLong(0);
         private final AtomicLong count = new AtomicLong(0);
+        private final AtomicLong supposedTraffic = new AtomicLong(0);
 
         public Stat(CharSequence category, CharSequence... args) {
             stackID = getStackID();
@@ -287,7 +292,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
         private final AtomicLong count = new AtomicLong();
         private final AtomicLong time = new AtomicLong();
+        private final AtomicLong supposedTraffic = new AtomicLong();
         private final HashSet<Integer> args = new HashSet<Integer>();
+
+        private void add(Stat stat) {
+            count.addAndGet(stat.count.get());
+            time.addAndGet(stat.deltaTime.get());
+            args.add(Arrays.deepHashCode(stat.args));
+            supposedTraffic.addAndGet(stat.supposedTraffic.get());
+        }       
     }
 
     private static class CategoriesStatComparator implements Comparator<Map.Entry<String, Counters>> {

@@ -190,13 +190,17 @@ public final class RemoteStatistics implements Callable<Boolean> {
     }
 
     public static void stopChannelActivity(RemoteStatistics.ActivityID activityID) {
+        stopChannelActivity(activityID, 0);
+    }
+
+    public static void stopChannelActivity(RemoteStatistics.ActivityID activityID, long supposedTraffic) {
         if (!COLLECT_STATISTICS) {
             return;
         }
         if (activityID == null) {
             return;
         }
-        currentStatRef.get().stat.stopChannelActivity(activityID);
+        currentStatRef.get().stat.stopChannelActivity(activityID, supposedTraffic);
     }
 
     private static RemoteMeasurementsRef reschedule() {
