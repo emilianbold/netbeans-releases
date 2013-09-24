@@ -313,9 +313,8 @@ public class SrcNode extends FilterNode {
                     null,
                 };
             }
-            // remove sync action
-            Action[] actions = new Action[COMMON_ACTIONS.length];
-            System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length - 1);
+            Action[] actions = new Action[COMMON_ACTIONS.length + 1];
+            System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length);
             actions[actions.length - 1] = null;
             return actions;
         }

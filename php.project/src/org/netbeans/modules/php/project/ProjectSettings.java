@@ -47,7 +47,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 
 /**
  * Helper class to get miscellaneous properties related to single PHP project
@@ -65,7 +64,7 @@ public final class ProjectSettings {
     private static final String DEBUG_URLS_DELIMITER = "??NB??"; // NOI18N
     private static final int DEBUG_URLS_LIMIT = 10;
     // remote synchronization
-    private static final String SYNC_TIMESTAMP = "sync.%s.timestamp"; // NOI18N
+    private static final String SYNC_TIMESTAMP = "sync.%s"; // NOI18N
 
 
     private ProjectSettings() {
@@ -117,21 +116,12 @@ public final class ProjectSettings {
         getPreferences(project).put(DEBUG_URLS, StringUtils.implode(debugUrls, DEBUG_URLS_DELIMITER));
     }
 
-    /**
-     * @return timestamp <b>in seconds</b> of the last synchronization of a project and the current remote configuration or <code>-1</code> if not found.
-     */
-    public static long getSyncTimestamp(PhpProject project) {
-        return getPreferences(project).getLong(getSyncKey(SYNC_TIMESTAMP, project), -1);
+    public static long getSyncTimestamp(Project project, String key) {
+        return getPreferences(project).getLong(String.format(SYNC_TIMESTAMP, key), -1);
     }
 
-    public static void setSyncTimestamp(PhpProject project, long timestamp) {
-        getPreferences(project).putLong(getSyncKey(SYNC_TIMESTAMP, project), timestamp);
-    }
-
-    private static String getSyncKey(String key, PhpProject project) {
-        String remoteConnectionHint = RunConfigRemote.forProject(project).getRemoteConnectionHint();
-        assert remoteConnectionHint != null : "Cannot get remote connection hint";
-        return String.format(key, remoteConnectionHint);
+    public static void setSyncTimestamp(Project project, String key, long value) {
+        getPreferences(project).putLong(String.format(SYNC_TIMESTAMP, key), value);
     }
 
 }
