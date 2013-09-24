@@ -66,7 +66,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TmpLocalFile;
@@ -92,7 +91,7 @@ public final class SyncController implements Cancellable {
     final PhpProject phpProject;
     final RemoteClient remoteClient;
     final RemoteConfiguration remoteConfiguration;
-    final long lastTimeStamp;
+    final TimeStamps timeStamps;
 
     volatile boolean cancelled = false;
 
@@ -102,7 +101,7 @@ public final class SyncController implements Cancellable {
         this.phpProject = phpProject;
         this.remoteClient = remoteClient;
         this.remoteConfiguration = remoteConfiguration;
-        lastTimeStamp = ProjectSettings.getSyncTimestamp(phpProject);
+        timeStamps = new TimeStamps(phpProject);
     }
 
     public static SyncController forProject(PhpProject phpProject, RemoteClient remoteClient, RemoteConfiguration remoteConfiguration) {
@@ -163,12 +162,16 @@ public final class SyncController implements Cancellable {
         if (isForProject()) {
             initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
         } else {
-            // fetch individual files...
+            // fetch individual files (can be directories as well)...
+            // cannot simply call prepareDownload() since we need to fetch _all_ files from server (to get proper metadata)
             for (FileObject file : files) {
                 TransferFile transferFile = remoteClient.listFile(sources, file);
                 if (transferFile != null) {
-                    // remote file exists
+                    // remote file exists and is a file
                     remoteFiles.add(transferFile);
+                } else {
+                    // might be a directory
+                    initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, file));
                 }
             }
         }
@@ -180,8 +183,8 @@ public final class SyncController implements Cancellable {
         if (isForProject()) {
             initLocalFiles(localFiles, remoteClient.prepareUpload(sources, sources));
         } else {
-            // fetch individual files...
-            localFiles.addAll(remoteClient.prepareUpload(sources, files));
+            // fetch individual files (can be directories as well)...
+            initLocalFiles(localFiles, remoteClient.prepareUpload(sources, files));
         }
         return localFiles;
     }
@@ -201,7 +204,7 @@ public final class SyncController implements Cancellable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject(), lastTimeStamp == -1);
+                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject());
                 if (panel.open()) {
                     List<SyncItem> itemsToSynchronize = panel.getItems();
                     doSynchronize(items, itemsToSynchronize, panel.getSyncInfo(itemsToSynchronize), resultProcessor);
@@ -213,14 +216,28 @@ public final class SyncController implements Cancellable {
         });
     }
 
-    void doSynchronize(final SyncItems syncItems, final List<SyncItem> itemsToSynchronize, final SyncPanel.SyncInfo syncInfo, final SyncResultProcessor resultProcessor) {
+    void doSynchronize(SyncItems syncItems, List<SyncItem> itemsToSynchronize, SyncPanel.SyncInfo syncInfo, SyncResultProcessor resultProcessor) {
         assert SwingUtilities.isEventDispatchThread();
 
         if (cancelled) {
             // in fact, cannot happen here
             return;
         }
-        new Synchronizer(syncItems, itemsToSynchronize, syncInfo, resultProcessor).sync(isForProject());
+        final Synchronizer synchronizer = new Synchronizer(syncItems, itemsToSynchronize, syncInfo, resultProcessor);
+        Runnable postSyncTask = null;
+        if (isForProject()) {
+            // set timestamp for project source dir itself
+            postSyncTask = new Runnable() {
+                @Override
+                public void run() {
+                    File sources = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject));
+                    TransferFile transferFile = TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sources.getAbsolutePath()),
+                            null, sources);
+                    synchronizer.setTimeStamp(transferFile);
+                }
+            };
+        }
+        synchronizer.sync(postSyncTask);
     }
 
     @Override
@@ -265,21 +282,21 @@ public final class SyncController implements Cancellable {
             }
             if (remote == null
                     || local == null) {
-                items.add(remote, local, lastTimeStamp);
+                items.add(remote, local, timeStamps.getSyncTimestamp(remote != null ? remote : local));
                 remote = null;
                 local = null;
             } else {
                 int compare = TransferFile.TRANSFER_FILE_COMPARATOR.compare(remote, local);
                 if (compare == 0) {
                     // same remote paths
-                    items.add(remote, local, lastTimeStamp);
+                    items.add(remote, local, timeStamps.getSyncTimestamp(remote));
                     remote = null;
                     local = null;
                 } else if (compare < 0) {
-                    items.add(remote, null, lastTimeStamp);
+                    items.add(remote, null, timeStamps.getSyncTimestamp(remote));
                     remote = null;
                 } else {
-                    items.add(null, local, lastTimeStamp);
+                    items.add(null, local, timeStamps.getSyncTimestamp(local));
                     local = null;
                 }
             }
@@ -368,7 +385,7 @@ public final class SyncController implements Cancellable {
             progressPanel = new ProgressPanel(syncInfo);
         }
 
-        public void sync(final boolean rememberTimestamp) {
+        public void sync(final Runnable postSyncTask) {
             assert SwingUtilities.isEventDispatchThread();
             progressPanel.createPanel(cancel);
             SYNC_RP.post(new Runnable() {
@@ -376,7 +393,7 @@ public final class SyncController implements Cancellable {
                 public void run() {
                     progressPanel.start(itemsToSynchronize);
                     try {
-                        doSync(rememberTimestamp);
+                        doSync(postSyncTask);
                     } finally {
                         if (cancel.get()) {
                             progressPanel.cancel();
@@ -389,7 +406,7 @@ public final class SyncController implements Cancellable {
         }
 
         @NbBundle.Messages("SyncController.error.tmpFileCopyFailed=Failed to copy content of temporary file.")
-        void doSync(boolean rememberTimestamp) {
+        void doSync(Runnable postSyncTask) {
             assert !SwingUtilities.isEventDispatchThread();
 
             Set<TransferFile> remoteFilesForDelete = new HashSet<>();
@@ -462,16 +479,23 @@ public final class SyncController implements Cancellable {
                     default:
                         assert false : "Unsupported synchronization operation: " + syncItem.getOperation();
                 }
+                // set timestamp
+                setTimeStamp(remoteTransferFile != null ? remoteTransferFile : localTransferFile);
             }
             if (!cancel.get()) {
                 deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
             }
+            if (postSyncTask != null) {
+                postSyncTask.run();
+            }
             syncItems.cleanup();
             disconnect();
-            if (rememberTimestamp) {
-                ProjectSettings.setSyncTimestamp(phpProject, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
-            }
             resultProcessor.process(syncResult);
+        }
+
+        public void setTimeStamp(TransferFile transferFile) {
+            assert transferFile != null;
+            timeStamps.setSyncTimestamp(transferFile, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
         }
 
         private boolean copyContent(TmpLocalFile source, File target) throws IOException {
