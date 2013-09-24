@@ -113,8 +113,8 @@ import java.util.concurrent.atomic.AtomicLong;
                 data.put(id, counters);
             }
 
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
+            counters.count.addAndGet(stat.count.get());
+            counters.time.addAndGet(stat.deltaTime.get());
         }
 
         out.printf("== Arguments statistics start ==\n"); // NOI18N
@@ -127,7 +127,7 @@ import java.util.concurrent.atomic.AtomicLong;
             String cat = entry.getKey();
             int idx = cat.indexOf('%');
             Counters cnts = entry.getValue();
-            out.printf("%20s|%8d|%8d|%s\n",  cat.substring(0, idx), cnts.cnt1.get(), cnts.cnt2.get(), cat.substring(idx + 1)); // NOI18N
+            out.printf("%20s|%8d|%8d|%s\n",  cat.substring(0, idx), cnts.count.get(), cnts.time.get(), cat.substring(idx + 1)); // NOI18N
         }
 
         out.printf("== Arguments statistics end ==\n"); // NOI18N
@@ -144,8 +144,8 @@ import java.util.concurrent.atomic.AtomicLong;
                 data.put(id, counters);
             }
 
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
+            counters.count.addAndGet(stat.count.get());
+            counters.time.addAndGet(stat.deltaTime.get());
         }
 
         out.printf("== Categories stacks statistics start ==\n"); // NOI18N
@@ -160,7 +160,7 @@ import java.util.concurrent.atomic.AtomicLong;
             Counters cnts = entry.getValue();
             Integer stackID = Integer.valueOf(cat.substring(0, idx));
             String category = cat.substring(idx + 1);
-            out.printf("%20s|%8d|%8d|%s\n", category, cnts.cnt1.get(), cnts.cnt2.get(), stacks.get(stackID)); // NOI18N
+            out.printf("%20s|%8d|%8d|%s\n", category, cnts.count.get(), cnts.time.get(), stacks.get(stackID)); // NOI18N
         }
 
         out.printf("== Categories stacks statistics end ==\n"); // NOI18N
@@ -175,16 +175,16 @@ import java.util.concurrent.atomic.AtomicLong;
                 counters = new Counters();
                 map.put(stat.category, counters);
             }
-            counters.cnt1.addAndGet(stat.count.get());
-            counters.cnt2.addAndGet(stat.deltaTime.get());
-            counters.cnt3.add(Arrays.deepHashCode(stat.args));
+            counters.count.addAndGet(stat.count.get());
+            counters.time.addAndGet(stat.deltaTime.get());
+            counters.args.add(Arrays.deepHashCode(stat.args));
         }
 
         out.printf("== Categories stat begin ==\n"); // NOI18N
         out.printf("%20s|%8s|%8s|%s\n", "Category", "Count", "Time", "Unique args"); // NOI18N
         for (Map.Entry<String, Counters> entry : map.entrySet()) {
-            long dt = entry.getValue().cnt2.get();
-            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().cnt1.get(), dt, entry.getValue().cnt3.size()); // NOI18N
+            long dt = entry.getValue().time.get();
+            out.printf("%20s|%8d|%8d|%s\n", entry.getKey(), entry.getValue().count.get(), dt, entry.getValue().args.size()); // NOI18N
             totalTime += dt;
         }
         out.printf("== Categories stat end ==\n"); // NOI18N
@@ -285,9 +285,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
     private static final class Counters {
 
-        private final AtomicLong cnt1 = new AtomicLong();
-        private final AtomicLong cnt2 = new AtomicLong();
-        private final HashSet<Integer> cnt3 = new HashSet<Integer>();
+        private final AtomicLong count = new AtomicLong();
+        private final AtomicLong time = new AtomicLong();
+        private final HashSet<Integer> args = new HashSet<Integer>();
     }
 
     private static class CategoriesStatComparator implements Comparator<Map.Entry<String, Counters>> {
@@ -302,8 +302,8 @@ import java.util.concurrent.atomic.AtomicLong;
             if (cmp != 0) {
                 return cmp;
             }
-            long o1Val = o1.getValue().cnt2.get();
-            long o2Val = o2.getValue().cnt2.get();
+            long o1Val = o1.getValue().time.get();
+            long o2Val = o2.getValue().time.get();
             return (o1Val < o2Val ? 1 : (o1Val == o2Val ? 0 : -1));
         }
     }
