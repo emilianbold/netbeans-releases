@@ -222,7 +222,8 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             "platform/core/org-openide-filesystems.jar",
             "platform/lib/org-openide-util.jar",
             "platform/lib/org-openide-util-lookup.jar",
-            "enterprise/modules/org-netbeans-modules-glassfish-common.jar"
+            "enterprise/modules/org-netbeans-modules-glassfish-common.jar",
+            "enterprise/modules/ext/glassfish-tooling-sdk.jar"
         };
         for (String c : cp) {
             File f = new File(nbLocation, c);
