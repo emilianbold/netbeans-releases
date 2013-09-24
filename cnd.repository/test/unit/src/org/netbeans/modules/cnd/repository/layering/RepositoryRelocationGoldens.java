@@ -175,6 +175,7 @@ public class RepositoryRelocationGoldens extends TraceModelTestBase {
 
             File projectSrcRoot1 = getDataFile("quote_nosyshdr_1/src");
 //            File projectSrcRoot2 = getDataFile("quote_nosyshdr_2/src");
+            removeDirectory(projectSrcRoot1);
             copyDirectory(projectSrc, projectSrcRoot1);
 
             File dump1 = new File(projectSrcRoot1.getParentFile(), "dump.dat");
