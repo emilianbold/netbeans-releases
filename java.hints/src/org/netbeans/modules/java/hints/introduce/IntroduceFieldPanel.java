@@ -175,7 +175,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     }
     
     private boolean isConstant() {
-        return elementType != CONSTANT;
+        return elementType == CONSTANT;
     }
     
     private boolean supportsInit() {
