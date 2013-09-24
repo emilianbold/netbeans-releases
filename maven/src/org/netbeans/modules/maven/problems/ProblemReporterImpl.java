@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -124,6 +125,7 @@ import org.openide.util.lookup.Lookups;
         position = 3100,
         path = "Projects/org-netbeans-modules-maven/Actions")
 })
+@SuppressWarnings("deprecation")
 public final class ProblemReporterImpl implements ProblemReporter, Comparator<ProblemReport>, ProjectProblemsProvider {
     private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
     private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
@@ -448,11 +450,14 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     if (file == null) {
                         missingNonSibling = true;
                     } else {
-                        //a.getFile should be already normalized
-                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
-                        if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
-                            missingNonSibling = true;
-                        } // else #189442: typically a snapshot dep on another project
+                        final URL archiveUrl = FileUtil.urlForArchiveOrDir(file);
+                        if (archiveUrl != null) { //#236050 null check
+                            //a.getFile should be already normalized
+                            SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(archiveUrl);
+                            if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
+                                missingNonSibling = true;
+                            } // else #189442: typically a snapshot dep on another project
+                        }
                     }
                     missingJars.add(art);
                 }
