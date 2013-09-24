@@ -63,7 +63,7 @@ public final class RemoteMeasurements {
     private final long startWallTime;
 
     RemoteMeasurements(String name) {
-        this.name = "'" + name + "'";
+        this.name = "'" + name + "'"; // NOI18N
         startWallTime = System.currentTimeMillis();
     }
 
