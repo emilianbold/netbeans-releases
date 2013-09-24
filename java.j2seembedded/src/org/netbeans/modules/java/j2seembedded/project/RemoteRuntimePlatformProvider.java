@@ -72,7 +72,8 @@ public class RemoteRuntimePlatformProvider implements J2SERuntimePlatformProvide
         for (JavaPlatform jp : JavaPlatformManager.getDefault().getPlatforms(
             null,
             new Specification(RemotePlatform.SPEC_NAME, null))) {
-            if (isSupported(jp, targetLevel, profile)) {
+            if ((jp instanceof RemotePlatform) &&
+                isSupported((RemotePlatform)jp, targetLevel, profile)) {
                 result.add(jp);
             }
         }
@@ -80,15 +81,11 @@ public class RemoteRuntimePlatformProvider implements J2SERuntimePlatformProvide
     }
 
     private static boolean isSupported(
-        @NonNull final JavaPlatform jp,
+        @NonNull final RemotePlatform jp,
         @NonNull final SpecificationVersion targetLevel,
         @NonNull final SourceLevelQuery.Profile profile) {
         final SpecificationVersion platformSpec = jp.getSpecification().getVersion();
-        final String profileName = jp.getProperties().get(RemotePlatform.PROP_VM_PROFILE);
-        SourceLevelQuery.Profile platformProfile = SourceLevelQuery.Profile.forName(profileName);
-        if (platformProfile == null) {
-            platformProfile = SourceLevelQuery.Profile.DEFAULT;
-        }
+        final SourceLevelQuery.Profile platformProfile = jp.getProfile();
         if (targetLevel.compareTo(platformSpec) > 0) {
             return false;
         }

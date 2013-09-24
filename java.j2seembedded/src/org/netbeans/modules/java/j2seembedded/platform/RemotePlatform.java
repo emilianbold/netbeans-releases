@@ -77,7 +77,7 @@ public final class RemotePlatform extends JavaPlatform {
     public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N    
     private static final String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
     private static final String PLAT_PROP_WORK_FOLDER = "platform.work.folder";         //NOI18N
-    public static final String PROP_VM_PROFILE = "platform.java.profile";                 //NOI18N
+    private static final String PROP_VM_PROFILE = "platform.java.profile";                 //NOI18N
     private static final String PROP_VM_EXTENSIONS = "platform.java.extensions";        //NOI18N
     private static final String PROP_VM_TYPE = "platform.jvm.type";                     //NOI18N
     private static final String PROP_VM_TARGET = "platform.jvm.target";                 //NOI18N
@@ -263,6 +263,16 @@ public final class RemotePlatform extends JavaPlatform {
         return cm;
     }
 
+    @NonNull
+    public SourceLevelQuery.Profile getProfile() {
+        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(
+            getProperties().get(PROP_VM_PROFILE));
+        if (profile == null) {
+            profile = SourceLevelQuery.Profile.DEFAULT;
+        }
+        return profile;
+    }
+
     public void setConnectionMethod(@NonNull final ConnectionMethod cm) {
         Parameters.notNull("cm", cm); //NOI18N
         connectionMethod = cm;
@@ -278,17 +288,7 @@ public final class RemotePlatform extends JavaPlatform {
         result.add(PROP_VM_DEBUG);
         result.addAll(getConnectionMethod().getGlobalPropertyNames());
         return Collections.unmodifiableSet(result);
-    }
-
-    @NonNull
-    SourceLevelQuery.Profile getProfile() {
-        SourceLevelQuery.Profile profile = SourceLevelQuery.Profile.forName(
-            getProperties().get(PROP_VM_PROFILE));
-        if (profile == null) {
-            profile = SourceLevelQuery.Profile.DEFAULT;
-        }
-        return profile;
-    }
+    }    
 
     @CheckForNull
     String getVMType() {
