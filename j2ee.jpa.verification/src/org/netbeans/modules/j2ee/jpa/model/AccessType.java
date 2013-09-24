@@ -52,6 +52,7 @@ public enum AccessType {
     INDETERMINED,
     PROPERTY,
     FIELD,
+    MIXED,
     INCONSISTENT;
     
     public static AccessType getDefault(){

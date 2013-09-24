@@ -78,6 +78,9 @@ public class JPAAnnotations {
     public static final String NAMED_NATIVE_QUERY = "javax.persistence.NamedNativeQuery"; // NOI18N
     public static final String NAMED_QUERIES = "javax.persistence.NamedQueries"; // NOI18N
     public static final String NAMED_NATIVE_QUERIES = "javax.persistence.NamedNativeQueries"; // NOI18N
+    public static final String ACCESS_TYPE = "javax.persistence.Access";//NOI18N
+    public static final String ACCESS_TYPE_FIELD = "javax.persistence.AccessType.FIELD";//NOI18N
+    public static final String ACCESS_TYPE_PROPERTY = "javax.persistence.AccessType.PROPERTY";//NOI18N
     
     // member level annotations...
     public static final String ID = "javax.persistence.Id"; //NOI18N
