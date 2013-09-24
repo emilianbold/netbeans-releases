@@ -44,17 +44,15 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionClient;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -63,12 +61,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JEditorPane;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.editor.EditorUI;
+import org.netbeans.api.debugger.Watch;
 
 import org.openide.text.Line;
 
@@ -115,6 +112,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -131,19 +130,12 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
-import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.OutlineView;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
     implements BreakpointProvider, Gdb.Factory.Listener {
@@ -2276,8 +2268,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set unwindonsignal off"); //NOI18N
     }*/
     
-    private static RequestProcessor RP = new RequestProcessor(GdbDebuggerImpl.class.getName());
-    
     @Override
     public void balloonEvaluate(int pos, String text) {
         // balloonEvaluate() requests come from the editor completely
@@ -2288,44 +2278,39 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (state().isProcess && state().isRunning) {
             return;
         }
-        String exp;
+        String expr;
         if (pos == -1) {
-            exp = text;
+            expr = text;
         } else {
-            exp = EvalAnnotation.extractExpr(pos, text);
+            expr = EvalAnnotation.extractExpr(pos, text);
         }
         
-        if (exp == null || exp.isEmpty()) {
+        if (expr == null || expr.isEmpty()) {
             return;
         }
-        final String expr = exp;
+                
+        ModelChangeDelegator mcd = new ModelChangeDelegator();
+        mcd.setListener(new ModelChangeListenerImpl());
+        
+        final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
+        watch.setNativeWatch(new NativeWatch(null));
+        createMIVar(watch, false);
+        
+        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch));
+        
+        final ActionListener disposeListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                postDeleteWatch(watch, false);
+            }
+        };
+        
         SwingUtilities.invokeLater(new Runnable() {
-
             @Override
             public void run() {
-                final OutlineView ov = new OutlineView();
-                ov.setPropertyColumns(
-                        "value", "Value"); //NOI18N
-                ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
-                ov.getOutline().setRootVisible(true);
-
-                ModelChangeDelegator mcd = new ModelChangeDelegator();                
-                mcd.setListener(new ModelChangeListenerImpl());
-                final GdbVariable watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
-                createMIVar(watch, false);
-                final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
-                final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
-
-                TooltipView myView = new TooltipView();
-                myView.add(ov, BorderLayout.CENTER);
-                myView.getExplorerManager().setRootContext(new VariableNode(watch));
-
-                eui.getToolTipSupport().setToolTip(myView);
-
+                ToolTipView.getDefault().setRootElement(node).setOnDisposeListener(disposeListener).showTooltip();
             }
-
         });
-        
     }
     
     private final class ModelChangeListenerImpl implements ModelListener {
@@ -2334,129 +2319,24 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (event instanceof ModelEvent.NodeChanged) {
                ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
                final Variable variable = ((Variable) nodeChanged.getNode());
-                VariableNode v = VariableNode.variables.get(variable);
+                VariableNode v = VariableNode.getNodeForVariable(variable);
                 if (v != null) {
                     v.propertyChanged();
                 }
             }
         }
-                
     }
     
-    private static final class VariableNodeChildren extends Children.Keys<Variable> {
-        private final Variable var;
+    private static final class GdbVariableNodeChildren extends VariableNodeChildren {
 
-        public VariableNodeChildren(Variable v) {
+        public GdbVariableNodeChildren(Variable v) {
+            super(v);            
             ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
-            this.var = v;
-            
-        }
-
-        private void updateKeys() {
-            // e.g.(?) Explorer view under Children.MUTEX subsequently calls e.g.
-            // SuiteProject$Info.getSimpleName() which acquires ProjectManager.mutex(). And
-            // since this method might be called under ProjectManager.mutex() write access
-            // and updateKeys() --> setKeys() in turn calls Children.MUTEX write access,
-            // deadlock is here, so preventing it... (also got this under read access)
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            setKeys(var.getChildren());
-                        }
-                    });
-                }
-            });
         }
 
         @Override
         protected Node[] createNodes(Variable key) {
-            return new Node[]{new VariableNode(key)};
-        }
-        
-
-    }    
-        
-    
-    private static final class VariableNode extends AbstractNode {
-        private Variable v;
-        private static final Map<Variable, VariableNode> variables = new HashMap<Variable, VariableNode>();
-
-        private VariableNode(Variable v) {
-            super(new VariableNodeChildren(v));
-            this.v = v;
-            variables.put(v, this);
-        }
-                                           
-        @Override
-        public String getDisplayName() {
-            return v.getVariableName();
-        }
-        
-        void propertyChanged() {
-            if (!(getChildren() instanceof VariableNodeChildren)) {
-                return;
-            }
-            ((VariableNodeChildren)getChildren()).updateKeys();
-        }
-
-        @Override
-        public PropertySet[] getPropertySets() {
-            return new PropertySet[]{new MyPropertySet(v)};
-        }
-
-        private final class MyPropertySet extends PropertySet {
-
-            private Variable v;
-
-            public MyPropertySet(Variable v) {
-                this.v = v;
-            }
-            
-            @Override
-            public Property<?>[] getProperties() {
-
-                Property<?>[] ps = new Property<?>[]{new Property<String>(String.class) {
-                        @Override
-                        public String getName() {
-                            return "value"; //NOI18N
-                        }
-
-                        @Override
-                        public boolean canRead() {
-                            return true;
-                        }
-
-                        @Override
-                        public String getValue() throws IllegalAccessException, InvocationTargetException {
-                            return v.getAsText();
-                        }
-
-                        @Override
-                        public boolean canWrite() {
-                            return false;
-                        }
-
-                        @Override
-                        public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                        }
-                    }};
-                return ps;
-            }
-        }
-    }
-
-    private static final class TooltipView extends TopComponent implements ExplorerManager.Provider {
-        private final ExplorerManager manager = new ExplorerManager();
-        public TooltipView() {
-            setLayout (new BorderLayout());
-        }
-
-        @Override
-        public ExplorerManager getExplorerManager() {
-            return manager;
+            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key))};
         }
     }
 
