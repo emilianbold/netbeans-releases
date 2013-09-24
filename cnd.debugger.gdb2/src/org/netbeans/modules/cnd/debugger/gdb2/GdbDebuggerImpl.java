@@ -65,7 +65,6 @@ import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.debugger.Watch;
 
 import org.openide.text.Line;
 
@@ -2218,7 +2217,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /* 
      * balloonEval stuff 
      */
-    /*public void balloonEvaluate(int pos, String text) {
+    @Override
+    public void balloonEvaluate(int pos, String text) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
         if (gdb == null || !gdb.connected()) {
@@ -2266,13 +2266,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             send(command.toString());
         }
         send("-gdb-set unwindonsignal off"); //NOI18N
-    }*/
+    }
     
-    @Override
-    public void balloonEvaluate(int pos, String text) {
+//    @Override
+    public void evaluateInOutline(String expr) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
-        if (gdb == null || !gdb.connected()) {
+        /*if (gdb == null || !gdb.connected()) {
             return;
         }
         if (state().isProcess && state().isRunning) {
@@ -2287,13 +2287,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         if (expr == null || expr.isEmpty()) {
             return;
-        }
+        }*/
                 
         ModelChangeDelegator mcd = new ModelChangeDelegator();
         mcd.setListener(new ModelChangeListenerImpl());
         
         final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
-        watch.setNativeWatch(new NativeWatch(null));
         createMIVar(watch, false);
         
         final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch));
@@ -2301,7 +2300,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         final ActionListener disposeListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                postDeleteWatch(watch, false);
+                MICommand cmd = new DeleteMIVarCommand(watch);
+                sendCommandInt(cmd);
             }
         };
         
@@ -2373,7 +2373,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     } else {
                         value_string = ValuePresenter.getValue(value_string);
                     }
-                    EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
+                    final String finalVal = value_string;
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(expr + "=" + finalVal); //NOI18N
+                            expTooltip.addExpansionListener(new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    evaluateInOutline(expr);
+                                }
+                            });
+                            expTooltip.showTooltip();
+                        }
+                    });
                     finish();
                 }
 
