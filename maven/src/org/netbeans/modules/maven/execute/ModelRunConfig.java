@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  */
 public final class ModelRunConfig extends BeanRunConfig {
     
-    private NetbeansActionMapping model;
+    private final NetbeansActionMapping model;
     
     public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile, Lookup lookup) {
         model = mod;
