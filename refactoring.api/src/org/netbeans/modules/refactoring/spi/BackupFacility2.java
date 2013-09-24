@@ -44,20 +44,22 @@
 package org.netbeans.modules.refactoring.spi;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper;
 import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper.UndoableEditDelegate;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -223,9 +225,8 @@ abstract class BackupFacility2 {
 
         private void storeChecksum(long l) throws IOException {
             BackupEntry backup = map.get(l);
-            File f = Utilities.toFile(backup.path);
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo==null) {
+            FileObject fo = backup.orig;
+            if (fo==null || !fo.isValid()) {
                 //deleted
                 backup.checkSum = new byte[16];
                 Arrays.fill(backup.checkSum, (byte)0);
@@ -240,8 +241,8 @@ abstract class BackupFacility2 {
                     return;
                 }
             }
-            LOG.log(Level.FINE, "Storing MD5 for {0}", backup.path);
-            backup.checkSum = getMD5(getInputStream(backup.path));
+            LOG.log(Level.FINE, "Storing MD5 for {0}", backup.orig);
+            backup.checkSum = getMD5(getInputStream(backup.orig.toURL()));
             LOG.log(Level.FINE, "MD5 is: {0}", MD5toString(backup.checkSum));
         }
 
@@ -249,9 +250,8 @@ abstract class BackupFacility2 {
 
             try {
                 BackupEntry backup = map.get(l);
-                File f = Utilities.toFile(backup.path);
-                FileObject fo = FileUtil.toFileObject(f);
-                if (fo==null) {
+                FileObject fo = backup.orig;
+                if (!fo.isValid()) {
                     //file does not exist. No conflict
                     return null;
                 }
@@ -270,12 +270,8 @@ abstract class BackupFacility2 {
                                     ? NbDocument.getEditToBeUndoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class)
                                     : NbDocument.getEditToBeRedoneOfType(editor, UndoableWrapper.UndoableEditDelegate.class);
                             if (edit == null) {
-                                try {
-                                    LOG.fine("Editor Undo Different");
-                                    return backup.path.toURL().getPath();
-                                } catch (MalformedURLException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                }
+                                LOG.fine("Editor Undo Different");
+                                return backup.orig.getPath();
                             }
                         }
 
@@ -283,11 +279,11 @@ abstract class BackupFacility2 {
                 }
 
                 try {
-                    LOG.log(Level.FINE, "Checking MD5 for {0}", backup.path);
-                    byte[] ts = getMD5(getInputStream(backup.path));
+                    LOG.log(Level.FINE, "Checking MD5 for {0}", backup.orig);
+                    byte[] ts = getMD5(getInputStream(backup.orig));
                     if (!Arrays.equals(backup.checkSum, ts)) {
                         LOG.fine("MD5 check failed");
-                        return backup.path.toURL().getPath();
+                        return backup.orig.getPath();
                     }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -298,9 +294,8 @@ abstract class BackupFacility2 {
             return null;
         }
 
-        private InputStream getInputStream(URI path) throws IOException {
-            File f = Utilities.toFile(path);
-            FileObject fo = FileUtil.toFileObject(f);
+        private InputStream getInputStream(URL path) throws IOException {
+            FileObject fo = URLMapper.findFileObject(path);
             DataObject dob = DataObject.find(fo);
             CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
             if (ces != null && ces.isModified()) {
@@ -310,11 +305,15 @@ abstract class BackupFacility2 {
             LOG.fine("File Input Stream");
             return fo.getInputStream();
         }
+        
+        private InputStream getInputStream(FileObject fo) throws FileNotFoundException {
+            return fo.getInputStream();
+        }
 
         private class BackupEntry {
 
             private File file;
-            private URI path;
+            private FileObject orig;
             private byte[] checkSum;
             private boolean undo = true;
             private boolean exists = true;
@@ -367,7 +366,7 @@ abstract class BackupFacility2 {
             BackupEntry entry = new BackupEntry();
             entry.file = File.createTempFile("nbbackup", null); //NOI18N
             copy(file, entry.file);
-            entry.path = file.toURI();
+            entry.orig = file;
             map.put(currentId, entry);
             entry.file.deleteOnExit();
             return currentId++;
@@ -383,7 +382,8 @@ abstract class BackupFacility2 {
         public long backup(File file) throws IOException {
             BackupEntry entry = new BackupEntry();
             entry.file = File.createTempFile("nbbackup", null); //NOI18N
-            entry.path = Utilities.toURI(file);
+            FileObject fo = FileUtil.toFileObject(file);
+            entry.orig = fo;
             entry.exists = file.exists();
             map.put(currentId, entry);
             entry.file.deleteOnExit();
@@ -479,19 +479,20 @@ abstract class BackupFacility2 {
             }
             File backup = File.createTempFile("nbbackup", null); //NOI18N
             backup.deleteOnExit();
-            File f = Utilities.toFile(entry.path);
-            boolean exists;
-            if (exists = createNewFile(f)) {
+            boolean exists = false;
+            FileObject fo = entry.orig;
+            if (exists = fo.isValid()) {
                 backup.createNewFile();
-                copy(f, backup);
+                copy(fo, backup);
+            } else {
+                fo = createNewFile(fo);
             }
-            FileObject fileObj = FileUtil.toFileObject(f);
             if (entry.exists) {
-                if (!tryUndoOrRedo(fileObj, entry)) {
-                    copy(entry.file, fileObj);
+                if (!tryUndoOrRedo(fo, entry)) {
+                    copy(entry.file, fo);
                 }
             } else {
-                fileObj.delete();
+                fo.delete();
             }
             entry.exists = exists;
             entry.file.delete();
@@ -502,10 +503,13 @@ abstract class BackupFacility2 {
             }
         }
 
-        private boolean tryUndoOrRedo(final FileObject fileObj, final BackupEntry entry) throws DataObjectNotFoundException {
+        private boolean tryUndoOrRedo(@NonNull final FileObject fileObj, @NonNull final BackupEntry entry) throws DataObjectNotFoundException {
             DataObject dob = DataObject.find(fileObj);
             if (dob != null) {
                 CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
+                if(ces == null) {
+                    return false;
+                }
                 final org.openide.awt.UndoRedo.Manager manager;
                 try {
                     manager = (org.openide.awt.UndoRedo.Manager) undoRedo.get(ces);
@@ -550,25 +554,28 @@ abstract class BackupFacility2 {
         /**
          * workaround for #93390
          */
-        private boolean createNewFile(File f) throws IOException {
-            if (f.exists()) {
-                return true;
+        private FileObject createNewFile(FileObject fo) throws IOException {
+            if (fo.isValid()) {
+                return fo;
             }
-            File parent = f.getParentFile();
+            File file = FileUtil.toFile(fo);
+            if(file != null && file.exists()) {
+                return FileUtil.toFileObject(file);
+            }
+            FileObject parent = fo.getParent();
             if (parent != null) {
                 createNewFolder(parent);
             }
-            FileUtil.createData(f);
-            return false;
+            return FileUtil.createData(parent, fo.getNameExt());
         }
 
-        private void createNewFolder(File f) throws IOException {
-            if (!f.exists()) {
-                File parent = f.getParentFile();
+        private void createNewFolder(FileObject fo) throws IOException {
+            if (!fo.isValid()) {
+                FileObject parent = fo.getParent();
                 if (parent != null) {
                     createNewFolder(parent);
+                    FileUtil.createFolder(parent, fo.getNameExt());
                 }
-                FileUtil.createFolder(f);
             }
         }
 
