@@ -78,7 +78,7 @@ public class JPARulesEngine extends RulesEngine {
     
     static{
         //classRules.add(new PersistenceUnitPresent());
-        classRules.add(new ConsistentAccessType());
+        //classRules.add(new ConsistentAccessType());
         classRules.add(new IdDefinedInHierarchy());
         //classRules.add(new HasNoArgConstructor());
         classRules.add(new ValidPrimaryTableName());
