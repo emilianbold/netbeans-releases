@@ -58,11 +58,15 @@ public class WebInspectorJNIBinding {
     
     private native boolean nisDeviceConnected();
 
-    private transient int started = 0;
+    private boolean started = false;
+    private final Object readLock;
+    private final Object writeLock;
     
     private static WebInspectorJNIBinding instance;
 
     private WebInspectorJNIBinding() {
+        this.writeLock = new Object();
+        this.readLock = new Object();
         System.loadLibrary("iDeviceNativeBinding"); // NOI18N
     }
     
@@ -73,42 +77,55 @@ public class WebInspectorJNIBinding {
         return instance;
     }
 
-    public synchronized void start() {
-        if (started++ < 1) {
-            try {
-                nstart();
-            } catch (IllegalStateException ise) {
-                started--;
-                throw ise;
+    public void start() {
+        synchronized (writeLock) {
+            synchronized (readLock) {
+                if (!started) {
+                    try {
+                        nstart();
+                        started = true;
+                    } catch (IllegalStateException ise) {
+                        throw ise;
+                    }
+                } else {
+                    LOG.info("WebKit Debugging Service already started");
+                }
             }
-        } else {
-            LOG.info("WebKit Debugging Service already started");
         }
     }
 
     public synchronized void stop() {
-        if (--started < 1) {
-            nstop();
-        } else {
-            LOG.info("WebKit Debugging Service not started");
+        synchronized (writeLock) {
+            synchronized (readLock) {
+                if (started) {
+                    nstop();
+                    started = false;
+                } else {
+                    LOG.info("WebKit Debugging Service not started");
+                }
+            }
         }
     }
 
     public String receiveMessage() {
-        if (started < 1) {
-            LOG.info("WebKit Debugging Service not started");
-            return null;
+        synchronized (readLock) {
+            if (!started) {
+                LOG.info("WebKit Debugging Service not started");
+                return null;
+            }
+            final String receiveMessage = nreceiveMessage(100);
+            return receiveMessage;
         }
-        final String receiveMessage = nreceiveMessage(100);
-        return receiveMessage;
     }
 
     public void sendMessage(String message) {
-        if (started < 1) {
-            LOG.info("WebKit Debugging Service not started");
-            return;
+        synchronized (writeLock) {
+            if (!started) {
+                LOG.info("WebKit Debugging Service not started");
+                return;
+            }
+            nsendMessage(message);
         }
-        nsendMessage(message);
     }
     
     public boolean isDeviceConnected() {
