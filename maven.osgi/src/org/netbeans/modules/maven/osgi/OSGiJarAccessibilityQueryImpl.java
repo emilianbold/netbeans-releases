@@ -42,29 +42,44 @@
 
 package org.netbeans.modules.maven.osgi;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.artifact.Artifact;
 import org.eclipse.osgi.util.ManifestElement;
+import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.maven.spi.nodes.DependencyTypeIconBadge;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 import org.osgi.framework.BundleException;
+import static org.netbeans.modules.maven.osgi.Bundle.*;
 
 /**
  *
  * @author mkleint
  */
-@ServiceProvider(service = AccessibilityQueryImplementation.class)
-public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplementation {
+@ServiceProviders({
+    @ServiceProvider(service = AccessibilityQueryImplementation.class), 
+    @ServiceProvider(service = DependencyTypeIconBadge.class)
+})
+public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplementation, DependencyTypeIconBadge {
     private static final Logger LOG = Logger.getLogger(OSGiJarAccessibilityQueryImpl.class.getName());
+    private static final @StaticResource String BADGE = "org/netbeans/modules/maven/osgi/maven_osgi_badge.png";
+    private static final String toolTip = "<img src=\"" + OSGiJarAccessibilityQueryImpl.class.getClassLoader().getResource(BADGE) + "\">&nbsp;" //NOI18N
+            + Tooltip_manifest();//NOI18N
 
     private final WeakHashMap<FileObject, List<ManifestElement>> publicCache = new WeakHashMap<FileObject, List<ManifestElement>>();
     private final List<ManifestElement> NOT_OSGIJAR = new ArrayList<ManifestElement>();
@@ -72,6 +87,7 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
     @Override
     public Boolean isPubliclyAccessible(FileObject pkg) {
         FileObject jarFile = FileUtil.getArchiveFile(pkg);
+        boolean notOSGi = true;
         if (jarFile != null) {
             FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
             synchronized (publicCache) {
@@ -103,16 +119,18 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
                             publicCache.put(jarRoot, pub);
                         }
                         return check(pub, FileUtil.getRelativePath(jarRoot, pkg).replace("/", "."));
+                    } else {
+                        notOSGi = mf.getMainAttributes().getValue(OSGiConstants.BUNDLE_SYMBOLIC_NAME) == null;
                     }
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "cannot read manifest", ex);
                 }
             }
             synchronized (publicCache) {
-                publicCache.put(jarRoot, NOT_OSGIJAR);
+                publicCache.put(jarRoot, notOSGi ? NOT_OSGIJAR : Collections.<ManifestElement>emptyList());
             }
         }
-        return null;
+        return notOSGi ? null : Boolean.FALSE;
         
     }
 
@@ -123,6 +141,45 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
             }
         }
         return Boolean.FALSE;
+    }
+
+    @Override
+    public Image getBadgeIcon(FileObject jarFile, Artifact art) {
+        if (jarFile != null) {
+            FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
+            synchronized (publicCache) {
+                List<ManifestElement> pub = publicCache.get(jarRoot);
+                
+                if (pub != null) {
+                    if (pub == NOT_OSGIJAR) {
+                        return null;
+                    }
+                    return getIcon();
+                }
+            }
+            FileObject manifest = jarRoot.getFileObject("META-INF/MANIFEST.MF");
+            if (manifest != null) {
+                try {
+                    Manifest mf = new Manifest(manifest.getInputStream());
+                    List<ManifestElement> pub = null;
+                    String name = mf.getMainAttributes().getValue(OSGiConstants.BUNDLE_SYMBOLIC_NAME);
+                    if (name != null) {
+                        return getIcon();
+                    }
+                } catch (IOException ex) {
+                     LOG.log(Level.FINE, "cannot read manifest", ex);
+                }
+            }
+            synchronized (publicCache) {
+                publicCache.put(jarRoot, NOT_OSGIJAR);
+            }
+        }
+        return null;            
+    }
+
+    @NbBundle.Messages("Tooltip_manifest=Contains OSGi manifest headers")
+    private Image getIcon() {
+        return ImageUtilities.addToolTipToImage(ImageUtilities.loadImage(BADGE), toolTip);
     }
 
 }

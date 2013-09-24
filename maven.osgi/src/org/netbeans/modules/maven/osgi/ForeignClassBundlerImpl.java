@@ -38,10 +38,18 @@
 
 package org.netbeans.modules.maven.osgi;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import org.apache.maven.artifact.Artifact;
@@ -49,24 +57,39 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.problem.ProblemReport;
-import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.osgi.Bundle.*;
+import org.netbeans.spi.project.ui.ProjectProblemResolver;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.util.RequestProcessor;
 
 @NbBundle.Messages({
     "PRBL_Name=Export-Package/Private-Package contains packages from dependencies",
     "PRBL_DESC=When the final bundle jar contains classes not originating in current project, NetBeans internal compiler cannot use the sources of the project. Then changes done in project's source code only appears in depending projects when project is recompiled. Also applies to features like Refactoring which will not be able to find usages in depending projects."
 })
-public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
-    private static final ProblemReport PROBLEM_REPORT = new ProblemReport(ProblemReport.SEVERITY_MEDIUM, 
-            PRBL_Name(), PRBL_DESC(), null);
+public class ForeignClassBundlerImpl implements ForeignClassBundler, ProjectProblemsProvider { // #179521
+    private static final ProjectProblem PROBLEM_REPORT = ProjectProblem.createWarning(PRBL_Name(), PRBL_DESC(), new ProjectProblemResolver() {
+
+        @Override
+        public Future<Result> resolve() {
+            return new FutureTask<Result>(new Callable<Result>() {
+                @Override
+                public Result call() throws Exception {
+                    return Result.create(Status.UNRESOLVED);
+                }
+            });
+        }
+    });
+    private static final RequestProcessor RP = new RequestProcessor(ForeignClassBundlerImpl.class);
+    
+    private final AtomicBoolean hasProblem = new AtomicBoolean(false);
     
     private final Project project;
     private boolean calculated = false;
     private boolean calculatedValue = false;
+    private final PropertyChangeSupport pchs = new PropertyChangeSupport(this);
 
 
     public ForeignClassBundlerImpl(Project p) {
@@ -84,14 +107,13 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
     }
 
     private boolean calculateValue() {
-        ProblemReporter pr = project.getLookup().lookup(ProblemReporter.class);
-        if (pr != null) {
-            pr.removeReport(PROBLEM_REPORT);
-        }
         NbMavenProject nbmp = project.getLookup().lookup(NbMavenProject.class);
         if (nbmp == null) {
             return true;
         }
+        boolean oldVal = hasProblem.get();
+        boolean newVal = false;
+        try {
         MavenProject mp = nbmp.getMavenProject();
         Properties props = PluginPropertyUtils.getPluginPropertyParameter(project, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
         if (props != null) {
@@ -116,9 +138,7 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
                                 if (je.isDirectory() && !je.getName().startsWith("META-INF")) { //is this optimization correct?
                                     String pack = je.getName().substring(0, je.getName().length() - 1).replace("/", "."); //last char is /
                                     if (exported.matches(pack) || prived.matches(pack)) {
-                                        if (pr != null) {
-                                            pr.addReport(PROBLEM_REPORT);
-                                        }
+                                        newVal = true;
                                         return false;
                                     }
                                 }
@@ -128,6 +148,17 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
                         }
                     }
                 }
+            }
+        }
+        } finally {
+            if (newVal != oldVal) {
+                hasProblem.set(newVal);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        pchs.firePropertyChange(ProjectProblemsProvider.PROP_PROBLEMS, null, null);
+                    }
+                });
             }
         }
         //according to http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html default value is just 
@@ -140,4 +171,20 @@ public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
         calculated = false;
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pchs.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pchs.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public Collection<? extends ProjectProblem> getProblems() {
+        return hasProblem.get() ? Collections.singleton(PROBLEM_REPORT) : Collections.<ProjectProblem>emptySet();
+    }
+
+    
 }

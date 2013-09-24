@@ -43,7 +43,7 @@ var NETBEANS_DOWNLOAD_BUNDLES_MSG = "NetBeans IDE Download Bundles";
 var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG = "NetBeans IDE Download Bundles in community contributed languages";
 var NETBEANS_PACKS_MSG 		  = "Supported&nbsp;technologies";
 
-var JDK_DOWNLOAD_LINK    = "http://java.sun.com/javase/downloads/index.jsp";
+var JDK_DOWNLOAD_LINK    = "http://www.oracle.com/technetwork/java/javase/downloads/index.html";
 var NBJDK_DOWNLOAD_LINK  = "http://www.oracle.com/technetwork/java/javase/downloads/jdk-7-netbeans-download-432126.html";
 
 var JAVA_COM_LINK        = "http://java.com/";

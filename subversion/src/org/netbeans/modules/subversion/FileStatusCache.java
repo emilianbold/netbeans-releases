@@ -922,9 +922,9 @@ public class FileStatusCache {
             while (it.hasNext()) {
                 File localFile = (File) it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
-                if (fi.isDirectory() || (fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
-                        && !isSymlink(localFile.toPath().normalize(),
-                        Subversion.getInstance().getTopmostManagedAncestor(localFile).toPath().normalize()))) {
+                File topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
+                if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
+                        && !isSymlink(localFile.toPath().normalize(), topmost.toPath().normalize())) {
                     folderFiles.put(localFile, fi);
                 }
             }

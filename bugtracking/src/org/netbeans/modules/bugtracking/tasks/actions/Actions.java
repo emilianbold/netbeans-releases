@@ -326,6 +326,11 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
+            for (TaskNode taskNode : getTaskNodes()) {
+                if (!taskNode.isCategorized()) {
+                    return false;
+                }
+            }
             return true;
         }
     }
@@ -797,7 +802,7 @@ public class Actions {
                 } else if (key.equals(TaskNode.class.getName())){
                     action = new Actions.RemoveTaskAction(value.toArray(new TaskNode[value.size()]));
                 }
-                if (action != null) {
+                if (action != null && action.isEnabled()) {
                     action.actionPerformed(e);
                 }
             }
