@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.j2seembedded.ui;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -48,17 +49,23 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.filechooser.FileView;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
@@ -496,7 +503,20 @@ public class CreateJREPanel extends javax.swing.JPanel {
 
     private void buttonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBrowseActionPerformed
         final String oldValue = jreCreateLocation.getText();
-        final JFileChooser chooser = new JFileChooser();
+        final JFileChooser chooser = new JFileChooser() {
+            @Override
+            public void approveSelection() {
+                if (EJDKFileView.isEJDK(getSelectedFile())) {
+                    super.approveSelection();
+                } else {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            NbBundle.getMessage(CreateJREPanel.class, "TXT_InvalidEJDKFolder", getSelectedFile().getName()),
+                            NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        };
+        chooser.setFileView(new EJDKFileView(chooser.getFileSystemView()));
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (oldValue != null) {
             chooser.setSelectedFile(new File(oldValue));
@@ -623,5 +643,58 @@ public class CreateJREPanel extends javax.swing.JPanel {
             path == null || path.isEmpty() ?
                 null :
                 path);
+    }
+
+    private static final class EJDKFileView extends FileView {
+        private static final Image BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/j2seembedded/resources/ejdkBadge.gif", false); // NOI18N
+        private static final ImageIcon EMPTY = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seembedded/resources/empty.gif", false); // NOI18N
+
+        private final FileSystemView fsv;
+        private Icon lastOrig;
+        private Icon lastMerged;
+
+        public EJDKFileView(@NonNull final FileSystemView fsv) {
+            this.fsv = fsv;
+        }
+
+        @Override
+        public Icon getIcon(@NonNull final File file) {
+            final File f = FileUtil.normalizeFile(file);
+            Icon original = fsv.getSystemIcon(f);
+            if (original == null) {
+                // L&F (e.g. GTK) did not specify any icon.
+                original = EMPTY;
+            }
+            if (isEJDK(f)) {
+                if (original.equals(lastOrig)) {
+                    assert lastMerged != null;
+                    return lastMerged;
+                }
+                lastMerged = ImageUtilities.image2Icon(ImageUtilities.mergeImages(
+                        ImageUtilities.icon2Image(original),
+                        BADGE,
+                        original.getIconWidth() - BADGE.getWidth(null),
+                        original.getIconHeight()- BADGE.getHeight(null)));
+                lastOrig = original;
+                return lastMerged;
+            } else {
+                return original;
+            }
+        }
+
+        static boolean isEJDK(@NonNull final File folder) {
+            //XXX: Workaround of hard NFS mounts on Solaris.
+            final int osId = Utilities.getOperatingSystem();
+            if (osId == Utilities.OS_SOLARIS || osId == Utilities.OS_SUNOS) {
+                return false;
+            }
+            final String jrecreateName = Utilities.isWindows() ?
+                "jrecreate.bat" :  //NOI18N
+                "jrecreate.sh";    //NOI18N
+            final File jrecreate = new File(
+                new File(folder, "bin"),    //NOI18N
+                jrecreateName);
+            return jrecreate.exists();
+        }        
     }
 }
