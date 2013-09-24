@@ -124,51 +124,8 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
     }
 
     static boolean checkConstantExpression(final CompilationInfo info, TreePath path) {
-        boolean ok1 = true, ok2;
-        
         class NotConstant extends Error {
         }
-        try {
-            new TreePathScanner<Void, Void>() {
-                private final Set<Element> definedIn = new HashSet<Element>();
-
-                @Override
-                public Void visitIdentifier(IdentifierTree node, Void p) {
-                    Element el = info.getTrees().getElement(getCurrentPath());
-                    if (el == null) {
-                        throw new NotConstant();
-                    }
-                    if (definedIn.contains(el)) {
-                        return null;
-                    }
-                    if (el.getKind().isClass() || el.getKind().isInterface()) {
-                        return null;
-                    }
-                    if (!el.getModifiers().contains(Modifier.STATIC)) {
-                        throw new NotConstant();
-                    }
-                    if (el.getKind() == ElementKind.FIELD && !el.getModifiers().contains(Modifier.FINAL)) {
-                        throw new NotConstant();
-                    }
-                    return super.visitIdentifier(node, p);
-                }
-
-                @Override
-                public Void visitVariable(VariableTree node, Void p) {
-                    definedIn.add(info.getTrees().getElement(getCurrentPath()));
-                    return super.visitVariable(node, p);
-                }
-
-                @Override
-                public Void visitMethod(MethodTree node, Void p) {
-                    definedIn.add(info.getTrees().getElement(getCurrentPath()));
-                    return super.visitMethod(node, p);
-                }
-            }.scan(path, null);
-        } catch (NotConstant n) {
-            ok1 = false;
-        }
-        
         InstanceRefFinder finder = new InstanceRefFinder(info, path) {
             @Override
             public Object visitIdentifier(IdentifierTree node, Object p) {
@@ -188,14 +145,10 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
         };
         try {
             finder.process();
-            ok2 =  !(finder.containsInstanceReferences() || finder.containsLocalReferences() || finder.containsReferencesToSuper());
+            return  !(finder.containsInstanceReferences() || finder.containsLocalReferences() || finder.containsReferencesToSuper());
         } catch (NotConstant e) {
-            ok2 = false;
+            return false;
         }
-        if (ok1 != ok2) {
-            System.err.println(path.getLeaf());
-        }
-        return ok2;
     }
 
     public IntroduceConstantFix(TreePathHandle handle, JavaSource js, String guessedName, int numDuplicates, int offset) {
