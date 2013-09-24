@@ -113,7 +113,7 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	return menu;
     }
 
-    private static boolean isSplitingEnabled() {
+    static boolean isSplitingEnabled() {
 	boolean splitingEnabled = "true".equals(Bundle.MultiViewElement_Spliting_Enabled()); // NOI18N
 	return splitingEnabled;
     }
@@ -132,7 +132,7 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    final TopComponent tc = WindowManager.getDefault().getRegistry().getActivated();
 	    if (tc != null) {
 		setEnabled(true);
-		if (tc instanceof MultiViewTopComponent || tc instanceof MultiViewCloneableTopComponent) {
+		if (tc instanceof Splitable) {
 		    JMenuItem item = new JMenuItem(new SplitDocumentAction(tc, JSplitPane.VERTICAL_SPLIT));
 		    Mnemonics.setLocalizedText(item, item.getText());
 		    add(item);
@@ -172,12 +172,9 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    putValue(Action.NAME, orientation == JSplitPane.VERTICAL_SPLIT ? Bundle.LBL_SplitDocumentActionVertical() : Bundle.LBL_SplitDocumentActionHorizontal());
 	    //hack to insert extra actions into JDev's popup menu
 	    putValue("_nb_action_id_", orientation == JSplitPane.VERTICAL_SPLIT ? Bundle.LBL_ValueSplitVertical() : Bundle.LBL_ValueSplitHorizontal()); //NOI18N
-	    if (tc instanceof MultiViewTopComponent) {
-		setEnabled(((MultiViewTopComponent) tc).getSplitOrientation() == -1
-			|| ((MultiViewTopComponent) tc).getSplitOrientation() != orientation);
-	    } else if (tc instanceof MultiViewCloneableTopComponent) {
-		setEnabled(((MultiViewCloneableTopComponent) tc).getSplitOrientation() == -1
-			|| ((MultiViewCloneableTopComponent) tc).getSplitOrientation() != orientation);
+	    if (tc instanceof Splitable) {
+                int split = ((Splitable)tc).getSplitOrientation();
+		setEnabled( split == -1 || split != orientation );
 	    } else {
 		setEnabled(false);
 	    }
@@ -200,10 +197,8 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	    putValue(Action.NAME, Bundle.LBL_ClearSplitAction());
 	    //hack to insert extra actions into JDev's popup menu
 	    putValue("_nb_action_id_", Bundle.LBL_ValueClearSplit()); //NOI18N
-	    if (tc instanceof MultiViewTopComponent) {
-		setEnabled(((MultiViewTopComponent) tc).getSplitOrientation() != -1);
-	    } else if (tc instanceof MultiViewCloneableTopComponent) {
-		setEnabled(((MultiViewCloneableTopComponent) tc).getSplitOrientation() != -1);
+	    if (tc instanceof Splitable) {
+		setEnabled(((Splitable) tc).getSplitOrientation() != -1);
 	    } else {
 		setEnabled(false);
 	    }
@@ -216,13 +211,8 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
     }
 
     static void splitWindow(TopComponent tc, int orientation) {
-	if (tc instanceof MultiViewTopComponent || tc instanceof MultiViewCloneableTopComponent) {
-	    TopComponent split;
-	    if (tc instanceof MultiViewTopComponent) {
-		split = ((MultiViewTopComponent) tc).splitComponent(orientation);
-	    } else {
-		split = ((MultiViewCloneableTopComponent) tc).splitComponent(orientation);
-	    }
+	if (tc instanceof Splitable) {
+	    TopComponent split = ((Splitable) tc).splitComponent(orientation);
 	    split.open();
 	    split.requestActive();
             split.invalidate();
@@ -233,13 +223,8 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
     }
 
     static void clearSplit(TopComponent tc) {
-	if (tc instanceof MultiViewTopComponent || tc instanceof MultiViewCloneableTopComponent) {
-	    TopComponent original;
-	    if (tc instanceof MultiViewTopComponent) {
-		original = ((MultiViewTopComponent) tc).clearSplit();
-	    } else {
-		original = ((MultiViewCloneableTopComponent) tc).clearSplit();
-	    }
+	if (tc instanceof Splitable) {
+	    TopComponent original = ((Splitable) tc).clearSplit();
 	    original.open();
 	    original.requestActive();
             original.invalidate();

@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
 
 public final class MultiViewTopComponent 
                             extends TopComponent 
-                            implements ActionRequestObserverFactory {
+                            implements ActionRequestObserverFactory, Splitable {
 
     MultiViewPeer peer;
                                            
@@ -316,16 +316,19 @@ public final class MultiViewTopComponent
         return res.toArray( new SubComponent[res.size()] );
     }
 
+    @Override
     public TopComponent splitComponent(int orientation) {
 	peer.peerSplitComponent(orientation);
 	return this;
     }
 
+    @Override
     public TopComponent clearSplit() {
 	peer.peerClearSplit();
 	return this;
     }
 
+    @Override
     public int getSplitOrientation() {
 	return peer.getSplitOrientation();
     }

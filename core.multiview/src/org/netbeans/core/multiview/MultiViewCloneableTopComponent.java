@@ -75,7 +75,9 @@ import org.openide.windows.TopComponent;
 
 
 public final class MultiViewCloneableTopComponent extends CloneableTopComponent 
-                                                  implements ActionRequestObserverFactory, CloneableEditorSupport.Pane {
+                                                  implements ActionRequestObserverFactory, 
+                                                             CloneableEditorSupport.Pane,
+                                                             Splitable {
 
     MultiViewPeer peer;
                                            
@@ -229,16 +231,19 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
 	return activeDescription;
     }
 
+    @Override
     public TopComponent splitComponent(int orientation) {
 	peer.peerSplitComponent(orientation);
 	return this;
     }
 
+    @Override
     public TopComponent clearSplit() {
 	peer.peerClearSplit();
 	return this;
     }
 
+    @Override
     public int getSplitOrientation() {
 	return peer.getSplitOrientation();
     }

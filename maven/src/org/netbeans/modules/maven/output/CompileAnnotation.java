@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.output;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -52,6 +53,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
@@ -64,7 +66,9 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
     
     File clazzfile; //for tests..
     private int lineNum;
-    private String text;
+    private final String text;
+    
+    private static final RequestProcessor RP = new RequestProcessor(CompileAnnotation.class);
     
     public CompileAnnotation(File clazz, String line, String textAnn) {
         clazzfile = clazz;
@@ -88,39 +92,63 @@ public final class CompileAnnotation /*extends Annotation */implements /*Propert
      */
     @Override
     public void outputLineAction(OutputEvent ev) {
-        FileUtil.refreshFor(clazzfile);
-        FileObject file = FileUtil.toFileObject(clazzfile);
-        if (file == null) {
-            Toolkit.getDefaultToolkit().beep();
-            return;
-        }
-        try {
-            DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
-            if (ed != null && file == dob.getPrimaryFile()) {
-                if (lineNum == -1) {
-                    ed.open();
-                } else {
-                    ed.openDocument();
-                    try {
-                        Line l = ed.getLineSet().getOriginal(lineNum - 1);
-                        if (! l.isDeleted()) {
-                            l.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
-                        }
-                    } catch (IndexOutOfBoundsException ioobe) {
-                        // Probably harmless. Bogus line number.
-                        ed.open();
-                    }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                FileUtil.refreshFor(clazzfile);
+                FileObject file = FileUtil.toFileObject(clazzfile);
+                if (file == null) {
+                    beep();                   
+                    return;
                 }
-//                attachAllInFile(ed, this);
-            } else {
+                try {
+                    DataObject dob = DataObject.find(file);
+                    final EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
+                    if (ed != null && file == dob.getPrimaryFile()) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if (lineNum == -1) {
+                                        ed.open();
+                                    } else {
+                                        ed.openDocument();
+                                        try {
+                                            Line l = ed.getLineSet().getOriginal(lineNum - 1);
+                                            if (!l.isDeleted()) {
+                                                l.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS);
+                                            }
+                                        } catch (IndexOutOfBoundsException ioobe) {
+                                            // Probably harmless. Bogus line number.
+                                            ed.open();
+                                        }
+                                    }
+                                } catch (IOException ioe) {
+                                    ErrorManager.getDefault().notify(ioe);
+                                }
+                            }
+                        });
+
+                        //                attachAllInFile(ed, this);
+                    } else {
+                        beep();
+                    }
+                } catch (DataObjectNotFoundException donfe) {
+                    ErrorManager.getDefault().notify(donfe);
+                }
+            }
+        });
+        
+    }
+
+    private void beep() {
+        SwingUtilities.invokeLater(new Runnable() {
+            
+            @Override
+            public void run() {
                 Toolkit.getDefaultToolkit().beep();
             }
-        } catch (DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
+        });
     }
     
 //    private static void attachAllInFile(EditorCookie cook, CompileAnnotation annot) {
