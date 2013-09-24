@@ -156,6 +156,7 @@ public final class SyncItem {
     private final TransferFile remoteTransferFile;
     private final TransferFile localTransferFile;
     private final Operation defaultOperation;
+    private final boolean hasLastTimestamp;
 
     private volatile Operation operation;
     // for merging
@@ -169,6 +170,7 @@ public final class SyncItem {
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
         defaultOperation = calculateDefaultOperation(lastTimestamp);
+        hasLastTimestamp = lastTimestamp != -1;
     }
 
     public String getName() {
@@ -230,6 +232,10 @@ public final class SyncItem {
         cleanupTmpLocalFile();
         tmpLocalFile = null;
         operation = null;
+    }
+
+    public boolean hasLastTimestamp() {
+        return hasLastTimestamp;
     }
 
     public void cleanupTmpLocalFile() {
