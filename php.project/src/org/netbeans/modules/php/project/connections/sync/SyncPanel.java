@@ -192,7 +192,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JButton okButton = null;
 
 
-    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject, boolean firstRun) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
@@ -202,7 +202,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         displayedItems = new ArrayList<>(items);
         this.remoteClient = remoteClient;
         tableModel = new FileTableModel(displayedItems);
-        defaultInfoMessage = getDefaultInfoMessage(forProject, firstRun);
+        defaultInfoMessage = getDefaultInfoMessage(items);
 
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
@@ -701,21 +701,23 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     @NbBundle.Messages({
-        "SyncPanel.info.firstRun=<strong>First time for this project and configuration - more user actions may be needed.</strong><br>",
-        "SyncPanel.info.individualFiles=<strong>Run synchronization on Source Files for more accurate result.</strong><br>",
+        "SyncPanel.info.firstRun=<strong>First time for this directory and configuration - more user actions may be needed.</strong><br>",
         "SyncPanel.info.warning=Review all suggested operations before proceeding. Note that remote timestamps may not be correct.",
     })
-    private String getDefaultInfoMessage(boolean forProject, boolean firstRun) {
-        String msg = Bundle.SyncPanel_info_warning();
-        if (forProject) {
-            if (firstRun) {
-                msg = Bundle.SyncPanel_info_firstRun() + msg;
+    private String getDefaultInfoMessage(List<SyncItem> items) {
+        StringBuilder msg = new StringBuilder();
+        boolean firstRun = false;
+        for (SyncItem item : items) {
+            if (!item.hasLastTimestamp()) {
+                firstRun = true;
+                break;
             }
-        } else {
-            // individual files
-            msg = Bundle.SyncPanel_info_individualFiles() + msg;
         }
-        return msg;
+        if (firstRun) {
+            msg.append(Bundle.SyncPanel_info_firstRun());
+        }
+        msg.append(Bundle.SyncPanel_info_warning());
+        return msg.toString();
     }
 
     private void initShowSummaryCheckBox(boolean showSummary) {
