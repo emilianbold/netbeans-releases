@@ -60,6 +60,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -790,33 +791,39 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return changed;
     }
     
-    void updateTestConnectionStatus(GeneralOptionsModel.TestingStatus status, String message) {        
-        switch (status) {
-            case NOT_TESTED:
-                lblTestResult.setText(" "); // NOI18N
-                lblTestResult.setIcon(null);
-                lblTestResult.setToolTipText("");
-                pbProxyWaiting.setVisible(false);
-                break;
-            case WAITING:                
-                lblTestResult.setText(" "); // NOI18N
-                lblTestResult.setIcon(null);
-                lblTestResult.setToolTipText("");
-                pbProxyWaiting.setVisible(true);
-                break;
-            case OK:
-                lblTestResult.setText(" "); // NOI18N
-                lblTestResult.setIcon(PROXY_TEST_OK);
-                lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.ok")); // NOI18N
-                pbProxyWaiting.setVisible(false);
-                break;
-            case FAILED:
-                lblTestResult.setText(message);
-                lblTestResult.setIcon(PROXY_TEST_ERROR);
-                lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.failed", message)); // NOI18N
-                pbProxyWaiting.setVisible(false);
-                break;
-        }       
+    void updateTestConnectionStatus(final GeneralOptionsModel.TestingStatus status, final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                switch (status) {
+                    case NOT_TESTED:
+                        lblTestResult.setText(" "); // NOI18N
+                        lblTestResult.setIcon(null);
+                        lblTestResult.setToolTipText("");
+                        pbProxyWaiting.setVisible(false);
+                        break;
+                    case WAITING:
+                        lblTestResult.setText(" "); // NOI18N
+                        lblTestResult.setIcon(null);
+                        lblTestResult.setToolTipText("");
+                        pbProxyWaiting.setVisible(true);
+                        break;
+                    case OK:
+                        lblTestResult.setText(" "); // NOI18N
+                        lblTestResult.setIcon(PROXY_TEST_OK);
+                        lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.ok")); // NOI18N
+                        pbProxyWaiting.setVisible(false);
+                        break;
+                    case FAILED:
+                        lblTestResult.setText(message);
+                        lblTestResult.setIcon(PROXY_TEST_ERROR);
+                        lblTestResult.setToolTipText(loc("GeneralOptionsPanel.proxy.result.failed", message)); // NOI18N
+                        pbProxyWaiting.setVisible(false);
+                        break;
+                }
+            }
+        });
     }
 
 
