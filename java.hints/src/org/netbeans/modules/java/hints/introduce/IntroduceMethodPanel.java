@@ -40,7 +40,6 @@ import javax.lang.model.element.Modifier;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import org.netbeans.modules.java.hints.introduce.IntroduceHint.TargetDescription;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 

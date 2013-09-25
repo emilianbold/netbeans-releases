@@ -108,6 +108,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.IntersectionType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -544,7 +545,9 @@ public class Utilities {
     
     public static TypeMirror resolveCapturedType(CompilationInfo info, TypeMirror tm) {
         TypeMirror type = resolveCapturedTypeInt(info, tm);
-        
+        if (type == null) {
+            return tm;
+        }
         if (type.getKind() == TypeKind.WILDCARD) {
             TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
             if (tmirr != null)
@@ -558,6 +561,10 @@ public class Utilities {
         return type;
     }
     
+    /**
+     * Note: may return {@code null}, if an intersection type is encountered, to indicate a 
+     * real type cannot be created.
+     */
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
         if (tm == null) return tm;
         
@@ -569,19 +576,28 @@ public class Utilities {
         
         if (tm.getKind() == TypeKind.WILDCARD) {
             TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
-            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
-            if (rct != null) {
-                switch (rct.getKind()) {
-                    case WILDCARD:
-                        return rct;
-                    case ARRAY:
-                    case DECLARED:
-                    case ERROR:
-                    case TYPEVAR:
-                    case OTHER:
-                        return info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+            TypeMirror superBound = ((WildcardType) tm).getSuperBound();
+            if (extendsBound != null || superBound != null) {
+                TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : superBound);
+                if (rct != null) {
+                    switch (rct.getKind()) {
+                        case WILDCARD:
+                            return rct;
+                        case ARRAY:
+                        case DECLARED:
+                        case ERROR:
+                        case TYPEVAR:
+                        case OTHER:
+                            return info.getTypes().getWildcardType(
+                                    extendsBound != null ? rct : null, superBound != null ? rct : null);
+                    }
+                } else {
+                    // propagate failure out of all wildcards
+                    return null;
                 }
             }
+        } else if (tm.getKind() == TypeKind.INTERSECTION) {
+            return null;
         }
         
         if (tm.getKind() == TypeKind.DECLARED) {
@@ -589,7 +605,18 @@ public class Utilities {
             List<TypeMirror> typeArguments = new LinkedList<TypeMirror>();
             
             for (TypeMirror t : dt.getTypeArguments()) {
-                typeArguments.add(resolveCapturedTypeInt(info, t));
+                TypeMirror targ = resolveCapturedTypeInt(info, t);
+                if (targ == null) {
+                    // bail out, if the type parameter is a wildcard, it's probably not possible
+                    // to create a proper parametrized type from it
+                    if (t.getKind() == TypeKind.WILDCARD || t.getKind() == TypeKind.INTERSECTION) {
+                        return null;
+                    }
+                    // use rawtype
+                    typeArguments.clear();
+                    break;
+                }
+                typeArguments.add(targ);
             }
             
             final TypeMirror enclosingType = dt.getEnclosingType();
@@ -603,8 +630,8 @@ public class Utilities {
 
         if (tm.getKind() == TypeKind.ARRAY) {
             ArrayType at = (ArrayType) tm;
-
-            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+            TypeMirror tm2 = resolveCapturedTypeInt(info, at.getComponentType());
+            return info.getTypes().getArrayType(tm2 != null ? tm2 : tm);
         }
         
         return tm;
