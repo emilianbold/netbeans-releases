@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -207,7 +208,7 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     private CharSequence[] initNameParts(AST qid) {
@@ -323,7 +324,7 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
      * Creates a fake class this forward declaration refers to
      */
     protected ForwardEnum createForwardEnumIfNeed(AST ast, CsmScope scope, boolean registerInProject) {
-        return ForwardEnum.createIfNeeded(name.toString(), getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
+        return ForwardEnum.createIfNeeded(name, getContainingFile(), ast, this.getStartOffset(), this.getEndOffset(), scope, registerInProject);
     }
 
     @Override

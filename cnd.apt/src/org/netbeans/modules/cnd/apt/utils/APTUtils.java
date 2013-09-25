@@ -83,6 +83,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -124,7 +125,7 @@ public class APTUtils {
             assert idx > 0 : "no " + TEST_DATA_DIR + " prefix in " + path;
             path = path.substring(idx + TEST_DATA_DIR.length());
         }
-        return CharSequences.create("\"" + path + "\""); //NOI18N
+        return CharSequences.create(CharSequenceUtils.concatenate("\"", path, "\"")); //NOI18N
     }
 
     public static String getAPTTokenName(int type) {
@@ -333,7 +334,7 @@ public class APTUtils {
         return last;
     }
 
-    public static String debugString(TokenStream ts) {
+    public static CharSequence debugString(TokenStream ts) {
         // use simple stringize
         return stringize(ts, false);
     }
@@ -357,7 +358,7 @@ public class APTUtils {
         return retValue.toString();
     }
     
-    public static String stringize(TokenStream ts, boolean inIncludeDirective) {
+    public static CharSequence stringize(TokenStream ts, boolean inIncludeDirective) {
         StringBuilder retValue = new StringBuilder();
         try {
             for (APTToken token = (APTToken)ts.nextToken();!isEOF(token);) {
@@ -374,7 +375,7 @@ public class APTUtils {
         } catch (TokenStreamException ex) {
             LOG.log(Level.SEVERE, "error on stringizing token stream\n{0}", new Object[] { ex }); // NOI18N
         }
-        return retValue.toString();
+        return retValue;
     }
     
     public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros) {

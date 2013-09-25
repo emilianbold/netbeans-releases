@@ -122,18 +122,18 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         return methodImpl;
     }
 
-    private static String getFunctionName(AST ast) {
+    private static CharSequence getFunctionName(AST ast) {
         CharSequence funName = CharSequences.create(AstUtil.findId(ast, CPPTokenTypes.RCURLY, true));
-        return getFunctionNameFromFunctionSpecialicationName(funName.toString());
+        return getFunctionNameFromFunctionSpecialicationName(funName);
     }
 
-    private static String getFunctionNameFromFunctionSpecialicationName(CharSequence functionName) {
+    private static CharSequence getFunctionNameFromFunctionSpecialicationName(CharSequence functionName) {
         CharSequence[] nameParts = Utils.splitQualifiedName(functionName.toString());
         StringBuilder className = new StringBuilder("");
         if(nameParts.length > 0) {
             className.append(nameParts[nameParts.length - 1]);
         }
-        return className.toString();
+        return className;
     }
 
     

@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Implements CsmClass
@@ -117,7 +118,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         this.leftBracketPos = leftBracketPos;
     }
     
-    private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
+    private ClassImpl(CsmFile file, CsmScope scope, CharSequence name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
         super(name, name, file, startOffset, endOffset);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
@@ -126,7 +127,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         initScope(scope);
     }
 
-    public static ClassImpl create(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset, boolean register) {
+    public static ClassImpl create(CsmFile file, CsmScope scope, CharSequence name, CsmDeclaration.Kind kind, int startOffset, int endOffset, boolean register) {
         ClassImpl classImpl = new ClassImpl(file, scope, name, kind, startOffset, endOffset);
         temporaryRepositoryRegistration(register, classImpl);
         if (register) {
@@ -428,7 +429,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     @Override
     public CharSequence getDisplayName() {
-        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
+        return (templateDescriptor != null) ? CharSequences.create(CharSequenceUtils.concatenate(getName(), templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
 
     @Override
@@ -715,9 +716,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         //case CPPTokenTypes.CSM_TEMPLATE_PARMLIST:
                         case CPPTokenTypes.LITERAL_template:{
                             List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(token, getContainingFile(), ClassImpl.this, !isRenderingLocalContext());
-                            final String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
-                            String name = "<" + classSpecializationSuffix + ">"; // NOI18N
-                            setTemplateDescriptor(params, name, !classSpecializationSuffix.isEmpty());
+                            final CharSequence classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
+                            CharSequence name = CharSequenceUtils.concatenate("<", classSpecializationSuffix, ">"); // NOI18N
+                            setTemplateDescriptor(params, name, classSpecializationSuffix.length() > 0);
                             break;
                         }
                         case CPPTokenTypes.CSM_BASE_SPECIFIER:
@@ -984,7 +985,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return innerClass;
         }
         
-        private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name, boolean specialization) {
+        private void setTemplateDescriptor(List<CsmTemplateParameter> params, CharSequence name, boolean specialization) {
             templateDescriptor = new TemplateDescriptor(params, name, specialization, !isRenderingLocalContext());
         }
 
@@ -1467,7 +1468,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (cls == null) {
                 cls = getContainingClass();
             }
-            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(cls.getQualifiedName(), "::", getName())); // NOI18N
         }
 
         public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
@@ -1634,7 +1635,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (cls == null) {
                 cls = getContainingClass();
             }
-            return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
+            return CharSequences.create(CharSequenceUtils.concatenate(cls.getQualifiedName(), "::", getName())); // NOI18N
         }
 
         ////////////////////////////////////////////////////////////////////////////

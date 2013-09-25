@@ -570,7 +570,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return nsp;
     }
 
-    private static String getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
+    private static CharSequence getNestedNamespaceQualifiedName(CharSequence name, NamespaceImpl parent, boolean createForEmptyNames) {
         StringBuilder sb = new StringBuilder(name);
         if (parent != null) {
             if (name.length() == 0 && createForEmptyNames) {
@@ -581,15 +581,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 sb.insert(0, parent.getQualifiedName());
             }
         }
-        return sb.toString();
+        return sb;
     }
 
     public final NamespaceImpl findNamespaceCreateIfNeeded(NamespaceImpl parent, CharSequence name) {
         synchronized (namespaceLock) {
-            String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
+            CharSequence qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
             if (nsp == null) {
-                nsp = NamespaceImpl.create(this, parent, name.toString(), qualifiedName);
+                nsp = NamespaceImpl.create(this, parent, name, qualifiedName);
             }
             return nsp;
         }

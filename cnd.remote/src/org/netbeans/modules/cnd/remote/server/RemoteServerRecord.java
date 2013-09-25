@@ -348,7 +348,10 @@ public class RemoteServerRecord implements ServerRecord {
     }
 
     public void setDisplayName(String displayName) {
-        this.displayName = escape(displayName);
+        String oldName = this.displayName;
+        String newName = escape(displayName);
+        this.displayName = newName;
+        this.pcs.firePropertyChange(DISPLAY_NAME_CHANGED, oldName, newName);
     }
 
     // #164242 Remote gets in trouble in the case user uses "," in host display name
