@@ -49,7 +49,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
-import org.netbeans.modules.java.hints.introduce.IntroduceHint.TargetDescription;
+import org.netbeans.modules.java.hints.introduce.TargetDescription;
 import org.openide.awt.HtmlRenderer;
 import org.openide.awt.HtmlRenderer.Renderer;
 

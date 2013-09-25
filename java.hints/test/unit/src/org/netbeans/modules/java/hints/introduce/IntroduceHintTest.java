@@ -456,7 +456,7 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test {public void test() {int y = 3 + 4;}}",
                        86 - 25, 91 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; public void test() {int y = NAME;}}",
-                       new DialogDisplayerImpl(null, false, false, true),
+                       new DialogDisplayerImpl(null, false, null, true),
                        5, 1);
     }
 
@@ -464,7 +464,7 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test { int y = 3 + 4;}",
                        67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME;}",
-                       new DialogDisplayerImpl(null, false, false, true),
+                       new DialogDisplayerImpl(null, false, null, true),
                        1, 0);
     }
 
@@ -472,7 +472,7 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
                        67 - 25, 72 - 25,
                        "package test; public class Test { private static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
-                       new DialogDisplayerImpl(null, true, false, true),
+                       new DialogDisplayerImpl(null, true, null, true),
                        1, 0);
     }
 
@@ -480,7 +480,7 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
                        67 - 25, 72 - 25,
                        "package test; public class Test { public static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
-                       new DialogDisplayerImpl(null, true, false, true, EnumSet
+                       new DialogDisplayerImpl(null, true, null, true, EnumSet
                 .of(Modifier.PUBLIC)),
                        1, 0);
     }
@@ -489,7 +489,7 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test { int y = 3 + 4; int z = 3 + 4;}",
                        67 - 25, 72 - 25,
                        "package test; public class Test { static final int NAME = 3 + 4; int y = NAME; int z = NAME;}",
-                       new DialogDisplayerImpl(null, true, false, true, EnumSet
+                       new DialogDisplayerImpl(null, true, null, true, EnumSet
                 .noneOf(Modifier.class)),
                        1, 0);
     }
@@ -751,7 +751,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void testIntroduceFieldFix213972() throws Exception {
         performFixTest("package test; public class Test {public void test1() {|int i = 3;|} public void test2() {int i = 3;}}",
-                       "package test; public class Test { private int i = 3; public void test1() {} public void test2() {}}",
+                       "package test; public class Test { private int i = 3; public void test1() {} public void test2() {int i = 3;}}",
                        new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet
                 .<Modifier>of(Modifier.PRIVATE), false, true),
                        3, 1);
@@ -1674,7 +1674,7 @@ public class IntroduceHintTest extends NbTestCase {
                         "    }\n" +
                         "}")
                 .replaceAll("[ \t\n]+", " "),
-                       new DialogDisplayerImpl(null, false, false, true, EnumSet
+                       new DialogDisplayerImpl(null, false, null, true, EnumSet
                 .of(Modifier.PRIVATE)),
                        3, 0);
     }
@@ -1749,7 +1749,7 @@ public class IntroduceHintTest extends NbTestCase {
                         "    }\n" +
                         "}")
                 .replaceAll("[ \t\n]+", " "),
-                       new DialogDisplayerImpl(null, false, false, true, EnumSet
+                       new DialogDisplayerImpl(null, false, null, true, EnumSet
                 .<Modifier>of(Modifier.PRIVATE)),
                        5, 1);
     }
@@ -2212,6 +2212,45 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 2);
     }
     
+    /**
+     * Checks that expressions that instantiate member classes cannot form constant
+     * @throws Exception 
+     */
+    public void testConstantFix236187() throws Exception {
+        performConstantAccessTest("package test;\n" +
+                        "public class Test {\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = |new InnerClass()|;\n" +
+                        "  }\n" +
+                        "  class InnerClass{\n" +
+                        "  }\n" +
+                        "}", false);
+    }
+    
+    public void testConstantFix236187Static() throws Exception {
+        performFixTest("package test;\n" +
+                        "public class Test {\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = |new InnerClass()|;\n" +
+                        "  }\n" +
+                        "  static class InnerClass{\n" +
+                        "  }\n" +
+                        "}",
+                        (
+                        "package test;\n" +
+                        "public class Test {\n" +
+                        "  private static final InnerClass ZZ = new InnerClass();\n" +
+                        "  public void method() {\n" +
+                        "     InnerClass ic = ZZ;\n" +
+                        "  }\n" +
+                        "  static class InnerClass{\n" +
+                        "  }\n" +
+                        "}"
+                        ).replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("ZZ", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.<Modifier>of(Modifier.PRIVATE), true, true),
+                       5, 1);
+    }
+    
     public void testFieldFix208072d() throws Exception {
         Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
         prefs.put("classMembersOrder", "STATIC_INIT;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD;FIELD");
@@ -2275,7 +2314,7 @@ public class IntroduceHintTest extends NbTestCase {
                         "        args = name;\n" +
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "),
-                       new DialogDisplayerImpl("name", true, false, true),
+                       new DialogDisplayerImpl("name", true, null, true),
                        5, 1);
     }
     
@@ -2306,11 +2345,11 @@ public class IntroduceHintTest extends NbTestCase {
                        "}\n",
                        ("package test;\n" +
                         "public class Test {\n" +
+                        "    private static String[] name() {\n" +
+                        "        return null;\n" +
+                        "    }\n" +
                         "    public void method(String... args) {\n" +
                         "        args = name();\n" +
-                        "    }\n" +
-                        "    private String[] name() {\n" +
-                        "        return null;\n" +
                         "    }\n" +
                         "}\n").replaceAll("[ \t\n]+", " "),
                        new DialogDisplayerImpl3("name", null, true),
@@ -2574,7 +2613,7 @@ public class IntroduceHintTest extends NbTestCase {
 
         int[] actualSpan = new int[2];
 
-        assertEquals(awaited, IntroduceHint
+        assertEquals(awaited, IntroduceMethodFix
                 .validateSelectionForIntroduceMethod(info, start, end, actualSpan) != null);
 
         if (awaited) {
@@ -2596,7 +2635,7 @@ public class IntroduceHintTest extends NbTestCase {
     private void performConstantAccessTest(String code, int start, int end, boolean awaited) throws Exception {
         prepareTest(code);
 
-        assertEquals(awaited, IntroduceHint
+        assertEquals(awaited, IntroduceConstantFix
                 .checkConstantExpression(info, IntroduceHint
                 .validateSelection(info, start, end)));
     }
@@ -2768,12 +2807,12 @@ public class IntroduceHintTest extends NbTestCase {
         }
 
         public Object notify(NotifyDescriptor descriptor) {
-            IntroduceVariablePanel panel = (IntroduceVariablePanel) descriptor
+            IntroduceFieldPanel panel = (IntroduceFieldPanel) descriptor
                     .getMessage();
 
             if (name != null) {
                 panel
-                        .setVariableName(name);
+                        .setFieldName(name);
             }
 
             if (replaceAll != null) {

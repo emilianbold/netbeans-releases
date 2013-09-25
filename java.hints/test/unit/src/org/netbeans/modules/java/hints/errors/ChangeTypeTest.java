@@ -203,6 +203,28 @@ public class ChangeTypeTest extends ErrorHintsTestBase {
                        "package test; import java.util.*; public class Test {public void foo() { ArrayList<String> l = new ArrayList<String>(); } }");
     }
 
+    public void test235716FixType() throws Exception {
+        performFixTest("test/Test.java",
+            "package test;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+            "class Test {\n" +
+            "    static void f() {\n" +
+            "       List<Class<?>> asList = Arrays.asList(Integer.class,String.class);\n" +
+            "    }\n" +
+            "}", -1,
+            "Change type of asList to List",
+            ("package test;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+             "class Test {\n" +
+             "    static void f() {\n" +
+             "       List asList = Arrays.asList(Integer.class,String.class);\n" +  
+             "    }\n" +
+             "}").replaceAll("\\s+", " "));
+    }
+
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) {
         List<Fix> fixes = new ChangeType().run(info, null, pos, path, null);
         List<Fix> result=  new LinkedList<Fix>();

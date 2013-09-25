@@ -296,6 +296,27 @@ public class AssignResultToVariableTest extends TreeRuleTestBase {
                              "    }\n" +
                              "}").replaceAll("\\s+", " "));
     }
+    
+    public void test235716NewVariable() throws Exception {
+        performFixTest("test/Test.java",
+            "package test;\n" +
+            "import java.util.Arrays;\n" +
+            "class Test {\n" +
+            "    static void f() {\n" +
+            "       Arrays.as|List(Integer.class,String.class);\n" +
+            "    }\n" +
+            "}",
+            "4:16-4:16:hint:Assign Return Value To New Variable",
+            "FixImpl",
+            ("package test;\n" +
+            "import java.util.Arrays;\n" +
+            "import java.util.List;\n" +
+             "class Test {\n" +
+             "    static void f() {\n" +
+             "       List asList = Arrays.asList(Integer.class,String.class);\n" +  
+             "    }\n" +
+             "}").replaceAll("\\s+", " "));
+    }
 
     protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path, int offset) {
         while (path != null && !new AssignResultToVariable().getTreeKinds().contains(path.getLeaf().getKind()))
