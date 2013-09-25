@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.util.Arrays;
+
 /**
  *
  * @author Vladimir Voskresensky
@@ -115,5 +117,10 @@ public class WhereUsedTestCase extends CsmWhereUsedQueryPluginTestCaseBase {
         
         performWhereUsed("iz216130_1.c", 12, 80);
         performWhereUsed("iz216130_2.c", 15, 80);
+    }
+    
+    public void test228094() throws Exception {
+        // IZ#228094 - Refactoring: only usages are changed, #define in header from the refactoring was called, remains unchanged
+        performWhereUsed("iz228094.cpp", 1, 10, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey(), CsmWhereUsedFilters.MACROS.getKey()));
     }
 }
