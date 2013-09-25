@@ -182,9 +182,10 @@ public enum LatteCompletionContext {
     }
 
     private void completeProvidedVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
-        List<VariableCompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
-        for (VariableCompletionProvider variableProvider : variableProviders) {
-            for (String variable : variableProvider.getVariables(request.parserResult.getSnapshot().getSource().getFileObject())) {
+        FileObject sourceFileObject = request.parserResult.getSnapshot().getSource().getFileObject();
+        List<CompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
+        for (CompletionProvider variableProvider : variableProviders) {
+            for (String variable : variableProvider.getItems(sourceFileObject)) {
                 if (startsWith(variable, request.prefix)) {
                     completionProposals.add(new LatteCompletionProposal.UserVariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
                 }
