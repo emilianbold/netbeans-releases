@@ -50,9 +50,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -80,14 +80,14 @@ import org.openide.util.NbBundle;
         suppressWarnings = "HasNoArgConstructor")
 @NbBundle.Messages({
     "HasNoArgConstructor.display.name=Default public/protected constructor",
-    "HasNoArgConstructor.desc=JPA classes need to have default public/protected no arg constructor",})
+    "HasNoArgConstructor.desc=JPA classes need to have default public/protected no arg constructor"})
 public class HasNoArgConstructor {
 
 
     @TriggerPatterns(value = {
-        @TriggerPattern(value = "javax.persistence.Entity"),
-        @TriggerPattern(value = "javax.persistence.Embeddable"),
-        @TriggerPattern(value = "javax.persistence.IdClass")})
+        @TriggerPattern(value = JPAAnnotations.ENTITY),
+        @TriggerPattern(value = JPAAnnotations.EMBEDDABLE),
+        @TriggerPattern(value = JPAAnnotations.ID_CLASS)})
     public static ErrorDescription apply(HintContext hc) {
         if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
             return null;//we pass only if it is an annotation
