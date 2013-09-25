@@ -64,6 +64,7 @@ import org.openide.util.RequestProcessor.Task;
 public final class RemoteStatistics implements Callable<Boolean> {
 
     public static final boolean COLLECT_STATISTICS = Boolean.parseBoolean(System.getProperty("jsch.statistics", "false")); // NOI18N
+    public static final boolean COLLECT_TRAFFIC = Boolean.parseBoolean(System.getProperty("jsch.statistics.traffic", "true")); // NOI18N
     public static final boolean COLLECT_STACKS = COLLECT_STATISTICS && Boolean.parseBoolean(System.getProperty("jsch.statistics.stacks", "false")); // NOI18N
     private static final String BREAK_UPLOADS_FLAG_FILE = System.getProperty("break.uploads"); // NOI18N
     private static final TrafficCounters trafficCounters = new TrafficCounters();
@@ -146,7 +147,9 @@ public final class RemoteStatistics implements Callable<Boolean> {
         while (true) {
             synchronized (trafficDetected) {
                 try {
-                    trafficDetected.wait(quietPrePeriodMillis);
+                    if (quietPrePeriodMillis > 0) {
+                        trafficDetected.wait(quietPrePeriodMillis);
+                    }
                     if (!trafficDetected.getAndSet(false)) {
                         break;
                     }
@@ -173,11 +176,11 @@ public final class RemoteStatistics implements Callable<Boolean> {
         return unnamed.equals(stopped);
     }
 
-    public static Object stratChannelActivity(CharSequence category, Channel channel, CharSequence... args) {
+    public static Object startChannelActivity(CharSequence category, CharSequence... args) {
         if (!COLLECT_STATISTICS) {
             return null;
         }
-        return currentStatRef.get().stat.stratChannelActivity(category, channel, args);
+        return currentStatRef.get().stat.startChannelActivity(category, args);
     }
 
     public static void stopChannelActivity(Object activityID) {

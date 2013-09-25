@@ -132,6 +132,7 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
+    @RandomlyFails
     public void testQuoteSolStudio() throws Exception {
         testReconnect = false;
         processSample(Toolchain.SUN, "Quote", "Quote_02");

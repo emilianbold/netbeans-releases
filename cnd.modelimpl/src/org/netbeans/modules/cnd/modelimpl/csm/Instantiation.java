@@ -85,6 +85,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Instantiations.
@@ -1290,7 +1291,7 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
 
         @Override
         public CharSequence getClassifierText() {
-            return instantiatedType.getClassifierText().toString() + TypeImpl.getInstantiationText(this);
+            return CharSequenceUtils.concatenate(instantiatedType.getClassifierText(), TypeImpl.getInstantiationText(this));
         }
 
         private CharSequence getInstantiatedText() {

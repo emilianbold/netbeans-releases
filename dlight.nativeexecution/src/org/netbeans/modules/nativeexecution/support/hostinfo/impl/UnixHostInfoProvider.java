@@ -282,7 +282,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         Object activityID = null;
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
-            activityID = RemoteStatistics.stratChannelActivity("UnixHostInfoProvider", login_shell_channels.channel, execEnv.getDisplayName()); // NOI18N
+            activityID = RemoteStatistics.startChannelActivity("UnixHostInfoProvider", execEnv.getDisplayName()); // NOI18N
             if (nbstart != null && envPath != null) {
                 login_shell_channels.in.write((nbstart + " --dumpenv " + envPath + "\n").getBytes()); // NOI18N
             }

@@ -76,8 +76,5 @@ public class SetDefaultHostAction extends SingleHostAction {
     @Override
     protected void performAction(ExecutionEnvironment env, Node node) {
         ServerList.setDefaultRecord(ServerList.get(env));
-        if (node instanceof HostNode) {
-            ((HostNode) node).refresh(); // TODO: introduce listeners for server records
-        }
     }
 }

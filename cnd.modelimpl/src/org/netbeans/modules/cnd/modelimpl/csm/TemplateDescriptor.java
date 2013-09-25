@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.CndCollectionUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -134,9 +135,10 @@ public final class TemplateDescriptor {
         AST start = TemplateUtils.getTemplateStart(ast.getFirstChild());
         for( AST token = start; token != null; token = token.getNextSibling() ) {
             if (token.getType() == CPPTokenTypes.LITERAL_template) {
-                String classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
+                CharSequence classSpecializationSuffix = TemplateUtils.getClassSpecializationSuffix(token, null);
                 return new TemplateDescriptor(TemplateUtils.getTemplateParameters(token, file, scope, global),
-                            '<' + classSpecializationSuffix + '>', !classSpecializationSuffix.isEmpty(), global);
+                            CharSequenceUtils.concatenate("<", classSpecializationSuffix, ">"), //NOI18N
+                            classSpecializationSuffix.length() > 0, global);
             }
         }
         return null;
@@ -216,9 +218,10 @@ public final class TemplateDescriptor {
                 }
             }
             
-            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(CharSequences.create("<T>")), inheritedTemplateParametersNumber, specialization); // NOI18N
+            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(TEMP_PARAM), inheritedTemplateParametersNumber, specialization); 
             return descriptor;
         }
+        private static final CharSequence TEMP_PARAM = CharSequences.create("<T>"); // NOI18N
     }      
     
     ////////////////////////////////////////////////////////////////////////////
