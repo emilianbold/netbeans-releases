@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
@@ -69,6 +70,7 @@ public class FilesAccessStrategyUnitClosureTest extends RepositoryAccessTestBase
 
     private static final boolean TRACE = true;
     
+    @RandomlyFails
     public void testClosure() throws Exception {
                         
         //assertTrue("Cache should be empty at that time", getFileNames(strategy).isEmpty());
