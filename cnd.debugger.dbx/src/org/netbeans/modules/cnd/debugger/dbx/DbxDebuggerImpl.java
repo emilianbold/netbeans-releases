@@ -71,6 +71,8 @@ import org.netbeans.spi.debugger.ContextProvider;
 
 
 import com.sun.tools.swdev.glue.dbx.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.LinkedList;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
@@ -2994,7 +2996,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             }
         } else {
             // remember to pathmap if file ever becomes non-null
-            dbx.expr_heval(RT_EVAL_TOOLTIP, text);
+            dbx.expr_line_eval(0, 0, expr, pos, null, 0, GPDbxLineEval.COMBO_ALL);
         }
 
         // result will be sent to us asynchronously via expr_line_eval_result()
@@ -3024,9 +3026,26 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void balloonResult(int rt1, int rt2, int flags,
-            String lhs, String rhs,
+            final String lhs, final String rhs,
             String rhs2, String rhs3) {
-        EvalAnnotation.postResult(rt1, rt2, flags, lhs, rhs, rhs2, rhs3);
+//        EvalAnnotation.postResult(rt1, rt2, flags, lhs, rhs, rhs2, rhs3);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(lhs + "=" + rhs); //NOI18N
+                expTooltip.addExpansionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        evaluateInOutline(lhs);
+                    }
+                });
+                expTooltip.showTooltip();
+            }
+        });
+    }
+    
+    public void evaluateInOutline(String expr) {
+        dbx.expr_heval(RT_EVAL_TOOLTIP, expr);
     }
 
     // interface NativeDebugger
