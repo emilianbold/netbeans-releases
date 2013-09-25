@@ -1109,7 +1109,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                         crit.setRevisionFrom(id);
                                         crit.setRevisionTo(trackedBranch.getId());
                                     }
-                                    GitRevisionInfo[] revs = client.log(crit, GitUtils.NULL_PROGRESS_MONITOR);
+                                    GitRevisionInfo[] revs = client.log(crit, false, GitUtils.NULL_PROGRESS_MONITOR);
                                     int diff = (revs.length - 1);
                                     if (info.getRevision().equals(trackedBranch.getId())) {
                                         tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
