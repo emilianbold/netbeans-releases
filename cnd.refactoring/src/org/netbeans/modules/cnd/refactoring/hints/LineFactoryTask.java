@@ -284,7 +284,10 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         }
                         if (CppTokenId.IDENTIFIER.equals(token.id())) {
                             name = token.text().toString();
-                            break;
+                        } else if (CppTokenId.LPAREN.equals(token.id())) {
+                            if (name != null) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -292,7 +295,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (name == null) {
                 name = "variable"; //NOI18N
             } else {
-                name = name+"1"; //NOI18N
+                if (name.toLowerCase().startsWith("get") && name.length() > 3) { //NOI18N
+                    name = name.substring(3);
+                } else if (name.toLowerCase().startsWith("is") && name.length() > 2) { //NOI18N
+                    name = name.substring(2);
+                }
             }
             return name;
         }
