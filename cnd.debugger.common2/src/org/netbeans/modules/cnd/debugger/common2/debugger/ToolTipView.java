@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
@@ -149,12 +150,31 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         public VariableNode(Variable v, Children ch) {
             super(ch);
             this.v = v;
+            add(v);
+        }
+        
+        private void add(Variable v) {
             variables.put(v, this);
         }
         
-        public static VariableNode getNodeForVariable(Variable v) {
-            return variables.get(v);
+        public static void propertyChanged(Variable v) {
+            final VariableNode node = variables.get(v);
+            if (node == null) {
+                return;
+            }
+            if (EventQueue.isDispatchThread()) {
+                node.propertyChanged();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        node.propertyChanged();
+                    }
+                });
+            }
         }
+
 
         @Override
         public String getDisplayName() {
@@ -174,16 +194,22 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
             return super.getIcon(type);
         }
 
-        public void propertyChanged() {
-            if (!(getChildren() instanceof VariableNodeChildren)) {
-                return;
-            }
+        private void propertyChanged() {
             if (v.getNumChild() < 1) {
                 setChildren(Children.LEAF);
             } else {
-                ((VariableNodeChildren) getChildren()).updateKeys();
+                if (getChildren() instanceof VariableNodeChildren) {
+                    ((VariableNodeChildren) getChildren()).updateKeys();
+                }
             }
+            String path = "";
             
+            try {
+                path = watchModel.getIconBaseWithExtension(null, v);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            setIconBaseWithExtension(path);            
             fireDisplayNameChange("old", "new"); //NOI18N
         }
 

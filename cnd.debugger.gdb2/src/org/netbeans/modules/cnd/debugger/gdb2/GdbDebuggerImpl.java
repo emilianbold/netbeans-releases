@@ -2319,10 +2319,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (event instanceof ModelEvent.NodeChanged) {
                ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
                final Variable variable = ((Variable) nodeChanged.getNode());
-                VariableNode v = VariableNode.getNodeForVariable(variable);
-                if (v != null) {
-                    v.propertyChanged();
-                }
+               VariableNode.propertyChanged(variable);
             }
         }
     }
