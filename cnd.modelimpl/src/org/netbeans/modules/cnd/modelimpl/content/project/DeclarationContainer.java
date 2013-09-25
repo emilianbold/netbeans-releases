@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  * Storage for project or namespace declarations.
@@ -226,7 +227,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
         Collection<CsmUID<CsmOffsetableDeclaration>> list = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         char maxChar = 255; //Character.MAX_VALUE;
         for(Kind kind : kinds) {
-            String prefix = Utils.getCsmDeclarationKindkey(kind) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + fqn;
+            String prefix = CharSequenceUtils.toString(Utils.getCsmDeclarationKindkey(kind), OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR, fqn);
             CharSequence from  = CharSequences.create(prefix);
             CharSequence to  = CharSequences.create(prefix+maxChar);
             try {

@@ -377,7 +377,7 @@ public final class Resolver3 implements Resolver {
         return false;
     }
 
-    private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
+    private CsmObject resolveInUsingDirectives(CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         CsmObject result = null;
         Set<CharSequence> checked = new HashSet<>(10);
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
@@ -393,10 +393,12 @@ public final class Resolver3 implements Resolver {
                 }
             }
         }
+        return result;
+    }
+    
+    private CsmObject resolveInUsingDeclarations(CsmObject result, CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (result == null || !outVisibility.get()) {
-            CsmUsingResolver ur = CsmUsingResolver.getDefault();
-            Collection<CsmDeclaration> decls;
-            decls = ur.findUsedDeclarations(containingNS);
+            Collection<CsmDeclaration> decls = CsmUsingResolver.getDefault().findUsedDeclarations(containingNS, nameToken);//, nameToken);
             for (CsmDeclaration decl : decls) {
                 if (CharSequences.comparator().compare(nameToken, decl.getName()) == 0) {
                     if (CsmKindUtilities.isClassifier(decl) && needClassifiers()) {
@@ -439,13 +441,15 @@ public final class Resolver3 implements Resolver {
             buf.append("N"); // NOI18N
         }
         buf.append(":").append(currName()); // NOI18N
-        for(int i = 0; i < names.length; i++){
-            if (i == 0) {
-                buf.append("?"); // NOI18N
-            } else {
-                buf.append("::"); // NOI18N
+        if (names != null) {
+            for(int i = 0; i < names.length; i++){
+                if (i == 0) {
+                    buf.append("?"); // NOI18N
+                } else {
+                    buf.append("::"); // NOI18N
+                }
+                buf.append(names[i]); // NOI18N
             }
-            buf.append(names[i]); // NOI18N
         }
 
         if (context.getContainingClass() != null) {
@@ -587,7 +591,8 @@ public final class Resolver3 implements Resolver {
             containingNS = context.getContainingNamespace();
             result = findClassifier(containingNS, name, resultIsVisible);
             if (!canStop(result, resultIsVisible, backupResult) && containingNS != null) {
-                result = resolveInUsings(containingNS, name, resultIsVisible);
+                result = resolveInUsingDirectives(containingNS, name, resultIsVisible);
+                result = resolveInUsingDeclarations(result, containingNS, name, resultIsVisible);
             }
         }
         if (result == null && needNamespaces()) {
@@ -650,7 +655,8 @@ public final class Resolver3 implements Resolver {
                                 result = findClassifierUsedInFile(fqn, resultIsVisible);
                             }
                             if (!canStop(result, resultIsVisible, backupResult)) {
-                                result = resolveInUsings(ns, name, resultIsVisible);
+                                result = resolveInUsingDirectives(ns, name, resultIsVisible);
+                                result = resolveInUsingDeclarations(result, ns, name, resultIsVisible);
                             }
                         }
                     }
@@ -816,7 +822,8 @@ public final class Resolver3 implements Resolver {
                             sb.append("::"); // NOI18N
                             sb.append(nameTokens[j]);
                         }
-                        result = resolveInUsings(ns, sb.toString(), resultIsVisible);
+                        result = resolveInUsingDirectives(ns, sb, resultIsVisible);
+                        result = resolveInUsingDeclarations(result, ns, sb, resultIsVisible);
                     }
                 }
             }

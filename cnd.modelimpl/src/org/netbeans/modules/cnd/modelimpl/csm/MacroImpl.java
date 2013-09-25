@@ -96,7 +96,7 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
      */
     private final List<CharSequence> params;
     
-    public static SystemMacroImpl createSystemMacro(CharSequence macroName, String macroBody, CsmFile unresolved, Kind kind) {
+    public static SystemMacroImpl createSystemMacro(CharSequence macroName, CharSequence macroBody, CsmFile unresolved, Kind kind) {
         return SystemMacroImpl.create(macroName, macroBody, null, unresolved, kind);
     }
     

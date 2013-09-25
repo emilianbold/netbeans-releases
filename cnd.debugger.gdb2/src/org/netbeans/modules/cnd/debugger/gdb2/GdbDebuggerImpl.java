@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.debugger.gdb2;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
@@ -110,6 +111,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.MacroSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNode;
+import org.netbeans.modules.cnd.debugger.common2.debugger.ToolTipView.VariableNodeChildren;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.FormatOption;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
@@ -126,8 +129,11 @@ import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.spi.viewmodel.ModelEvent;
+import org.netbeans.spi.viewmodel.ModelListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
 public final class GdbDebuggerImpl extends NativeDebuggerImpl 
@@ -2211,6 +2217,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     /* 
      * balloonEval stuff 
      */
+    @Override
     public void balloonEvaluate(int pos, String text) {
         // balloonEvaluate() requests come from the editor completely
         // independently of debugger startup and shutdown.
@@ -2260,6 +2267,78 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         send("-gdb-set unwindonsignal off"); //NOI18N
     }
+    
+//    @Override
+    public void evaluateInOutline(String expr) {
+        // balloonEvaluate() requests come from the editor completely
+        // independently of debugger startup and shutdown.
+        /*if (gdb == null || !gdb.connected()) {
+            return;
+        }
+        if (state().isProcess && state().isRunning) {
+            return;
+        }
+        String expr;
+        if (pos == -1) {
+            expr = text;
+        } else {
+            expr = EvalAnnotation.extractExpr(pos, text);
+        }
+        
+        if (expr == null || expr.isEmpty()) {
+            return;
+        }*/
+                
+        ModelChangeDelegator mcd = new ModelChangeDelegator();
+        mcd.setListener(new ModelChangeListenerImpl());
+        
+        final GdbWatch watch = new GdbWatch(GdbDebuggerImpl.this, mcd, expr);
+        createMIVar(watch, false);
+        
+        final Node node = new VariableNode(watch, new GdbVariableNodeChildren(watch));
+        
+        final ActionListener disposeListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MICommand cmd = new DeleteMIVarCommand(watch);
+                sendCommandInt(cmd);
+            }
+        };
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                ToolTipView.getDefault().setRootElement(node).setOnDisposeListener(disposeListener).showTooltip();
+            }
+        });
+    }
+    
+    private final class ModelChangeListenerImpl implements ModelListener {
+        @Override
+        public void modelChanged(ModelEvent event) {
+            if (event instanceof ModelEvent.NodeChanged) {
+               ModelEvent.NodeChanged nodeChanged = (ModelEvent.NodeChanged) event;
+               final Variable variable = ((Variable) nodeChanged.getNode());
+                VariableNode v = VariableNode.getNodeForVariable(variable);
+                if (v != null) {
+                    v.propertyChanged();
+                }
+            }
+        }
+    }
+    
+    private static final class GdbVariableNodeChildren extends VariableNodeChildren {
+
+        public GdbVariableNodeChildren(Variable v) {
+            super(v);            
+            ((GdbDebuggerImpl) v.getDebugger()).getMIChildren((GdbVariable) v, ((GdbVariable) v).getMIName(), 0);
+        }
+
+        @Override
+        protected Node[] createNodes(Variable key) {
+            return new Node[]{new VariableNode(key, new GdbVariableNodeChildren(key))};
+        }
+    }
 
     @Override
     public void postExprQualify(String expr, QualifiedExprListener qeListener) {
@@ -2294,7 +2373,22 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     } else {
                         value_string = ValuePresenter.getValue(value_string);
                     }
-                    EvalAnnotation.postResult(0, 0, 0, expr, value_string, null, null);
+                    final String finalVal = value_string;
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            final ToolTipView.ExpandableTooltip expTooltip = ToolTipView.getExpTooltipForText(expr + "=" + finalVal); //NOI18N
+                            expTooltip.addExpansionListener(new ActionListener() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    evaluateInOutline(expr);
+                                }
+                            });
+                            expTooltip.showTooltip();
+                        }
+                    });
                     finish();
                 }
 

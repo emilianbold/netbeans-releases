@@ -584,7 +584,6 @@ public final class FileImpl implements CsmFile,
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
                 }         
-                RepositoryUtils.put(this);
                 return;
             }
             FileContentSignature newSignature = null;
@@ -728,7 +727,6 @@ public final class FileImpl implements CsmFile,
                 synchronized (changeStateLock) {
                     state = State.INITIAL;
                 }
-                RepositoryUtils.put(this);
             } else {
                 // if was request for partial reparse and file state was not modified during parse
                 if (tryPartialReparse && newSignature != null) {
@@ -740,6 +738,8 @@ public final class FileImpl implements CsmFile,
             if (inEnsureParsed.decrementAndGet() != 0) {
                 CndUtils.assertTrueInConsole(false, "broken state in file " + getAbsolutePath() + parsingState + state);
             }
+            // put parsed file into repository after all
+            RepositoryUtils.put(this);
             // all exist points must have state change notifcation
             synchronized (stateLock) {
                 stateLock.notifyAll();
@@ -748,12 +748,6 @@ public final class FileImpl implements CsmFile,
     }
 
     private void postParse() {
-        // do not call fix fakes after file parsed
-        // if something is not resolved, postpone till project parse finished
-//        fixFakeRegistrations(false);
-        if (isValid()) {   // FIXUP: use a special lock here
-            RepositoryUtils.put(this);
-        }
         if (isValid()) {	// FIXUP: use a special lock here
             getProjectImpl(true).getGraph().putFile(this);
         }
@@ -1509,7 +1503,6 @@ public final class FileImpl implements CsmFile,
             System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",
                     getAbsolutePath(), fileBuffer.lastModified(), lastParsed, fileBuffer.lastModified() - lastParsed);
         }
-        RepositoryUtils.put(this);
         if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
             if(parsingErrors == null) {
                 parsingErrors = new ArrayList<ParserError>();
@@ -1536,6 +1529,7 @@ public final class FileImpl implements CsmFile,
                 synchronized (fileImplIncluded.changeStateLock) {
                     fileImplIncluded.state = State.PARSED;
                 }
+                RepositoryUtils.put(fileImplIncluded);
             }
         }
     }
@@ -1764,6 +1758,7 @@ public final class FileImpl implements CsmFile,
              state = State.PARSED;
              postParse();
         }
+        RepositoryUtils.put(this);
     }
 
     /*package*/final State getState() {

@@ -32,7 +32,6 @@ package org.netbeans.modules.java.hints.introduce;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.java.hints.introduce.IntroduceFieldPanel;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
@@ -44,10 +43,19 @@ import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
+ * Panel that contains options for creating a field or a local variable.
+ * 
+ * The class was refactored to handle both variables and fields. For variables, the access modifiers and initialize parts
+ * are hidden. If more options for variables are desired, a subpanel should be probably created and inserted here.
+ * 
+ * Supports a special mode for constants, which are always static final and initialized by an constant initializer (now).
  *
  * @author Jan Lahoda
  */
 public class IntroduceFieldPanel extends javax.swing.JPanel {
+    public static final int FIELD = 0;
+    public static final int CONSTANT = 1;
+    public static final int VARIABLE = 2;
     
     public static final int INIT_METHOD = 1;
     public static final int INIT_FIELD = 2;
@@ -62,8 +70,24 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     private boolean allowFinalInCurrentMethod;
     
     private JButton btnOk;
+    private int elementType;
+    private Preferences preferences;
     
-    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, boolean variableRewrite, JButton btnOk) {
+    /**
+     * Constructs the dialog.
+     * 
+     * The `allowInitMethods' array contains two indexes. Possible init methods for the current occurrence only is at index 0,
+     * possible init methods for all occurrences are at index 1.
+     * @param name proposed field name
+     * @param allowInitMethods contains INIT_bitfield for possible initialization methods. Null can be passed, meaning initialization from field.
+     * @param numOccurrences number of other expression occurrences
+     * @param allowFinalInCurrentMethod
+     * @param variableRewrite allow to rename variable
+     * @param type field/constant/variable
+     * @param btnOk confirm button, to hook callbacks
+     */
+    public IntroduceFieldPanel(String name, int[] allowInitMethods, int numOccurrences, boolean allowFinalInCurrentMethod, boolean variableRewrite, int type, String prefNode, JButton btnOk) {
+        this.elementType = type;
         this.btnOk = btnOk;
         
         initComponents();
@@ -82,62 +106,108 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         this.allowInitMethods = allowInitMethods;
         this.replaceAll.setEnabled(numOccurrences > 1);
         this.allowFinalInCurrentMethod = allowFinalInCurrentMethod;
-        
-        Preferences pref = getPreferences();
+        this.preferences = NbPreferences.forModule( IntroduceFieldPanel.class ).node( prefNode ); //NOI18N
+        Preferences pref = preferences;
         if( numOccurrences == 1 ) {
             replaceAll.setEnabled( false );
             replaceAll.setSelected( false );
         } else {
             replaceAll.setEnabled( true );
+            // FIXME - I18N
             replaceAll.setText( replaceAll.getText() + " (" + numOccurrences + ")" );
             replaceAll.setSelected( pref.getBoolean("replaceAll", true) ); //NOI18N
         }
         
-        declareFinal.setSelected( pref.getBoolean("declareFinal", true) ); //NOI18N
+        if (isConstant()) {
+            declareFinal.setEnabled(false);
+            // value of declare final will be used in IntroduceFieldFix for constants, no special case in isDeclareFinal()
+            declareFinal.setSelected(true);
+        } else {
+            declareFinal.setSelected( pref.getBoolean("declareFinal", true) ); //NOI18N
+        }
         
-        int accessModifier = pref.getInt( "accessModifier", ACCESS_PRIVATE ); //NOI18N
-        switch( accessModifier ) {
-        case ACCESS_PUBLIC:
-            accessPublic.setSelected( true );
-            break;
-        case ACCESS_PROTECTED:
-            accessProtected.setSelected( true );
-            break;
-        case ACCESS_DEFAULT:
-            accessDefault.setSelected( true );
-            break;
-        case ACCESS_PRIVATE:
-            accessPrivate.setSelected( true );
-            break;
+        if (supportsAccess()) {
+            int accessModifier = pref.getInt( "accessModifier", ACCESS_PRIVATE ); //NOI18N
+            switch( accessModifier ) {
+            case ACCESS_PUBLIC:
+                accessPublic.setSelected( true );
+                break;
+            case ACCESS_PROTECTED:
+                accessProtected.setSelected( true );
+                break;
+            case ACCESS_DEFAULT:
+                accessDefault.setSelected( true );
+                break;
+            case ACCESS_PRIVATE:
+                accessPrivate.setSelected( true );
+                break;
+            }
+        } else {
+            lblAccess.setVisible(false);
+            accessPublic.setVisible(false);
+            accessProtected.setVisible(false);
+            accessDefault.setVisible(false);
+            accessPrivate.setVisible(false);
         }
 
-        int init = pref.getInt( "initMethod", INIT_METHOD ); //NOI18N
-        switch( init ) {
-        case INIT_FIELD:
-            initField.setSelected( true );
-            break;
-        case INIT_CONSTRUCTORS:
-            initConstructors.setSelected( true );
-            break;
-        case INIT_METHOD:
-            initMethod.setSelected( true );
-            break;
+        if (supportsInit()) {
+            int init = pref.getInt( "initMethod", INIT_METHOD ); //NOI18N
+            switch( init ) {
+            case INIT_FIELD:
+                initField.setSelected( true );
+                break;
+            case INIT_CONSTRUCTORS:
+                initConstructors.setSelected( true );
+                break;
+            case INIT_METHOD:
+            default:
+                initMethod.setSelected( true );
+                break;
+            }
+        } else {
+            lblInitializeIn.setVisible(false);
+            initField.setVisible(false);
+            initConstructors.setVisible(false);
+            initMethod.setVisible(false);
+            // reset the first radio button in the group
+            initMethod.setSelected(false);
         }
         
         adjustInitializeIn();
         adjustFinal();
     }
     
+    private boolean isConstant() {
+        return elementType == CONSTANT;
+    }
+    
+    private boolean supportsInit() {
+        return elementType == FIELD;
+    }
+    
+    private boolean supportsAccess() {
+        return elementType != VARIABLE;
+    }
+    
     private Preferences getPreferences() {
-        return NbPreferences.forModule( IntroduceFieldPanel.class ).node( "introduceField" ); //NOI18N
+        return preferences;
     }
 
     private void adjustInitializeIn() {
-        int allowInitMethods = this.allowInitMethods[this.replaceAll.isSelected() ? 1 : 0];
+        if (!supportsInit()) {
+            return;
+        }
+        final int initIn;
+        if (this.allowInitMethods != null) {
+            initIn = this.allowInitMethods[this.replaceAll.isSelected() ? 1 : 0];
+        } else {
+            // currently serves for constants, see IntroduceConstantFix
+            initIn = INIT_FIELD;
+        }
         
-        initMethod.setEnabled((allowInitMethods & INIT_METHOD) != 0);
-        initField.setEnabled((allowInitMethods & INIT_FIELD) != 0);
-        initConstructors.setEnabled((allowInitMethods & INIT_CONSTRUCTORS) != 0);
+        initMethod.setEnabled((initIn & INIT_METHOD) != 0);
+        initField.setEnabled((initIn & INIT_FIELD) != 0);
+        initConstructors.setEnabled((initIn & INIT_CONSTRUCTORS) != 0);
         
         if( !initMethod.isEnabled() && initMethod.isSelected() ) {
             if( initField.isEnabled() )
@@ -158,6 +228,9 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
     }
     
     private void adjustFinal() {
+        if (isConstant()) {
+            return;
+        }
         declareFinal.setEnabled( !(initMethod.isSelected() && !allowFinalInCurrentMethod) );
         if (initMethod.isSelected() && !allowFinalInCurrentMethod) {
             declareFinal.setSelected(false);
@@ -195,7 +268,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         initilizeIn = new javax.swing.ButtonGroup();
@@ -241,7 +314,6 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblInitializeIn, org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "IntroduceFieldPanel.lblInitializeIn.text")); // NOI18N
 
         initilizeIn.add(initMethod);
-        initMethod.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(initMethod, org.openide.util.NbBundle.getBundle(IntroduceFieldPanel.class).getString("LBL_CurrentMethod")); // NOI18N
         initMethod.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         initMethod.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -311,7 +383,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
                             .addComponent(lblName))
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                            .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(accessPublic)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -431,8 +503,11 @@ private void replaceAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             ret = INIT_FIELD;
         else if (initConstructors.isSelected())
             ret = INIT_CONSTRUCTORS;
-        else
+        else if (isConstant()) {
+            return INIT_FIELD;
+        } else {
             throw new IllegalStateException();
+        }
         getPreferences().putInt( "initMethod", ret ); //NOI18N
         return ret;
     }

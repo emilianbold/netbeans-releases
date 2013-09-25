@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.lookup.Lookups;
 
 
@@ -145,15 +146,11 @@ public class Utils {
         return new Offsetable(file, startOffset, endOffset);
     }
     
-    public static String getQualifiedName(String name, CsmNamespace parent) {
-        StringBuilder sb = new StringBuilder(name);
-        if (parent != null) {
-            if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
-                sb.insert(0, parent.getQualifiedName());
-            }
+    public static CharSequence getQualifiedName(CharSequence name, CsmNamespace parent) {
+        if (parent != null && !parent.isGlobal()) {
+            return CharSequenceUtils.concatenate(parent.getQualifiedName(), "::", name); // NOI18N
         }
-        return sb.toString();
+        return name;
     }
       
     public static CharSequence[] splitQualifiedName(String qualified) {

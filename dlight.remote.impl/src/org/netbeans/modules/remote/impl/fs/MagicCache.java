@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,15 +49,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -196,6 +193,7 @@ public class MagicCache {
         File od = new File(dir.getCache(), cacheName);
         OutputStream os = null;
         InputStream is = null;
+        Object activityID = RemoteStatistics.startChannelActivity("reading MIME", path);
         try {
             os = new FileOutputStream(od);
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(dir.getExecutionEnvironment());
@@ -222,6 +220,9 @@ public class MagicCache {
             is = process.getInputStream();
             FileUtil.copy(is, os);
         } finally {
+            if (activityID != null) {
+                RemoteStatistics.stopChannelActivity(activityID);
+            }            
             if (os != null) {
                 try {
                     os.close();

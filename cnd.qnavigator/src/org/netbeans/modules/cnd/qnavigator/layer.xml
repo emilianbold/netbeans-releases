@@ -63,4 +63,39 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-c++">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-c">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
+                    </file>
+                </folder>
+            </folder>
+            <folder name="x-h">
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5500"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
