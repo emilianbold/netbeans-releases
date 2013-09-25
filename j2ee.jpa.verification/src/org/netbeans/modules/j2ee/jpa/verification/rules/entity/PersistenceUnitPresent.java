@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.api.JPAVerificationWarningIds;
 import org.netbeans.modules.j2ee.jpa.verification.api.VerificationWarningOverrider;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
 })
 public class PersistenceUnitPresent{
 
-    @TriggerPattern(value = "javax.persistence.Entity")
+    @TriggerPattern(value = JPAAnnotations.ENTITY)
     public static ErrorDescription apply(HintContext hc) {
         if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
             return null;//we pass only if entity is an annotation
