@@ -184,10 +184,8 @@ public enum LatteCompletionContext {
         FileObject sourceFileObject = request.parserResult.getSnapshot().getSource().getFileObject();
         List<CompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
         for (CompletionProvider variableProvider : variableProviders) {
-            for (String variable : variableProvider.getItems(sourceFileObject)) {
-                if (startsWith(variable, request.prefix)) {
-                    completionProposals.add(new LatteCompletionProposal.UserVariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
-                }
+            for (String variable : variableProvider.getItems(sourceFileObject, request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.UserVariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
             }
         }
     }
@@ -196,10 +194,8 @@ public enum LatteCompletionContext {
         FileObject sourceFileObject = request.parserResult.getSnapshot().getSource().getFileObject();
         List<CompletionProvider> controlProviders = CompletionProviders.getControlProviders();
         for (CompletionProvider controlProvider : controlProviders) {
-            for (String item : controlProvider.getItems(sourceFileObject)) {
-                if (startsWith(item, request.prefix)) {
-                    completionProposals.add(new LatteCompletionProposal.ControlCompletionProposal(LatteElement.ControlFactory.create(item), request));
-                }
+            for (String item : controlProvider.getItems(sourceFileObject, request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.ControlCompletionProposal(LatteElement.ControlFactory.create(item), request));
             }
         }
     }
