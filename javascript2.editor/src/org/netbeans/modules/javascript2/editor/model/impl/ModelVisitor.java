@@ -376,6 +376,13 @@ public class ModelVisitor extends PathNodeVisitor {
             if (ln.isString()) {
                 result.add(FunctionArgumentAccessor.getDefault().createForString(
                         position, argument.getStart(), ln.getString()));
+            } else if (ln instanceof LiteralNode.ArrayLiteralNode) {
+                for (JsObjectImpl jsObject: functionArguments) {
+                    if (jsObject.getOffset() == argument.getStart()) {
+                        result.add(FunctionArgumentAccessor.getDefault().createForArray(position, jsObject.getOffset(), jsObject));
+                        break;
+                    }
+                }
             }
         } else if (argument instanceof ObjectNode) {
             for (JsObjectImpl jsObject: functionArguments) {
@@ -840,6 +847,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 array.addAssignment(ModelUtils.resolveSemiTypeOfExpression(modelBuilder, lNode), aOffset);
                 for (Node item : aNode.getArray()) {
                     array.addTypesInArray(ModelUtils.resolveSemiTypeOfExpression(modelBuilder, item));
+                }
+                if (!functionArgumentStack.isEmpty()) {
+                    functionArgumentStack.peek().add(array);
                 }
             }
         } 

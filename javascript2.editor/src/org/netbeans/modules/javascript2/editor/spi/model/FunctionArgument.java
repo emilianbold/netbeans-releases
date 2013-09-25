@@ -58,6 +58,11 @@ public final class FunctionArgument {
             public FunctionArgument createForAnonymousObject(int order, int offset, JsObject value) {
                 return new FunctionArgument(Kind.ANONYMOUS_OBJECT, order, offset, value);
             }
+            
+            @Override
+            public FunctionArgument createForArray(int order, int offset, JsObject value) {
+                return new FunctionArgument(Kind.ANONYMOUS_OBJECT, order, offset, value);
+            }
 
             @Override
             public FunctionArgument createForString(int order, int offset, String value) {
@@ -110,6 +115,7 @@ public final class FunctionArgument {
         STRING,
         REFERENCE,
         ANONYMOUS_OBJECT,
+        ARRAY,
         UNKNOWN
     };
 }
