@@ -46,6 +46,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSession.SessionType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.testng.annotations.Test;
 import org.xml.sax.SAXException;
@@ -133,7 +135,13 @@ public class XmlOutputParserTest extends NbTestCase {
     private class P implements Project {
 
         public FileObject getProjectDirectory() {
-            return null;
+            FileObject projectDir = null;
+            try {
+                projectDir = FileUtil.toFileObject(getWorkDir());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return projectDir;
         }
 
         public Lookup getLookup() {

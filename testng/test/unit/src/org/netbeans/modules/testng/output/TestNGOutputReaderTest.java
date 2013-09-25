@@ -85,7 +85,7 @@ public class TestNGOutputReaderTest extends NbTestCase {
                 r.verboseMessageLogged(line);
             }
         }
-        assertEquals(23116, ts.getSessionResult().getElapsedTime());
+        assertEquals(23115, ts.getSessionResult().getElapsedTime());
         assertEquals(0, ts.getSessionResult().getErrors());
         assertEquals(0, ts.getSessionResult().getFailed());
         System.out.println(ts.getSessionResult().getPassed());
