@@ -44,37 +44,100 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
-import java.util.Arrays;
+import com.sun.source.tree.Tree;
+import java.io.IOException;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.MakeClassPublic;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
-public class PublicClass extends JPAClassRule {
+@Hint(id = "o.n.m.j2ee.jpa.verification.PublicClass",
+        displayName = "#PublicClass.display.name",
+        description = "#PublicClass.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        severity = Severity.ERROR,
+        suppressWarnings = "PublicClass")
+@NbBundle.Messages({
+    "PublicClass.display.name=Verify access level for IdClass",
+    "PublicClass.desc=IdClass need to be public"})
+public class PublicClass {
     
-    /** Creates a new instance of PublicClass */
-    public PublicClass() {
-        setClassContraints(Arrays.asList(ClassConstraints.IDCLASS));//todo: need to handle embeddable but only if used as pk
-    }
     
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+    @TriggerPattern(value = JPAAnnotations.ID_CLASS)//NOI18N
+    public static ErrorDescription apply(HintContext hc){
+        
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+
+        final JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+        
+        final IdClass[] idclass = {null};
+         try {
+            MetadataModel<EntityMappingsMetadata> model = ModelUtils.getModel(hc.getInfo().getFileObject());
+            model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+                @Override
+                public Void run(EntityMappingsMetadata metadata) {
+                    if(ctx.getModelElement() instanceof Entity) {
+                        idclass[0] = ((Entity) ctx.getModelElement()).getIdClass();
+
+                    } else if (ctx.getModelElement() instanceof MappedSuperclass) {
+                        idclass[0] = ((MappedSuperclass) ctx.getModelElement()).getIdClass();
+                    } 
+                    return null;
+                }
+            });
+        } catch (IOException ex) {
+        }
+       
+
+        
+        if(idclass[0] == null) {
+            return null;
+        }
+        
+        TypeElement subject = hc.getInfo().getElements().getTypeElement(idclass[0].getClass2());
+        
+        if(subject == null) {
+            return null;
+        }
+
         if (subject.getModifiers().contains(Modifier.PUBLIC)){
             return null;
         }
         
         Fix fix = new MakeClassPublic(ctx.getFileObject(), ElementHandle.create(subject));
-        
-        return new ErrorDescription[]{createProblem(subject, ctx, 
-                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NonPublicClassAsEntity"), fix)};
+          return ErrorDescriptionFactory.forTree(
+                    hc,
+                    hc.getPath().getParentPath(),
+                    NbBundle.getMessage(PublicClass.class, "MSG_NonPublicClassAsEntity"),
+                    fix);           
     }
 }

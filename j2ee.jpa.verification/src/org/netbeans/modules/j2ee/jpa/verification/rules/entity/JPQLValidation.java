@@ -65,11 +65,11 @@ import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.eclipse.persistence.jpa.jpql.parser.DefaultJPQLGrammar;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.jpa.verification.CancelListener;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.tools.DefaultJPQLQueryHelper;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
@@ -101,7 +101,7 @@ import org.openide.util.NbBundle;
         suppressWarnings = "JPQLValidation")
 @NbBundle.Messages({
     "JPQLValidation.display.name=JPQL validation",
-    "JPQLValidation.desc=Parse and find errors in a jpql query",
+    "JPQLValidation.desc=Parse and find errors in a jpql query"
 })
 public class JPQLValidation {
 
@@ -109,13 +109,13 @@ public class JPQLValidation {
      * Creates a new instance of NonFinalClass
      */
     @TriggerPatterns(value = {
-        @TriggerPattern(value = "javax.persistence.NamedQuery"),
+        @TriggerPattern(value = JPAAnnotations.NAMED_QUERY),
         @TriggerPattern(
                 value = "$em.createQuery",
                 constraints =
                 @ConstraintVariableType(
                 variable = "$em",
-                type = "javax.persistence.EntityManager"))
+                type = "javax.persistence.EntityManager"))//NOI18N
     })
     public static ErrorDescription apply(HintContext hc) {
         if (hc.isCanceled() || ((hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION) && hc.getVariables().get("$em") == null)) {//NOI18N
