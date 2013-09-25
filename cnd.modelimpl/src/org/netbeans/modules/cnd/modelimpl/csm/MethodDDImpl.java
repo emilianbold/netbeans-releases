@@ -88,7 +88,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     private CsmCompoundStatement body;
     
     protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, false, file, startOffset, endOffset, global);
     }
 
     public static<T> MethodDDImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
