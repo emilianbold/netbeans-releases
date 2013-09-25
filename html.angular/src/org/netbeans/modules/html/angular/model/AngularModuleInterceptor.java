@@ -53,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
  *
  * @author Petr Pisl
  */
-@FunctionInterceptor.Registration(priority = 9)
+@FunctionInterceptor.Registration(priority = 10)
 public class AngularModuleInterceptor implements FunctionInterceptor{
 
     private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
