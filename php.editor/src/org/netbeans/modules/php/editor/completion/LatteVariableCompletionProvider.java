@@ -90,12 +90,14 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
 
     private Set<String> result;
     private FileObject templateFile;
+    private String variablePrefix;
 
     @Override
-    public Set<String> getItems(FileObject templateFile) {
+    public Set<String> getItems(FileObject templateFile, String variablePrefix) {
         result = new HashSet<>();
         if (isView(templateFile)) {
             this.templateFile = templateFile;
+            this.variablePrefix = variablePrefix;
             processTemplateFile(templateFile);
         }
         return result;
@@ -121,7 +123,7 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
                 PresenterVisitor presenterVisitor = new PresenterVisitor(templateFile);
                 presenterVisitor.scan(parseResult.getProgram());
                 for (MethodDeclaration methodToScan : presenterVisitor.getMethodsToScan()) {
-                    VariableVisitor variableVisitor = new VariableVisitor(parseResult.getModel());
+                    VariableVisitor variableVisitor = new VariableVisitor(parseResult.getModel(), variablePrefix);
                     methodToScan.accept(variableVisitor);
                     result.addAll(variableVisitor.getVariables());
                 }
@@ -209,9 +211,11 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
         private static final String VARIABLE_PREFIX = "$"; //NOI18N
         private final Set<FieldAccess> fieldAccesses = new HashSet<>();
         private final Model model;
+        private final String variablePrefix;
 
-        public VariableVisitor(Model model) {
+        public VariableVisitor(Model model, String variablePrefix) {
             this.model = model;
+            this.variablePrefix = variablePrefix;
         }
 
         @Override
@@ -232,7 +236,12 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
                 if (existsTemplateTypeAndDispatcherTypeMatches(templateType, dispatcherType) || addAllPossibleVariables(templateType)) {
                     Variable field = fieldAccess.getField();
                     String varName = CodeUtils.extractVariableName(field);
-                    result.add(VARIABLE_PREFIX + varName); //NOI18N
+                    if (varName != null) {
+                        String variableName = VARIABLE_PREFIX + varName;
+                        if (variablePrefix.length() == 0 || variableName.toLowerCase().startsWith(variablePrefix.toLowerCase())) {
+                            result.add(variableName);
+                        }
+                    }
                 }
             }
             return result;
