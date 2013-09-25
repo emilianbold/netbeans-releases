@@ -24,7 +24,6 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.languages.neon</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.latte</friend>
                 <package>org.netbeans.modules.php.spi.templates.completion</package>
