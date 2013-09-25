@@ -39,32 +39,65 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.spi.completion;
+package org.netbeans.modules.php.editor.completion;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.HashSet;
 import java.util.Set;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.spi.templates.completion.CompletionProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface TypeCompletionProvider {
+@ServiceProvider(service = CompletionProvider.class, path = "Neon/completion/type") //NOI18N
+public final class PhpTypeCompletionProviderWrapper implements CompletionProvider {
 
-    Set<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
+    @Override
+    public Set<String> getItems(FileObject sourceFile, String prefix) {
+        return PhpTypeCompletionProvider.getInstance().getItems(sourceFile, prefix);
+    }
 
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({
-        ElementType.TYPE,
-        ElementType.METHOD
-    })
-    public @interface Registration {
+    public static final class PhpTypeCompletionProvider implements CompletionProvider {
+        private static final PhpTypeCompletionProvider INSTANCE = new PhpTypeCompletionProvider();
+        //@GuardedBy("this")
+        private Set<TypeElement> cachedElements;
 
-        int position() default Integer.MAX_VALUE;
+        private PhpTypeCompletionProvider() {
+        }
+
+        public static PhpTypeCompletionProvider getInstance() {
+            return INSTANCE;
+        }
+
+        @Override
+        public Set<String> getItems(FileObject sourceFile, String prefix) {
+            Set<String> result = new HashSet<>();
+            for (TypeElement typeElement : ElementFilter.forName(NameKind.prefix(prefix)).filter(getElements(sourceFile))) {
+                result.add(typeElement.getFullyQualifiedName().toString());
+            }
+            return result;
+        }
+
+        private synchronized Set<TypeElement> getElements(FileObject fileObject) {
+            if (cachedElements == null) {
+                ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+                cachedElements = indexQuery.getTypes(NameKind.empty());
+            }
+            return cachedElements;
+        }
+
+        public synchronized void clearCache() {
+            cachedElements = null;
+        }
 
     }
+
 }
