@@ -44,11 +44,10 @@
 
 package org.netbeans.modules.refactoring.spi;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.refactoring.spi.BackupFacility.Handle;
+import org.netbeans.modules.refactoring.spi.BackupFacility2.Handle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -57,6 +56,10 @@ import org.openide.filesystems.FileUtil;
  * @author Jan Becicka
  */
 public class BackupFacilityTest extends NbTestCase {
+
+    FileObject f;
+    FileObject f2;
+    private FileObject folder;
     
     public BackupFacilityTest(String testName) {
         super(testName);
@@ -65,7 +68,10 @@ public class BackupFacilityTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        f = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), "test");
+        FileObject workdir = FileUtil.toFileObject(getWorkDir());
+        f = FileUtil.createData(workdir, "test");
+        folder = FileUtil.createFolder(workdir, "test2");
+        f2 = FileUtil.createData(folder, "test");
         OutputStream outputStream = f.getOutputStream();
         outputStream.write("test".getBytes());
         outputStream.close();
@@ -76,14 +82,18 @@ public class BackupFacilityTest extends NbTestCase {
         super.tearDown();
     }
     
-    public void testGetDefault() {
-        assertNotNull(BackupFacility.getDefault());
+    public void test93390() throws IOException {
+        Handle transactionId = BackupFacility2.getDefault().backup(f2);
+        f2.delete();
+        folder.delete();
+        assertFalse(f2.isValid());
+        transactionId.restore();
+        FileObject newone = FileUtil.toFileObject(FileUtil.toFile(f2));
+        assertTrue(newone.isValid());
     }
 
-    FileObject f;
-
     public void testBackupRestore() throws Exception {
-        Handle transactionId = BackupFacility.getDefault().backup(f);
+        Handle transactionId = BackupFacility2.getDefault().backup(f);
         f.delete();
         assertFalse(f.isValid());
         transactionId.restore();
@@ -92,16 +102,20 @@ public class BackupFacilityTest extends NbTestCase {
     }
 
     public void testClear() throws IOException {
-        Handle transactionId = BackupFacility.getDefault().backup(f);
+        Handle transactionId = BackupFacility2.getDefault().backup(f);
         f.delete();
         assertFalse(f.isValid());
-        BackupFacility.getDefault().clear();
+        BackupFacility2.getDefault().clear();
         try {
             transactionId.restore();
         } catch (IllegalArgumentException iae) {
             return;
         }
         fail("clear failed");
+    }
+
+    public void testGetDefault() {
+        assertNotNull(BackupFacility2.getDefault());
     }
 
 }

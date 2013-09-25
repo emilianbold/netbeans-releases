@@ -214,6 +214,38 @@ public class PhpCommentGeneratorTest extends PHPNavTestBase {
                             "?>");
     }
 
+    public void testIssue236311() throws Exception {
+        insertBreak("<?php\n" +
+                "class MyCls {\n" +
+                "    /**^\n" +
+                "    public static function beginRequest()\n" +
+                "    {\n" +
+                "        foreach(array_keys($_GET) as $key) {\n" +
+                "            array_filter($_GET[$key], function($var){\n" +
+                "                return isset($var) && $var !== '';\n" +
+                "            });\n" +
+                "        }\n" +
+                "        $_GET = array_filter($_GET);\n" +
+                "    }\n" +
+                "}\n" +
+                "?>", "<?php\n" +
+                "class MyCls {\n" +
+                "    /**\n" +
+                "     * ^\n" +
+                "     */\n" +
+                "    public static function beginRequest()\n" +
+                "    {\n" +
+                "        foreach(array_keys($_GET) as $key) {\n" +
+                "            array_filter($_GET[$key], function($var){\n" +
+                "                return isset($var) && $var !== '';\n" +
+                "            });\n" +
+                "        }\n" +
+                "        $_GET = array_filter($_GET);\n" +
+                "    }\n" +
+                "}\n" +
+                "?>");
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
