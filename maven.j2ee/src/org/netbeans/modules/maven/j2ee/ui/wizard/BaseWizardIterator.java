@@ -102,7 +102,7 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         JavaEEProjectSettings.setServerInstanceID(project, instanceID);
         MavenProjectSupport.createWebXMLIfRequired(project, serverID);
 
-        if (j2eeVersion.contains("1.7")) { //NOI18N
+        if (j2eeVersion != null && j2eeVersion.contains("1.7")) { //NOI18N
             JavaPlatform platform = findJDK7Platform();
 
             AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);

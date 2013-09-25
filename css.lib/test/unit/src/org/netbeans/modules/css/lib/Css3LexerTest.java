@@ -290,6 +290,12 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(";" ,Css3Lexer.SEMI, lexer.nextToken());
     }
     
+    public void testURLWithAtSign() throws Exception {
+        String source = "url(bottom@2x.png)";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken("url(bottom@2x.png)" ,Css3Lexer.URI, lexer.nextToken());
+    }
+    
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

@@ -53,6 +53,7 @@ public interface Type {
     static String ARRAY = "Array";       //NOI18N
 
     static String REGEXP = "RegExp";     //NOI18N
+    static String FUNCTION = "Function"; //NOI18N
 
     /**
      * When the type is unknown / we are not able to resolve it

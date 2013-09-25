@@ -44,16 +44,20 @@
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateDefaultConstructor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
@@ -72,17 +76,18 @@ import org.openide.util.NbBundle;
         description = "#HasNoArgConstructor.desc",
         category = "javaee/jpa",
         enabled = true,
+        severity = Severity.WARNING,
         suppressWarnings = "HasNoArgConstructor")
 @NbBundle.Messages({
     "HasNoArgConstructor.display.name=Default public/protected constructor",
-    "HasNoArgConstructor.desc=JPA classes need to have default public/protected no arg constructor",})
+    "HasNoArgConstructor.desc=JPA classes need to have default public/protected no arg constructor"})
 public class HasNoArgConstructor {
 
 
     @TriggerPatterns(value = {
-        @TriggerPattern(value = "javax.persistence.Entity"),
-        @TriggerPattern(value = "javax.persistence.Embeddable"),
-        @TriggerPattern(value = "javax.persistence.IdClass")})
+        @TriggerPattern(value = JPAAnnotations.ENTITY),
+        @TriggerPattern(value = JPAAnnotations.EMBEDDABLE),
+        @TriggerPattern(value = JPAAnnotations.ID_CLASS)})
     public static ErrorDescription apply(HintContext hc) {
         if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
             return null;//we pass only if it is an annotation
@@ -119,10 +124,19 @@ public class HasNoArgConstructor {
 
         Fix fix = new CreateDefaultConstructor(ctx.getFileObject(),
                 ElementHandle.create(ctx.getJavaClass()));
+        
+        TreePath par = hc.getPath();
+        while(par!=null && par.getParentPath()!=null && par.getLeaf().getKind()!= Tree.Kind.CLASS){
+            par = par.getParentPath();
+        }
+        
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                           ctx.getCompilationInfo(), par.getLeaf());
 
-        return ErrorDescriptionFactory.forTree(
+        return ErrorDescriptionFactory.forSpan(
                     hc,
-                    hc.getPath().getParentPath(),
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
                     NbBundle.getMessage(HasNoArgConstructor.class, "MSG_HasNoNoArgConstructor"),
                     fix);
     }

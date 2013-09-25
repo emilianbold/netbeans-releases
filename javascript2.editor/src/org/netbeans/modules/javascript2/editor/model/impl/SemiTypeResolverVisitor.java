@@ -324,6 +324,14 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         return super.enter(binaryNode);
     }
 
+    @Override
+    public Node enter(ReferenceNode rNode) {
+        add(new TypeUsageImpl(Type.FUNCTION, rNode.getReference().getStart(), true));
+        return null;
+    }
+    
+    
+
     private boolean isResultString(BinaryNode binaryNode) {
         boolean bResult = false;
         TokenType tokenType = binaryNode.tokenType();

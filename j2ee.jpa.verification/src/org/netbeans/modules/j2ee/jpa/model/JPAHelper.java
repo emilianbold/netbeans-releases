@@ -46,9 +46,13 @@
 package org.netbeans.modules.j2ee.jpa.model;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Attributes;
@@ -133,38 +137,70 @@ public class JPAHelper {
             else if (Entity.PROPERTY_ACCESS.equals(accessDef)){
                 accessType = AccessType.PROPERTY;
             }
+        } else if (modelElement instanceof MappedSuperclass) {
+            String accessDef = ((MappedSuperclass)modelElement).getAccess();
+            
+            if (MappedSuperclass.FIELD_ACCESS.equals(accessDef)){
+                accessType = AccessType.FIELD;
+            }
+            else if (MappedSuperclass.PROPERTY_ACCESS.equals(accessDef)){
+                accessType = AccessType.PROPERTY;
+            }            
         }
         
-        // look for the first element annotated with a JPA field annotation
-        for (Element element : entityClass.getEnclosedElements()){
-            if (element.getKind() == ElementKind.FIELD || element.getKind() == ElementKind.METHOD){
-                AnnotationMirror ann = getFirstAnnotationFromGivenSet(element, JPAAnnotations.MEMBER_LEVEL);
-                
-                if (ann != null){
-                    accessType = element.getKind() == ElementKind.FIELD ?
-                        AccessType.FIELD : AccessType.PROPERTY;
-                    
-                    break;
+        if(!accessType.isDetermined()) {
+        
+            // look for the first element annotated with a JPA field annotation
+            for (Element element : entityClass.getEnclosedElements()){
+                if (element.getKind() == ElementKind.FIELD || element.getKind() == ElementKind.METHOD){
+                    AnnotationMirror ann = getFirstAnnotationFromGivenSet(element, JPAAnnotations.MEMBER_LEVEL);
+
+                    if (ann != null){
+                        accessType = element.getKind() == ElementKind.FIELD ?
+                            AccessType.FIELD : AccessType.PROPERTY;
+
+                        break;
+                    }
                 }
             }
         }
         
         if (accessType.isDetermined()){
             // check if access type is consistent
-            Collection<? extends Element> otherElems = null;
-            
+            Collection<? extends Element> otherElems;
+            String alllowedOpposite;
             if (accessType == AccessType.FIELD){
                 otherElems = ElementFilter.methodsIn(entityClass.getEnclosedElements());
+                alllowedOpposite = JPAAnnotations.ACCESS_TYPE_PROPERTY;
             } else{
                 otherElems = ElementFilter.fieldsIn(entityClass.getEnclosedElements());
+                alllowedOpposite = JPAAnnotations.ACCESS_TYPE_FIELD;
             }
             
             for (Element element : otherElems){
                 AnnotationMirror ann = getFirstAnnotationFromGivenSet(element, JPAAnnotations.MEMBER_LEVEL);
                 
                 if (ann != null){
-                    accessType = AccessType.INCONSISTENT;
-                    break;
+                    boolean valid = false;
+                    ann = getFirstAnnotationFromGivenSet(element, Collections.singletonList(JPAAnnotations.ACCESS_TYPE));
+                    if(ann != null) {
+                        Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = ann.getElementValues();
+                        if(elementValues != null) {
+                            for(ExecutableElement el : elementValues.keySet()) {
+                                if(el.getSimpleName().toString().equals("value")) {//NO18N
+                                    if (alllowedOpposite.equals(elementValues.get(el).toString())) {
+                                        valid = true;
+                                        accessType = AccessType.MIXED;
+                                        break;
+                                    }
+                                }
+                            }
+                        } 
+                    }
+                    if(!valid) {
+                        accessType = AccessType.INCONSISTENT;
+                        break;
+                    }
                 }
             }
         }

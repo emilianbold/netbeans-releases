@@ -41,9 +41,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.Collections;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -52,15 +54,24 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateId;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,45 +83,92 @@ import org.openide.util.NbBundle;
  * @author Sanjeeb.Sahoo@Sun.COM
  * @author Tomasz.Slota@Sun.COM
  */
-public class IdDefinedInHierarchy extends JPAClassRule {
-    
-    public IdDefinedInHierarchy(){
-        setClassContraints(Collections.singleton(ClassConstraints.ENTITY));
-    }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        TypeElement javaClass = subject;
-        Object modelElement = ctx.getModelElement();
-        EntityMappingsMetadata metadata = ((JPAProblemContext)ctx).getMetaData();
-        
-        do{
-            if (JPAHelper.isAnyMemberAnnotatedAsIdOrEmbeddedId(modelElement)){
-                return null; // OK
-            }
-            
-            TypeMirror parentType = javaClass.getSuperclass();
-            javaClass = null;
-            
-            if (!"java.lang.Object".equals(parentType.toString())){ //NOI18N
-                if (parentType.getKind() == TypeKind.DECLARED){
-                    Element parent = ((DeclaredType)parentType).asElement();
-                    
-                    if (parent.getKind() == ElementKind.CLASS){
-                        javaClass = (TypeElement) parent;
-                        modelElement = ModelUtils.getEntity(metadata, javaClass);
-                        
-                        if (modelElement == null){
-                            modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
+@Hint(id = "o.n.m.j2ee.jpa.verification.IdDefinedInHierarchy",
+        displayName = "#IdDefinedInHierarchy.display.name",
+        description = "#IdDefinedInHierarchy.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        severity = Severity.ERROR,
+        suppressWarnings = "IdDefinedInHierarchy")
+@NbBundle.Messages({
+    "IdDefinedInHierarchy.display.name=Verify entity have defined promary key",
+    "IdDefinedInHierarchy.desc=Id is required for entities"})
+public class IdDefinedInHierarchy {
+
+    @TriggerPattern(value = JPAAnnotations.ENTITY)//NOI18N
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+
+        final JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+        TypeElement javaClass = ctx.getJavaClass();
+
+        EntityMappingsMetadata metadata = ((JPAProblemContext) ctx).getMetaData();
+
+        final boolean[] haveId = {false};
+        try {
+            MetadataModel<EntityMappingsMetadata> model = ModelUtils.getModel(hc.getInfo().getFileObject());
+            model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, Void>() {
+                @Override
+                public Void run(EntityMappingsMetadata metadata) {
+                    TypeElement javaClass = ctx.getJavaClass();
+                    Object modelElement = ctx.getModelElement();
+                    do {
+                        if (JPAHelper.isAnyMemberAnnotatedAsIdOrEmbeddedId(modelElement)) {
+                            haveId[0] = true;
+                            return null; // OK
                         }
-                    }
+
+                        TypeMirror parentType = javaClass.getSuperclass();
+                        javaClass = null;
+
+                        if (!"java.lang.Object".equals(parentType.toString())) { //NOI18N
+                            if (parentType.getKind() == TypeKind.DECLARED) {
+                                Element parent = ((DeclaredType) parentType).asElement();
+
+                                if (parent.getKind() == ElementKind.CLASS) {
+                                    javaClass = (TypeElement) parent;
+                                    modelElement = ModelUtils.getEntity(metadata, javaClass);
+
+                                    if (modelElement == null) {
+                                        modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
+                                    }
+                                }
+                            }
+                        }
+
+                    } while (javaClass != null && modelElement != null);
+
+                    return null;
                 }
-            }
-            
-        } while (javaClass != null && modelElement != null);
-        Fix fix = new CreateId(ctx.getFileObject(), ElementHandle.create(subject),
-                ((JPAProblemContext)ctx).getAccessType());
-        
-        return new ErrorDescription[]{createProblem(subject, ctx, 
-                NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_NoIdDefinedInHierarchy"),fix)};
+            });
+        } catch (IOException ex) {
+        }
+
+        if (haveId[0]) {
+            return null;
+        }
+
+        Fix fix = new CreateId(ctx.getFileObject(), ElementHandle.create(javaClass),
+                ((JPAProblemContext) ctx).getAccessType());
+
+        TreePath par = hc.getPath();
+        while (par != null && par.getParentPath() != null && par.getLeaf().getKind() != Tree.Kind.CLASS) {
+            par = par.getParentPath();
+        }
+
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                ctx.getCompilationInfo(), par.getLeaf());
+        return ErrorDescriptionFactory.forSpan(
+                hc,
+                underlineSpan.getStartOffset(),
+                underlineSpan.getEndOffset(),
+                NbBundle.getMessage(ConsistentAccessType.class, "MSG_NoIdDefinedInHierarchy"),
+                fix);
+
     }
 }

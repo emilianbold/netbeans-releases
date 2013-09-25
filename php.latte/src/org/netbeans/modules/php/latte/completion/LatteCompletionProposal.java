@@ -323,6 +323,31 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
 
     }
 
+    static class ControlCompletionProposal extends LatteCompletionProposal {
+        private static final ImageIcon CONTROL_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/php/latte/resources/latte_cc_icon.png")); //NOI18N
+
+        public ControlCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("ControlRhs=Control")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.ControlRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return CONTROL_ICON;
+        }
+
+    }
+
     public static class CompletionRequest {
         public int anchorOffset;
         public String prefix;

@@ -375,8 +375,8 @@ public final class StartTomcat extends StartServer implements ProgressObject {
             String javaOpts = tp.getJavaOpts();            
             // use the IDE proxy settings if the 'use proxy' checkbox is selected
             // do not override a property if it was set manually by the user
+            StringBuilder sb = new StringBuilder(javaOpts);
             if (tp.getProxyEnabled()) {
-                StringBuilder sb = new StringBuilder(javaOpts);
                 final String[] PROXY_PROPS = {
                     "http.proxyHost",       // NOI18N
                     "http.proxyPort",       // NOI18N
@@ -398,18 +398,17 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                         }
                     }
                 }
+            }
 
-
-                if (command == CommandType.START) {
-                    for (StartupExtender args : StartupExtender.getExtenders(
-                            Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
-                        for (String singleArg : args.getArguments()) {
-                            sb.append(' ').append(singleArg);
-                        }
+            if (command == CommandType.START) {
+                for (StartupExtender args : StartupExtender.getExtenders(
+                        Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
+                    for (String singleArg : args.getArguments()) {
+                        sb.append(' ').append(singleArg);
                     }
                 }
-                javaOpts = sb.toString();
             }
+            javaOpts = sb.toString();
             
             JavaPlatform platform = getJavaPlatform();
             String jdkVersion = platform.getSpecification().getVersion().toString();

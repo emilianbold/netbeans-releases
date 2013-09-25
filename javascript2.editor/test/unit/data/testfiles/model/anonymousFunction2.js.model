@@ -9,11 +9,9 @@ _L5         : FUNCTION _L5 [ANONYMOUS: true, DECLARED: true - _L5, MODIFIERS: PU
             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 document    : OBJECT document [ANONYMOUS: false, DECLARED: false - document, MODIFIERS: PUBLIC, OBJECT]
             # PROPERTIES
-            getElementById : FUNCTION getElementById [ANONYMOUS: false, DECLARED: false - getElementById, MODIFIERS: PUBLIC, METHOD]
-                           # PARAMETERS
-                           OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+            getElementById : OBJECT getElementById [ANONYMOUS: false, DECLARED: false - getElementById, MODIFIERS: PUBLIC, OBJECT]
                            # PROPERTIES
-                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                           className : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PROPERTY]
 highlight   : FUNCTION highlight [ANONYMOUS: false, DECLARED: true - highlight, MODIFIERS: PUBLIC, FUNCTION]
             # RETURN TYPES
             undefined, RESOLVED: true
@@ -29,7 +27,6 @@ location    : OBJECT location [ANONYMOUS: false, DECLARED: false - location, MOD
                          OBJECT param2 [ANONYMOUS: false, DECLARED: true - param2, MODIFIERS: PUBLIC, PARAMETER]
                          # PROPERTIES
                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                         className : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PUBLIC, PROPERTY]
 prettyPrint : FUNCTION prettyPrint [ANONYMOUS: false, DECLARED: false - prettyPrint, MODIFIERS: PUBLIC, FUNCTION]
             # PROPERTIES
             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
