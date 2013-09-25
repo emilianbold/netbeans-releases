@@ -64,9 +64,10 @@ public interface CompletionProvider {
      * Gets the set of {@link String items} which should be displayed in the code completion.
      *
      * @param sourceFile {@link FileObject source file} in which the code completion was invoked
+     * @param prefix {@link String prefix} of the needed item, or empty string.
      * @return Set of {@link String items} which should be displayed in the code completion.
      */
     @NonNull
-    Set<String> getItems(@NonNull FileObject sourceFile);
+    Set<String> getItems(@NonNull FileObject sourceFile, @NonNull String prefix);
 
 }
