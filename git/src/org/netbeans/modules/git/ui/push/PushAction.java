@@ -400,7 +400,7 @@ public class PushAction extends SingleRepositoryAction {
                 if (crit != null) {
                     final GitProgressSupport supp = this;
                     try {
-                        GitRevisionInfo[] revisions = client.log(crit, new ProgressMonitor() {
+                        GitRevisionInfo[] revisions = client.log(crit, false, new ProgressMonitor() {
                             @Override
                             public boolean isCanceled () {
                                 return supp.isCanceled();

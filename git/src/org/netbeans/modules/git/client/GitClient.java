@@ -95,7 +95,7 @@ public final class GitClient {
     private final boolean handleAuthenticationIssues;
     private static final int CLEANUP_TIME = 15000;
     private static final List<org.netbeans.libs.git.GitClient> unusedClients = new LinkedList<org.netbeans.libs.git.GitClient>();
-    private static RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
+    private static final RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
     
     /**
      * Set of commands that do not need to run under repository lock
@@ -564,12 +564,13 @@ public final class GitClient {
         }, "log"); //NOI18N
     }
 
-    public GitRevisionInfo[] log (final SearchCriteria searchCriteria, final ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+    public GitRevisionInfo[] log (final SearchCriteria searchCriteria, final boolean fetchAffectedBranches,
+            final ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         return new CommandInvoker().runMethod(new Callable<GitRevisionInfo[]>() {
 
             @Override
             public GitRevisionInfo[] call () throws Exception {
-                return delegate.log(searchCriteria, monitor);
+                return delegate.log(searchCriteria, fetchAffectedBranches, monitor);
             }
         }, "log"); //NOI18N
     }

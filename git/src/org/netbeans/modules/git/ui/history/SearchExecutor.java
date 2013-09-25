@@ -152,7 +152,7 @@ class SearchExecutor extends GitProgressSupport {
     List<RepositoryRevision> search (int limit, GitClient client, ProgressMonitor monitor) throws GitException {
         sc.setLimit(limit);
         List<RepositoryRevision> retval = Collections.<RepositoryRevision>emptyList();
-        GitRevisionInfo[] messages = client.log(sc, monitor);
+        GitRevisionInfo[] messages = client.log(sc, true, monitor);
         if (!monitor.isCanceled()) {
             RepositoryInfo info = RepositoryInfo.getInstance(getRepositoryRoot());
             retval = appendResults(messages, info.getBranches().values(), info.getTags().values(), monitor);

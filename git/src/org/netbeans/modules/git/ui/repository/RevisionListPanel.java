@@ -367,7 +367,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                     if (rev != null) {
                         criteria.setRevisionTo(rev.getCommitId());
                     }
-                    final GitRevisionInfo[] revs = client.log(criteria, listHistoryMonitor);
+                    final GitRevisionInfo[] revs = client.log(criteria, false, listHistoryMonitor);
                     if (!isCanceled()) {
                         finished = true;
                         EventQueue.invokeLater(new Runnable() {

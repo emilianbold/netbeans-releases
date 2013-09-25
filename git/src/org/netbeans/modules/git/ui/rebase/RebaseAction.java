@@ -501,7 +501,7 @@ public class RebaseAction extends SingleRepositoryAction {
         SearchCriteria crit = new SearchCriteria();
         crit.setRevisionFrom(revisionFrom);
         crit.setRevisionTo(revisionTo);
-        GitRevisionInfo[] log = client.log(crit, pm);
+        GitRevisionInfo[] log = client.log(crit, false, pm);
         return convertToEntries(log);
     }    
 

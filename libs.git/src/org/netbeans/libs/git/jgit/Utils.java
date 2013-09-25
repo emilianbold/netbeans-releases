@@ -83,6 +83,8 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
+import org.netbeans.libs.git.jgit.commands.ListBranchCommand;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -421,5 +423,11 @@ public final class Utils {
             }
             return allBranches.get(remoteName + trackedBranchName);
         }
+    }
+
+    public static Map getAllBranches (Repository repository, GitClassFactory fac, ProgressMonitor monitor) throws GitException {
+        ListBranchCommand cmd = new ListBranchCommand(repository, fac, true, monitor);
+        cmd.execute();
+        return cmd.getBranches();
     }
 }

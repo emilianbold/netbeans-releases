@@ -111,6 +111,28 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>The log command returns also branches containing the commits from the result.</summary>
+            <version major="1" minor="14"/>
+            <date day="25" month="9" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <ul>
+                <li>Adding a new method GitClient.log (SearchCriteria, boolean, ProgressMonitor)
+                    allowing an API client to specify if he wants to know what branches contain
+                    the returned commits applying the search criteria. Such information can
+                    be used to filter the resulted commits by branches without a need to restart
+                    the command again.</li>
+                <li>Adding a method GitRevisionInfo.getBranches() returning all branches
+                that are known to contain the commit.</li>
+                </ul>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <class package="org.netbeans.libs.git" name="GitRevisionInfo"/>
+            <issue number="235882"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Adding a command setting the upstream branch/tracking of local branches</summary>
             <version major="1" minor="12"/>
             <date day="22" month="8" year="2013"/>

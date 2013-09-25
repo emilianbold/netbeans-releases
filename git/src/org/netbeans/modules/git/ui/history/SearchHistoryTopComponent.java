@@ -51,32 +51,28 @@ import java.io.File;
 import java.awt.BorderLayout;
 import java.util.List;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 
 @TopComponent.Description(persistenceType=TopComponent.PERSISTENCE_NEVER, preferredID="Git.SearchHistoryTopComponent")
 public class SearchHistoryTopComponent extends TopComponent {
 
     private SearchHistoryPanel shp;
     private SearchCriteriaPanel scp;
-    private File[] files;
-    private File repository;
-
-    public SearchHistoryTopComponent () {
+    private final File[] files;
+    private final File repository;
+    private final RepositoryInfo info;
+    
+    public SearchHistoryTopComponent (File repository, RepositoryInfo info, File[] files) {
+        this.repository = repository;
+        this.info = info;
+        this.files = files;
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSN_SearchHistoryT_Top_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchHistoryTopComponent.class, "ACSD_SearchHistoryT_Top_Component")); // NOI18N
-    }
-    
-    public SearchHistoryTopComponent (File repository, File[] files) {
-        this();
-        this.repository = repository;
-        this.files = files;
         initComponents();
     }
     
-    SearchHistoryTopComponent (File repository, File file, DiffResultsViewFactory fac) {
-        this();
-        this.repository = repository;
-        this.files = new File[] { file };
-        initComponents();
+    SearchHistoryTopComponent (File repository, RepositoryInfo info, File file, DiffResultsViewFactory fac) {
+        this(repository, info, new File[] { file });
         shp.setDiffResultsViewFactory(fac);
     }
 
@@ -113,7 +109,7 @@ public class SearchHistoryTopComponent extends TopComponent {
     private void initComponents () {
         setLayout(new BorderLayout());
         scp = new SearchCriteriaPanel();
-        shp = new SearchHistoryPanel(repository, files, scp);
+        shp = new SearchHistoryPanel(repository, info, files, scp);
         add(shp);
     }
 

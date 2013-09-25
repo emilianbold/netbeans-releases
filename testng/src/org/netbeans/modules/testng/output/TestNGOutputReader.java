@@ -974,7 +974,7 @@ final class TestNGOutputReader {
 
     private String getMessage(String msg) {
         int prefixLength = RegexpUtils.TEST_LISTENER_PREFIX.length();
-        return msg.substring(prefixLength);
+        return msg.substring(prefixLength).replace("\n", "");
     }
 
     private void addDescription(String in) {

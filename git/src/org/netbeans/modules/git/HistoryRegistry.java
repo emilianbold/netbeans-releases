@@ -87,7 +87,7 @@ public class HistoryRegistry {
         crit.setFollowRenames(true);
         crit.setIncludeMerges(false);
         try {
-            GitRevisionInfo[] history = client.log(crit, pm);
+            GitRevisionInfo[] history = client.log(crit, false, pm);
             if (!pm.isCanceled() && history.length > 0) {
                 for (File f : files) {
                     logs.put(f, Arrays.asList(history));

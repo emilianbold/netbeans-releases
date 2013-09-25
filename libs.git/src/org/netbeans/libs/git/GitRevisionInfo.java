@@ -45,8 +45,10 @@ package org.netbeans.libs.git;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -70,14 +72,20 @@ import org.netbeans.libs.git.jgit.Utils;
  */
 public final class GitRevisionInfo {
 
-    private RevCommit revCommit;
-    private Repository repository;
+    private final RevCommit revCommit;
+    private final Repository repository;
+    private final Map<String, GitBranch> branches;
     private GitFileInfo[] modifiedFiles;
     private static final Logger LOG = Logger.getLogger(GitRevisionInfo.class.getName());
 
     GitRevisionInfo (RevCommit commit, Repository repository) {
+        this(commit, Collections.<String, GitBranch>emptyMap(), repository);
+    }
+
+    GitRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, Repository repository) {
         this.revCommit = commit;
         this.repository = repository;
+        this.branches = Collections.unmodifiableMap(affectedBranches);
     }
 
     /**
@@ -159,6 +167,14 @@ public final class GitRevisionInfo {
         return parents;
     }
     
+    /**
+     * @return all branches known to contain this commit.
+     * @since 1.14
+     */
+    public Map<String, GitBranch> getBranches () {
+        return branches;
+    }
+    
     private void listFiles() throws GitException {
         RevWalk revWalk = new RevWalk(repository);
         TreeWalk walk = new TreeWalk(repository);
@@ -197,6 +213,12 @@ public final class GitRevisionInfo {
             revWalk.release();
             walk.release();
         }
+    }
+
+    private static Map<String, GitBranch> buildBranches (RevCommit commit, Map<String, GitBranch> branches) {
+        Map<String, GitBranch> retval = new LinkedHashMap<>(branches.size());
+        
+        return retval;
     }
     
     /**
