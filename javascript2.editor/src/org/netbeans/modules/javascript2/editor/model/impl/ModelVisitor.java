@@ -1835,18 +1835,20 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (bNode.tokenType() == TokenType.ASSIGN) {
                         if (bNode.lhs() instanceof AccessNode) {
                             List<Identifier> identifier = getName((AccessNode) bNode.lhs(), parserResult);
-                            if (identifier != null && !identifier.isEmpty() && "this".equals(identifier.get(0).getName())) {
-                                identifier.remove(0);
-                            }
-                            if (identifier.size() == 1) {
-                                name = identifier.get(0).getName();
-                            } else {
-                                StringBuilder sb = new StringBuilder();
-                                for (Identifier part : identifier) {
-                                    sb.append(part.getName()).append('.');
+                            if (identifier != null) {
+                                if (!identifier.isEmpty() && "this".equals(identifier.get(0).getName())) {
+                                    identifier.remove(0);
                                 }
-                                name = sb.toString().substring(0, sb.length() - 1);
-                                simpleName = false;
+                                if (identifier.size() == 1) {
+                                    name = identifier.get(0).getName();
+                                } else {
+                                    StringBuilder sb = new StringBuilder();
+                                    for (Identifier part : identifier) {
+                                        sb.append(part.getName()).append('.');
+                                    }
+                                    name = sb.toString().substring(0, sb.length() - 1);
+                                    simpleName = false;
+                                }
                             }
                         } else if (bNode.lhs() instanceof IdentNode) {
                             name = ((IdentNode) bNode.lhs()).getName();
