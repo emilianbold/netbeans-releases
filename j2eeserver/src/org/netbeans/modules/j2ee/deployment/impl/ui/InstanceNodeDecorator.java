@@ -45,6 +45,8 @@
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -54,15 +56,16 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.DebugAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ProfileAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RefreshAction;
-import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveInstanceAction;
+import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RestartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StopAction;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -76,7 +79,7 @@ import org.openide.util.actions.SystemAction;
  * @author sherold
  */
 public class InstanceNodeDecorator extends FilterNode 
-        implements ServerInstance.StateListener {
+        implements ServerInstance.StateListener, PropertyChangeListener {
     
     private static final String WAITING_ICON
             = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/waiting.png"; // NOI18N
@@ -94,10 +97,18 @@ public class InstanceNodeDecorator extends FilterNode
     private ServerInstance si;
     
     /** Creates a new instance of InstanceNodeDecorator */
-    public InstanceNodeDecorator(Node original, ServerInstance si) {
+    private InstanceNodeDecorator(Node original, ServerInstance si) {
         super(original);
         this.si = si;
-        si.addStateListener(this);
+    }
+
+    public static InstanceNodeDecorator getInstance(Node original, ServerInstance si) {
+        InstanceNodeDecorator ret = new InstanceNodeDecorator(original, si);
+        si.addStateListener(WeakListeners.create(ServerInstance.StateListener.class, ret, si));
+        InstanceProperties ip = si.getInstanceProperties();
+        ip.addPropertyChangeListener(WeakListeners.propertyChange(ret, ip));
+
+        return ret;
     }
     
     public String getDisplayName() {
@@ -124,7 +135,7 @@ public class InstanceNodeDecorator extends FilterNode
                                         SystemAction.get(StopAction.class),
                                         SystemAction.get(RefreshAction.class),
                                         null,
-                                        SystemAction.get(RemoveInstanceAction.class)
+                                        SystemAction.get(RemoveAction.class)
         }));
         actions.addAll(Arrays.asList(getOriginal().getActions(context)));
         actions.add(null);
@@ -181,5 +192,16 @@ public class InstanceNodeDecorator extends FilterNode
                 fireIconChange();
             }
         });
+    }
+
+    @Override
+    public void propertyChange(final PropertyChangeEvent evt) {
+        if (InstanceProperties.DISPLAY_NAME_ATTR.equals(evt.getPropertyName())) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    fireDisplayNameChange((String) evt.getOldValue(), (String) evt.getNewValue());
+                }
+            });
+        }
     }
 }

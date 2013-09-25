@@ -68,7 +68,7 @@ public class RegistryNodeProvider {
     }
 
     public Node createInstanceNode(ServerInstance instance) {
-        return new InstanceNodeDecorator(createInstanceNodeImpl(instance, true), instance);
+        return InstanceNodeDecorator.getInstance(createInstanceNodeImpl(instance, true), instance);
     }
 
     public Node createTargetNode(ServerTarget target) {
@@ -87,7 +87,7 @@ public class RegistryNodeProvider {
 
     public Node createInstanceTargetNode(ServerInstance instance) {
         Node original = createInstanceNodeImpl(instance, false);
-        return new InstanceNodeDecorator(new InstanceTargetXNode(original, instance), instance);
+        return InstanceNodeDecorator.getInstance(new InstanceTargetXNode(original, instance), instance);
     }
 
     private Node createInstanceNodeImpl(ServerInstance instance, boolean addStateListener) {
