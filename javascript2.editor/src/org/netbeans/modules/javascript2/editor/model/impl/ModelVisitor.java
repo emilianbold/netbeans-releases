@@ -1376,7 +1376,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         if (base instanceof IdentNode) {
-            if (name.size() > 0 && base instanceof IdentNode) {
+            if (name.size() > 0) {
                 IdentNode ident = (IdentNode) base;
 //                if (!"this".equals(ident.getName())) {
                     name.add(new IdentifierImpl(ident.getName(),
