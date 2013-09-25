@@ -792,6 +792,9 @@ public final class GitClient {
 
     /**
      * Digs through the repository's history and returns revisions according to the given search criteria.
+     * No information about branches is returned, you
+     * should call {@link #log(org.netbeans.libs.git.SearchCriteria, boolean, org.netbeans.libs.git.progress.ProgressMonitor)}
+     * if you want to get such knowledge.
      * @param searchCriteria criteria filtering the returned revisions
      * @param monitor progress monitor
      * @return revisions that follow the given search criteria
@@ -799,8 +802,30 @@ public final class GitClient {
      * @throws GitException an unexpected error occurs
      */
     public GitRevisionInfo[] log (SearchCriteria searchCriteria, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
+        return log(searchCriteria, false, monitor);
+    }
+
+    /**
+     * Digs through the repository's history and returns revisions according to
+     * the given search criteria.
+     *
+     * @param searchCriteria criteria filtering the returned revisions
+     * @param fetchBranchInfo if set to <code>true</code> then the command will
+     * also fetch information ({@link GitRevisionInfo#getBranches()}) about what
+     * branches contain the individual commits returned by the command. You can
+     * use that information to filter returned commits by the branches they're
+     * part of. Also note that the command will take more time to finish.
+     * @param monitor progress monitor
+     * @return revisions that follow the given search criteria
+     * @throws GitException.MissingObjectException revision specified in search
+     * criteria (or head if no such revision is specified) does not exist
+     * @throws GitException an unexpected error occurs
+     * @since 1.14
+     */
+    public GitRevisionInfo[] log (SearchCriteria searchCriteria, boolean fetchBranchInfo, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
-        LogCommand cmd = new LogCommand(repository, getClassFactory(), searchCriteria, monitor, delegateListener);
+        LogCommand cmd = new LogCommand(repository, getClassFactory(), searchCriteria,
+                fetchBranchInfo, monitor, delegateListener);
         cmd.execute();
         return cmd.getRevisions();
     }

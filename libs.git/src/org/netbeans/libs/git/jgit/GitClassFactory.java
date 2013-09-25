@@ -42,6 +42,7 @@
 package org.netbeans.libs.git.jgit;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.MergeResult;
@@ -103,7 +104,11 @@ public abstract class GitClassFactory {
 
     public abstract GitRevertResult createRevertResult (GitRevertResult.Status status, GitRevisionInfo createRevisionInfo, List<File> conflicts, List<File> failures);
     
-    public abstract GitRevisionInfo createRevisionInfo (RevCommit commit, Repository repository);
+    public final GitRevisionInfo createRevisionInfo (RevCommit commit, Repository repository) {
+        return createRevisionInfo(commit, Collections.<String, GitBranch>emptyMap(), repository);
+    }
+    
+    public abstract GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, Repository repository);
 
     public abstract GitStatus createStatus (boolean tracked, String path, String workTreePath, File file, 
                 Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, 

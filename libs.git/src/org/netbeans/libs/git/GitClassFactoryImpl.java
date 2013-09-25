@@ -129,8 +129,8 @@ final class GitClassFactoryImpl extends GitClassFactory {
     }
 
     @Override
-    public GitRevisionInfo createRevisionInfo (RevCommit commit, Repository repository) {
-        return new GitRevisionInfo(commit, repository);
+    public GitRevisionInfo createRevisionInfo (RevCommit commit, Map<String, GitBranch> affectedBranches, Repository repository) {
+        return new GitRevisionInfo(commit, affectedBranches, repository);
     }
 
     @Override
