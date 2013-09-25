@@ -94,7 +94,7 @@ public class WebInspectorJNIBinding {
         }
     }
 
-    public synchronized void stop() {
+    public void stop() {
         synchronized (writeLock) {
             synchronized (readLock) {
                 if (started) {
