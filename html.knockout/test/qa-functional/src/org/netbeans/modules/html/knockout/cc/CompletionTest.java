@@ -80,6 +80,7 @@ public class CompletionTest extends GeneralKnockout {
 
   public void createApplication() {
     startTest();
+    GeneralKnockout.NAME_ITERATOR = (int)System.currentTimeMillis();
     createSampleProject("Knockout", TEST_BASE_NAME + "_" + NAME_ITERATOR);
     evt.waitNoEvent(3000);
     openFile("models|gamelistviewmodels.js", TEST_BASE_NAME + "_" + NAME_ITERATOR);

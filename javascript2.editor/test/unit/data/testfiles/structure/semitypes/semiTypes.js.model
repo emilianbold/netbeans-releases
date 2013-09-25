@@ -20,22 +20,29 @@ _L1 : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC, FU
                          arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
               property01 : OBJECT property01 [ANONYMOUS: false, DECLARED: true - property01, MODIFIERS: PUBLIC, PROPERTY]
               property02 : OBJECT property02 [ANONYMOUS: false, DECLARED: true - property02, MODIFIERS: PUBLIC, PROPERTY]
-                         # PROPERTIES
-                         method01 : FUNCTION method01 [ANONYMOUS: false, DECLARED: false - method01, MODIFIERS: PUBLIC, METHOD]
-                                  # PROPERTIES
-                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                  method02  : FUNCTION method02 [ANONYMOUS: false, DECLARED: false - method02, MODIFIERS: PUBLIC, METHOD]
-                                            # PROPERTIES
-                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                            fontsize  : FUNCTION fontsize [ANONYMOUS: false, DECLARED: false - fontsize, MODIFIERS: PUBLIC, METHOD]
-                                                      # PROPERTIES
-                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
     getInfo   : FUNCTION getInfo [ANONYMOUS: false, DECLARED: true - getInfo, MODIFIERS: PRIVATE, METHOD]
               # RETURN TYPES
               String, RESOLVED: true
               # PROPERTIES
               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              fontcolor : FUNCTION fontcolor [ANONYMOUS: false, DECLARED: false - fontcolor, MODIFIERS: PUBLIC, METHOD]
+                        # PROPERTIES
+                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                        small     : FUNCTION small [ANONYMOUS: false, DECLARED: false - small, MODIFIERS: PUBLIC, METHOD]
+                                  # PROPERTIES
+                                  arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                  fontsize  : FUNCTION fontsize [ANONYMOUS: false, DECLARED: false - fontsize, MODIFIERS: PUBLIC, METHOD]
+                                            # PROPERTIES
+                                            arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+                                            toPrecision : FUNCTION toPrecision [ANONYMOUS: false, DECLARED: false - toPrecision, MODIFIERS: PUBLIC, METHOD]
+                                                        # PARAMETERS
+                                                        OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
+                                                        # PROPERTIES
+                                                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
+              fontsize  : FUNCTION fontsize [ANONYMOUS: false, DECLARED: false - fontsize, MODIFIERS: PUBLIC, METHOD]
+                        # PROPERTIES
+                        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
     prom01    : OBJECT prom01 [ANONYMOUS: false, DECLARED: true - prom01, MODIFIERS: PRIVATE, VARIABLE]
               # PROPERTIES
               fontsize : FUNCTION fontsize [ANONYMOUS: false, DECLARED: false - fontsize, MODIFIERS: PUBLIC, METHOD]
@@ -52,20 +59,6 @@ _L1 : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC, FU
               toLocaleString : FUNCTION toLocaleString [ANONYMOUS: false, DECLARED: false - toLocaleString, MODIFIERS: PUBLIC, METHOD]
                              # PROPERTIES
                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                             fontcolor : FUNCTION fontcolor [ANONYMOUS: false, DECLARED: false - fontcolor, MODIFIERS: PUBLIC, METHOD]
-                                       # PROPERTIES
-                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                       small     : FUNCTION small [ANONYMOUS: false, DECLARED: false - small, MODIFIERS: PUBLIC, METHOD]
-                                                 # PROPERTIES
-                                                 arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                 fontsize  : FUNCTION fontsize [ANONYMOUS: false, DECLARED: false - fontsize, MODIFIERS: PUBLIC, METHOD]
-                                                           # PROPERTIES
-                                                           arguments   : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                                                           toPrecision : FUNCTION toPrecision [ANONYMOUS: false, DECLARED: false - toPrecision, MODIFIERS: PUBLIC, METHOD]
-                                                                       # PARAMETERS
-                                                                       OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
-                                                                       # PROPERTIES
-                                                                       arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
     prom09    : OBJECT prom09 [ANONYMOUS: false, DECLARED: true - prom09, MODIFIERS: PRIVATE, VARIABLE]
     prom10    : OBJECT prom10 [ANONYMOUS: false, DECLARED: true - prom10, MODIFIERS: PRIVATE, VARIABLE]
     prom11    : OBJECT prom11 [ANONYMOUS: false, DECLARED: true - prom11, MODIFIERS: PRIVATE, VARIABLE]

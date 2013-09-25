@@ -44,16 +44,21 @@
 
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
-import java.util.Collections;
-import javax.lang.model.element.TypeElement;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import org.netbeans.modules.db.api.sql.SQLKeywords;
+import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
+import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,34 +66,65 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomasz.Slota@Sun.COM
  */
-public class ValidPrimaryTableName extends JPAClassRule {
+@Hint(id = "o.n.m.j2ee.jpa.verification.ValidPrimaryTableName",
+        displayName = "#ValidPrimaryTableName.display.name",
+        description = "#ValidPrimaryTableName.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        suppressWarnings = "ValidPrimaryTableName")
+@NbBundle.Messages({
+    "ValidPrimaryTableName.display.name=Entity table name verification",
+    "ValidPrimaryTableName.desc=Entity table name must be valid QL intentifier"
+})
+public class ValidPrimaryTableName {
     
-    /** Creates a new instance of LegalName */
-    public ValidPrimaryTableName() {
-        setClassContraints(Collections.singleton(ClassConstraints.ENTITY));
-    }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+
+    @TriggerPattern(value = JPAAnnotations.ENTITY)
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+        
+        JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+
         String tableName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
         if(tableName == null){
             return null;
         }
         String entityName = ((Entity) ctx.getModelElement()).getName();
+        TreePath par = hc.getPath();
+        while(par!=null && par.getParentPath()!=null && par.getLeaf().getKind()!= Tree.Kind.CLASS){
+            par = par.getParentPath();
+        }
+        
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                           ctx.getCompilationInfo(), par.getLeaf());
+
         if (tableName.length() == 0){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"))};
+            return ErrorDescriptionFactory.forSpan(
+                    hc,
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InvalidPersistenceQLIdentifier"));
         }
         
         if (SQLKeywords.isSQL99ReservedKeyword(tableName)){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"),
-                    Severity.WARNING)};
+            return ErrorDescriptionFactory.forSpan(
+                    hc,
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithReservedSQLKeyword"));
         }
         
         if (JavaPersistenceQLKeywords.isKeyword(entityName)){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"),
-                    Severity.WARNING)};
+            return ErrorDescriptionFactory.forSpan(
+                    hc,
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
+                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_ClassNamedWithJavaPersistenceQLKeyword"));
         }
         
         

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.ArrayList;
@@ -57,19 +56,18 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.An
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ValueProvider;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class EntityImpl extends PersistentObject implements Entity, JavaContextListener {
 
     private final EntityMappingsImpl root;
-
     // persistent
     private String name;
     private String class2;
+    private String accessType;//is used to store access annotation value only, it's not final access type
     private Table table;
-    
     private boolean valid;
-
     // transient: set to null in javaContextLeft()
     private IdClassImpl idClass;
     private AttributesImpl attributes;
@@ -95,6 +93,23 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         parser.expectString("name", AnnotationParser.defaultValue(typeElement.getSimpleName().toString())); // NOI18N
         ParseResult parseResult = parser.parse(entityAnn); // NOI18N
         name = parseResult.get("name", String.class); // NOI18N
+        AnnotationMirror entityAcc = annByType.get("javax.persistence.Access"); // NOI18N
+        if (entityAcc != null) {
+            parser = AnnotationParser.create(helper);
+            parser.expect("value", new ValueProvider() {
+                @Override
+                public Object getValue(AnnotationValue elementValue) {
+                    return elementValue.toString();
+                }
+
+                @Override
+                public Object getDefaultValue() {
+                    return null;
+                }
+            });//NOI18N
+            parseResult = parser.parse(entityAcc);
+            accessType = parseResult.get("value", String.class);
+        }
         // also reading the table element to avoid initializing the whole model
         // when a client looking the entity mapped to a specific table iterates
         // over all entities calling getTable().
@@ -103,33 +118,33 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
         //fill named queries
         AnnotationMirror nqsAnn = annByType.get("javax.persistence.NamedQueries");// NOI18N
         ArrayList<AnnotationMirror> nqAnn = null;
-        if(nqsAnn == null){
+        if (nqsAnn == null) {
             nqsAnn = annByType.get("javax.persistence.NamedQuery");// NOI18N
-            if(nqsAnn != null){
+            if (nqsAnn != null) {
                 nqAnn = new ArrayList<AnnotationMirror>();
                 nqAnn.add(nqsAnn);
             }
         } else {
-                Map<? extends ExecutableElement, ? extends AnnotationValue> maps = nqsAnn.getElementValues();
-                nqAnn = new ArrayList<AnnotationMirror>();
-                for(AnnotationValue vl:maps.values()){
-                    List  lst = (List) vl.getValue();
-                    for(Object val:lst){
-                        if(val instanceof AnnotationMirror){
-                            AnnotationMirror am = (AnnotationMirror) val;
-                            if("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())){//NOI18N
-                                nqAnn.add(am);
-                            }
+            Map<? extends ExecutableElement, ? extends AnnotationValue> maps = nqsAnn.getElementValues();
+            nqAnn = new ArrayList<AnnotationMirror>();
+            for (AnnotationValue vl : maps.values()) {
+                List lst = (List) vl.getValue();
+                for (Object val : lst) {
+                    if (val instanceof AnnotationMirror) {
+                        AnnotationMirror am = (AnnotationMirror) val;
+                        if ("javax.persistence.NamedQuery".equals(am.getAnnotationType().toString())) {//NOI18N
+                            nqAnn.add(am);
                         }
                     }
                 }
+            }
         }
         nqs = null;//we reset all queries
-        if(nqAnn != null && nqAnn.size()>0){
+        if (nqAnn != null && nqAnn.size() > 0) {
             parser = AnnotationParser.create(helper);
             parser.expectString("name", AnnotationParser.defaultValue("")); // NOI18N
             parser.expectString("query", AnnotationParser.defaultValue("")); // NOI18N
-            for(AnnotationMirror am:nqAnn){
+            for (AnnotationMirror am : nqAnn) {
                 parseResult = parser.parse(am); // NOI18N
                 String nm = parseResult.get("name", String.class); // NOI18N            
                 String qr = parseResult.get("query", String.class); // NOI18N
@@ -172,7 +187,12 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public String getAccess() {
-        return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
+        if (accessType != null && accessType.length()>0) {
+            //use access type specified by annotation by default, regardless of later fields/properties annitatons
+            return accessType.equals("javax.persistence.AccessType.PROPERTY") ? PROPERTY_ACCESS : FIELD_ACCESS;
+        } else {
+            return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
+        }
     }
 
     public void setMetadataComplete(boolean value) {
@@ -196,15 +216,17 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
     }
 
     public Table getTable() {
-        if(!valid){
+        if (!valid) {
             TypeElement te = null;
-            try{
+            try {
                 te = getTypeElement();
-            } catch (IllegalStateException ex){
+            } catch (IllegalStateException ex) {
                 //refresh only if possible
                 //table use videly used out of UserActionTask as cached value
             }
-            if(te!=null)valid = refresh(te);
+            if (te != null) {
+                valid = refresh(te);
+            }
         }
         return table;
     }
@@ -353,13 +375,15 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     @Override
     public void setNamedQuery(int index, NamedQuery value) {
-        if(nqs == null) nqs = new ArrayList<NamedQuery>();
+        if (nqs == null) {
+            nqs = new ArrayList<NamedQuery>();
+        }
         nqs.set(index, value); // NOI18N
     }
 
     @Override
     public NamedQuery getNamedQuery(int index) {
-        return nqs !=null && nqs.size()>index ? nqs.get(index) : null; // NOI18N
+        return nqs != null && nqs.size() > index ? nqs.get(index) : null; // NOI18N
     }
 
     @Override
@@ -374,16 +398,16 @@ public class EntityImpl extends PersistentObject implements Entity, JavaContextL
 
     @Override
     public NamedQuery[] getNamedQuery() {
-        return nqs!=null ? nqs.toArray(new NamedQuery[]{}) : new NamedQuery[]{}; // NOI18N
+        return nqs != null ? nqs.toArray(new NamedQuery[]{}) : new NamedQuery[]{}; // NOI18N
     }
 
     @Override
     public int addNamedQuery(NamedQuery value) {
-        if(nqs == null){
-            nqs = new ArrayList<NamedQuery> ();
+        if (nqs == null) {
+            nqs = new ArrayList<NamedQuery>();
         }
         nqs.add(value);
-        return nqs.size()-1;
+        return nqs.size() - 1;
     }
 
     @Override

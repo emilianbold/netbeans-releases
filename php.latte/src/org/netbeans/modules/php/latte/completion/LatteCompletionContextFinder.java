@@ -71,6 +71,11 @@ public final class LatteCompletionContextFinder {
             new Object[]{LatteMarkupTokenId.T_MACRO_END},
             new Object[]{LatteMarkupTokenId.T_MACRO_END, LatteMarkupTokenId.T_SYMBOL}
     );
+    private static final List<Object[]> CONTROL_MACRO_TOKEN_CHAINS = Arrays.asList(
+            new Object[]{LatteMarkupTokenId.T_MACRO_START},
+            new Object[]{LatteMarkupTokenId.T_MACRO_START, LatteMarkupTokenId.T_WHITESPACE},
+            new Object[]{LatteMarkupTokenId.T_MACRO_START, LatteMarkupTokenId.T_WHITESPACE, LatteMarkupTokenId.T_SYMBOL}
+    );
 
     private LatteCompletionContextFinder() {
     }
@@ -114,6 +119,9 @@ public final class LatteCompletionContextFinder {
                 break;
             } else if (acceptTokenChains(ts, END_MACRO_TOKEN_CHAINS, false)) {
                 result = LatteCompletionContext.END_MACRO;
+                break;
+            } else if (acceptTokenChains(ts, CONTROL_MACRO_TOKEN_CHAINS, false)) {
+                result = LatteCompletionContext.CONTROL_MACRO;
                 break;
             } else if (LatteMarkupTokenId.T_SYMBOL.equals(tokenId) || LatteMarkupTokenId.T_MACRO_START.equals(tokenId)) {
                 result = LatteCompletionContext.MACRO;

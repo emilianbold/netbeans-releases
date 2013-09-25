@@ -281,6 +281,8 @@ cleanNode                   : FUNCTION cleanNode [ANONYMOUS: false, DECLARED: tr
                             # PROPERTIES
                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 computed                    : FUNCTION computed [ANONYMOUS: false, DECLARED: true - computed, MODIFIERS: PUBLIC, METHOD]
+                            # DOCUMENTATION URL
+                            http://knockoutjs.com/documentation/computedObservables.html
                             # RETURN TYPES
                             ko.dependentObservable.dependentObservable, RESOLVED: true
                             # PARAMETERS
@@ -944,6 +946,8 @@ nativeTemplateEngine        : FUNCTION nativeTemplateEngine [ANONYMOUS: false, D
                                                            templateText        : OBJECT templateText [ANONYMOUS: false, DECLARED: true - templateText, MODIFIERS: PRIVATE, VARIABLE]
                                                            useNodesIfAvailable : OBJECT useNodesIfAvailable [ANONYMOUS: false, DECLARED: true - useNodesIfAvailable, MODIFIERS: PRIVATE, VARIABLE]
 observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: true - observable, MODIFIERS: PUBLIC, METHOD]
+                            # DOCUMENTATION URL
+                            http://knockoutjs.com/documentation/observables.html
                             # RETURN TYPES
                             ko.observable.observable, RESOLVED: true
                             # PARAMETERS
@@ -996,6 +1000,8 @@ observable                  : FUNCTION observable [ANONYMOUS: false, DECLARED: t
                                                             arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                             protoProperty : OBJECT protoProperty [ANONYMOUS: false, DECLARED: true - protoProperty, MODIFIERS: PUBLIC, STATIC, PROPERTY]
 observableArray             : FUNCTION observableArray [ANONYMOUS: false, DECLARED: true - observableArray, MODIFIERS: PUBLIC, METHOD]
+                            # DOCUMENTATION URL
+                            http://knockoutjs.com/documentation/observableArrays.html
                             # RETURN TYPES
                             ko.observable.observable, RESOLVED: true
                             ko.observableArray.result, RESOLVED: true

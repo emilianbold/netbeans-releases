@@ -78,15 +78,15 @@ public class JPARulesEngine extends RulesEngine {
     
     static{
         //classRules.add(new PersistenceUnitPresent());
-        classRules.add(new ConsistentAccessType());
-        classRules.add(new IdDefinedInHierarchy());
+        //classRules.add(new ConsistentAccessType());
+        //classRules.add(new IdDefinedInHierarchy());
         //classRules.add(new HasNoArgConstructor());
-        classRules.add(new ValidPrimaryTableName());
-        classRules.add(new SerializableClass());
-        classRules.add(new PublicClass());
-        classRules.add(new NonFinalClass());
-        classRules.add(new TopLevelClass());
-        classRules.add(new IdClassOverridesEqualsAndHashCode());
+        //classRules.add(new ValidPrimaryTableName());
+        //classRules.add(new SerializableClass());
+        //classRules.add(new PublicClass());
+        //classRules.add(new NonFinalClass());
+        //classRules.add(new TopLevelClass());
+        //classRules.add(new IdClassOverridesEqualsAndHashCode());
         classRules.add(new NoIdClassOnEntitySubclass());
         classRules.add(new ValidAttributes());
         classRules.add(new UniqueEntityName());
