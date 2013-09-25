@@ -46,25 +46,30 @@ package org.netbeans.modules.java.j2seembedded.project;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -103,13 +108,7 @@ public final class RemoteJavaAntLogger extends AntLogger {
         void hyperlink(AntSession session, AntEvent event, FileObject source,
                 int messageLevel, int sessionLevel, SessionData data) {
             if (messageLevel <= sessionLevel && !event.isConsumed()) {
-                OutputListener hyperlink;
-                try {
-                    hyperlink = session.createStandardHyperlink(source.getURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1);
-                } catch (FileStateInvalidException e) {
-                    assert false : e;
-                    return;
-                }
+                final OutputListener hyperlink = session.createStandardHyperlink(source.toURL(), guessExceptionMessage(data), lineNumber, -1, -1, -1);
                 event.consume();
                 InputOutput io = session.getIO();
                 if (IOColorPrint.isSupported(io)) {
@@ -144,7 +143,7 @@ public final class RemoteJavaAntLogger extends AntLogger {
      * </ol>
      */
     private static final Pattern STACK_TRACE = Pattern.compile(
-            "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
+              "(.*?((?:" + JIDENT + "[.])*)(" + JIDENT + ")[.](?:" + JIDENT + "|<init>|<clinit>)" + // NOI18N
             "[(])((" + JIDENT + "[.]java):([0-9]+)|Unknown Source)([)].*)"); // NOI18N
     static StackTraceParse/*|null*/ parseStackTraceLine(String line) {
         Matcher m = STACK_TRACE.matcher(line);
@@ -175,26 +174,7 @@ public final class RemoteJavaAntLogger extends AntLogger {
     private static final Pattern EXCEPTION_MESSAGE = Pattern.compile(
     // #42894: JRockit uses "Main Thread" not "main"
     "(?:Exception in thread \"(?:main|Main Thread)\" )?(?:(?:" + JIDENT + "\\.)+)(" + JIDENT + "(?:: .+)?)"); // NOI18N
-    
-    /**
-     * Regexp matching part of a Java task's invocation debug message
-     * that specifies the classpath.
-     * Hack to find the classpath an Ant task is using.
-     * Cf. Commandline.describeArguments, issue #28190.
-     * Captured groups:
-     * <ol>
-     * <li>the classpath
-     * </ol>
-     */
-    private static final Pattern CLASSPATH_ARGS = Pattern.compile("\r?\n'-classpath'\r?\n'(.*)'\r?\n"); // NOI18N
-    
-    /**
-     * Regexp matching part of a Java task's invocation debug message
-     * that specifies java executable.
-     * Hack to find JDK used for execution.
-     */
-    private static final Pattern JAVA_EXECUTABLE = Pattern.compile("^Executing '(.*)' with arguments:$", Pattern.MULTILINE); // NOI18N
-    
+        
     /**
      * Ant task names we will pay attention to.
      */
@@ -214,12 +194,12 @@ public final class RemoteJavaAntLogger extends AntLogger {
      */
     private static final class SessionData {
         public ClassPath platformSources = null;
-        public String classpath = null;
+        public ClassPath classpath = null;
         public volatile Collection<FileObject> classpathSourceRoots = null;
         public volatile String possibleExceptionText = null;
         public volatile String lastExceptionMessage = null;
         public SessionData() {}
-        public void setClasspath(String cp) {
+        public void setClasspath(ClassPath cp) {
             classpath = cp;
             classpathSourceRoots = null;
         }
@@ -268,16 +248,50 @@ public final class RemoteJavaAntLogger extends AntLogger {
     }
 
     @Override
+    public void buildStarted(AntEvent event) {
+        final AntSession session = event.getSession();
+        final SessionData data = getSessionData(session);
+        final String path = event.evaluate("${basedir}");   //NOI18N
+        if (path != null) {
+            final File projectDir = FileUtil.normalizeFile(new File (path));
+            final FileObject projectFolder = FileUtil.toFileObject(projectDir);
+            if (projectFolder != null) {
+                final Project prj = FileOwnerQuery.getOwner(projectFolder);
+                if (prj != null) {
+                    ClassPath runCP = null;
+                    ClassPath bootCP = null;
+                    for (SourceGroup sg : ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                        final FileObject root = sg.getRootFolder();
+                        if (!isTest(root)) {
+                            runCP = ClassPath.getClassPath(root, ClassPath.EXECUTE);
+                            bootCP = ClassPath.getClassPath(root, ClassPath.BOOT);
+                            break;
+                        }
+                    }
+                    if (runCP != null) {
+                        data.setClasspath(runCP);
+                    }
+                    if (bootCP != null) {
+                        final ClassPath platformSources = findPlatformSources(bootCP);
+                        if (platformSources != null) {
+                            data.setPlatformSources(platformSources);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public void messageLogged(AntEvent event) {
         AntSession session = event.getSession();
         int messageLevel = event.getLogLevel();
         int sessionLevel = session.getVerbosity();
         SessionData data = getSessionData(session);
-        String line = event.getMessage();
-        assert line != null;
-        
-        StackTraceParse parse = parseStackTraceLine(line);
-        if (parse != null) {
+        String line = removeCRLF(event.getMessage());
+
+        StackTraceParse parse = parseStackTraceLine(line);        
+        if (parse != null) {            
             // Check to see if the class is listed in our per-task sourcepath.
             // XXX could also look for -Xbootclasspath etc., but probably less important
             for (FileObject root : getCurrentSourceRootsForClasspath(data)) {
@@ -297,41 +311,20 @@ public final class RemoteJavaAntLogger extends AntLogger {
                 FileObject source = GlobalPathRegistry.getDefault().findResource(parse.resource);
                 if (source != null) {
                     parse.hyperlink(session, event, source, messageLevel, sessionLevel, data);
-                } else if (messageLevel <= sessionLevel && "java".equals(event.getTaskName())) {
+                } else if (messageLevel <= sessionLevel && TASKS_OF_INTEREST[0].equals(event.getTaskName())) {
                     event.consume();
                     session.println(line, event.getLogLevel() <= AntEvent.LOG_WARN, null);
                 }
             }
         } else {
             // Track the last line which was not a stack trace - probably the exception message.
-            String newLine = removeCRLF(line);
-            if (line.length() != newLine.length()) {
-                if (!newLine.isEmpty()) {
-                    session.println(newLine, false, null);
-                }
-                event.consume();
+            if (!line.isEmpty()) {
+                session.println(line, false, null);
+                data.lastExceptionMessage = null;
+                data.possibleExceptionText = line;
             }
-            data.lastExceptionMessage = null;
-            data.possibleExceptionText = line;
-        }
-        
-        // Look for classpaths.
-        if (messageLevel == AntEvent.LOG_VERBOSE) {
-            Matcher m2 = CLASSPATH_ARGS.matcher(line);
-            if (m2.find()) {
-                String cp = m2.group(1);
-                data.setClasspath(cp);
-            }
-            // XXX should also probably clear classpath when taskFinished called
-            m2 = JAVA_EXECUTABLE.matcher(line);
-            if (m2.find()) {
-                String executable = m2.group(1);
-                ClassPath platformSources = findPlatformSources(executable);
-                if (platformSources != null) {
-                    data.setPlatformSources(platformSources);
-                }
-            }
-        }
+            event.consume();            
+        }        
     }
 
     private static String removeCRLF(@NonNull final String message) {
@@ -347,16 +340,21 @@ public final class RemoteJavaAntLogger extends AntLogger {
         return index == message.length() - 1 ?
             message :
             message.substring(0, index+1);
-    }        
-    
-    private ClassPath findPlatformSources(String javaExecutable) {
+    }
+
+    private static boolean isTest(FileObject root) {
+        return UnitTestForSourceQuery.findSources(root).length > 0;
+    }
+
+    @CheckForNull
+    private ClassPath findPlatformSources(@NullAllowed ClassPath bootCP) {
+        if (bootCP == null) {
+            return null;
+        }
         for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
-            FileObject fo = p.findTool("java"); // NOI18N
-            if (fo != null) {
-                File f = FileUtil.toFile(fo);
-                if (f.getAbsolutePath().startsWith(javaExecutable)) {
-                    return p.getSourceFolders();
-                }
+            final ClassPath platformBootLibs = p.getBootstrapLibraries();
+            if (bootCP.toString().equals(platformBootLibs.toString())) {
+                return p.getSourceFolders();
             }
         }
         return null;
@@ -375,16 +373,9 @@ public final class RemoteJavaAntLogger extends AntLogger {
             result = data.classpathSourceRoots;
         }
         if (result == null) {
-            result = new LinkedHashSet<FileObject>();
-            StringTokenizer tok = new StringTokenizer(data.classpath, File.pathSeparator);
-            while (tok.hasMoreTokens()) {
-                String binrootS = tok.nextToken();
-                File f = FileUtil.normalizeFile(new File(binrootS));
-                URL binroot = FileUtil.urlForArchiveOrDir(f);
-                if (binroot == null) {
-                    continue;
-                }
-                FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(binroot).getRoots();
+            result = new LinkedHashSet<>();
+            for (ClassPath.Entry entry : data.classpath.entries()) {
+                FileObject[] someRoots = SourceForBinaryQuery.findSourceRoots(entry.getURL()).getRoots();
                 result.addAll(Arrays.asList(someRoots));
             }
             if (data.platformSources != null) {
