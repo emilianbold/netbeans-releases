@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,39 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
+package org.netbeans.modules.php.spi.templates.completion;
 
-import java.util.Arrays;
-import java.util.Collection;
-import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
-import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
-import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
-import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
+ * SPI for extending PHP templates code completion.
+ * <p>
+ * All completion prividers must be registered by {@code org.openide.util.lookup.ServiceProvider} annotation and
+ * the purpose of the implementation should be recognized by {@code org.openide.util.lookup.ServiceProvider} {@code path}
+ * parameter.
+ * <p>
+ * <i>All the methods are called only for the {@link FileObject}
+ * that is currently opened in the editor and where the code completion is
+ * invoked.</i>
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ElementCollectionType extends JPAEntityAttributeCheck {
-    private static Collection<String> temporalTypes = 
-            Arrays.asList("java.util.Calendar", "java.util.Date"); //NOI18N
+public interface CompletionProvider {
 
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
-
-        if (Utilities.hasAnnotation(attrib.getJavaElement(), JPAAnnotations.ELEMENT_COLLECTION)) {
-            //verification code
-            
-        }
-        else
-        {
-            //not verified in this validator
-            return null;
-        }
-        
-        return null;        
-    }
+    /**
+     * Gets the set of {@link String items} which should be displayed in the code completion.
+     *
+     * @param sourceFile {@link FileObject source file} in which the code completion was invoked
+     * @return Set of {@link String items} which should be displayed in the code completion.
+     */
+    @NonNull
+    Set<String> getItems(@NonNull FileObject sourceFile);
 
 }

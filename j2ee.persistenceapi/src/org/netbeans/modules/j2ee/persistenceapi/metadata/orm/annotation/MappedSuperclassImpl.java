@@ -46,10 +46,14 @@ package org.netbeans.modules.j2ee.persistenceapi.metadata.orm.annotation;
 
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.JavaContextListener;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ValueProvider;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
 
 public class MappedSuperclassImpl extends PersistentObject implements MappedSuperclass, JavaContextListener {
@@ -62,6 +66,7 @@ public class MappedSuperclassImpl extends PersistentObject implements MappedSupe
     // transient: set to null in javaContextLeft()
     private IdClassImpl idClass;
     private AttributesImpl attributes;
+    private String accessType;
 
     public MappedSuperclassImpl(AnnotationModelHelper helper, EntityMappingsImpl root, TypeElement typeElement) {
         super(helper, typeElement);
@@ -76,6 +81,24 @@ public class MappedSuperclassImpl extends PersistentObject implements MappedSupe
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
         AnnotationMirror embeddableAnn = annByType.get("javax.persistence.MappedSuperclass"); // NOI18N
+        AnnotationMirror entityAcc = annByType.get("javax.persistence.Access"); // NOI18N
+        if (entityAcc != null) {
+            entityAcc.getElementValues();
+            AnnotationParser parser = AnnotationParser.create(helper);
+            parser.expect("value", new ValueProvider() {
+                @Override
+                public Object getValue(AnnotationValue elementValue) {
+                    return elementValue.toString();
+                }
+
+                @Override
+                public Object getDefaultValue() {
+                    return null;
+                }
+            });//NOI18N
+            ParseResult parseResult = parser.parse(entityAcc);
+            accessType = parseResult.get("value", String.class);
+        }
         return embeddableAnn != null;
     }
 
@@ -101,7 +124,12 @@ public class MappedSuperclassImpl extends PersistentObject implements MappedSupe
     }
 
     public String getAccess() {
-        return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
+        if (accessType != null && accessType.length()>0) {
+            //use access type specified by annotation by default, regardless of later fields/properties annitatons
+            return accessType.equals("javax.persistence.AccessType.PROPERTY") ? PROPERTY_ACCESS : FIELD_ACCESS;
+        } else {
+            return getAttributes().hasFieldAccess() ? FIELD_ACCESS : PROPERTY_ACCESS;
+        }
     }
 
     public void setMetadataComplete(boolean value) {

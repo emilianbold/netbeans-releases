@@ -199,11 +199,19 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/markoccurences/issue231782.js");
     }
     
+    public void testIssue236141_01() throws Exception {
+        checkModel("testfiles/model/issue236141_01.js");
+    }
+    
+    public void testIssue236141_02() throws Exception {
+        checkModel("testfiles/model/issue236141_02.js");
+    }
+    
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
         try {
-            Collection<JsObject> obj = Model.readModel(reader, null, null);
+            Collection<JsObject> obj = Model.readModel(reader, null, null, null);
             assertEquals(1, obj.size());
 
             final StringWriter sw = new StringWriter();
