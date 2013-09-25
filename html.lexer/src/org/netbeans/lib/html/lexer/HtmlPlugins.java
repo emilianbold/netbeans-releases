@@ -90,6 +90,7 @@ public class HtmlPlugins {
             data[0][idx] = fact.getOpenDelimiter();
             data[1][idx] = fact.getCloseDelimiter();
             data[2][idx] = fact.getContentMimeType();
+            idx++;
         }
     }
     

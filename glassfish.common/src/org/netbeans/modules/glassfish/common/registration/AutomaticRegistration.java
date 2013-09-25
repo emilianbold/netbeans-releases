@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,25 +46,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * Registers a glassfish instance by creating instance file in cluster config
- * directory. Designed to be called from installer.
- * <p>
- * Sample command line<br>
- *  java -cp ./platform/core/core.jar:./platform/lib/boot.jar:./platform/lib/org-openide-modules.jar:
- *       ./platform/core/org-openide-filesystems.jar:./platform/lib/org-openide-util.jar:
- *       ./platform/lib/org-openide-util-lookup.jar:./enterprise/modules/org-netbeans-modules-j2eeapis.jar:
- *       ./enterprise/modules/org-netbeans-modules-j2eeserver.jar:./ide/modules/org-netbeans-modules-glassfish-common.jar
- *             org.netbeans.modules.glassfish.common.registration.AutomaticRegistration
- *                ./ide /export/home/vkraemer/Glassfish_v3/glassfish/
- *
- * @author vince kraemer
- * @author Petr Hejl
+ * Registers a GlassFish instance by creating instance file in cluster
+ * configuration directory.
+ * <p/>
+ * Designed to be called from installer.
+ * <p/>
+ * Sample command line<br/>
+ * java -cp ./platform/core/core.jar:./platform/lib/boot.jar:./platform/lib/org-openide-modules.jar:./platform/core/org-openide-filesystems.jar:./platform/lib/org-openide-util.jar:./platform/lib/org-openide-util-lookup.jar:./enterprise/modules/org-netbeans-modules-j2eeapis.jar:./enterprise/modules/org-netbeans-modules-j2eeserver.jar:./enterprise/modules/org-netbeans-modules-glassfish-common.jar:./enterprise/modules/ext/glassfish-tooling-sdk.jar org.netbeans.modules.glassfish.common.registration.AutomaticRegistration ./ide /users/tomas/WS/gfr3122/glassfish
+ * <p/>
+ * @author Vince Kraemer, Petr Hejl Tomas Kraus
  * @see #main(args)
  */
 public class AutomaticRegistration {
@@ -73,7 +71,7 @@ public class AutomaticRegistration {
 
     /**
      * Performs registration.
-     *
+     * <p/>
      * Exit codes:<p>
      * <ul>
      *   <li> 2: could not find/create config/J2EE/InstalledServers folder
@@ -105,33 +103,22 @@ public class AutomaticRegistration {
                     + "The GlassFish Root directory {0} does not exist.", glassfishRoot); // NOI18N
             return 3;
         }
-        String config;
-        String deployer;
-        String defaultDisplayName;
-        if(new File(glassfishHome, "lib/schemas/javaee_7.xsd").exists()) {
-            // ee6wc
-            config = "GlassFishEE6WC/Instances";
-            deployer = "deployer:gfv3ee6wc";
-            defaultDisplayName = "GlassFish Server 4.0";
-        } else if(new File(glassfishHome, "lib/dtds/glassfish-web-app_3_0-1.dtd").exists()) {
-            // ee6wc
-            config = "GlassFishEE6WC/Instances";
-            deployer = "deployer:gfv3ee6wc";
-            defaultDisplayName = "GlassFish Server 3.1.2";
-        } else if(new File(glassfishHome, "lib/schemas/web-app_3_0.xsd").exists()) {
-            // ee6
-            config = "GlassFishEE6/Instances";
-            deployer = "deployer:gfv3ee6";
-            defaultDisplayName = "GlassFish Server 3";
-        } else if (!new File(glassfishHome, "lib/schemas/web-app_3_0.xsd").exists()) {
-            config = "GlassFish/Instances";
-            deployer = "deployer:gfv3";
-            defaultDisplayName = "GlassFish v3 Prelude";
+        String config = "GlassFishEE6/Instances";
+        String deployer = "deployer:gfv3ee6";
+        String defaultDisplayNamePrefix = "GlassFish Server ";
+        GlassFishVersion version = ServerUtils.getServerVersion(glassfishRoot);
+        StringBuilder sb = new StringBuilder(
+                defaultDisplayNamePrefix.length() + 12);
+        if (version != null) {
+            sb.append(defaultDisplayNamePrefix);
+            sb.append(version.toString());
+            System.out.println(sb.toString());
         } else {
             LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
                     + "The GlassFish Root directory {0} is of unknown version.", glassfishRoot); // NOI18N
             return 4;
         }
+        String defaultDisplayName = sb.toString();
         FileObject serverInstanceDir = FileUtil.getConfigFile(config); // NOI18N
 
         if (serverInstanceDir == null) {

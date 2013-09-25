@@ -41,46 +41,77 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
-import java.util.Arrays;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.UnifyAccessType;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class ConsistentAccessType extends JPAClassRule {
-    
-    /** Creates a new instance of ConsistentAccessType */
-    public ConsistentAccessType() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
-                ClassConstraints.MAPPED_SUPERCLASS, ClassConstraints.EMBEDDABLE, ClassConstraints.IDCLASS));
-    }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        if (((JPAProblemContext)ctx).getAccessType() == AccessType.INCONSISTENT){
+@Hint(id = "o.n.m.j2ee.jpa.verification.ConsistentAccessType",
+        displayName = "#ConsistentAccessType.display.name",
+        description = "#ConsistentAccessType.desc",
+        category = "javaee/jpa",
+        enabled = true,
+        severity = Severity.ERROR,
+        suppressWarnings = "ConsistentAccessType")
+@NbBundle.Messages({
+    "ConsistentAccessType.display.name=Check access types for jpa classes",
+    "ConsistentAccessType.desc=JPA classes need to have consistent access types for fields/properties",})
+public class ConsistentAccessType {
+
+    @TriggerPatterns(value = {
+        @TriggerPattern(value = "javax.persistence.Entity"),
+        @TriggerPattern(value = "javax.persistence.Embeddable"),
+        @TriggerPattern(value = "javax.persistence.MappedSuperclass"),
+        @TriggerPattern(value = "javax.persistence.IdClass")})
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled() || (hc.getPath().getLeaf().getKind() != Tree.Kind.IDENTIFIER || hc.getPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION)) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+
+        JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+
+        if (((JPAProblemContext) ctx).getAccessType() == AccessType.INCONSISTENT) {
             ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
-            
+
             Fix fix1 = new UnifyAccessType.UnifyFieldAccess(ctx.getFileObject(), classHandle);
             Fix fix2 = new UnifyAccessType.UnifyPropertyAccess(ctx.getFileObject(), classHandle);
-            
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(IdDefinedInHierarchy.class, "MSG_InconsistentAccessType"),
-                    Severity.ERROR, Arrays.asList(fix1, fix2))};
+        TreePath par = hc.getPath();
+        while(par!=null && par.getParentPath()!=null && par.getLeaf().getKind()!= Tree.Kind.CLASS){
+            par = par.getParentPath();
         }
         
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                           ctx.getCompilationInfo(), par.getLeaf());
+        return ErrorDescriptionFactory.forSpan(
+                    hc,
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
+                    NbBundle.getMessage(ConsistentAccessType.class, "MSG_InconsistentAccessType"),
+                    fix1, fix2);
+        }
         return null;
     }
 }

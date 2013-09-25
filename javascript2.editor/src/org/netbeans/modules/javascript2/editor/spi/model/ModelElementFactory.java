@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -100,20 +101,21 @@ public final class ModelElementFactory {
         return JsFunctionImpl.createGlobal(fileObject, length, null);
     }
 
-    public JsObject loadGlobalObject(FileObject fileObject, int length, String sourceLabel) throws IOException {
+    public JsObject loadGlobalObject(FileObject fileObject, int length,
+            String sourceLabel, URL defaultDocURL) throws IOException {
         InputStream is = fileObject.getInputStream();
         try {
-            return loadGlobalObject(is, sourceLabel);
+            return loadGlobalObject(is, sourceLabel, defaultDocURL);
         } finally {
             is.close();
         }
     }
 
-    public JsObject loadGlobalObject(InputStream is, String sourceLabel) throws IOException {
+    public JsObject loadGlobalObject(InputStream is, String sourceLabel, URL defaultDocURL) throws IOException {
         JsFunction global = newGlobalObject(null, Integer.MAX_VALUE);
         BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
         try {
-            for (JsObject object : Model.readModel(reader, global, sourceLabel)) {
+            for (JsObject object : Model.readModel(reader, global, sourceLabel, defaultDocURL)) {
                 putGlobalProperty(global, object);
             }
             return global;
