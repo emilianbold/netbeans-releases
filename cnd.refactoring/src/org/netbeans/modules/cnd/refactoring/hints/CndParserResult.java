@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.ui;
 
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
+package org.netbeans.modules.cnd.refactoring.hints;
+
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author alsimon
  */
-public abstract class SingleHostAction extends NodeAction {
+public class CndParserResult  extends Result {
+    private final Collection<CsmFile> files;
 
-    public SingleHostAction() {
-    }
-
-    /** @param env not null */
-    protected boolean enable(ExecutionEnvironment env) {
-        return true;
-    }
-
-    protected abstract void performAction(ExecutionEnvironment env, Node node);
-
-//    protected final ExecutionEnvironment getEnv(Node[] activatedNodes) {
-//        if (activatedNodes.length == 1) {
-//            return activatedNodes[0].getLookup().lookup(ExecutionEnvironment.class);
-//        }
-//        return null;
-//    }
-
-    public boolean isVisible(Node node) {
-        return true;
-    }
-
-    protected boolean isRemote(Node node) {
-        ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-        return env != null && env.isRemote();
+    public CndParserResult(Collection<CsmFile> tus, Snapshot snapshot) {
+        super(snapshot);
+        this.files = Collections.unmodifiableCollection(tus);
     }
 
     @Override
-    protected boolean asynchronous() {
-        return false;
+    protected void invalidate() {
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length == 1) {
-            ExecutionEnvironment env = activatedNodes[0].getLookup().lookup(ExecutionEnvironment.class);
-            if (env != null) {
-                return enable(env);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        if (activatedNodes.length == 1) {
-            Node node = activatedNodes[0];
-            ExecutionEnvironment env = node.getLookup().lookup(ExecutionEnvironment.class);
-            if (env != null) {
-                performAction(env, node);
-            }
-        }
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public Collection<CsmFile> getCsmFiles() {
+        return files;
     }
 }

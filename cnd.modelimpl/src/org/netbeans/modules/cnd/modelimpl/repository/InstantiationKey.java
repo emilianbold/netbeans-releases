@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
         super(inst.getTemplateDeclaration(), Utils.getCsmInstantiationKindKey(), NameCache.getManager().getString(getName(inst))); // NOI18N
     }
     
-    private static String getName(CsmInstantiation inst) {
+    private static CharSequence getName(CsmInstantiation inst) {
         StringBuilder sb = new StringBuilder(inst.getTemplateDeclaration().getName());
         sb.append("<"); // NOI18N
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
             }
         }
         sb.append(">"); // NOI18N
-        return sb.toString();
+        return sb;
     }
 
     /*package*/ InstantiationKey(RepositoryDataInput aStream) throws IOException {

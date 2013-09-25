@@ -77,7 +77,7 @@ public final class LinkedListBasedTokenStream implements TokenStream, APTTokenSt
 
     @Override
     public String toString() {
-        return APTUtils.debugString(new LinkedListBasedTokenStream(tokens));
+        return APTUtils.debugString(new LinkedListBasedTokenStream(tokens)).toString();
     }
     
     //public List<APTToken> getList() {

@@ -286,7 +286,7 @@ public class NameHolder {
         return ""; // NOI18N
     }
 
-    private String getFunctionName(AST ast) {
+    private CharSequence getFunctionName(AST ast) {
 	AST operator = AstUtil.findChildOfType(ast, CPPTokenTypes.LITERAL_OPERATOR);
 	if( operator == null ) {
             // error in AST
@@ -324,7 +324,7 @@ public class NameHolder {
 		    sb.append(AstUtil.getText(next));
 	    }
 	}
-	return sb.toString();
+	return sb;
     }
 
     private void addTypeText(AST ast, StringBuilder sb) {
@@ -417,7 +417,7 @@ public class NameHolder {
                             end = OffsetableBase.getEndOffset(next);
                             first = false;
                         }
-                        return sb.toString();
+                        return sb;
                     } else {
                         AST first = token.getFirstChild();
                         if (first.getType() == CPPTokenTypes.IDENT) {
@@ -509,7 +509,7 @@ public class NameHolder {
                                 end = OffsetableBase.getEndOffset(next);
                                 sb.append(AstUtil.getText(next));
                             }
-                            return sb.toString();
+                            return sb;
                         } else if (first.getType() == CPPTokenTypes.IDENT){
                             start = OffsetableBase.getStartOffset(first);
                             end = OffsetableBase.getEndOffset(first);

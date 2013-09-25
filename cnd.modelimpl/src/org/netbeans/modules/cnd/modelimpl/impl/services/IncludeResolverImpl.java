@@ -183,8 +183,9 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
 
     // Says is header standard or not
     private boolean isStandardHeader(List<FSPath> sysIncsPaths, CsmFile header) {
-        String bestSystemPath = getRelativePath(sysIncsPaths, header.getAbsolutePath().toString());
-        return standardHeaders.contains(header.getAbsolutePath().toString().substring(bestSystemPath.length() + 1));
+        final String path = header.getAbsolutePath().toString();
+        String bestSystemPath = getRelativePath(sysIncsPaths, path);
+        return standardHeaders.contains(path.substring(bestSystemPath.length() + 1));
     }
     
     // Returns standard header if it exists
@@ -235,7 +236,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                     } else {
                         includeDirective.append("\""); // NOI18N
                         String projectPath = currentFile.getAbsolutePath().toString().substring(0,
-                                currentFile.getAbsolutePath().toString().length() - currentFile.getName().toString().length() - 1);
+                                currentFile.getAbsolutePath().length() - currentFile.getName().length() - 1);
                         if (!incFilePath.startsWith(projectPath)) {
                             projectPath = ""; // NOI18N
                         }
@@ -252,7 +253,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         }
                     }
                 } else {
-                    String projectPath = currentFile.getAbsolutePath().toString().substring(0, currentFile.getAbsolutePath().toString().length() - currentFile.getName().toString().length());
+                    String projectPath = currentFile.getAbsolutePath().toString().substring(0, currentFile.getAbsolutePath().length() - currentFile.getName().length());
                     if (incFilePath.startsWith(projectPath)) {
                         includeDirective.append("\""); // NOI18N
                         includeDirective.append(incFilePath.substring(projectPath.length()));
