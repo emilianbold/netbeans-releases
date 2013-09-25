@@ -318,7 +318,7 @@ public final class RemoteJavaAntLogger extends AntLogger {
             }
         } else {
             // Track the last line which was not a stack trace - probably the exception message.
-            if (!line.isEmpty()) {
+            if (!isEmpty(line)) {
                 session.println(line, false, null);
                 data.lastExceptionMessage = null;
                 data.possibleExceptionText = line;
@@ -327,6 +327,12 @@ public final class RemoteJavaAntLogger extends AntLogger {
         }        
     }
 
+    /**
+     * Removes CR, LF from line.
+     * Workaround of sshexec.
+     * @param message to remove CR LF from
+     * @return stripped line
+     */
     private static String removeCRLF(@NonNull final String message) {
         int index = message.length() - 1;
         int len = 0;
@@ -340,6 +346,23 @@ public final class RemoteJavaAntLogger extends AntLogger {
         return index == message.length() - 1 ?
             message :
             message.substring(0, index+1);
+    }
+
+    /**
+     * Tests if a line contains just white spaces.
+     * Workaround of sshexec.
+     * @param str the string to test
+     * @return true if line contains just white spaces.
+     */
+    private boolean isEmpty(@NonNull final String str) {
+        boolean res = true;
+        for (int i = 0; i < str.length(); i++) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                res = false;
+                break;
+            }
+        }
+        return res;
     }
 
     private static boolean isTest(FileObject root) {
