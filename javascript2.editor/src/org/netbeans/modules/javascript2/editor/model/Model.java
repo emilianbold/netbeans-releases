@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelElementFactoryAccessor;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import java.text.MessageFormat;
@@ -65,6 +66,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -76,21 +78,21 @@ import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceBuilder;
 import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
+@NbBundle.Messages("LBL_DefaultDocContentForURL=To view documentation for this function, press the browser button in the toolbar above this text.")
 public final class Model {
 
     private static final Logger LOGGER = Logger.getLogger(OccurrencesSupport.class.getName());
@@ -120,7 +122,7 @@ public final class Model {
     private static final Pattern RETURN_TYPE_PATTERN = Pattern.compile("(\\S+), RESOLVED: (true|false)");
 
     private static enum ParsingState {
-        RETURN, PARAMETER, PROPERTY
+        DOCUMETATION_URL, RETURN, PARAMETER, PROPERTY
     }
 
     private final JsParserResult parserResult;
@@ -518,7 +520,7 @@ public final class Model {
     }
 
     public static Collection<JsObject> readModel(BufferedReader reader, JsObject parent,
-            @NullAllowed String sourceLabel) throws IOException {
+            @NullAllowed String sourceLabel, URL defaultDocUrl) throws IOException {
         String line = null;
         StringBuilder pushback = new StringBuilder();
         List<JsObject> ret = new ArrayList<JsObject>();
@@ -530,13 +532,15 @@ public final class Model {
             if (line.trim().isEmpty()) {
                 continue;
             }
-            ret.add(readObject(parent, line, 0, reader, pushback, false, sourceLabel));
+            ret.add(readObject(parent, line, 0, reader, pushback, false, sourceLabel,
+                    defaultDocUrl == null ? null : Documentation.create(Bundle.LBL_DefaultDocContentForURL(), defaultDocUrl)));
         }
         return ret;
     }
 
     private static JsObject readObject(JsObject parent, String firstLine, int indent,
-            BufferedReader reader, StringBuilder pushback, boolean parameter, String sourceLabel) throws IOException {
+            BufferedReader reader, StringBuilder pushback, boolean parameter,
+            String sourceLabel, Documentation defaultDoc) throws IOException {
 
         JsObject object = readObject(parent, firstLine, parameter, sourceLabel);
 
@@ -555,7 +559,10 @@ public final class Model {
                 break;
             }
 
-            if ("# RETURN TYPES".equals(line.trim())) { // NOI18N
+            if ("# DOCUMENTATION URL".equals(line.trim())) { // NOI18N
+                state = ParsingState.DOCUMETATION_URL;
+                continue;
+            } else if ("# RETURN TYPES".equals(line.trim())) { // NOI18N
                 state = ParsingState.RETURN;
                 continue;
             } else if ("# PARAMETERS".equals(line.trim())) { // NOI18N
@@ -566,42 +573,51 @@ public final class Model {
                 continue;
             } else if ("# SEPARATOR".equals(line.trim())) { // NOI18N
                 break;
-            } else {
-                if (state == null) {
-                    pushback.append(line);
-                    break;
-                }
-                switch (state) {
-                    case RETURN:
-                        Matcher matcher = RETURN_TYPE_PATTERN.matcher(line.trim());
-                        if (!matcher.matches()) {
-                            throw new IOException("Unexpected line: " + line);
-                        }
-                        ((JsFunctionImpl) object).addReturnType(
-                                new TypeUsageImpl(matcher.group(1), -1, Boolean.parseBoolean(matcher.group(2))));
-                        break;
-                    case PARAMETER:
-                        JsObject parameterObject = readObject(object, line.trim(),
-                                indent + 8, reader, innerPushback, true, sourceLabel);
-                        ((JsFunctionImpl) object).addParameter(parameterObject);
-                        break;
-                    case PROPERTY:
-                        int index = line.indexOf(':');
-                        assert index > 0 && index < line.length() : line;
-
-                        String name = line.substring(0, index);
-                        String value = line.substring(index + 1);
-
-                        int newIndent = name.length();
-                        name = name.trim();
-                        JsObject property = readObject(object, value.trim(), newIndent,
-                                    reader, innerPushback, false, sourceLabel);
-                        object.addProperty(name, property);
-                        break;
-                    default:
-                        throw new IOException("Unexpected line: " + line);
-                }
             }
+
+
+            if (state == null) {
+                pushback.append(line);
+                break;
+            }
+            switch (state) {
+                case DOCUMETATION_URL:
+                    ((JsObjectImpl) object).setDocumentation(
+                            Documentation.create(Bundle.LBL_DefaultDocContentForURL(), new URL(line.trim())));
+                    break;
+                case RETURN:
+                    Matcher matcher = RETURN_TYPE_PATTERN.matcher(line.trim());
+                    if (!matcher.matches()) {
+                        throw new IOException("Unexpected line: " + line);
+                    }
+                    ((JsFunctionImpl) object).addReturnType(
+                            new TypeUsageImpl(matcher.group(1), -1, Boolean.parseBoolean(matcher.group(2))));
+                    break;
+                case PARAMETER:
+                    JsObject parameterObject = readObject(object, line.trim(),
+                            indent + 8, reader, innerPushback, true, sourceLabel, null);
+                    ((JsFunctionImpl) object).addParameter(parameterObject);
+                    break;
+                case PROPERTY:
+                    int index = line.indexOf(':');
+                    assert index > 0 && index < line.length() : line;
+
+                    String name = line.substring(0, index);
+                    String value = line.substring(index + 1);
+
+                    int newIndent = name.length();
+                    name = name.trim();
+                    JsObject property = readObject(object, value.trim(), newIndent,
+                                reader, innerPushback, false, sourceLabel, defaultDoc);
+                    object.addProperty(name, property);
+                    break;
+                default:
+                    throw new IOException("Unexpected line: " + line);
+            }
+        }
+
+        if (defaultDoc != null && object.getDocumentation() == null) {
+            ((JsObjectImpl) object).setDocumentation(defaultDoc);
         }
         return object;
     }

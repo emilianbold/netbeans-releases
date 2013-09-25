@@ -43,12 +43,21 @@
  */
 package org.netbeans.modules.j2ee.jpa.model;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;

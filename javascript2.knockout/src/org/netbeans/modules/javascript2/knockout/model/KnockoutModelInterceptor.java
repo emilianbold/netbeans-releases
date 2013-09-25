@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.knockout.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -74,7 +75,8 @@ public class KnockoutModelInterceptor implements ModelInterceptor {
         InputStream is = getClass().getClassLoader().getResourceAsStream(
                 "org/netbeans/modules/javascript2/knockout/model/resources/knockout-3.0.0.model"); // NOI18N
         try {
-            return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout()));
+            return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout(),
+                    new URL("http://knockoutjs.com/documentation/introduction.html")));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             return Collections.emptySet();
