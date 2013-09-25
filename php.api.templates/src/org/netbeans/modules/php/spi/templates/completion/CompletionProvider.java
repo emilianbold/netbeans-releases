@@ -39,52 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.completion;
+package org.netbeans.modules.php.spi.templates.completion;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.templates.completion.CompletionProvider;
-import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.lookup.Lookups;
+import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
+ * SPI for extending PHP templates code completion.
+ * <p>
+ * All completion prividers must be registered by {@code org.openide.util.lookup.ServiceProvider} annotation and
+ * the purpose of the implementation should be recognized by {@code org.openide.util.lookup.ServiceProvider} {@code path}
+ * parameter.
+ * <p>
+ * <i>All the methods are called only for the {@link FileObject}
+ * that is currently opened in the editor and where the code completion is
+ * invoked.</i>
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class CompletionProviders {
-    public static final String VARIABLE_COMPLETION_PROVIDER_PATH = "Latte/Completion/Variables"; //NOI18N
-    private static final Lookup.Result<CompletionProvider> VARIABLE_PROVIDERS
-            = Lookups.forPath(VARIABLE_COMPLETION_PROVIDER_PATH).lookupResult(CompletionProvider.class);
-    public static final String CONTROL_COMPLETION_PROVIDER_PATH = "Latte/Completion/Controls"; //NOI18N
-    private static final Lookup.Result<CompletionProvider> CONTROL_PROVIDERS
-            = Lookups.forPath(CONTROL_COMPLETION_PROVIDER_PATH).lookupResult(CompletionProvider.class);
+public interface CompletionProvider {
 
-    private CompletionProviders() {
-    }
-
-    public static List<CompletionProvider> getVariableProviders() {
-        return new ArrayList<>(VARIABLE_PROVIDERS.allInstances());
-    }
-
-    public static void addVariableProviderListener(LookupListener listener) {
-        VARIABLE_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeVariableProviderListener(LookupListener listener) {
-        VARIABLE_PROVIDERS.removeLookupListener(listener);
-    }
-
-    public static List<CompletionProvider> getControlProviders() {
-        return new ArrayList<>(CONTROL_PROVIDERS.allInstances());
-    }
-
-    public static void addControlProviderListener(LookupListener listener) {
-        CONTROL_PROVIDERS.addLookupListener(listener);
-    }
-
-    public static void removeControlProviderListener(LookupListener listener) {
-        CONTROL_PROVIDERS.removeLookupListener(listener);
-    }
+    /**
+     * Gets the set of {@link String items} which should be displayed in the code completion.
+     *
+     * @param sourceFile {@link FileObject source file} in which the code completion was invoked
+     * @return Set of {@link String items} which should be displayed in the code completion.
+     */
+    @NonNull
+    Set<String> getItems(@NonNull FileObject sourceFile);
 
 }

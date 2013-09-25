@@ -123,6 +123,15 @@ public interface LatteElement extends ElementHandle {
 
     }
 
+    public static class ControlFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.ControlDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name) {
+            return new LatteElementSimple(name, DF);
+        }
+
+    }
+
     abstract static class BaseLatteElementItem implements LatteElement {
         private final String name;
         private final LatteDocumentationFactory documentationFactory;

@@ -43,7 +43,9 @@ package org.netbeans.modules.php.latte.completion;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.php.spi.templates.completion.CompletionProvider;
 import org.netbeans.modules.php.spi.templates.completion.VariableCompletionProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -96,6 +98,12 @@ public enum LatteCompletionContext {
             completeMacros(completionProposals, request);
             completeVariables(completionProposals, request);
             completeEndMacros(completionProposals, request);
+        }
+    },
+    CONTROL_MACRO {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeControls(completionProposals, request);
         }
     },
     NONE {
@@ -174,11 +182,24 @@ public enum LatteCompletionContext {
     }
 
     private void completeProvidedVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
-        List<VariableCompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
-        for (VariableCompletionProvider variableProvider : variableProviders) {
-            for (String variable : variableProvider.getVariables(request.parserResult.getSnapshot().getSource().getFileObject())) {
+        FileObject sourceFileObject = request.parserResult.getSnapshot().getSource().getFileObject();
+        List<CompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
+        for (CompletionProvider variableProvider : variableProviders) {
+            for (String variable : variableProvider.getItems(sourceFileObject)) {
                 if (startsWith(variable, request.prefix)) {
                     completionProposals.add(new LatteCompletionProposal.UserVariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
+                }
+            }
+        }
+    }
+
+    protected void completeControls(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        FileObject sourceFileObject = request.parserResult.getSnapshot().getSource().getFileObject();
+        List<CompletionProvider> controlProviders = CompletionProviders.getControlProviders();
+        for (CompletionProvider controlProvider : controlProviders) {
+            for (String item : controlProvider.getItems(sourceFileObject)) {
+                if (startsWith(item, request.prefix)) {
+                    completionProposals.add(new LatteCompletionProposal.ControlCompletionProposal(LatteElement.ControlFactory.create(item), request));
                 }
             }
         }
