@@ -160,4 +160,22 @@ public interface LatteDocumentationFactory {
 
     }
 
+    public static final class ControlDocumentationFactory extends BaseDocumentationFactory {
+
+        private static final LatteDocumentationFactory INSTANCE = new ControlDocumentationFactory();
+
+        public static LatteDocumentationFactory getInstance() {
+            return INSTANCE;
+        }
+
+        private ControlDocumentationFactory() {
+        }
+
+        @Override
+        protected String getDocumentationKey() {
+            return "CONTROL_"; //NOI18N
+        }
+
+    }
+
 }
