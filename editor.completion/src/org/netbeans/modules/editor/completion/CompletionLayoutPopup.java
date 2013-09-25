@@ -136,6 +136,11 @@ abstract class CompletionLayoutPopup {
         anchorOffsetBounds = null;
     }
     
+    final void setLocation(Point location) {
+        this.anchorOffset = -1;
+        anchorOffsetBounds = new Rectangle(location);
+    }
+    
     final int getAnchorOffset() {
 	int offset = anchorOffset;
 	if (offset == -1) {

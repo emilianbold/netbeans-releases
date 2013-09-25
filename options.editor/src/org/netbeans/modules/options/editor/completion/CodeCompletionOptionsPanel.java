@@ -133,6 +133,7 @@ public class CodeCompletionOptionsPanel extends JPanel implements PropertyChange
         if (c != null)
             panel.add(c.getComponent(), BorderLayout.CENTER);
         panel.setVisible(true);
+        cbLanguage.setSelectedItem(evt.getNewValue());
     }
 
     /** This method is called from within the constructor to

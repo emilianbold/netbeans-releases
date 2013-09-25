@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.completion;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -60,11 +61,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.plaf.TextUI;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -86,7 +86,8 @@ public class CompletionScrollPane extends JScrollPane {
     private static final String COMPLETION_PGDN = "completion-pgdn"; //NOI18N
     private static final String COMPLETION_BEGIN = "completion-begin"; //NOI18N
     private static final String COMPLETION_END = "completion-end"; //NOI18N
-
+    private static final String COMPLETION_SUBITEMS_SHOW = "completion-subitems-show"; //NOI18N
+    
     private static final int ACTION_ESCAPE = 0;
     private static final int ACTION_COMPLETION_UP = 1;
     private static final int ACTION_COMPLETION_DOWN = 2;
@@ -94,8 +95,9 @@ public class CompletionScrollPane extends JScrollPane {
     private static final int ACTION_COMPLETION_PGDN = 4;
     private static final int ACTION_COMPLETION_BEGIN = 5;
     private static final int ACTION_COMPLETION_END = 6;
-
-    private CompletionJList view;
+    private static final int ACTION_COMPLETION_SUBITEMS_SHOW = 7;
+    
+    private final CompletionJList view;
     
     private List dataObj;
     
@@ -148,6 +150,14 @@ public class CompletionScrollPane extends JScrollPane {
         return view.getSelectedIndex();
     }
     
+    public Point getSelectedLocation() {
+        Rectangle r = view.getCellBounds(getSelectedIndex(), getSelectedIndex());
+        Point p = new Point(r.getLocation());
+        SwingUtilities.convertPointToScreen(p, view);
+        p.x += r.width;
+        return p;
+    }
+    
     public @Override Dimension getPreferredSize() {
         Dimension prefSize = super.getPreferredSize();
         Dimension labelSize = topLabel != null ? topLabel.getPreferredSize() : new Dimension(0, 0);
@@ -160,6 +170,10 @@ public class CompletionScrollPane extends JScrollPane {
         }
         // Height is covered by maxVisibleRowCount value
         return prefSize;
+    }
+    
+    protected CompletionJList getView() {
+        return view;
     }
     
     private void setTitle(String title) {
@@ -185,7 +199,7 @@ public class CompletionScrollPane extends JScrollPane {
         // This method is implemented due to the issue
         // #25715 - Attempt to search keymap for the keybinding that logically corresponds to the action
         KeyStroke[] ret = new KeyStroke[] { defaultKey };
-        if (component != null) {
+        if (component != null && editorActionName != null) {
             Action a = component.getActionMap().get(editorActionName);
             Keymap km = component.getKeymap();
             if (a != null && km != null) {
@@ -200,8 +214,8 @@ public class CompletionScrollPane extends JScrollPane {
 
     private void registerKeybinding(int action, String actionName, KeyStroke stroke, String editorActionName, JTextComponent component){
         KeyStroke[] keys = findEditorKeys(editorActionName, stroke, component);
-        for (int i = 0; i < keys.length; i++) {
-            getInputMap().put(keys[i], actionName);
+        for (KeyStroke key : keys) {
+            getInputMap().put(key, actionName);
         }
         getActionMap().put(actionName, new CompletionPaneAction(action));
     }
@@ -241,6 +255,10 @@ public class CompletionScrollPane extends JScrollPane {
         registerKeybinding(ACTION_COMPLETION_END, COMPLETION_END,
         KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
         BaseKit.endLineAction, component);
+
+        registerKeybinding(ACTION_COMPLETION_SUBITEMS_SHOW, COMPLETION_SUBITEMS_SHOW,
+        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_MASK),
+        null, component);
     }
 
     List testGetData() {
@@ -248,19 +266,21 @@ public class CompletionScrollPane extends JScrollPane {
     }
     
     private class CompletionPaneAction extends AbstractAction {
-        private int action;
+        private final int action;
 
         private CompletionPaneAction(int action) {
             this.action = action;
         }
 
+        @Override
         public void actionPerformed(ActionEvent actionEvent) {
             switch (action) {
-		case ACTION_ESCAPE:
-                    LogRecord r = new LogRecord(Level.FINE, "COMPL_CANCEL"); // NOI18N
-                    CompletionImpl.uilog(r);
-                    CompletionImpl.get().hideCompletion(false);
-		    break;
+                case ACTION_ESCAPE:
+                    if (CompletionImpl.get().hideCompletion(false)) {
+                        LogRecord r = new LogRecord(Level.FINE, "COMPL_CANCEL"); // NOI18N
+                        CompletionImpl.uilog(r);
+                    }
+                    break;
                 case ACTION_COMPLETION_UP:
                     view.up();
                     break;
@@ -271,13 +291,16 @@ public class CompletionScrollPane extends JScrollPane {
                     view.pageUp();
                     break;
                 case ACTION_COMPLETION_PGDN:
-                        view.pageDown();
+                    view.pageDown();
                     break;
                 case ACTION_COMPLETION_BEGIN:
-                        view.begin();
+                    view.begin();
                     break;
                 case ACTION_COMPLETION_END:
-                        view.end();
+                    view.end();
+                    break;
+                case ACTION_COMPLETION_SUBITEMS_SHOW:
+                    CompletionImpl.get().showCompletionSubItems();
                     break;
             }
         }
