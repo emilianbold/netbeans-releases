@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -189,6 +191,17 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                 }
             }
         }
+
+        private void visitClasses(Set<CsmClass> classes, Collection<? extends CsmOffsetableDeclaration> decls, final int caretOffset) {
+            for(CsmOffsetableDeclaration decl : decls) {
+                if (CsmKindUtilities.isNamespaceDefinition(decl)) {
+                    visitClasses(classes, ((CsmNamespaceDefinition)decl).getDeclarations(), caretOffset);
+                } else if (CsmKindUtilities.isClass(decl)) {
+                    visitClasses(classes, ((CsmClass)decl).getMembers(), caretOffset);
+                    classes.add((CsmClass)decl);
+                }
+            }
+        }
         
         private Collection<CsmImplementsMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<CsmImplementsMethodCompletionItem>();
@@ -198,6 +211,31 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                     Set<CsmClass> classes = new HashSet<CsmClass>();
                     visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
                     if (isAppliccable)  {
+                        if (classes.isEmpty()) {
+                            // probably empty file
+                            // try to find corresponded header
+                            String name = CndPathUtilities.getBaseName(csmFile.getAbsolutePath().toString());
+                            if (name.lastIndexOf('.') > 0) { //NOI18N
+                                name = name.substring(0, name.lastIndexOf('.')); //NOI18N
+                            }
+                            CsmFile bestInterface = null;
+                            for(CsmInclude incl : csmFile.getIncludes()) {
+                                CsmFile includeFile = incl.getIncludeFile();
+                                if (includeFile != null) {
+                                    String inclName = CndPathUtilities.getBaseName(includeFile.getAbsolutePath().toString());
+                                    if (inclName.lastIndexOf('.') > 0) { //NOI18N
+                                        inclName = inclName.substring(0, inclName.lastIndexOf('.')); //NOI18N
+                                    }
+                                    if (name.equals(inclName)) {
+                                        bestInterface = includeFile;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (bestInterface != null) {
+                                visitClasses(classes, bestInterface.getDeclarations(), caretOffset);
+                            }
+                        }
                         for(CsmClass cls : classes) {
                             for(CsmMember member : cls.getMembers()) {
                                 if (CsmKindUtilities.isMethodDeclaration(member)) {
