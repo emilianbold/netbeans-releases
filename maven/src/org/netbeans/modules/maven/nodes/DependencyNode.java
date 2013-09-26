@@ -525,24 +525,39 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     public boolean hasSourceInRepository() {
         return sourceExists.get() && (!Artifact.SCOPE_SYSTEM.equals(art.getScope()));
     }
-
+    
     void downloadJavadocSources(ProgressContributor progress, boolean isjavadoc) {
+        downloadJavadocSources(progress, isjavadoc, art, project);
+        refreshNode();
+    }
+
+    /**
+     * 
+     * @param progress
+     * @param isjavadoc
+     * @param artifact
+     * @param prj
+     * @return the sources/javadoc artifact
+     */
+    public static Artifact downloadJavadocSources(ProgressContributor progress, boolean isjavadoc, Artifact artifact, Project prj) {
         MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
         progress.start(2);
-        if ( Artifact.SCOPE_SYSTEM.equals(art.getScope())) {
+        if ( Artifact.SCOPE_SYSTEM.equals(artifact.getScope())) {
             progress.finish();
-            return;
+            return null;
         }
+        NbMavenProjectImpl prjimpl = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        Artifact sources = null;
         try {
             String classifier;
             String baseClassifier;
             String bundleName;
             if (isjavadoc) {
-                if (art.getClassifier() != null) {
-                    if ("tests".equals(art.getClassifier())) {
+                if (artifact.getClassifier() != null) {
+                    if ("tests".equals(artifact.getClassifier())) {
                         classifier = "test-javadoc";
                     } else {
-                        classifier = art.getClassifier() + "-javadoc";
+                        classifier = artifact.getClassifier() + "-javadoc";
                     }
                 } else {
                     classifier = "javadoc";
@@ -551,11 +566,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 bundleName = "MSG_Checking_Javadoc";
             } else {
                 baseClassifier = "sources";
-                if (art.getClassifier() != null) {
-                    if ("tests".equals(art.getClassifier())) {
+                if (artifact.getClassifier() != null) {
+                    if ("tests".equals(artifact.getClassifier())) {
                         classifier = "test-sources";
                     } else {
-                        classifier = art.getClassifier() + "-sources";
+                        classifier = artifact.getClassifier() + "-sources";
                     }
                 } else {
                     classifier = "sources";
@@ -563,26 +578,26 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 bundleName = "MSG_Checking_Sources";
             }
             
-            Artifact sources = project.getEmbedder().createArtifactWithClassifier(
-                art.getGroupId(),
-                art.getArtifactId(),
-                art.getVersion(),
-                art.getType(),
+            sources = prjimpl.getEmbedder().createArtifactWithClassifier(
+                artifact.getGroupId(),
+                artifact.getArtifactId(),
+                artifact.getVersion(),
+                artifact.getType(),
                 classifier); 
-            progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
-            online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
-            if (art.getFile() != null && art.getFile().exists()) {
-                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(art.getFile());
+            progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,artifact.getId()), 1);
+            online.resolve(sources, prjimpl.getOriginalMavenProject().getRemoteArtifactRepositories(), prjimpl.getEmbedder().getLocalRepository());
+            if (artifact.getFile() != null && artifact.getFile().exists()) {
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(artifact.getFile());
                 if (coordinates != null) {
                     for (Coordinates coordinate : coordinates) {
-                        sources = project.getEmbedder().createArtifactWithClassifier(
+                        sources = prjimpl.getEmbedder().createArtifactWithClassifier(
                             coordinate.groupId,
                             coordinate.artifactId,
                             coordinate.version,
                             "jar",
                             baseClassifier);
-                        progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
-                        online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                        progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, artifact.getId()), 1);
+                        online.resolve(sources, prjimpl.getOriginalMavenProject().getRemoteArtifactRepositories(), prjimpl.getEmbedder().getLocalRepository());
                     }
                 }
             }
@@ -593,7 +608,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         } finally {
             progress.finish();
         }
-        refreshNode();
+        return sources;
     }
 
 

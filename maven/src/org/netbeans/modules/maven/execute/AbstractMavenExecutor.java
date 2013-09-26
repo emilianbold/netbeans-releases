@@ -459,7 +459,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         @Override 
         public void actionPerformed(ActionEvent e) {
             ShowExecutionPanel panel = new ShowExecutionPanel();
-            panel.setTreeToDisplay(root);
+            panel.setTreeToDisplay(root, executor != null ? executor.config.getProject() : null);
             DialogDescriptor dd = new DialogDescriptor(panel, "Build execution overview");
             dd.setOptions(new Object[] {"Close"});
             dd.setClosingOptions(new Object[] {"Close"});
