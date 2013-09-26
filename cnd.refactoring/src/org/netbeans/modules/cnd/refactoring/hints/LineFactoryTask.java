@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
 import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
@@ -284,7 +285,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     }
                 });
                 if (startOffset <= offset && offset <= trueEndOffset.get()) {
-                    if(isApplicable((CsmExpressionStatement) st)) {
+                    if(isApplicable((CsmExpressionStatement) st, doc)) {
                         return (CsmExpressionStatement) st;
                     } else {
                         return null;
@@ -295,8 +296,43 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         return null;
     }
     
-    private boolean isApplicable(CsmExpressionStatement st) {
-        CsmType resolveType = CsmTypeResolver.resolveType(st.getExpression(), null);
+    private boolean isApplicable(CsmExpressionStatement st, final Document doc) {
+        final CsmExpression expression = st.getExpression();
+        final int startOffset = expression.getStartOffset();
+        final int endOffset = expression.getEndOffset();
+        final AtomicBoolean isAssignment = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                TokenSequence<?> ts = hi.tokenSequence();
+                ts.move(startOffset);
+                while (ts.moveNext()) {
+                    Token<?> token = ts.token();
+                    if (ts.offset() >= endOffset) {
+                        break;
+                    }
+                    if (CppTokenId.EQ.equals(token.id())
+                        ||CppTokenId.MINUSEQ.equals(token.id())
+                        ||CppTokenId.STAREQ.equals(token.id())
+                        ||CppTokenId.SLASHEQ.equals(token.id())
+                        ||CppTokenId.AMPEQ.equals(token.id())
+                        ||CppTokenId.BAREQ.equals(token.id())
+                        ||CppTokenId.CARETEQ.equals(token.id())
+                        ||CppTokenId.PERCENTEQ.equals(token.id())
+                        ||CppTokenId.LTLTEQ.equals(token.id())
+                        ||CppTokenId.GTGTEQ.equals(token.id())) {
+                        isAssignment.set(true);
+                        break;
+                    }
+                }
+            }
+        });
+        if (isAssignment.get()) {
+            return false;
+        }
+        CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
         if (resolveType == null) {
             return false;
         }
@@ -374,18 +410,29 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
                     TokenSequence<?> ts = hi.tokenSequence();
                     ts.move(expression.getStartOffset());
+                    String lastCandidate = null;
+                    String bestCandidate = null;
+                    int parenDepth = 0;
                     while (ts.moveNext()) {
                         Token<?> token = ts.token();
                         if (ts.offset() > expression.getEndOffset()) {
                             break;
                         }
                         if (CppTokenId.IDENTIFIER.equals(token.id())) {
-                            name = token.text().toString();
+                            lastCandidate = token.text().toString();
                         } else if (CppTokenId.LPAREN.equals(token.id())) {
-                            if (name != null) {
-                                break;
+                            if (parenDepth == 0) {
+                                bestCandidate = lastCandidate;
                             }
+                            parenDepth++;
+                        } else if (CppTokenId.RPAREN.equals(token.id())) {
+                            parenDepth--;
                         }
+                    }
+                    if (bestCandidate != null) {
+                        name = bestCandidate;
+                    } else {
+                        name = lastCandidate;
                     }
                 }
             });
