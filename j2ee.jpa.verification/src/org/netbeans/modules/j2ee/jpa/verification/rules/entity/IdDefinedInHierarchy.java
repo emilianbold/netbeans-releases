@@ -107,7 +107,9 @@ public class IdDefinedInHierarchy {
         }
         TypeElement javaClass = ctx.getJavaClass();
 
-        EntityMappingsMetadata metadata = ((JPAProblemContext) ctx).getMetaData();
+        if (ctx.getModelElement() == null) {
+            return null;
+        }
 
         final boolean[] haveId = {false};
         try {
