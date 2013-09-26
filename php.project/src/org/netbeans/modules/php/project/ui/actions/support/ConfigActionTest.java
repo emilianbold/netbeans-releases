@@ -237,10 +237,12 @@ class ConfigActionTest extends ConfigAction {
         return validDirs;
     }
 
+    /**
+     * Get run info for a file or a folder.
+     */
     @CheckForNull
     private TestRunInfo getTestRunInfoForFile(FileObject fileObj, boolean debug) {
         assert fileObj != null;
-        assert fileObj.isData() : fileObj;
 
         if (!fileObj.isValid()) {
             return null;
