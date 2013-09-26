@@ -62,7 +62,6 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -94,8 +93,8 @@ public class JPDAStart implements Runnable {
     private final Object[] lock = new Object[2];
     
     private Project project;
-    private String actionName;
-    private InputOutput io;
+    private final String actionName;
+    private final InputOutput io;
 
     JPDAStart(InputOutput inputOutput, String actionName) {
         io = inputOutput;
@@ -147,14 +146,13 @@ public class JPDAStart implements Runnable {
                 // This is NOT a clean solution to the problem but it SHOULD work in 99% cases
                 final Map args = lc.defaultArguments();
                 String address = lc.startListening(args);
-                int port = -1;
                 try {
-                    port = Integer.parseInt(address.substring(address.indexOf(':') + 1));
+                    int port = Integer.parseInt(address.substring(address.indexOf(':') + 1));
 //                    getProject ().setNewProperty (getAddressProperty (), "localhost:" + port);
                     Connector.IntegerArgument portArg = (Connector.IntegerArgument) args.get("port"); //NOI18N
                     portArg.setValue(port);
                     lock[0] = Integer.toString(port);
-                } catch (Exception e) {
+                } catch (NumberFormatException e) {
                     // this address format is not known, use default
 //                    getProject ().setNewProperty (getAddressProperty (), address);
                     lock[0] = address;
@@ -221,8 +219,8 @@ public class JPDAStart implements Runnable {
     
     private static class Listener extends DebuggerManagerAdapter {
         
-        private MethodBreakpoint    breakpoint;
-        private Set                 debuggers = new HashSet();
+        private MethodBreakpoint breakpoint;
+        private final Set debuggers = new HashSet();
         
         
         Listener(MethodBreakpoint breakpoint) {
