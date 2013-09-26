@@ -53,12 +53,15 @@ import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Alexander Simon
  */
 public final class BreadCrumbsFactory {
+    private static final RequestProcessor RP = new RequestProcessor("C/C++ BreadCrumbsFactory", 1, false, false); //NOI18N
+    
     private BreadCrumbsFactory(){
     }
     
@@ -98,6 +101,7 @@ public final class BreadCrumbsFactory {
                 break;
             }
         }
+        boolean deep = false;
         BreadcrumbsElement selected = breadcrumbsElement;
         if (selected instanceof BreadcrumbsElementImpl &&
            ((BreadcrumbsElementImpl)selected).getNode() == selectedNode) {
@@ -110,27 +114,48 @@ public final class BreadCrumbsFactory {
             }
             if (startOffset < caretLineNo && caretLineNo < endOffset) {
                 if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                    while(true) {
-                        boolean advance = false;
-                        for(BreadcrumbsElement child : selected.getChildren()) {
-                            if (child instanceof StatementNode) {
-                                int start = ((StatementNode)child).getStartOffset();
-                                int end = ((StatementNode)child).getEndOffset();
-                                if (start <= caretLineNo && caretLineNo < end) {
-                                    selected = child;
-                                    advance = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!advance) {
-                            break;
-                        }
-                    }
+                    deep = true;
                 }
             }
         }
-        BreadcrumbsController.setBreadcrumbs(doc, selected);
+        RP.post(new Body(selected, doc, caretLineNo, deep));
     }
     
+    private static final class Body implements Runnable {
+        private BreadcrumbsElement selected;
+        private final long caretLineNo;
+        private final Document doc;
+        private final boolean deep;
+        
+        private Body(BreadcrumbsElement selected, Document doc, long caretLineNo, boolean deep) {
+            this.selected = selected;
+            this.caretLineNo = caretLineNo;
+            this.doc = doc;
+            this.deep = deep;
+        }
+
+        @Override
+        public void run() {
+            if (deep) {
+                while (true) {
+                    boolean advance = false;
+                    for (BreadcrumbsElement child : selected.getChildren()) {
+                        if (child instanceof StatementNode) {
+                            int start = ((StatementNode) child).getStartOffset();
+                            int end = ((StatementNode) child).getEndOffset();
+                            if (start <= caretLineNo && caretLineNo < end) {
+                                selected = child;
+                                advance = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!advance) {
+                        break;
+                    }
+                }
+            }
+            BreadcrumbsController.setBreadcrumbs(doc, selected);
+        }
+    }
 }
