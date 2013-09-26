@@ -46,32 +46,43 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.util.Elements;
+import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 
 import com.sun.source.tree.Scope;
 import com.sun.source.util.Trees;
 
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.support.ReferencesCount;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.CompositeCompletionItem;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,6 +96,17 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
 
     public static JavaCompletionItem createStaticMemberItem(ElementHandle<TypeElement> handle, String name, int substitutionOffset, boolean addSemicolon, ReferencesCount referencesCount, Source source, WhiteListQuery.WhiteList whiteList) {
         return new StaticMemberItem(handle, name, substitutionOffset, addSemicolon, referencesCount, source, whiteList);
+    }
+
+    private static CompletionItem createExcludeItem(CharSequence name) {
+        if (name == null) {
+            ExcludeFromCompletionItem item = ExcludeFromCompletionItem.CONFIGURE_ITEM != null ? ExcludeFromCompletionItem.CONFIGURE_ITEM.get() : null;
+            if (item == null) {
+                ExcludeFromCompletionItem.CONFIGURE_ITEM = new WeakReference<ExcludeFromCompletionItem>(item = new ExcludeFromCompletionItem(name));
+            }
+            return item;
+        }
+        return new ExcludeFromCompletionItem(name);
     }
 
     private LazyJavaCompletionItem(int substitutionOffset, ElementHandle<? extends Element> handle, Source source, WhiteListQuery.WhiteList whiteList) {
@@ -164,7 +186,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         return null;
     }
 
-    static class TypeItem extends LazyJavaCompletionItem<TypeElement> {
+    static class TypeItem extends LazyJavaCompletionItem<TypeElement> implements CompositeCompletionItem {
 
         private EnumSet<ElementKind> kinds;
         private boolean insideNew;
@@ -175,6 +197,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         private String pkgName;
         private CharSequence sortText;
         private ReferencesCount referencesCount;
+        private List<CompletionItem> subItems = new ArrayList<CompletionItem>();
 
         private TypeItem(ElementHandle<TypeElement> handle, EnumSet<ElementKind> kinds, int substitutionOffset, ReferencesCount referencesCount, Source source, boolean insideNew, boolean addTypeVars, boolean afterExtends, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, handle, source, whiteList);
@@ -197,6 +220,9 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
             Scope scope = trees.getScope(info.getTreeUtilities().pathFor(substitutionOffset));
             if (te != null && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(te)) && trees.isAccessible(scope, te)) {
                 if (isOfKind(te, kinds) && (!afterExtends || !te.getModifiers().contains(Modifier.FINAL)) && (!isInDefaultPackage(te) || isInDefaultPackage(scope.getEnclosingClass())) && !Utilities.isExcluded(te.getQualifiedName())) {
+                    subItems.add(createExcludeItem(te.getQualifiedName()));
+                    subItems.add(createExcludeItem(elements.getPackageOf(te).getQualifiedName()));
+                    subItems.add(createExcludeItem(null));
                     return createTypeItem(info, te, (DeclaredType) te.asType(), substitutionOffset, referencesCount, elements.isDeprecated(te), insideNew, addTypeVars, false, false, false, getWhiteList());
                 }
             }
@@ -216,6 +242,16 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         @Override
         public CharSequence getInsertPrefix() {
             return simpleName;
+        }
+
+        @Override
+        public List<? extends CompletionItem> getSubItems() {
+            return subItems;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
 
         private boolean isOfKind(Element e, EnumSet<ElementKind> kinds) {
@@ -238,7 +274,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         }
     }
 
-    static class StaticMemberItem extends LazyJavaCompletionItem<TypeElement> {
+    private static class StaticMemberItem extends LazyJavaCompletionItem<TypeElement> {
 
         private boolean addSemicolon;
         private String name;
@@ -293,6 +329,75 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
         @Override
         public CharSequence getInsertPrefix() {
             return name;
+        }
+    }
+    
+    @NbBundle.Messages({"exclude_Lbl=Exclude \"{0}\" from completion", "configure_Excludes_Lbl=Configure excludes"}) // NOI18N
+    private static class ExcludeFromCompletionItem implements CompletionItem {
+
+        private static final ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
+        private static WeakReference<ExcludeFromCompletionItem> CONFIGURE_ITEM;
+        private CharSequence name;
+        private String text;
+
+        private ExcludeFromCompletionItem(CharSequence name) {
+            this.name = name;
+            this.text = name == null ? Bundle.configure_Excludes_Lbl() : Bundle.exclude_Lbl(name);
+        }
+        
+        @Override
+        public void defaultAction(JTextComponent component) {
+            Completion.get().hideAll();
+            if (name == null) {
+                OptionsDisplayer.getDefault().open("Editor/CodeCompletion/text/x-java"); //NOI18N
+            } else {
+                Utilities.exclude(name);
+                Completion.get().showCompletion();
+            }
+        }
+
+        @Override
+        public void processKeyEvent(KeyEvent evt) {
+        }
+
+        @Override
+        public int getPreferredWidth(Graphics g, Font defaultFont) {
+            return CompletionUtilities.getPreferredWidth(text, null, g, defaultFont);
+        }
+
+        @Override
+        public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
+            CompletionUtilities.renderHtml(icon, text, null, g, defaultFont, defaultColor, width, height, selected);
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return null;
+        }
+
+        @Override
+        public CompletionTask createToolTipTask() {
+            return null;
+        }
+
+        @Override
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;
+        }
+
+        @Override
+        public int getSortPriority() {
+            return 10;
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return text;
+        }
+
+        @Override
+        public CharSequence getInsertPrefix() {
+            return null;
         }
     }
 }

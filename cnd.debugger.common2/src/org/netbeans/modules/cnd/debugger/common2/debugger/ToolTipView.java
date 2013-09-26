@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Insets;
@@ -68,6 +69,7 @@ import javax.swing.text.Document;
 import static javax.swing.text.JTextComponent.addKeymap;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -120,7 +122,7 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
         final EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(ep);
         final ToolTipSupport toolTipSupport = eui.getToolTipSupport();
-        toolTipSupport.setToolTip(this);
+        toolTipSupport.setToolTip(this, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
     }
 
     @Override
@@ -148,12 +150,31 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         public VariableNode(Variable v, Children ch) {
             super(ch);
             this.v = v;
+            add(v);
+        }
+        
+        private void add(Variable v) {
             variables.put(v, this);
         }
         
-        public static VariableNode getNodeForVariable(Variable v) {
-            return variables.get(v);
+        public static void propertyChanged(Variable v) {
+            final VariableNode node = variables.get(v);
+            if (node == null) {
+                return;
+            }
+            if (EventQueue.isDispatchThread()) {
+                node.propertyChanged();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        node.propertyChanged();
+                    }
+                });
+            }
         }
+
 
         @Override
         public String getDisplayName() {
@@ -173,16 +194,22 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
             return super.getIcon(type);
         }
 
-        public void propertyChanged() {
-            if (!(getChildren() instanceof VariableNodeChildren)) {
-                return;
-            }
+        private void propertyChanged() {
             if (v.getNumChild() < 1) {
                 setChildren(Children.LEAF);
             } else {
-                ((VariableNodeChildren) getChildren()).updateKeys();
+                if (getChildren() instanceof VariableNodeChildren) {
+                    ((VariableNodeChildren) getChildren()).updateKeys();
+                }
             }
+            String path = "";
             
+            try {
+                path = watchModel.getIconBaseWithExtension(null, v);
+            } catch (UnknownTypeException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            setIconBaseWithExtension(path);            
             fireDisplayNameChange("old", "new"); //NOI18N
         }
 

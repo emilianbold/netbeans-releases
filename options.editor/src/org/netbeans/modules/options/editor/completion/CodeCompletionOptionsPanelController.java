@@ -196,6 +196,13 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
         return panel;
     }
 
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        if (selector != null && selector.getMimeTypes().contains(subpath)) {
+            selector.setSelectedMimeType(subpath);
+        }
+    }
+
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }

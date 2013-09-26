@@ -48,6 +48,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -56,8 +57,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.swing.Action;
@@ -75,6 +76,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompositeCompletionItem;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
@@ -105,7 +107,7 @@ public final class CompletionLayout {
     private final DocPopup docPopup;
     private final TipPopup tipPopup;
     
-    private Stack<CompletionLayoutPopup> visiblePopups;
+    private LinkedList<CompletionLayoutPopup> visiblePopups;
     
     CompletionLayout() {
         completionPopup = new CompletionPopup();
@@ -117,7 +119,7 @@ public final class CompletionLayout {
         tipPopup = new TipPopup();
         tipPopup.setLayout(this);
         tipPopup.setPreferDisplayAboveCaret(true);
-        visiblePopups = new Stack<CompletionLayoutPopup>();
+        visiblePopups = new LinkedList<CompletionLayoutPopup>();
     }
     
     public JTextComponent getEditorComponent() {
@@ -132,9 +134,9 @@ public final class CompletionLayout {
     }
 
     private void hideAll() {
-        completionPopup.hide();
-        docPopup.hide();
-        tipPopup.hide();
+        for (CompletionLayoutPopup popup : visiblePopups) {
+            popup.hide();
+        }
         visiblePopups.clear();
     }
 
@@ -145,15 +147,31 @@ public final class CompletionLayout {
             visiblePopups.push(completionPopup);
     }
     
-    public boolean hideCompletion() {
-        if (completionPopup.isVisible()) {
-            completionPopup.hide();
-            completionPopup.completionScrollPane = null;
-            visiblePopups.remove(completionPopup);
-            return true;
-        } else { // not visible
-            return false;
+    public void showCompletionSubItems() {
+        CompletionItem item = getSelectedCompletionItem();
+        List<? extends CompletionItem> subItems = item instanceof CompositeCompletionItem ? ((CompositeCompletionItem)item).getSubItems() : null;
+        if (subItems != null && !subItems.isEmpty()) {
+            Point p = getSelectedLocation();
+            if (p != null) {
+                CompletionPopup popup = new CompletionPopup();
+                popup.setLayout(this);
+                popup.show(subItems, p);
+                if (!visiblePopups.contains(popup))
+                    visiblePopups.push(popup);
+            }
         }
+    }
+    
+    public boolean hideCompletion() {
+        for (CompletionLayoutPopup popup : visiblePopups) {
+            if (popup instanceof CompletionPopup && popup.isVisible()) {
+                popup.hide();
+                ((CompletionPopup)popup).completionScrollPane = null;
+                visiblePopups.remove(popup);
+                return true;                
+            }            
+        }
+        return false;
     }
     
     public boolean isCompletionVisible() {
@@ -161,16 +179,34 @@ public final class CompletionLayout {
     }
     
     public CompletionItem getSelectedCompletionItem() {
-        return completionPopup.getSelectedCompletionItem();
+        for (CompletionLayoutPopup popup : visiblePopups) {
+            if (popup instanceof CompletionPopup && popup.isVisible()) {
+                return ((CompletionPopup)popup).getSelectedCompletionItem();
+            }
+        }
+        return null;
     }
     
     public int getSelectedIndex() {
-        return completionPopup.getSelectedIndex();
+        for (CompletionLayoutPopup popup : visiblePopups) {
+            if (popup instanceof CompletionPopup && popup.isVisible()) {
+                return ((CompletionPopup)popup).getSelectedIndex();
+            }
+        }
+        return -1;
+    }
+    
+    public Point getSelectedLocation() {
+        for (CompletionLayoutPopup popup : visiblePopups) {
+            if (popup instanceof CompletionPopup && popup.isVisible()) {
+                return ((CompletionPopup)popup).getSelectedLocation();
+            }
+        }
+        return null;
     }
     
     public void processKeyEvent(KeyEvent evt) {
-        for (int i = visiblePopups.size() - 1; i >= 0; i--) {
-            CompletionLayoutPopup popup = visiblePopups.get(i);
+        for (CompletionLayoutPopup popup : visiblePopups) {
             popup.processKeyEvent(evt);
             if (evt.isConsumed())
                 return;
@@ -271,7 +307,6 @@ public final class CompletionLayout {
             ) {
                 updateLayout(docPopup);
             }
-            
         } else if (popup == docPopup) { // documentation popup
             if (isCompletionVisible()) {
                 // Documentation must sync anchoring with completion
@@ -294,6 +329,9 @@ public final class CompletionLayout {
                 // docPopup layout will be handled as part of completion popup layout
                 updateLayout(completionPopup);
             }
+        } else { // completion sub-items popup
+            Rectangle occupiedBounds = popup.getAnchorOffsetBounds();
+            popup.showAlongOrNextOccupiedBounds(occupiedBounds, occupiedBounds);
         }
     }
     
@@ -313,7 +351,16 @@ public final class CompletionLayout {
         
         private CompletionScrollPane completionScrollPane;
         
+        public void show(List data, Point location) {
+            show(data, null, -1, location, null, null, null, 0);
+        }
+        
         public void show(List data, String title, int anchorOffset,
+        ListSelectionListener listSelectionListener, String additionalItemsText, String shortcutHint, int selectedIndex) {
+            show(data, title, anchorOffset, null, listSelectionListener, additionalItemsText, shortcutHint, selectedIndex);
+        }
+            
+        private void show(List data, String title, int anchorOffset, Point location,
         ListSelectionListener listSelectionListener, String additionalItemsText, String shortcutHint, int selectedIndex) {
             
 	    JTextComponent editorComponent = getEditorComponent();
@@ -338,6 +385,23 @@ public final class CompletionLayout {
                         public void mouseClicked(MouseEvent evt) {
 			    JTextComponent c = getEditorComponent();
                             if (SwingUtilities.isLeftMouseButton(evt)) {
+                                if (completionScrollPane.getView().getSize().width - CompletionJList.arrowSpan() <= evt.getPoint().x) {
+                                    CompletionItem selectedItem = completionScrollPane.getSelectedCompletionItem();
+                                    if (selectedItem instanceof CompositeCompletionItem && !((CompositeCompletionItem)selectedItem).getSubItems().isEmpty()) {
+                                        CompletionImpl.get().showCompletionSubItems();
+                                        evt.consume();
+                                        return;
+                                    }
+                                }
+                                for (CompletionLayoutPopup popup : getLayout().visiblePopups) {
+                                    if (popup instanceof CompletionPopup) {
+                                        if (popup == CompletionPopup.this) {
+                                            break;
+                                        } else {
+                                            popup.hide();
+                                        }
+                                    }
+                                }
                                 if (c != null && evt.getClickCount() == 2 ) {
                                     CompletionItem selectedItem
                                             = completionScrollPane.getSelectedCompletionItem();
@@ -382,7 +446,10 @@ public final class CompletionLayout {
             // Set the new data
             getPreferredSize();
             completionScrollPane.setData(data, title, selectedIndex);
-            setAnchorOffset(anchorOffset);
+            if (anchorOffset >= 0)
+                setAnchorOffset(anchorOffset);
+            if (location != null)
+                setLocation(location);
 
             Dimension prefSize = getPreferredSize();
 
@@ -412,6 +479,10 @@ public final class CompletionLayout {
             return isVisible() ? completionScrollPane.getSelectedIndex() : -1;
         }
 
+        public Point getSelectedLocation() {
+            return isVisible() ? completionScrollPane.getSelectedLocation() : null;
+        }
+
         public void processKeyEvent(KeyEvent evt) {
             if (isVisible()) {
                 Object actionMapKey = completionScrollPane.getInputMap().get(
@@ -431,7 +502,6 @@ public final class CompletionLayout {
         protected int getAnchorHorizontalShift() {
             return COMPLETION_ANCHOR_HORIZONTAL_SHIFT;
         }
-
     }
     
     private static final class DocPopup extends CompletionLayoutPopup {
@@ -484,7 +554,6 @@ public final class CompletionLayout {
         protected int getAnchorHorizontalShift() {
             return COMPLETION_ANCHOR_HORIZONTAL_SHIFT;
         }
-
     }
     
     private static final class TipPopup extends CompletionLayoutPopup {
@@ -514,8 +583,6 @@ public final class CompletionLayout {
 		    CompletionImpl.get().hideToolTip();
 		}
             }
-        }
-        
-    }
-    
+        }        
+    }    
 }

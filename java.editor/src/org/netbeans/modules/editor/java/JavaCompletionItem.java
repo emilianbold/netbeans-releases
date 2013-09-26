@@ -325,7 +325,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }
             }
-        } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.ALT_MASK) > 0) {
+        } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0) {
             JTextComponent component = (JTextComponent)evt.getSource();
             Completion.get().hideDocumentation();
             Completion.get().hideCompletion();

@@ -56,7 +56,9 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompositeCompletionItem;
 import org.netbeans.spi.editor.completion.LazyCompletionItem;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -67,11 +69,12 @@ import org.openide.util.Utilities;
 public class CompletionJList extends JList {
 
     private static final int DARKER_COLOR_COMPONENT = 5;
+    private static final int SUB_MENU_ICON_GAP = 1;
+    private static final ImageIcon subMenuIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/editor/hints/resources/suggestion.gif", false); // NOI18N
 
     private final RenderComponent renderComponent;
     
     private Graphics cellPreferredSizeGraphics;
-
     private int fixedItemHeight;
     private int maxVisibleRowCount;
     private JTextComponent editorComponent;
@@ -90,8 +93,9 @@ public class CompletionJList extends JList {
         renderComponent = new RenderComponent();
         setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         setCellRenderer(new ListCellRenderer() {
-            private ListCellRenderer defaultRenderer = new DefaultListCellRenderer();
+            private final ListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
+            @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 if( value instanceof CompletionItem ) {
                     CompletionItem item = (CompletionItem)value;
@@ -315,10 +319,12 @@ public class CompletionJList extends JList {
             this.data = data;
         }
         
+        @Override
         public int getSize() {
             return data.size();
         }
 
+        @Override
         public Object getElementAt(int index) {
             return (index >= 0 && index < data.size()) ? data.get(index) : null;
         }
@@ -364,6 +370,9 @@ public class CompletionJList extends JList {
             // Render the item
             item.render(g, CompletionJList.this.getFont(), getForeground(), bgColor,
                     itemRenderWidth, getHeight(), selected);
+            if (selected && item instanceof CompositeCompletionItem && !((CompositeCompletionItem)item).getSubItems().isEmpty()) {
+                g.drawImage(subMenuIcon.getImage(), itemRenderWidth - subMenuIcon.getIconWidth() - SUB_MENU_ICON_GAP, (height - subMenuIcon.getIconHeight()) / 2, null);
+            }
             
             if (separator) {
                 g.setColor(Color.gray);
@@ -383,7 +392,9 @@ public class CompletionJList extends JList {
             return new Dimension(item.getPreferredWidth(cellPreferredSizeGraphics, CompletionJList.this.getFont()),
                     fixedItemHeight);
         }
-
     }
 
+    public static int arrowSpan() {
+        return SUB_MENU_ICON_GAP + subMenuIcon.getIconWidth() + SUB_MENU_ICON_GAP;
+    }
 }

@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CompositeCompletionItem">
+            <api name="completion"/>
+            <summary>Addition of CompositeCompletionItem</summary>
+            <version major="1" minor="38"/>
+            <date day="24" month="9" year="2013"/>
+            <author login="dbalek"/>
+            <compatibility addition="yes"/>
+            <description>
+            <p>
+                <code>CompositeCompletionItem</code> interface was added to allow for
+                completion items containing possible sub-items.
+            </p>
+            </description>
+            <issue number="236313"/>
+        </change>
+
         <change id="CompletionResultSet.setHasAdditionalItemsText">
             <api name="completion"/>
             <summary>Addition of CompletionResultSet.setHasAdditionalItemsText()</summary>
