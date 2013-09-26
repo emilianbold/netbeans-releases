@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification;
 
+import java.util.Collection;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *
@@ -52,7 +54,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
  */
 public abstract class JPAEntityAttributeCheck {
 
-    public abstract ErrorDescription[] check(JPAProblemContext ctx,
+    public abstract Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc,
             AttributeWrapper attrib);
 
 }

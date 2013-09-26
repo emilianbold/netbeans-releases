@@ -50,8 +50,6 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPAAnnotsOnlyOnAccesor;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.LegalCombinationOfAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidAttributes;
 
 /**
@@ -62,26 +60,10 @@ public class JPARulesEngine extends RulesEngine {
     private static final List<Rule<TypeElement>> classRules = new LinkedList<>();
     
     static{
-        //classRules.add(new PersistenceUnitPresent());
-        //classRules.add(new ConsistentAccessType());
-        //classRules.add(new IdDefinedInHierarchy());
-        //classRules.add(new HasNoArgConstructor());
-        //classRules.add(new ValidPrimaryTableName());
-        //classRules.add(new SerializableClass());
-        //classRules.add(new PublicClass());
-        //classRules.add(new NonFinalClass());
-        //classRules.add(new TopLevelClass());
-        //classRules.add(new IdClassOverridesEqualsAndHashCode());
-        //classRules.add(new NoIdClassOnEntitySubclass());
-        classRules.add(new ValidAttributes());
-        //classRules.add(new UniqueEntityName());
-        classRules.add(new LegalCombinationOfAnnotations());
-        classRules.add(new JPAAnnotsOnlyOnAccesor());
-        //classRules.add(new QueriesProperlyDefined());
-        //classRules.add(new JPQLValidation());
-        //classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
+        //classRules.add(new ValidAttributes());
     }
     
+    @Override
     protected Collection<Rule<TypeElement>> getClassRules() {
         return classRules;
     }

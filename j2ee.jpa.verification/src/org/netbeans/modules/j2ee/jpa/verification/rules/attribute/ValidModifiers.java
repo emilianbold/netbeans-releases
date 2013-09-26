@@ -43,7 +43,10 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
@@ -51,8 +54,11 @@ import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class ValidModifiers extends JPAEntityAttributeCheck {
     
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
+    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
         
         Set<Modifier> fieldModifiers = attrib.getInstanceVariable() == null ? null
                 : attrib.getInstanceVariable().getModifiers();
@@ -79,21 +85,18 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
         
         if (fieldModifiers != null){
             if (fieldModifiers.contains(Modifier.PUBLIC)){
-                errors.add(Rule.createProblem(attrib.getInstanceVariable(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_PublicVariable")));
+                errors.addAll(getErr(ctx, hc, attrib, "MSG_PublicVariable"));//TODO: error by default
             }
         }
         
         if (accesorModifiers != null){
             if (!accesorModifiers.contains(Modifier.PUBLIC)
                     && !accesorModifiers.contains(Modifier.PROTECTED)){
-                errors.add(Rule.createProblem(attrib.getAccesor(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicAccesor")));
+                errors.addAll(getErr(ctx, hc, attrib, "MSG_NonPublicAccesor"));//TODO: error by default
             }
             
             if (accesorModifiers.contains(Modifier.FINAL)){
-                errors.add(Rule.createProblem(attrib.getAccesor(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_FinalAccesor")));
+                errors.addAll(getErr(ctx, hc, attrib, "MSG_FinalAccesor"));//TODO: error by default
             }
         }
         
@@ -102,8 +105,7 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
             //if (!mutatorModifiers.contains(Modifier.PUBLIC)
             //        && !mutatorModifiers.contains(Modifier.PROTECTED)){
             if (mutatorModifiers.contains(Modifier.PRIVATE) ) {
-                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_NonPublicMutator"), Severity.WARNING));
+                errors.addAll(getErr(ctx, hc, attrib, "MSG_NonPublicMutator"));//TODO: warning by default
             }
             // see issue #108876
 //            else if (attrib.getModelElement() instanceof Id
@@ -114,11 +116,23 @@ public class ValidModifiers extends JPAEntityAttributeCheck {
 //            }
             
             if (mutatorModifiers.contains(Modifier.FINAL)){
-                errors.add(Rule.createProblem(attrib.getMutator(), ctx,
-                        NbBundle.getMessage(ValidModifiers.class, "MSG_FinalMutator")));
+                errors.addAll(getErr(ctx, hc, attrib, "MSG_FinalMutator"));//TODO: error by default
             }
         }
         
-        return errors.toArray(new ErrorDescription[errors.size()]);
+        return errors;
+    }
+    private static Collection<ErrorDescription> getErr(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib, String msgKey) {
+        Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                ctx.getCompilationInfo(), elementTree);
+
+        ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                hc,
+                underlineSpan.getStartOffset(),
+                underlineSpan.getEndOffset(),
+                NbBundle.getMessage(ValidColumnName.class, msgKey));//TODO: may need to have "error" fo some/ warning for another
+        return Collections.singleton(error);
     }
 }
