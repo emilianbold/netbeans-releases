@@ -67,10 +67,10 @@ import org.openide.util.NbBundle;
  * @author  mkleint
  */
 class TabsComponent extends JPanel {
-    
+
     private JComponent EMPTY;
     private final static String TOOLBAR_MARKER = "MultiViewPanel"; //NOI18N
-    
+
     MultiViewModel model;
     private MouseListener buttonMouseListener = null;
     private JComponent toolbarPanel;
@@ -96,12 +96,11 @@ class TabsComponent extends JPanel {
     private boolean removeSplit = false;
     private MultiViewPeer mvPeer;
     private boolean hiddenTriggeredByMultiViewButton = false;
-    private JComponent splitDragger;
-    
+
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     private boolean toolbarVisible = true;
-    
+
     /** Creates a new instance of TabsComponent */
     public TabsComponent(boolean toolVis) {
         super();
@@ -110,33 +109,33 @@ class TabsComponent extends JPanel {
         bar.setBorder(b);
         bar.setFloatable(false);
         bar.setFocusable(true);
-        if( "Windows".equals( UIManager.getLookAndFeel().getID()) 
+        if( "Windows".equals( UIManager.getLookAndFeel().getID())
                 && !isXPTheme()) {
             bar.setRollover(true);
         } else if( AQUA ) {
             bar.setBackground(UIManager.getColor("NbExplorerView.background"));
         }
-        
+
         setLayout(new BorderLayout());
         add(bar, BorderLayout.NORTH);
         startToggling();
         setToolbarBarVisible(toolVis);
     }
-    
-    
-    
+
+
+
     public void setModel(MultiViewModel model) {
         if (this.model != null) {
             bar.removeAll();
         }
         this.model = model;
-        
+
         componentPanel = new JPanel();
         cardLayout = new CardLayout();
         componentPanel.setLayout(cardLayout);
         add(componentPanel, BorderLayout.CENTER);
         alreadyAddedElements = new HashSet<MultiViewElement>();
-        
+
         MultiViewDescription[] descs = model.getDescriptions();
         MultiViewDescription def = model.getActiveDescription();
         GridBagLayout grid = new GridBagLayout();
@@ -168,7 +167,7 @@ class TabsComponent extends JPanel {
             Insets ins = but.getBorder().getBorderInsets(but);
             but.setPreferredSize(new Dimension(prefWidth + 10, prefHeight));
             but.setMinimumSize(new Dimension(prefWidth + 10, prefHeight));
-            
+
         }
         if (active != null) {
             active.setSelected(true);
@@ -183,7 +182,7 @@ class TabsComponent extends JPanel {
         bar.add(toolbarPanel, cons);
     }
 
-    
+
     MultiViewDescription getTopComponentDescription() {
 	return topBottomDescriptions == null ? model.getActiveDescription() : topBottomDescriptions[0];
     }
@@ -210,7 +209,7 @@ class TabsComponent extends JPanel {
 	toolbarPanelSplit = null;
 	splitterPropertyChangeListener = null;
 	mvPeer = null;
-	
+
 	add(bar, BorderLayout.NORTH);
         add(componentPanel, BorderLayout.CENTER);
 	model.setActiveDescription(activeDescription);
@@ -306,7 +305,7 @@ class TabsComponent extends JPanel {
 		topBottomDescriptions[0] = descriptions[activeDescIndex];
 		topBottomDescriptions[1] = descriptions[activeDescIndex + 1];
 	    }
-	    
+
 	    setupSplit();
 	    splitPane.setOneTouchExpandable(true);
 	    splitPane.setContinuousLayout(true);
@@ -498,7 +497,7 @@ class TabsComponent extends JPanel {
             alreadyAddedElementsSplit.clear();
         }
     }
-    
+
     void changeActiveManually(MultiViewDescription desc) {
         Enumeration en = model.getButtonGroup().getElements();
 	MultiViewDescription activeDescription = model.getActiveDescription();
@@ -507,7 +506,7 @@ class TabsComponent extends JPanel {
 	}
         while (en.hasMoreElements()) {
             JToggleButton obj = (JToggleButton)en.nextElement();
-            
+
             if (obj.getModel() instanceof TabsComponent.TabsButtonModel) {
                 TabsButtonModel btnmodel = (TabsButtonModel)obj.getModel();
                 if (btnmodel.getButtonsDescription().getDisplayName().equals(desc.getDisplayName())) {
@@ -544,7 +543,7 @@ class TabsComponent extends JPanel {
 	}
         while (en.hasMoreElements()) {
             JToggleButton obj = (JToggleButton)en.nextElement();
-            
+
             if (obj.getModel() instanceof TabsComponent.TabsButtonModel) {
                 TabsButtonModel btnmodel = (TabsButtonModel)obj.getModel();
                 if (btnmodel.getButtonsDescription().equals(desc)) {
@@ -554,7 +553,7 @@ class TabsComponent extends JPanel {
             }
         }
     }
-    
+
     private JToggleButton createButton(MultiViewDescription description) {
         final JToggleButton button = new JToggleButton();
         Mnemonics.setLocalizedText(button, Actions.cutAmpersand(description.getDisplayName()));
@@ -568,7 +567,7 @@ class TabsComponent extends JPanel {
             button.putClientProperty("JButton.buttonType", "square");
             button.putClientProperty("JComponent.sizeVariant", "small");
         }
-          
+
         if (buttonMouseListener == null) {
             buttonMouseListener = new ButtonMouseListener();
         }
@@ -602,44 +601,18 @@ class TabsComponent extends JPanel {
             GridBagConstraints cons = new GridBagConstraints();
             cons.anchor = GridBagConstraints.EAST;
             cons.fill = GridBagConstraints.BOTH;
-//            cons.gridwidth = GridBagConstraints.REMAINDER;
+            cons.gridwidth = GridBagConstraints.REMAINDER;
             cons.weightx = 1;
             toolbarPanel.setMinimumSize(new Dimension(10, 10));
 //            cons.gridwidth = GridBagConstraints.REMAINDER;
 
             bar.add(toolbarPanel, cons);
 
-            if( SplitAction.isSplitingEnabled() && null == splitPane ) {
-                cons = new GridBagConstraints();
-                cons.anchor = GridBagConstraints.EAST;
-                cons.fill = GridBagConstraints.NONE;
-                cons.insets = new Insets( 0, 5, 0, 2 );
-
-                if( null == splitDragger ) {
-                    splitDragger = createSplitDragger();
-                }
-                bar.add(splitDragger, cons);
-            }
-
             // rootcycle is the tabscomponent..
 //            toolbarPanel.setFocusCycleRoot(false);
             bar.revalidate();
             bar.repaint();
         }
-    }
-
-    private JComponent createSplitDragger() {
-        JLabel res = new JLabel( "x" );
-        res.setToolTipText( "Drag me to split this window horizontally or vertically.");
-        res.addMouseMotionListener( new MouseAdapter() {
-
-            @Override
-            public void mouseDragged( MouseEvent e ) {
-                System.err.println( "dragged: " + e.getLocationOnScreen() );
-            }
-
-        });
-        return res;
     }
 
     private void setInnerToolBarSplit(JComponent innerbar) {
@@ -674,7 +647,7 @@ class TabsComponent extends JPanel {
             barSplit.repaint();
         }
     }
-    
+
     void setToolbarBarVisible(boolean visible) {
         if (toolbarVisible == visible) {
             return;
@@ -690,17 +663,17 @@ class TabsComponent extends JPanel {
         toolbarVisible = visible;
         barSplit.setVisible(visible);
     }
-    
-    
-    
+
+
+
     JComponent getEmptyInnerToolBar() {
         if (EMPTY == null) {
             EMPTY = new JPanel();
         }
         return EMPTY;
     }
-    
-    
+
+
     void requestFocusForSelectedButton() {
         bar.setFocusable(true);
         Enumeration en = model.getButtonGroup().getElements();
@@ -718,36 +691,36 @@ class TabsComponent extends JPanel {
         bar.setFocusable(false);
         componentPanel.requestFocus();
     }
-    
-    
+
+
     private Border buttonBorder = null;
     private Border getButtonBorder() {
         if (buttonBorder == null) {
             //For some lf's, core will supply one
             buttonBorder = UIManager.getBorder ("nb.tabbutton.border"); //NOI18N
         }
-        
+
         return buttonBorder;
     }
-    
+
     public static boolean isXPTheme () {
         Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
                         getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
         return isXP == null ? false : isXP.booleanValue();
     }
-    
-  
+
+
     void startToggling() {
         ActionMap map = bar.getActionMap();
         Action act = new TogglesGoEastAction();
         // JToolbar action name
         map.put("navigateRight", act);//NOI18N
         InputMap input = bar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-        
+
         act = new TogglesGoWestAction();
         // JToolbar action name
         map.put("navigateLeft", act);//NOI18N
-        
+
         act = new TogglesGoDownAction();
         map.put("TogglesGoDown", act);//NOI18N
         // JToolbar action name
@@ -775,9 +748,9 @@ class TabsComponent extends JPanel {
         input.put(stroke, "TogglesGoDown");//NOI18N
     }
 
-    
+
     private class TogglesGoWestAction extends AbstractAction {
-        
+
         public void actionPerformed(ActionEvent e) {
             MultiViewDescription[] descs = model.getDescriptions();
             MultiViewDescription active = model.getActiveDescription();
@@ -793,9 +766,9 @@ class TabsComponent extends JPanel {
             }
         }
     }
-    
+
     private class TogglesGoEastAction extends AbstractAction {
-        
+
         public void actionPerformed(ActionEvent e) {
             MultiViewDescription[] descs = model.getDescriptions();
             MultiViewDescription active = model.getActiveDescription();
@@ -813,17 +786,17 @@ class TabsComponent extends JPanel {
     }
 
     private class TogglesGoDownAction extends AbstractAction {
-        
+
         public void actionPerformed(ActionEvent e) {
             changeActiveManually(model.getActiveDescription());
             model.getActiveElement().getVisualRepresentation().requestFocusInWindow();
         }
     }
-    
-    
+
+
 /**
- * used in 
- */    
+ * used in
+ */
     static class TabsButtonModel extends ToggleButtonModel {
 
         private MultiViewDescription desc;
@@ -831,12 +804,12 @@ class TabsComponent extends JPanel {
             super();
             desc = description;
         }
-        
+
         public MultiViewDescription getButtonsDescription() {
             return desc;
         }
     }
-    
+
     class ButtonMouseListener extends MouseAdapter {
         @Override
         public void mouseEntered(MouseEvent e) {
@@ -848,7 +821,7 @@ class TabsComponent extends JPanel {
             AbstractButton b = (AbstractButton)e.getComponent();
             b.getModel().setRollover(false);
         }
-        
+
         /** for user triggered clicks, do activate the current element..
             make it on mousePressed to be in synch with the topcpomponent activation code in the winsys impl #68505
          */
@@ -882,6 +855,6 @@ class TabsComponent extends JPanel {
             }
 
         }
-        
-    }    
+
+    }
 }
