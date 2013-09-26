@@ -43,15 +43,21 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.Collections;
 import javax.lang.model.element.Element;
 import org.netbeans.modules.db.api.sql.SQLKeywords;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.dd.JavaPersistenceQLKeywords;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,31 +65,39 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class ValidColumnName extends JPAEntityAttributeCheck {
-    
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
+
+    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
         String columnName = attrib.getColumn().getName();
-        Element javaElement = attrib.getJavaElement();
-        
-        if (columnName.length() == 0){
-            return new ErrorDescription[]{Rule.createProblem(javaElement, ctx,
-                    NbBundle.getMessage(ValidColumnName.class,
-                    "MSG_AttrInvalidPersistenceQLIdentifier",
-                    columnName))};
+
+        if (columnName.length() == 0) {
+            return getErr(ctx, hc, attrib, "MSG_AttrInvalidPersistenceQLIdentifier",
+                    columnName);
         }
-        
-        if (JavaPersistenceQLKeywords.isKeyword(columnName)){
-            return new ErrorDescription[]{Rule.createProblem(javaElement, ctx,
-                    NbBundle.getMessage(ValidColumnName.class,
-                    "MSG_AttrNamedWithJavaPersistenceQLKeyword", columnName))};
+
+        if (JavaPersistenceQLKeywords.isKeyword(columnName)) {
+            return getErr(ctx, hc, attrib, "MSG_AttrNamedWithJavaPersistenceQLKeyword",
+                    columnName);
         }
-        
-        if (SQLKeywords.isSQL99ReservedKeyword(columnName)){
-            return new ErrorDescription[]{Rule.createProblem(javaElement, ctx,
-                    NbBundle.getMessage(ValidColumnName.class,
-                    "MSG_AttrNamedWithReservedSQLKeyword", columnName),
-                    Severity.WARNING)};
+
+        if (SQLKeywords.isSQL99ReservedKeyword(columnName)) {
+            return getErr(ctx, hc, attrib, "MSG_AttrNamedWithReservedSQLKeyword",
+                    columnName);
         }
-        
+
         return null;
+    }
+
+    private static Collection<ErrorDescription> getErr(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib, String msgKey, String msgPar) {
+        Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+        Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                ctx.getCompilationInfo(), elementTree);
+
+        ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                hc,
+                underlineSpan.getStartOffset(),
+                underlineSpan.getEndOffset(),
+                NbBundle.getMessage(ValidColumnName.class, msgKey, msgPar));//TODO: may need to have "error" as default
+        return Collections.singleton(error);
     }
 }

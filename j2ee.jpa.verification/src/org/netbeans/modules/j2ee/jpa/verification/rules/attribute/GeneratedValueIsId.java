@@ -43,15 +43,18 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,18 +64,26 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class GeneratedValueIsId extends JPAEntityAttributeCheck {
-    
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
-        
-        if (!(attrib.getModelElement() instanceof Id)){
-            if (Utilities.hasAnnotation(attrib.getJavaElement(), JPAAnnotations.GENERATED_VALUE)){
-                return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
-                        ctx, NbBundle.getMessage(GeneratedValueIsId.class,
-                        "MSG_GeneratedValueIsId"),
-                        Severity.WARNING)};
+
+    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
+
+        if (!(attrib.getModelElement() instanceof Id)) {
+            if (Utilities.hasAnnotation(attrib.getJavaElement(), JPAAnnotations.GENERATED_VALUE)) {
+
+                Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+                Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                        ctx.getCompilationInfo(), elementTree);
+
+                ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                        hc,
+                        underlineSpan.getStartOffset(),
+                        underlineSpan.getEndOffset(),
+                        NbBundle.getMessage(GeneratedValueIsId.class, "MSG_GeneratedValueIsId"));
+                return Collections.singletonList(error);
             }
         }
-        
+
         return null;
     }
 }
