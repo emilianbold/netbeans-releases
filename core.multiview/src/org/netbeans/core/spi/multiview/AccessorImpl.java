@@ -68,12 +68,21 @@ class AccessorImpl extends SpiAccessor {
         }
     }
     
+    @Override
     public MultiViewElementCallback createCallback(MultiViewElementCallbackDelegate delegate) {
         return new MultiViewElementCallback(delegate);
     }    
     
+    @Override
     public CloseOperationHandler createDefaultCloseHandler() {
         return MultiViewFactory.createDefaultCloseOpHandler();
+    }
+
+    @Override
+    public boolean shouldCheckCanCloseAgain( CloseOperationHandler closeHandler ) {
+        if( closeHandler instanceof MultiViewFactory.DefaultCloseHandler )
+            return ((MultiViewFactory.DefaultCloseHandler)closeHandler).shouldCheckCanCloseAgain();
+        return false;
     }
     
 }

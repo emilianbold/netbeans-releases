@@ -140,7 +140,13 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertTrue("Second one is for split", ((ContextAwareDescription)description).isSplitDescription());
 
         CloseH.retValue = true;
-        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", null, null);
+        MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", new AbstractAction() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                MVE.closeState = null;
+            }
+        }, null);
         assertTrue("Closed OK", mvc.close());
         assertNotNull(CloseH.globalElements);
         assertEquals("One handle", 1, CloseH.globalElements.length);
@@ -159,7 +165,14 @@ public class MultiViewProcessorTest extends NbTestCase {
         
         assertTrue("First component can be closed without any questions", cmv.close());
         
-        CntAction accept = new CntAction();
+        CntAction accept = new CntAction() {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                super.actionPerformed( e );
+                MVE.closeState = null;
+            }
+
+        };
         CntAction discard = new CntAction();
         CloseH.retValue = false;
         MVE.closeState = MultiViewFactory.createUnsafeCloseState("warn", accept, discard);
@@ -182,6 +195,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertTrue("Closed accepted OK", mvc.close());
         assertEquals("Three buttons", 3, DD.d.getOptions().length);
         assertNull("Not called, we use default handler", CloseH.globalElements);
+        MVE.closeState = null;
     }
 
     public void testCloneableMultiViewsSerialize() throws Exception {
@@ -655,7 +669,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         }
     }
     
-    private static final class CntAction extends AbstractAction {
+    private static class CntAction extends AbstractAction {
         int cnt;
         
         @Override

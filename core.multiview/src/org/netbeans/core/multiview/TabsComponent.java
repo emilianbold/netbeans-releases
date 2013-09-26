@@ -96,6 +96,7 @@ class TabsComponent extends JPanel {
     private boolean removeSplit = false;
     private MultiViewPeer mvPeer;
     private boolean hiddenTriggeredByMultiViewButton = false;
+    private JComponent splitDragger;
     
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
@@ -601,18 +602,44 @@ class TabsComponent extends JPanel {
             GridBagConstraints cons = new GridBagConstraints();
             cons.anchor = GridBagConstraints.EAST;
             cons.fill = GridBagConstraints.BOTH;
-            cons.gridwidth = GridBagConstraints.REMAINDER;
+//            cons.gridwidth = GridBagConstraints.REMAINDER;
             cons.weightx = 1;
             toolbarPanel.setMinimumSize(new Dimension(10, 10));
 //            cons.gridwidth = GridBagConstraints.REMAINDER;
 
             bar.add(toolbarPanel, cons);
 
+            if( SplitAction.isSplitingEnabled() && null == splitPane ) {
+                cons = new GridBagConstraints();
+                cons.anchor = GridBagConstraints.EAST;
+                cons.fill = GridBagConstraints.NONE;
+                cons.insets = new Insets( 0, 5, 0, 2 );
+
+                if( null == splitDragger ) {
+                    splitDragger = createSplitDragger();
+                }
+                bar.add(splitDragger, cons);
+            }
+
             // rootcycle is the tabscomponent..
 //            toolbarPanel.setFocusCycleRoot(false);
             bar.revalidate();
             bar.repaint();
         }
+    }
+
+    private JComponent createSplitDragger() {
+        JLabel res = new JLabel( "x" );
+        res.setToolTipText( "Drag me to split this window horizontally or vertically.");
+        res.addMouseMotionListener( new MouseAdapter() {
+
+            @Override
+            public void mouseDragged( MouseEvent e ) {
+                System.err.println( "dragged: " + e.getLocationOnScreen() );
+            }
+
+        });
+        return res;
     }
 
     private void setInnerToolBarSplit(JComponent innerbar) {
