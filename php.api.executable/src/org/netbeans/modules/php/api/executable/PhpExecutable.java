@@ -120,7 +120,7 @@ public final class PhpExecutable {
     };
 
     /**
-     * Get the {@link ExecutionDescriptor execution descriptor}. This descriptor is:
+     * This descriptor is:
      * <ul>
      *   <li>{@link ExecutionDescriptor#isControllable() controllable}</li>
      *   <li>{@link ExecutionDescriptor#isFrontWindow() displays the Output window}</li>
@@ -128,7 +128,6 @@ public final class PhpExecutable {
      *   <li>{@link ExecutionDescriptor#isInputVisible() has visible user input}</li>
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
-     * @return the default {@link ExecutionDescriptor execution descriptor}.
      */
     public static final ExecutionDescriptor DEFAULT_EXECUTION_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)

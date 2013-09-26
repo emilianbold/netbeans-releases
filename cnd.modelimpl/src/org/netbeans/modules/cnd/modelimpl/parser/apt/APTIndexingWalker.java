@@ -92,6 +92,7 @@ public final class APTIndexingWalker extends APTWalker {
     @Override
     protected void onDefine(APT apt) {
         APTDefine defineNode = (APTDefine) apt;
+        analyzeToken(defineNode.getName());
         analyzeList(defineNode.getBody());
     }
 

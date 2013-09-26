@@ -277,10 +277,10 @@ public final class Atoum {
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+        // #236397 - cannot be controllable
+        return new ExecutionDescriptor()
                 .optionsPath(AtoumOptionsPanelController.OPTIONS_PATH)
-                .frontWindowOnError(false)
-                .inputVisible(false);
+                .showProgress(true);
     }
 
     @NbBundle.Messages({

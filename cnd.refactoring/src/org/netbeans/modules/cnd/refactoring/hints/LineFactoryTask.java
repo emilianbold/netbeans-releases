@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -110,7 +111,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
                     int caretOffset = cursorEvent.getCaretOffset();
                     CsmFile file = csmFiles.iterator().next();
-                    CsmExpressionStatement expression = findExpressionStatement(file.getDeclarations(), caretOffset);
+                    CsmExpressionStatement expression = findExpressionStatement(file.getDeclarations(), caretOffset, doc);
                     if (expression != null) {
                         createHint(expression, doc, fileObject);
                     } else {
@@ -123,37 +124,90 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         }
     }
     
-    private CsmExpressionStatement findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls, int offset) {
+    private CsmExpressionStatement findExpressionStatement(Collection<? extends CsmOffsetableDeclaration> decls, int offset, Document doc) {
         for(CsmOffsetableDeclaration decl : decls) {
             if (decl.getStartOffset() < offset && offset < decl.getEndOffset()) {
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
                     CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
-                    return findExpressionStatement(def.getBody(), offset);
+                    return findExpressionStatement(def.getBody(), offset, doc);
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     CsmNamespaceDefinition def = (CsmNamespaceDefinition) decl;
-                    return findExpressionStatement(def.getDeclarations(), offset);
+                    return findExpressionStatement(def.getDeclarations(), offset, doc);
                 } else if (CsmKindUtilities.isClass(decl)) {
                     CsmClass cls = (CsmClass) decl;
-                    return findExpressionStatement(cls.getMembers(), offset);
+                    return findExpressionStatement(cls.getMembers(), offset, doc);
                 }
             }
         }
         return null;
     }    
     
-    private CsmExpressionStatement findExpressionStatement(CsmCompoundStatement body, int offset) {
+    private CsmExpressionStatement findExpressionStatement(CsmCompoundStatement body, int offset, final Document doc) {
         if (body != null) {
-            for(CsmStatement st : body.getStatements()) {
-                if (st.getStartOffset() <= offset && offset < st.getEndOffset()) {
-                    if (st.getKind() == CsmStatement.Kind.COMPOUND) {
-                        findExpressionStatement((CsmCompoundStatement)st, offset);
-                    } else if (st.getKind() == CsmStatement.Kind.EXPRESSION){
-                        return (CsmExpressionStatement) st;
+            final List<CsmStatement> statements = body.getStatements();
+            for(int i = 0; i < statements.size(); i++) {
+                final CsmStatement st = statements.get(i);
+                final int startOffset = st.getStartOffset();
+                final int endOffset = st.getEndOffset();
+                if (startOffset > offset) {
+                    break;
+                }
+                if (st.getKind() == CsmStatement.Kind.COMPOUND) {
+                    if (startOffset <= offset && offset < endOffset) {
+                        findExpressionStatement((CsmCompoundStatement)st, offset, doc);
+                    }
+                } else if (st.getKind() == CsmStatement.Kind.EXPRESSION){
+                    final int nexStartOffset;
+                    if(i+1 < statements.size()) {
+                        nexStartOffset = statements.get(i+1).getStartOffset();
+                    } else {
+                        nexStartOffset = body.getEndOffset();
+                    }
+                    if (startOffset <= offset && offset < nexStartOffset) {
+                        final AtomicInteger trueEndOffset = new AtomicInteger(endOffset);
+                        doc.render(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                                TokenSequence<?> ts = hi.tokenSequence();
+                                ts.move(endOffset);
+                                while (ts.moveNext()) {
+                                    Token<?> token = ts.token();
+                                    if (ts.offset() >= nexStartOffset) {
+                                        break;
+                                    }
+                                    if (CppTokenId.SEMICOLON.equals(token.id())) {
+                                        trueEndOffset.set(ts.offset()+1);
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        if (startOffset <= offset && offset <= trueEndOffset.get()) {
+                            if(isApplicable((CsmExpressionStatement) st)) {
+                                return (CsmExpressionStatement) st;
+                            } else {
+                                return null;
+                            }
+                        }
                     }
                 }
             }
         }
         return null;
+    }
+    
+    private boolean isApplicable(CsmExpressionStatement st) {
+        CsmType resolveType = CsmTypeResolver.resolveType(st.getExpression(), Collections.<CsmInstantiation>emptyList());
+        if (resolveType == null) {
+            return false;
+        }
+        final String typeText = resolveType.getCanonicalText().toString();
+        if ("void".equals(typeText)) { //NOI18N
+            return false;
+        }
+        return true;
     }
     
     private void createHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
@@ -230,7 +284,10 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         }
                         if (CppTokenId.IDENTIFIER.equals(token.id())) {
                             name = token.text().toString();
-                            break;
+                        } else if (CppTokenId.LPAREN.equals(token.id())) {
+                            if (name != null) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -238,7 +295,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (name == null) {
                 name = "variable"; //NOI18N
             } else {
-                name = name+"1"; //NOI18N
+                if (name.toLowerCase().startsWith("get") && name.length() > 3) { //NOI18N
+                    name = name.substring(3);
+                } else if (name.toLowerCase().startsWith("is") && name.length() > 2) { //NOI18N
+                    name = name.substring(2);
+                }
             }
             return name;
         }
