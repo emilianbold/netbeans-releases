@@ -45,13 +45,6 @@ cd ${DIRNAME}
 SCRIPT_DIR=`pwd`
 source init.sh
 
-if [ -n "$JDEV_BUILD" ]; then
-    echo "building limited subset of the modules for jdev"
-    CLUSTER_CONFIG="-Dcluster.config=java"
-else
-    CLUSTER_CONFIG=
-fi
-
 #Clean old tests results
 if [ -n $WORKSPACE ]; then
     rm -rf $WORKSPACE/results
