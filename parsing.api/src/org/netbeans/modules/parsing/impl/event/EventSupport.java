@@ -424,7 +424,7 @@ public final class EventSupport {
         private void editorRegistryChanged() {
             final JTextComponent editor = EditorRegistry.lastFocusedComponent();
             final JTextComponent lastEditor = lastEditorRef == null ? null : lastEditorRef.get();
-            if (lastEditor != editor) {
+            if (lastEditor != editor && (editor == null || editor.getClientProperty("AsTextField") == null)) {
                 if (lastEditor != null) {
                     lastEditor.removeCaretListener(this);
                     lastEditor.removePropertyChangeListener(this);
