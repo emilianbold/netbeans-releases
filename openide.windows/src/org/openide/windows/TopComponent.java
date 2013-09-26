@@ -1452,6 +1452,9 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     @Target(ElementType.TYPE)
     public static @interface Description {
         /** The default value for {@link TopComponent#preferredID()}.
+         * It can consist only of upper and lower case letters, digits and '-' or '_' characters.
+         * If the TopCopmponent is a singleton then you can use this id to
+         * lookup the TopComponent in {@link WindowManager#findTopComponent(java.lang.String)}
          */
         public String preferredID();
         /** The icon to load for {@link TopComponent#getIcon()}.

@@ -116,16 +116,15 @@ public final class Splash implements Stamps.Updater {
         if (!CLIOptions.isNoSplash() && !GraphicsEnvironment.isHeadless()) {
             if (!s.exists("splash.png")) {
                 s.scheduleSave(this, "splash.png", false);
-            } else {
-                try {
-                    splashScreen = SplashScreen.getSplashScreen();
-                    if (splashScreen != null) {
-                        Graphics2D graphics = splashScreen.createGraphics();
-                        painter = new SplashPainter(graphics, null, false);
-                    }
-                } catch (RuntimeException x) {
-                    Exceptions.printStackTrace(x);
+            }
+            try {
+                splashScreen = SplashScreen.getSplashScreen();
+                if (splashScreen != null) {
+                    Graphics2D graphics = splashScreen.createGraphics();
+                    painter = new SplashPainter(graphics, null, false);
                 }
+            } catch (RuntimeException x) {
+                Exceptions.printStackTrace(x);
             }
             if (painter == null) {
                 comp = new SplashComponent(false);
