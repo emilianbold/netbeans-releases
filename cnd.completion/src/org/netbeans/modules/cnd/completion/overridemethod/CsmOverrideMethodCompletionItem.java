@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.implmethod;
+package org.netbeans.modules.cnd.completion.overridemethod;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -75,7 +75,7 @@ import org.openide.util.Lookup;
  *
  * @author Alexander Simon
  */
-public class CsmImplementsMethodCompletionItem implements CompletionItem {
+public class CsmOverrideMethodCompletionItem implements CompletionItem {
 
     private final int substitutionOffset;
     private final int priority;
@@ -88,7 +88,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     private final ImageIcon icon;
     private final String right;
 
-    private CsmImplementsMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
+    private CsmOverrideMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
             String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right) {
         this.substitutionOffset = substitutionOffset;
         this.priority = priority;
@@ -101,18 +101,21 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.right = right;
     }
 
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
-        String sortItemText = item.getName().toString();
+    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+        String sortItemText;
+        if (CsmKindUtilities.isDestructor(item)) {
+            sortItemText = "~"+cls.getName(); //NOI18N
+        } else {
+            sortItemText = item.getName().toString();
+        }
         String appendItemText = createAppendText(item, cls);
         String rightText = createRightName(item);
-        String coloredItemText = createDisplayName(item, cls, "implement"); //NOI18N
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
+        String coloredItemText = createDisplayName(item, cls, "override"); //NOI18N
+        return new CsmOverrideMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
     }
 
-    private static String createDisplayName(CsmMember item,  CsmClass parent, String operation) {
+    private static String createDisplayName(CsmMember item, CsmClass parent, String operation) {
         StringBuilder displayName = new StringBuilder();
-        displayName.append(parent.getName());
-        displayName.append("::"); //NOI18N
         displayName.append("<b>"); //NOI18N
         displayName.append(((CsmFunction)item).getSignature());
         displayName.append("</b>"); //NOI18N
@@ -120,9 +123,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             displayName.append(" - "); //NOI18N
             displayName.append(operation);
         }
+        if (CsmKindUtilities.isDestructor(item)) {
+            String s = displayName.toString();
+            int i = s.indexOf('('); //NOI18N
+            if (i > 0) {
+                return "~"+parent.getName()+s.substring(i); //NOI18N
+            }
+        }
         return displayName.toString();
-        //return CsmDisplayUtilities.addHTMLColor(displayName.toString(), 
-        //       CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.FUNCTION));
     }
     
     private static String createRightName(CsmMember item) {
@@ -136,7 +144,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     }
     
     private static String createAppendText(CsmMember item, CsmClass parent) {
-        StringBuilder appendItemText = new StringBuilder();
+        StringBuilder appendItemText = new StringBuilder("virtual "); //NOI18N
         String type = "";
         if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
@@ -160,16 +168,19 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             }
         }
         appendItemText.append(type);
-        appendItemText.append(parent.getName());
-        appendItemText.append("::"); //NOI18N
-        addSignature(item, appendItemText);
-        appendItemText.append(" {\n}\n"); //NOI18N
+        addSignature(item, parent, appendItemText);
+        appendItemText.append(";"); //NOI18N
         return appendItemText.toString();
     }
     
-    private static void addSignature(CsmMember item, StringBuilder sb) {
+    private static void addSignature(CsmMember item, CsmClass parent, StringBuilder sb) {
         //sb.append(item.getSignature());
-        sb.append(item.getName());
+        if (CsmKindUtilities.isDestructor(item)) {
+            sb.append('~');
+            sb.append(parent.getName());
+        } else {
+            sb.append(item.getName());
+        }
         if (CsmKindUtilities.isTemplate(item)) {
             List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
             // What to do with template?

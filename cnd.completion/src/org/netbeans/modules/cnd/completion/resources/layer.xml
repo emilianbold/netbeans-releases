@@ -66,6 +66,10 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="160"/>
                     </file>
 
+                    <file name="org-netbeans-modules-cnd-completion-overridemethod-CsmOverrideMethodCompletionProvider.instance">
+                        <attr name="position" intvalue="160"/>
+                    </file>
+
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
