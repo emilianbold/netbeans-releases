@@ -45,6 +45,7 @@
 package org.netbeans.modules.git.ui.history;
 
 import java.awt.Color;
+import java.awt.Component;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.util.NbBundle;
@@ -73,8 +74,12 @@ import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BoxLayout;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
@@ -88,14 +93,19 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.history.SearchHistoryTopComponent.DiffResultsViewFactory;
 import org.netbeans.modules.git.ui.history.SummaryView.GitLogEntry;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
+import org.openide.util.WeakListeners;
 
 /**
  * Contains all components of the Search History panel.
  *
  * @author Maros Sandor
  */
+@NbBundle.Messages({
+    "SearchHistoryPanel.filter.allbranches=All Branches"
+})
 class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.Provider, PropertyChangeListener, DocumentListener, ActionListener {
 
     private final File[]                roots;
@@ -124,6 +134,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private DiffResultsViewFactory diffViewFactory;
     private boolean searchStarted;
     private String currentBranch;
+    private Object currentBranchFilter = ALL_BRANCHES_FILTER;
+    private final RepositoryInfo info;
+    private static final String ALL_BRANCHES_FILTER = Bundle.SearchHistoryPanel_filter_allbranches();
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -147,9 +160,10 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private final Timer filterTimer;
 
     /** Creates new form SearchHistoryPanel */
-    public SearchHistoryPanel(File repository, File [] roots, SearchCriteriaPanel criteria) {
+    public SearchHistoryPanel(File repository, RepositoryInfo info, File [] roots, SearchCriteriaPanel criteria) {
         this.roots = roots;
         this.repository = repository;
+        this.info = info;
         this.criteria = criteria;
         this.diffViewFactory = new SearchHistoryTopComponent.DiffResultsViewFactory();
         criteriaVisible = true;
@@ -160,6 +174,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         filterTimer.setRepeats(false);
         filterTimer.stop();
         setupComponents();
+        info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
         aquaBackgroundWorkaround();
         refreshComponents(true);
     }
@@ -253,6 +268,18 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         fileInfoCheckBox.setSelected(GitModuleConfig.getDefault().getShowFileInfo());
         
         criteria.btnSelectBranch.addActionListener(this);
+        cmbBranch.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent (JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof GitBranch) {
+                    value = ((GitBranch) value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+            
+        });
+        refreshBranchFilterModel();
     }
 
     private ExplorerManager             explorerManager;
@@ -263,6 +290,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, this);
             if (tc == null) return;
             tc.setActivatedNodes((Node[]) evt.getNewValue());
+        } else if (RepositoryInfo.PROPERTY_BRANCHES.equals(evt.getPropertyName())) {
+            refreshBranchFilterModel();
         }
     }
 
@@ -375,6 +404,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             // did user change this setting and cleared the branch field?
             GitModuleConfig.getDefault().setSearchOnlyCurrentBranchEnabled(criteria.getBranch() != null);
         }
+        updateBranchFilter(criteria.getBranch());
         try {
             currentSearch = new SearchExecutor(this);
             currentSearch.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress", repository)); //NOI18N
@@ -436,6 +466,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbDiff = new javax.swing.JToggleButton();
         jSeparator2 = new javax.swing.JSeparator();
         jSeparator3 = new javax.swing.JToolBar.Separator();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        lblBranch = new javax.swing.JLabel();
+        cmbBranch = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         lblFilter = new javax.swing.JLabel();
         cmbFilterKind = new javax.swing.JComboBox();
@@ -502,6 +535,20 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         });
         jToolBar1.add(fileInfoCheckBox);
+        jToolBar1.add(jSeparator4);
+
+        lblBranch.setLabelFor(cmbBranch);
+        org.openide.awt.Mnemonics.setLocalizedText(lblBranch, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "branchLabel.text")); // NOI18N
+        lblBranch.setToolTipText(org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "branchLabel.TTtext")); // NOI18N
+        lblBranch.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        jToolBar1.add(lblBranch);
+
+        cmbBranch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbBranchActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(cmbBranch);
         jToolBar1.add(jSeparator1);
 
         org.openide.awt.Mnemonics.setLocalizedText(lblFilter, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "filterLabel.text")); // NOI18N
@@ -518,6 +565,9 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         org.openide.awt.Mnemonics.setLocalizedText(lblFilterContains, org.openide.util.NbBundle.getMessage(SearchHistoryPanel.class, "containsLabel")); // NOI18N
         lblFilterContains.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 5, 0, 5));
         jToolBar1.add(lblFilterContains);
+
+        txtFilter.setMinimumSize(new java.awt.Dimension(30, 18));
+        txtFilter.setPreferredSize(new java.awt.Dimension(50, 18));
         jToolBar1.add(txtFilter);
 
         resultsPanel.setLayout(new java.awt.BorderLayout());
@@ -595,6 +645,31 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }//GEN-LAST:event_cmbFilterKindActionPerformed
 
+    @NbBundle.Messages({
+        "LBL_SearchHistoryPanel.searchAllBranches.title=Search Restart Required",
+        "# {0} - branch name", "MSG_SearchHistoryPanel.searchAllBranches.text=Changing the branch filter to this value will have no effect \n"
+                + "because you are currently searching the branch \"{0}\" only.\n\n"
+                + "Do you want to restart the search to view all branches?"
+    })
+    private void cmbBranchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBranchActionPerformed
+        Object filter = cmbBranch.getSelectedItem();
+        boolean refresh = filter != currentBranchFilter;
+        if (refresh) {
+            currentBranchFilter = filter;
+            if (currentBranchFilter == ALL_BRANCHES_FILTER && criteria.getBranch() != null) {
+                if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this,
+                        Bundle.MSG_SearchHistoryPanel_searchAllBranches_text(criteria.getBranch()),
+                        Bundle.LBL_SearchHistoryPanel_searchAllBranches_title(),
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+                    criteria.setBranch("");
+                    executeSearch();
+                    return;
+                }
+            }
+            filterTimer.restart();
+        }
+    }//GEN-LAST:event_cmbBranchActionPerformed
+
     @Override
     public void insertUpdate(DocumentEvent e) {
         documentChanged(e);
@@ -654,13 +729,16 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     final javax.swing.JButton bPrev = new javax.swing.JButton();
     private javax.swing.JButton bSearch;
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JComboBox cmbBranch;
     private javax.swing.JComboBox cmbFilterKind;
     private org.netbeans.modules.versioning.history.LinkButton expandCriteriaButton;
     final javax.swing.JCheckBox fileInfoCheckBox = new javax.swing.JCheckBox();
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel lblBranch;
     private javax.swing.JLabel lblFilter;
     private javax.swing.JLabel lblFilterContains;
     private javax.swing.JPanel resultsPanel;
@@ -758,6 +836,10 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                         || contains(rev.getBranches(), filterText)
                         || contains(rev.getTags(), filterText);
             }
+        }
+        Object selectedBranchFilter = currentBranchFilter;
+        if (visible && selectedBranchFilter instanceof GitBranch) {
+            visible = rev.getLog().getBranches().containsKey(((GitBranch) currentBranchFilter).getName());
         }
         return visible;
     }
@@ -861,5 +943,36 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
         if (fac != null) {
             this.diffViewFactory = fac;
         }
+    }
+
+    private void refreshBranchFilterModel () {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        model.addElement(ALL_BRANCHES_FILTER);
+        for (Map.Entry<String, GitBranch> e : info.getBranches().entrySet()) {
+            GitBranch b = e.getValue();
+            if (b.getName() != GitBranch.NO_BRANCH) {
+                model.addElement(b);
+                if (currentBranchFilter instanceof GitBranch && b.getName().equals(((GitBranch) currentBranchFilter).getName())) {
+                    currentBranchFilter = b;
+                }
+            }
+        }
+        cmbBranch.setModel(model);
+        cmbBranch.setSelectedItem(currentBranchFilter);
+    }
+
+    private void updateBranchFilter (String branch) {
+        currentBranchFilter = ALL_BRANCHES_FILTER;
+        if (branch != null) {
+            ComboBoxModel model = cmbBranch.getModel();
+            for (int i = 0; i < model.getSize(); ++i) {
+                Object filter = model.getElementAt(i);
+                if (filter instanceof GitBranch && branch.equals(((GitBranch) filter).getName())) {
+                    currentBranchFilter = filter;
+                    break;
+                }
+            }
+        }
+        cmbBranch.setSelectedItem(currentBranchFilter);
     }
 }

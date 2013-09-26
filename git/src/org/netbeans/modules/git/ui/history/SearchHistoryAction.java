@@ -79,10 +79,11 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     public static void openSearch(final File repository, final File[] roots, final String contextName) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
         final String activeBranch = getActiveBranchName(repository);
+        final RepositoryInfo info = RepositoryInfo.getInstance(repository);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, roots);
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, info, roots);
                 tc.setBranch(activeBranch);
                 tc.setDisplayName(title);
                 tc.open();
@@ -97,10 +98,11 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     public static void openSearch (final File repository, final File root, final String contextName,
             final String commitIdFrom, final String commitIdTo) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        final RepositoryInfo info = RepositoryInfo.getInstance(repository);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, new File[] { root });
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, info, new File[] { root });
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
@@ -113,10 +115,11 @@ public class SearchHistoryAction extends MultipleRepositoryAction {
     
     public static void openSearch (final File repository, final File root, final String contextName, final int lineNumber) {
         final String title = NbBundle.getMessage(SearchHistoryTopComponent.class, "LBL_SearchHistoryTopComponent.title", contextName);
+        final RepositoryInfo info = RepositoryInfo.getInstance(repository);
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, root, new SearchHistoryTopComponent.DiffResultsViewFactory() {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(repository, info, root, new SearchHistoryTopComponent.DiffResultsViewFactory() {
                     @Override
                     DiffResultsView createDiffResultsView(SearchHistoryPanel panel, List<RepositoryRevision> results) {
                         return new DiffResultsViewForLine(panel, results, lineNumber);

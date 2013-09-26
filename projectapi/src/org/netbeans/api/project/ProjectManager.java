@@ -602,18 +602,22 @@ public final class ProjectManager {
                     if (!removedProjects.add(p)) {
                         LOG.log(Level.WARNING, "An attempt to call notifyDeleted more than once. Project: {0}", dir);
                     }
-                    //#111892
-                    Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
-                    for (FileOwnerQueryImplementation impl : col) {
-                        if (impl instanceof SimpleFileOwnerQueryImplementation) {
-                            ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
-                        }
-                    }
+                    resetSimpleFileOwnerQuery();
                     return null;
                 }
             });
         }
 
+    }
+
+    private void resetSimpleFileOwnerQuery() {
+        //#111892
+        Collection<? extends FileOwnerQueryImplementation> col = Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class);
+        for (FileOwnerQueryImplementation impl : col) {
+            if (impl instanceof SimpleFileOwnerQueryImplementation) {
+                ((SimpleFileOwnerQueryImplementation)impl).resetLastFoundReferences();
+            }
+        }
     }
     
     /**
@@ -761,6 +765,7 @@ public final class ProjectManager {
             synchronized (dir2Proj) {
                 LOG.log(Level.FINE, "deleted: {0}", fe.getFile());
                 dir2Proj.remove(fe.getFile());
+                resetSimpleFileOwnerQuery();            
             }
         }
 
@@ -769,6 +774,8 @@ public final class ProjectManager {
             synchronized (dir2Proj) {
                 LOG.log(Level.FINE, "renamed: {0}", fe.getFile());
                 dir2Proj.remove(fe.getFile());
+                resetSimpleFileOwnerQuery();            
+                
             }
         }
         

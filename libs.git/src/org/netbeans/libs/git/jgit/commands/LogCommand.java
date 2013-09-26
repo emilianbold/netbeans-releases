@@ -44,18 +44,24 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevFlag;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.AndRevFilter;
@@ -87,14 +93,18 @@ public class LogCommand extends GitCommand {
     private final List<GitRevisionInfo> revisions;
     private final String revision;
     private final SearchCriteria criteria;
+    private final boolean fetchBranchInfo;
+    private static final Logger LOG = Logger.getLogger(LogCommand.class.getName());
 
-    public LogCommand (Repository repository, GitClassFactory gitFactory, SearchCriteria criteria, ProgressMonitor monitor, RevisionInfoListener listener) {
+    public LogCommand (Repository repository, GitClassFactory gitFactory, SearchCriteria criteria,
+            boolean fetchBranchInfo, ProgressMonitor monitor, RevisionInfoListener listener) {
         super(repository, gitFactory, monitor);
         this.monitor = monitor;
         this.listener = listener;
         this.criteria = criteria;
+        this.fetchBranchInfo = fetchBranchInfo;
         this.revision = null;
-        this.revisions = new LinkedList<GitRevisionInfo>();
+        this.revisions = new LinkedList<>();
     }
     
     public LogCommand (Repository repository, GitClassFactory gitFactory, String revision, ProgressMonitor monitor, RevisionInfoListener listener) {
@@ -102,8 +112,9 @@ public class LogCommand extends GitCommand {
         this.monitor = monitor;
         this.listener = listener;
         this.criteria = null;
+        this.fetchBranchInfo = false;
         this.revision = revision;
-        this.revisions = new LinkedList<GitRevisionInfo>();
+        this.revisions = new LinkedList<>();
     }
 
     @Override
@@ -115,21 +126,50 @@ public class LogCommand extends GitCommand {
         } else {
             RevWalk walk = new RevWalk(repository);
             RevWalk fullWalk = new RevWalk(repository);
+            Map<String, GitBranch> allBranches;
+            Map<String, RevCommit> branchCommits;
+            List<RevFlag> branchFlags;
+            if (fetchBranchInfo) {
+                allBranches = Utils.getAllBranches(repository, getClassFactory(), new DelegatingGitProgressMonitor(monitor));
+                branchFlags = new ArrayList<>(allBranches.size());
+                branchCommits = new LinkedHashMap<>(allBranches.size());
+                for (Map.Entry<String, GitBranch> e : allBranches.entrySet()) {
+                    if (e.getKey() != GitBranch.NO_BRANCH) {
+                        RevFlag flag = walk.newFlag(e.getKey());
+                        branchFlags.add(flag);
+                        try {
+                            RevCommit branchHeadCommit = walk.parseCommit(repository.resolve(e.getValue().getId()));
+                            branchHeadCommit.add(flag);
+                            branchHeadCommit.carry(flag);
+                            walk.markStart(branchHeadCommit);
+                        } catch (IOException ex) {
+                            LOG.log(Level.INFO, null, ex);
+                        }
+                    }
+                }
+                walk.carry(branchFlags);
+            } else {
+                allBranches = Collections.<String, GitBranch>emptyMap();
+                branchCommits = Collections.<String, RevCommit>emptyMap();
+                branchFlags = Collections.<RevFlag>emptyList();
+            }
             try {
+                RevFlag interestingFlag = walk.newFlag("RESULT_FLAG"); //NOI18N
+                walk.carry(interestingFlag);
                 String revisionFrom = criteria.getRevisionFrom();
                 String revisionTo = criteria.getRevisionTo();
                 if (revisionTo != null && revisionFrom != null) {
                     for (RevCommit uninteresting : Utils.findCommit(repository, revisionFrom).getParents()) {
                         walk.markUninteresting(walk.parseCommit(uninteresting));
                     }
-                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, revisionTo)));
+                    walk.markStart(markStartCommit(walk.lookupCommit(Utils.findCommit(repository, revisionTo)), interestingFlag));
                 } else if (revisionTo != null) {
-                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, revisionTo)));
+                    walk.markStart(markStartCommit(walk.lookupCommit(Utils.findCommit(repository, revisionTo)), interestingFlag));
                 } else if (revisionFrom != null) {
                     for (RevCommit uninteresting : Utils.findCommit(repository, revisionFrom).getParents()) {
                         walk.markUninteresting(walk.parseCommit(uninteresting));
                     }
-                    walk.markStart(walk.lookupCommit(Utils.findCommit(repository, Constants.HEAD)));
+                    walk.markStart(markStartCommit(walk.lookupCommit(Utils.findCommit(repository, Constants.HEAD)), interestingFlag));
                 } else {
                     ListBranchCommand branchCommand = new ListBranchCommand(repository, getClassFactory(), false, new DelegatingGitProgressMonitor(monitor));
                     branchCommand.execute();
@@ -137,10 +177,10 @@ public class LogCommand extends GitCommand {
                         return;
                     }
                     for (Map.Entry<String, GitBranch> e : branchCommand.getBranches().entrySet()) {
-                        walk.markStart(walk.lookupCommit(Utils.findCommit(repository, e.getValue().getId())));
+                        walk.markStart(markStartCommit(walk.lookupCommit(Utils.findCommit(repository, e.getValue().getId())), interestingFlag));
                     }
                 }
-                applyCriteria(walk, criteria);
+                applyCriteria(walk, criteria, interestingFlag);
                 walk.sort(RevSort.TOPO);
                 walk.sort(RevSort.COMMIT_TIME_DESC, true);
                 int remaining = criteria.getLimit();
@@ -149,7 +189,8 @@ public class LogCommand extends GitCommand {
                     if (!applyCriteriaAfter(criteria, commit)) {
                         continue;
                     }
-                    addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(commit), repository));
+                    addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(commit),
+                            getAffectedBranches(commit, allBranches, branchFlags), repository));
                     --remaining;
                 }
             } catch (MissingObjectException ex) {
@@ -190,7 +231,7 @@ public class LogCommand extends GitCommand {
         listener.notifyRevisionInfo(info);
     }
 
-    private void applyCriteria (RevWalk walk, SearchCriteria criteria) {
+    private void applyCriteria (RevWalk walk, SearchCriteria criteria, final RevFlag partOfResultFlag) {
         File[] files = criteria.getFiles();
         if (files.length > 0) {
             Collection<PathFilter> pathFilters = Utils.getPathFilters(getRepository().getWorkTree(), files);
@@ -208,6 +249,24 @@ public class LogCommand extends GitCommand {
         } else {
             filter = RevFilter.NO_MERGES;
         }
+        filter = AndRevFilter.create(filter, new RevFilter() {
+
+            @Override
+            public boolean include (RevWalk walker, RevCommit cmit) {
+                return cmit.has(partOfResultFlag);
+            }
+
+            @Override
+            public RevFilter clone () {
+                return this;
+            }
+
+            @Override
+            public boolean requiresCommitBody () {
+                return false;
+            }            
+            
+        });
         
 //        String username = criteria.getUsername();
 //        if (username != null && !(username = username.trim()).isEmpty()) {
@@ -244,5 +303,22 @@ public class LogCommand extends GitCommand {
 
     private boolean applyTo (PersonIdent ident, String pattern) {
         return ident != null && new GitUser(ident.getName(), ident.getEmailAddress()).toString().contains(pattern);
+    }
+
+    private RevCommit markStartCommit (RevCommit commit, RevFlag interestingFlag) {
+        commit.add(interestingFlag);
+        return commit;
+    }
+
+    private Map<String, GitBranch> getAffectedBranches (RevCommit commit, Map<String, GitBranch> allBranches,
+            List<RevFlag> branchFlags) {
+        Map<String, GitBranch> affected = new LinkedHashMap<>(allBranches.size());
+        for (RevFlag flag : branchFlags) {
+            GitBranch b;
+            if (commit.has(flag) && (b = allBranches.get(flag.toString())) != null) {
+                affected.put(b.getName(), b);
+            }
+        }
+        return affected;
     }
 }

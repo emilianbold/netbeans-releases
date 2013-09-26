@@ -145,8 +145,8 @@ public final class NbMavenProjectImpl implements Project {
             problemReporter.doIDEConfigChecks();
         }
     });
-    private FileObject fileObject;
-    private FileObject folderFileObject;
+    private final FileObject fileObject;
+    private final FileObject folderFileObject;
     private final File projectFile;
     private final Lookup basicLookup;
     private final Lookup completeLookup;
@@ -227,8 +227,14 @@ public final class NbMavenProjectImpl implements Project {
             }
         });
         watcher = ACCESSOR.createWatcher(this);
-        File homeFile = FileUtil.normalizeFile(MavenCli.userMavenConfigurationHome);
-        openedProjectUpdater = new Updater(new File(projectFile.getParentFile(), "nb-configuration.xml"), projectFile, new File(homeFile, "settings.xml")); //NOI18N
+        openedProjectUpdater = new Updater(new FileProvider() {
+
+            @Override
+            public File[] getFiles() {
+                File homeFile = FileUtil.normalizeFile(MavenCli.userMavenConfigurationHome);
+                return new File[] {new File(projectFile.getParentFile(), "nb-configuration.xml"), projectFile, new File(homeFile, "settings.xml")}; //NOI18N
+            }
+        });
         problemReporter = new ProblemReporterImpl(this);
         M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(folder, true);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
@@ -420,7 +426,7 @@ public final class NbMavenProjectImpl implements Project {
     private @NonNull MavenProject loadOriginalMavenProject(boolean reload) {
         MavenProject newproject;
         try {
-            newproject = MavenProjectCache.getMavenProject(this.folderFileObject, reload);
+            newproject = MavenProjectCache.getMavenProject(this.getPOMFile(), reload);
             if (newproject == null) { //null when no pom.xml in project folder..
                 newproject = MavenProjectCache.getFallbackProject(projectFile);
             }
@@ -773,34 +779,44 @@ public final class NbMavenProjectImpl implements Project {
     // no idea why, it's supposed to be ProjectManager job.. maybe related to
     // maven impl of SubProjectProvider or FileOwnerQueryImplementation
     //TODO need to investigate why it's like that..
+    
+    //a renamed FileObject for project folder stays the same, changing the identity of the project, we have to use File.
     @Override
     public int hashCode() {
-        return getProjectDirectory().hashCode() * 13;
+        return getPOMFile().hashCode() * 13;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Project) {
-            return getProjectDirectory().equals(((Project) obj).getProjectDirectory());
+            NbMavenProjectImpl impl = ((Project) obj).getLookup().lookup(NbMavenProjectImpl.class);
+            if (impl != null) {
+                return getPOMFile().equals(impl.getPOMFile());
+            }
         }
         return false;
     }
 
     @Override
     public String toString() {
-        return "Maven[" + fileObject.getPath() + "]"; //NOI18N
+        return "Maven[" + getPOMFile().getAbsolutePath() + "]"; //NOI18N
 
+    }
+    
+    interface FileProvider {
+        File[] getFiles();
     }
 
     private class Updater implements FileChangeListener {
 
-        private final File[] filesToWatch;
+        
+        private final FileProvider fileProvider;
+        private File[] filesToWatch;
         private long lastTime = 0;
 
         /** Relative file paths to watch. */
-        Updater(File... toWatch) {
-            Arrays.sort(toWatch);
-            filesToWatch = toWatch;
+        Updater(FileProvider toWatch) {
+            fileProvider = toWatch;
         }
 
         @Override
@@ -841,15 +857,23 @@ public final class NbMavenProjectImpl implements Project {
         public void fileRenamed(FileRenameEvent fileRenameEvent) {
         }
 
-        void attachAll() {
-            for (File file : filesToWatch) {
+        synchronized void attachAll() {
+            File[] toWatch = fileProvider.getFiles();
+            Arrays.sort(toWatch);
+            this.filesToWatch = toWatch;
+            
+            for (File file : toWatch) {
                 FileUtil.addFileChangeListener(this, file);
             }
         }
 
-        void detachAll() {
-            for (File file : filesToWatch) {
-                FileUtil.removeFileChangeListener(this, file);
+        synchronized void detachAll() {
+            if (filesToWatch != null) {
+                File[] toWatch = filesToWatch;
+                filesToWatch = null;
+                for (File file : toWatch) {
+                    FileUtil.removeFileChangeListener(this, file);
+                }
             }
         }
     }

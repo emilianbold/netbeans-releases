@@ -59,7 +59,7 @@ import org.openide.util.actions.CookieAction;
  *
  * @author  nn136682
  */
-public class RemoveInstanceAction extends CookieAction {
+public class RemoveAction extends CookieAction {
     
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i=0; i<nodes.length; i++) {
@@ -67,8 +67,8 @@ public class RemoveInstanceAction extends CookieAction {
             if (instance == null || instance.isRemoveForbidden()) {
                 continue;
             }
-            String title = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_RemoveInstanceTitle", instance.getDisplayName());
-            String msg = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_ReallyRemoveInstance", instance.getDisplayName());
+            String title = NbBundle.getMessage(RemoveAction.class, "MSG_RemoveInstanceTitle");
+            String msg = NbBundle.getMessage(RemoveAction.class, "MSG_ReallyRemoveInstance", instance.getDisplayName());
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.YES_NO_OPTION);
             if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
                 instance.remove();
@@ -98,7 +98,7 @@ public class RemoveInstanceAction extends CookieAction {
     }
     
     public String getName() {
-        return NbBundle.getMessage(RemoveInstanceAction.class, "LBL_Remove");
+        return NbBundle.getMessage(RemoveAction.class, "LBL_Remove");
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {

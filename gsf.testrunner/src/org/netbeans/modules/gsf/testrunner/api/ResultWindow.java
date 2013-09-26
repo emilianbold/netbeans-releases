@@ -386,6 +386,10 @@ final class ResultWindow extends TopComponent {
     }
 
     private static JSplitPane getCurrentResultView(){
+        if(tabPane == null) {
+            // Test Results Window is not opened yet
+            return null;
+        }
         return (JSplitPane)tabPane.getSelectedComponent();
     }
 

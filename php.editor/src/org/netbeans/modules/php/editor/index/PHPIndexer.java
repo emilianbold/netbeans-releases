@@ -88,10 +88,10 @@ import org.openide.util.NbBundle;
  */
 public final class PHPIndexer extends EmbeddingIndexer {
     @MIMEResolver.ExtensionRegistration(
-        extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
-        displayName="#PHPResolver",
-        mimeType=PHP_MIME_TYPE,
-        position=282
+        extension = { "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
+        displayName = "#PHPResolver",
+        mimeType = PHP_MIME_TYPE,
+        position = 282
     )
     @NbBundle.Messages("PHPResolver=PHP Files")
     private static final Logger LOG = Logger.getLogger(PHPIndexer.class.getName());
