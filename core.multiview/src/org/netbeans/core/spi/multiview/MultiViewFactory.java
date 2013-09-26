@@ -266,8 +266,10 @@ public final class MultiViewFactory {
 /**
  * default simple implementation of the close handler.
  */    
-    private static final class DefaultCloseHandler implements CloseOperationHandler, Serializable {
-         private static final long serialVersionUID =-3126744916624172427L;        
+    static final class DefaultCloseHandler implements CloseOperationHandler, Serializable {
+         private static final long serialVersionUID =-3126744916624172427L;
+
+         private boolean checkCanCloseAgain = false;
        
         @Override
         @Messages({
@@ -275,6 +277,7 @@ public final class MultiViewFactory {
             "CTL_Discard=&Discard"
         })
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
+            checkCanCloseAgain = false;
             Iterator<CloseOperationState> it;
             if (elements != null) {
                 boolean canBeClosed = true;
@@ -301,6 +304,8 @@ public final class MultiViewFactory {
                                 act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
                             }
                         }
+                        //#236369 - check if everything saved ok later on
+                        checkCanCloseAgain = true;
                     } else if (retVal == choose[1]) {
                         // do discard
                         it = badOnes.values().iterator();
@@ -317,6 +322,10 @@ public final class MultiViewFactory {
                 }
             }
             return true;
+        }
+
+        boolean shouldCheckCanCloseAgain() {
+            return checkCanCloseAgain;
         }
         
         private Object createPanel(Map<String,CloseOperationState> elems) {

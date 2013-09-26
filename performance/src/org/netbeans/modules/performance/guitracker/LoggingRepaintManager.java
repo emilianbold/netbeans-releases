@@ -288,7 +288,8 @@ public class LoggingRepaintManager extends RepaintManager {
                 statusPanel = (JComponent) c.getParent();
                 statusLayeredPane = (JComponent) statusPanel.getParent();
             }
-            return c != statusLabel && c != statusPanel && c != statusLayeredPane && !"org.netbeans.core.windows.view.ui.StatusLine".equals(c.getClass().getName());
+            // ignore also org.netbeans.core.windows.view.ui.StatusLine and org.netbeans.modules.editor.impl.StatusLineComponent
+            return c != statusLabel && c != statusPanel && c != statusLayeredPane && !c.getClass().getName().contains("StatusLine");
         }
 
         @Override
