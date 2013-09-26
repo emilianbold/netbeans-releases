@@ -46,10 +46,13 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
@@ -57,6 +60,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
+import org.netbeans.modules.javascript2.editor.qaf.cc.ExtendsTest;
 import org.openide.util.Exceptions;
 
 /**
@@ -119,6 +123,37 @@ public class GeneralJavaScript extends JellyTestCase {
                 return;
             }
         }
+    }
+    
+      public void doTest(EditorOperator eo, int lineNumber) {
+        waitScanFinished();
+        String rawLine = eo.getText(lineNumber);
+        int start = rawLine.indexOf("//cc;");
+        String rawConfig = rawLine.substring(start + 2);
+        String[] config = rawConfig.split(";");
+        eo.setCaretPositionToEndOfLine(Integer.parseInt(config[1]));
+        type(eo, config[2]);
+
+        CompletionInfo completion = getCompletion();
+        CompletionJListOperator cjo = completion.listItself;
+        checkCompletionItems(cjo, config[3].split(","));
+        completion.listItself.hideAll();
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
+        }
+    }
+      
+    public void openFile(String fileName, String projectName) {
+        if (projectName == null) {
+            throw new IllegalStateException("YOU MUST OPEN PROJECT FIRST");
+        }
+        Logger.getLogger(GeneralJavaScript.class.getName()).log(Level.INFO, "Opening file {0}", fileName);
+        Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        Node node = new Node(rootNode, "Source Files|" + fileName);
+        node.select();
+        node.performPopupAction("Open");
     }
 
     protected void createPhpApplication(String projectName) {

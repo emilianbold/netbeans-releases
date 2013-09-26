@@ -89,8 +89,14 @@ public class ValidPrimaryTableName {
         if (ctx == null || hc.isCanceled()) {
             return null;
         }
+        
+        Object me= ctx.getModelElement();
+        
+        if(me == null) {
+            return null;
+        }
 
-        String tableName = JPAHelper.getPrimaryTableName((Entity)ctx.getModelElement());
+        String tableName = JPAHelper.getPrimaryTableName((Entity) me);
         if(tableName == null){
             return null;
         }

@@ -41,66 +41,100 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
 
 /**
  * Named queries can be defined only on Entity or MappedSuperclass class
- * 
+ *
  * @author Tomasz.Slota@Sun.COM
  */
-public class QueriesProperlyDefined extends JPAClassRule {
-    
-    /** Creates a new instance of NonFinalClass */
-    public QueriesProperlyDefined() {
-        setClassContraints(Arrays.asList(ClassConstraints.ENTITY,
-                ClassConstraints.EMBEDDABLE,
-                ClassConstraints.MAPPED_SUPERCLASS));
-    }
-    
-    @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        AnnotationMirror firstOffendingAnotation = getFirstAnnotationFromGivenSet(subject, 
-                Arrays.asList(JPAAnnotations.NAMED_QUERY, JPAAnnotations.NAMED_NATIVE_QUERY,
-                JPAAnnotations.NAMED_QUERIES, JPAAnnotations.NAMED_NATIVE_QUERIES));
+@Hint(id = "o.n.m.j2ee.jpa.verification.QueriesProperlyDefined",
+        displayName = "#QueriesProperlyDefined.display.name",
+        description = "#MSG_QueriesProperlyDefined",
+        category = "javaee/jpa",
+        enabled = true,
+        severity = Severity.ERROR,
+        suppressWarnings = "QueriesProperlyDefined")
+@NbBundle.Messages({
+    "QueriesProperlyDefined.display.name=Verify named query location"})
+public class QueriesProperlyDefined {
+
+    @TriggerTreeKind(value = Tree.Kind.CLASS)
+    public static ErrorDescription apply(HintContext hc) {
+        if (hc.isCanceled()) {//NOI18N
+            return null;//we pass only if it is an annotation
+        }
+
+        final JPAProblemContext ctx = ModelUtils.getOrCreateCachedContext(hc);
+        if (ctx == null || hc.isCanceled()) {
+            return null;
+        }
+
+        TypeElement subject = ctx.getJavaClass();
+
+        AnnotationMirror isENtityMapped = getFirstAnnotationFromGivenSet(subject,
+                Arrays.asList(JPAAnnotations.ENTITY, JPAAnnotations.MAPPED_SUPERCLASS));
         
-        if (firstOffendingAnotation != null){
-            return new ErrorDescription[]{createProblem(subject, ctx,
-                    NbBundle.getMessage(QueriesProperlyDefined.class, "MSG_QueriesProperlyDefined"))};
+        if(isENtityMapped != null) {
+            return null;
         }
         
+        AnnotationMirror firstOffendingAnotation = getFirstAnnotationFromGivenSet(subject,
+                Arrays.asList(JPAAnnotations.NAMED_QUERY, JPAAnnotations.NAMED_NATIVE_QUERY,
+                JPAAnnotations.NAMED_QUERIES, JPAAnnotations.NAMED_NATIVE_QUERIES));
+
+        if (firstOffendingAnotation != null) {
+
+            TreePath par = hc.getPath();
+            while (par != null && par.getParentPath() != null && par.getLeaf().getKind() != Tree.Kind.CLASS) {
+                par = par.getParentPath();
+            }
+
+            Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                    ctx.getCompilationInfo(), par.getLeaf());
+
+            return ErrorDescriptionFactory.forSpan(
+                    hc,
+                    underlineSpan.getStartOffset(),
+                    underlineSpan.getEndOffset(),
+                    NbBundle.getMessage(QueriesProperlyDefined.class, "MSG_QueriesProperlyDefined"));
+        }
+
         return null;
     }
-    
-    @Override protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
-        JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
-        
-        return !(jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
-    }
-    
-    private AnnotationMirror getFirstAnnotationFromGivenSet(TypeElement subject,
-            Collection<String> annotationClasses){
-        
-        for (String annClass : annotationClasses){
+
+    private static AnnotationMirror getFirstAnnotationFromGivenSet(TypeElement subject,
+            Collection<String> annotationClasses) {
+
+        for (String annClass : annotationClasses) {
             AnnotationMirror foundAnn = Utilities.findAnnotation(subject, annClass);
-            
-            if (foundAnn != null){
+
+            if (foundAnn != null) {
                 return foundAnn;
             }
         }
-        
+
         return null;
     }
 }

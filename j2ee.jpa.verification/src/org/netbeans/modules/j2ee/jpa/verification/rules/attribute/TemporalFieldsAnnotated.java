@@ -43,16 +43,20 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateTemporalAnnotationHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,24 +64,33 @@ import org.openide.util.NbBundle;
  * @author Tomasz.Slota@Sun.COM
  */
 public class TemporalFieldsAnnotated extends JPAEntityAttributeCheck {
-    private static Collection<String> temporalTypes = 
+
+    private static Collection<String> temporalTypes =
             Arrays.asList("java.util.Calendar", "java.util.Date"); //NOI18N
 
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
+    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
         String temporal = attrib.getTemporal();
-        
-        if (temporal == null || temporal.length() == 0){
-            if (temporalTypes.contains(attrib.getType().toString())){
+
+        if (temporal == null || temporal.length() == 0) {
+            if (temporalTypes.contains(attrib.getType().toString())) {
                 Fix fix = new CreateTemporalAnnotationHint(ctx.getFileObject(),
                         ElementHandle.create(attrib.getJavaElement()));
-                
-                return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(), ctx,
-                    NbBundle.getMessage(ValidColumnName.class,
-                    "MSG_TemporalAttrNotAnnotatedProperly"), fix)};
+
+                Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+                Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                        ctx.getCompilationInfo(), elementTree);
+
+                ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                        hc,
+                        underlineSpan.getStartOffset(),
+                        underlineSpan.getEndOffset(),
+                        NbBundle.getMessage(TemporalFieldsAnnotated.class, "MSG_TemporalAttrNotAnnotatedProperly"),
+                        fix);//TODO: may need to have "error" as default
+                return Collections.singleton(error);
             }
         }
-        
-        return null;        
-    }
 
+        return null;
+    }
 }
