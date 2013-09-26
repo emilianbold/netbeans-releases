@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.awt.Image;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -130,15 +131,39 @@ public final class StatementNode implements BreadcrumbsElement {
     private static StatementNode createIfNode(CsmIfStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
         List<CsmStatement> st = new ArrayList<CsmStatement>();
         List<String> decorations = new ArrayList<String>();
-        if (stmt.getThen() != null) {
-            st.add(stmt.getThen());
+        List<List<CsmStatement>> bodies = new ArrayList<List<CsmStatement>>();
+        final CsmStatement thenStmt = stmt.getThen();
+        if (thenStmt != null) {
+            st.add(thenStmt);
             decorations.add("");
+            final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+            list.add(thenStmt);
+            bodies.add(list);
         }
-        if (stmt.getElse() != null) {
-            st.add(stmt.getElse());
+        CsmStatement elseStmt = stmt.getElse();
+        while(elseStmt != null && elseStmt.getKind() == CsmStatement.Kind.IF) {
+            CsmIfStatement elseIfStmt =  (CsmIfStatement) elseStmt;
+            st.add(elseIfStmt);
             decorations.add("else ");//NOI18N
+            bodies.add(new ArrayList<CsmStatement>());
+            CsmStatement elifThenStmt = elseIfStmt.getThen();
+            if (elifThenStmt != null) {
+                st.add(elifThenStmt);
+                decorations.add("");
+                final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+                list.add(elifThenStmt);
+                bodies.add(list);
+            }
+            elseStmt = elseIfStmt.getElse();
         }
-        return new StatementNode(stmt, null, st, null, decorations, parent, cdo);
+        if (elseStmt != null) {
+            st.add(elseStmt);
+            decorations.add("else ");//NOI18N
+            final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+            list.add(elseStmt);
+            bodies.add(list);
+        }
+        return new StatementNode(stmt, null, st, bodies, decorations, parent, cdo);
     }
 
     private static StatementNode createTryNode(CsmTryCatchStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
@@ -275,6 +300,11 @@ public final class StatementNode implements BreadcrumbsElement {
                 case '&':
                     buf.append("&amp;"); //NOI18N
                     break;
+                case '/':
+                    if (i+1 < text.length() && text.charAt(i) == '/')  {
+                        break loop;
+                    }
+                    break;
                 default:
                     buf.append(c);
             }
@@ -287,7 +317,7 @@ public final class StatementNode implements BreadcrumbsElement {
             }
         }
         endOffset = end;
-        displayName = CharSequences.create(buf);
+        displayName = CharSequences.create(buf.toString().trim());
         this.cdo = cdo;
         lookup =  Lookups.fixed(new OpenableImpl(this));
     }
