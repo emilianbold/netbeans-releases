@@ -44,8 +44,6 @@
 package org.netbeans.modules.refactoring.spi;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -59,14 +57,12 @@ import org.netbeans.modules.refactoring.spi.impl.UndoableWrapper.UndoableEditDel
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  * Simple backup facility can be used to backup files and implement undo For
@@ -242,7 +238,7 @@ abstract class BackupFacility2 {
                 }
             }
             LOG.log(Level.FINE, "Storing MD5 for {0}", backup.orig);
-            backup.checkSum = getMD5(getInputStream(backup.orig.toURL()));
+            backup.checkSum = getMD5(getInputStream(backup.orig));
             LOG.log(Level.FINE, "MD5 is: {0}", MD5toString(backup.checkSum));
         }
 
@@ -294,8 +290,7 @@ abstract class BackupFacility2 {
             return null;
         }
 
-        private InputStream getInputStream(URL path) throws IOException {
-            FileObject fo = URLMapper.findFileObject(path);
+        private InputStream getInputStream(FileObject fo) throws IOException {
             DataObject dob = DataObject.find(fo);
             CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
             if (ces != null && ces.isModified()) {
@@ -303,10 +298,6 @@ abstract class BackupFacility2 {
                 return ces.getInputStream();
             }
             LOG.fine("File Input Stream");
-            return fo.getInputStream();
-        }
-        
-        private InputStream getInputStream(FileObject fo) throws FileNotFoundException {
             return fo.getInputStream();
         }
 

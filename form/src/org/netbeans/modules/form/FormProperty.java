@@ -987,12 +987,17 @@ public abstract class FormProperty extends Node.Property {
             if (isExternalChangeMonitoring()) {
                 value = getTargetValue();
                 if (!equals(value, lastRealValue)) {
-                    // the value is different from the one last set
+                    // the value is different than when we saw it last time
                     Object propValue = (propertyValue instanceof FormDesignValue) ?
                         ((FormDesignValue)propertyValue).getDesignValue() : propertyValue;
-                    if (propValue != FormDesignValue.IGNORED_VALUE) {
-                        // TODO check type of the value, beware of boolean != Boolean
-//                        assert (propValue == null) || getValueType().isAssignableFrom(propValue.getClass());
+                    if (equals(value, propValue)) {
+                        // Bug 236005 - after setting a property value, the value obtained from
+                        // getter at that moment (and kept in lastRealValue) might be different.
+                        // But later it may return to the value originally set (after some other
+                        // property is set). In this case we should consider the property value
+                        // still set (not changed externally - derived).
+                        lastRealValue = value;
+                    } else if (propValue != FormDesignValue.IGNORED_VALUE) {
                         valueSet = false;
                         setChanged(false);
                         lastRealValue = null;

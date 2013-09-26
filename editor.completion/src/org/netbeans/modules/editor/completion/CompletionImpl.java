@@ -637,7 +637,8 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                         }
                     }
                     // Call default action if ENTER was pressed
-                    if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED
+                            && (e.getModifiers() & InputEvent.ALT_MASK) == 0) {
                         e.consume();
                         if (guardedPos) {
                             Toolkit.getDefaultToolkit().beep();
@@ -1088,16 +1089,30 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         pleaseWaitTimer.stop();
         stopProfiling();
         boolean hidePerformed = layout.hideCompletion();
-        pleaseWaitDisplayed = false;
-        JTextComponent jtc = getActiveComponent();
-        if (!completionOnly && hidePerformed && CompletionSettings.getInstance(jtc).documentationAutoPopup()) {
-            hideDocumentation(true);
-        }
-        if (jtc != null) {
-            jtc.putClientProperty("completion-visible", Boolean.FALSE);
-            jtc.putClientProperty("completion-active", Boolean.FALSE);
+        if (!layout.isCompletionVisible()) {
+            pleaseWaitDisplayed = false;
+            JTextComponent jtc = getActiveComponent();
+            if (!completionOnly && hidePerformed && CompletionSettings.getInstance(jtc).documentationAutoPopup()) {
+                hideDocumentation(true);
+            }
+            if (jtc != null) {
+                jtc.putClientProperty("completion-visible", Boolean.FALSE);
+                jtc.putClientProperty("completion-active", Boolean.FALSE);
+            }
         }
         return hidePerformed;
+    }
+    
+    /**
+     * May be called from any thread but it will be rescheduled into AWT.
+     */
+    public void showCompletionSubItems() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            // Re-call this method in AWT if necessary
+            SwingUtilities.invokeLater(new ParamRunnable(ParamRunnable.SHOW_COMPLETION_SUB_ITEMS));
+            return;
+        }
+        layout.showCompletionSubItems();
     }
     
     /**
@@ -1588,11 +1603,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     private final class ParamRunnable implements Runnable {
         
         private static final int SHOW_COMPLETION = 0;
-        private static final int SHOW_DOCUMENTATION = 1;
-        private static final int SHOW_TOOL_TIP = 2;
-        private static final int HIDE_COMPLETION_PANE = 3;
-        private static final int HIDE_DOCUMENTATION_PANE = 4;
-        private static final int HIDE_TOOL_TIP_PANE = 5;
+        private static final int SHOW_COMPLETION_SUB_ITEMS = 1;
+        private static final int SHOW_DOCUMENTATION = 2;
+        private static final int SHOW_TOOL_TIP = 3;
+        private static final int HIDE_COMPLETION_PANE = 4;
+        private static final int HIDE_DOCUMENTATION_PANE = 5;
+        private static final int HIDE_TOOL_TIP_PANE = 6;
         
         private final int opCode;
         private final boolean explicit;
@@ -1617,6 +1633,10 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         public void run() {
             switch (opCode) {
                 case SHOW_COMPLETION:
+                    showCompletion(explicitQuery, false, delayQuery, type);
+                    break;
+
+                case SHOW_COMPLETION_SUB_ITEMS:
                     showCompletion(explicitQuery, false, delayQuery, type);
                     break;
 

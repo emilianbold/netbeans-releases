@@ -382,6 +382,15 @@ public final class Utilities {
 
         return false;
     }
+    
+    public static void exclude(final CharSequence fqn) {
+        if (fqn != null && fqn.length() > 0) {
+            lazyInit();
+            String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
+            blacklist += (blacklist.length() > 0 ? "," + fqn : fqn); //NOI18N
+            preferences.put(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, blacklist);
+        }
+    }
 
     private static void lazyInit() {
         if (inited.compareAndSet(false, true)) {

@@ -604,7 +604,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ParametersPanel.class, "ACSD_FindUsagesDialog"));
         }
         
-        HelpCtx.setHelpIDString(dialog.getRootPane(), rui.getHelpCtx().getHelpID());
+        HelpCtx helpCtx = rui.getHelpCtx();
+        helpCtx = (helpCtx == null) ? HelpCtx.DEFAULT_HELP : helpCtx;
+        
+        HelpCtx.setHelpIDString(dialog.getRootPane(), helpCtx.getHelpID());
 
         setOkCancelShortcuts();
         RequestProcessor.Task task = RP.post(new Runnable() {
