@@ -57,6 +57,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ProfileAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RefreshAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveAction;
+import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RenameAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RestartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StartAction;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.StopAction;
@@ -135,6 +136,7 @@ public class InstanceNodeDecorator extends FilterNode
                                         SystemAction.get(StopAction.class),
                                         SystemAction.get(RefreshAction.class),
                                         null,
+                                        SystemAction.get(RenameAction.class),
                                         SystemAction.get(RemoveAction.class)
         }));
         actions.addAll(Arrays.asList(getOriginal().getActions(context)));
