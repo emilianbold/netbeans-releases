@@ -100,6 +100,7 @@ public final class J2MEPlatform extends JavaPlatform {
     private String displayName;
     private List<URL> javadocs;
     private ClassPath sources;
+    private boolean me3Platform;
     
     public J2MEPlatform(String name, String home, String type, String displayName, String srcPath, String docPath, String preverifyCmd, String runCmd, String debugCmd, Device[] devices) {
         assert name != null;
@@ -118,6 +119,7 @@ public final class J2MEPlatform extends JavaPlatform {
         this.devices = devices;
         this.sources = ClassPathSupport.createClassPath(resolveRelativePathToFileObjects(srcPath).toArray(new FileObject[0]));
         this.javadocs = resolveRelativePathToURLs(docPath);
+        this.me3Platform = isJavaME3Platform(this.home);
     }
     
     public Device[] getDevices() {
@@ -162,7 +164,7 @@ public final class J2MEPlatform extends JavaPlatform {
             if (!FileUtil.isArchiveFile(url)) {
                 final String s = url.toExternalForm();
                 if (s.endsWith("/")) return url; //NOI18N
-                return new URL(s + '/');
+                return new URL(s + '/'); //NOI18N
             }
             return FileUtil.getArchiveRoot(url);
         } catch (MalformedURLException e) {
@@ -337,8 +339,16 @@ public final class J2MEPlatform extends JavaPlatform {
         return homeFile.getAbsolutePath();
     }
 
+    public boolean isMe3Platform() {
+        return me3Platform;
+    }        
+
     private boolean hasEssentialTools(Collection<FileObject> folders) {
-        return findTool("emulator", folders)!=null && findTool("preverify", folders)!=null; //NOI18N
+        if (me3Platform) {
+            return findTool("emulator", folders) != null && findTool("preverify", folders) != null; //NOI18N
+        } else {
+            return findTool("emulator", folders) != null; //NOI18N
+        }
     }
     
     public Collection<FileObject> getInstallFolders() {
@@ -430,7 +440,7 @@ public final class J2MEPlatform extends JavaPlatform {
                 for (int j=0; j<profiles.length; j++)
                     profs.add(profiles[j]);
             }
-            spec = new Specification(SPECIFICATION_NAME, null, NbBundle.getMessage(J2MEPlatform.class, "TXT_J2MEDisplayName"), profs.toArray(new Profile[profs.size()]));
+            spec = new Specification(SPECIFICATION_NAME, null, NbBundle.getMessage(J2MEPlatform.class, "TXT_J2MEDisplayName"), profs.toArray(new Profile[profs.size()])); //NOI18N
         }
         return spec;
     }
@@ -440,7 +450,17 @@ public final class J2MEPlatform extends JavaPlatform {
         for (int i=0; i<devices.length; i++) if (devices[i].isValid()) return true;
         return false;
     }
-    
+
+    public static boolean isJavaME3Platform(FileObject dir) {
+        return J2MEPlatform.findTool("emulator", Collections.singletonList(dir)) != null //NOI18N
+                && J2MEPlatform.findTool("preverify", Collections.singletonList(dir)) != null; //NOI18N
+    }
+
+    public static boolean isJavaME8Platform(FileObject dir) {
+        return J2MEPlatform.findTool("emulator", Collections.singletonList(dir)) != null //NOI18N
+                && J2MEPlatform.findTool("preverify", Collections.singletonList(dir)) == null; //NOI18N
+    }
+
     public static final class Device {
         
         private final String name;

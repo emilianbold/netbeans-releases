@@ -245,12 +245,14 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
         }
 
         public boolean isPossibleJ2MEPlatform(final File directory) {
-            Collection <? extends CustomCLDCPlatformConfigurator> customConfigurators = Lookup.getDefault().lookupAll(CustomCLDCPlatformConfigurator.class);
-            for ( CustomCLDCPlatformConfigurator pc : customConfigurators )
-                if (pc.isPossiblePlatform(directory)) return true;
+            Collection<? extends CustomCLDCPlatformConfigurator> customConfigurators = Lookup.getDefault().lookupAll(CustomCLDCPlatformConfigurator.class);
+            for (CustomCLDCPlatformConfigurator pc : customConfigurators) {
+                if (pc.isPossiblePlatform(directory)) {
+                    return true;
+                }
+            }
             final FileObject dir = FileUtil.toFileObject(directory);
-            return dir != null && J2MEPlatform.findTool("emulator", Collections.singletonList(dir)) != null // NOI18N
-                    && J2MEPlatform.findTool("preverify", Collections.singletonList(dir)) != null; //NOI18N
+            return dir != null && (J2MEPlatform.isJavaME3Platform(dir) || J2MEPlatform.isJavaME8Platform(dir));
         }
 
         private static FileObject convertToValidDir(File f) {
