@@ -192,10 +192,10 @@ public final class Tester {
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+        // #236397 - cannot be controllable
+        return new ExecutionDescriptor()
                 .optionsPath(TesterOptionsPanelController.OPTIONS_PATH)
-                .frontWindowOnError(false)
-                .inputVisible(false);
+                .showProgress(true);
     }
 
     @NbBundle.Messages({
