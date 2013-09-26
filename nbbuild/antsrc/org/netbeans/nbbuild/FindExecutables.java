@@ -85,18 +85,12 @@ public class FindExecutables extends Task {
             load.setFile(new File(getProject().getProperty("nb_all"), module + "/nbproject/project.properties"));
             load.execute();
             if (execFiles.get() != null) {
-
-                System.out.println(module + ".dir");
-                System.out.println("getProject().getProperty(module + .dir):" + getProject().getProperty(module + ".dir"));
-
-                if (getProject().getProperty(module + ".dir") != null) {
-                    String cluster = getProject().getProperty(module + ".dir").replaceFirst(".+[/\\\\]", "");
-                    for (String pattern : execFiles.get().split(",")) {
-                        if (b.length() > 0) {
-                            b.append(',');
-                        }
-                        b.append(cluster).append('/').append(pattern);
+                String cluster = getProject().getProperty(module + ".dir").replaceFirst(".+[/\\\\]", "");
+                for (String pattern : execFiles.get().split(",")) {
+                    if (b.length() > 0) {
+                        b.append(',');
                     }
+                    b.append(cluster).append('/').append(pattern);
                 }
             }
         }
