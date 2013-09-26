@@ -301,6 +301,15 @@ public final class MultiViewFactory {
                                 act.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "proceed"));
                             }
                         }
+                        //#236369 - check if everything saved ok
+                        canBeClosed = true;
+                        for (int i = 0; i < elements.length && canBeClosed; i++) {
+                            if (!elements[i].canClose()) {
+                                canBeClosed = false;
+                            }
+                        }
+                        if( !canBeClosed )
+                            return false;
                     } else if (retVal == choose[1]) {
                         // do discard
                         it = badOnes.values().iterator();
