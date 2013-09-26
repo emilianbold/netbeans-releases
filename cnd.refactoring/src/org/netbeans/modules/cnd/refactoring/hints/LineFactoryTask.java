@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +67,6 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
@@ -83,9 +81,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,27 +95,21 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
 
     @Override
     public void run(CndParserResult result, SchedulerEvent event) {
-        try {
-            final Document doc = result.getSnapshot().getSource().getDocument(false);
-            final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-            final URI uri = fileObject.toURI();
-            final DataObject dobj = DataObject.find(CndFileUtils.urlToFileObject(uri.getPath()));
-            Collection<CsmFile> csmFiles = result.getCsmFiles();
-            if (csmFiles.size() == 1) {
-                if (event instanceof CursorMovedSchedulerEvent) {
-                    CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
-                    int caretOffset = cursorEvent.getCaretOffset();
-                    CsmFile file = csmFiles.iterator().next();
-                    CsmExpressionStatement expression = findExpressionStatement(file.getDeclarations(), caretOffset, doc);
-                    if (expression != null) {
-                        createHint(expression, doc, fileObject);
-                    } else {
-                        clearHint(doc, fileObject);
-                    }
+        final Document doc = result.getSnapshot().getSource().getDocument(false);
+        final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
+        Collection<CsmFile> csmFiles = result.getCsmFiles();
+        if (csmFiles.size() == 1) {
+            if (event instanceof CursorMovedSchedulerEvent) {
+                CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
+                int caretOffset = cursorEvent.getCaretOffset();
+                CsmFile file = csmFiles.iterator().next();
+                CsmExpressionStatement expression = findExpressionStatement(file.getDeclarations(), caretOffset, doc);
+                if (expression != null) {
+                    createHint(expression, doc, fileObject);
+                } else {
+                    clearHint(doc, fileObject);
                 }
             }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
         }
     }
     
