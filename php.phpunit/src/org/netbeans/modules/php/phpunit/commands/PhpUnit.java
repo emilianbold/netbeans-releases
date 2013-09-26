@@ -428,12 +428,9 @@ public final class PhpUnit {
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+        // #236397 - cannot be controllable
+        return new ExecutionDescriptor()
                 .optionsPath(PhpUnitOptionsPanelController.OPTIONS_PATH)
-                .controllable(false)
-                .frontWindow(false)
-                .frontWindowOnError(false)
-                .inputVisible(false)
                 .outConvertorFactory(PHPUNIT_LINE_CONVERTOR_FACTORY)
                 .preExecution(new Runnable() {
                     @Override
