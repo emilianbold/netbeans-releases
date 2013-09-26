@@ -188,7 +188,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
     }
     
     private boolean isApplicable(CsmExpressionStatement st) {
-        CsmType resolveType = CsmTypeResolver.resolveType(st.getExpression(), Collections.<CsmInstantiation>emptyList());
+        CsmType resolveType = CsmTypeResolver.resolveType(st.getExpression(), null);
         if (resolveType == null) {
             return false;
         }
@@ -295,7 +295,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
 
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmType resolveType = CsmTypeResolver.resolveType(expression.getExpression(), Collections.<CsmInstantiation>emptyList());
+            CsmType resolveType = CsmTypeResolver.resolveType(expression.getExpression(), null);
             if (resolveType == null) {
                 return null;
             }
