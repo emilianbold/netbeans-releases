@@ -50,24 +50,9 @@ import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
 import org.netbeans.modules.j2ee.jpa.verification.common.RulesEngine;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ConsistentAccessType;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.HasNoArgConstructor;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdClassOverridesEqualsAndHashCode;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.IdDefinedInHierarchy;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPAAnnotsOnlyOnAccesor;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.JPQLValidation;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.LegalCombinationOfAnnotations;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NoIdClassOnEntitySubclass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.NonFinalClass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.OnlyEntityOrMappedSuperclassCanUseIdClass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PersistenceUnitPresent;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.PublicClass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.QueriesProperlyDefined;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.SerializableClass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.TopLevelClass;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.UniqueEntityName;
 import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidAttributes;
-import org.netbeans.modules.j2ee.jpa.verification.rules.entity.ValidPrimaryTableName;
 
 /**
  *
@@ -87,14 +72,14 @@ public class JPARulesEngine extends RulesEngine {
         //classRules.add(new NonFinalClass());
         //classRules.add(new TopLevelClass());
         //classRules.add(new IdClassOverridesEqualsAndHashCode());
-        classRules.add(new NoIdClassOnEntitySubclass());
+        //classRules.add(new NoIdClassOnEntitySubclass());
         classRules.add(new ValidAttributes());
-        classRules.add(new UniqueEntityName());
+        //classRules.add(new UniqueEntityName());
         classRules.add(new LegalCombinationOfAnnotations());
         classRules.add(new JPAAnnotsOnlyOnAccesor());
-        classRules.add(new QueriesProperlyDefined());
+        //classRules.add(new QueriesProperlyDefined());
         //classRules.add(new JPQLValidation());
-        classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
+        //classRules.add(new OnlyEntityOrMappedSuperclassCanUseIdClass());
     }
     
     protected Collection<Rule<TypeElement>> getClassRules() {
