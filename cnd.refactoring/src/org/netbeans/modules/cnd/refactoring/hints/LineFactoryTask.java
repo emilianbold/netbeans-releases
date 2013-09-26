@@ -57,13 +57,19 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
+import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -118,7 +124,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (decl.getStartOffset() < offset && offset < decl.getEndOffset()) {
                 if (CsmKindUtilities.isFunctionDefinition(decl)) {
                     CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
-                    return findExpressionStatement(def.getBody(), offset, doc);
+                    return findExpressionStatementInBody(def.getBody(), offset, doc);
                 } else if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     CsmNamespaceDefinition def = (CsmNamespaceDefinition) decl;
                     return findExpressionStatement(def.getDeclarations(), offset, doc);
@@ -130,56 +136,158 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         }
         return null;
     }    
-    
-    private CsmExpressionStatement findExpressionStatement(CsmCompoundStatement body, int offset, final Document doc) {
+
+    private CsmExpressionStatement findExpressionStatementInBody(CsmCompoundStatement body, int offset, final Document doc) {
         if (body != null) {
             final List<CsmStatement> statements = body.getStatements();
             for(int i = 0; i < statements.size(); i++) {
                 final CsmStatement st = statements.get(i);
                 final int startOffset = st.getStartOffset();
-                final int endOffset = st.getEndOffset();
                 if (startOffset > offset) {
                     break;
                 }
-                if (st.getKind() == CsmStatement.Kind.COMPOUND) {
-                    if (startOffset <= offset && offset < endOffset) {
-                        findExpressionStatement((CsmCompoundStatement)st, offset, doc);
-                    }
-                } else if (st.getKind() == CsmStatement.Kind.EXPRESSION){
-                    final int nexStartOffset;
-                    if(i+1 < statements.size()) {
-                        nexStartOffset = statements.get(i+1).getStartOffset();
-                    } else {
-                        nexStartOffset = body.getEndOffset();
-                    }
-                    if (startOffset <= offset && offset < nexStartOffset) {
-                        final AtomicInteger trueEndOffset = new AtomicInteger(endOffset);
-                        doc.render(new Runnable() {
+                final int nexStartOffset;
+                if(i+1 < statements.size()) {
+                   nexStartOffset = statements.get(i+1).getStartOffset();
+                } else {
+                   nexStartOffset = body.getEndOffset();
+                }
+                if (startOffset <= offset && offset < nexStartOffset) {
+                    return findExpressionStatement(st, nexStartOffset, offset, doc);
+                }
+            }
+        }
+        return null;
+    }
 
-                            @Override
-                            public void run() {
-                                TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-                                TokenSequence<?> ts = hi.tokenSequence();
-                                ts.move(endOffset);
-                                while (ts.moveNext()) {
-                                    Token<?> token = ts.token();
-                                    if (ts.offset() >= nexStartOffset) {
-                                        break;
-                                    }
-                                    if (CppTokenId.SEMICOLON.equals(token.id())) {
-                                        trueEndOffset.set(ts.offset()+1);
-                                        break;
-                                    }
-                                }
+    private CsmExpressionStatement findExpressionStatement(final CsmStatement st, final int nexStartOffset, int offset, final Document doc) {
+        switch(st.getKind()) {
+            case COMPOUND:
+                return findExpressionStatementInBody((CsmCompoundStatement)st, offset, doc);
+            case SWITCH:
+            {
+                CsmSwitchStatement switchStmt = (CsmSwitchStatement) st;
+                final CsmStatement body = switchStmt.getBody();
+                if (body != null) {
+                    final int startOffset = body.getStartOffset();
+                    if (startOffset <= offset && offset < nexStartOffset) {
+                        return findExpressionStatement(body, nexStartOffset, offset, doc);
+                    }
+                }
+                return null;
+            }
+            case FOR: 
+            {
+                CsmForStatement forStmt = (CsmForStatement) st;
+                CsmStatement body = forStmt.getBody();
+                if (body != null) {
+                    final int startOffset = body.getStartOffset();
+                    if (startOffset <= offset && offset < nexStartOffset) {
+                        return findExpressionStatement(body, nexStartOffset, offset, doc);
+                    }
+                }
+                return null;
+            }
+            case WHILE:
+            case DO_WHILE:
+            {
+                CsmLoopStatement loopStmt = (CsmLoopStatement) st;
+                CsmStatement body = loopStmt.getBody();
+                if (body != null) {
+                    final int startOffset = body.getStartOffset();
+                    int endOffset = nexStartOffset;
+                    if (loopStmt.isPostCheck()) {
+                        CsmCondition condition = loopStmt.getCondition();
+                        if (condition != null) {
+                            endOffset = condition.getStartOffset();
+                        }
+                    }
+                    if (startOffset <= offset && offset < endOffset) {
+                        return findExpressionStatement(body, endOffset, offset, doc);
+                    }
+                }
+                return null;
+            }
+            case TRY_CATCH:
+            {
+                CsmTryCatchStatement tryStmt = (CsmTryCatchStatement) st;
+                CsmStatement tryBody = tryStmt.getTryStatement();
+                List<CsmExceptionHandler> handlers = tryStmt.getHandlers();
+                if (tryBody != null) {
+                    final int startOffset = tryBody.getStartOffset();
+                    int endOffset = nexStartOffset;
+                    if (handlers != null && handlers.size() > 0) {
+                        endOffset = handlers.get(0).getStartOffset();
+                    }
+                    if (startOffset <= offset && offset < endOffset) {
+                        return findExpressionStatement(tryBody, endOffset, offset, doc);
+                    }
+                }
+                if (handlers != null) {
+                    for(int i = 0; i < handlers.size(); i++) {
+                        CsmExceptionHandler handler = handlers.get(i);
+                        final int startOffset = handler.getStartOffset();
+                        final int endOffset = handler.getEndOffset();
+                        if (startOffset <= offset && offset < endOffset) {
+                            return findExpressionStatement(handler, endOffset, offset, doc);
+                        }
+                    }
+                }
+                return null;
+            }
+            case IF:
+            {
+                CsmIfStatement ifStmt = (CsmIfStatement) st;
+                CsmStatement thenStmt = ifStmt.getThen();
+                CsmStatement elseStmt = ifStmt.getElse();
+                if (thenStmt != null) {
+                    final int startOffset = thenStmt.getStartOffset();
+                    int endOffset = thenStmt.getEndOffset();
+                    if (elseStmt != null) {
+                        endOffset = elseStmt.getStartOffset();
+                    }
+                    if (startOffset <= offset && offset < endOffset) {
+                        return findExpressionStatement(thenStmt, endOffset, offset, doc);
+                    }
+                }
+                if (elseStmt != null) {
+                    final int startOffset = elseStmt.getStartOffset();
+                    int endOffset = nexStartOffset;
+                    if (startOffset <= offset && offset < endOffset) {
+                        return findExpressionStatement(elseStmt, endOffset, offset, doc);
+                    }
+                }
+                return null;
+            }
+            case EXPRESSION:
+            {
+                final int startOffset = st.getStartOffset();
+                final int endOffset = st.getEndOffset();
+                final AtomicInteger trueEndOffset = new AtomicInteger(endOffset);
+                doc.render(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                        TokenSequence<?> ts = hi.tokenSequence();
+                        ts.move(endOffset);
+                        while (ts.moveNext()) {
+                            Token<?> token = ts.token();
+                            if (ts.offset() >= nexStartOffset) {
+                                break;
                             }
-                        });
-                        if (startOffset <= offset && offset <= trueEndOffset.get()) {
-                            if(isApplicable((CsmExpressionStatement) st)) {
-                                return (CsmExpressionStatement) st;
-                            } else {
-                                return null;
+                            if (CppTokenId.SEMICOLON.equals(token.id())) {
+                                trueEndOffset.set(ts.offset()+1);
+                                break;
                             }
                         }
+                    }
+                });
+                if (startOffset <= offset && offset <= trueEndOffset.get()) {
+                    if(isApplicable((CsmExpressionStatement) st)) {
+                        return (CsmExpressionStatement) st;
+                    } else {
+                        return null;
                     }
                 }
             }
