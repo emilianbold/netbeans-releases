@@ -60,6 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
@@ -84,6 +85,24 @@ import org.openide.util.RequestProcessor;
  */
 public final class SyncController implements Cancellable {
 
+    static enum SourceFiles {
+        PROJECT,
+        DIRECTORIES_ONLY,
+        INDIVIDUAL_FILES;
+
+        static SourceFiles forFiles(@NullAllowed FileObject[] files) {
+            if (files == null) {
+                return PROJECT;
+            }
+            for (FileObject file : files) {
+                if (file.isData()) {
+                    return INDIVIDUAL_FILES;
+                }
+            }
+            return DIRECTORIES_ONLY;
+        }
+    }
+
     static final Logger LOGGER = Logger.getLogger(SyncController.class.getName());
     static final RequestProcessor SYNC_RP = new RequestProcessor("Remote PHP Synchronization", 1); // NOI18N
 
@@ -92,6 +111,7 @@ public final class SyncController implements Cancellable {
     final RemoteClient remoteClient;
     final RemoteConfiguration remoteConfiguration;
     final TimeStamps timeStamps;
+    final SourceFiles sourceFiles;
 
     volatile boolean cancelled = false;
 
@@ -102,6 +122,7 @@ public final class SyncController implements Cancellable {
         this.remoteClient = remoteClient;
         this.remoteConfiguration = remoteConfiguration;
         timeStamps = new TimeStamps(phpProject);
+        sourceFiles = SourceFiles.forFiles(files);
     }
 
     public static SyncController forProject(PhpProject phpProject, RemoteClient remoteClient, RemoteConfiguration remoteConfiguration) {
@@ -122,14 +143,6 @@ public final class SyncController implements Cancellable {
         });
     }
 
-    boolean isForFiles() {
-        return files != null;
-    }
-
-    boolean isForProject() {
-        return !isForFiles();
-    }
-
     @NbBundle.Messages({
         "# {0} - project name",
         "SyncController.fetching.project=Fetching {0} files",
@@ -139,9 +152,13 @@ public final class SyncController implements Cancellable {
     SyncItems fetchSyncItems() {
         assert !SwingUtilities.isEventDispatchThread();
         SyncItems items = null;
-        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
-                isForFiles() ? Bundle.SyncController_fetching_files(files.length) : Bundle.SyncController_fetching_project(phpProject.getName()),
-                this);
+        String displayName;
+        if (sourceFiles == SourceFiles.PROJECT) {
+            displayName = Bundle.SyncController_fetching_project(phpProject.getName());
+        } else {
+            displayName = Bundle.SyncController_fetching_files(files.length);
+        }
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(displayName, this);
         try {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
@@ -159,7 +176,7 @@ public final class SyncController implements Cancellable {
 
     private Set<TransferFile> getRemoteFiles(FileObject sources) throws RemoteException {
         Set<TransferFile> remoteFiles = new HashSet<>();
-        if (isForProject()) {
+        if (sourceFiles == SourceFiles.PROJECT) {
             initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
         } else {
             // fetch individual files (can be directories as well)...
@@ -180,7 +197,7 @@ public final class SyncController implements Cancellable {
 
     private Set<TransferFile> getLocalFiles(FileObject sources) {
         Set<TransferFile> localFiles = new HashSet<>();
-        if (isForProject()) {
+        if (sourceFiles == SourceFiles.PROJECT) {
             initLocalFiles(localFiles, remoteClient.prepareUpload(sources, sources));
         } else {
             // fetch individual files (can be directories as well)...
@@ -204,7 +221,7 @@ public final class SyncController implements Cancellable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, isForProject());
+                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient, sourceFiles);
                 if (panel.open()) {
                     List<SyncItem> itemsToSynchronize = panel.getItems();
                     doSynchronize(items, itemsToSynchronize, panel.getSyncInfo(itemsToSynchronize), resultProcessor);
@@ -471,7 +488,7 @@ public final class SyncController implements Cancellable {
             if (!cancel.get()) {
                 deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
             }
-            if (isForProject()) {
+            if (sourceFiles == SourceFiles.PROJECT) {
                 // set timestamp for project source dir itself
                 File sources = FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(phpProject));
                 TransferFile transferFile = TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sources.getAbsolutePath()),
