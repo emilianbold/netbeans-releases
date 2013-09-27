@@ -403,6 +403,11 @@ public class Flow {
             }
         }
         
+        private boolean isUndefinedVariable(Element e) {
+            Name n = e.getSimpleName();
+            return undefinedVariables.containsKey(n);
+        }
+        
         /**
          * Determines if the Element should be processed as an undefined variable. Currently the implementation
          * only returns true if an undefinedSymbolScope is set, AND the undefined symbol might belong to that scope.
@@ -942,7 +947,10 @@ public class Flow {
             for (Iterator< Element> it = variable2State.keySet().iterator(); it.hasNext();) {
                  Element k = it.next();
                 
-                if (!k.getKind().isField()) it.remove();
+                if (!k.getKind().isField() &&
+                    !isUndefinedVariable(k)) {
+                    it.remove();
+                }
             }
             
             return null;

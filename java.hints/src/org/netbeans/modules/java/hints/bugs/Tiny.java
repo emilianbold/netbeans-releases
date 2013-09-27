@@ -49,12 +49,15 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LineMap;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,10 +66,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -78,6 +85,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
@@ -306,5 +314,123 @@ public class Tiny {
         }
         
         return indent;
+    }
+
+    @Hint(
+            displayName = "#DN_HashCodeOnArray",
+            description = "#DESC_HashCodeOnArray",
+            category = "bugs",
+            enabled = true,
+            suppressWarnings = { "ArrayHashCode" }
+    )
+    @TriggerPatterns({
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "java.lang.Object[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "int[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "short[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "byte[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "long[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "char[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "float[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "double[]", variable = "$v")
+                }
+        ),
+        @TriggerPattern(
+                value = "$v.hashCode()", 
+                constraints = {
+                    @ConstraintVariableType(type = "boolean[]", variable = "$v")
+                }
+        )
+    })
+    @NbBundle.Messages({
+        "TEXT_HashCodeOnArray=hashCode() called on array instance",
+        "FIX_UseArraysHashCode=Use Arrays.hashCode()",
+        "FIX_UseArraysDeepHashCode=Use Arrays.deepHashCode()"
+    })
+    public static List<ErrorDescription> hashCodeOnArray(HintContext ctx) {
+        CompilationInfo ci = ctx.getInfo();
+        TreePath arrayRef = ctx.getVariables().get("$v"); // NOI18N
+        boolean enableDeep = ArrayStringConversions.canContainArrays(ci, arrayRef);
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>(enableDeep ? 2 : 1);
+        TreePathHandle handle = TreePathHandle.create(ctx.getPath(), ci);
+        result.add(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.TEXT_HashCodeOnArray(),
+                new HashCodeFix(false, handle).toEditorFix()));
+        if (enableDeep) {
+            result.add(ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), Bundle.TEXT_HashCodeOnArray(),
+                    new HashCodeFix(true, handle).toEditorFix()));
+        }
+        return result;
+    }
+    
+    private static final class HashCodeFix extends JavaFix {
+        private final boolean deep;
+
+        public HashCodeFix(boolean deep, TreePathHandle handle) {
+            super(handle);
+            this.deep = deep;
+        }
+        
+        @Override
+        protected String getText() {
+            return deep ? Bundle.FIX_UseArraysDeepHashCode() : Bundle.FIX_UseArraysHashCode();
+        }
+
+        @Override
+        protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
+            Tree t = ctx.getPath().getLeaf();
+            if (t.getKind() != Tree.Kind.METHOD_INVOCATION) {
+                return;
+            }
+            MethodInvocationTree mi = (MethodInvocationTree)t;
+            if (mi.getMethodSelect().getKind() != Tree.Kind.MEMBER_SELECT) {
+                return;
+            }
+            MemberSelectTree selector = ((MemberSelectTree)mi.getMethodSelect());
+            TreeMaker maker = ctx.getWorkingCopy().getTreeMaker();
+            ExpressionTree ms = maker.MemberSelect(maker.QualIdent("java.util.Arrays"), deep ? "deepHashCode" : "hashCode"); // NOI18N
+            Tree nue = maker.MethodInvocation(
+                            Collections.<ExpressionTree>emptyList(), 
+                            ms, 
+                            Collections.singletonList(selector.getExpression())
+            );
+            ctx.getWorkingCopy().rewrite(t, nue);
+        }
     }
 }
