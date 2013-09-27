@@ -46,21 +46,12 @@ package org.netbeans.modules.j2ee.jpa.verification.rules.entity;
 
 import com.sun.source.tree.Tree;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Level;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
-import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.fixes.CreatePersistenceUnit;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
@@ -89,7 +80,7 @@ import org.openide.util.NbBundle;
 //@NbBundle.Messages({
 //    "IdClassOverridesEqualsAndHashCode.display.name=Verify entity have defined promary key",
 //    "IdClassOverridesEqualsAndHashCode.desc=Id is required for entities"})
-public class IdClassOverridesEqualsAndHashCode extends JPAClassRule {
+public class IdClassOverridesEqualsAndHashCode {
     
     @TriggerPattern(value = JPAAnnotations.ID_CLASS)//NOI18N
     public static ErrorDescription apply(HintContext hc){
