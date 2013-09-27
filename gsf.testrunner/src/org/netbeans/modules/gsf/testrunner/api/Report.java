@@ -75,6 +75,7 @@ public final class Report {
     private int errors;
     private int pending;
     private int skippedNum;
+    private int abortedNum;
     private long elapsedTimeMillis;
     private int detectedPassedTests;
     private Collection<Testcase> tests;
@@ -120,7 +121,7 @@ public final class Report {
         //PENDING - should be synchronized
         tests.add(test);
         
-        if (!Status.isFailureOrError(test.getStatus()) && !Status.isSkipped(test.getStatus())) {
+        if (!Status.isFailureOrError(test.getStatus()) && !Status.isSkipped(test.getStatus()) && !Status.isAborted(test.getStatus())) {
             detectedPassedTests++;
         }
     }
@@ -142,11 +143,12 @@ public final class Report {
             this.completed = report.completed;
             this.skipped = report.skipped;
             this.skippedNum = report.skippedNum;
+            this.abortedNum = report.abortedNum;
         }
     }
     
     public Status getStatus() {
-        if (aborted){
+        if (abortedNum > 0){
             return Status.ABORTED;
         } else if (skippedNum > 0) {
             return Status.SKIPPED;
@@ -264,6 +266,20 @@ public final class Report {
     }
 
     /**
+     * @return the the number of aborted tests
+     */
+    public int getAborted() {
+        return abortedNum;
+    }
+
+    /**
+     * @param aborted the number of aborted tests to set
+     */
+    public void setAborted(int aborted) {
+        this.abortedNum = aborted;
+    }
+
+    /**
      * @return the failures
      */
     public int getFailures() {
@@ -377,6 +393,7 @@ public final class Report {
         statusMask |= getFailures() > 0 ? Status.FAILED.getBitMask() : 0;
         statusMask |= getErrors() > 0 ? Status.ERROR.getBitMask() : 0;
         statusMask |= getSkipped() > 0 ? Status.SKIPPED.getBitMask() : 0;
+        statusMask |= getAborted() > 0 ? Status.ABORTED.getBitMask() : 0;
         return statusMask;
     }
 }

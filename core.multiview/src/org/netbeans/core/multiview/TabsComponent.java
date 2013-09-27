@@ -60,6 +60,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.Actions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -75,7 +76,7 @@ class TabsComponent extends JPanel {
     private MouseListener buttonMouseListener = null;
     private JComponent toolbarPanel;
     private JComponent toolbarPanelSplit;
-    JPanel componentPanel; /** package private for tests */
+    final JPanel componentPanel = new JPanel(); /** package private for tests */
     JPanel componentPanelSplit; /** package private for tests */
     private CardLayout cardLayout;
     private CardLayout cardLayoutSplit;
@@ -89,13 +90,11 @@ class TabsComponent extends JPanel {
     private boolean isTopLeft = true;
     private JPanel topLeftComponent;
     private JPanel bottomRightComponent;
-    private Dimension barMinSize;
-    private Dimension panelMinSizep;
     private MultiViewDescription[] topBottomDescriptions = null;
     private PropertyChangeListener splitterPropertyChangeListener;
     private boolean removeSplit = false;
-    private MultiViewPeer mvPeer;
     private boolean hiddenTriggeredByMultiViewButton = false;
+    private SplitLayerUI layerUI;
 
     private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
@@ -120,6 +119,12 @@ class TabsComponent extends JPanel {
         add(bar, BorderLayout.NORTH);
         startToggling();
         setToolbarBarVisible(toolVis);
+
+        if( SplitAction.isSplitingEnabled() ) {
+            layerUI = new SplitLayerUI( componentPanel );
+        } else {
+            layerUI = null;
+        }
     }
 
 
@@ -130,10 +135,13 @@ class TabsComponent extends JPanel {
         }
         this.model = model;
 
-        componentPanel = new JPanel();
         cardLayout = new CardLayout();
         componentPanel.setLayout(cardLayout);
-        add(componentPanel, BorderLayout.CENTER);
+        if( null != layerUI ) {
+            add(new JLayer( componentPanel, layerUI), BorderLayout.CENTER);
+        } else {
+            add(componentPanel, BorderLayout.CENTER);
+        }
         alreadyAddedElements = new HashSet<MultiViewElement>();
 
         MultiViewDescription[] descs = model.getDescriptions();
@@ -164,7 +172,6 @@ class TabsComponent extends JPanel {
         Enumeration en = model.getButtonGroup().getElements();
         while (en.hasMoreElements()) {
             JToggleButton but = (JToggleButton)en.nextElement();
-            Insets ins = but.getBorder().getBorderInsets(but);
             but.setPreferredSize(new Dimension(prefWidth + 10, prefHeight));
             but.setMinimumSize(new Dimension(prefWidth + 10, prefHeight));
 
@@ -191,8 +198,28 @@ class TabsComponent extends JPanel {
 	return topBottomDescriptions == null ? model.getActiveDescription() : topBottomDescriptions[1];
     }
 
-    void peerClearSplit() {
-	MultiViewDescription activeDescription = topBottomDescriptions[0];
+    void peerClearSplit(int splitElementToActivate) {
+	MultiViewDescription activeDescription = null;
+        if( splitElementToActivate < 0 || splitElementToActivate >= topBottomDescriptions.length ) {
+            activeDescription = model.getActiveDescription();
+            if( null == activeDescription )
+                activeDescription = topBottomDescriptions[0]; //just being paranoid
+        } else {
+            activeDescription = topBottomDescriptions[splitElementToActivate];
+        }
+
+        MultiViewDescription toDeactivate = activeDescription == topBottomDescriptions[0]
+                ? topBottomDescriptions[1] : topBottomDescriptions[0];
+        if( activeDescription == topBottomDescriptions[1] ) {
+            //the description to be activated is actually a split copy so find the original non-split one
+            MultiViewDescription[] descriptions = model.getDescriptions();
+            for( int i=1; i<descriptions.length; i++ ) {
+                if( descriptions[i] == activeDescription ) {
+                    activeDescription = descriptions[i-1];
+                    break;
+                }
+            }
+        }
 	Toolkit.getDefaultToolkit().removeAWTEventListener(getAWTEventListener());
 	splitPane.removePropertyChangeListener(splitterPropertyChangeListener);
 	removeAll();
@@ -208,17 +235,22 @@ class TabsComponent extends JPanel {
 	componentPanelSplit = null;
 	toolbarPanelSplit = null;
 	splitterPropertyChangeListener = null;
-	mvPeer = null;
 
 	add(bar, BorderLayout.NORTH);
-        add(componentPanel, BorderLayout.CENTER);
+        if( null != layerUI ) {
+            add(new JLayer( componentPanel, layerUI ), BorderLayout.CENTER);
+        } else {
+            add(componentPanel, BorderLayout.CENTER);
+        }
+        MultiViewElement mve = model.getElementForDescription( toDeactivate );
+        mve.componentDeactivated();
+        mve.componentHidden();
 	model.setActiveDescription(activeDescription);
+        syncButtonsWithModel();
     }
 
     private void setupSplit() {
 	topLeftComponent = new JPanel(new BorderLayout());
-	barMinSize = bar.getMinimumSize();
-	panelMinSizep = componentPanel.getMinimumSize();
 	topLeftComponent.add(bar, BorderLayout.NORTH);
         topLeftComponent.add(componentPanel, BorderLayout.CENTER);
 
@@ -228,11 +260,11 @@ class TabsComponent extends JPanel {
         barSplit.setBorder(b);
         barSplit.setFloatable(false);
         barSplit.setFocusable(true);
-        if( "Windows".equals( UIManager.getLookAndFeel().getID())
+        if( "Windows".equals( UIManager.getLookAndFeel().getID()) //NOI18N
                 && !isXPTheme()) {
             barSplit.setRollover(true);
         } else if( AQUA ) {
-            barSplit.setBackground(UIManager.getColor("NbExplorerView.background"));
+            barSplit.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
 
         bottomRightComponent.setLayout(new BorderLayout());
@@ -247,7 +279,6 @@ class TabsComponent extends JPanel {
         alreadyAddedElementsSplit = new HashSet<MultiViewElement>();
 
         MultiViewDescription[] descs = model.getDescriptions();
-        MultiViewDescription def = model.getActiveDescription();
         GridBagLayout grid = new GridBagLayout();
         barSplit.setLayout(grid);
         int prefHeight = -1;
@@ -282,9 +313,9 @@ class TabsComponent extends JPanel {
         barSplit.add(toolbarPanelSplit, cons);
     }
 
-    void peerSplitComponent(int orientation, MultiViewPeer mvPeer, MultiViewDescription defaultDesc, MultiViewDescription defaultDescClone) {
+    void peerSplitComponent(int orientation, MultiViewPeer mvPeer, MultiViewDescription defaultDesc, MultiViewDescription defaultDescClone,
+            int splitPosition) {
 	MultiViewDescription[] descriptions = model.getDescriptions();
-	this.mvPeer = mvPeer;
 
 	MultiViewDescription activeDescription = model.getActiveDescription();
 	if (splitPane == null) {
@@ -307,7 +338,7 @@ class TabsComponent extends JPanel {
 	    }
 
 	    setupSplit();
-	    splitPane.setOneTouchExpandable(true);
+	    splitPane.setOneTouchExpandable(false);
 	    splitPane.setContinuousLayout(true);
 	    splitPane.setResizeWeight(0.5);
             splitPane.setBorder( BorderFactory.createEmptyBorder() );
@@ -320,13 +351,13 @@ class TabsComponent extends JPanel {
 	    MultiViewDescription bottomDescription = topBottomDescriptions[1];
 	    isTopLeft = false;
 	    model.setActiveDescription(bottomDescription);
-            syncButtonsWithModel();
+            syncSplitButtonsWithModel();
 
 	    MultiViewDescription topDescription = topBottomDescriptions[0];
 	    isTopLeft = true;
 	    model.setActiveDescription(topDescription);
 
-            syncButtonsWithModel();
+            syncSplitButtonsWithModel();
 	} else {
 	    topLeftComponent = (JPanel) splitPane.getTopComponent();
 	    bottomRightComponent = (JPanel) splitPane.getBottomComponent();
@@ -335,15 +366,18 @@ class TabsComponent extends JPanel {
 	    splitPane.removePropertyChangeListener(splitterPropertyChangeListener);
 	    splitterPropertyChangeListener = null;
 	}
+        bar.remove( layerUI.getSplitDragger() );
 	splitPane.setOrientation(orientation);
 	splitPane.setTopComponent(topLeftComponent);
 	splitPane.setBottomComponent(bottomRightComponent);
 	splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, getSplitterPropertyChangeListener(orientation));
 	topLeftComponent.setMinimumSize(new Dimension(0, 0));
 	bottomRightComponent.setMinimumSize(new Dimension(0, 0));
+        if( splitPosition > 0 )
+            splitPane.setDividerLocation( splitPosition );
     }
 
-    private void syncButtonsWithModel() {
+    private void syncSplitButtonsWithModel() {
         model.setFreezeTabButtons( true );
 	Enumeration en = model.getButtonGroupSplit().getElements();
 	while (en.hasMoreElements()) {
@@ -351,6 +385,20 @@ class TabsComponent extends JPanel {
             TabsButtonModel buttonModel = ( TabsButtonModel ) but.getModel();
 	    MultiViewDescription buttonsDescription = buttonModel.getButtonsDescription();
             if( buttonsDescription == (isTopLeft ? topBottomDescriptions[0] : topBottomDescriptions[1]) ) {
+                but.setSelected( true );
+            }
+	}
+        model.setFreezeTabButtons( false );
+    }
+
+    private void syncButtonsWithModel() {
+        model.setFreezeTabButtons( true );
+	Enumeration en = model.getButtonGroup().getElements();
+	while (en.hasMoreElements()) {
+	    JToggleButton but = (JToggleButton) en.nextElement();
+            TabsButtonModel buttonModel = ( TabsButtonModel ) but.getModel();
+	    MultiViewDescription buttonsDescription = buttonModel.getButtonsDescription();
+            if( buttonsDescription == model.getActiveDescription() ) {
                 but.setSelected( true );
             }
 	}
@@ -379,11 +427,7 @@ class TabsComponent extends JPanel {
 			}
 			int min = topMinSize;
 			int max = splitSize - bottomMinSize - dividerSize;
-			if (current <= min || current >= max) {
-			    removeSplit = true;
-			} else {
-			    removeSplit = false;
-			}
+                        removeSplit = current <= min || current >= max;
 		    }
 		}
 	    };
@@ -421,31 +465,21 @@ class TabsComponent extends JPanel {
 				model.setActiveDescription(activeDescription);
 			    }
 			}
-		    } else if (splitPane != null && e.getID() == MouseEvent.MOUSE_RELEASED) {
-			if (removeSplit) {
-			    if (e.getClickCount() != 0) {
-				return;
-			    }
-			    if (mvPeer != null) {
-				mvPeer.peerClearSplit();
-				bar.setMinimumSize(barMinSize);
-				componentPanel.setMinimumSize(panelMinSizep);
-			    }
-			    removeSplit = false;
-			}
+		    } else if (splitPane != null && e.getID() == MouseEvent.MOUSE_RELEASED
+                            && e.getButton() == MouseEvent.BUTTON1 && removeSplit ) {
+                        removeSplit = false;
+                        TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, splitPane);
+                        if( null != tc ) {
+                            int toActivate = 0;
+                            if( splitPane.getDividerLocation() < 10 )
+                                toActivate = 1;
+                            SplitAction.clearSplit( tc, toActivate );
+                        }
 		    }
                 }
             };
         }
         return awtEventListener;
-    }
-
-    private void changeSplitOrientation(int orientation) {
-	splitPane.removePropertyChangeListener(splitterPropertyChangeListener);
-	splitterPropertyChangeListener = null;
-	splitPane.setOrientation(orientation);
-	splitPane.setDividerLocation(0.5);
-	splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, getSplitterPropertyChangeListener(orientation));
     }
 
     boolean isHiddenTriggeredByMultiViewButton() {
@@ -601,12 +635,21 @@ class TabsComponent extends JPanel {
             GridBagConstraints cons = new GridBagConstraints();
             cons.anchor = GridBagConstraints.EAST;
             cons.fill = GridBagConstraints.BOTH;
-            cons.gridwidth = GridBagConstraints.REMAINDER;
+//            cons.gridwidth = GridBagConstraints.REMAINDER;
             cons.weightx = 1;
             toolbarPanel.setMinimumSize(new Dimension(10, 10));
 //            cons.gridwidth = GridBagConstraints.REMAINDER;
 
             bar.add(toolbarPanel, cons);
+
+            if( SplitAction.isSplitingEnabled() && null == splitPane ) {
+                cons = new GridBagConstraints();
+                cons.anchor = GridBagConstraints.EAST;
+                cons.fill = GridBagConstraints.NONE;
+                cons.insets = new Insets( 0, 5, 0, 2 );
+
+                bar.add(layerUI.getSplitDragger(), cons);
+            }
 
             // rootcycle is the tabscomponent..
 //            toolbarPanel.setFocusCycleRoot(false);
@@ -748,9 +791,9 @@ class TabsComponent extends JPanel {
         input.put(stroke, "TogglesGoDown");//NOI18N
     }
 
-
     private class TogglesGoWestAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             MultiViewDescription[] descs = model.getDescriptions();
             MultiViewDescription active = model.getActiveDescription();
@@ -769,6 +812,7 @@ class TabsComponent extends JPanel {
 
     private class TogglesGoEastAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             MultiViewDescription[] descs = model.getDescriptions();
             MultiViewDescription active = model.getActiveDescription();
@@ -787,6 +831,7 @@ class TabsComponent extends JPanel {
 
     private class TogglesGoDownAction extends AbstractAction {
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             changeActiveManually(model.getActiveDescription());
             model.getActiveElement().getVisualRepresentation().requestFocusInWindow();

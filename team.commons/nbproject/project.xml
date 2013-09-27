@@ -64,13 +64,14 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
+                <friend>org.netbeans.modules.localtasks</friend>
                 <friend>org.netbeans.modules.odcs.ui</friend>
                 <friend>org.netbeans.modules.odcs.versioning</friend>
-                <friend>org.netbeans.modules.team.server</friend>
                 <friend>org.netbeans.modules.team.ide</friend>
-                <friend>oracle.jdevimpl.nbteam.ide</friend>
+                <friend>org.netbeans.modules.team.server</friend>
                 <package>org.netbeans.modules.team.commons.treelist</package>
                 <package>org.netbeans.modules.team.ide.spi</package>
             </friend-packages>

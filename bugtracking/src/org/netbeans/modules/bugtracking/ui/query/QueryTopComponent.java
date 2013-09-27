@@ -229,6 +229,7 @@ public final class QueryTopComponent extends TopComponent
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
             }
+            rs.setLocalRepositoryHidden(true);
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
         }

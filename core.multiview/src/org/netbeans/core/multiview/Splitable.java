@@ -49,9 +49,9 @@ import org.openide.windows.TopComponent;
  */
 public interface Splitable {
 
-    TopComponent splitComponent( int orientation );
+    TopComponent splitComponent( int orientation, int splitPosition );
 
-    TopComponent clearSplit();
+    TopComponent clearSplit( int elementToActivate);
 
     int getSplitOrientation();
 }

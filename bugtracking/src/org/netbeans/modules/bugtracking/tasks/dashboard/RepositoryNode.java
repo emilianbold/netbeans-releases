@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.*;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CloseRepositoryNodeAction;
@@ -148,6 +149,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
 
             btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/add_query.png", true), new CreateQueryAction(this)); //NOI18N
             btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
+            btnAddQuery.setEnabled(!BugtrackingManager.isLocalConnectorID(getRepository().getConnectorId()));
             panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
             btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N

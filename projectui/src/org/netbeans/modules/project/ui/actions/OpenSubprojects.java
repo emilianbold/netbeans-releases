@@ -44,24 +44,31 @@
 
 package org.netbeans.modules.project.ui.actions;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.actions.Presenter;
 
-/** Action opening all "subprojects" of given project
+/** Action opening openAllProjectsItem "subprojects" of given project
  */
 @ActionID(category="Project", id="org.netbeans.modules.project.ui.actions.OpenSubprojects")
 @ActionRegistration(displayName="#LBL_OpenSubprojectsAction_Name", lazy=/* SubprojectProvider check */false)
 @Messages("LBL_OpenSubprojectsAction_Name=Open Required Projects")
-public class OpenSubprojects extends NodeAction {
+public class OpenSubprojects extends NodeAction implements Presenter.Popup{
 
     @StaticResource private static final String ICON = "org/netbeans/modules/project/ui/resources/openProject.png";
 
@@ -89,7 +96,7 @@ public class OpenSubprojects extends NodeAction {
             return false; // No nodes no closing
         }
         
-        // Find out whether all nodes have project in lookup 
+        // Find out whether openAllProjectsItem nodes have project in lookup 
         boolean someSubprojects = false; // And have some subprojects;
         for( int i = 0; i < activatedNodes.length; i++ ) {
             Project p = activatedNodes[i].getLookup().lookup(Project.class);
@@ -112,13 +119,62 @@ public class OpenSubprojects extends NodeAction {
     
     @Override protected void performAction(Node[] activatedNodes) {
     
-        for( int i = 0; i < activatedNodes.length; i++ ) {
+        /*for( int i = 0; i < activatedNodes.length; i++ ) {
             Project p = activatedNodes[i].getLookup().lookup(Project.class);
             if ( p != null ) {
                 OpenProjectList.getDefault().open(new Project[] {p}, true, true);
             }
-        }
+        }*/
         
+    }
+    
+    @Messages({
+        "OpenProjectMenu.Open_All_Projects=&Open All Projects"
+    })
+    @Override public JMenuItem getPopupPresenter() {
+        
+        final JMenu menu = new JMenu(LBL_OpenSubprojectsAction_Name());
+        Node [] activatedNodes = getActivatedNodes();
+        if(activatedNodes != null) {
+            for( int i = 0; i < activatedNodes.length; i++ ) {
+                Project p = activatedNodes[i].getLookup().lookup(Project.class);
+                if ( p != null ) {
+                    SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+                    if(spp != null) {
+                        for(final Project prjIter:spp.getSubprojects()) {
+                            JMenuItem selectPrjAction = new JMenuItem(new AbstractAction() {
+
+                                @Override
+                                public void actionPerformed(ActionEvent e) {
+                                    OpenProjectList.getDefault().open(new Project[] {prjIter}, true, true);
+                                }
+                            });
+                            selectPrjAction.setText(ProjectUtils.getInformation(prjIter).getDisplayName());
+                            menu.add(selectPrjAction);
+                        }
+                    }
+                }
+            }
+        }
+        final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Node [] activatedNodes = getActivatedNodes();
+                if(activatedNodes != null) {
+                    for( int i = 0; i < activatedNodes.length; i++ ) {
+                        Project p = activatedNodes[i].getLookup().lookup(Project.class);
+                        if ( p != null ) {
+                            OpenProjectList.getDefault().open(new Project[] {p}, true, true);
+                        }
+                    }
+                }
+            }
+        });
+        Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
+        menu.add(openAllProjectsItem);
+            
+        return menu;
     }
     
 }

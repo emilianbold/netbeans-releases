@@ -231,6 +231,12 @@ public final class NbTaskDataModel {
         return isDirty() || !getChangedAttributes().isEmpty();
     }
 
+    public void clearUnsavedChanges () {
+        if (isDirty()) {
+            delegateModel.revert();
+        }
+    }
+
     private boolean editsDiffer (TaskAttribute ta, TaskData repositoryData) {
         TaskAttribute repositoryTA = repositoryData.getRoot().getMappedAttribute(ta.getPath());
         boolean changes = new TaskAttributeDiff(ta, repositoryTA).hasChanges();

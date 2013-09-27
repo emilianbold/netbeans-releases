@@ -110,6 +110,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private volatile Repository[] repositories;
     private volatile boolean defaultRepoComputationPending;
     private volatile Repository defaultRepo;
+    private boolean hideLocalRepository;
 
     /**
      * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
@@ -298,6 +299,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             displayabilityListener.dispose();
             displayabilityListener = null;
         }
+    }
+
+    public void setLocalRepositoryHidden (boolean hidden) {
+        this.hideLocalRepository = hidden;
     }
 
     private final class DisplayabilityListener implements HierarchyListener {
@@ -620,7 +625,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         Collection<RepositoryImpl> repoImpls = RepositoryRegistry.getInstance().getKnownRepositories(true);
         List<Repository> repos = new ArrayList(repoImpls.size());
         for (RepositoryImpl impl : repoImpls) {
-            repos.add(impl.getRepository());
+            if (!(hideLocalRepository && BugtrackingManager.isLocalConnectorID(impl.getConnectorId()))) {
+                repos.add(impl.getRepository());
+            }
         }
         repositories = repos.toArray(new Repository[repos.size()]);
 
