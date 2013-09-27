@@ -65,8 +65,10 @@ public class TestCreationTestSuite extends JellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(GotoTest.class, 
                         "testSelectTestFromMainMenu",
-                        "testSelectTestFromExplorer")
-                .addTest(CreateTestTest.class, "testCreateTestByPopup",
+                        "testSelectTestFromExplorer",
+                        "testSelectTestFromEditorContextMenu")
+                .addTest(CreateTestTest.class, 
+                        "testCreateTestByPopup",
                         "testCreateTestByPopup2",
                         "testCreateTestByPopup3",
                         "testCreateTestByPopup4",
@@ -75,7 +77,9 @@ public class TestCreationTestSuite extends JellyTestCase {
                         "testCreateWOHints",
                         "testCreateWOJavadoc",
                         "testCreateWOsetUp",
-                        "testCreateWOtearDown")
+                        "testCreateWOtearDown",
+                        "testCreateTestAndSuiteByPopup",
+                        "testCreateTestAndSuiteByPopup2")
                 .enableModules(".*").clusters(".*"));
     } 
 }
