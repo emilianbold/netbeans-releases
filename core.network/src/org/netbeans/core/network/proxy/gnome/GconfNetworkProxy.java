@@ -146,7 +146,28 @@ public class GconfNetworkProxy {
         }
         
         return new NetworkProxySettings(false);
-    }    
+    }
+    
+        /**
+     * Checks if gconftool returns suitable response
+     * 
+     * @return true if gconftool returns suitable response
+     */
+    protected static boolean isGconfValid() {
+        String command = GCONF_PATH + GCONF_ARGUMENT_LIST_RECURSIVELY + GCONF_NODE_PROXY;
+        
+        try {
+            BufferedReader reader = executeCommand(command);
+            if (reader.ready()) {
+                return true;
+            }
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, "Cannot read line: " + command, ioe); //NOI18N
+        }
+        
+        LOGGER.log(Level.WARNING, "GConf return empty list"); //NOI18N
+        return false;
+    }
     
     /**
      * Returns map of properties retrieved from gconftool-2.

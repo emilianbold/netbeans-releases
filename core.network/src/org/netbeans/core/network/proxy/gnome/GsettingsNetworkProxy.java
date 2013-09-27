@@ -150,6 +150,28 @@ public class GsettingsNetworkProxy {
     }    
     
     /**
+     * Checks if GSettings returns suitable response
+     * (On Solaris 11 GSettings is available, but returns empty list)
+     * 
+     * @return true if GSettings returns suitable response
+     */
+    protected static boolean isGsettingsValid() {
+        String command = GSETTINGS_PATH + GSETTINGS_ARGUMENT_LIST_RECURSIVELY + GSETTINGS_PROXY_SCHEMA;
+        
+        try {
+            BufferedReader reader = executeCommand(command);
+            if (reader.ready()) {
+                return true;
+            }
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, "Cannot read line: " + command, ioe); //NOI18N
+        }
+        
+        LOGGER.log(Level.INFO, "GSettings return empty list"); //NOI18N
+        return false;
+    }
+    
+    /**
      * Returns map of properties retrieved from GSettings.
      * 
      * Executes the command "/usr/bin/gsettings list-recursively org.gnome.system.proxy".
@@ -177,7 +199,7 @@ public class GsettingsNetworkProxy {
         }
 
         return map;
-    }
+    }    
     
     /**
      * Returns the key for one line response from GSettings.
