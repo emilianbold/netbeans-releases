@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.completion.overridemethod;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.ImageIcon;
@@ -54,6 +55,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -65,11 +67,15 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -97,46 +103,58 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         this.appendItemText = appendItemText;
         this.htmlItemText = htmlItemText;
         this.item = item;
-        icon = CsmImageLoader.getIcon(item);
+        ImageIcon anIicon;
+        if (item != null) {
+            anIicon = CsmImageLoader.getIcon(item);
+        } else {
+            anIicon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, CsmUtilities.DESTRUCTOR);
+        }
+        icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(anIicon),
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      0, 7)));
         this.right = right;
     }
 
     public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
         String sortItemText;
-        if (CsmKindUtilities.isDestructor(item)) {
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
             sortItemText = "~"+cls.getName(); //NOI18N
         } else {
             sortItemText = item.getName().toString();
         }
         String appendItemText = createAppendText(item, cls);
         String rightText = createRightName(item);
-        String coloredItemText = createDisplayName(item, cls, "override"); //NOI18N
+        String coloredItemText;
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "destructor.txt")); //NOI18N
+        } else {
+            coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "override.txt")); //NOI18N
+        }
         return new CsmOverrideMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
     }
 
     private static String createDisplayName(CsmMember item, CsmClass parent, String operation) {
         StringBuilder displayName = new StringBuilder();
         displayName.append("<b>"); //NOI18N
-        displayName.append(((CsmFunction)item).getSignature());
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            displayName.append('~');
+            displayName.append(parent.getName());
+            displayName.append("()"); //NOI18N
+        } else {
+            displayName.append(((CsmFunction)item).getSignature());
+        }
         displayName.append("</b>"); //NOI18N
         if (operation != null) {
             displayName.append(" - "); //NOI18N
             displayName.append(operation);
         }
-        if (CsmKindUtilities.isDestructor(item)) {
-            String s = displayName.toString();
-            int i = s.indexOf('('); //NOI18N
-            if (i > 0) {
-                return "~"+parent.getName()+s.substring(i); //NOI18N
-            }
-        }
         return displayName.toString();
     }
     
     private static String createRightName(CsmMember item) {
-        if (CsmKindUtilities.isConstructor(item)) {
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
             return "";
-        } else if (CsmKindUtilities.isDestructor(item)) {
+        } else if (CsmKindUtilities.isConstructor(item)) {
             return "";
         } else {
             return ((CsmFunction)item).getReturnType().getCanonicalText().toString();
@@ -146,7 +164,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
     private static String createAppendText(CsmMember item, CsmClass parent) {
         StringBuilder appendItemText = new StringBuilder("\nvirtual "); //NOI18N
         String type = "";
-        if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
+        if (item != null && !CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
             type = returnType.getCanonicalText().toString()+" "; //NOI18N
             if (type.indexOf("::") < 0) { //NOI18N
@@ -169,47 +187,52 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         }
         appendItemText.append(type);
         addSignature(item, parent, appendItemText);
-        appendItemText.append(";\n"); //NOI18N
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            appendItemText.append(" {\n\n}\n"); //NOI18N
+        } else {
+            appendItemText.append(";\n"); //NOI18N
+        }
         return appendItemText.toString();
     }
     
     private static void addSignature(CsmMember item, CsmClass parent, StringBuilder sb) {
         //sb.append(item.getSignature());
-        if (CsmKindUtilities.isDestructor(item)) {
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
             sb.append('~');
             sb.append(parent.getName());
+            sb.append("()"); //NOI18N
         } else {
             sb.append(item.getName());
-        }
-        if (CsmKindUtilities.isTemplate(item)) {
-            List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
-            // What to do with template?
-        }
-        //sb.append(parameterList.getText());
-        sb.append('('); //NOI18N
-        boolean first = true;
-        for(CsmParameter param : ((CsmFunction)item).getParameterList().getParameters()) {
-            if (!first) {
-               sb.append(','); //NOI18N
-               sb.append(' '); //NOI18N
+            if (CsmKindUtilities.isTemplate(item)) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
+                // What to do with template?
             }
-            first = false;
-            if (param.isVarArgs()) {
-                sb.append(param.getName());
-                sb.append(' '); //NOI18N
-                sb.append("..."); // NOI18N
-            } else {
-                CsmType type = param.getType();
-                if (type != null) {
-                    sb.append(type.getCanonicalText());
-                    sb.append(' ');
+            //sb.append(parameterList.getText());
+            sb.append('('); //NOI18N
+            boolean first = true;
+            for(CsmParameter param : ((CsmFunction)item).getParameterList().getParameters()) {
+                if (!first) {
+                   sb.append(','); //NOI18N
+                   sb.append(' '); //NOI18N
+                }
+                first = false;
+                if (param.isVarArgs()) {
                     sb.append(param.getName());
+                    sb.append(' '); //NOI18N
+                    sb.append("..."); // NOI18N
+                } else {
+                    CsmType type = param.getType();
+                    if (type != null) {
+                        sb.append(type.getCanonicalText());
+                        sb.append(' ');
+                        sb.append(param.getName());
+                    }
                 }
             }
-        }
-        sb.append(')'); //NOI18N
-        if(CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isConst()) {
-            sb.append(" const"); // NOI18N
+            sb.append(')'); //NOI18N
+            if(CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isConst()) {
+                sb.append(" const"); // NOI18N
+            }
         }
     }
     
@@ -319,14 +342,19 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                     String itemText = getItemText();
                     doc.insertString(offset, itemText, null);
                     if (c != null) {
-                        int setDot = offset + itemText.length() - 1;
+                        int setDot;
+                        if (item == null || CsmKindUtilities.isDestructor(item)) {
+                            setDot = offset + itemText.length() - 3;
+                        } else {
+                            setDot = offset + itemText.length() - 1;
+                        }
                         c.setCaretPosition(setDot);
-                        Indent indent = Indent.get(doc);
-                        indent.lock();
+                        Reformat reformat = Reformat.get(doc);
+                        reformat.lock();
                         try {
-                            indent.reindent(offset + 1, offset + itemText.length() - 1);
+                            reformat.reformat(offset, offset + itemText.length() - 1);
                         } finally {
-                            indent.unlock();
+                            reformat.unlock();
                         }
                     }
                 } catch (BadLocationException e) {
