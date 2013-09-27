@@ -51,6 +51,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -275,6 +279,25 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
         private boolean init(final BaseDocument doc, final int caretOffset) throws BadLocationException {
             filterPrefix = "";
             queryAnchorOffset = caretOffset;
+            if (doc != null) {
+                doc.readLock();
+                try {
+                    TokenItem<TokenId> tok = CndTokenUtilities.getTokenCheckPrev(doc, caretOffset);
+                    if (tok != null) {
+                        TokenId id = tok.id();
+                        if(id instanceof CppTokenId) {
+                            if (!CppTokenId.WHITESPACE_CATEGORY.equals(id.primaryCategory())) {
+                                queryAnchorOffset = tok.offset();
+                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                            }
+                        }
+                    }
+                } catch (BadLocationException ex) {
+                    // skip
+                } finally {
+                    doc.readUnlock();
+                }
+            }
             return this.queryAnchorOffset >= 0;
         }
 
