@@ -44,43 +44,26 @@
 
 package org.netbeans.modules.j2ee.jpa.verification;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
-import org.netbeans.modules.j2ee.jpa.model.JPAHelper;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
-import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.IdClass;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.MappedSuperclass;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -131,143 +114,8 @@ public abstract class JPAProblemFinder {
                 return; // File doesn't belong to any project or project doesn't support JPA
             }
             
-            emModel.runReadActionWhenReady(new MetadataModelAction<EntityMappingsMetadata, Void>() {
-                public Void run(EntityMappingsMetadata metadata) {
-                    for (Tree tree : info.getCompilationUnit().getTypeDecls()){
-                        if (isCancelled()){
-                            break;
-                        }
-                        
-                        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
-                            
-                            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
-                            TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
-                            
-                            processClass(info, metadata, javaClass);
-                            
-                            for (TypeElement innerClass : ElementFilter.typesIn(javaClass.getEnclosedElements())){
-                                processClass(info, metadata, innerClass);
-                            }
-                            
-                            synchronized(cancellationLock){
-                                context = null;
-                            }
-                        }
-                    }
-                    
-                    return null;
-                }
-            });
-            
-            //TODO: should we really reset the errors if the task is cancelled?
-            HintsController.setErrors(file, "JPA Verification", problemsFound); //NOI18N
             runningInstance = null;
         }
-    }
-    
-    private void processClass(CompilationInfo info,
-            EntityMappingsMetadata metadata,
-            TypeElement javaClass) {
-        long startTime = Calendar.getInstance().getTimeInMillis();
-        context = findProblemContext(info, javaClass, metadata, false);
-        JPARulesEngine rulesEngine = new JPARulesEngine();
-        rulesEngine.visitTypeAsClass(javaClass, context);
-        problemsFound.addAll(rulesEngine.getProblemsFound());
-
-        // signal locally errors found in the IdClass
-        problemsFound.addAll(processIdClass(info, javaClass, metadata, context.getModelElement()));
-
-        if (LOG.isLoggable(Level.FINE)) {
-            long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;
-
-            LOG.log(Level.FINE, "processed class {0} in {1} ms", new Object[]{javaClass.getSimpleName(), timeElapsed});
-        }
-    }
-    
-    /**
-     * If there is IdClass annotation present run the rules on the referenced class
-     * and show problems found in the referencing class
-     */
-    private List<ErrorDescription> processIdClass(CompilationInfo info, TypeElement javaClass,
-            EntityMappingsMetadata metadata, Object modelElement){
-        
-        IdClass idClassElem = null;
-        
-        if (modelElement instanceof Entity){
-            idClassElem = ((Entity)modelElement).getIdClass();
-        }
-        else if (modelElement instanceof MappedSuperclass){
-            idClassElem = ((MappedSuperclass)modelElement).getIdClass();
-        }
-        
-        if (idClassElem != null){
-            String idClassName = idClassElem.getClass2();
-            
-            if (idClassName != null){
-                TypeElement idClass = info.getElements().getTypeElement(idClassName);
-                
-                if (idClass != null){
-                    JPAProblemContext context = findProblemContext(info, idClass, metadata, true);
-                    AnnotationMirror annIdClass = Utilities.findAnnotation(javaClass, JPAAnnotations.ID_CLASS);
-                    
-                    // By default underline the @IdClass annotation. 
-                    // If IdClass is defined in orm.xml underline the class name 
-                    // (of the entity using IdClass)
-                    Tree treeToAnnotate = annIdClass != null ? 
-                        info.getTrees().getTree(javaClass, annIdClass) : info.getTrees().getTree(javaClass);
-                    
-                    context.setElementToAnnotate(treeToAnnotate);
-                    JPARulesEngine rulesEngine = new JPARulesEngine();
-                    rulesEngine.visitTypeAsClass(idClass, context);
-                    return rulesEngine.getProblemsFound();
-                }
-            }
-        }
-        
-        return Collections.<ErrorDescription>emptyList();
-    }
-    
-    private JPAProblemContext findProblemContext(CompilationInfo info,
-            TypeElement javaClass, EntityMappingsMetadata metadata, boolean idClass){
-        
-        JPAProblemContext context = new JPAProblemContext();
-        context.setMetaData(metadata);
-        context.setJavaClass(javaClass);
-        
-        if (!idClass){
-            Object modelElement = ModelUtils.getEntity(metadata, javaClass);
-            
-            if (modelElement != null){
-                context.setEntity(true);
-            } else{
-                modelElement = ModelUtils.getEmbeddable(metadata, javaClass);
-                
-                if (modelElement != null){
-                    context.setEmbeddable(true);
-                } else{
-                    modelElement = ModelUtils.getMappedSuperclass(metadata, javaClass);
-                    
-                    if (modelElement != null){
-                        context.setMappedSuperClass(true);
-                    }
-                }
-            }
-            
-            context.setModelElement(modelElement);
-        }
-        context.setIdClass(idClass);
-        context.setFileObject(file);
-        context.setCompilationInfo(info);
-        
-        if (context.isJPAClass()){
-            context.setAccessType(JPAHelper.findAccessType(javaClass, context.getModelElement()));
-            if(!usgLogged) {
-                usgLogged = true;
-                PersistenceUtils.logUsage(JPAProblemFinder.class, "USG_PERSISTENCE_DETECTED", new String[]{"CLASS"});//NOI18N
-            }
-        }
-        
-        return context;
     }
     
     public void cancel(){
