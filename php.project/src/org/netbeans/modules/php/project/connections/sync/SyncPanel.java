@@ -192,7 +192,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     private JButton okButton = null;
 
 
-    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient, boolean forProject) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient,
+            SyncController.SourceFiles sourceFiles) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
@@ -202,7 +203,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         displayedItems = new ArrayList<>(items);
         this.remoteClient = remoteClient;
         tableModel = new FileTableModel(displayedItems);
-        defaultInfoMessage = getDefaultInfoMessage(items);
+        defaultInfoMessage = getDefaultInfoMessage(items, sourceFiles);
 
         initComponents();
         viewCheckBoxes = getViewCheckBoxes();
@@ -212,7 +213,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         initOperationButtons();
         initDiffButton();
         initMessages();
-        initShowSummaryCheckBox(forProject);
+        initShowSummaryCheckBox(sourceFiles == SyncController.SourceFiles.PROJECT);
     }
 
     private JCheckBox createViewCheckBox() {
@@ -702,9 +703,10 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     @NbBundle.Messages({
         "SyncPanel.info.firstRun=<strong>First time for this directory and configuration - more user actions may be needed.</strong><br>",
+        "SyncPanel.info.files=Suggested operation for individual files may not be correct (synchronize directory instead).<br>",
         "SyncPanel.info.warning=Review all suggested operations before proceeding. Note that remote timestamps may not be correct.",
     })
-    private String getDefaultInfoMessage(List<SyncItem> items) {
+    private String getDefaultInfoMessage(List<SyncItem> items, SyncController.SourceFiles sourceFiles) {
         StringBuilder msg = new StringBuilder();
         boolean firstRun = false;
         for (SyncItem item : items) {
@@ -715,6 +717,9 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
         }
         if (firstRun) {
             msg.append(Bundle.SyncPanel_info_firstRun());
+        }
+        if (sourceFiles == SyncController.SourceFiles.INDIVIDUAL_FILES) {
+            msg.append(Bundle.SyncPanel_info_files());
         }
         msg.append(Bundle.SyncPanel_info_warning());
         return msg.toString();
