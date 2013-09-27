@@ -851,6 +851,9 @@ public class ArrayStringConversions {
                     continue;
                 }
             }
+            if (arg.getKind() == Tree.Kind.NULL_LITERAL) {
+                continue;
+            }
             if (isVarArgs && (index == el.getParameters().size() - 1) && index == (mit.getArguments().size() - 1)) {
                 TypeMirror argType = ci.getTrees().getTypeMirror(argPath);
                 // check whether the argtype exactly matches the vararg; so if Object[] is passed to a Object... vararg method,

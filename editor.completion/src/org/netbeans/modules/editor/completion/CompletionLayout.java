@@ -446,10 +446,11 @@ public final class CompletionLayout {
             // Set the new data
             getPreferredSize();
             completionScrollPane.setData(data, title, selectedIndex);
-            if (anchorOffset >= 0)
-                setAnchorOffset(anchorOffset);
-            if (location != null)
+            if (location != null) {
                 setLocation(location);
+            } else {
+                setAnchorOffset(anchorOffset);
+            }
 
             Dimension prefSize = getPreferredSize();
 

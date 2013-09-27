@@ -271,6 +271,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
+            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
+                JavaCustomIndexer.setErrors(context, unit.getValue(), dc);
+            }
             for (TypeElement type : types) {
                 Iterable<? extends JavaFileObject> generatedFiles = jt.generate(Collections.singletonList(type));
                 CompileTuple unit = clazz2Tuple.get(type);
@@ -285,9 +288,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
             }
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
-                CompileTuple active = unit.getValue();
-                JavaCustomIndexer.setErrors(context, active, dc);
-                finished.add(active.indexable);
+                finished.add(unit.getValue().indexable);
             }
             return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {

@@ -305,6 +305,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         previous.modifiedTypes.addAll(aTypes);
                     }
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
+                    JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                     Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
                     if (!active.virtual) {
                         for (JavaFileObject generated : generatedFiles) {
@@ -315,7 +316,6 @@ final class MultiPassCompileWorker extends CompileWorker {
                             }
                         }
                     }
-                    JavaCustomIndexer.setErrors(context, active, diagnosticListener);
                     Log.instance(jt.getContext()).nerrors = 0;
                     previous.finishedFiles.add(active.indexable);
                     active = null;
