@@ -208,44 +208,46 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-                    Set<CsmClass> classes = new HashSet<CsmClass>();
-                    visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
-                    if (isApplicable)  {
-                        if (classes.isEmpty()) {
-                            // probably empty file
-                            // try to find corresponded header
-                            String name = CndPathUtilities.getBaseName(csmFile.getAbsolutePath().toString());
-                            if (name.lastIndexOf('.') > 0) { //NOI18N
-                                name = name.substring(0, name.lastIndexOf('.')); //NOI18N
-                            }
-                            CsmFile bestInterface = null;
-                            for(CsmInclude incl : csmFile.getIncludes()) {
-                                CsmFile includeFile = incl.getIncludeFile();
-                                if (includeFile != null) {
-                                    String inclName = CndPathUtilities.getBaseName(includeFile.getAbsolutePath().toString());
-                                    if (inclName.lastIndexOf('.') > 0) { //NOI18N
-                                        inclName = inclName.substring(0, inclName.lastIndexOf('.')); //NOI18N
-                                    }
-                                    if (name.equals(inclName)) {
-                                        bestInterface = includeFile;
-                                        break;
+                    if (csmFile != null) {
+                        Set<CsmClass> classes = new HashSet<CsmClass>();
+                        visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
+                        if (isApplicable)  {
+                            if (classes.isEmpty()) {
+                                // probably empty file
+                                // try to find corresponded header
+                                String name = CndPathUtilities.getBaseName(csmFile.getAbsolutePath().toString());
+                                if (name.lastIndexOf('.') > 0) { //NOI18N
+                                    name = name.substring(0, name.lastIndexOf('.')); //NOI18N
+                                }
+                                CsmFile bestInterface = null;
+                                for(CsmInclude incl : csmFile.getIncludes()) {
+                                    CsmFile includeFile = incl.getIncludeFile();
+                                    if (includeFile != null) {
+                                        String inclName = CndPathUtilities.getBaseName(includeFile.getAbsolutePath().toString());
+                                        if (inclName.lastIndexOf('.') > 0) { //NOI18N
+                                            inclName = inclName.substring(0, inclName.lastIndexOf('.')); //NOI18N
+                                        }
+                                        if (name.equals(inclName)) {
+                                            bestInterface = includeFile;
+                                            break;
+                                        }
                                     }
                                 }
+                                if (bestInterface != null) {
+                                    visitClasses(classes, bestInterface.getDeclarations(), caretOffset);
+                                }
                             }
-                            if (bestInterface != null) {
-                                visitClasses(classes, bestInterface.getDeclarations(), caretOffset);
-                            }
-                        }
-                        for(CsmClass cls : classes) {
-                            for(CsmMember member : cls.getMembers()) {
-                                if (CsmKindUtilities.isMethodDeclaration(member)) {
-                                    if (((CsmMethod) member).isAbstract()) {
-                                        continue;
-                                    }
-                                    CsmFunction method = (CsmFunction) member;
-                                    CsmFunctionDefinition definition = method.getDefinition();
-                                    if (definition == null) {
-                                        items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
+                            for(CsmClass cls : classes) {
+                                for(CsmMember member : cls.getMembers()) {
+                                    if (CsmKindUtilities.isMethodDeclaration(member)) {
+                                        if (((CsmMethod) member).isAbstract()) {
+                                            continue;
+                                        }
+                                        CsmFunction method = (CsmFunction) member;
+                                        CsmFunctionDefinition definition = method.getDefinition();
+                                        if (definition == null) {
+                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
+                                        }
                                     }
                                 }
                             }

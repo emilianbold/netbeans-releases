@@ -66,10 +66,13 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -97,7 +100,9 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.appendItemText = appendItemText;
         this.htmlItemText = htmlItemText;
         this.item = item;
-        icon = CsmImageLoader.getIcon(item);
+        icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(CsmImageLoader.getIcon(item)),
+                                                      ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
+                                                      0, 7)));
         this.right = right;
     }
 
@@ -105,7 +110,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String sortItemText = item.getName().toString();
         String appendItemText = createAppendText(item, cls);
         String rightText = createRightName(item);
-        String coloredItemText = createDisplayName(item, cls, "implement"); //NOI18N
+        String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "implement.txt")); //NOI18N
         return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
     }
 
@@ -310,13 +315,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                     if (c != null) {
                         int setDot = offset + itemText.length() - 3;
                         c.setCaretPosition(setDot);
-                        Indent indent = Indent.get(doc);
-                        indent.lock();
+                        Reformat reformat = Reformat.get(doc);
+                        reformat.lock();
                         try {
-                            indent.reindent(offset, offset + itemText.length());
+                            reformat.reformat(offset, offset + itemText.length() - 1);
                         } finally {
-                            indent.unlock();
+                            reformat.unlock();
                         }
+                        
                     }
                 } catch (BadLocationException e) {
                     // Can't update

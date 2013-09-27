@@ -188,11 +188,12 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                                     }
                                 }
                             }
-                            Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
-                            if (baseClasses != null && baseClasses.size() > 0) {
-                                return cls;
-                            }
-                            return null;
+                            return cls;
+                            //Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
+                            //if (baseClasses != null && baseClasses.size() > 0) {
+                            //    return cls;
+                            //}
+                            //return null;
                         }
                         break;
                     }
@@ -210,21 +211,37 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
-                    CsmClass cls = visitDeclarations(csmFile.getDeclarations(), caretOffset);
-                    if (cls != null) {
-                        Set<CsmMethod> virtual = new HashSet<CsmMethod>();
-                        getVirtualMethods(virtual, cls, new HashSet<CsmClass>());
-                        for(CsmMember member : cls.getMembers()) {
-                            if(CsmKindUtilities.isMethod(member)) {
-                                for(CsmMethod m : CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) member)) {
-                                    virtual.remove(m);
+                    if (csmFile != null) {
+                        CsmClass cls = visitDeclarations(csmFile.getDeclarations(), caretOffset);
+                        if (cls != null) {
+                            Set<CsmMethod> virtual = new HashSet<CsmMethod>();
+                            getVirtualMethods(virtual, cls, new HashSet<CsmClass>());
+                            boolean hasDestructor = false;
+                            for(CsmMember member : cls.getMembers()) {
+                                if(CsmKindUtilities.isMethod(member)) {
+                                    if (CsmKindUtilities.isDestructor(member)) {
+                                        hasDestructor = true;
+                                    }
+                                    for(CsmMethod m : CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) member)) {
+                                        virtual.remove(m);
+                                    }
                                 }
                             }
+                            boolean addDestructor = !hasDestructor;
+                            for(CsmMethod m : virtual) {
+                                if (CsmKindUtilities.isDestructor(m)) {
+                                    if (!hasDestructor) {
+                                        items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
+                                        addDestructor = false;
+                                    }
+                                } else {
+                                    items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
+                                }
+                            }
+                            if (addDestructor) {
+                                items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, null));
+                            }
                         }
-                        for(CsmMethod m : virtual) {
-                            items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
-                        }
-                        
                     }
                 }
             } catch (BadLocationException ex) {
