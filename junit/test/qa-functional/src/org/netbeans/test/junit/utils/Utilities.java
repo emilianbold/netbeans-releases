@@ -198,7 +198,7 @@ public class Utilities {
      * Sets all checkboxes inside Junit create tests dialog to checked
      */
     public static void checkAllCheckboxes(NbDialogOperator ndo) {
-        for(int i = 0; i < 7; i++) {
+        for(int i = 0; i < 10; i++) {
             new JCheckBoxOperator(ndo, i).setSelected(true);
         }
     }
