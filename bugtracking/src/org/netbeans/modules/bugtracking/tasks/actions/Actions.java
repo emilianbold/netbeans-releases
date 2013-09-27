@@ -51,6 +51,7 @@ import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -574,7 +575,7 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            return true;
+            return !containsLocalRepository(getRepositoryNodes());
         }
     }
 
@@ -661,6 +662,12 @@ public class Actions {
                 org.netbeans.modules.bugtracking.ui.query.QueryAction.openQuery(null, repositoryNode.getRepository());
             }
         }
+
+        @Override
+        public boolean isEnabled () {
+            return super.isEnabled() && !containsLocalRepository(getRepositoryNodes());
+        }
+        
     }
 
     public static class QuickSearchAction extends RepositoryAction {
@@ -712,7 +719,7 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            return true;
+            return !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
 
@@ -729,7 +736,7 @@ public class Actions {
 
         @Override
         public boolean isEnabled() {
-            return false;
+            return false && !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
 
@@ -752,6 +759,11 @@ public class Actions {
                 queryNode.getQuery().open(false, mode);
             }
         }
+
+        @Override
+        public boolean isEnabled() {
+            return !containsQueryFromLocalRepository(getQueryNodes());
+        }
     }
     public static class EditQueryAction extends QueryAction {
 
@@ -771,6 +783,11 @@ public class Actions {
             for (QueryNode queryNode : getQueryNodes()) {
                 queryNode.getQuery().open(false, mode);
             }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
     //</editor-fold>
@@ -830,5 +847,27 @@ public class Actions {
                 refresh.actionPerformed(e);
             }
         }
+    }
+
+    private static boolean containsLocalRepository (RepositoryNode[] nodes) {
+        boolean isLocal = false;
+        for (RepositoryNode n : nodes) {
+            if (BugtrackingManager.isLocalConnectorID(n.getRepository().getConnectorId())) {
+                isLocal = true;
+                break;
+            }
+        }
+        return isLocal;
+    }
+
+    private static boolean containsQueryFromLocalRepository (QueryNode[] nodes) {
+        boolean isLocal = false;
+        for (QueryNode n : nodes) {
+            if (BugtrackingManager.isLocalConnectorID(n.getQuery().getRepositoryImpl().getConnectorId())) {
+                isLocal = true;
+                break;
+            }
+        }
+        return isLocal;
     }
 }

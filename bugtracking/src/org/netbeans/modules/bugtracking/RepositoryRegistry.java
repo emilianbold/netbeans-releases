@@ -279,6 +279,14 @@ public class RepositoryRegistry {
                     }
                 }
             }
+            for (DelegatingConnector c : connectors) {
+                if (BugtrackingManager.isLocalConnectorID(c.getID())) {
+                    Repository repo = c.createRepository();
+                    if (repo != null) {
+                        repositories.put(APIAccessor.IMPL.getImpl(repo));
+                    }
+                }
+            }
         }
         return repositories;
     }

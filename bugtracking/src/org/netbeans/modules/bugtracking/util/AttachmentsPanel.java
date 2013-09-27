@@ -357,6 +357,13 @@ public class AttachmentsPanel extends JPanel {
     public Dimension getMinimumSize() {
         return new Dimension(0, super.getMinimumSize().height);
     }
+    
+    /**
+     * Programmatically calls create new attachment method
+     */
+    public final void createAttachment () {
+        createNewButton.doClick();
+    }
 
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();
@@ -370,6 +377,12 @@ public class AttachmentsPanel extends JPanel {
             String label = patchButton.getText();
             patchButton.setText(label.substring(0,1).toLowerCase()+label.substring(1));
             patchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AttachmentsPanel.class, "AttachmentPanels.patchButton.AccessibleContext.accessibleDescription")); // NOI18N
+        }
+        if (attachment.canBeDeleted()) {
+            Action action = attachment.getDeleteAction();
+            if (action != null) {
+                menu.add(action);
+            }
         }
         return menu;
     }
@@ -562,6 +575,7 @@ public class AttachmentsPanel extends JPanel {
             UIUtils.keepFocusedComponentVisible(attachment, parentPanel);
             revalidate();
             attachment.addChangeListener(getChangeListener());
+            attachment.fileField.requestFocus();
             if (nbCallback != null) {
                 supp.fireChange();
             }
@@ -594,6 +608,8 @@ public class AttachmentsPanel extends JPanel {
         public Action getApplyPatchAction ();
 
         public Action getSaveAction ();
+        
+        public Action getDeleteAction ();
 
         public String getDesc ();
 
@@ -604,6 +620,8 @@ public class AttachmentsPanel extends JPanel {
         public String getAuthor ();
 
         public String getAuthorName ();
+
+        public boolean canBeDeleted ();
 
     }
 
@@ -639,9 +657,19 @@ public class AttachmentsPanel extends JPanel {
             return saveAttachmentAction;
         }
 
+        @Override
+        public Action getDeleteAction () {
+            return null;
+        }
+
         protected abstract void getAttachementData (OutputStream os);
         
         protected abstract String getContentType ();
+        
+        @Override
+        public boolean canBeDeleted () {
+            return false;
+        }
 
         public void open() {
             // XXX

@@ -292,6 +292,11 @@ public class IDEServicesImpl implements IDEServices {
         OptionsDisplayer.getDefault().open("General"); // NOI18N
     }
 
+    @Override
+    public DatePickerComponent createDatePicker () {
+        return new JXDatePickerImpl();
+    }
+
     private static class SwingXBusyIcon extends PainterIcon implements BusyIcon {
         private static final int SIZE = 16;
         private static final int POINTS = 8;

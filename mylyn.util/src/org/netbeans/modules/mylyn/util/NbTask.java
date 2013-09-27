@@ -45,6 +45,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
+import org.eclipse.mylyn.internal.tasks.core.DateRange;
+import org.eclipse.mylyn.internal.tasks.core.LocalRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.mylyn.util.internal.TaskListener;
@@ -204,12 +207,68 @@ public final class NbTask {
         return MylynSupport.getInstance().getTaskDataState(this);
     }
 
-    boolean isNew () {
-        return syncState == SynchronizationState.OUTGOING_NEW;
+    public String getTaskKey () {
+        return delegate.getTaskKey();
     }
 
-    public final String getTaskKey () {
-        return delegate.getTaskKey();
+    boolean isUnsubmittedRepositoryTask () {
+        return syncState == SynchronizationState.OUTGOING_NEW
+                && MylynSupport.getInstance().isUnsubmittedRepositoryTask(delegate);
+    }
+
+    boolean isLocal () {
+        return LocalRepositoryConnector.CONNECTOR_KIND.equals(delegate.getConnectorKind());
+    }
+
+    public final String getPrivateNotes () {
+        if (delegate instanceof AbstractTask) {
+            return ((AbstractTask) delegate).getNotes();
+        } else {
+            return null;
+        }
+    }
+
+    public final void setPrivateNotes (String notes) {
+        if (delegate instanceof AbstractTask) {
+            ((AbstractTask) delegate).setNotes(notes);
+        }
+    }
+
+    public final Date getDueDate () {
+        return delegate.getDueDate();
+    }
+
+    public final void setDueDate (Date dueDate) {
+        delegate.setDueDate(dueDate);
+    }
+
+    public final NbDateRange getScheduleDate () {
+        if (delegate instanceof AbstractTask) {
+            DateRange date = ((AbstractTask) delegate).getScheduledForDate();
+            return date == null ? null : new NbDateRange(date);
+        } else {
+            return null;
+        }
+    }
+
+    public final void setScheduleDate (NbDateRange scheduledDate) {
+        if (delegate instanceof AbstractTask) {
+            ((AbstractTask) delegate).setScheduledForDate(scheduledDate == null ? null : scheduledDate.getDelegate());
+        }
+    }
+
+    public int getEstimate () {
+        if (delegate instanceof AbstractTask) {
+            return ((AbstractTask) delegate).getEstimatedTimeHours();
+        } else {
+            return 0;
+        }
+    }
+
+    public void setEstimate (int estimatedHours) {
+        if (delegate instanceof AbstractTask) {
+            ((AbstractTask) delegate).setEstimatedTimeHours(estimatedHours);
+        }
     }
 
     public static enum SynchronizationState {

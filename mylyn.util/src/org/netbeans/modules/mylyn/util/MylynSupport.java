@@ -97,6 +97,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.mylyn.util.commands.CommandFactory;
 import org.netbeans.modules.mylyn.util.internal.CommandsAccessor;
 import org.netbeans.modules.mylyn.util.internal.TaskListener;
+import org.netbeans.modules.mylyn.util.localtasks.internal.LocalTaskDataHandler;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -151,14 +152,17 @@ public class MylynSupport {
         return instance;
     }
 
+    @NbBundle.Messages({
+        "LBL_LocalTaskRepository.displayName=Local Tasks"
+    })
     private MylynSupport () {
         taskRepositoryManager = new TaskRepositoryManager();
         taskRepositoryManager.addRepositoryConnector(new LocalRepositoryConnector());
-        localTaskRepository = new TaskRepository(LocalRepositoryConnector.CONNECTOR_KIND,
-                LocalRepositoryConnector.REPOSITORY_URL);
+        localTaskRepository = new TaskRepository(LocalRepositoryConnector.CONNECTOR_KIND, LocalRepositoryConnector.REPOSITORY_URL);
+        localTaskRepository.setRepositoryLabel(Bundle.LBL_LocalTaskRepository_displayName());
         taskRepositoryManager.addRepository(localTaskRepository);
-        taskList = new TaskList();
 
+        taskList = new TaskList();
         repositoryModel = new RepositoryModel(taskList, taskRepositoryManager);
         synchronizationManager = new SynchronizationManger(repositoryModel);
         taskActivityManager = new TaskActivityManager(taskRepositoryManager, taskList);
@@ -199,7 +203,8 @@ public class MylynSupport {
         ensureTaskListLoaded();
         assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
                 : "Did you forget to implement RepositoryConnectorProvider?";
-        return toNbTasks(taskList.getTasks(taskRepository.getUrl()));
+        return toNbTasks(taskList.getTasks(taskRepository.getUrl()),
+                !LocalRepositoryConnector.CONNECTOR_KIND.equals(taskRepository.getConnectorKind()));
     }
 
     public Collection<NbTask> getTasks (IRepositoryQuery query) throws CoreException {
@@ -347,9 +352,12 @@ public class MylynSupport {
         ensureTaskListLoaded();
         AbstractTask task = createNewTask(taskRepository);
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
-        TaskAttributeMapper attributeMapper = repositoryConnector.getTaskDataHandler().getAttributeMapper(taskRepository);
+        AbstractTaskDataHandler taskDataHandler = taskRepository == localTaskRepository
+                ? new LocalTaskDataHandler(taskRepository)
+                : repositoryConnector.getTaskDataHandler();
+        TaskAttributeMapper attributeMapper = taskDataHandler.getAttributeMapper(taskRepository);
         TaskData taskData = new TaskData(attributeMapper, repositoryConnector.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
-        repositoryConnector.getTaskDataHandler().initializeTaskData(taskRepository, taskData, initializingData, new NullProgressMonitor());
+        taskDataHandler.initializeTaskData(taskRepository, taskData, initializingData, new NullProgressMonitor());
         initializeTask(repositoryConnector, taskData, task, taskRepository);
         return MylynSupport.getInstance().toNbTask(task);
     }
@@ -357,9 +365,9 @@ public class MylynSupport {
     public NbTask createSubtask (NbTask parentTask) throws CoreException {
         ensureTaskListLoaded();
         TaskRepository taskRepository = taskRepositoryManager.getRepository(parentTask.getDelegate().getRepositoryUrl());
-        if (taskRepository == null || parentTask.isNew()) {
+        if (taskRepository == null || parentTask.isUnsubmittedRepositoryTask()) {
             throw new IllegalStateException("Task repository: " + parentTask.getDelegate().getRepositoryUrl()
-                    + " - parent: " + parentTask.isNew());
+                    + " - parent: " + parentTask.isUnsubmittedRepositoryTask());
         }
         AbstractTask task = createNewTask(taskRepository);
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
@@ -385,15 +393,21 @@ public class MylynSupport {
         if (summary != null && summary.length() > 0) {
             task.setSummary(summary);
         }
-        taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
+        if (taskRepository == localTaskRepository) {
+            taskList.addTask(task);
+        } else {
+            taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
+        }
         task.setAttribute(AbstractNbTaskWrapper.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
     }
 
     private AbstractTask createNewTask (TaskRepository taskRepository) {
         AbstractTask task = new LocalTask(String.valueOf(taskList.getNextLocalTaskId()), Bundle.MSG_NewTaskSummary());
-        task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
-        task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
+        if (taskRepository != localTaskRepository) {
+            task.setSynchronizationState(ITask.SynchronizationState.OUTGOING_NEW);
+            task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND, taskRepository.getConnectorKind());
+            task.setAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL, taskRepository.getUrl());
+        }
         return task;
     }
 
@@ -490,7 +504,7 @@ public class MylynSupport {
     }
 
     TaskRepository getTaskRepositoryFor (ITask task) {
-        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+        if (isUnsubmittedRepositoryTask(task)) {
             return taskRepositoryManager.getRepository(
                     task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND),
                     task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL));
@@ -724,9 +738,17 @@ public class MylynSupport {
     }
 
     Collection<NbTask> toNbTasks (Collection<ITask> tasks) {
+        return toNbTasks(tasks, true);
+    }
+    
+    Collection<NbTask> toNbTasks (Collection<ITask> tasks, boolean includeUnsubmittedNewTasks) {
         Set<NbTask> nbTasks = new LinkedHashSet<NbTask>(tasks.size());
         for (ITask task : tasks) {
-            nbTasks.add(toNbTask(task));
+            if (includeUnsubmittedNewTasks || task.getSynchronizationState() != ITask.SynchronizationState.OUTGOING_NEW) {
+                // remember that unsubmitted tasks are local tasks and should not be included
+                // in tasks for local task repository
+                nbTasks.add(toNbTask(task));
+            }
         }
         return Collections.unmodifiableSet(nbTasks);
     }
@@ -838,5 +860,14 @@ public class MylynSupport {
                 }
             }, null, true);
         }
+    }
+
+    boolean isUnsubmittedRepositoryTask (ITask task) {
+        return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW
+                && task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_CONNECTOR_KIND) != null;
+    }
+
+    void taskModified (ITask task) {
+        taskList.notifyElementChanged(task);
     }
 }
