@@ -223,6 +223,7 @@ final class ResultPanelTree extends JPanel
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
         resultBar.setSkippedPercentage(rootNode.getSkippedPercentage());
+        resultBar.setAbortedPercentage(rootNode.getAbortedPercentage());
         statPanel.updateButtons();
     }
 
@@ -241,6 +242,7 @@ final class ResultPanelTree extends JPanel
         }
         resultBar.setPassedPercentage(rootNode.getPassedPercentage());
         resultBar.setSkippedPercentage(rootNode.getSkippedPercentage());
+        resultBar.setAbortedPercentage(rootNode.getAbortedPercentage());
         statPanel.updateButtons();
    }
 

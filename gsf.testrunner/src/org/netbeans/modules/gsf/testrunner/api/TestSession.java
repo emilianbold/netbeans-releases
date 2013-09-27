@@ -314,6 +314,9 @@ public class TestSession {
 		} else if (testcase.getStatus() == Status.SKIPPED) {
 		    report.setSkipped(report.getSkipped() + 1);
 		    report.setSkipped(true);
+		} else if (testcase.getStatus() == Status.ABORTED) {
+		    report.setAborted(report.getAborted()+ 1);
+		    report.setAborted(true);
 		}
 	    }
         }
@@ -334,6 +337,7 @@ public class TestSession {
         result.pending(report.getPending());
         result.errors(report.getErrors());
         result.skipped(report.getSkipped());
+        result.aborted(report.getAborted());
     }
 
     /**
@@ -383,6 +387,7 @@ public class TestSession {
         private int errors;
         private int pending;
         private int skipped;
+        private int aborted;
         private long elapsedTime;
         
         private int failed(int failedCount) {
@@ -407,6 +412,10 @@ public class TestSession {
 
         private int skipped(int skippedCount) {
             return skipped += skippedCount;
+        }
+
+        private int aborted(int abortedCount) {
+            return aborted += abortedCount;
         }
 
         private long elapsedTime(long time) {

@@ -88,6 +88,13 @@ public enum Status {
         return SKIPPED.equals(status);
     }
 
+    /**
+     * @return true if the given status represents an aborted test.
+     */
+    static boolean isAborted(Status status) {
+        return ABORTED.equals(status);
+    }
+
     boolean isMaskApplied(int mask){
         return (mask & getBitMask()) != 0;
     }

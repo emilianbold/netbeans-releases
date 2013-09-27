@@ -82,6 +82,7 @@ final class StatisticsPanel extends JPanel {
     private JToggleButton btnShowPassedWithErrors;
     private JToggleButton btnShowIgnored;
     private JToggleButton btnShowSkipped;
+    private JToggleButton btnShowAborted;
 
     private JToggleButton btnAlwaysOpenTRW;
     private JToggleButton btnAlwaysOpenNewTab;
@@ -160,6 +161,7 @@ final class StatisticsPanel extends JPanel {
         }
         toolbar.add(btnShowFailed);
         toolbar.add(btnShowError);
+        toolbar.add(btnShowAborted);
 //        if(testingFramework.equals(Manager.TESTNG_TF) || testingFramework.equals(Manager.JUNIT_TF)) {
 //            toolbar.add(btnShowIgnored);
 //        }
@@ -300,6 +302,11 @@ final class StatisticsPanel extends JPanel {
                "StatisticsPanel.btnShowError",
                "ACSN_ShowErrorButton",
                Status.ERROR);
+        btnShowAborted = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/aborted.png",
+               "StatisticsPanel.btnShowAborted",
+               "ACSN_ShowAbortedButton",
+               Status.ABORTED);
         btnShowIgnored = newShowButton(
                "org/netbeans/modules/gsf/testrunner/resources/ignored_16.png",
                "StatisticsPanel.btnShowIgnored",
@@ -338,6 +345,7 @@ final class StatisticsPanel extends JPanel {
         btnShowError.setSelected((filterMask & Status.ERROR.getBitMask()) == 0);
         btnShowIgnored.setSelected((filterMask & Status.IGNORED.getBitMask()) == 0);
         btnShowSkipped.setSelected((filterMask & Status.SKIPPED.getBitMask()) == 0);
+        btnShowAborted.setSelected((filterMask & Status.ABORTED.getBitMask()) == 0);
     }
 
     private void createNextPrevFailureButtons() {

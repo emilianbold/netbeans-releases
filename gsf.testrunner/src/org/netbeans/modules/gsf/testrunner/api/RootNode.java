@@ -81,6 +81,7 @@ final class RootNode extends AbstractNode {
     private volatile int errors = 0;
     private volatile int pending = 0;
     private volatile int skipped = 0;
+    private volatile int aborted = 0;
     private volatile long elapsedTimeMillis = 0;
     private volatile int detectedPassedTests = 0;
     private boolean sessionFinished;
@@ -191,6 +192,7 @@ final class RootNode extends AbstractNode {
         errors = 0;
         pending = 0;
 	skipped = 0;
+	aborted = 0;
         detectedPassedTests = 0;
         elapsedTimeMillis = 0;
         for(Report rep: children.getReports()){
@@ -199,6 +201,7 @@ final class RootNode extends AbstractNode {
             errors += rep.getErrors();
             pending += rep.getPending();
 	    skipped += rep.getSkipped();
+	    aborted += rep.getAborted();
             detectedPassedTests += rep.getDetectedPassedTests();
             elapsedTimeMillis += rep.getElapsedTimeMillis();
         }
@@ -210,6 +213,10 @@ final class RootNode extends AbstractNode {
     
     float getSkippedPercentage() {
         return (float) skipped / totalTests * 100;
+    }
+
+    float getAbortedPercentage() {
+        return (float) aborted / totalTests * 100;
     }
 
     /**
@@ -236,6 +243,7 @@ final class RootNode extends AbstractNode {
         "# {0} - number of tests", "MSG_FailedTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} failed",
         "# {0} - number of tests", "MSG_ErrorTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} caused an error",
         "# {0} - number of tests", "MSG_SkippedTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} skipped",
+        "# {0} - number of tests", "MSG_AbortedTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} aborted",
         "MSG_SomePassedNotDisplayed=Information about some passed tests is not displayed.",
         "MSG_PassedNotDisplayed=Information about passed tests is not displayed.",
         "# Elapsed time for a test suite", "# {0} - number of tests", "MSG_TestSuiteElapsedTime=({0,number,0.0##} s)"
@@ -253,11 +261,11 @@ final class RootNode extends AbstractNode {
             } else {
                 msg = null;
             }
-        } else if (failures == 0 && errors == 0 && pending == 0 && skipped == 0) {
+        } else if (failures == 0 && errors == 0 && pending == 0 && skipped == 0 && aborted == 0) {
             msg = MSG_TestsInfoAllOK(totalTests);
         } else {
             
-            String passedTestsInfo = MSG_PassedTestsInfo(totalTests - failures - errors - pending - skipped);
+            String passedTestsInfo = MSG_PassedTestsInfo(totalTests - failures - errors - pending - skipped - aborted);
             
             String pendingTestsInfo = (pending == 0)
                     ? null
@@ -272,8 +280,11 @@ final class RootNode extends AbstractNode {
             String skippedTestsInfo = (skipped == 0)
                     ? null
                     : MSG_SkippedTestsInfo(skipped);
+            String abortedTestsInfo = (aborted == 0)
+                    ? null
+                    : MSG_AbortedTestsInfo(aborted);
             
-            msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo, skippedTestsInfo);
+            msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo, skippedTestsInfo, abortedTestsInfo);
             
         }
 
@@ -319,7 +330,8 @@ final class RootNode extends AbstractNode {
         "# {0} - info about tests in one state", "# {1} - info about tests in another state", "MSG_TestResultSummary1={0}, {1}.",
         "# {0} - info about tests in one state", "# {1} - info about tests in another state", "# {2} - info about tests in yet another state", "MSG_TestResultSummary2={0}, {1}, {2}.",
         "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "MSG_TestResultSummary3={0}, {1}, {2}, {3}.",
-        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "# {4} - info about skipped tests", "MSG_TestResultSummary4={0}, {1}, {2}, {3}, {4}."
+        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "# {4} - info about skipped tests", "MSG_TestResultSummary4={0}, {1}, {2}, {3}, {4}.",
+        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "# {4} - info about skipped tests", "# {5} - info about aborted tests", "MSG_TestResultSummary5={0}, {1}, {2}, {3}, {4}, {5}."
     })
     String constructMessage(String... subMessages) {
         List<String> messageList = new ArrayList<String>();
@@ -338,6 +350,8 @@ final class RootNode extends AbstractNode {
             return MSG_TestResultSummary3(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(3));
         case 5:
             return MSG_TestResultSummary4(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(3), messageList.get(4));
+        case 6:
+            return MSG_TestResultSummary5(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(3), messageList.get(4), messageList.get(5));
         default:
             throw new AssertionError(messageList);
         }
@@ -351,7 +365,7 @@ final class RootNode extends AbstractNode {
      *                           <code>ALL_PASSED_ABSENT</code>
      */
     int getSuccessDisplayedLevel() {
-        int reportedPassedTestsCount = totalTests - failures - errors - skipped;
+        int reportedPassedTestsCount = totalTests - failures - errors - skipped - aborted;
         if (detectedPassedTests >= reportedPassedTestsCount) {
             return ALL_PASSED_DISPLAYED;
         } else if (detectedPassedTests == 0) {
