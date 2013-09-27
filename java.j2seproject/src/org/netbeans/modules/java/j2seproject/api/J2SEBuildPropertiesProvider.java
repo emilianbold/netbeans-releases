@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.j2seproject.api;
 
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
@@ -63,4 +64,13 @@ public interface J2SEBuildPropertiesProvider {
      */
     @NonNull
     Map<String,String> createAdditionalProperties(@NonNull String command, @NonNull Lookup context);
+
+    /**
+     * Returns the names of concealed properties.
+     * @param command the command to be invoked
+     * @param context the invocation context
+     * @return the {@link Set} of concealed properties names.
+     */
+    @NonNull
+    Set<String> createConcealedProperties(@NonNull String command, @NonNull Lookup context);
 }

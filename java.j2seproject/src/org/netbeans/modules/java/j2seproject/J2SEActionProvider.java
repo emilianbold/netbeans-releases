@@ -275,6 +275,26 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
         }
 
         @Override
+        public Set<String> createConcealedProperties(String command, Lookup context) {
+            final Set<String> result = new HashSet<>();
+            for (J2SEBuildPropertiesProvider bpp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
+                final Set<String> contrib = bpp.createConcealedProperties(command, context);
+                assert contrib != null;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(
+                        Level.FINE,
+                        "J2SEBuildPropertiesProvider: {0} added following concealed properties: {1}",   //NOI18N
+                        new Object[]{
+                            bpp.getClass(),
+                            contrib
+                        });
+                }
+                result.addAll(contrib);
+            }
+            return Collections.unmodifiableSet(result);
+        }
+
+        @Override
         public void antTargetInvocationStarted(@NonNull String command, @NonNull Lookup context) {
         }
 

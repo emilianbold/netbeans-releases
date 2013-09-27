@@ -45,6 +45,7 @@ package org.netbeans.modules.java.j2seembedded.project;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
@@ -106,6 +107,31 @@ public class RemoteBuildPropertiesProvider implements J2SEBuildPropertiesProvide
             default:
                 return Collections.<String,String>emptyMap();
         }
-    }    
+    }
 
+    @NonNull
+    @Override
+    @SuppressWarnings("fallthrough")
+    public Set<String> createConcealedProperties(@NonNull final String command, @NonNull final Lookup context) {
+        Parameters.notNull("command", command); //NOI18N
+        Parameters.notNull("context", context); //NOI18N
+        switch (command) {
+            case ActionProvider.COMMAND_RUN:
+            case ActionProvider.COMMAND_DEBUG:
+                final RemotePlatform rp = Utilities.getRemotePlatform(prj);
+                if (rp != null) {
+                final ConnectionMethod.Authentification.Kind kind = rp.getConnectionMethod().getAuthentification().getKind();
+                    switch (kind) {
+                        case PASSWORD:
+                            return Collections.singleton(PROP_PASSWD);
+                        case KEY:
+                            return Collections.singleton(PROP_PASSPHRASE);
+                        default:
+                            throw new IllegalStateException(kind.name());
+                    }
+                }
+            default:
+                return Collections.<String>emptySet();
+        }
+    }
 }

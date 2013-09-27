@@ -519,7 +519,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                                 String url = p.getProperty("applet.url");
                                 execProperties.put("applet.url", url);
                                 execProperties.put(JavaRunner.PROP_EXECUTE_FILE, file);
-                                prepareSystemProperties(execProperties, command, false);
+                                prepareSystemProperties(execProperties, command, context, false);
                                 task =
                                 JavaRunner.execute(targetNames[0], execProperties);
                             }
@@ -529,7 +529,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         return;
                     }
                     if (!isServerExecution() && (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, false);
+                        prepareSystemProperties(execProperties, command, context, false);
                         AtomicReference<ExecutorTask> _task = new AtomicReference<ExecutorTask>();
                         bypassAntBuildScript(command, context, execProperties, _task);
                         task = _task.get();
@@ -539,7 +539,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     boolean serverExecution = p.getProperty(PROPERTY_RUN_SINGLE_ON_SERVER) != null;
                     p.remove(PROPERTY_RUN_SINGLE_ON_SERVER);
                     if (!serverExecution && (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command) || COMMAND_PROFILE_SINGLE.equals(command))) {
-                        prepareSystemProperties(execProperties, command, false);
+                        prepareSystemProperties(execProperties, command, context, false);
                         if (COMMAND_RUN_SINGLE.equals(command)) {
                             execProperties.put(JavaRunner.PROP_CLASSNAME, p.getProperty("run.class"));
                         } else if (COMMAND_DEBUG_SINGLE.equals(command)) {
@@ -557,7 +557,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                         @SuppressWarnings("MismatchedReadAndWriteOfArray")
                         FileObject[] files = findTestSources(context, true);
                         try {
-                            prepareSystemProperties(execProperties, command, true);
+                            prepareSystemProperties(execProperties, command, context, true);
                             execProperties.put(JavaRunner.PROP_EXECUTE_FILE, files[0]);
                             if (buildDir != null) { // #211543
                                 execProperties.put("tmp.dir", updateHelper.getAntProjectHelper().resolvePath(buildDir));
@@ -590,6 +590,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     }
                 }
                 collectStartupExtenderArgs(p, command);
+                Set<String> concealedProperties = collectAdditionalProperties(p, command, context);
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
@@ -598,11 +599,6 @@ public abstract class BaseActionProvider implements ActionProvider {
                 }
                 final Callback cb = getCallback();
                 final Callback2 cb2 = (cb instanceof Callback2) ? (Callback2) cb : null;
-                if (cb2 instanceof Callback3) {
-                    final Map<String,String> additionalProperties = ((Callback3)cb2).createAdditionalProperties(command, context);
-                    assert additionalProperties != null;
-                    p.putAll(additionalProperties);
-                }
                 if (p.keySet().isEmpty()) {
                     p = null;
                 }
@@ -617,7 +613,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                             cb2.antTargetInvocationStarted(command, context);
                         }
                         try {
-                            task = ActionUtils.runTarget(buildFo, targetNames, p);
+                            task = ActionUtils.runTarget(buildFo, targetNames, p, concealedProperties);
                             task.addTaskListener(new TaskListener() {
                                 @Override
                                 public void taskFinished(Task _) {
@@ -1617,13 +1613,26 @@ public abstract class BaseActionProvider implements ActionProvider {
             p.put(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
         }
     }
-    
-    private void prepareSystemProperties(Map<String, Object> properties, String command, boolean test) {
+
+    @CheckForNull
+    private Set<String> collectAdditionalProperties(Map<? super String,? super String> p, String command, Lookup context) {
+        final Callback cb = getCallback();
+        if (cb instanceof Callback3) {
+            final Map<String,String> additionalProperties = ((Callback3)cb).createAdditionalProperties(command, context);
+            assert additionalProperties != null;
+            p.putAll(additionalProperties);
+            return ((Callback3)cb).createConcealedProperties(command, context);
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private Set<String> prepareSystemProperties(Map<String, Object> properties, String command, Lookup context, boolean test) {
         String prefix = test ? ProjectProperties.SYSTEM_PROPERTIES_TEST_PREFIX : ProjectProperties.SYSTEM_PROPERTIES_RUN_PREFIX;
         Map<String, String> evaluated = evaluator.getProperties();
 
         if (evaluated == null) {
-            return ;
+            return null;
         }
         
         for (Entry<String, String> e : evaluated.entrySet()) {
@@ -1632,6 +1641,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             }
         }        
         collectStartupExtenderArgs(properties, command);
+        return collectAdditionalProperties(properties, command, context);
     }
 
     private static enum MainClassStatus {
@@ -2056,6 +2066,18 @@ public abstract class BaseActionProvider implements ActionProvider {
          */
         @NonNull
         Map<String,String> createAdditionalProperties(@NonNull String command, @NonNull Lookup context);
+
+
+        /**
+         * Returns names of concealed properties.
+         * Values of such properties are not printed into UI.
+         *
+         * @param command the command to be invoked
+         * @param context the invocation context
+         * @return the {@link Set} of property names.
+         */
+        @NonNull
+        Set<String> createConcealedProperties(@NonNull String command, @NonNull Lookup context);
     }
 
     public static final class CallbackImpl implements Callback {

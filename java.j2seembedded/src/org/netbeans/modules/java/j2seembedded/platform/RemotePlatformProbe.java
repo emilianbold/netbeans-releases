@@ -48,9 +48,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -120,17 +122,20 @@ public final class RemotePlatformProbe {
             try {
                 platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
                 prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
+                final Set<String> concealedProps;
                 if (connectionMethod.getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
                     antTargets = new String[]{"connect-ssh-password"}; //NOI18N
                     prop.setProperty("remote.password", ((ConnectionMethod.Authentification.Password)connectionMethod.getAuthentification()).getPassword()); //NOI18N
+                    concealedProps = Collections.singleton("remote.password");  //NOI18N
                 } else {
                     antTargets = new String[]{"connect-ssh-keyfile"}; //NOI18N
                     prop.setProperty("keystore.file", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getKeyStore().getAbsolutePath()); //NOI18N
                     prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
+                    concealedProps = Collections.singleton("keystore.passphrase");  //NOI18N
                 }
 
                 final FileObject antScript = FileUtil.toFileObject(buildScript != null && buildScript.exists() ? buildScript : createBuildScript());
-                executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
+                executorTask = ActionUtils.runTarget(antScript, antTargets, prop, concealedProps);
                 final int antResult = executorTask.result();
                 if (antResult != 0) {
                     throw new WizardValidationException(
@@ -196,17 +201,20 @@ public final class RemotePlatformProbe {
         prop.setProperty("remote.jre.dir", remoteJreLocation); //NOI18N
         prop.setProperty("jre.dir", localJreLocation); //NOI18N
         ExecutorTask executorTask = null;
+        Set<String> concealedProps;
         if (connectionMethod.getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
             antTargets = new String[]{"upload-JRE-password"}; //NOI18N
             prop.setProperty("remote.password", ((ConnectionMethod.Authentification.Password) connectionMethod.getAuthentification()).getPassword()); //NOI18N
+            concealedProps = Collections.singleton("remote.password");  //NOI18N
         } else {
             antTargets = new String[]{"upload-JRE-keyfile"}; //NOI18N
             prop.setProperty("keystore.file", ((ConnectionMethod.Authentification.Key) connectionMethod.getAuthentification()).getKeyStore().getAbsolutePath()); //NOI18N
             prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key) connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
+            concealedProps = Collections.singleton("keystore.passphrase");  //NOI18N
         }
         final FileObject antScript = FileUtil.toFileObject(buildScript != null ? buildScript : createBuildScript());
         try {
-            executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
+            executorTask = ActionUtils.runTarget(antScript, antTargets, prop, concealedProps);
         } catch (IOException | IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         } finally {

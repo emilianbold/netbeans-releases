@@ -110,6 +110,24 @@ is the proper place.
 
     <changes>
 
+        <change id="setConcealedProperties">
+            <api name="general"/>
+            <summary>Added <code>AntTargetExecutor.Env.setConcealedProperties</code></summary>
+            <version major="3" minor="71"/>
+            <date year="2013" month="10" day="2"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added ability to hide property values. Such properties can
+                    be used to pass passwords from the IDE keyring to ant scripts.
+                </p>
+            </description>
+            <class package="org.apache.tools.ant.module.api.support" name="ActionUtils"/>
+            <class package="org.apache.tools.ant.module.api" name="AntTargetExecutor"/>
+            <class package="org.apache.tools.ant.module.spi" name="AntSession"/>
+        </change>
+
         <change id="originatingScript">
             <api name="general"/>
             <summary>Added <code>TargetLister.Target.getOriginatingScript</code></summary>

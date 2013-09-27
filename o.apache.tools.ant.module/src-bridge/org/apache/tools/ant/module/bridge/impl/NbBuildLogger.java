@@ -82,12 +82,14 @@ import org.apache.tools.ant.module.spi.AntEvent;
 import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
 import org.openide.windows.InputOutput;
@@ -116,6 +118,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     final InputOutput io;
     private final int verbosity;
     private final Map<String,String> properties;
+    private final Set<? extends String> concealedProperties;
     private final String displayName;
     private final Runnable interestingOutputCallback;
     private final ProgressHandle handle;
@@ -181,7 +184,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
     
     @SuppressWarnings("LeakingThisInConstructor")
     NbBuildLogger(File origScript, OutputWriter out, OutputWriter err, int verbosity, String displayName, Map<String,String> properties,
-            Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
+            Set<? extends String> concealedProperties, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
         thisSession = LoggerTrampoline.ANT_SESSION_CREATOR.makeAntSession(this);
         this.origScript = origScript;
         this.out = out;
@@ -189,6 +192,7 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
         this.io = io;
         this.verbosity = verbosity;
         this.properties = properties;
+        this.concealedProperties = concealedProperties;
         this.displayName = displayName;
         this.interestingOutputCallback = interestingOutputCallback;
         this.handle = handle;
@@ -752,6 +756,12 @@ final class NbBuildLogger implements BuildListener, LoggerTrampoline.AntSessionI
 
     @Override public Map<String, String> getProperties() {
         return Collections.unmodifiableMap(properties);
+    }
+
+    @Override
+    public boolean isConcealed(@NonNull final String propertyName) {
+        Parameters.notNull("propertyName", propertyName);   //NOI18N
+        return concealedProperties.contains(propertyName);
     }
     
     String getDisplayNameNoLock() {
