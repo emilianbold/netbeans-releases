@@ -45,6 +45,7 @@
 package org.netbeans.modules.subversion;
 
 import java.io.*;
+import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.*;
@@ -100,8 +101,13 @@ public class VersionsCache {
      * @throws java.io.IOException
      */
     public File getFileRevision(SVNUrl repoUrl, SVNUrl url, String revision, String pegRevision, String fileName) throws IOException {
+        boolean canUseRevisionsCache = true;
         try {
-            if ("false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
+            canUseRevisionsCache = SVNRevision.getRevision(revision).getKind() == SVNRevision.Kind.number
+                    && SVNRevision.getRevision(pegRevision).getKind() == SVNRevision.Kind.number;
+        } catch (ParseException ex) { }
+        try {
+            if (!canUseRevisionsCache || "false".equals(System.getProperty("versioning.subversion.historycache.enable", "true"))) { //NOI18N
                 SvnClient client = Subversion.getInstance().getClient(repoUrl);
                 InputStream in = getInputStream(client, url, revision, pegRevision);
                 return createContent(fileName, in);
