@@ -144,7 +144,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
     }
     
     private static String createAppendText(CsmMember item, CsmClass parent) {
-        StringBuilder appendItemText = new StringBuilder("virtual "); //NOI18N
+        StringBuilder appendItemText = new StringBuilder("\nvirtual "); //NOI18N
         String type = "";
         if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
@@ -169,7 +169,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         }
         appendItemText.append(type);
         addSignature(item, parent, appendItemText);
-        appendItemText.append(";"); //NOI18N
+        appendItemText.append(";\n"); //NOI18N
         return appendItemText.toString();
     }
     
@@ -319,16 +319,14 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                     String itemText = getItemText();
                     doc.insertString(offset, itemText, null);
                     if (c != null) {
-                        int setDot = offset + getInsertPrefix().length();
+                        int setDot = offset + itemText.length() - 1;
                         c.setCaretPosition(setDot);
-                        if (appendItemText.length() > 0) {
-                            Indent indent = Indent.get(doc);
-                            indent.lock();
-                            try {
-                                indent.reindent(offset, offset + itemText.length());
-                            } finally {
-                                indent.unlock();
-                            }
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            indent.reindent(offset + 1, offset + itemText.length() - 1);
+                        } finally {
+                            indent.unlock();
                         }
                     }
                 } catch (BadLocationException e) {

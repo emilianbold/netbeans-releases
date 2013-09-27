@@ -136,7 +136,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     }
     
     private static String createAppendText(CsmMember item, CsmClass parent) {
-        StringBuilder appendItemText = new StringBuilder();
+        StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
         String type = "";
         if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
@@ -163,7 +163,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         appendItemText.append(parent.getName());
         appendItemText.append("::"); //NOI18N
         addSignature(item, appendItemText);
-        appendItemText.append(" {\n}\n"); //NOI18N
+        appendItemText.append(" {\n\n}\n"); //NOI18N
         return appendItemText.toString();
     }
     
@@ -308,16 +308,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                     String itemText = getItemText();
                     doc.insertString(offset, itemText, null);
                     if (c != null) {
-                        int setDot = offset + getInsertPrefix().length();
+                        int setDot = offset + itemText.length() - 3;
                         c.setCaretPosition(setDot);
-                        if (appendItemText.length() > 0) {
-                            Indent indent = Indent.get(doc);
-                            indent.lock();
-                            try {
-                                indent.reindent(offset, offset + itemText.length());
-                            } finally {
-                                indent.unlock();
-                            }
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            indent.reindent(offset, offset + itemText.length());
+                        } finally {
+                            indent.unlock();
                         }
                     }
                 } catch (BadLocationException e) {
