@@ -1881,7 +1881,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case GTGT:
                     case GTGTGT:
                         CompilationController controller = env.getController();
-                        controller.toPhase(Phase.RESOLVED);
                         ExpressionTree exp = mr.getQualifierExpression();
                         TreePath expPath = new TreePath(path, exp);
                         Trees trees = controller.getTrees();
@@ -3298,7 +3297,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
-            final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER) && elem.asType().getKind() != TypeKind.ERROR;
             final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
             final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
             final Scope scope = env.getScope();
@@ -3310,7 +3308,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case METHOD:
                             String sn = e.getSimpleName().toString();
                             return startsWith(env, sn, prefix) &&
-                                    (!isStatic || e.getModifiers().contains(STATIC)) &&
                                     (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)) &&
                                     env.isAccessible(scope, e, t, isSuperCall) &&
                                     (!Utilities.isExcludeMethods() || !Utilities.isExcluded(Utilities.getElementName(e.getEnclosingElement(), true) + "." + sn)); //NOI18N
