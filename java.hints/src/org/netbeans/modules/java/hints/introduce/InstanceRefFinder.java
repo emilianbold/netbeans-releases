@@ -192,7 +192,7 @@ class InstanceRefFinder extends TreePathScanner {
     }
     
     protected TypeElement findOwnerType(Element el) {
-        Element t = el.getEnclosingElement();
+        Element t = ci.getElementUtilities().enclosingTypeElement(el);
         ElementKind k = t.getKind();
         TypeMirror declType = t.asType();
         
