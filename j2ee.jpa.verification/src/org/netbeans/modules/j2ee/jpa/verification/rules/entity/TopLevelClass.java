@@ -50,7 +50,6 @@ import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
-import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;

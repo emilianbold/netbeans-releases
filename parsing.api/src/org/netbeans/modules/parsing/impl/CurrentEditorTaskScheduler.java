@@ -76,7 +76,7 @@ public abstract class CurrentEditorTaskScheduler extends Scheduler {
                 evt.getPropertyName ().equals (EditorRegistry.FOCUS_GAINED_PROPERTY)
             ) {
                 JTextComponent editor = EditorRegistry.focusedComponent ();
-                if (editor == currentEditor) return;
+                if (editor == currentEditor || (editor != null && editor.getClientProperty("AsTextField") != null)) return; //NOI18N
                 currentEditor = editor;
                 if (currentEditor != null) {
                     Document document = currentEditor.getDocument ();

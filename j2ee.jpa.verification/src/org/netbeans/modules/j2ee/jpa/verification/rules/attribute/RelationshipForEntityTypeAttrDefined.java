@@ -43,8 +43,9 @@
  */
 package org.netbeans.modules.j2ee.jpa.verification.rules.attribute;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -55,68 +56,71 @@ import org.netbeans.modules.j2ee.jpa.model.AttributeWrapper;
 import org.netbeans.modules.j2ee.jpa.model.ModelUtils;
 import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.common.Rule;
+import org.netbeans.modules.j2ee.jpa.verification.common.Utilities;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateManyToOneRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateOneToOneRelationshipHint;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirManyToOneRelationship;
 import org.netbeans.modules.j2ee.jpa.verification.fixes.CreateUnidirOneToOneRelationship;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Id;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.ManyToOne;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCheck  {
-    
-    public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
-        
+public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCheck {
+
+    public Collection<ErrorDescription> check(JPAProblemContext ctx, HintContext hc, AttributeWrapper attrib) {
+
         // Not applicable for embeddable classes, which do not have relationships.
         if (ctx.isEmbeddable()) {
             return null;
         }
 
-        
+
         Element typeElement = ctx.getCompilationInfo().getTypes().asElement(attrib.getType());
-        
-        if (typeElement != null && typeElement.getKind() == ElementKind.CLASS){
-            Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement)typeElement));
-            
-            if (entity != null){
+
+        if (typeElement != null && typeElement.getKind() == ElementKind.CLASS) {
+            Entity entity = ModelUtils.getEntity(ctx.getMetaData(), ((TypeElement) typeElement));
+
+            if (entity != null) {
                 //not appliable to derived ids, it's already attribute and relationship
                 //if id and have one-one and many-one
                 List<? extends AnnotationMirror> anns = attrib.getJavaElement().getAnnotationMirrors();
-                if(anns!=null){
-                    boolean id=false;
-                    boolean rel=false;
-                    for(AnnotationMirror ann:anns){ann.getAnnotationType().asElement().toString();
-                        if(ann.getAnnotationType().asElement().toString().equals("javax.persistence.Id"))id=true;//NOI18N
-                        else if(ann.getAnnotationType().asElement().toString().equals("javax.persistence.ManyToOne") || ann.getAnnotationType().asElement().toString().equals("javax.persistence.OneToOne"))
-                        rel = true;//NOI18N
-                        if(id && rel)return null;//in future more strict verification may be done
+                if (anns != null) {
+                    boolean id = false;
+                    boolean rel = false;
+                    for (AnnotationMirror ann : anns) {
+                        ann.getAnnotationType().asElement().toString();
+                        if (ann.getAnnotationType().asElement().toString().equals("javax.persistence.Id")) {
+                            id = true;//NOI18N
+                        } else if (ann.getAnnotationType().asElement().toString().equals("javax.persistence.ManyToOne") || ann.getAnnotationType().asElement().toString().equals("javax.persistence.OneToOne")) {
+                            rel = true;//NOI18N
+                        }
+                        if (id && rel) {
+                            return null;//in future more strict verification may be done
+                        }
                     }
 
                 }
                 //other cases
                 ElementHandle<TypeElement> classHandle = ElementHandle.create(ctx.getJavaClass());
                 ElementHandle<Element> elemHandle = ElementHandle.create(attrib.getJavaElement());
-                String remoteClassName = ((TypeElement)typeElement).getQualifiedName().toString();
-                
+                String remoteClassName = ((TypeElement) typeElement).getQualifiedName().toString();
+
                 Fix fix1 = new CreateUnidirOneToOneRelationship(ctx.getFileObject(),
                         classHandle, elemHandle);
-                
+
                 Fix fix2 = new CreateOneToOneRelationshipHint(ctx.getFileObject(),
                         classHandle,
                         ctx.getAccessType(),
                         attrib.getName(),
                         remoteClassName);
-                
+
                 Fix fix3 = new CreateUnidirManyToOneRelationship(ctx.getFileObject(),
                         classHandle,
                         elemHandle);
@@ -126,17 +130,22 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
                         ctx.getAccessType(),
                         attrib.getName(),
                         remoteClassName);
-                
-                
-                return new ErrorDescription[]{Rule.createProblem(attrib.getJavaElement(),
-                        ctx, NbBundle.getMessage(RelationshipForEntityTypeAttrDefined.class,
-                        "MSG_EntityRelationNotDefined"),
-                        Severity.WARNING,
-                        Arrays.asList(fix1, fix2, fix3, fix4))};
+                Tree elementTree = ctx.getCompilationInfo().getTrees().getTree(attrib.getJavaElement());
+
+                Utilities.TextSpan underlineSpan = Utilities.getUnderlineSpan(
+                        ctx.getCompilationInfo(), elementTree);
+
+                ErrorDescription error = ErrorDescriptionFactory.forSpan(
+                        hc,
+                        underlineSpan.getStartOffset(),
+                        underlineSpan.getEndOffset(),
+                        NbBundle.getMessage(RelationshipForEntityTypeAttrDefined.class, "MSG_EntityRelationNotDefined"),
+                        fix1, fix2, fix3, fix4);
+                return Collections.singletonList(error);
+
             }
         }
-        
+
         return null;
     }
-    
 }
