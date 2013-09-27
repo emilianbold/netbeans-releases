@@ -160,6 +160,9 @@ class InstanceRefFinder extends TreePathScanner {
                 case NEW_CLASS:
                     enclosingElementPath = path;
                     enclosingElement = ci.getTrees().getElement(enclosingElementPath);
+                    if (enclosingElement == null) {
+                        return;
+                    }
                     enclosingType = ci.getElementUtilities().enclosingTypeElement(enclosingElement);
                     return;
             }
@@ -250,7 +253,7 @@ class InstanceRefFinder extends TreePathScanner {
     public void process(TreePath path) {
         this.initPath = path;
         findEnclosingElement();
-        if (enclosingElement == null) {
+        if (enclosingElement == null || enclosingType == null) {
             return;
         }
         scan(initPath, null);
@@ -342,7 +345,7 @@ class InstanceRefFinder extends TreePathScanner {
     @Override
     public Object visitIdentifier(IdentifierTree node, Object p) {
         Element el = ci.getTrees().getElement(getCurrentPath());
-        if (el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
+        if (el == null || el.asType() == null || el.asType().getKind() == TypeKind.ERROR) {
             return null;
         }
         switch (el.getKind()) {
@@ -376,7 +379,7 @@ class InstanceRefFinder extends TreePathScanner {
     
     private TypeElement findType(Tree selector) {
         TypeMirror tm = ci.getTrees().getTypeMirror(new TreePath(getCurrentPath(), selector));
-        if (tm.getKind() == TypeKind.DECLARED) {
+        if (tm != null && tm.getKind() == TypeKind.DECLARED) {
             TypeElement t = (TypeElement)ci.getTypes().asElement(tm);
             ElementKind ek = t.getKind();
             if (!(ek.isClass() || ek.isInterface())) {
@@ -427,7 +430,7 @@ class InstanceRefFinder extends TreePathScanner {
     @Override
     public Object visitNewClass(NewClassTree node, Object p) {
         Element e = ci.getTrees().getElement(getCurrentPath());
-        if (e.getKind() == ElementKind.CONSTRUCTOR) {
+        if (e != null && e.getKind() == ElementKind.CONSTRUCTOR) {
             addInstanceForConstructor(e);
         }
         Object r = scan(node.getEnclosingExpression(), p);
@@ -450,11 +453,5 @@ class InstanceRefFinder extends TreePathScanner {
     private Object scanAndReduce(Iterable<? extends Tree> nodes, Object p, Object r) {
         return reduce(scan(nodes, p), r);
     }
-
-    @Override
-    public Object visitMethodInvocation(MethodInvocationTree node, Object p) {
-        return super.visitMethodInvocation(node, p); //To change body of generated methods, choose Tools | Templates.
-    }
-    
     
 }
