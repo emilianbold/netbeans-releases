@@ -205,7 +205,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         tc.setCloseOperationHandler(peer.closeHandler);
         tc.peer.copyMimeContext(peer);
 	if(getSplitOrientation() != -1) {
-	    tc.splitComponent(getSplitOrientation());
+	    tc.splitComponent(getSplitOrientation(), -1);
 	    tc.updateName();
 	}
         return tc;
@@ -232,14 +232,14 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     }
 
     @Override
-    public TopComponent splitComponent(int orientation) {
-	peer.peerSplitComponent(orientation);
+    public TopComponent splitComponent(int orientation, int splitPosition) {
+	peer.peerSplitComponent(orientation, splitPosition);
 	return this;
     }
 
     @Override
-    public TopComponent clearSplit() {
-	peer.peerClearSplit();
+    public TopComponent clearSplit(int splitElementToActivate) {
+	peer.peerClearSplit(splitElementToActivate);
 	return this;
     }
 

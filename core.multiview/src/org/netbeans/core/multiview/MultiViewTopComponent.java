@@ -317,14 +317,14 @@ public final class MultiViewTopComponent
     }
 
     @Override
-    public TopComponent splitComponent(int orientation) {
-	peer.peerSplitComponent(orientation);
+    public TopComponent splitComponent(int orientation, int splitPosition) {
+	peer.peerSplitComponent(orientation, splitPosition);
 	return this;
     }
 
     @Override
-    public TopComponent clearSplit() {
-	peer.peerClearSplit();
+    public TopComponent clearSplit(int splitElementToActivate) {
+	peer.peerClearSplit(splitElementToActivate);
 	return this;
     }
 
