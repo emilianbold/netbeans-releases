@@ -74,6 +74,7 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -112,6 +113,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     private boolean showPhases = false;
     private boolean showOnlyErrors = false;
     private Project prj;
+    private RunConfig config;
 
     /**
      * Creates new form ShowExecutionPanel
@@ -246,8 +248,9 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         return manager;
     }
     
-    public void setTreeToDisplay(ExecutionEventObject.Tree item, Project project) {
-        this.prj = project;
+    public void setTreeToDisplay(ExecutionEventObject.Tree item, RunConfig config) {
+        this.prj = config.getProject();
+        this.config = config;
         manager.setRootContext(createNodeForExecutionEventTree(item));
         
         manager.addPropertyChangeListener(new PropertyChangeListener() {
@@ -299,7 +302,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
                 case ProjectStarted :
                     return new ProjectNode(showPhases ? createPhasedChildren(item.getChildrenNodes()) : createChildren(item.getChildrenNodes()), Lookups.fixed(item));
                 case MojoStarted :
-                    return new MojoNode(createChildren(item.getChildrenNodes()), prj != null ? Lookups.fixed(item, prj) : Lookups.fixed(item));
+                    return new MojoNode(createChildren(item.getChildrenNodes()), Lookups.fixed(item, config));
                 case ForkStarted :
                 case ForkedProjectStarted :
                 default :
@@ -427,14 +430,14 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         private final ExecMojo start;
         private final ExecMojo end;
         private final ExecutionEventObject.Tree tree;
-        private final Project prj;
+        private final RunConfig config;
 
         public MojoNode(Children children, Lookup lookup) {
             super(children, lookup);
             this.tree = lookup.lookup(ExecutionEventObject.Tree.class);
             this.start = (ExecMojo) tree.getStartEvent();
             this.end = (ExecMojo) tree.getEndEvent();
-            prj = lookup.lookup(Project.class);
+            config = lookup.lookup(RunConfig.class);
             assert start != null && end != null;
             
             setIconBaseWithExtension(ICON_MOJO);
@@ -457,7 +460,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
             return new Action[] {
                 new GotoOutputAction(tree),
                 new GotoSourceAction(start),
-                new GotoPluginSourceAction(start, prj)
+                new GotoPluginSourceAction(start, config)
             };
         }
         
@@ -560,13 +563,13 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     
     private static class GotoPluginSourceAction extends AbstractAction {
         private final ExecMojo mojo;
-        private final Project prj;
+        private final RunConfig config;
 
         @NbBundle.Messages("ACT_GOTO_Plugin=Go to Plugin Mojo Source")
-        public GotoPluginSourceAction(ExecMojo start, Project prj) {
+        public GotoPluginSourceAction(ExecMojo start, RunConfig conf) {
             putValue(NAME, ACT_GOTO_Plugin());           
             this.mojo = start;
-            this.prj = prj;
+            this.config = conf;
         }
 
         @Override
@@ -586,7 +589,8 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         private void doLoad(AtomicBoolean cancel) {
             final MavenEmbedder onlineEmbedder = EmbedderFactory.getOnlineEmbedder();
             Artifact art = onlineEmbedder.createArtifact(mojo.plugin.groupId, mojo.plugin.artifactId, mojo.plugin.version, "jar");
-            if (prj != null) {
+            Project prj = config.getProject();
+            if (prj != null) { //todo what about build without project.. it's just create archetype one though..
                 ProgressContributor contributor = AggregateProgressFactory.createProgressContributor("multi-1");
 
                 AggregateProgressHandle handle = AggregateProgressFactory.createHandle("Downloading plugin sources",

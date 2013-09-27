@@ -69,5 +69,7 @@ public abstract class SpiAccessor {
     public abstract MultiViewElementCallback createCallback(MultiViewElementCallbackDelegate delegate);
     
     public abstract CloseOperationHandler createDefaultCloseHandler();
+
+    public abstract boolean shouldCheckCanCloseAgain( CloseOperationHandler closeHandler );
     
 }

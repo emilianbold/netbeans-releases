@@ -126,7 +126,7 @@ public class TopComponentProcessorTest extends  NbTestCase {
         assertEquals("Created", 1, TC.cnt);
         assertEquals("Hello TC!", a.getValue(Action.NAME));
         assertEquals("any/iconbase.png", a.getValue("iconBase"));
-        assertEquals("preferredID found", "factory.tc", fo.getAttribute("preferredID"));
+        assertEquals("preferredID found", "factory-tc", fo.getAttribute("preferredID"));
         
         FileObject dir = FileUtil.getConfigFile("Kuk/Huk");
         assertNotNull("Kuk/Huk found", dir);
@@ -193,13 +193,13 @@ public class TopComponentProcessorTest extends  NbTestCase {
         return new TC();
     }
     
-    @TopComponent.Description(preferredID = "factory.tc", iconBase = "any/iconbase.png")
+    @TopComponent.Description(preferredID = "factory-tc", iconBase = "any/iconbase.png")
     public static class TC extends TopComponent {
         static int cnt;
         static int cnt2;
         
         @ActionID(category="Windows", id="open.factory.tc")
-        @TopComponent.OpenActionRegistration(displayName="#TEST_ACTION",preferredID="factory.tc")
+        @TopComponent.OpenActionRegistration(displayName="#TEST_ACTION",preferredID="factory-tc")
         @ActionReference(path="Kuk/Huk")
         public static TC create() {
             cnt++;

@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.openide.windows;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedSourceVersion;
@@ -55,6 +58,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import org.openide.awt.ActionID;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
@@ -90,7 +94,8 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             if (info == null) {
                 throw new LayerGenerationException("Cannot find TopComponent.Description for this element", e, processingEnv, reg);
             }
-            String id = info.preferredID().replace('.', '-');
+            String id = info.preferredID();
+            checkValidId(id, e, processingEnv, info);
 
             String rootFolder;
             String[] roles = reg.roles();
@@ -191,5 +196,16 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
         sb.append("  <state opened=\"").append(openAtStart).append("\"/>\n");
         sb.append("</tc-ref>\n");
         return sb.toString();
+    }
+
+    private static void checkValidId( String id, Element e, ProcessingEnvironment processingEnv, TopComponent.Description descr) throws LayerGenerationException {
+        if( null == id )
+            return;
+        for( char c : id.toCharArray() ) {
+            if( !(Character.isLetterOrDigit(c ) || c == '-' || c == '_')
+                    || c > '\u007E' ) {
+                throw new LayerGenerationException("The preferred id contains invalid character '" + c + "'", e, processingEnv, descr);
+            }
+        }
     }
 }

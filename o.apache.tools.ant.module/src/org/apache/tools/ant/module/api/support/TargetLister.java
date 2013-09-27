@@ -295,7 +295,8 @@ public class TargetLister {
             this.apc = apc;
             Element prj = apc.getProjectElement();
             if (prj == null) {
-                throw new IOException("Could not parse " + apc); // NOI18N
+                throw new IOException(apc.getParseException()!=null?
+                        apc.getParseException().getLocalizedMessage():"Could not parse file"); // NOI18N
             }
             File prjFile = apc.getFile();
             if (prjFile != null) {
