@@ -154,6 +154,7 @@ public class HgUtils {
     private static HashMap<String, Set<Pattern>> ignorePatterns;
     private static HashMap<String, Long> ignoreFilesTimestamps;
 
+    private static final Logger LOG = Logger.getLogger(HgUtils.class.getName());
 
     /**
      * Timeout for remote repository check in seconds, after expires the repository will be considered valid.
@@ -488,27 +489,41 @@ public class HgUtils {
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
             if (pattern.matcher(path).find()) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "File {0}:::{1} ignored because of pattern {2}", new Object[] { file, path, pattern.toString() }); //NOI18N
+                }
                 return true;
             }
         }
 
         // check cached not sharable folders and files
         if (isNotSharable(path, topFile)) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "File {0}:::{1} ignored because of cached NOT_SHARABLE", new Object[] { file, path }); //NOI18N
+            }
             return true;
         }
 
         // If a parent of the file matches a pattern ignore the file
         File parentFile = file.getParentFile();
         if (!parentFile.equals(topFile)) {
-            if (isIgnored(parentFile, false)) return true;
+            if (isIgnored(parentFile, false)) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "File {0}:::{1} ignored because of ignored parent {2}", new Object[] { file, path, parentFile }); //NOI18N
+                }
+                return true;
+            }
         }
 
         if (FILENAME_HGIGNORE.equals(file.getName())) return false;
         if (checkSharability) {
-            Logger.getLogger(HgUtils.class.getName()).log(Level.FINE, "Calling sharability for {0}:::{1}", new Object[] { file, topFile }); //NOI18N
+            Logger.getLogger(HgUtils.class.getName()).log(Level.FINER, "Calling sharability for {0}:::{1}", new Object[] { file, topFile }); //NOI18N
             int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
             if (sharability == SharabilityQuery.NOT_SHARABLE) {
                 addNotSharable(topFile, path);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "File {0}:::{1} ignored by sharability {2}", new Object[] { file, path, sharability }); //NOI18N
+                }
                 return true;
             }
         }

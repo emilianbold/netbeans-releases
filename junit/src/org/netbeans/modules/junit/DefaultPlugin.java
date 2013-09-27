@@ -1822,7 +1822,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                             testResourceName + ".java");//NOI18N
                     boolean isNew = (testFile == null);
                     if (testFile == null) {
-                        testDataObj = createTestClass(testClassPath,
+                        testDataObj = createTestClass(testClassPath, null,
                                                       testResourceName,
                                                       templateDataObj,
                                                       templateParams);
@@ -1973,7 +1973,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                                         fullSuiteName + ".java");       //NOI18N
             boolean isNew = (testFile == null);
             if (testFile == null) {
-                testDataObj = createTestClass(testClassPath,
+                testDataObj = createTestClass(testClassPath, cp,
                                               fullSuiteName,
                                               templateDataObj,
                                               suiteTemplParams);
@@ -2101,6 +2101,7 @@ public final class DefaultPlugin extends JUnitPlugin {
     /**
      */
     private static DataObject createTestClass(
+            ClassPath testCp,
             ClassPath cp,
             String testClassName,
             DataObject templateDataObj,
@@ -2108,15 +2109,16 @@ public final class DefaultPlugin extends JUnitPlugin {
                                         throws DataObjectNotFoundException,
                                                IOException {
         
-        FileObject root = cp.getRoots()[0];
+        FileObject root = testCp.getRoots()[0];
         // #176958 : decide in which Classpath root folder the new Suite file will be generated
+        //           as there exist 2 or more source/test root sources
         String rootFolderName = ""; //NOI18N
-        if (cp.getRoots().length > 1) {
+        if (testCp.getRoots().length > 1 || (cp != null && cp.getRoots().length > 1)) {
             int indexFirst = testClassName.indexOf('/');
             rootFolderName = testClassName.substring(0, indexFirst);
             testClassName = testClassName.substring(indexFirst + 1);
-            for (int i = 0; i < cp.getRoots().length; i++) {
-                FileObject rootFO = cp.getRoots()[i];
+            for (int i = 0; i < testCp.getRoots().length; i++) {
+                FileObject rootFO = testCp.getRoots()[i];
                 if (rootFO.getPath().endsWith(rootFolderName)) {
                     root = rootFO;
                 }

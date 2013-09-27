@@ -1,5 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -51,5 +52,23 @@ public class TestClassTest extends TestCase {
     public void testThirdPow() {
     }
 
+    /**
+     * Test of getStrings method, of class TestClass.
+     */
+    public void testGetStrings() {
+}
+
+    /**
+     * Test of getString2T method, of class TestClass.
+     */
+    public void testGetString2T() {
+    }
+
+    /**
+     * Test of getTT2Strings method, of class TestClass.
+     */
+    public void testGetTT2Strings() {
+    }
+    
 }
 
