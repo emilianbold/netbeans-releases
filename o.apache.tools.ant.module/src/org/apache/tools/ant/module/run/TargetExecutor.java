@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -71,6 +72,7 @@ import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.TargetLister;
 import org.apache.tools.ant.module.bridge.AntBridge;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -89,6 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.ReaderInputStream;
 import org.openide.windows.IOProvider;
@@ -126,11 +129,13 @@ public final class TargetExecutor implements Runnable {
     /** used for the tab etc. */
     private String displayName;
     private String suggestedDisplayName;
+    private volatile Set<String> concealedProperties;
 
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
         this.pcookie = pcookie;
         targetNames = ((targets == null) ? null : Arrays.asList(targets));
+        concealedProperties = Collections.emptySet();
     }
   
     public void setVerbosity (int v) {
@@ -139,6 +144,11 @@ public final class TargetExecutor implements Runnable {
     
     public synchronized void setProperties(Map<String,String> p) {
         properties = new HashMap<String,String>(p);
+    }
+
+    public void setConcealedProperties(@NonNull final Set<? extends String> concealedProperties) {
+        Parameters.notNull("concealedProperties", concealedProperties); //NOI18N
+        this.concealedProperties = Collections.unmodifiableSet(new HashSet<>(concealedProperties));
     }
 
     void setDisplayName(String n) {
@@ -220,6 +230,7 @@ public final class TargetExecutor implements Runnable {
         private List<String> targetNames;
         private int verbosity;
         private Map<String,String> properties;
+        private Set<String> concealedProperties;
         private String displayName;
 
         public RerunAction(TargetExecutor prototype, boolean withModifications) {
@@ -237,6 +248,7 @@ public final class TargetExecutor implements Runnable {
             targetNames = prototype.targetNames;
             verbosity = prototype.verbosity;
             properties = prototype.properties;
+            concealedProperties = prototype.concealedProperties;
             displayName = prototype.suggestedDisplayName;
         }
 
@@ -267,6 +279,7 @@ public final class TargetExecutor implements Runnable {
                     panel.setTargets(targetNames);
                     panel.setVerbosity(verbosity);
                     panel.setProperties(properties);
+                    panel.setConcealedProperties(concealedProperties);
                     if (!panel.display()) {
                         setEnabled(true);
                     }
@@ -275,6 +288,7 @@ public final class TargetExecutor implements Runnable {
                             targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
                     //exec.setVerbosity(verbosity);
                     exec.setProperties(properties);
+                    exec.setConcealedProperties(concealedProperties);
                     if (displayName != null) {
                         exec.setDisplayName(displayName);
                     }
@@ -538,7 +552,7 @@ public final class TargetExecutor implements Runnable {
         for (RerunAction ra : ras) {
             setEnabledEQ(ra, false);
         }
-        ok = AntBridge.getInterface().run(buildFile, targetNames, in.get(), out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
+        ok = AntBridge.getInterface().run(buildFile, targetNames, in.get(), out, err, properties, concealedProperties, verbosity, displayName, interestingOutputCallback, handle, io);
         
         } finally {
             if (io != null) {
