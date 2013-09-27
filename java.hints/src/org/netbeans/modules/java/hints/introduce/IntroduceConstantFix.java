@@ -43,13 +43,8 @@ package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -62,6 +57,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.StopProcessing;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -124,8 +120,6 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
     }
 
     static boolean checkConstantExpression(final CompilationInfo info, TreePath path) {
-        class NotConstant extends Error {
-        }
         InstanceRefFinder finder = new InstanceRefFinder(info, path) {
             @Override
             public Object visitIdentifier(IdentifierTree node, Object p) {
@@ -134,10 +128,10 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
                     return null;
                 }
                 if (el.getKind() == ElementKind.LOCAL_VARIABLE || el.getKind() == ElementKind.PARAMETER) {
-                    throw new NotConstant();
+                    throw new StopProcessing();
                 } else if (el.getKind() == ElementKind.FIELD) {
                     if (!el.getModifiers().contains(Modifier.FINAL)) {
-                        throw new NotConstant();
+                        throw new StopProcessing();
                     }
                 }
                 return super.visitIdentifier(node, p);
@@ -146,7 +140,7 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
         try {
             finder.process();
             return  !(finder.containsInstanceReferences() || finder.containsLocalReferences() || finder.containsReferencesToSuper());
-        } catch (NotConstant e) {
+        } catch (StopProcessing e) {
             return false;
         }
     }

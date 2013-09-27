@@ -157,7 +157,6 @@ class InstanceRefFinder extends TreePathScanner {
                 case VARIABLE:
                 case CLASS: 
                 case INTERFACE:
-                case LAMBDA_EXPRESSION:
                 case NEW_CLASS:
                     enclosingElementPath = path;
                     enclosingElement = ci.getTrees().getElement(enclosingElementPath);
