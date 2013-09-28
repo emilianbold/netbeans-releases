@@ -60,9 +60,9 @@ public class GnomeNetworkProxy implements NetworkProxyResolver{
         
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
-        if (new File(GsettingsNetworkProxy.GSETTINGS_PATH).exists()) {
+        if (new File(GsettingsNetworkProxy.GSETTINGS_PATH).exists() && GsettingsNetworkProxy.isGsettingsValid()) {
             return GsettingsNetworkProxy.getNetworkProxySettings();
-        } else if (new File(GconfNetworkProxy.GCONF_PATH).exists()) {
+        } else if (new File(GconfNetworkProxy.GCONF_PATH).exists() && GconfNetworkProxy.isGconfValid()) {
             return GconfNetworkProxy.getNetworkProxySettings();
         } else {
             return new NetworkProxySettings(false);

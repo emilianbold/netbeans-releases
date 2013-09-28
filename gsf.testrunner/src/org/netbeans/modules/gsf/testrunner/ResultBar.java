@@ -83,17 +83,22 @@ public final class ResultBar extends JComponent implements ActionListener{
     private static final Color COVERED_DARK = new Color(30, 180, 30);
     private static final Color NO_TESTS_LIGHT = new Color(200, 200, 200);
     private static final Color NO_TESTS_DARK = new Color(110, 110, 110);
+    private static final Color ABORTED_TESTS_LIGHT = new Color(246, 232, 206);
+    private static final Color ABORTED_TESTS_DARK = new Color(214, 157, 41);
     private boolean emphasize;
     private boolean selected;
     /** Passed tests percentage:  0.0f <= x <= 100f */
     private float passedPercentage = 0.0f;
     /** Skipped tests percentage:  0.0f <= x <= 100f */
     private float skippedPercentage = 0.0f;
+    /** Aborted tests percentage:  0.0f <= x <= 100f */
+    private float abortedPercentage = 0.0f;
 
     private Timer timer = new Timer(100, this);
     private int phase = 1;
     private boolean passedReported = false;
     private boolean skippedReported = false;
+    private boolean abortedReported = false;
 
     public ResultBar() {
         updateUI();
@@ -128,6 +133,15 @@ public final class ResultBar extends JComponent implements ActionListener{
         }
         this.skippedPercentage = skippedPercentage;
         this.skippedReported = true;
+        repaint();
+    }
+
+    public void setAbortedPercentage(float abortedPercentage) {
+        if(Float.isNaN(abortedPercentage)) { // #167230
+            abortedPercentage = 0.0f;
+        }
+        this.abortedPercentage = abortedPercentage;
+        this.abortedReported = true;
         repaint();
     }
 
@@ -205,7 +219,8 @@ public final class ResultBar extends JComponent implements ActionListener{
 
         int amountFull = (int) (barRectWidth * passedPercentage / 100.0f);
 	int amountSkip = (int) (barRectWidth * skippedPercentage / 100.0f);
-	int amountFail = Math.abs(barRectWidth - amountFull - amountSkip);
+	int amountAbort = (int) (barRectWidth * abortedPercentage / 100.0f);
+	int amountFail = Math.abs(barRectWidth - amountFull - amountSkip - amountAbort);
 	if(amountFail <= 1) {
 	    amountFail = 0;
 	}
@@ -220,10 +235,13 @@ public final class ResultBar extends JComponent implements ActionListener{
         Color coveredDark = COVERED_DARK;
         Color noTestsLight = NO_TESTS_LIGHT;
         Color noTestsDark = NO_TESTS_DARK;
+        Color abortedTestsLight = ABORTED_TESTS_LIGHT;
+        Color abortedTestsDark = ABORTED_TESTS_DARK;
         if (emphasize) {
             coveredDark = coveredDark.darker();
             notCoveredDark = notCoveredDark.darker();
             noTestsDark = noTestsDark.darker();
+            abortedTestsDark = abortedTestsDark.darker();
         } else if (selected) {
             coveredLight = coveredLight.brighter();
             coveredDark = coveredDark.darker();
@@ -231,6 +249,8 @@ public final class ResultBar extends JComponent implements ActionListener{
             notCoveredDark = notCoveredDark.darker();
             noTestsLight = noTestsLight.brighter();
             noTestsDark = noTestsDark.darker();
+            abortedTestsLight = abortedTestsLight.brighter();
+            abortedTestsDark = abortedTestsDark.darker();
         }
 
         if (passedReported){
@@ -249,6 +269,12 @@ public final class ResultBar extends JComponent implements ActionListener{
 		g2.fillRect(amountFull + amountFail, 1, width - 1, height);
 	    }
 
+            if(abortedReported) {
+		g2.setColor(getForeground());
+		g2.setPaint(new GradientPaint(0, phase, abortedTestsLight, 0, phase + height/2, abortedTestsDark, true));
+		g2.fillRect(amountFull + amountFail + amountSkip, 1, width - 1, height);
+	    }
+
             Rectangle oldClip = g2.getClipBounds();
             if (passedPercentage > 0.0f) {
                 g2.setColor(coveredDark);
@@ -259,7 +285,7 @@ public final class ResultBar extends JComponent implements ActionListener{
 		if (amountFail > 0) {
 		    g2.setColor(notCoveredDark);
 		    g2.setClip(oldClip);
-		    g2.clipRect(amountFull + 1, 0, width - amountSkip, height);
+		    g2.clipRect(amountFull + 1, 0, width - amountSkip - amountAbort, height);
 		    g2.drawRect(0, 0, width - 1, height - 1);
 		}
 		if(skippedReported) {
@@ -268,6 +294,12 @@ public final class ResultBar extends JComponent implements ActionListener{
 		    g2.clipRect(amountFull + amountFail, 0, width, height);
 		    g2.drawRect(0, 0, width - 1, height - 1);
 		}
+		if(abortedReported) {
+		    g2.setColor(abortedTestsDark);
+		    g2.setClip(oldClip);
+		    g2.clipRect(amountFull + amountFail + amountSkip, 0, width, height);
+		    g2.drawRect(0, 0, width - 1, height - 1);
+            }
             }
             g2.setClip(oldClip);
         } else if (skippedReported){

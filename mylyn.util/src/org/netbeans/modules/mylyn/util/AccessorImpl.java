@@ -103,4 +103,9 @@ class AccessorImpl extends Accessor {
     public NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTasklist) throws CoreException {
         return MylynSupport.getInstance().getOrCreateTask(taskRepository, taskId, addToTasklist);
     }
+
+    @Override
+    public void taskModified (NbTask nbTask) {
+        MylynSupport.getInstance().taskModified(getDelegate(nbTask));
+    }
 }

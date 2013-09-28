@@ -85,6 +85,15 @@ public abstract class AbstractNbTaskWrapper {
     private final TaskListenerImpl taskListener;
     private Reference<TaskData> repositoryDataRef;
     private final RequestProcessor.Task repositoryTaskDataLoaderTask;
+    
+    /** PRIVATE TASK ATTRIBUTES **/
+    private String privateNotes;
+    private Date dueDate;
+    private boolean dueDateModified;
+    private NbDateRange scheduleDate;
+    private boolean scheduleDateModified;
+    private Integer estimate;
+    /** PRIVATE TASK ATTRIBUTES **/
 
     public AbstractNbTaskWrapper (NbTask task) {
         this.task = task;
@@ -108,7 +117,7 @@ public abstract class AbstractNbTaskWrapper {
      * @return id or null
      */
     public static String getID (NbTask task) {
-        if (task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW) {
+        if (task.isUnsubmittedRepositoryTask()) {
             return "-" + task.getTaskId();
         }
         return task.getTaskId();
@@ -166,7 +175,7 @@ public abstract class AbstractNbTaskWrapper {
     }
 
     protected final void deleteTask () {
-        assert task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW : "Only new local tasks can be deleted: " + task.getSynchronizationState();
+        assert task.isLocal() : "Only local tasks can be deleted: " + task.getDelegate().getConnectorKind();
         synchronized (MODEL_LOCK) {
             if (list != null) {
                 model.removeNbTaskDataModelListener(list);
@@ -177,7 +186,7 @@ public abstract class AbstractNbTaskWrapper {
         MylynSupport mylynSupp = MylynSupport.getInstance();
         mylynSupp.removeTaskDataListener(taskDataListener);
         task.removeNbTaskListener(taskListener);
-        if (task.getSynchronizationState() == NbTask.SynchronizationState.OUTGOING_NEW) {
+        if (task.isLocal()) {
             task.delete();
             taskDeleted(task);
         }
@@ -186,11 +195,11 @@ public abstract class AbstractNbTaskWrapper {
     protected abstract void taskDeleted (NbTask task);
 
     public final boolean isMarkedNewUnread () {
-        return isNew() && Boolean.TRUE.toString().equals(task.getAttribute(ATTR_NEW_UNREAD));
+        return task.isLocal() && Boolean.TRUE.toString().equals(task.getAttribute(ATTR_NEW_UNREAD));
     }
 
     public final boolean isNew () {
-        return task.isNew();
+        return task.isUnsubmittedRepositoryTask();
     }
 
     protected final void markNewRead () {
@@ -314,6 +323,7 @@ public abstract class AbstractNbTaskWrapper {
     private void save () throws CoreException {
         NbTaskDataModel m = this.model;
         markNewRead();
+        boolean modified = persistPrivateTaskAttributes();
         if (m.isDirty()) {
             if (isNew()) {
                 String summary = task.getSummary();
@@ -325,6 +335,9 @@ public abstract class AbstractNbTaskWrapper {
             }
             m.save();
             modelSaved(m);
+        }
+        if (modified) {
+            taskModified(false);
         }
     }
     
@@ -369,9 +382,20 @@ public abstract class AbstractNbTaskWrapper {
         return false;
     }
 
+    public final void clearUnsavedChanges () {
+        clearPrivateTaskAttributeChanges();
+        model.clearUnsavedChanges();
+    }
+
     public final boolean hasLocalEdits () {
         NbTaskDataModel m = model;
         return !(m == null || m.getChangedAttributes().isEmpty());
+    }
+    
+    public final boolean hasUnsavedChanges () {
+        NbTaskDataModel m = model;
+        return m != null && m.isDirty()
+                || hasUnsavedPrivateTaskAttributes();
     }
 
     protected final boolean updateModel () {
@@ -552,6 +576,84 @@ public abstract class AbstractNbTaskWrapper {
             }
         }
         return attachments;
+    }
+
+    protected final void setPrivateNotes (String text) {
+        privateNotes = text;
+    }
+
+    public final String getPrivateNotes () {
+        if (privateNotes == null) {
+            return getNbTask().getPrivateNotes();
+        } else {
+            return privateNotes;
+        }
+    }
+
+    public final Date getDueDate () {
+        return dueDateModified ? dueDate : getNbTask().getDueDate();
+    }
+
+    protected final void setDueDate (Date date) {
+        dueDate = date;
+        dueDateModified = true;
+    }
+
+    public final NbDateRange getScheduleDate () {
+        return scheduleDateModified ? scheduleDate : getNbTask().getScheduleDate();
+    }
+
+    protected final void setScheduleDate (NbDateRange date) {
+        scheduleDate = date;
+        scheduleDateModified = true;
+    }
+
+    public final int getEstimate () {
+        return estimate == null ? getNbTask().getEstimate() : estimate;
+    }
+
+    protected final void setEstimate (int estimate) {
+        this.estimate = estimate;
+    }
+
+    protected final boolean hasUnsavedPrivateTaskAttributes () {
+        return privateNotes != null || dueDateModified || scheduleDateModified;
+    }
+
+    private boolean persistPrivateTaskAttributes () {
+        boolean modified = false;
+        if (privateNotes != null) {
+            getNbTask().setPrivateNotes(privateNotes.isEmpty() ? null : privateNotes);
+            privateNotes = null;
+            modified = true;
+        }
+        if (estimate != null) {
+            getNbTask().setEstimate(estimate);
+            estimate = null;
+            modified = true;
+        }
+        if (dueDateModified) {
+            getNbTask().setDueDate(dueDate);
+            dueDate = null;
+            dueDateModified = false;
+            modified = true;
+        }
+        if (scheduleDateModified) {
+            getNbTask().setScheduleDate(scheduleDate);
+            scheduleDate = null;
+            scheduleDateModified = false;
+            modified = true;
+        }
+        return modified;
+    }
+
+    private void clearPrivateTaskAttributeChanges () {
+        privateNotes = null;
+        dueDate = null;
+        dueDateModified = false;
+        scheduleDate = null;
+        scheduleDateModified = false;
+        estimate = null;
     }
 
     private class TaskDataListenerImpl implements TaskDataListener {

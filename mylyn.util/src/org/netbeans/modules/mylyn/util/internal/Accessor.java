@@ -81,5 +81,7 @@ public abstract class Accessor {
     public abstract ITask getDelegate (NbTask task);
 
     public abstract NbTask getOrCreateTask (TaskRepository taskRepository, String taskId, boolean addToTasklist) throws CoreException;
+
+    public abstract void taskModified (NbTask nbTask);
     
 }

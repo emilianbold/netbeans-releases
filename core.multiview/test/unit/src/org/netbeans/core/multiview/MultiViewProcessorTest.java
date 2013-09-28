@@ -245,7 +245,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         ic.add(1);
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
 
-	((MultiViewCloneableTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	((MultiViewCloneableTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT, -1);
 	handler.requestActive(arr[0]);
 	ic.remove(1);
         assertNull("No integer now", mvc.getLookup().lookup(Integer.class));
@@ -437,7 +437,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         assertEquals("Second change in listener", 2, listener.cnt);
         assertNull("No icon again", tc.getIcon());
 
-	((MultiViewCloneableTopComponent)tc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	((MultiViewCloneableTopComponent)tc).splitComponent(JSplitPane.HORIZONTAL_SPLIT, -1);
 	handler.requestVisible(two[1]);
         ic.add(img);
         assertEquals("Third change in listener", 3, listener.cnt);
@@ -476,7 +476,7 @@ public class MultiViewProcessorTest extends NbTestCase {
         ic.add(1);
         assertEquals("1 now", Integer.valueOf(1), mvc.getLookup().lookup(Integer.class));
 	
-	((MultiViewTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+	((MultiViewTopComponent)mvc).splitComponent(JSplitPane.HORIZONTAL_SPLIT, -1);
 	ic.remove(1);
 	handler.requestActive(arr[1]);
         assertNull("No integer now", mvc.getLookup().lookup(Integer.class));

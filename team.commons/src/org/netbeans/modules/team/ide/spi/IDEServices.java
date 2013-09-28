@@ -44,7 +44,10 @@ package org.netbeans.modules.team.ide.spi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -189,6 +192,15 @@ public interface IDEServices {
     public void openProxyConfiguration();
     
     /**
+     * Creates a date picker component that can be used in task editor UI.
+     * May return null.
+     * 
+     * @return <code>DatePickerComponent</code> implementation of a date picker, or
+     *         <code>null</code> if no specific implementation is available
+     */
+    public DatePickerComponent createDatePicker ();
+    
+    /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
     public interface Plugin {
@@ -214,5 +226,43 @@ public interface IDEServices {
          * Called by timer (run by ProgressLabel) for next animation step.
          */
         public void tick();
+    }
+    
+    /**
+     * Date picker component used in task editor and tasks view
+     * Implementation can use a specific library, e.g. SwingX.
+     */
+    public interface DatePickerComponent {
+        
+        /**
+         * Returns the component that can be added into a component hierarchy
+         * @return UI component
+         */
+        public JComponent getComponent ();
+        
+        /**
+         * Sets date for this component.
+         * @param date date to set
+         */
+        public void setDate (Date date);
+        
+        /**
+         * Returns date selected by this component
+         * @return selected date
+         */
+        public Date getDate ();
+        
+        /**
+         * Adds a listener that will be notified when the selected date changes.
+         * @param listener listener to add
+         */
+        public void addChangeListener (ChangeListener listener);
+        
+        /**
+         * Removes a listener, it will be no longer notified about changes.
+         * @param listener listener to remove
+         */
+        public void removeChangeListener (ChangeListener listener);
+        
     }
 }

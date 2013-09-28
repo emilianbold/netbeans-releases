@@ -92,6 +92,7 @@ public final class BugtrackingManager implements LookupListener {
 
     private IDEServices ideServices;
     private ProjectServices projectServices;
+    private static final String LOCAL_CONNECTOR_ID = "NB_LOCAL_TASKS"; //NOI18N
     
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
@@ -226,6 +227,10 @@ public final class BugtrackingManager implements LookupListener {
             projectServices = Lookup.getDefault().lookup(ProjectServices.class);
         }
         return projectServices;
+    }
+
+    public static boolean isLocalConnectorID (String connectorID) {
+        return LOCAL_CONNECTOR_ID.equals(connectorID);
     }
     
 }

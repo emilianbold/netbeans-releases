@@ -206,13 +206,17 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 
 	@Override
 	public void actionPerformed(ActionEvent evt) {
-	    clearSplit(tc);
+	    clearSplit(tc, -1);
 	}
     }
 
     static void splitWindow(TopComponent tc, int orientation) {
+	splitWindow( tc, orientation, -1 );
+    }
+
+    static void splitWindow(TopComponent tc, int orientation, int splitLocation) {
 	if (tc instanceof Splitable) {
-	    TopComponent split = ((Splitable) tc).splitComponent(orientation);
+	    TopComponent split = ((Splitable) tc).splitComponent(orientation, splitLocation);
 	    split.open();
 	    split.requestActive();
             split.invalidate();
@@ -222,9 +226,9 @@ public class SplitAction extends AbstractAction implements Presenter.Menu, Prese
 	}
     }
 
-    static void clearSplit(TopComponent tc) {
+    static void clearSplit(TopComponent tc, int elementToActivate) {
 	if (tc instanceof Splitable) {
-	    TopComponent original = ((Splitable) tc).clearSplit();
+	    TopComponent original = ((Splitable) tc).clearSplit(elementToActivate);
 	    original.open();
 	    original.requestActive();
             original.invalidate();

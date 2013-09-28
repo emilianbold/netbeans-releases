@@ -276,39 +276,33 @@ public final class MultiViewPeer implements PropertyChangeListener {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
 		    TopComponent split;
-		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
-			split = ((MultiViewTopComponent) peer).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
-		    } else {
-			split = ((MultiViewCloneableTopComponent) peer).splitComponent(JSplitPane.HORIZONTAL_SPLIT);
+		    if(peer instanceof Splitable) {
+			split = ((Splitable) peer).splitComponent(JSplitPane.HORIZONTAL_SPLIT, -1);
+                        split.open();
+                        split.requestActive();
 		    }
-		    split.open();
-		    split.requestActive();
                 }
             });
             delegatingMap.put("splitWindowVertically", new javax.swing.AbstractAction() { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent evt) {
 		    TopComponent split;
-		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
-			split = ((MultiViewTopComponent) peer).splitComponent(JSplitPane.VERTICAL_SPLIT);
-		    } else {
-			split = ((MultiViewCloneableTopComponent) peer).splitComponent(JSplitPane.VERTICAL_SPLIT);
+		    if(peer instanceof Splitable) {
+			split = ((Splitable) peer).splitComponent(JSplitPane.VERTICAL_SPLIT, -1);
+                        split.open();
+                        split.requestActive();
 		    }
-		    split.open();
-		    split.requestActive();
                 }
             });
             delegatingMap.put("clearSplit", new javax.swing.AbstractAction() { // NOI18N
 		@Override
                 public void actionPerformed(ActionEvent evt) {
 		    TopComponent original;
-		    if(peer instanceof MultiViewTopComponent || peer instanceof MultiViewCloneableTopComponent) {
-			original = ((MultiViewTopComponent) peer).clearSplit();
-		    } else {
-			original = ((MultiViewCloneableTopComponent) peer).clearSplit();
+		    if(peer instanceof Splitable) {
+			original = ((Splitable) peer).clearSplit(-1);
+                        original.open();
+                        original.requestActive();
 		    }
-		    original.open();
-		    original.requestActive();
                 }
             });
         }
@@ -350,7 +344,7 @@ public final class MultiViewPeer implements PropertyChangeListener {
         }
         if( initialSplitOrientation != -1 ) {
             splitOrientation = initialSplitOrientation;
-            tabs.peerSplitComponent(splitOrientation, MultiViewPeer.this, getModel().getActiveDescription(), initialSplitDescription);
+            tabs.peerSplitComponent(splitOrientation, MultiViewPeer.this, getModel().getActiveDescription(), initialSplitDescription, -1);
             initialSplitDescription = null;
             initialSplitOrientation = -1;
         }
@@ -382,13 +376,13 @@ public final class MultiViewPeer implements PropertyChangeListener {
         tabs.setToolbarBarVisible(isToolbarVisible());
     }
 
-    void peerSplitComponent(int orientation) {
+    void peerSplitComponent(int orientation, int splitPosition) {
 	splitOrientation = orientation;
-	tabs.peerSplitComponent(orientation, this, null, null);
+	tabs.peerSplitComponent(orientation, this, null, null, splitPosition);
     }
 
-    void peerClearSplit() {
-	tabs.peerClearSplit();
+    void peerClearSplit( int elementToActivate ) {
+	tabs.peerClearSplit( elementToActivate );
 	showCurrentElement();
 	model.fireActivateCurrent();
 	splitOrientation = -1;

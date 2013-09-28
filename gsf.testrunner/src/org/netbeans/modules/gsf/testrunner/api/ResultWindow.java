@@ -215,12 +215,6 @@ final class ResultWindow extends TopComponent {
 		key = key.concat(" #").concat(Integer.toString(frequency));   //NOI18N
 		displayComp.setToolTipText(key);
 	    }
-	} else {
-	    Component selectedComponent = tabPane.getSelectedComponent();
-	    if (selectedComponent != null) {
-		key = ((JSplitPane) selectedComponent).getToolTipText();
-		displayComp.setToolTipText(key);
-	    }
 	}
 
         JSplitPane prevComp = viewMap.put(key, displayComp);
@@ -240,12 +234,12 @@ final class ResultWindow extends TopComponent {
 	int result = 0;
 	int max = 0;
 	for (String key : c) {
-	    int index = key.indexOf(" #");   //NOI18N
-	    if (index != -1) {
-		max = Math.max(max, Integer.parseInt(key.substring(index + 2)));
-	    }
 	    if (key.startsWith(tooltip)) {
 		result++;
+                int index = key.indexOf(" #");   //NOI18N
+                if (index != -1) {
+                    max = Math.max(max, Integer.parseInt(key.substring(index + 2)));
+                }
 	    }
 	}
 	return result == 0 ? 0 : Math.max(max + 1, result);
