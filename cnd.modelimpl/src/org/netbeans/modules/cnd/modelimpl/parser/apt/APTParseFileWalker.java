@@ -101,7 +101,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
         void onEval(APT apt, boolean result);
 
-        void onStoppedDirective(APT apt);
+        void onErrorDirective(APT apt);
+        
+        void onPragmaOnceDirective(APT apt);
     }
     private FileContent fileContent;
     private final boolean triggerParsingActivity;
@@ -110,7 +112,8 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         @Override
         public void onEval(APT apt, boolean result) { }
         @Override
-        public void onStoppedDirective(APT apt) { }
+        public void onErrorDirective(APT apt) { }
+        public void onPragmaOnceDirective(APT apt) { }
     };
 
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
@@ -178,7 +181,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void onErrorNode(APT apt) {
         super.onErrorNode(apt);
-        evalCallback.onStoppedDirective(apt);
+        evalCallback.onErrorDirective(apt);
         if (needMacroAndIncludes()) {
             this.fileContent.addError(createError((APTError)apt));
         }
@@ -188,7 +191,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onPragmaNode(APT apt) {
         super.onPragmaNode(apt);
         if (isStopped()) {
-            evalCallback.onStoppedDirective(apt);
+            evalCallback.onPragmaOnceDirective(apt);
         } else {
             APTPragma pragma = (APTPragma) apt;
             APTToken name = pragma.getName();
