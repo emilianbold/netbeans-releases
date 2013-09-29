@@ -225,6 +225,12 @@ public class CordovaPerformer implements BuildPerformer {
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
+                                } else {
+                                    try {
+                                        Thread.sleep(5000);
+                                    } catch (InterruptedException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
                                 WebKitDebuggingSupport.getDefault().startDebugging(device, 
                                         project, 
