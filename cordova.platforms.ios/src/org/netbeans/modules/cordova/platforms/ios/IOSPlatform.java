@@ -144,10 +144,14 @@ public class IOSPlatform implements MobilePlatform {
     
     @Override
     public SDK getPrefferedTarget() {
+        String preffered = System.getProperty("ios.preffered.sdk");
+        if (preffered != null ) {
+            return new IOSSDK(preffered, preffered);
+        }
         if (Utilities.isMac()) {
-            final Iterator<SDK> iterator = getSDKs().iterator();
-            if (iterator.hasNext()) {
-                return iterator.next();
+            final Collection<SDK> sDKs = getSDKs();
+            if (!sDKs.isEmpty()) {
+                return (SDK) sDKs.toArray()[sDKs.size()-1];
             }
         }
         return DEFAULT;
