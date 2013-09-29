@@ -266,7 +266,14 @@ final class AntArtifactChooser extends JPanel implements PropertyChangeListener 
                 return null;
             }
 
-            if (AntArtifactQuery.findArtifactsByType(selectedProject, JavaProjectConstants.ARTIFACT_TYPE_JAR).length == 0) {
+            boolean noSuitableOutput = true;
+            for (String type : artifactTypes) {
+                if (AntArtifactQuery.findArtifactsByType(selectedProject, type).length > 0) {
+                    noSuitableOutput = false;
+                    break;
+                }
+            }
+            if (noSuitableOutput) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                         NbBundle.getMessage (AntArtifactChooser.class,"MSG_NO_JAR_OUTPUT")));
                 return null;
