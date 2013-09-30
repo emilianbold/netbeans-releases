@@ -104,7 +104,7 @@ public class CordovaProjectExtender implements ClientProjectExtender {
             iosdev.put(Device.DEVICE_PROP, Device.DEVICE);
             String sim = PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier();
             iosdev.put("ios.build.sdk", sim.replace("iphonesimulator", "iphoneos")); // NOI18N
-            iosdev.put("ios.build.arch", sim.startsWith("iphonesimulator6")?"armv6 armv7":"armv7"); // NOI18N
+            iosdev.put("ios.build.arch", sim.startsWith("iphonesimulator6")?"armv6 armv7":"armv7 armv7s"); // NOI18N
 
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, iosdev);//NOI18N
         }
