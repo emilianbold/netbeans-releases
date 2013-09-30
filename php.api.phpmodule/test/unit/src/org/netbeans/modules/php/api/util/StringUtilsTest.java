@@ -148,4 +148,27 @@ public class StringUtilsTest extends NbTestCase {
         assertEquals("FoobarbaZ", StringUtils.capitalize("foobarbaZ"));
     }
 
+    public void testEmptyCapitalize() {
+        try {
+            StringUtils.capitalize("");
+            fail("Empty text can not be capitalized!");
+        } catch (Exception ex) {
+        }
+    }
+
+    public void testDecapitalize() {
+        assertEquals("Foobarbaz", StringUtils.capitalize("foobarbaz"));
+        assertEquals("Foobarbaz", StringUtils.capitalize("foobarbaz"));
+        assertEquals("FOOBARBAZ", StringUtils.capitalize("fOOBARBAZ"));
+        assertEquals("FoobarbaZ", StringUtils.capitalize("foobarbaZ"));
+    }
+
+    public void testEmptyDecapitalize() {
+        try {
+            StringUtils.decapitalize("");
+            fail("Empty text can not be decapitalized!");
+        } catch (Exception ex) {
+        }
+    }
+
 }
