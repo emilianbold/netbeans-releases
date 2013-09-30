@@ -1588,6 +1588,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                     @Override
                     public void run() {
                         ToolTipView.getDefault().setRootElement(new VariableNode(v, new DbxVariableNodeChildren(v))).showTooltip();
+                        VariableNode.propertyChanged(v);
                     }
 
                 });
