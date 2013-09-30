@@ -103,23 +103,28 @@ public class LatteControlCompletionProvider implements CompletionProvider {
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parseResult = (PHPParseResult) resultIterator.getParserResult();
                 if (parseResult != null) {
-                    Set<MethodScope> controlFactories = new HashSet<>();
-                    String realPrefix = StringUtils.hasText(controlPrefix) ? CREATE_COMPONENT_PREFIX + StringUtils.capitalize(controlPrefix) : CREATE_COMPONENT_PREFIX;
-                    NameKind.Prefix nameKindPrefix = NameKind.prefix(realPrefix);
-                    Model model = parseResult.getModel(Model.Type.COMMON);
-                    Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(model.getFileScope());
-                    for (ClassScope classScope : declaredClasses) {
-                        Collection<? extends MethodScope> methods = classScope.getMethods();
-                        controlFactories = ElementFilter.forName(nameKindPrefix).filter(new HashSet<>(methods));
-                    }
-                    for (MethodScope methodScope : controlFactories) {
-                        String methodName = methodScope.getName();
-                        String controlName = methodName.substring(CREATE_COMPONENT_PREFIX.length());
-                        result.add(StringUtils.decapitalize(controlName));
-                    }
+                    findControls(parseResult);
                 }
             }
+
         });
+    }
+
+    private void findControls(PHPParseResult parseResult) {
+        Set<MethodScope> controlFactories = new HashSet<>();
+        String realPrefix = StringUtils.hasText(controlPrefix) ? CREATE_COMPONENT_PREFIX + StringUtils.capitalize(controlPrefix) : CREATE_COMPONENT_PREFIX;
+        NameKind.Prefix nameKindPrefix = NameKind.prefix(realPrefix);
+        Model model = parseResult.getModel(Model.Type.COMMON);
+        Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(model.getFileScope());
+        for (ClassScope classScope : declaredClasses) {
+            Collection<? extends MethodScope> methods = classScope.getMethods();
+            controlFactories = ElementFilter.forName(nameKindPrefix).filter(new HashSet<>(methods));
+        }
+        for (MethodScope methodScope : controlFactories) {
+            String methodName = methodScope.getName();
+            String controlName = methodName.substring(CREATE_COMPONENT_PREFIX.length());
+            result.add(StringUtils.decapitalize(controlName));
+        }
     }
 
 }
