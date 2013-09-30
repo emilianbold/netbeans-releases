@@ -84,7 +84,7 @@ NetBeans.nextHighlight = [];
 NetBeans.windowActive = true;
 
 // Determines whether getClientRects() returns incorrect values (see issue 236445)
-NetBeans.clientRectsBug = false; /* is iOS 7 */
+NetBeans.clientRectsBug = (navigator.userAgent.match(/(iPad|iPhone|iPod);.*CPU.*OS 7_\d/i) ? true : false); /* is iOS 7 */
 
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
