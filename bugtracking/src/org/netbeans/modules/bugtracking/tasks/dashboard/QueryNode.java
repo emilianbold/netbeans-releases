@@ -57,6 +57,7 @@ import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -143,9 +144,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
+            JLabel lblIcon = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true));
 
+            panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             lblName = new TreeLabel(query.getDisplayName());
-            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             labels.add(lblName);
 
             TreeLabel lbl = new TreeLabel("("); //NOI18N
