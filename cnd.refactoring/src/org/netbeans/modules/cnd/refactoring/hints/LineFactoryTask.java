@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -94,6 +95,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -483,12 +485,12 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
 
     private static abstract class BaseFixImpl implements Fix {
         protected final CsmOffsetable expression;
-        protected final Document doc;
+        protected final BaseDocument doc;
         protected String name;
         
         protected BaseFixImpl(CsmOffsetable expression, Document doc) {
             this.expression = expression;
-            this.doc = doc;
+            this.doc = (BaseDocument) doc;
         }
         
         protected String suggestName() {
@@ -496,7 +498,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
 
                 @Override
                 public void run() {
-                    TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                    TokenHierarchy<? extends Document> hi = TokenHierarchy.get(doc);
                     TokenSequence<?> ts = hi.tokenSequence();
                     ts.move(expression.getStartOffset());
                     String lastCandidate = null;
@@ -609,18 +611,28 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 return null;
             }
             final String aName = suggestName();
-            String exprText = expression.getText().toString();
-            doc.remove(expression.getStartOffset(), exprText.length());
-            doc.insertString(expression.getStartOffset(), aName, null);
+            final String exprText = expression.getText().toString();
             final String text = typeText+" "+aName+" = "+expression.getText()+";\n"; //NOI18N
-            doc.insertString(st.getStartOffset(), text, null);
-            Indent indent = Indent.get(doc);
-            indent.lock();
-            try {
-                indent.reindent(st.getStartOffset()+text.length()+1);
-            } finally {
-                indent.unlock();
-            }
+            doc.runAtomicAsUser(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        doc.remove(expression.getStartOffset(), exprText.length());
+                        doc.insertString(expression.getStartOffset(), aName, null);
+                        doc.insertString(st.getStartOffset(), text, null);
+                        Indent indent = Indent.get(doc);
+                        indent.lock();
+                        try {
+                            indent.reindent(st.getStartOffset()+text.length()+1);
+                        } finally {
+                            indent.unlock();
+                        }
+                    }   catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+            
             Position startPosition = new Position() {
                 
                 @Override
