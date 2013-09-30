@@ -205,13 +205,26 @@ public final class StringUtils {
      * Capitalizes first character of the passed input.
      * <p>
      * Example: foobarbaz -> Foobarbaz
-     * @param input text to be capitalized, never null
+     * @param input text to be capitalized, never null or empty
      * @return capitalized input string, never null
      * @since 2.21
      */
     public static String capitalize(String input) {
-        Parameters.notNull("input", input); //NOI18N
+        Parameters.notEmpty("input", input); //NOI18N
         return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
+    /**
+     * Decapitalizes first character of the passed input.
+     * <p>
+     * Example: Foobarbaz -> foobarbaz
+     * @param input text to be decapitalized, never null or empty
+     * @return decapitalized input string, never null
+     * @since 2.33
+     */
+    public static String decapitalize(String input) {
+        Parameters.notEmpty("input", input); //NOI18N
+        return input.substring(0, 1).toLowerCase() + input.substring(1);
     }
 
     private static Pattern getPattern0(String text, String prefix, String suffix) {
