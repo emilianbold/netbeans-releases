@@ -177,7 +177,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 }
             }
         });
-        
+
         versionUpdater = createVersionUpdater(J2eeModule.Type.WAR);
     }
     
