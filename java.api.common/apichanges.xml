@@ -105,6 +105,35 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="BaseActionProvider.Callback3">
+            <api name="java-api-common"/>
+            <summary>Added <code>BaseActionProvider.Callback3</code> with a method providing additional build properties.</summary>
+            <version major="1" minor="58"/>
+            <date day="24" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>BaseActionProvider.Callback3</code> interface with a method providing additional build properties.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="BaseActionProvider"/>
+        </change>
+        <change id="PlatformUiSupport.getProfile">
+            <api name="java-api-common"/>
+            <summary>Added getter for profile from profile model.</summary>
+            <version major="1" minor="57"/>
+            <date day="18" month="9" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added utility method<code>PlatformUiSupport.getProfile</code>
+                    returning a <code>Profile</code> for a key obtained from profile model.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+        </change>
         <change id="CustomizerProvider3">
             <api name="java-api-common"/>
             <summary>Enable programmatical closing of project customizer dialog.</summary>

@@ -242,10 +242,15 @@ public final class StandardLogger extends AntLogger {
             }
             cmd.add(script.getAbsolutePath());
             for (Map.Entry<String,String> prop : session.getProperties().entrySet()) {
-                if (prop.getKey().equals("build.compiler.emacs")) {
+                final String key = prop.getKey();
+                if (key.equals("build.compiler.emacs")) {
                     continue; // uninteresting
                 }
-                cmd.add("-D" + prop);
+                String value = prop.getValue();
+                if (session.isConcealed(key)) {
+                    value = "*****";    //NOI18N
+                }
+                cmd.add(String.format("-D%s=%s",key,value));    //NOI18N
             }
             for (String target : session.getOriginatingTargets()) {
                 cmd.add(target);
