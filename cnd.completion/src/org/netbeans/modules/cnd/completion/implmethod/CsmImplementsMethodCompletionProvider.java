@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -88,11 +87,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
 
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        CompletionSupport sup = CompletionSupport.get(component);
-        if (sup == null) {
-            return 0;
-        }
-        return COMPLETION_QUERY_TYPE;
+        return 0;
     }
 
     @Override
