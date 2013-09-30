@@ -148,4 +148,12 @@ public class StringUtilsTest extends NbTestCase {
         assertEquals("FoobarbaZ", StringUtils.capitalize("foobarbaZ"));
     }
 
+    public void testEmptyCapitalize() {
+        try {
+            StringUtils.capitalize("");
+            fail("Empty text can not be capitalized!");
+        } catch (Exception ex) {
+        }
+    }
+
 }
