@@ -29,12 +29,12 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="serverCBox" alignment="1" max="32767" attributes="0"/>
+                          <Component id="jCBServer" alignment="1" max="32767" attributes="0"/>
                           <Component id="contextPathTField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="javaeeVersionCBox" alignment="0" max="32767" attributes="0"/>
+                          <Component id="jCBJavaeeVersion" alignment="0" max="32767" attributes="0"/>
                           <Component id="lblHint2" alignment="0" pref="517" max="32767" attributes="0"/>
                           <Component id="txtRelativeUrl" max="32767" attributes="0"/>
-                          <Component id="browserCBox" alignment="1" max="32767" attributes="0"/>
+                          <Component id="jCBBrowser" alignment="1" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -42,13 +42,13 @@
                       <Component id="dosDescription" pref="609" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jCheckBoxDeployOnSave" min="-2" max="-2" attributes="0"/>
+                      <Component id="jCBDeployOnSave" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="showBrowserCheckBox" max="32767" attributes="0"/>
-                          <Component id="jCheckBoxCopyStaticResources" max="32767" attributes="0"/>
+                          <Component id="jCBshowBrowser" max="32767" attributes="0"/>
+                          <Component id="jCBCopyStaticResources" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -62,11 +62,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serverLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="serverCBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCBServer" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="javaeeVersionCBox" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                  <Component id="jCBJavaeeVersion" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
                   <Component id="javaeeVersionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -84,14 +84,14 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="browserLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="browserCBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jCBBrowser" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="showBrowserCheckBox" min="-2" max="-2" attributes="0"/>
+              <Component id="jCBshowBrowser" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jCheckBoxCopyStaticResources" min="-2" max="-2" attributes="0"/>
+              <Component id="jCBCopyStaticResources" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jCheckBoxDeployOnSave" min="-2" max="-2" attributes="0"/>
+              <Component id="jCBDeployOnSave" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="dosDescription" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
@@ -102,24 +102,18 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="serverLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="serverCBox"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_Server" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="serverCBox">
+    <Component class="javax.swing.JComboBox" name="jCBServer">
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="serverCBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCBServerActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="javaeeVersionLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="javaeeVersionCBox"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_J2EE_Version" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -150,7 +144,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="showBrowserCheckBox">
+    <Component class="javax.swing.JCheckBox" name="jCBshowBrowser">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/maven/j2ee/web/Bundle.properties" key="LBL_Display_on_Run" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -194,10 +188,10 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBoxDeployOnSave">
+    <Component class="javax.swing.JCheckBox" name="jCBDeployOnSave">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCheckBoxDeployOnSave.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCBDeployOnSave.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -211,7 +205,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="javaeeVersionCBox">
+    <Component class="javax.swing.JComboBox" name="jCBJavaeeVersion">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="0"/>
@@ -225,18 +219,18 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="browserCBox">
+    <Component class="javax.swing.JComboBox" name="jCBBrowser">
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox()"/>
       </AuxValues>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBoxCopyStaticResources">
+    <Component class="javax.swing.JCheckBox" name="jCBCopyStaticResources">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCheckBoxCopyStaticResources.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCBCopyStaticResources.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCheckBoxCopyStaticResources.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/maven/j2ee/ui/customizer/impl/Bundle.properties" key="CustomizerRunWeb.jCBCopyStaticResources.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
