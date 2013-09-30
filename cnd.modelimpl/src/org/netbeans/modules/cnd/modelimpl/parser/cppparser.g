@@ -2551,14 +2551,25 @@ conversion_function_decl_or_def returns [boolean definition = false]
 		LPAREN (parameter_list[false])? RPAREN	
 		(tq = cv_qualifier)*
                 (LITERAL_override | LITERAL_final | LITERAL_new)*
-                ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
+                ((conversion_function_special_definition)=> definition = conversion_function_special_definition)?
 		(exception_specification)?
 		(	compound_statement { definition = true; }
                     |	
-                        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
+                        ((conversion_function_special_definition)=> definition = conversion_function_special_definition)?
                         SEMICOLON! //{end_of_stmt();}
 		)
 	;
+
+protected
+conversion_function_special_definition returns [boolean definition = false]
+    :         
+        ASSIGNEQUAL
+        (
+               OCTALINT
+           |
+               LITERAL_delete { definition = true; }
+        )
+    ;
 
 // JEL note:  does not use (const|volatile)* to avoid lookahead problems
 cv_qualifier_seq
