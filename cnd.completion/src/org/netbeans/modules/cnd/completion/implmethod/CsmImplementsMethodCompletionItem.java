@@ -46,6 +46,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -82,6 +83,7 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -148,6 +150,14 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 final AtomicInteger trueBodyStratOffset = new AtomicInteger(0);
                 CsmFile containingFile = item.getContainingFile();
                 Document document = CsmUtilities.getDocument(containingFile);
+                if (document == null) {
+                    CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(containingFile);
+                    try {
+                        document = support.openDocument();
+                    } catch (IOException ex) {
+                        return null;
+                    }
+                }
                 if (document instanceof BaseDocument) {
                     final BaseDocument classDoc = (BaseDocument) document;
                     classDoc.render(new Runnable() {
@@ -413,6 +423,13 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         if (isExtractBody) {
             CsmFile containingFile = item.getContainingFile();
             Document document = CsmUtilities.getDocument(containingFile);
+            if (document == null) {
+                CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(containingFile);
+                try {
+                    document = support.openDocument();
+                } catch (IOException ex) {
+                }
+            }
             if (document instanceof BaseDocument) {
                 final BaseDocument classDoc = (BaseDocument) document;
                 classDoc.runAtomicAsUser(new Runnable() {
