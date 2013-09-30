@@ -99,11 +99,11 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     private final ProjectCustomizer.Category category;
     private final Project project;
 
-    private final List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
-    private final List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
-    private final List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
-    private final Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<WebFrameworkProvider, WebModuleExtender>();
-    private final List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
+    private final List<WebModuleExtender> newExtenders = new LinkedList<>();
+    private final List<WebModuleExtender> existingExtenders = new LinkedList<>();
+    private final List<WebFrameworkProvider> usedFrameworks = new LinkedList<>();
+    private final Map<WebFrameworkProvider, WebModuleExtender> extenders = new IdentityHashMap<>();
+    private final List<WebFrameworkProvider> addedFrameworks = new LinkedList<>();
 
     private final ExtenderController controller = ExtenderController.create();
 
@@ -481,7 +481,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         "CustomizerFrameworks.label.saving.project.frameworks=Saving project frameworks"
     })
     private void handleExtenders() {
-        final List<WebModuleExtender> includedExtenders = new LinkedList<WebModuleExtender>(existingExtenders);
+        final List<WebModuleExtender> includedExtenders = new LinkedList<>(existingExtenders);
         final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if (newExtenders != null && !newExtenders.isEmpty()) {
             // in case that new extenders should be included
@@ -510,7 +510,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
                 @Override
                 public void run() {
-                    final FutureTask<Void> future = new FutureTask<Void>(new Callable<Void>() {
+                    final FutureTask<Void> future = new FutureTask<>(new Callable<Void>() {
                         @Override
                         public Void call() throws Exception {
                             // save all already included extenders
@@ -525,9 +525,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                         // that lenghty opperation is happening. BTW, initial waiting time is used to prevent
                         // dialogs flickering.
                         future.get(300, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (ExecutionException ex) {
+                    } catch (InterruptedException | ExecutionException ex) {
                         Exceptions.printStackTrace(ex);
                     } catch (TimeoutException ex) {
                         // End of the 300ms period, continue in processing but display progress dialog
@@ -537,9 +535,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                                 try {
                                     // Wait for finishing of the future
                                     future.get();
-                                } catch (InterruptedException ex) {
-                                    Exceptions.printStackTrace(ex);
-                                } catch (ExecutionException ex) {
+                                } catch (InterruptedException | ExecutionException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
                             }

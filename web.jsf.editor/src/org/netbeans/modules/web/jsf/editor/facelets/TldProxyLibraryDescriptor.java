@@ -47,6 +47,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -72,6 +74,7 @@ import org.xml.sax.SAXException;
  * @author marekfukala
  */
 public class TldProxyLibraryDescriptor implements LibraryDescriptor {
+    private static final Logger LOG = Logger.getLogger(TldProxyLibraryDescriptor.class.getName());
 
     private LibraryDescriptor source;
     private LibraryDescriptor tld;
@@ -114,7 +117,12 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
     }
 
     private void initTLD(JsfIndex index) {
-        IndexedFile file = index.getTagLibraryDescriptor(getNamespace());
+        // omit libraries with undefined namespaces - #236539
+        String namespace = getNamespace();
+        if (namespace == null) {
+            return;
+        }
+        IndexedFile file = index.getTagLibraryDescriptor(namespace);
         if (file == null) {
             return;
         }

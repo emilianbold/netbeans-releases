@@ -83,6 +83,9 @@ NetBeans.nextHighlight = [];
 // Determines whether the enclosing browser window is active
 NetBeans.windowActive = true;
 
+// Determines whether getClientRects() returns incorrect values (see issue 236445)
+NetBeans.clientRectsBug = (navigator.userAgent.match(/(iPad|iPhone|iPod);.*CPU.*OS 7_\d/i) ? true : false); /* is iOS 7 */
+
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
     this.nextSelection = [];
@@ -330,7 +333,7 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
     };
     for (var i=0; i<elements.length; i++) {
         var selectedElement = elements[i];
-        var rects = selectedElement.getClientRects();
+        var rects = NetBeans.getClientRects(selectedElement);
         for (var j=0; j<rects.length; j++) {
             var rect = rects[j];
             ctx.strokeStyle = color;
@@ -381,7 +384,7 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
     ctx.lineWidth = 1;
     for (var i=0; i<elements.length; i++) {
         var highlightedElement = elements[i];
-        var rects = highlightedElement.getClientRects();
+        var rects = NetBeans.getClientRects(highlightedElement);
         var style = window.getComputedStyle(highlightedElement);
 
         var inline = (style.display === 'inline');
@@ -569,6 +572,37 @@ NetBeans.replaceInCSSSelectors = function(oldString, newString) {
             }
         }
     }
+};
+
+NetBeans.getClientRects = function(element) {
+    var rects = element.getClientRects();
+    // Workaround for issue 236445
+    if (NetBeans.clientRectsBug && NetBeans.isScrolling(element)) {
+        var newRects = [];
+        for (var i=0; i<rects.length; i++) {
+            var rect = rects[i];
+            var newRect = {
+                left: rect.left-pageXOffset,
+                top: rect.top-pageYOffset,
+                height: rect.height,
+                width: rect.width
+            };
+            newRects.push(newRect);
+        }
+        rects = newRects;
+    }
+    return rects;
+};
+
+NetBeans.isScrolling = function(element) {
+    while (element) {
+        var position = getComputedStyle(element).getPropertyValue('position');
+        if (position === 'fixed') {
+            return false;
+        }
+        element = element.parentElement;
+    }
+    return true;
 };
 
 // Cancels the inspection of the page
