@@ -44,7 +44,7 @@ package org.netbeans.modules.languages.neon.completion;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.languages.neon.spi.completion.MethodCompletionProvider;
-import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.netbeans.modules.php.spi.templates.completion.CompletionProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
@@ -56,13 +56,13 @@ import org.openide.util.lookup.Lookups;
 public final class CompletionProviders {
     public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
     public static final String METHOD_COMPLETION_PROVIDER_PATH = "Neon/completion/method"; //NOI18N
-    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
+    private static final Lookup.Result<CompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(CompletionProvider.class);
     private static final Lookup.Result<MethodCompletionProvider> METHOD_PROVIDERS = Lookups.forPath(METHOD_COMPLETION_PROVIDER_PATH).lookupResult(MethodCompletionProvider.class);
 
     private CompletionProviders() {
     }
 
-    public static List<TypeCompletionProvider> getTypeProviders() {
+    public static List<CompletionProvider> getTypeProviders() {
         return new ArrayList<>(TYPE_PROVIDERS.allInstances());
     }
 
