@@ -51,7 +51,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -253,7 +252,11 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         if (definition == null) {
                                             items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
                                         } else if (method == definition){
-                                            items.add(CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member));
+                                            final CsmImplementsMethodCompletionItem item =
+                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member);
+                                            if (item != null) {
+                                                items.add(item);
+                                            }
                                         }
                                     }
                                 }
