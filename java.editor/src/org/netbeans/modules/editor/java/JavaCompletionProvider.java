@@ -651,7 +651,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     insideAnnotation(env);
                     break;
                 case ANNOTATED_TYPE:
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                    insideAnnotatedType(env);
                     break;
                 case TYPE_PARAMETER:
                     insideTypeParameter(env);
@@ -1336,6 +1336,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     addLocalConstantsAndTypes(env);
                 }
+            }
+        }
+        
+        private void insideAnnotatedType(Env env) throws IOException {
+            int offset = env.getOffset();
+            AnnotatedTypeTree att = (AnnotatedTypeTree)env.getPath().getLeaf();
+            SourcePositions sourcePositions = env.getSourcePositions();
+            CompilationUnitTree root = env.getRoot();
+            int pos = (int)sourcePositions.getStartPosition(root, att.getUnderlyingType());
+            if (pos >= 0 && pos < offset) {
+                insideExpression(env, new TreePath(env.getPath(), att.getUnderlyingType()));
+            } else {
+                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
             }
         }
 
