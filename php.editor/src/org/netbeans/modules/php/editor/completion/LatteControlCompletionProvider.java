@@ -115,7 +115,7 @@ public class LatteControlCompletionProvider implements CompletionProvider {
                     for (MethodScope methodScope : controlFactories) {
                         String methodName = methodScope.getName();
                         String controlName = methodName.substring(CREATE_COMPONENT_PREFIX.length());
-                        result.add(controlName.substring(0, 1).toLowerCase() + controlName.substring(1));
+                        result.add(StringUtils.decapitalize(controlName));
                     }
                 }
             }

@@ -214,6 +214,19 @@ public final class StringUtils {
         return input.substring(0, 1).toUpperCase() + input.substring(1);
     }
 
+    /**
+     * Decapitalizes first character of the passed input.
+     * <p>
+     * Example: Foobarbaz -> foobarbaz
+     * @param input text to be decapitalized, never null or empty
+     * @return decapitalized input string, never null
+     * @since 2.33
+     */
+    public static String decapitalize(String input) {
+        Parameters.notEmpty("input", input); //NOI18N
+        return input.substring(0, 1).toLowerCase() + input.substring(1);
+    }
+
     private static Pattern getPattern0(String text, String prefix, String suffix) {
         assert text != null;
         assert prefix != null;
