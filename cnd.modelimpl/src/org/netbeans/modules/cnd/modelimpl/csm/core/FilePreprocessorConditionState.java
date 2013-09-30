@@ -63,6 +63,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  */
 public final class FilePreprocessorConditionState {
     public static final FilePreprocessorConditionState PARSING = new FilePreprocessorConditionState("PARSING", new int[]{0, Integer.MAX_VALUE}); // NOI18N
+    private static final int ERROR_DIRECTIVE_MARKER = Integer.MAX_VALUE;
+    private static final int PRAGMA_ONCE_DIRECTIVE_MARKER = Integer.MAX_VALUE - 1;
 
     /** a SORTED array of blocks [start-end] for which conditionals were evaluated to false */
     private final int[] offsets;
@@ -138,9 +140,12 @@ public final class FilePreprocessorConditionState {
             if (i > 0) {
                 sb.append("][");//NOI18N
             }
-            if (state.offsets[i+1] == Integer.MAX_VALUE) {
-                sb.append(Integer.MAX_VALUE-state.offsets[i]);
+            if (state.offsets[i+1] == ERROR_DIRECTIVE_MARKER) {
+                sb.append(ERROR_DIRECTIVE_MARKER-state.offsets[i]);
                 sb.append("#error");//NOI18N
+            } else if (state.offsets[i + 1] == PRAGMA_ONCE_DIRECTIVE_MARKER) {
+                sb.append(state.offsets[i]);
+                sb.append("#pragma once");//NOI18N
             } else {
                 sb.append(state.offsets[i]);
                 sb.append("-");//NOI18N
@@ -226,7 +231,7 @@ public final class FilePreprocessorConditionState {
         if (this.offsets.length == 0 || this == PARSING) {
             return false;
         }
-        return offsets[offsets.length-1] == Integer.MAX_VALUE;
+        return offsets[offsets.length-1] == ERROR_DIRECTIVE_MARKER;
     }
 
     public static final class Builder implements APTParseFileWalker.EvalCallback {
@@ -258,9 +263,19 @@ public final class FilePreprocessorConditionState {
          * adds offset of dead branch to offsets array
          */        
         @Override
-        public void onStoppedDirective(APT apt) {
+        public void onErrorDirective(APT apt) {
             // on error directive we add special dead block
-            addBlockImpl(Integer.MAX_VALUE-apt.getToken().getOffset(), Integer.MAX_VALUE);
+            addBlockImpl(ERROR_DIRECTIVE_MARKER-apt.getToken().getOffset(), ERROR_DIRECTIVE_MARKER);
+        }
+
+        /**
+         * Implements APTParseFileWalker.EvalCallback - adds offset of dead
+         * branch to offsets array
+         */
+        @Override
+        public void onPragmaOnceDirective(APT apt) {
+            // on pragma once directive we add dead block from pragma till the end
+            addBlockImpl(apt.getToken().getOffset(), PRAGMA_ONCE_DIRECTIVE_MARKER);
         }
 
         /**
@@ -316,7 +331,7 @@ public final class FilePreprocessorConditionState {
             int size = 0;
             for (int[] deadInterval : blocks) {
                 size++;
-                if (deadInterval[1] == Integer.MAX_VALUE) {
+                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
                     break;
                 }
             }
@@ -325,7 +340,7 @@ public final class FilePreprocessorConditionState {
             for (int[] deadInterval : blocks) {
                 offsets[index++] = deadInterval[0];
                 offsets[index++] = deadInterval[1];
-                if (deadInterval[1] == Integer.MAX_VALUE) {
+                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
                     break;
                 }
             }
@@ -355,9 +370,12 @@ public final class FilePreprocessorConditionState {
                 if (i++ > 0) {
                     sb.append("][");//NOI18N
                 }
-                if (deadInterval[1] == Integer.MAX_VALUE) {
-                    sb.append(Integer.MAX_VALUE-deadInterval[0]);
+                if (deadInterval[1] == ERROR_DIRECTIVE_MARKER) {
+                    sb.append(ERROR_DIRECTIVE_MARKER-deadInterval[0]);
                     sb.append("#error");//NOI18N
+                } else if (deadInterval[1] == PRAGMA_ONCE_DIRECTIVE_MARKER) {
+                    sb.append(deadInterval[0]);
+                    sb.append("#pragma once");//NOI18N    
                 } else {
                     sb.append(deadInterval[0]);
                     sb.append("-");//NOI18N

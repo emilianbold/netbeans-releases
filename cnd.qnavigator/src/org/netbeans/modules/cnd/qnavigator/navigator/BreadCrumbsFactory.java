@@ -146,7 +146,7 @@ public final class BreadCrumbsFactory {
                             if (start <= caretLineNo && caretLineNo < end) {
                                 selected = child;
                                 advance = true;
-                                break;
+                                //break;
                             }
                         }
                     }

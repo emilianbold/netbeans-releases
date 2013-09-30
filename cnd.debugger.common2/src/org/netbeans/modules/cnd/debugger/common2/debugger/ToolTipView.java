@@ -103,6 +103,10 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
         ov.setPropertyColumns("value", "Value"); //NOI18N
         ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
         ov.getOutline().setRootVisible(true);
+        
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(getForeground()),
+                BorderFactory.createEmptyBorder(0, 0, 0, 0)));
 
         setLayout(new BorderLayout());
         add(ov, BorderLayout.CENTER);

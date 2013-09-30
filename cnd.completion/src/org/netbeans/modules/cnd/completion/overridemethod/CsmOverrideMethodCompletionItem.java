@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.implmethod;
+package org.netbeans.modules.cnd.completion.overridemethod;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -49,15 +49,13 @@ import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -65,12 +63,10 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -83,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class CsmImplementsMethodCompletionItem implements CompletionItem {
+public class CsmOverrideMethodCompletionItem implements CompletionItem {
 
     private final int substitutionOffset;
     private final int priority;
@@ -93,13 +89,11 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     private final String appendItemText;
     private final String htmlItemText;
     private final CsmMember item;
-    private final CsmCompoundStatement body;
     private final ImageIcon icon;
     private final String right;
-    private final boolean isExtractBody;
 
-    private CsmImplementsMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
-            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right, boolean isExtractBody) {
+    private CsmOverrideMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
+            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right) {
         this.substitutionOffset = substitutionOffset;
         this.priority = priority;
         this.supportInstantSubst = supportInstantSubst;
@@ -107,65 +101,68 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         this.appendItemText = appendItemText;
         this.htmlItemText = htmlItemText;
         this.item = item;
-        icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(CsmImageLoader.getIcon(item)),
+        ImageIcon anIicon;
+        if (item != null) {
+            anIicon = CsmImageLoader.getIcon(item);
+        } else {
+            anIicon = CsmImageLoader.getIcon(CsmDeclaration.Kind.FUNCTION, CsmUtilities.DESTRUCTOR);
+        }
+        icon = (ImageIcon) ImageUtilities.image2Icon((ImageUtilities.mergeImages(ImageUtilities.icon2Image(anIicon),
                                                       ImageUtilities.loadImage("org/netbeans/modules/cnd/completion/resources/generate.png"),  // NOI18N
                                                       0, 7)));
         this.right = right;
-        this.isExtractBody = isExtractBody;
-        if (isExtractBody) {
-            body = ((CsmFunctionDefinition)item).getBody();
+    }
+
+    public static CsmOverrideMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
+        String sortItemText;
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            sortItemText = "~"+cls.getName(); //NOI18N
         } else {
-            body = null;
+            sortItemText = item.getName().toString();
         }
-    }
-
-    public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
-        String sortItemText = item.getName().toString();
-        String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
+        String appendItemText = createAppendText(item, cls);
         String rightText = createRightName(item);
-        String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "implement.txt")); //NOI18N
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false);
+        String coloredItemText;
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "destructor.txt")); //NOI18N
+        } else {
+            coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmOverrideMethodCompletionItem.class, "override.txt")); //NOI18N
+        }
+        return new CsmOverrideMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText);
     }
 
-    public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
-        String sortItemText = item.getName().toString();
-        CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
-        String appendItemText = createAppendText(item, cls, body.getText().toString());
-        String rightText = createRightName(item);
-        String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, true);
-    }
-
-    private static String createDisplayName(CsmMember item,  CsmClass parent, String operation) {
+    private static String createDisplayName(CsmMember item, CsmClass parent, String operation) {
         StringBuilder displayName = new StringBuilder();
-        displayName.append(parent.getName());
-        displayName.append("::"); //NOI18N
         displayName.append("<b>"); //NOI18N
-        displayName.append(((CsmFunction)item).getSignature());
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            displayName.append('~');
+            displayName.append(parent.getName());
+            displayName.append("()"); //NOI18N
+        } else {
+            displayName.append(((CsmFunction)item).getSignature());
+        }
         displayName.append("</b>"); //NOI18N
         if (operation != null) {
             displayName.append(" - "); //NOI18N
             displayName.append(operation);
         }
         return displayName.toString();
-        //return CsmDisplayUtilities.addHTMLColor(displayName.toString(), 
-        //       CsmFontColorManager.instance().getColorAttributes(MIMENames.CPLUSPLUS_MIME_TYPE, FontColorProvider.Entity.FUNCTION));
     }
     
     private static String createRightName(CsmMember item) {
-        if (CsmKindUtilities.isConstructor(item)) {
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
             return "";
-        } else if (CsmKindUtilities.isDestructor(item)) {
+        } else if (CsmKindUtilities.isConstructor(item)) {
             return "";
         } else {
             return ((CsmFunction)item).getReturnType().getCanonicalText().toString();
         }
     }
     
-    private static String createAppendText(CsmMember item, CsmClass parent, String bodyText) {
-        StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
+    private static String createAppendText(CsmMember item, CsmClass parent) {
+        StringBuilder appendItemText = new StringBuilder("\nvirtual "); //NOI18N
         String type = "";
-        if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
+        if (item != null && !CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
             type = returnType.getCanonicalText().toString()+" "; //NOI18N
             if (type.indexOf("::") < 0) { //NOI18N
@@ -187,47 +184,53 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             }
         }
         appendItemText.append(type);
-        appendItemText.append(parent.getName());
-        appendItemText.append("::"); //NOI18N
-        addSignature(item, appendItemText);
-        appendItemText.append(" "); //NOI18N
-        appendItemText.append(bodyText);
-        appendItemText.append("\n"); //NOI18N
+        addSignature(item, parent, appendItemText);
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            appendItemText.append(" {\n\n}\n"); //NOI18N
+        } else {
+            appendItemText.append(";\n"); //NOI18N
+        }
         return appendItemText.toString();
     }
     
-    private static void addSignature(CsmMember item, StringBuilder sb) {
+    private static void addSignature(CsmMember item, CsmClass parent, StringBuilder sb) {
         //sb.append(item.getSignature());
-        sb.append(item.getName());
-        if (CsmKindUtilities.isTemplate(item)) {
-            List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
-            // What to do with template?
-        }
-        //sb.append(parameterList.getText());
-        sb.append('('); //NOI18N
-        boolean first = true;
-        for(CsmParameter param : ((CsmFunction)item).getParameterList().getParameters()) {
-            if (!first) {
-               sb.append(','); //NOI18N
-               sb.append(' '); //NOI18N
+        if (item == null || CsmKindUtilities.isDestructor(item)) {
+            sb.append('~');
+            sb.append(parent.getName());
+            sb.append("()"); //NOI18N
+        } else {
+            sb.append(item.getName());
+            if (CsmKindUtilities.isTemplate(item)) {
+                List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
+                // What to do with template?
             }
-            first = false;
-            if (param.isVarArgs()) {
-                sb.append(param.getName());
-                sb.append(' '); //NOI18N
-                sb.append("..."); // NOI18N
-            } else {
-                CsmType type = param.getType();
-                if (type != null) {
-                    sb.append(type.getCanonicalText());
-                    sb.append(' ');
+            //sb.append(parameterList.getText());
+            sb.append('('); //NOI18N
+            boolean first = true;
+            for(CsmParameter param : ((CsmFunction)item).getParameterList().getParameters()) {
+                if (!first) {
+                   sb.append(','); //NOI18N
+                   sb.append(' '); //NOI18N
+                }
+                first = false;
+                if (param.isVarArgs()) {
                     sb.append(param.getName());
+                    sb.append(' '); //NOI18N
+                    sb.append("..."); // NOI18N
+                } else {
+                    CsmType type = param.getType();
+                    if (type != null) {
+                        sb.append(type.getCanonicalText());
+                        sb.append(' ');
+                        sb.append(param.getName());
+                    }
                 }
             }
-        }
-        sb.append(')'); //NOI18N
-        if(CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isConst()) {
-            sb.append(" const"); // NOI18N
+            sb.append(')'); //NOI18N
+            if(CsmKindUtilities.isMethod(item) && ((CsmMethod)item).isConst()) {
+                sb.append(" const"); // NOI18N
+            }
         }
     }
     
@@ -337,13 +340,13 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                     String itemText = getItemText();
                     doc.insertString(offset, itemText, null);
                     if (c != null) {
-                        if (isExtractBody) {
-                            int setDot = offset;
-                            c.setCaretPosition(setDot);
+                        int setDot;
+                        if (item == null || CsmKindUtilities.isDestructor(item)) {
+                            setDot = offset + itemText.length() - 3;
                         } else {
-                            int setDot = offset + itemText.length() - 3;
-                            c.setCaretPosition(setDot);
+                            setDot = offset + itemText.length() - 1;
                         }
+                        c.setCaretPosition(setDot);
                         Reformat reformat = Reformat.get(doc);
                         reformat.lock();
                         try {
@@ -357,23 +360,5 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 }
             }
         });
-        if (isExtractBody) {
-            CsmFile containingFile = item.getContainingFile();
-            Document document = CsmUtilities.getDocument(containingFile);
-            if (document instanceof BaseDocument) {
-                final BaseDocument classDoc = (BaseDocument) document;
-                classDoc.runAtomicAsUser(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            classDoc.remove(body.getStartOffset(), body.getText().length());
-                            classDoc.insertString(body.getStartOffset(), ";", null); // NOI18N
-                        } catch (BadLocationException e) {
-                            // Can't update
-                        }
-                    }
-                });
-            }
-        }
     }
 }

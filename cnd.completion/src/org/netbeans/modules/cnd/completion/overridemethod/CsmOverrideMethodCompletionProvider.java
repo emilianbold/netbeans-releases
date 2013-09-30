@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.completion.implmethod;
+package org.netbeans.modules.cnd.completion.overridemethod;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,27 +51,26 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import static org.netbeans.spi.editor.completion.CompletionProvider.COMPLETION_QUERY_TYPE;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -81,9 +80,9 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  *
  * @author Alexander Simon
  */
-public class CsmImplementsMethodCompletionProvider implements CompletionProvider {
+public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
 
-    public CsmImplementsMethodCompletionProvider() {
+    public CsmOverrideMethodCompletionProvider() {
         // default constructor to be created as lookup service
     }
 
@@ -106,19 +105,18 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
     }
 
     // method for tests
-    /*package*/ static Collection<CsmImplementsMethodCompletionItem> getFilteredData(BaseDocument doc, int caretOffset, int queryType) {
+    /*package*/ static Collection<CsmOverrideMethodCompletionItem> getFilteredData(BaseDocument doc, int caretOffset, int queryType) {
         Query query = new Query(caretOffset);
-        Collection<CsmImplementsMethodCompletionItem> items = query.getItems(doc, caretOffset);
+        Collection<CsmOverrideMethodCompletionItem> items = query.getItems(doc, caretOffset);
         return items;
     }
 
     private static final class Query extends AsyncCompletionQuery {
 
-        private Collection<CsmImplementsMethodCompletionItem> results;
+        private Collection<CsmOverrideMethodCompletionItem> results;
         private final int creationCaretOffset;
         private int queryAnchorOffset;
         private String filterPrefix;
-        private boolean isApplicable = true;
 
         /*package*/ Query(int caretOffset) {
             this.creationCaretOffset = caretOffset;
@@ -127,7 +125,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-            Collection<CsmImplementsMethodCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
+            Collection<CsmOverrideMethodCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset >= 0) {
                 if (items != null && items.size() > 0) {
                     this.results = items;
@@ -162,7 +160,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
         protected void filter(CompletionResultSet resultSet) {
             if (filterPrefix != null && results != null) {
                 resultSet.setAnchorOffset(queryAnchorOffset);
-                Collection<? extends CsmImplementsMethodCompletionItem> items = getFilteredData(results, filterPrefix);
+                Collection<? extends CsmOverrideMethodCompletionItem> items = getFilteredData(results, filterPrefix);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             }
@@ -170,93 +168,82 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             resultSet.finish();
         }
 
-        private void visitDeclarations(Set<CsmClass> classes, Collection<CsmOffsetableDeclaration> decls, final int caretOffset) {
+        private CsmClass visitDeclarations(Collection<CsmOffsetableDeclaration> decls, final int caretOffset) {
             for(CsmOffsetableDeclaration decl : decls) {
-                if (!isApplicable) {
-                    return;
-                }
                 if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     if (decl.getStartOffset() <= caretOffset && caretOffset <= decl.getEndOffset()) {
-                        visitDeclarations(classes, ((CsmNamespaceDefinition)decl).getDeclarations(), caretOffset);
+                        return visitDeclarations(((CsmNamespaceDefinition)decl).getDeclarations(), caretOffset);
+                    }
+                } else if (CsmKindUtilities.isClass(decl)) {
+                    loop:while(true) {
+                        if (decl.getStartOffset() <= caretOffset && caretOffset <= decl.getEndOffset()) {
+                            CsmClass cls = (CsmClass) decl;
+                            int leftBracketOffset = cls.getLeftBracketOffset();
+                            if (leftBracketOffset >= caretOffset) {
+                                return null;
+                            }
+                            List<CsmMember> members = new ArrayList<CsmMember>(cls.getMembers());
+                            for(int i = 0; i < members.size(); i++) {
+                                CsmMember member = members.get(i);
+                                if (member.getStartOffset() <= caretOffset && caretOffset <= member.getEndOffset()) {
+                                    if (CsmKindUtilities.isClass(member)) {
+                                        decl = member;
+                                        continue loop;
+                                    }
+                                }
+                            }
+                            return cls;
+                            //Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
+                            //if (baseClasses != null && baseClasses.size() > 0) {
+                            //    return cls;
+                            //}
+                            //return null;
+                        }
+                        break;
                     }
                 } else {
                     if (decl.getStartOffset() <= caretOffset && caretOffset <= decl.getEndOffset()) {
-                        isApplicable = false;
-                    }
-                    if (CsmKindUtilities.isMethodDefinition(decl)) {
-                        CsmFunction declaration = ((CsmFunctionDefinition)decl).getDeclaration();
-                        if (CsmKindUtilities.isFunctionDeclaration(declaration) && CsmKindUtilities.isClassMember(declaration)) {
-                            CsmMember method = (CsmMember) declaration;
-                            CsmClass cls = method.getContainingClass();
-                            if (cls != null) {
-                                classes.add(cls);
-                            }
-                        }
+                        return null;
                     }
                 }
             }
+            return null;
         }
 
-        private void visitClasses(Set<CsmClass> classes, Collection<? extends CsmOffsetableDeclaration> decls, final int caretOffset) {
-            for(CsmOffsetableDeclaration decl : decls) {
-                if (CsmKindUtilities.isNamespaceDefinition(decl)) {
-                    visitClasses(classes, ((CsmNamespaceDefinition)decl).getDeclarations(), caretOffset);
-                } else if (CsmKindUtilities.isClass(decl)) {
-                    visitClasses(classes, ((CsmClass)decl).getMembers(), caretOffset);
-                    classes.add((CsmClass)decl);
-                }
-            }
-        }
-        
-        private Collection<CsmImplementsMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
-            Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<CsmImplementsMethodCompletionItem>();
+        private Collection<CsmOverrideMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
+            Collection<CsmOverrideMethodCompletionItem> items = new ArrayList<CsmOverrideMethodCompletionItem>();
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
                     if (csmFile != null) {
-                        Set<CsmClass> classes = new HashSet<CsmClass>();
-                        visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
-                        if (isApplicable)  {
-                            if (classes.isEmpty()) {
-                                // probably empty file
-                                // try to find corresponded header
-                                String name = CndPathUtilities.getBaseName(csmFile.getAbsolutePath().toString());
-                                if (name.lastIndexOf('.') > 0) { //NOI18N
-                                    name = name.substring(0, name.lastIndexOf('.')); //NOI18N
-                                }
-                                CsmFile bestInterface = null;
-                                for(CsmInclude incl : csmFile.getIncludes()) {
-                                    CsmFile includeFile = incl.getIncludeFile();
-                                    if (includeFile != null) {
-                                        String inclName = CndPathUtilities.getBaseName(includeFile.getAbsolutePath().toString());
-                                        if (inclName.lastIndexOf('.') > 0) { //NOI18N
-                                            inclName = inclName.substring(0, inclName.lastIndexOf('.')); //NOI18N
-                                        }
-                                        if (name.equals(inclName)) {
-                                            bestInterface = includeFile;
-                                            break;
-                                        }
+                        CsmClass cls = visitDeclarations(csmFile.getDeclarations(), caretOffset);
+                        if (cls != null) {
+                            Set<CsmMethod> virtual = new HashSet<CsmMethod>();
+                            getVirtualMethods(virtual, cls, new HashSet<CsmClass>());
+                            boolean hasDestructor = false;
+                            for(CsmMember member : cls.getMembers()) {
+                                if(CsmKindUtilities.isMethod(member)) {
+                                    if (CsmKindUtilities.isDestructor(member)) {
+                                        hasDestructor = true;
                                     }
-                                }
-                                if (bestInterface != null) {
-                                    visitClasses(classes, bestInterface.getDeclarations(), caretOffset);
+                                    for(CsmMethod m : CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) member)) {
+                                        virtual.remove(m);
+                                    }
                                 }
                             }
-                            for(CsmClass cls : classes) {
-                                for(CsmMember member : cls.getMembers()) {
-                                    if (CsmKindUtilities.isMethodDeclaration(member)) {
-                                        if (((CsmMethod) member).isAbstract()) {
-                                            continue;
-                                        }
-                                        CsmFunction method = (CsmFunction) member;
-                                        CsmFunctionDefinition definition = method.getDefinition();
-                                        if (definition == null) {
-                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
-                                        } else if (method == definition){
-                                            items.add(CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member));
-                                        }
+                            boolean addDestructor = !hasDestructor;
+                            for(CsmMethod m : virtual) {
+                                if (CsmKindUtilities.isDestructor(m)) {
+                                    if (!hasDestructor) {
+                                        items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
+                                        addDestructor = false;
                                     }
+                                } else {
+                                    items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, m));
                                 }
+                            }
+                            if (addDestructor) {
+                                items.add(CsmOverrideMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, null));
                             }
                         }
                     }
@@ -265,6 +252,28 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                 // no completion
             }
             return items;
+        }
+        
+        private void getVirtualMethods(Set<CsmMethod> res, CsmClass cls, Set<CsmClass> antiLoop) {
+            if (antiLoop.contains(cls)) {
+                return;
+            }
+            antiLoop.add(cls);
+            Collection<CsmInheritance> baseClasses = cls.getBaseClasses();
+            for(CsmInheritance inh : baseClasses) {
+                CsmClassifier classifier = inh.getClassifier();
+                if (CsmKindUtilities.isClass(classifier)) {
+                    CsmClass c = (CsmClass) classifier;
+                    getVirtualMethods(res, c, antiLoop);
+                    for(CsmMember member : c.getMembers()) {
+                        if(CsmKindUtilities.isMethod(member)) {
+                            if (CsmVirtualInfoQuery.getDefault().isVirtual((CsmMethod) member)) {
+                                res.add((CsmMethod) member);
+                            }
+                        }
+                    }
+                }
+            }
         }
         
         private boolean init(final BaseDocument doc, final int caretOffset) throws BadLocationException {
@@ -292,13 +301,13 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             return this.queryAnchorOffset >= 0;
         }
 
-        private Collection<CsmImplementsMethodCompletionItem> getFilteredData(Collection<CsmImplementsMethodCompletionItem> data, String prefix) {
-            Collection<CsmImplementsMethodCompletionItem> out;
+        private Collection<CsmOverrideMethodCompletionItem> getFilteredData(Collection<CsmOverrideMethodCompletionItem> data, String prefix) {
+            Collection<CsmOverrideMethodCompletionItem> out;
             if (prefix == null) {
                 out = data;
             } else {
-                List<CsmImplementsMethodCompletionItem> ret = new ArrayList<CsmImplementsMethodCompletionItem>(data.size());
-                for (CsmImplementsMethodCompletionItem itm : data) {
+                List<CsmOverrideMethodCompletionItem> ret = new ArrayList<CsmOverrideMethodCompletionItem>(data.size());
+                for (CsmOverrideMethodCompletionItem itm : data) {
                     if (matchPrefix(itm, prefix)) {
                         ret.add(itm);
                     }
@@ -308,7 +317,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             return out;
         }
 
-        private boolean matchPrefix(CsmImplementsMethodCompletionItem itm, String prefix) {
+        private boolean matchPrefix(CsmOverrideMethodCompletionItem itm, String prefix) {
             return CharSequenceUtils.startsWith(itm.getSortText(), prefix);
         }
     }

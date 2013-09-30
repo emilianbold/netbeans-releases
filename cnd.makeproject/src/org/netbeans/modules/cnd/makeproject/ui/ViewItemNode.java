@@ -233,6 +233,9 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         } else if (valstring.equals("This")) // NOI18N
         {
             return this;
+        } else if (valstring.equals("slowRename")) // NOI18N
+        {
+            return null;
         }
         return super.getValue(valstring);
     }
