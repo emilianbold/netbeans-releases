@@ -39,64 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.ui.impl;
 
-package org.netbeans.modules.maven.execute.cmd;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.apache.maven.execution.ExecutionEvent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.spi.UIExtension;
+import org.netbeans.modules.hudson.ui.api.UI;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mkleint
+ * @author jhavlin
  */
-public class ExecSession extends ExecutionEventObject {
+@ServiceProvider(service = UIExtension.class)
+public class UIExtensionImpl extends UIExtension {
 
-    public final int projectCount;
-    private URL[] mnvcoreurls;
-
-    public ExecSession(int projectCount, ExecutionEvent.Type type) {
-        super(type);
-        this.projectCount = projectCount;
-    }
-    
-    public static ExecutionEventObject create(JSONObject obj, ExecutionEvent.Type t) {
-        Long count = (Long) obj.get("prjcount");
-        int prjCount = -1;
-        if (count != null) {
-            prjCount = count.intValue();
-        }
-        ExecSession toRet = new ExecSession(prjCount, t);
-        JSONArray arr = (JSONArray) obj.get("mvncoreurls");
-        if (arr != null) {
-            List<URL> urlList = new ArrayList<URL>();
-            Iterator it = arr.iterator();
-            while (it.hasNext()) {
-                String url = (String) it.next();
-                try {
-                    urlList.add(new URL(url));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            toRet.setMnvcoreurls(urlList.toArray(new URL[0]));
-        }
-        
-        return toRet;
+    /**
+     * Show a build in the UI - Select the node in Services window.
+     *
+     * @param build Build to show.
+     */
+    @Override
+    public void showInUI(HudsonJobBuild build) {
+        HudsonJob job = build.getJob();
+        UI.selectNode(job.getInstance().getUrl(),
+                job.getName(), Integer.toString(build.getNumber()));
     }
 
-    public URL[] getMnvcoreurls() {
-        return mnvcoreurls;
+    /**
+     * Show a job in the UI - Select the node in Services window.
+     *
+     * @param job Job to show.
+     */
+    @Override
+    public void showInUI(HudsonJob job) {
+        UI.selectNode(job.getInstance().getUrl(), job.getName());
     }
-
-    private void setMnvcoreurls(URL[] mnvcoreurls) {
-        this.mnvcoreurls = mnvcoreurls;
-    }
-    
 }

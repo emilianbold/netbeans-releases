@@ -111,7 +111,16 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         }
 
         if (defined == null) {
-            return Collections.emptyList();
+            if (file.exists()) {
+                List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(file);
+                if (coordinates != null && coordinates2.size() == 1) { //only when non-shaded?
+                    RepositoryForBinaryQueryImpl.Coordinates coord = coordinates2.get(0);
+                    defined = new NBVersionInfo(null, coord.groupId, coord.artifactId, coord.version, null, null, null, null, null);
+                }
+            }
+            if (defined == null) {
+                return Collections.emptyList();
+            }
         }
         if (Boolean.TRUE.equals(cancel.call())) {
             return Collections.emptyList();
@@ -143,7 +152,7 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                     return Collections.emptyList();
                 }
                 if (file.isFile()) {
-                    List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getShadedCoordinates(result);
+                    List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(result);
                     List<URL> res = new ArrayList<URL>();
                     if (coordinates2 != null) {
                         for (RepositoryForBinaryQueryImpl.Coordinates coordinate : coordinates2) {

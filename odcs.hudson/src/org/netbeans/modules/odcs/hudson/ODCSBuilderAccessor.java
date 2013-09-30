@@ -72,7 +72,7 @@ import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
-import org.netbeans.modules.hudson.ui.api.UI;
+import org.netbeans.modules.hudson.api.Utilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
@@ -350,12 +350,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         @Override
         public Action getDefaultAction() {
             String name = this.getStatus().name();
-            Icon icon = ODCSHudsonUtils.centerIcon(UI.getIcon(hudsonJob));
+            Icon icon = ODCSHudsonUtils.centerIcon(Utilities.getIcon(hudsonJob));
             return new AbstractAction(name, icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    UI.selectNode(hudsonInstance.getUrl(),
-                            hudsonJob.getName());
+                    Utilities.showInUI(hudsonJob);
                 }
             };
         }
@@ -452,13 +451,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
         @Override
         public Action getDefaultAction() {
-            Icon icon = ODCSHudsonUtils.centerIcon(UI.getIcon(build));
+            Icon icon = ODCSHudsonUtils.centerIcon(Utilities.getIcon(build));
             return new AbstractAction(build.getDisplayName(), icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    HudsonJob job = build.getJob();
-                    UI.selectNode(job.getInstance().getUrl(),
-                            job.getName(), Integer.toString(build.getNumber()));
+                    Utilities.showInUI(build);
                 }
             };
         }

@@ -39,64 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.spi;
 
-package org.netbeans.modules.maven.execute.cmd;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import org.apache.maven.execution.ExecutionEvent;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Extend Hudson Utilities class with UI-related methods.
  *
- * @author mkleint
+ * {@link Utilities} class contains several UI-related methods. To implement
+ * them, register custom subclasses of this class using {@link ServiceProvider}.
+ *
+ * @author jhavlin
  */
-public class ExecSession extends ExecutionEventObject {
+public abstract class UIExtension {
 
-    public final int projectCount;
-    private URL[] mnvcoreurls;
+    /**
+     * Show a build in the UI.
+     *
+     * @param build Hudson Build to show.
+     */
+    public abstract void showInUI(HudsonJobBuild build);
 
-    public ExecSession(int projectCount, ExecutionEvent.Type type) {
-        super(type);
-        this.projectCount = projectCount;
-    }
-    
-    public static ExecutionEventObject create(JSONObject obj, ExecutionEvent.Type t) {
-        Long count = (Long) obj.get("prjcount");
-        int prjCount = -1;
-        if (count != null) {
-            prjCount = count.intValue();
-        }
-        ExecSession toRet = new ExecSession(prjCount, t);
-        JSONArray arr = (JSONArray) obj.get("mvncoreurls");
-        if (arr != null) {
-            List<URL> urlList = new ArrayList<URL>();
-            Iterator it = arr.iterator();
-            while (it.hasNext()) {
-                String url = (String) it.next();
-                try {
-                    urlList.add(new URL(url));
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            toRet.setMnvcoreurls(urlList.toArray(new URL[0]));
-        }
-        
-        return toRet;
-    }
-
-    public URL[] getMnvcoreurls() {
-        return mnvcoreurls;
-    }
-
-    private void setMnvcoreurls(URL[] mnvcoreurls) {
-        this.mnvcoreurls = mnvcoreurls;
-    }
-    
+    /**
+     * Show a job in the UI.
+     *
+     * @param job Hudson Job to show.
+     */
+    public abstract void showInUI(HudsonJob job);
 }
