@@ -1198,6 +1198,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         public SectionImpl(SectionNode node) {
             this.title = node.getDisplayName();
             this.node = node;
+            this.node.setIndentChildren(false);
 
             // XXX Hacking the SectioNode/treelist so that instead of the actuall node, 
             // its children are shown as roots in the list (kind of not show root nodes mode)
