@@ -57,7 +57,6 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
-import org.netbeans.modules.maven.j2ee.ui.wizard.ServerSelectionHelper;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.openide.util.HelpCtx;
@@ -69,11 +68,10 @@ import org.openide.util.NbBundle.Messages;
  */
 public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCustomizer, HelpCtx.Provider {
 
-    protected Project project;
-    protected ModelHandle2 handle;
+    protected final Project project;
+    protected final ModelHandle2 handle;
     protected CheckBoxUpdater deployOnSaveUpdater;
     protected ComboBoxUpdater<Server> serverUpdater;
-    protected ServerSelectionHelper helper;
 
 
     public BaseRunCustomizer(ModelHandle2 handle, Project project) {
