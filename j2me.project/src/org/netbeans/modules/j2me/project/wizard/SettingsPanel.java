@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,30 +40,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2me.project;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.ListCellRenderer;
+package org.netbeans.modules.j2me.project.wizard;
 
-/**
- *
- * @author Roman Svitanic
- */
-public class J2MEProjectUtils {
+import javax.swing.JPanel;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 
-    public static ComboBoxModel createPlatformComboBoxModel() {
-        return new DefaultComboBoxModel();
-    }
 
-    public static ListCellRenderer createPlatformListCellRenderer() {
-        return new DefaultListCellRenderer();
-    }
-    
+abstract class SettingsPanel extends JPanel {
+
+    abstract void store (WizardDescriptor settings);
+
+    abstract void read (WizardDescriptor settings);
+
+    abstract boolean valid (WizardDescriptor settings);
+
+    abstract void validate (WizardDescriptor settings) throws WizardValidationException;
 }

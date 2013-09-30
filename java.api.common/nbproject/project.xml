@@ -297,6 +297,7 @@
                 <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.javafx.project</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
+                <friend>org.netbeans.modules.j2me.project</friend>
                 <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.maven</friend>

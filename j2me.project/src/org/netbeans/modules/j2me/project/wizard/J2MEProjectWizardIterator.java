@@ -62,6 +62,8 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     
     public static enum WizardType { APPLICATION, EXISTING };
     
+    static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
+    
     private static final String MANIFEST_FILE = "manifest.mf"; //NOI18N
     private static final long serialVersionUID = 1L;
     private WizardType type;
@@ -180,7 +182,9 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     private WizardDescriptor.Panel[] createPanels() {
         switch (type) {
             default:
-                return null;
+                return new WizardDescriptor.Panel[]{
+                    new PanelConfigureProject(type)
+                };
         }
     }
 
