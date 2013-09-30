@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -179,9 +180,12 @@ public class JFXActionProvider implements ActionProvider {
                     }
 
                     collectStartupExtenderArgs(props, command, context);
-                    collectAdditionalBuildProperties(props, command, context);
-
-                    ActionUtils.runTarget(buildFo, targets.toArray(new String[targets.size()]), props).addTaskListener(new TaskListener() {
+                    final Set<String> concealedProperties = collectAdditionalBuildProperties(props, command, context);
+                    ActionUtils.runTarget(
+                            buildFo,
+                            targets.toArray(new String[targets.size()]),
+                            props,
+                            concealedProperties).addTaskListener(new TaskListener() {
                         @Override public void taskFinished(Task task) {
                             listener.finished(((ExecutorTask) task).result() == 0);
                         }
@@ -278,10 +282,12 @@ public class JFXActionProvider implements ActionProvider {
         }
     }
 
-    private void collectAdditionalBuildProperties(
+    @NonNull
+    private Set<String> collectAdditionalBuildProperties(
         @NonNull final Map<? super String, ? super String> p,
         @NonNull final String command,
         @NonNull final Lookup context) {
+        final Set<String> concealedProperties = new HashSet<>();
         for (J2SEBuildPropertiesProvider pp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
             final Map<String,String> contrib = pp.createAdditionalProperties(command, context);
             assert contrib != null;
@@ -295,7 +301,20 @@ public class JFXActionProvider implements ActionProvider {
                     });
             }
             p.putAll(contrib);
+            final Set<String> concealedContrib = pp.createConcealedProperties(command, context);
+            assert concealedContrib != null;
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(
+                    Level.FINE,
+                    "J2SEBuildPropertiesProvider: {0} added following concealed properties: {1}",   //NOI18N
+                    new Object[]{
+                        pp.getClass(),
+                        concealedContrib
+                    });
+            }
+            concealedProperties.addAll(concealedContrib);
         }
+        return Collections.unmodifiableSet(concealedProperties);
     }
     
     private List<String> runJvmargsIde(String command, Lookup context) {
