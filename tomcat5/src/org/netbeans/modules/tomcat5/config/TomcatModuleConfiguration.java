@@ -51,11 +51,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -71,10 +73,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanCon
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Context;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
+import org.netbeans.modules.tomcat5.config.gen.Tomee;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -101,20 +105,25 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     
     private final J2eeModule j2eeModule;
     private final TomcatVersion tomcatVersion;
+    private final TomEEVersion tomeeVersion;
     
     private DataObject contextDataObject;
     private final File contextXml;
+    private final File resourcesXml;
     private Context context;
+    private Tomee resources;
     
     private static final String ATTR_PATH = "path"; // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.tomcat5"); // NOI18N
     
     /** Creates a new instance of TomcatModuleConfiguration */
-    public TomcatModuleConfiguration(J2eeModule j2eeModule, TomcatVersion tomcatVersion) {
+    public TomcatModuleConfiguration(J2eeModule j2eeModule, TomcatVersion tomcatVersion, TomEEVersion tomeeVersion) {
         this.j2eeModule = j2eeModule;
         this.tomcatVersion = tomcatVersion;
+        this.tomeeVersion = tomeeVersion;
         this.contextXml = j2eeModule.getDeploymentConfigurationFile("META-INF/context.xml"); // NOI18N
+        this.resourcesXml = j2eeModule.getDeploymentConfigurationFile("WEB-INF/resources.xml"); // NOI18N
         init(contextXml);
     }
     
@@ -168,22 +177,57 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                 try {
                     context = Context.createGraph(contextXml);
                 } catch (IOException e) {
-                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlReadFail", contextXml.getPath());
+                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlReadFail", contextXml.getPath());
                     throw new ConfigurationException(msg, e);
                 } catch (RuntimeException e) {
                     // context.xml is not parseable
-                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlBroken", contextXml.getPath());
+                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlBroken", contextXml.getPath());
                     throw new ConfigurationException(msg, e);
                 }
             } else {
                 // create context.xml if it does not exist yet
                 context = genereateContext();
-                writefile(contextXml);
+                TomcatModuleConfiguration.<Context>writeToFile(contextXml, new ConfigurationValue<Context>() {
+
+                    @Override
+                    public Context getValue() throws ConfigurationException {
+                        return getContext();
+                    }
+                });
             }
         }
         return context;
     }
-    
+
+    public synchronized Tomee getResources(final boolean create) throws ConfigurationException {
+        if (resources == null) {
+            if (resourcesXml.exists()) {
+                // load configuration if already exists
+                try {
+                    resources = Tomee.createGraph(resourcesXml);
+                } catch (IOException e) {
+                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlReadFail", resourcesXml.getPath());
+                    throw new ConfigurationException(msg, e);
+                } catch (RuntimeException e) {
+                    // context.xml is not parseable
+                    String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlBroken", resourcesXml.getPath());
+                    throw new ConfigurationException(msg, e);
+                }
+            } else if (create) {
+                // create resources.xml if it does not exist yet
+                resources = genereateResources();
+                TomcatModuleConfiguration.<Tomee>writeToFile(resourcesXml, new ConfigurationValue<Tomee>() {
+
+                    @Override
+                    public Tomee getValue() throws ConfigurationException {
+                        return getResources(create);
+                    }
+                });
+            }
+        }
+        return resources;
+    }
+
     /**
      * Return context path.
      * 
@@ -214,6 +258,35 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                     if (name != null && username != null && url != null && driverClassName != null) {
                         // return the datasource only if all the needed params are non-null except the password param
                         result.add(new TomcatDatasource(username, url, password, name, driverClassName));
+                    }
+                }
+            }
+            if (tomeeVersion != null) {
+                Tomee actualResources = getResources(false);
+                if (actualResources != null) {
+                    int resourcesLength = actualResources.getTomeeResource().length;
+                    for (int i = 0; i < resourcesLength; i++) {
+                        String type = actualResources.getTomeeResourceType(i);
+                        if ("javax.sql.DataSource".equals(type)) { // NOI18N
+
+                            String data = actualResources.getTomeeResource(i);
+                            Properties props = new Properties();
+                            try {
+                                props.load(new StringReader(data));
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+
+                            String name = actualResources.getTomeeResourceId(i);
+                            String username = props.getProperty("userName"); // NOI18N
+                            String url = props.getProperty("jdbcUrl"); // NOI18N
+                            String password = props.getProperty("password"); // NOI18N
+                            String driverClassName = props.getProperty("jdbcDriver"); // NOI18N
+                            if (name != null && username != null && url != null && driverClassName != null) {
+                                // return the datasource only if all the needed params are non-null except the password param
+                                result.add(new TomcatDatasource(username, url, password, name, driverClassName));
+                            }
+                        }
                     }
                 }
             }
@@ -378,12 +451,13 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         return j2eeModule;
     }
     
+    @Override
     public void save (OutputStream os) throws ConfigurationException {
         Context ctx = getContext();
         try {
             ctx.write(os);
         } catch (IOException ioe) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", contextXml.getPath());
             throw new ConfigurationException(msg, ioe);
         }
     }
@@ -411,6 +485,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             newContext.setAntiJARLocking("true"); // NOI18N
         }
         return newContext;
+    }
+
+    private Tomee genereateResources() {
+        return new Tomee();
     }
     
     /**
@@ -467,10 +545,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                 context = newContext;
             }
         } catch (BadLocationException e) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", contextXml.getPath());
             throw new ConfigurationException(msg, e);
         } catch (IOException e) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", contextXml.getPath());
             throw new ConfigurationException(msg, e);
         }
     }
@@ -500,8 +578,8 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                 ? contextPath.substring(1).replace('/', '_').concat(".") // NOI18N
                 : "ROOT.";   // NOI18N
     }
-    
-    private void writefile(final File file) throws ConfigurationException {
+
+    private static <T extends BaseBean> void writeToFile(final File file, final ConfigurationValue<T> store) throws ConfigurationException {
         assert file != null : "File to write can't be null"; // NOI18N
         assert file.getParentFile() != null : "File parent folder can't be null"; // NOI18N
 
@@ -517,7 +595,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             }
 
             final FileObject folder = cfolder;
-            final ConfigurationException anonClassException[] = new ConfigurationException[]{null};
+            final ConfigurationException anonClassException[] = new ConfigurationException[] {null};
             FileSystem fs = folder.getFileSystem();
             fs.runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
@@ -526,9 +604,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                     if (configFO == null) {
                         configFO = folder.createData(name);
                     }
-                    Context ctx = null;
-                    try{
-                        ctx = getContext();
+                    T ctx = null;
+                    try {
+                        ctx = store.getValue();
                     } catch (ConfigurationException e) {
                         // propagate exception out to the outer class
                         anonClassException[0] = e;
@@ -553,11 +631,11 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                 throw anonClassException[0];
             }
         } catch (IOException e) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", file.getPath());
             throw new ConfigurationException(msg, e);
         }
     }
-    
+
     /**
      * Replace the content of the document by the graph.
      */
@@ -675,5 +753,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
      
     private interface ContextModifier {
         void modify(Context context);
+    }
+
+    private interface ConfigurationValue<T> {
+        T getValue() throws ConfigurationException;
     }
 }
