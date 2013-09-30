@@ -46,8 +46,6 @@ import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JCheckBox;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.Bundle.*;
 
