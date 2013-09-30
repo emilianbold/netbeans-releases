@@ -252,6 +252,8 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         CsmFunctionDefinition definition = method.getDefinition();
                                         if (definition == null) {
                                             items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
+                                        } else if (method == definition){
+                                            items.add(CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member));
                                         }
                                     }
                                 }
