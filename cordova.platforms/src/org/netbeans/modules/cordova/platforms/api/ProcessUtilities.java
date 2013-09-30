@@ -105,6 +105,13 @@ public final class ProcessUtilities {
         if (avdString.toString().isEmpty()) {
             LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters)); // NOI18N
         }
+        if (executable.endsWith("ios-sim") && call.exitValue() > 0) {
+            for (String p:parameters) {
+                if (p.endsWith("MobileSafari.app")) {
+                    throw new IllegalStateException();
+                }
+            }
+        }
         return avdString.toString();
     }
     
