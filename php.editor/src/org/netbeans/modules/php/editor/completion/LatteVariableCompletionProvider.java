@@ -53,7 +53,6 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Model;
@@ -78,11 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CompletionProvider.class, path = "Latte/Completion/Variables") //NOI18N
 public class LatteVariableCompletionProvider implements CompletionProvider {
     private static final Logger LOGGER = Logger.getLogger(LatteVariableCompletionProvider.class.getName());
-    private static final String DOTTED_RELATIVE_PRESENTER_PATH = "../../presenters/"; //NOI18N
-    private static final String COMMON_RELATIVE_PRESENTER_PATH = "../" + DOTTED_RELATIVE_PRESENTER_PATH; //NOI18N
     private static final String PRESENTER_CLASS_SUFFIX = "Presenter"; //NOI18N
-    private static final String PRESENTER_FILE_SUFFIX = PRESENTER_CLASS_SUFFIX + ".php"; //NOI18N
-    private static final String LATTE_EXTENSION = "latte"; //NOI18N
     private static final String ACTION_METHOD_PREFIX = "action"; //NOI18N
     private static final String RENDER_METHOD_PREFIX = "render"; //NOI18N
     private static final String STARTUP_METHOD = "startup"; //NOI18N
@@ -95,7 +90,7 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
     @Override
     public Set<String> getItems(FileObject templateFile, String variablePrefix) {
         result = new HashSet<>();
-        if (isView(templateFile)) {
+        if (LatteUtils.isView(templateFile)) {
             this.templateFile = templateFile;
             this.variablePrefix = variablePrefix;
             processTemplateFile(templateFile);
@@ -104,7 +99,7 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
     }
 
     private void processTemplateFile(FileObject templateFile) {
-        FileObject presenterFile = getPresenterFile(templateFile);
+        FileObject presenterFile = LatteUtils.getPresenterFile(templateFile);
         if (presenterFile != null) {
             try {
                 parsePresenter(presenterFile);
@@ -129,27 +124,6 @@ public class LatteVariableCompletionProvider implements CompletionProvider {
                 }
             }
         });
-    }
-
-    private static boolean isView(FileObject templateFile) {
-        assert templateFile != null;
-        return LATTE_EXTENSION.equals(templateFile.getExt());
-    }
-
-    private static FileObject getPresenterFile(FileObject templateFile) {
-        String templateName = templateFile.getName();
-        String presenterName;
-        String relativePath;
-        if (templateName.contains(".")) { //NOI18N
-            String[] parts = templateName.split("\\."); //NOI18N
-            assert parts.length > 0;
-            presenterName = parts[0];
-            relativePath = DOTTED_RELATIVE_PRESENTER_PATH;
-        } else {
-            presenterName = templateFile.getParent().getName();
-            relativePath = COMMON_RELATIVE_PRESENTER_PATH;
-        }
-        return templateFile.getFileObject(relativePath + StringUtils.capitalize(presenterName) + PRESENTER_FILE_SUFFIX);
     }
 
     private static String extractActionName(FileObject templateFile) {
