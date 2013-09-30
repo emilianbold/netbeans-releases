@@ -1785,10 +1785,8 @@
                         var f2 = res.createFileSet();
                         f2.setProject(project);
                         f2.setDir(new java.io.File(pdir));
-                        var i2a = new String(project.getProperty("jfx.deployment.jar"));
                         var i2b = new String(project.getProperty("pp_jar_fs2"));
                         var e2c = new String(project.getProperty("pp_jar_fs1"));
-                        f2.setIncludes(i2a);
                         f2.setIncludes(i2b);
                         f2.setExcludes(e2c);
                         f2.setRequiredFor("startup");
@@ -1804,9 +1802,7 @@
                         var fn = res.createFileSet();
                         fn.setProject(project);
                         fn.setDir(new java.io.File(pdir));
-                        var ia = new String(project.getProperty("jfx.deployment.jar"));
                         var ib = new String(project.getProperty("pp_jar_fs2"));
-                        fn.setIncludes(ia);
                         fn.setIncludes(ib);
                         fn.setRequiredFor("startup");
                         var lazyjars = getLazyJars();

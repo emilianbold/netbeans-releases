@@ -45,6 +45,8 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -129,19 +131,26 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
     }
     
     @Messages({
-        "OpenProjectMenu.Open_All_Projects=&Open All Projects"
+        "OpenProjectMenu.Open_All_Projects=&Open All Projects",
+        "OpenProjectMenu.Nothing=Nothing"
     })
     @Override public JMenuItem getPopupPresenter() {
         
         final JMenu menu = new JMenu(LBL_OpenSubprojectsAction_Name());
         Node [] activatedNodes = getActivatedNodes();
+        boolean existSubProjects = false;
         if(activatedNodes != null) {
             for( int i = 0; i < activatedNodes.length; i++ ) {
                 Project p = activatedNodes[i].getLookup().lookup(Project.class);
                 if ( p != null ) {
                     SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                     if(spp != null) {
-                        for(final Project prjIter:spp.getSubprojects()) {
+                        Set<Project> subProjects = new HashSet<Project>();
+                        fillRecursiveSubProjects(p, subProjects);
+                        if(!subProjects.isEmpty()) {
+                            existSubProjects = true;
+                        }
+                        for(final Project prjIter:subProjects) {
                             JMenuItem selectPrjAction = new JMenuItem(new AbstractAction() {
 
                                 @Override
@@ -156,25 +165,43 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
                 }
             }
         }
-        final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
+        if(existSubProjects) {
+            final JMenuItem openAllProjectsItem = new JMenuItem(new AbstractAction() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Node [] activatedNodes = getActivatedNodes();
-                if(activatedNodes != null) {
-                    for( int i = 0; i < activatedNodes.length; i++ ) {
-                        Project p = activatedNodes[i].getLookup().lookup(Project.class);
-                        if ( p != null ) {
-                            OpenProjectList.getDefault().open(new Project[] {p}, true, true);
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Node [] activatedNodes = getActivatedNodes();
+                    if(activatedNodes != null) {
+                        for( int i = 0; i < activatedNodes.length; i++ ) {
+                            Project p = activatedNodes[i].getLookup().lookup(Project.class);
+                            if ( p != null ) {
+                                OpenProjectList.getDefault().open(new Project[] {p}, true, true);
+                            }
                         }
                     }
                 }
-            }
-        });
-        Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
-        menu.add(openAllProjectsItem);
+            });
+            Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
+            menu.add(openAllProjectsItem);
+        } else {
+            JMenuItem nothingItem = new JMenuItem(OpenProjectMenu_Nothing());
+            nothingItem.setEnabled(false);
+            menu.add(nothingItem);
+        }
             
         return menu;
+    }
+    
+    private void fillRecursiveSubProjects(Project p, Set<Project> subProjects) {
+        SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
+        if(spp.getSubprojects() == null 
+                || (spp.getSubprojects() != null && spp.getSubprojects().isEmpty())) {
+            return;
+        } 
+        subProjects.addAll(spp.getSubprojects());
+        for(Project prjIter:spp.getSubprojects()) {
+            fillRecursiveSubProjects(prjIter, subProjects);
+        }
     }
     
 }

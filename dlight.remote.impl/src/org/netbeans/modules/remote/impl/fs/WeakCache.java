@@ -184,7 +184,7 @@ public class WeakCache<K, V> {
         return map.size();
     }
 
-    public void cleanDeadEntries() {
+    public void tryCleaningDeadEntries() {
         if (lock.tryLock()) {
             try {
                 Ref<K, V> ref;

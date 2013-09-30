@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
 import org.openide.util.Lookup;
 
@@ -60,7 +60,7 @@ public final class CsmTypeResolver {
      * @param instantiations - context
      * @return type
      */
-    public static CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+    public static CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         return DEFAULT.resolveType(expression, instantiations);
     }
     
@@ -99,7 +99,7 @@ public final class CsmTypeResolver {
         }
         
         @Override
-        public CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+        public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
             return getDelegate().resolveType(expression, instantiations);
         }
     }

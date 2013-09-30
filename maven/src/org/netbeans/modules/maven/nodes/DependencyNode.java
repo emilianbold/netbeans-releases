@@ -587,7 +587,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,artifact.getId()), 1);
             online.resolve(sources, prjimpl.getOriginalMavenProject().getRemoteArtifactRepositories(), prjimpl.getEmbedder().getLocalRepository());
             if (artifact.getFile() != null && artifact.getFile().exists()) {
-                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(artifact.getFile());
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getJarMetadataCoordinates(artifact.getFile());
                 if (coordinates != null) {
                     for (Coordinates coordinate : coordinates) {
                         sources = prjimpl.getEmbedder().createArtifactWithClassifier(
