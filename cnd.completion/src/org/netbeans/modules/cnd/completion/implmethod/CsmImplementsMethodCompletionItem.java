@@ -46,15 +46,22 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -66,15 +73,16 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.completion.spi.dynhelp.CompletionDocumentationProvider;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -93,13 +101,15 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     private final String appendItemText;
     private final String htmlItemText;
     private final CsmMember item;
-    private final CsmCompoundStatement body;
     private final ImageIcon icon;
     private final String right;
     private final boolean isExtractBody;
+    private final int startReplacement;
+    private final int lengthReplacement;
 
     private CsmImplementsMethodCompletionItem(CsmMember item, int substitutionOffset, int priority,
-            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right, boolean isExtractBody) {
+            String sortItemText, String appendItemText, String htmlItemText, boolean supportInstantSubst, String right,
+            boolean isExtractBody, int startReplacement, int lengthReplacement) {
         this.substitutionOffset = substitutionOffset;
         this.priority = priority;
         this.supportInstantSubst = supportInstantSubst;
@@ -112,11 +122,8 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                                                       0, 7)));
         this.right = right;
         this.isExtractBody = isExtractBody;
-        if (isExtractBody) {
-            body = ((CsmFunctionDefinition)item).getBody();
-        } else {
-            body = null;
-        }
+        this.startReplacement = startReplacement;
+        this.lengthReplacement = lengthReplacement;
     }
 
     public static CsmImplementsMethodCompletionItem createImplementItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
@@ -124,16 +131,62 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String appendItemText = createAppendText(item, cls, "{\n\n}"); //NOI18N
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "implement.txt")); //NOI18N
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false);
+        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, false, 0, 0);
     }
 
     public static CsmImplementsMethodCompletionItem createExtractBodyItem(int substitutionOffset, int priority, CsmClass cls, CsmMember item) {
         String sortItemText = item.getName().toString();
-        CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
-        String appendItemText = createAppendText(item, cls, body.getText().toString());
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText, true);
+        CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
+        if (CsmKindUtilities.isConstructor(item)) {
+            CsmConstructor con = (CsmConstructor) item;
+            Collection<CsmExpression> initializerList = con.getInitializerList();
+            if (initializerList != null && initializerList.size() > 0) {
+                final int methodStartOffset = item.getStartOffset();
+                final int startOffset = initializerList.iterator().next().getStartOffset();
+                final AtomicInteger trueBodyStratOffset = new AtomicInteger(0);
+                CsmFile containingFile = item.getContainingFile();
+                Document document = CsmUtilities.getDocument(containingFile);
+                if (document instanceof BaseDocument) {
+                    final BaseDocument classDoc = (BaseDocument) document;
+                    classDoc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            TokenHierarchy<? extends Document> hi = TokenHierarchy.get(classDoc);
+                            TokenSequence<?> ts = hi.tokenSequence();
+                            ts.move(startOffset);
+                            while (ts.movePrevious()) {
+                                Token<?> token = ts.token();
+                                if (ts.offset() < methodStartOffset) {
+                                    break;
+                                }
+                                if (CppTokenId.COLON.equals(token.id())) {
+                                    trueBodyStratOffset.set(ts.offset());
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    if (trueBodyStratOffset.get() > 0) {
+                        String bodyText;
+                        try {
+                            bodyText = "\n"+classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
+                            String appendItemText = createAppendText(item, cls, bodyText);
+                            return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+                                    true, trueBodyStratOffset.get(), bodyText.length()-1);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                            
+                }
+                return null;
+            }
+        }
+        String appendItemText = createAppendText(item, cls, body.getText().toString());
+        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+                true, body.getStartOffset(), body.getText().length());
     }
 
     private static String createDisplayName(CsmMember item,  CsmClass parent, String operation) {
@@ -366,8 +419,8 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                     @Override
                     public void run() {
                         try {
-                            classDoc.remove(body.getStartOffset(), body.getText().length());
-                            classDoc.insertString(body.getStartOffset(), ";", null); // NOI18N
+                            classDoc.remove(startReplacement, lengthReplacement);
+                            classDoc.insertString(startReplacement, ";", null); // NOI18N
                         } catch (BadLocationException e) {
                             // Can't update
                         }
