@@ -503,7 +503,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 
         private @NonNull synchronized FileObject[] getShadedJarSources() {
             try {
-                List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
+                List<Coordinates> coordinates = getJarMetadataCoordinates(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<FileObject> fos = new ArrayList<FileObject>();
                 if (coordinates != null) {
@@ -535,7 +535,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
     }
 
-    public static List<Coordinates> getShadedCoordinates(File binaryFile) {
+    public static List<Coordinates> getJarMetadataCoordinates(File binaryFile) {
         if (binaryFile == null || !binaryFile.exists() || !binaryFile.isFile()) {
             return null;
         }
@@ -558,10 +558,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     }
                 }
             }
-            if (toRet.size() > 1) {
+            if (toRet.size() > 0) {
                 return toRet;
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             LOG.log(Level.INFO, "error while examining binary " + binaryFile, ex);
         } finally {
             if (zip != null) {
@@ -759,7 +759,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 
         private synchronized URL[] checkShadedMultiJars() {
             try {
-                List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
+                List<Coordinates> coordinates = getJarMetadataCoordinates(Utilities.toFile(binary.toURI()));
                 File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
                 List<URL> urls = new ArrayList<URL>();
                 if (coordinates != null) {
