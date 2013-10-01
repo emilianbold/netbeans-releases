@@ -45,7 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -82,6 +84,7 @@ import org.openide.util.RequestProcessor;
 public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener, DeployOnSaveListener {
 
     private static final RequestProcessor RP = new RequestProcessor("Maven Copy on Save", 5);
+    private static final List<String> staticResources = new ArrayList<>();
     private final Project project;
     private final FileChangeListener listener;
     
@@ -89,6 +92,14 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
     private FileObject webInf;
     private boolean active;
 
+
+    static {
+        staticResources.add("html");  //NOI18N
+        staticResources.add("jsp");   //NOI18N
+        staticResources.add("xhtml"); //NOI18N
+        staticResources.add("js");    //NOI18N
+        staticResources.add("css");   //NOI18N
+    };
 
     public WebCopyOnSave(Project project) {
         super(project);
@@ -287,7 +298,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         }
 
         private boolean isStaticResource(String fileExt) {
-            if ("html".equals(fileExt) || "jsp".equals(fileExt) || "xhtml".equals(fileExt)) { //NOI18N
+            if (staticResources.contains(fileExt)) {
                 return true;
             }
             return false;

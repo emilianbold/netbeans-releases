@@ -43,12 +43,14 @@ package org.netbeans.modules.php.latte.csl;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
+import org.netbeans.modules.php.latte.hints.LatteHintsProvider;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
 import org.netbeans.modules.php.latte.parser.LatteParser;
@@ -105,6 +107,16 @@ public class LatteLanguage extends DefaultLanguageConfig {
     @Override
     public boolean isUsingCustomEditorKit() {
         return true;
+    }
+
+    @Override
+    public boolean hasHintsProvider() {
+        return true;
+    }
+
+    @Override
+    public HintsProvider getHintsProvider() {
+        return new LatteHintsProvider();
     }
 
 }

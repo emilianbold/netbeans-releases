@@ -196,7 +196,7 @@ public class WebServerTest extends NbTestCase {
 
     }
 
-    private static class TestProject implements Project {
+    static class TestProject implements Project {
 
         private FileObject fo;
 
@@ -216,7 +216,7 @@ public class WebServerTest extends NbTestCase {
 
     }
 
-    private static class FileOwnerQueryImpl implements FileOwnerQueryImplementation {
+    static class FileOwnerQueryImpl implements FileOwnerQueryImplementation {
 
         private Project testProject1;
         private Project testProject2;

@@ -434,9 +434,23 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public synchronized boolean isTomEE() {
+        return getTomEEVersion() != null;
+    }
+
+    /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
+    public String libFolder() {
+        // Tomcat 5.x and 6.0 uses different lib folder
+        return isTomcat50() || isTomcat55() ? "common/lib" : "lib"; // NOI18N
+    }
+
+    public TomcatVersion getTomcatVersion() {
+        return tomcatVersion;
+    }
+
+    public synchronized TomEEVersion getTomEEVersion() {
         if (tomEEChecked) {
             LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
-            return tomEEVersion != null;
+            return tomEEVersion;
         }
         assert tomEEWarListener == null;
 
@@ -465,20 +479,6 @@ public class TomcatManager implements DeploymentManager {
         }
 
         LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
-        return tomEEVersion != null;
-    }
-
-    /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
-    public String libFolder() {
-        // Tomcat 5.x and 6.0 uses different lib folder
-        return isTomcat50() || isTomcat55() ? "common/lib" : "lib"; // NOI18N
-    }
-
-    public TomcatVersion getTomcatVersion() {
-        return tomcatVersion;
-    }
-
-    public TomEEVersion getTomEEVersion() {
         return tomEEVersion;
     }
 
@@ -755,7 +755,7 @@ public class TomcatManager implements DeploymentManager {
         ensurePortsUptodate();
         return tp.getShutdownPort();
     }
-
+    
     private void ensurePortsUptodate() {
         File serverXml = tp.getServerXml();
         long timestamp = -1;

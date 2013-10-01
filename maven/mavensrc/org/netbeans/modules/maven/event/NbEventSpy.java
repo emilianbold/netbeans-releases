@@ -42,15 +42,20 @@
 
 package org.netbeans.modules.maven.event;
 
+import java.net.URL;
 import org.apache.maven.eventspy.AbstractEventSpy;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.lifecycle.LifecycleExecutionException;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.plugin.descriptor.MojoDescriptor;
+import org.apache.maven.plugin.descriptor.PluginDescriptor;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.Base64;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
@@ -113,6 +118,19 @@ public class NbEventSpy extends AbstractEventSpy {
                 if (ExecutionEvent.Type.SessionStarted.equals(ex.getType()) || ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
                     //only in session events
                     root.put("prjcount", ex.getSession().getProjects().size());
+                    if (ExecutionEvent.Type.SessionStarted.equals(ex.getType())) {
+                        ClassRealm cr = ex.getSession().getContainer().getContainerRealm();
+                        if (cr != null) {
+                            JSONArray array = new JSONArray();
+                            do {
+                                URL[] urls = cr.getURLs();
+                                for (URL url : urls) {
+                                    array.add(url.toExternalForm());
+                                }
+                            } while ((cr = cr.getParentRealm()) != null);
+                            root.put("mvncoreurls", array);
+                        }
+                    }
                 }
                 if (ex.getMojoExecution() != null && 
                         (ExecutionEvent.Type.MojoStarted.equals(ex.getType()) ||
@@ -154,6 +172,23 @@ public class NbEventSpy extends AbstractEventSpy {
                                 loc.put("id", mid);
                             }
                             mojo.put("loc", loc);
+                        }
+                    }
+                    //used to go to sources + debug build actions
+                    MojoDescriptor md = me.getMojoDescriptor();
+                    if (md != null) {
+                        mojo.put("impl", md.getImplementation());
+                        PluginDescriptor pd = md.getPluginDescriptor();
+                        if (pd != null) {
+                            ClassRealm cr = pd.getClassRealm();
+                            if (cr != null) {
+                                URL[] urls = cr.getURLs();
+                                JSONArray array = new JSONArray();
+                                for (URL url : urls) {
+                                    array.add(url.toExternalForm());
+                                }
+                                mojo.put("urls", array);
+                            }
                         }
                     }
                     root.put("mojo", mojo);    

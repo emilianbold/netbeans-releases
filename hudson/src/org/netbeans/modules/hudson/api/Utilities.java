@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
@@ -56,6 +57,9 @@ import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.FAILURE;
 import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.SUCCESS;
 import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.UNSTABLE;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.spi.UIExtension;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.w3c.dom.Element;
 
@@ -157,5 +161,72 @@ public class Utilities {
             default:
                 return HudsonJob.Color.grey;
         }
+    }
+
+    /**
+     * Return icon for a Hudson job.
+     *
+     * @param job Job to get icon for.
+     * @return Icon representing current state of the job.
+     */
+    public static Icon getIcon(HudsonJob job) {
+        return makeIcon(job.getColor().iconBase());
+    }
+
+    /**
+     * Return icon for a Hudson Job build.
+     *
+     * @param build Build to get icon for.
+     * @return Icon representing current state of the build.
+     */
+    public static Icon getIcon(HudsonJobBuild build) {
+        return makeIcon(Utilities.getColorForBuild(build).iconBase());
+    }
+
+    /**
+     * Make an icon for the provided iconBase.
+     */
+    private static Icon makeIcon(String iconBase) {
+        return ImageUtilities.image2Icon(
+                ImageUtilities.loadImageIcon(iconBase, false).getImage());
+    }
+
+    /**
+     * Show a build in the UI.
+     *
+     * A UI extendsion is needed to perform this method. If no extension is
+     * registered, this method does nothing. See {@link UIExtension}.
+     *
+     * @param build Hudson Build to show.
+     */
+    public static void showInUI(HudsonJobBuild build) {
+        UIExtension ext = findUIExtension();
+        if (ext != null) {
+            ext.showInUI(build);
+        }
+    }
+
+    /**
+     * Show a job in the UI.
+     *
+     * A UI extendsion is needed to perform this method. If no extension is
+     * registered, this method does nothing. See {@link UIExtension}.
+     *
+     * @param job Hudson Job to show.
+     */
+    public static void showInUI(HudsonJob job) {
+        UIExtension ext = findUIExtension();
+        if (ext != null) {
+            ext.showInUI(job);
+        }
+    }
+
+    /**
+     * Find UI extension.
+     *
+     * @return The UI extension if registered, null otherwise.
+     */
+    private static UIExtension findUIExtension() {
+        return Lookup.getDefault().lookup(UIExtension.class);
     }
 }

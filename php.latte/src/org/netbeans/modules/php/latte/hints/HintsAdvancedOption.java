@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,66 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.ui.util;
+package org.netbeans.modules.php.latte.hints;
 
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
+import org.netbeans.modules.php.latte.csl.LatteLanguage;
+import org.netbeans.spi.options.AdvancedOption;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Martin Janicek
+ * @author phrebejk, Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class DeployOnSaveCheckBoxUpdater extends CheckBoxUpdater {
+public class HintsAdvancedOption extends AdvancedOption {
+    OptionsPanelController panelController;
 
-    private final Project project;
-    private final boolean defaultValue;
-
-    private DeployOnSaveCheckBoxUpdater(Project project, JCheckBox deployOnSaveCheckBox) {
-        super(deployOnSaveCheckBox);
-        this.project = project;
-        this.defaultValue = MavenProjectSupport.isDeployOnSave(project);
-    }
-
-
-    /**
-     * Factory method encapsulating CheckBoxUpdater creation. Typically client don't
-     * want to do anything with a new instance so this makes more sense than creating
-     * it using "new" keyword.
-     *
-     * @param project project for which we want to change DoS
-     * @param deployOnSaveCheckBox Deploy on Save check box for which we want to create updater
-     */
-    public static void create(Project project, JCheckBox deployOnSaveCheckBox) {
-        new DeployOnSaveCheckBoxUpdater(project, deployOnSaveCheckBox);
+    @Override
+    @Messages("CTL_Hints_DisplayName=Hints")
+    public String getDisplayName() {
+        return Bundle.CTL_Hints_DisplayName();
     }
 
     @Override
-    public Boolean getValue() {
-        Preferences preferences = ProjectUtils.getPreferences(project, DeployOnSaveCheckBoxUpdater.class, true);
-        String value = preferences.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
-        
-        if (value != null) {
-            return Boolean.parseBoolean(value);
-        } else {
-            return null;
+    @Messages("CTL_Hints_ToolTip=Static code verification for Latte")
+    public String getTooltip() {
+        return Bundle.CTL_Hints_ToolTip();
+    }
+
+    @Override
+    public synchronized OptionsPanelController create() {
+        if (panelController == null) {
+            HintsManager manager = HintsProvider.HintsManager.getManagerForMimeType(LatteLanguage.LATTE_MIME_TYPE);
+            assert manager != null;
+            panelController = manager.getOptionsController();
         }
+        return panelController;
     }
 
-    @Override
-    public void setValue(Boolean value) {
-        MavenProjectSupport.setDeployOnSave(project, value);
-    }
-
-    @Override
-    public boolean getDefaultValue() {
-        return defaultValue;
+    //TODO: temporary solution, this should be solved on GSF level
+    public static  OptionsPanelController createStatic() {
+        return new HintsAdvancedOption().create();
     }
 }
