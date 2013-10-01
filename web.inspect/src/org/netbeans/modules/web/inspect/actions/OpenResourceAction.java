@@ -61,8 +61,8 @@ public class OpenResourceAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
-        for (int i=0; i<activatedNodes.length; i++) {
-            Resource resource = activatedNodes[i].getLookup().lookup(Resource.class);
+        for (Node activatedNode : activatedNodes) {
+            Resource resource = activatedNode.getLookup().lookup(Resource.class);
             FileObject fob = resource.toFileObject();
             if (fob != null) {
                 try {
@@ -83,8 +83,8 @@ public class OpenResourceAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return false;
         }
-        for (int i=0; i<activatedNodes.length; i++) {
-            Resource resource = activatedNodes[i].getLookup().lookup(Resource.class);
+        for (Node activatedNode : activatedNodes) {
+            Resource resource = activatedNode.getLookup().lookup(Resource.class);
             if ((resource != null) && (resource.toFileObject() == null)) {
                 return false;
             }
