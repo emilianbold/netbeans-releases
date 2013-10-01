@@ -53,6 +53,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
@@ -97,7 +98,8 @@ public class GeneralGroovy extends JellyTestCase {
     }
 
     protected void createJavaApplication(String projectName) {
-
+        
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
         NewProjectWizardOperator opNewProjectWizard = NewProjectWizardOperator.invoke();
         opNewProjectWizard.selectCategory(JAVA_CATEGORY_NAME);
         opNewProjectWizard.selectProject(JAVA_PROJECT_NAME);
