@@ -39,84 +39,64 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.csl;
+package org.netbeans.modules.php.latte.hints;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.csl.api.StructureScanner;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
-import org.netbeans.modules.php.latte.hints.LatteHintsProvider;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
-import org.netbeans.modules.php.latte.parser.LatteParser;
-import org.netbeans.modules.php.latte.semantic.LatteSemanticAnalyzer;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = LatteLanguage.LATTE_MIME_TYPE, useCustomEditorKit = true)
-public class LatteLanguage extends DefaultLanguageConfig {
-    public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
+public class LatteHintsProvider implements HintsProvider {
+    private volatile boolean cancel = false;
 
     @Override
-    public Language<LatteTopTokenId> getLexerLanguage() {
-        return LatteTopTokenId.language();
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
+        resume();
     }
 
     @Override
-    public String getDisplayName() {
-        return "Latte"; //NOI18N
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        resume();
     }
 
     @Override
-    public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '_');
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
+        resume();
     }
 
     @Override
-    public Parser getParser() {
-        return new LatteParser();
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        resume();
     }
 
     @Override
-    public SemanticAnalyzer<LatteParser.LatteParserResult> getSemanticAnalyzer() {
-        return new LatteSemanticAnalyzer();
+    public void cancel() {
+        cancel = true;
+    }
+
+    private void resume() {
+        cancel = false;
     }
 
     @Override
-    public boolean hasStructureScanner() {
-        return true;
+    public List<Rule> getBuiltinRules() {
+        return Collections.emptyList();
     }
 
     @Override
-    public StructureScanner getStructureScanner() {
-        return new LatteStructureScanner();
+    public RuleContext createRuleContext() {
+        return new LatteRuleContext();
     }
 
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new LatteCompletionHandler();
-    }
+    public static final class LatteRuleContext extends RuleContext {
 
-    @Override
-    public boolean isUsingCustomEditorKit() {
-        return true;
-    }
-
-    @Override
-    public boolean hasHintsProvider() {
-        return true;
-    }
-
-    @Override
-    public HintsProvider getHintsProvider() {
-        return new LatteHintsProvider();
     }
 
 }
