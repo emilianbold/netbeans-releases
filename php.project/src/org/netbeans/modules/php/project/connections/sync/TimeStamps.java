@@ -114,7 +114,7 @@ public final class TimeStamps {
     /**
      * Set timestamp of remote synchronization for the given file. Timestamp is saved only for directories.
      * @param transferFile transfer file of the synchronization
-     * @param timestamp timestamp to be saved
+     * @param timestamp timestamp to be saved, <b>in seconds</b>
      */
     public void setSyncTimestamp(TransferFile transferFile, long timestamp) {
         assert transferFile != null;

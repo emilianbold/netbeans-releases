@@ -39,43 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.run;
+package org.netbeans.modules.php.latte.hints;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.csl.api.Rule.AstRule;
 
-public final class TestRunner {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public interface CaretSensitiveRule extends AstRule {
 
-    private final PhpModule phpModule;
-
-
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
-    }
-
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule, true);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
-        }
-        assert atoum != null;
-        Integer result = atoum.runTests(phpModule, runInfo, testSession);
-        // 255 - some error
-        // 1 - some test failed
-        if (result != null
-                && result == 255) {
-            throw new TestRunException();
-        }
-    }
+    void setCaretOffset(int caretOffset);
 
 }

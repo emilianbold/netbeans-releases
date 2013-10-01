@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -108,6 +109,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     private final TomEEVersion tomeeVersion;
     
     private DataObject contextDataObject;
+    private DataObject resourcesDataObject;
     private final File contextXml;
     private final File resourcesXml;
     private Context context;
@@ -199,6 +201,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         return context;
     }
 
+    @CheckForNull
     public synchronized Tomee getResources(final boolean create) throws ConfigurationException {
         if (resources == null) {
             if (resourcesXml.exists()) {
@@ -224,6 +227,15 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                     }
                 });
             }
+            // XXX listener ?
+            if (resourcesXml.exists() && resourcesDataObject == null) {
+                try {
+                    resourcesDataObject = DataObject.find(FileUtil.toFileObject(FileUtil.normalizeFile(resourcesXml)));
+                    //resourcesDataObject.addPropertyChangeListener(this);
+                } catch (DataObjectNotFoundException donfe) {
+                    LOGGER.log(Level.FINE, null, donfe);
+                }
+            }
         }
         return resources;
     }
@@ -233,6 +245,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
      * 
      * @return context path or null, if the file is not parseable.
      */
+    @Override
     public String getContextRoot() throws ConfigurationException {
         return getContext().getAttributeValue(ATTR_PATH);
     }
@@ -241,6 +254,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     /**
      * Get the module datasources defined in the context.xml file.
      */
+    @Override
     public Set<Datasource> getDatasources() throws ConfigurationException {
         Context context = getContext();
         Set<Datasource> result = new HashSet<Datasource>();
@@ -336,22 +350,49 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             throw new DatasourceAlreadyExistsException(conflictingDS);
         }
         if (tomcatVersion != TomcatVersion.TOMCAT_50) {
-            // Tomcat 5.5.x or Tomcat 6.0.x
-            modifyContext(new ContextModifier() {
-                public void modify(Context context) {
-                    int idx = context.addResource(true);
-                    context.setResourceName(idx, name);
-                    context.setResourceAuth(idx, "Container"); // NOI18N
-                    context.setResourceType(idx, "javax.sql.DataSource"); // NOI18N
-                    context.setResourceDriverClassName(idx, driverClassName);
-                    context.setResourceUrl(idx, url);
-                    context.setResourceUsername(idx, username);
-                    context.setResourcePassword(idx, password);
-                    context.setResourceMaxActive(idx, "20");    // NOI18N
-                    context.setResourceMaxIdle(idx, "10");      // NOI18N
-                    context.setResourceMaxWait(idx, "-1");      // NOI18N
-                }
-            });
+            if (tomeeVersion != null) {
+                // we need to store it to resources.xml
+                Tomee resources = getResources(true);
+                assert resources != null;
+                modifyResources(new ResourcesModifier() {
+
+                    @Override
+                    public void modify(Tomee tomee) {
+                        Properties props = new Properties();
+                        props.put("userName", username); // NOI18N
+                        props.put("password", password); // NOI18N
+                        props.put("jdbcUrl", url); // NOI18N
+                        props.put("jdbcDriver", driverClassName); // NOI18N
+                        StringWriter sw = new StringWriter();
+                        try {
+                            props.store(sw, null);
+                        } catch (IOException ex) {
+                            // should not really happen
+                            LOGGER.log(Level.WARNING, null, ex);
+                        }
+                        int idx = tomee.addTomeeResource(sw.toString());
+                        tomee.setTomeeResourceId(idx, name);
+                        tomee.setTomeeResourceType(idx, "javax.sql.DataSource"); // NOI18N
+                    }
+                });
+            } else {
+                // Tomcat 5.5.x or Tomcat 6.0.x
+                modifyContext(new ContextModifier() {
+                    public void modify(Context context) {
+                        int idx = context.addResource(true);
+                        context.setResourceName(idx, name);
+                        context.setResourceAuth(idx, "Container"); // NOI18N
+                        context.setResourceType(idx, "javax.sql.DataSource"); // NOI18N
+                        context.setResourceDriverClassName(idx, driverClassName);
+                        context.setResourceUrl(idx, url);
+                        context.setResourceUsername(idx, username);
+                        context.setResourcePassword(idx, password);
+                        context.setResourceMaxActive(idx, "20");    // NOI18N
+                        context.setResourceMaxIdle(idx, "10");      // NOI18N
+                        context.setResourceMaxWait(idx, "-1");      // NOI18N
+                    }
+                });
+            }
         } else {
             // Tomcat 5.0.x
             modifyContext(new ContextModifier() {
@@ -427,11 +468,6 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         });
     }
     
-    /** Context data object */
-    public DataObject getContextDataObject() {
-        return contextDataObject;
-    }
-    
     // PropertyChangeListener listener ----------------------------------------
     
     /**
@@ -497,27 +533,86 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
      *
      * @param modifier
      */
-    private void modifyContext(ContextModifier modifier) throws ConfigurationException {
-        assert contextDataObject != null : "DataObject has not been initialized yet"; // NIO18N
+    private void modifyContext(final ContextModifier modifier) throws ConfigurationException {
+        TomcatModuleConfiguration.<Context>modifyConfiguration(contextDataObject, new ConfigurationModifier<Context>() {
+
+            @Override
+            public void modify(Context configuration) {
+                modifier.modify(configuration);
+            }
+            @Override
+            public void finished(Context configuration) {
+                synchronized (TomcatModuleConfiguration.this) {
+                    context = configuration;
+                }
+            }
+        }, new ConfigurationFactory<Context>() {
+
+            @Override
+            public Context create(byte[] content) {
+                return Context.createGraph(new ByteArrayInputStream(content));
+            }
+        }, new ConfigurationValue<Context>() {
+
+            @Override
+            public Context getValue() throws ConfigurationException {
+                return getContext();
+            }
+        });
+    }
+
+    private void modifyResources(final ResourcesModifier modifier) throws ConfigurationException {
+        TomcatModuleConfiguration.<Tomee>modifyConfiguration(resourcesDataObject, new ConfigurationModifier<Tomee>() {
+
+            @Override
+            public void modify(Tomee configuration) {
+                modifier.modify(configuration);
+            }
+            @Override
+            public void finished(Tomee configuration) {
+                synchronized (TomcatModuleConfiguration.this) {
+                    resources = configuration;
+                }
+            }
+        }, new ConfigurationFactory<Tomee>() {
+
+            @Override
+            public Tomee create(byte[] content) {
+                return Tomee.createGraph(new ByteArrayInputStream(content));
+            }
+        }, new ConfigurationValue<Tomee>() {
+
+            @Override
+            public Tomee getValue() throws ConfigurationException {
+                return getResources(false);
+            }
+        });
+    }
+
+    private static <T extends BaseBean> void modifyConfiguration(DataObject dataObject,
+            ConfigurationModifier<T> modifier, ConfigurationFactory<T> factory,
+            ConfigurationValue<T> value) throws ConfigurationException {
+        assert dataObject != null : "DataObject has not been initialized yet"; // NIO18N
         try {
             // get the document
-            EditorCookie editor = (EditorCookie)contextDataObject.getCookie(EditorCookie.class);
+            EditorCookie editor = (EditorCookie) dataObject.getCookie(EditorCookie.class);
             StyledDocument doc = editor.getDocument();
             if (doc == null) {
                 doc = editor.openDocument();
             }
-            
+
             // get the up-to-date model
-            Context newContext = null;
+            T newConfig = null;
             try {
                 // try to create a graph from the editor content
                 byte[] docString = doc.getText(0, doc.getLength()).getBytes();
-                newContext = Context.createGraph(new ByteArrayInputStream(docString));
+                newConfig = factory.create(docString);
             } catch (RuntimeException e) {
-                Context oldContext = getContext(); // throws an exception if not parseable
+                T oldConfig = value.getValue(); // throws an exception if not parseable
                 // current editor content is not parseable, ask whether to override or not
                 NotifyDescriptor notDesc = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ContextXmlNotValid"),
+                        NbBundle.getMessage(TomcatModuleConfiguration.class,
+                        "MSG_ConfigurationXmlNotValid", dataObject.getPrimaryFile().getNameExt()),
                         NotifyDescriptor.OK_CANCEL_OPTION);
                 Object result = DialogDisplayer.getDefault().notify(notDesc);
                 if (result == NotifyDescriptor.CANCEL_OPTION) {
@@ -525,42 +620,42 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                     return;
                 }
                 // use the old graph
-                newContext = oldContext;
+                newConfig = oldConfig;
             }
-            
+
             // perform changes
-            modifier.modify(newContext);
-            
+            modifier.modify(newConfig);
+
             // save, if appropriate
-            boolean modified = contextDataObject.isModified();
-            replaceDocument(doc, newContext);
+            boolean modified = dataObject.isModified();
+            replaceDocument(doc, newConfig);
             if (!modified) {
-                SaveCookie cookie = (SaveCookie)contextDataObject.getCookie(SaveCookie.class);
+                SaveCookie cookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
                 if (cookie != null) {
                     cookie.save();
                 }
             }
-            
-            synchronized (this) {
-                context = newContext;
-            }
+
+            modifier.finished(newConfig);
         } catch (BadLocationException e) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class,
+                    "MSG_ConfigurationXmlWriteFail", dataObject.getPrimaryFile().getPath());
             throw new ConfigurationException(msg, e);
         } catch (IOException e) {
-            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlWriteFail", contextXml.getPath());
+            String msg = NbBundle.getMessage(TomcatModuleConfiguration.class,
+                    "MSG_ConfigurationXmlWriteFail", dataObject.getPrimaryFile().getPath());
             throw new ConfigurationException(msg, e);
         }
     }
     
-    private Parameter createParameter(String name, String value) {
+    private static Parameter createParameter(String name, String value) {
         Parameter parameter = new Parameter();
         parameter.setName(name);
         parameter.setValue(value);
         return parameter;
     }
     
-    private ResourceParams createResourceParams(String name, Parameter[] parameters) {
+    private static ResourceParams createResourceParams(String name, Parameter[] parameters) {
         ResourceParams resourceParams = new ResourceParams();
         resourceParams.setName(name);
         for (int i = 0; i < parameters.length; i++) {
@@ -573,7 +668,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
      * Compute logger prefix based on context path. Cut off leading slash and 
      * escape other slashes, use ROOT prefix for empty context path.
      */
-    private String computeLoggerPrefix(String contextPath) {
+    private static String computeLoggerPrefix(String contextPath) {
         return contextPath.length() > 0 
                 ? contextPath.substring(1).replace('/', '_').concat(".") // NOI18N
                 : "ROOT.";   // NOI18N
@@ -639,7 +734,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     /**
      * Replace the content of the document by the graph.
      */
-    private void replaceDocument(final StyledDocument doc, BaseBean graph) {
+    private static void replaceDocument(final StyledDocument doc, BaseBean graph) {
         final StringWriter out = new StringWriter();
         try {
             graph.write(out);
@@ -750,12 +845,26 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
     
     // private helper interface -----------------------------------------------
-     
+
     private interface ContextModifier {
         void modify(Context context);
     }
 
+    private interface ResourcesModifier {
+        void modify(Tomee tomee);
+    }
+
+    private interface ConfigurationModifier<T> {
+        void modify(T configuration);
+
+        void finished(T configuration);
+    }
+
     private interface ConfigurationValue<T> {
         T getValue() throws ConfigurationException;
+    }
+
+    private interface ConfigurationFactory<T> {
+        T create(byte[] content);
     }
 }

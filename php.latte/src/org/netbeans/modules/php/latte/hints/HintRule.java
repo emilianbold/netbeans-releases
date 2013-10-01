@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,74 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.run;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+package org.netbeans.modules.php.latte.hints;
 
-public final class TestRunner {
+import java.util.Collections;
+import java.util.Set;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 
-    private final PhpModule phpModule;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public abstract class HintRule implements CaretSensitiveRule, InvokableRule<Hint> {
+    private int caretOffset = -1;
+    private OffsetRange lineBounds;
 
-
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    @Override
+    public void setCaretOffset(int caretOffset) {
+        this.caretOffset = caretOffset;
+        this.lineBounds = null;
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule, true);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-            return;
-        }
-        assert atoum != null;
-        Integer result = atoum.runTests(phpModule, runInfo, testSession);
-        // 255 - some error
-        // 1 - some test failed
-        if (result != null
-                && result == 255) {
-            throw new TestRunException();
-        }
+    protected boolean showHint(OffsetRange hintOffsetRange, BaseDocument doc) {
+        OffsetRange currentLineBounds = getLineBounds(doc);
+        return currentLineBounds == OffsetRange.NONE || hintOffsetRange.overlaps(currentLineBounds);
     }
 
+    private OffsetRange getLineBounds(BaseDocument doc) {
+        if (lineBounds == null) {
+            lineBounds = HintsUtils.createLineBounds(caretOffset, doc);
+        }
+        return lineBounds;
+    }
+
+    @Override
+    public Set<? extends Object> getKinds() {
+        return Collections.singleton(LatteHintsProvider.DEFAULT_HINTS);
+    }
+
+    @Override
+    public boolean getDefaultEnabled() {
+        return true;
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return null;
+    }
+
+    @Override
+    public boolean appliesTo(RuleContext context) {
+        return true;
+    }
+
+    @Override
+    public boolean showInTasklist() {
+        return false;
+    }
+
+    @Override
+    public HintSeverity getDefaultSeverity() {
+        return HintSeverity.WARNING;
+    }
 }
