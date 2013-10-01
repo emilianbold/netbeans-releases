@@ -430,7 +430,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         if (resolveType == null) {
             return false;
         }
-        final String typeText = resolveType.getCanonicalText().toString();
+        //final String typeText = resolveType.getCanonicalText().toString();
+        final String typeText = resolveType.getText().toString();
         if ("void".equals(typeText)) { //NOI18N
             return false;
         }
@@ -570,7 +571,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (resolveType == null) {
                 return null;
             }
-            final String typeText = resolveType.getCanonicalText().toString();
+            //final String typeText = resolveType.getCanonicalText().toString();
+            final String typeText = resolveType.getText().toString();
             if ("void".equals(typeText)) { //NOI18N
                 return null;
             }
@@ -617,7 +619,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (resolveType == null) {
                 return null;
             }
-            final String typeText = resolveType.getCanonicalText().toString();
+            //final String typeText = resolveType.getCanonicalText().toString();
+            final String typeText = resolveType.getText().toString();
             if ("void".equals(typeText)) { //NOI18N
                 return null;
             }
