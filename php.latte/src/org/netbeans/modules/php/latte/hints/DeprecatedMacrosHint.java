@@ -61,10 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class WidgetMacroHint extends HintRule {
-    private static final String HINT_ID = "latte.widget.macro.hint"; //NOI18N
-    private static final String WIDGET_MACRO = "widget"; //NOI18N
-    private static final String CONTROL_MACRO = "control"; //NOI18N
+public abstract class DeprecatedMacrosHint extends HintRule {
     private FileObject fileObject;
     private BaseDocument baseDocument;
     private List<Hint> hints;
@@ -99,64 +96,90 @@ public class WidgetMacroHint extends HintRule {
         Token<LatteMarkupTokenId> token;
         while (ts.moveNext()) {
             token = ts.token();
-            if (token != null && LatteMarkupTokenId.T_MACRO_START.equals(token.id()) && WIDGET_MACRO.equals(token.text().toString().trim())) {
+            if (isDeprecatedToken(token)) {
                 createHint(ts.offset(), token);
             }
         }
     }
 
-    @NbBundle.Messages("WidgetMacroHintText=Widget macro is deprecated, use 'control' macro instead.")
+    @NbBundle.Messages("DeprecatedMacroHintText=Deprecated Macro")
     private void createHint(int startOffset, Token<LatteMarkupTokenId> token) {
         OffsetRange offsetRange = new OffsetRange(startOffset, startOffset + token.length());
         if (showHint(offsetRange, baseDocument)) {
             hints.add(new Hint(
                     this,
-                    Bundle.WidgetMacroHintText(),
+                    Bundle.DeprecatedMacroHintText(),
                     fileObject,
                     offsetRange,
-                    Collections.<HintFix>singletonList(new Fix(startOffset, token, baseDocument)),
+                    Collections.<HintFix>singletonList(new Fix(startOffset, token, baseDocument, getReplaceText())),
                     500));
         }
     }
 
-    @Override
-    public String getId() {
-        return HINT_ID;
-    }
+    protected abstract boolean isDeprecatedToken(Token<LatteMarkupTokenId> token);
 
-    @Override
-    @NbBundle.Messages("WidgetMacroHintDesc=Widget macro is deprecated, use 'control' macro instead.")
-    public String getDescription() {
-        return Bundle.WidgetMacroHintDesc();
-    }
+    protected abstract String getReplaceText();
 
-    @Override
-    @NbBundle.Messages("WidgetMacroHintDisp=Deprecated Widget Macro")
-    public String getDisplayName() {
-        return Bundle.WidgetMacroHintDisp();
+    public static final class WidgetMacroHint extends DeprecatedMacrosHint {
+        private static final String HINT_ID = "latte.widget.macro.hint"; //NOI18N
+        private static final String WIDGET_MACRO = "widget"; //NOI18N
+        private static final String CONTROL_MACRO = "control"; //NOI18N
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("WidgetMacroHintDesc=Widget macro is deprecated, use 'control' macro instead.")
+        public String getDescription() {
+            return Bundle.WidgetMacroHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("WidgetMacroHintDisp=Widget Macro")
+        public String getDisplayName() {
+            return Bundle.WidgetMacroHintDisp();
+        }
+
+        @Override
+        protected boolean isDeprecatedToken(Token<LatteMarkupTokenId> token) {
+            return token != null && LatteMarkupTokenId.T_MACRO_START.equals(token.id()) && WIDGET_MACRO.equals(token.text().toString().trim());
+        }
+
+        @Override
+        protected String getReplaceText() {
+            return CONTROL_MACRO;
+        }
+
     }
 
     private static final class Fix implements HintFix {
         private final int startOffset;
         private final Token<LatteMarkupTokenId> token;
         private final BaseDocument baseDocument;
+        private final String replaceText;
 
-        private Fix(int startOffset, Token<LatteMarkupTokenId> token, BaseDocument baseDocument) {
+        private Fix(int startOffset, Token<LatteMarkupTokenId> token, BaseDocument baseDocument, String replaceText) {
             this.startOffset = startOffset;
             this.token = token;
             this.baseDocument = baseDocument;
+            this.replaceText = replaceText;
         }
 
         @Override
-        @NbBundle.Messages("WidgetMacroHintFix=Replace 'widget' with 'control'")
+        @NbBundle.Messages({
+            "# {0} - text of replacement",
+            "DeprecatedMacroHintFix=Replace with: {0}"
+        })
         public String getDescription() {
-            return Bundle.WidgetMacroHintFix();
+            return Bundle.DeprecatedMacroHintFix(replaceText);
         }
 
         @Override
         public void implement() throws Exception {
             EditList editList = new EditList(baseDocument);
-            editList.replace(startOffset, token.length(), CONTROL_MACRO, true, 0);
+            editList.replace(startOffset, token.length(), replaceText, true, 0);
             editList.apply();
         }
 

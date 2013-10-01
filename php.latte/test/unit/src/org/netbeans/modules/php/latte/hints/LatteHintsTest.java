@@ -52,7 +52,7 @@ public class LatteHintsTest extends LatteHintsTestBase {
     }
 
     public void testWidgetMacroHint() throws Exception {
-        checkHints(new WidgetMacroHint(), "testWidgetMacroHint.latte");
+        checkHints(new DeprecatedMacrosHint.WidgetMacroHint(), "testWidgetMacroHint.latte");
     }
 
 }

@@ -1,4 +1,4 @@
 {widget myComponent}
  ------
-HINT:Widget macro is deprecated, use 'control' macro instead.
-FIX:Replace 'widget' with 'control'
+HINT:Deprecated Macro
+FIX:Replace with: control
