@@ -66,6 +66,7 @@ import javax.swing.JToolTip;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.notifications.center.NotificationCenterManager;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
@@ -103,10 +104,8 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     public void addNotify() {
         super.addNotify();
         int unreadCount = manager.getUnreadCount();
-        setIcon(getNotificationsIcon(unreadCount));
         currentNotification = manager.getLastUnreadNotification();
-        if (null != currentNotification) {
-        }
+        setIcon(getNotificationsIcon(unreadCount, currentNotification != null ? currentNotification.getCategory() == NotificationDisplayer.Category.ERROR : false));
         setToolTipText(getToolTip(unreadCount, currentNotification));
         setVisible(unreadCount > 0);
         manager.addPropertyChangeListener(this);
@@ -199,7 +198,7 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
     private void setNotification(final NotificationImpl n, boolean showBalloon) {
         int notificationCount = manager.getUnreadCount();
         setToolTipText(getToolTip(notificationCount, n));
-        setIcon(getNotificationsIcon(notificationCount));
+        setIcon(getNotificationsIcon(notificationCount, n != null ? n.getCategory() == NotificationDisplayer.Category.ERROR : false));
         currentNotification = n;
         if (null != currentNotification) {
             if (showBalloon) {
@@ -242,16 +241,21 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         return tooltip;
     }
 
-    private Icon getNotificationsIcon(int unread) {
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/notifications.png", true);
+    private Icon getNotificationsIcon(int unread, boolean isError) {
+        ImageIcon icon;
+        if (isError) {
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/notificationsError.png", true);
+        } else {
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/notifications/resources/notifications.png", true);
+        }
         BufferedImage countIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = countIcon.createGraphics();
         g.setFont(getFont().deriveFont(10f));
         Color color;
         if ("Nimbus".equals(UIManager.getLookAndFeel().getID())) {
-            color = Color.BLACK;
+            color = isError ? Color.RED : Color.BLACK;
         } else {
-            color = UIManager.getColor("Label.foreground");
+            color = isError ? UIManager.getColor("nb.errorForeground") : UIManager.getColor("Label.foreground");
         }
         g.setColor(color);
         if (unread < 10) {
