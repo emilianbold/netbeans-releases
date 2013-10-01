@@ -140,63 +140,103 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String sortItemText = item.getName().toString();
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
+        CsmFile containingFile = item.getContainingFile();
         CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
+        Document document = CsmUtilities.getDocument(containingFile);
+        if (document == null) {
+            CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(containingFile);
+            try {
+                document = support.openDocument();
+            } catch (IOException ex) {
+                return null;
+            }
+        }
+        if (!(document instanceof BaseDocument)) {
+            return null;
+        }
+        final BaseDocument classDoc = (BaseDocument) document;
+        final int methodStartOffset = item.getStartOffset();
         if (CsmKindUtilities.isConstructor(item)) {
             CsmConstructor con = (CsmConstructor) item;
             Collection<CsmExpression> initializerList = con.getInitializerList();
             if (initializerList != null && initializerList.size() > 0) {
-                final int methodStartOffset = item.getStartOffset();
                 final int startOffset = initializerList.iterator().next().getStartOffset();
                 final AtomicInteger trueBodyStratOffset = new AtomicInteger(0);
-                CsmFile containingFile = item.getContainingFile();
-                Document document = CsmUtilities.getDocument(containingFile);
-                if (document == null) {
-                    CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(containingFile);
-                    try {
-                        document = support.openDocument();
-                    } catch (IOException ex) {
-                        return null;
-                    }
-                }
-                if (document instanceof BaseDocument) {
-                    final BaseDocument classDoc = (BaseDocument) document;
-                    classDoc.render(new Runnable() {
-                        @Override
-                        public void run() {
-                            TokenHierarchy<? extends Document> hi = TokenHierarchy.get(classDoc);
-                            TokenSequence<?> ts = hi.tokenSequence();
-                            ts.move(startOffset);
-                            while (ts.movePrevious()) {
-                                Token<?> token = ts.token();
-                                if (ts.offset() < methodStartOffset) {
-                                    break;
-                                }
-                                if (CppTokenId.COLON.equals(token.id())) {
+                classDoc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenHierarchy<? extends Document> hi = TokenHierarchy.get(classDoc);
+                        TokenSequence<?> ts = hi.tokenSequence();
+                        ts.move(startOffset);
+                        boolean columnFound = false;
+                        while (ts.movePrevious()) {
+                            Token<?> token = ts.token();
+                            if (ts.offset() < methodStartOffset) {
+                                break;
+                            }
+                            if (columnFound) {
+                                if (CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) ||
+                                    CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
                                     trueBodyStratOffset.set(ts.offset());
+                                    continue;
+                                } else {
                                     break;
                                 }
                             }
-                        }
-                    });
-                    if (trueBodyStratOffset.get() > 0) {
-                        String bodyText;
-                        try {
-                            bodyText = "\n"+classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
-                            String appendItemText = createAppendText(item, cls, bodyText);
-                            return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
-                                    true, trueBodyStratOffset.get(), bodyText.length()-1);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
+                            if (CppTokenId.COLON.equals(token.id())) {
+                                trueBodyStratOffset.set(ts.offset());
+                                columnFound = true;
+                            }
                         }
                     }
-                            
+                });
+                if (trueBodyStratOffset.get() > 0) {
+                    String bodyText;
+                    try {
+                        bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
+                        String appendItemText = createAppendText(item, cls, bodyText);
+                        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+                                true, trueBodyStratOffset.get(), bodyText.length());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 return null;
             }
         }
-        String appendItemText = createAppendText(item, cls, body.getText().toString());
-        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
-                true, body.getStartOffset(), body.getText().length());
+        
+        final int startOffset = body.getStartOffset();
+        final AtomicInteger trueBodyStratOffset = new AtomicInteger(startOffset);
+        classDoc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy<? extends Document> hi = TokenHierarchy.get(classDoc);
+                TokenSequence<?> ts = hi.tokenSequence();
+                ts.move(startOffset);
+                while (ts.movePrevious()) {
+                    Token<?> token = ts.token();
+                    if (ts.offset() < methodStartOffset) {
+                        break;
+                    }
+                    if (CppTokenId.WHITESPACE_CATEGORY.equals(token.id().primaryCategory()) ||
+                        CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
+                        trueBodyStratOffset.set(ts.offset());
+                    } else {
+                        break;
+                    }
+                }
+            }
+        });
+        String bodyText;
+        try {
+            bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
+            String appendItemText = createAppendText(item, cls, bodyText);
+            return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+                    true, trueBodyStratOffset.get(), bodyText.length());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     private static String createDisplayName(CsmMember item,  CsmClass parent, String operation) {
@@ -253,7 +293,6 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         appendItemText.append(parent.getName());
         appendItemText.append("::"); //NOI18N
         addSignature(item, appendItemText);
-        appendItemText.append(" "); //NOI18N
         appendItemText.append(bodyText);
         appendItemText.append("\n"); //NOI18N
         return appendItemText.toString();
