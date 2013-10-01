@@ -55,4 +55,8 @@ public class LatteHintsTest extends LatteHintsTestBase {
         checkHints(new DeprecatedMacrosHint.WidgetMacroHint(), "testWidgetMacroHint.latte");
     }
 
+    public void testIfCurrentMacroHint() throws Exception {
+        checkHints(new DeprecatedMacrosHint.IfCurrentMacroHint(), "testIfCurrentMacroHint.latte");
+    }
+
 }

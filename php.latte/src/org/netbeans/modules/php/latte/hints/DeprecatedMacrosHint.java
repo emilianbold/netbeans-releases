@@ -106,13 +106,11 @@ public abstract class DeprecatedMacrosHint extends HintRule {
     private void createHint(int startOffset, Token<LatteMarkupTokenId> token) {
         OffsetRange offsetRange = new OffsetRange(startOffset, startOffset + token.length());
         if (showHint(offsetRange, baseDocument)) {
-            hints.add(new Hint(
-                    this,
-                    Bundle.DeprecatedMacroHintText(),
-                    fileObject,
-                    offsetRange,
-                    Collections.<HintFix>singletonList(new Fix(startOffset, token, baseDocument, getReplaceText())),
-                    500));
+            String replaceText = getReplaceText();
+            List<HintFix> fixes = replaceText == null
+                    ? Collections.<HintFix>emptyList()
+                    : Collections.<HintFix>singletonList(new Fix(startOffset, token, baseDocument, replaceText));
+            hints.add(new Hint(this, Bundle.DeprecatedMacroHintText(), fileObject, offsetRange, fixes, 500));
         }
     }
 
@@ -150,6 +148,39 @@ public abstract class DeprecatedMacrosHint extends HintRule {
         @Override
         protected String getReplaceText() {
             return CONTROL_MACRO;
+        }
+
+    }
+
+    public static final class IfCurrentMacroHint extends DeprecatedMacrosHint {
+        private static final String HINT_ID = "latte.ifcurrent.macro.hint"; //NOI18N
+        private static final String DEPRECATED_MACRO = "ifCurrent"; //NOI18N
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("IfCurrentMacroHintDesc=IfCurrent macro is deprecated, use 'n:class=\"$presenter->linkCurrent ? ...\"' instead.")
+        public String getDescription() {
+            return Bundle.IfCurrentMacroHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("IfCurrentMacroHintDisp=IfCurrent Macro")
+        public String getDisplayName() {
+            return Bundle.IfCurrentMacroHintDisp();
+        }
+
+        @Override
+        protected boolean isDeprecatedToken(Token<LatteMarkupTokenId> token) {
+            return token != null && LatteMarkupTokenId.T_MACRO_START.equals(token.id()) && DEPRECATED_MACRO.equals(token.text().toString().trim());
+        }
+
+        @Override
+        protected String getReplaceText() {
+            return null;
         }
 
     }
