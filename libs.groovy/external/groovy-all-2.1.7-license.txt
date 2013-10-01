@@ -1,8 +1,8 @@
 Name: Groovy
-Version: 2.0.1
+Version: 2.1.7
 Description: Groovy Language distribution.
 License: Apache-2.0, incl. groovy-ASM, groovy-ANTLR and groovy-COMMONS-CLI
-Origin: http://dist.groovy.codehaus.org/distributions/groovy-binary-2.0.1.zip
+Origin: http://dist.groovy.codehaus.org/distributions/groovy-binary-2.1.7.zip
 
                                  Apache License
                            Version 2.0, January 2004
