@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -70,6 +71,7 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.xml.XMLUtil;
@@ -322,5 +324,31 @@ public class DashboardUtils {
             }
         }
         return null;
+    }
+
+    public static ImageIcon getTaskIcon(IssueImpl issue) {
+        ImageIcon icon;
+        //TODO replace with real priority value ASA it is in issue API
+        int priorityValue = -1;
+        switch (priorityValue) {
+            case 0:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true);
+                break;
+            case 1:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true);
+                break;
+            case 2:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true);
+                break;
+            case 3:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true);
+                break;
+            case 4:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true);
+                break;
+            default:
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/task.png", true);
+        }
+        return icon;
     }
 }

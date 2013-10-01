@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.spi.model.services;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  *
@@ -59,6 +59,6 @@ public interface CsmTypeResolverImplementation {
      * @param instantiations - context
      * @return type of expression
      */
-    CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations);
+    CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations);
     
 }

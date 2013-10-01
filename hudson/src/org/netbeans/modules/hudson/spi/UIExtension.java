@@ -39,64 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.spi;
 
-package org.netbeans.modules.maven.j2ee.ui.util;
-
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.api.Utilities;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Extend Hudson Utilities class with UI-related methods.
  *
- * @author Martin Janicek
+ * {@link Utilities} class contains several UI-related methods. To implement
+ * them, register custom subclasses of this class using {@link ServiceProvider}.
+ *
+ * @author jhavlin
  */
-public final class DeployOnSaveCheckBoxUpdater extends CheckBoxUpdater {
-
-    private final Project project;
-    private final boolean defaultValue;
-
-    private DeployOnSaveCheckBoxUpdater(Project project, JCheckBox deployOnSaveCheckBox) {
-        super(deployOnSaveCheckBox);
-        this.project = project;
-        this.defaultValue = MavenProjectSupport.isDeployOnSave(project);
-    }
-
+public abstract class UIExtension {
 
     /**
-     * Factory method encapsulating CheckBoxUpdater creation. Typically client don't
-     * want to do anything with a new instance so this makes more sense than creating
-     * it using "new" keyword.
+     * Show a build in the UI.
      *
-     * @param project project for which we want to change DoS
-     * @param deployOnSaveCheckBox Deploy on Save check box for which we want to create updater
+     * @param build Hudson Build to show.
      */
-    public static void create(Project project, JCheckBox deployOnSaveCheckBox) {
-        new DeployOnSaveCheckBoxUpdater(project, deployOnSaveCheckBox);
-    }
+    public abstract void showInUI(HudsonJobBuild build);
 
-    @Override
-    public Boolean getValue() {
-        Preferences preferences = ProjectUtils.getPreferences(project, DeployOnSaveCheckBoxUpdater.class, true);
-        String value = preferences.get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
-        
-        if (value != null) {
-            return Boolean.parseBoolean(value);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public void setValue(Boolean value) {
-        MavenProjectSupport.setDeployOnSave(project, value);
-    }
-
-    @Override
-    public boolean getDefaultValue() {
-        return defaultValue;
-    }
+    /**
+     * Show a job in the UI.
+     *
+     * @param job Hudson Job to show.
+     */
+    public abstract void showInUI(HudsonJob job);
 }

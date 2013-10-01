@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -59,6 +60,7 @@ import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -131,9 +133,11 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
+            JLabel lblIcon = new JLabel(DashboardUtils.getTaskIcon(task));
+            panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel();
-            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+            panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
             lblName.setToolTipText(task.getTooltip());
             labels.add(lblName);
         }
@@ -143,7 +147,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     @Override
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
-        lblName.setText(DashboardUtils.getTaskDisplayText(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
+        lblName.setText(DashboardUtils.getTaskDisplayText(task, lblName, rowWidth - 18, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
     }
 
     @Override

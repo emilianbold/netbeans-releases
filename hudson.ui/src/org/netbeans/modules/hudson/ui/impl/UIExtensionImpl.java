@@ -39,64 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.hudson.ui.impl;
 
-package org.netbeans.modules.maven.j2ee.ui.util;
-
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJobBuild;
+import org.netbeans.modules.hudson.spi.UIExtension;
+import org.netbeans.modules.hudson.ui.api.UI;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Martin Janicek <mjanicek@netbeans.org>
+ * @author jhavlin
  */
-public class CopyStaticResourcesOnSaveCheckBoxUpdater extends CheckBoxUpdater {
-
-    private final Project project;
-    private final boolean defaultValue;
-
-    private CopyStaticResourcesOnSaveCheckBoxUpdater(Project project, JCheckBox compileStaticResourcesCheckBox) {
-        super(compileStaticResourcesCheckBox);
-        this.project = project;
-        this.defaultValue = MavenProjectSupport.isCopyStaticResourcesOnSave(project);
-    }
-
+@ServiceProvider(service = UIExtension.class)
+public class UIExtensionImpl extends UIExtension {
 
     /**
-     * Factory method encapsulating CheckBoxUpdater creation. Typically client don't
-     * want to do anything with a new instance so this makes more sense than creating
-     * it using "new" keyword.
+     * Show a build in the UI - Select the node in Services window.
      *
-     * @param project project for which we want to change DoS
-     * @param deployOnSaveCheckBox Deploy on Save check box for which we want to create updater
+     * @param build Build to show.
      */
-    public static void create(Project project, JCheckBox deployOnSaveCheckBox) {
-        new CopyStaticResourcesOnSaveCheckBoxUpdater(project, deployOnSaveCheckBox);
+    @Override
+    public void showInUI(HudsonJobBuild build) {
+        HudsonJob job = build.getJob();
+        UI.selectNode(job.getInstance().getUrl(),
+                job.getName(), Integer.toString(build.getNumber()));
     }
 
+    /**
+     * Show a job in the UI - Select the node in Services window.
+     *
+     * @param job Job to show.
+     */
     @Override
-    public Boolean getValue() {
-        Preferences preferences = ProjectUtils.getPreferences(project, DeployOnSaveCheckBoxUpdater.class, true);
-        String value = preferences.get(MavenJavaEEConstants.HINT_COPY_STATIC_RESOURCES_ON_SAVE, null);
-
-        if (value != null) {
-            return Boolean.parseBoolean(value);
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public void setValue(Boolean value) {
-        MavenProjectSupport.setCopyStaticResourcesOnSave(project, value);
-    }
-
-    @Override
-    public boolean getDefaultValue() {
-        return defaultValue;
+    public void showInUI(HudsonJob job) {
+        UI.selectNode(job.getInstance().getUrl(), job.getName());
     }
 }

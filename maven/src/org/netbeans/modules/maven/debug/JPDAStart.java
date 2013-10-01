@@ -46,6 +46,7 @@ import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -62,6 +64,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
@@ -80,15 +83,14 @@ public class JPDAStart implements Runnable {
      */
     private String transport = "dt_socket"; //NOI18N
     
-    /**
-     * @parameter expression="${project.artifactId}"
-     */
     private String name;
     
-    /**
-     * @parameter expression="${jpda.stopclass}"
-     */
     private String stopClassName;
+    
+    private String stopMethod;
+    
+    private ClassPath additionalSourcePath;
+    
     
     private final Object[] lock = new Object[2];
     
@@ -161,15 +163,29 @@ public class JPDAStart implements Runnable {
                 io.getOut().println("Port:" + lock[0]); //NOI18N
                 
                 ClassPath sourcePath = Utils.createSourcePath(project);
+                if (getAdditionalSourcePath() != null) {
+                    sourcePath = ClassPathSupport.createProxyClassPath(sourcePath, getAdditionalSourcePath());
+                }
                 ClassPath jdkSourcePath = Utils.createJDKSourcePath(project);
                 
                 if (getStopClassName() != null && getStopClassName().length() > 0) {
-                    MethodBreakpoint b = Utils.createBreakpoint(getStopClassName());
+                    final MethodBreakpoint b = getStopMethod() != null ? Utils.createBreakpoint(getStopClassName(), getStopMethod()) : Utils.createBreakpoint(getStopClassName());
+                    final Listener list = new Listener(b);
+                    b.addPropertyChangeListener(MethodBreakpoint.PROP_VALIDITY, new PropertyChangeListener() {
+                        @Override
+                        public void propertyChange(PropertyChangeEvent pce) {
+                            if (Breakpoint.VALIDITY.INVALID.equals(b.getValidity()) && getStopMethod() != null) {
+                                //when the original method with method is not available (maybe defined in parent class?), replace it with a class breakpoint
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+                                MethodBreakpoint b2 = Utils.createBreakpoint(getStopClassName());
+                                list.replaceBreakpoint(b2);
+                            }
+                        }
+                    });
                     DebuggerManager.getDebuggerManager().addDebuggerListener(
                             DebuggerManager.PROP_DEBUGGER_ENGINES,
-                            new Listener(b));
+                            list);
                 }
-                
                 
                 final Map properties = new HashMap();
                 properties.put("sourcepath", sourcePath); //NOI18N
@@ -208,14 +224,6 @@ public class JPDAStart implements Runnable {
         }
         
     }
-    
-    
-    // support methods .........................................................
-    
-    
-    
-    
-    // innerclasses ............................................................
     
     private static class Listener extends DebuggerManagerAdapter {
         
@@ -289,6 +297,12 @@ public class JPDAStart implements Runnable {
                     );
             debuggers.remove(debugger);
         }
+
+        private void replaceBreakpoint(MethodBreakpoint b2) {
+            breakpoint = b2;
+        }
+        
+        
     }
     
     public String getTransport() {
@@ -313,6 +327,22 @@ public class JPDAStart implements Runnable {
     
     public void setStopClassName(String stopClassName) {
         this.stopClassName = stopClassName;
+    }
+
+    public String getStopMethod() {
+        return stopMethod;
+    }
+
+    public void setStopMethod(String stopMethod) {
+        this.stopMethod = stopMethod;
+    }
+
+    public ClassPath getAdditionalSourcePath() {
+        return additionalSourcePath;
+    }
+
+    public void setAdditionalSourcePath(ClassPath additionalSourcePath) {
+        this.additionalSourcePath = additionalSourcePath;
     }
     
     

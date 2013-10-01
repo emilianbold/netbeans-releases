@@ -147,6 +147,9 @@ public class ExecutionEventObject {
 
         public void setEndEvent(ExecutionEventObject endEvent) {
             this.endEvent = endEvent;
+            if (ExecutionEvent.Type.MojoStarted.equals(startEvent.type)) {
+                ((ExecMojo)startEvent).setClasspathURLs(((ExecMojo)endEvent).getClasspathURLs());
+            }
             assert endEvent != null && endEvent.getClass().equals(startEvent.getClass());
         }
 

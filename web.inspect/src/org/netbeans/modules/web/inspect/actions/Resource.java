@@ -110,7 +110,10 @@ public final class Resource {
         Ref ref = new Ref(this);
         synchronized (cache) {
             if (cache.containsKey(ref)) {
-                return cache.get(ref);
+                FileObject cached = cache.get(ref);
+                if ((cached == null) || cached.isValid()) {
+                    return cached;
+                }
             }
         }
         FileObject result = null;

@@ -157,10 +157,10 @@ public class StringUtilsTest extends NbTestCase {
     }
 
     public void testDecapitalize() {
-        assertEquals("Foobarbaz", StringUtils.capitalize("foobarbaz"));
-        assertEquals("Foobarbaz", StringUtils.capitalize("foobarbaz"));
-        assertEquals("FOOBARBAZ", StringUtils.capitalize("fOOBARBAZ"));
-        assertEquals("FoobarbaZ", StringUtils.capitalize("foobarbaZ"));
+        assertEquals("foobarbaz", StringUtils.decapitalize("foobarbaz"));
+        assertEquals("foobarbaz", StringUtils.decapitalize("Foobarbaz"));
+        assertEquals("fOOBARBAZ", StringUtils.decapitalize("FOOBARBAZ"));
+        assertEquals("foobarbaZ", StringUtils.decapitalize("foobarbaZ"));
     }
 
     public void testEmptyDecapitalize() {
