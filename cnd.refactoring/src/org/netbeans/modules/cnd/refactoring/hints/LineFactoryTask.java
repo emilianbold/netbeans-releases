@@ -339,6 +339,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 }
                 return null;
             }
+            case RETURN:
             case DECLARATION:
             {
                 StatementResult res = new StatementResult();
