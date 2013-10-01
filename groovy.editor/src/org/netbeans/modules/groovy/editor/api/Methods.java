@@ -210,11 +210,14 @@ public class Methods {
     }
 
     private static List<String> getMethodParams(IndexedMethod indexedMethod) {
-        List<MethodParameter> parameters = indexedMethod.getParameters();
         List<String> paramTypes = new ArrayList<>();
 
-        for (MethodParameter param : parameters) {
-            paramTypes.add(param.getType());
+        if (indexedMethod != null) {
+            List<MethodParameter> parameters = indexedMethod.getParameters();
+
+            for (MethodParameter param : parameters) {
+                paramTypes.add(param.getType());
+            }
         }
         return paramTypes;
     }
