@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
@@ -338,6 +339,12 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 }
                 return null;
             }
+            case DECLARATION:
+            {
+                StatementResult res = new StatementResult();
+                res.container = st;
+                return res;
+            }
             case EXPRESSION:
             {
                 final int startOffset = st.getStartOffset();
@@ -368,9 +375,12 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         res.expression = (CsmExpressionStatement) st;
                         return res;
                     } else {
-                        return null;
+                        StatementResult res = new StatementResult();
+                        res.container = (CsmExpressionStatement) st;
+                        return res;
                     }
                 }
+                return null;
             }
         }
         return null;
