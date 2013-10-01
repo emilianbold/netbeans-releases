@@ -60,11 +60,14 @@ import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.PhpOptions;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
 import org.netbeans.modules.php.atoum.preferences.AtoumPreferences;
+import org.netbeans.modules.php.atoum.preferences.AtoumPreferencesValidator;
 import org.netbeans.modules.php.atoum.run.TapParser;
 import org.netbeans.modules.php.atoum.run.TestCaseVo;
 import org.netbeans.modules.php.atoum.run.TestSuiteVo;
@@ -75,6 +78,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -128,28 +132,64 @@ public final class Atoum {
     }
 
     @CheckForNull
-    public static Atoum getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            return null;
+    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) throws InvalidPhpExecutableException {
+        // first try the default atoum, because of validation
+        InvalidPhpExecutableException defaultAtoumExc = null;
+        Atoum defaultAtoum = null;
+        try {
+            defaultAtoum = Atoum.getDefault();
+        } catch (InvalidPhpExecutableException ex) {
+            defaultAtoumExc = ex;
         }
-        FileObject fileObject = sourceDirectory.getFileObject(ATOUM_PROJECT_FILE_PATH);
-        if (fileObject == null) {
-            return getDefault();
+        // now, php module
+        try {
+            Atoum atoum = getForPhpModule(phpModule);
+            if (atoum != null) {
+                return atoum;
+            }
+        } catch (InvalidPhpExecutableException ex) {
+            if (showCustomizer) {
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpTesting.CUSTOMIZER_IDENT, null);
+                defaultAtoumExc = null;
+            }
         }
-        File file = FileUtil.toFile(fileObject);
-        assert file != null : "File not found fileobject: " + fileObject;
-        String path = file.getAbsolutePath();
-        String error = validate(path);
+        if (defaultAtoumExc != null
+                && showCustomizer) {
+            UiUtils.invalidScriptProvided(defaultAtoumExc.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+        }
+        return defaultAtoum;
+    }
+
+    @CheckForNull
+    private static Atoum getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
+        assert phpModule != null;
+        String error = validateForModule(phpModule);
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new Atoum(path);
+        if (!AtoumPreferences.isAtoumEnabled(phpModule)) {
+            return null;
+        }
+        // we have project specific atoum
+        return new Atoum(AtoumPreferences.getAtoumPath(phpModule));
     }
 
     @NbBundle.Messages("Atoum.file.label=atoum file")
     public static String validate(String command) {
         return PhpExecutableValidator.validateCommand(command, Bundle.Atoum_file_label());
+    }
+
+    public static String validateForModule(PhpModule phpModule) {
+        ValidationResult result = new AtoumPreferencesValidator()
+                .validate(phpModule)
+                .getResult();
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        if (result.hasWarnings()) {
+            return result.getWarnings().get(0).getMessage();
+        }
+        return null;
     }
 
     public static boolean isTestMethod(PhpClass.Method method) {

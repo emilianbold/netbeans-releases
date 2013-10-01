@@ -58,6 +58,7 @@ public final class AtoumPreferencesValidator {
     public AtoumPreferencesValidator validate(PhpModule phpModule) {
         validateBootstrap(AtoumPreferences.isBootstrapEnabled(phpModule), AtoumPreferences.getBootstrapPath(phpModule));
         validateConfiguration(AtoumPreferences.isConfigurationEnabled(phpModule), AtoumPreferences.getConfigurationPath(phpModule));
+        validateAtoum(AtoumPreferences.isAtoumEnabled(phpModule), AtoumPreferences.getAtoumPath(phpModule));
         return this;
     }
 
@@ -70,6 +71,12 @@ public final class AtoumPreferencesValidator {
     @NbBundle.Messages("AtoumPreferencesValidator.configuration.label=Configuration")
     public AtoumPreferencesValidator validateConfiguration(boolean configurationEnabled, String configurationPath) {
         validatePath(configurationEnabled, configurationPath, Bundle.AtoumPreferencesValidator_configuration_label(), "configurationPath"); // NOI18N
+        return this;
+    }
+
+    @NbBundle.Messages("AtoumPreferencesValidator.atoum.label=Custom atoum")
+    public AtoumPreferencesValidator validateAtoum(boolean atoumEnabled, String atoumPath) {
+        validatePath(atoumEnabled, atoumPath, Bundle.AtoumPreferencesValidator_atoum_label(), "atoumPath"); // NOI18N
         return this;
     }
 
