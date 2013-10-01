@@ -61,11 +61,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.eclipse.persistence:javax.persistence:2.1.0-SNAPSHOT:jar</value>
-        </property>
-        <property>
-            <name>maven-repositories</name>
-            <value>default:http://download.eclipse.org/rt/eclipselink/maven.repo/</value>
+            <value>org.eclipse.persistence:javax.persistence:2.1.0:jar</value>
         </property>
     </properties>    
 </library>
