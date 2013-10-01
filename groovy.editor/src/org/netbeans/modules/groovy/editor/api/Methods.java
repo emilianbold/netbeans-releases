@@ -220,7 +220,7 @@ public class Methods {
     }
 
     private static List<String> getMethodParams(MethodNode methodNode) {
-        final List<String> params = new ArrayList<String>();
+        final List<String> params = new ArrayList<>();
         for (Parameter param : methodNode.getParameters()) {
             params.add(ElementUtils.getTypeName(param));
         }
@@ -229,7 +229,7 @@ public class Methods {
     }
 
     private static List<String> getMethodParams(MethodCallExpression methodCall) {
-        final List<String> params = new ArrayList<String>();
+        final List<String> params = new ArrayList<>();
         final Expression arguments = methodCall.getArguments();
 
         if (arguments instanceof ArgumentListExpression) {
