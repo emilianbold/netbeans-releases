@@ -222,4 +222,15 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
             </file>
         </folder>
     </folder>
+    <folder name="csl-hints">
+        <folder name="text">
+            <folder name="x-latte">
+                <folder name="hints">
+                    <attr name="position" intvalue="100"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.latte.hints.Bundle"/>
+                    <file name="org-netbeans-modules-php-latte-hints-WidgetMacroHint.instance" />
+                </folder>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
