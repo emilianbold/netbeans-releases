@@ -107,7 +107,11 @@ final class RendererPanel extends JPanel {
 
             add(expander, BorderLayout.WEST);
         } else if (!isRoot || node.getType().equals(TreeListNode.Type.CLOSED)) {
-            add(new JLabel(new EmptyIcon()), BorderLayout.WEST);
+            // Leaf nodes might need additional empty space to line up with expandable nodes
+            // that have the expand icon, but in all known situations the leaf nodes are alone
+            // (not mixed with expandable ones) and the empty space just makes the indent too big.
+            // So commented out the line below.
+//            add(new JLabel(new EmptyIcon()), BorderLayout.WEST);
         }
         depth = getDepth();
     }
@@ -132,6 +136,9 @@ final class RendererPanel extends JPanel {
             background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
         }
         int maxWidth = rowWidth - depth * EMPTY_ICON.getIconWidth() - (TreeList.INSETS_LEFT + nestingDepth * rowHeight / 2) - TreeList.INSETS_RIGHT;
+        if (expander == null) {
+            maxWidth += EMPTY_ICON.getIconWidth();
+        }
         JComponent inner = node.getComponent(foreground, background, isSelected, hasFocus, maxWidth > 0 ? maxWidth : 0);
         if (node.isExpandable() || !isRoot || node.getType().equals(TreeListNode.Type.CLOSED)) {
             inner.setBorder(INNER_BORDER);
