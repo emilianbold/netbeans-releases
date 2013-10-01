@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.atoum.run;
 
-import java.util.logging.Logger;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -64,7 +63,7 @@ public final class TestRunner {
     public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
         Atoum atoum;
         try {
-            atoum = Atoum.getForPhpModule(phpModule);
+            atoum = Atoum.getForPhpModule(phpModule, true);
         } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
             return;
