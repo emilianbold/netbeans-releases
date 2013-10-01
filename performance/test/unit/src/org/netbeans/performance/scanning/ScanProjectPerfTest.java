@@ -85,7 +85,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     protected void setUp() throws IOException, InterruptedException {
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
-        System.setProperty("grails.home","/space/grails/"); //NOI18N
+       // System.setProperty("grails.home","/space/grails/"); //NOI18N
     }
 
     @Override
@@ -98,32 +98,52 @@ public class ScanProjectPerfTest extends NbTestCase {
                     "jEdit41.zip",
                     "jEdit");
     }
-    
-    public void testGroovyGrails() throws IOException, ExecutionException, InterruptedException {
-        System.setProperty("grails.home","/space/grails/"); //NOI18N
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
-        npwo.selectProject("Grails Application");
-        try {
-            npwo.next();
-            wait(5000);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        WizardOperator wo = new WizardOperator("New Project");
-        wo.cancel(); 
-        
-        OptionsOperator optionsOper = OptionsOperator.invoke();
-        optionsOper.selectMiscellaneous();
-              
-        
-        optionsOper.ok();
-        
-               
-        scanProject("https://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
-                    "gravl-0.4.zip",
-                    "gravl-0.4");
+
+    public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                    "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                    "mediawiki-1.14.0"
+                );
     }
+    
+    public void testWebProject() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                    "BigWebProject.zip",
+                    "FrankioskiProject"
+                );
+    }
+    
+    public void testTomcat() throws IOException, ExecutionException, InterruptedException {
+        scanProject("http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
+                    "tomcat6.zip",
+                    "tomcat6");
+    }
+    
+//    public void testGroovyGrails() throws IOException, ExecutionException, InterruptedException {
+//        System.setProperty("grails.home","/space/grails/"); //NOI18N
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
+//        npwo.selectProject("Grails Application");
+//        try {
+//            npwo.next();
+//            wait(5000);
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//        }
+//        WizardOperator wo = new WizardOperator("New Project");
+//        wo.cancel(); 
+//        
+//        OptionsOperator optionsOper = OptionsOperator.invoke();
+//        optionsOper.selectMiscellaneous();
+//              
+//        
+//        optionsOper.ok();
+//        
+//               
+//        scanProject("http://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
+//                    "gravl-0.4.zip",
+//                    "gravl-0.4");
+//    }
     
     
 
