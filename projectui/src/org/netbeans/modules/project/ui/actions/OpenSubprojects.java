@@ -145,8 +145,8 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
                 if ( p != null ) {
                     SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
                     if(spp != null) {
-                        Set<Project> subProjects = new HashSet<Project>();
-                        fillRecursiveSubProjects(p, subProjects);
+                        Set<? extends Project> subProjects = spp.getSubprojects();
+                        //fillRecursiveSubProjects(p, subProjects);
                         if(!subProjects.isEmpty()) {
                             existSubProjects = true;
                         }
@@ -192,7 +192,7 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
         return menu;
     }
     
-    private void fillRecursiveSubProjects(Project p, Set<Project> subProjects) {
+    /*private void fillRecursiveSubProjects(Project p, Set<Project> subProjects) {
         SubprojectProvider spp = p.getLookup().lookup(SubprojectProvider.class);
         if(spp.getSubprojects() == null 
                 || (spp.getSubprojects() != null && spp.getSubprojects().isEmpty())) {
@@ -202,6 +202,6 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
         for(Project prjIter:spp.getSubprojects()) {
             fillRecursiveSubProjects(prjIter, subProjects);
         }
-    }
+    }*/
     
 }
