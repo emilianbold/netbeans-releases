@@ -60,7 +60,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,7 +82,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -102,7 +103,6 @@ import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -116,6 +116,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.NumberFormatter;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -138,7 +139,9 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
+import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -172,6 +175,11 @@ public class IssuePanel extends javax.swing.JPanel {
     private static final String SECTION_ATTRIBUTES = ".attributes"; //NOI18N
     private static final String SECTION_ATTACHMENTS = ".attachments"; //NOI18N
     private static final String SECTION_COMMENTS = ".comments"; //NOI18N
+    private static final String SECTION_PRIVATE = ".private"; //NOI18N
+    private static final String ATTRIBUTE_PRIVATE_NOTES = "nb.private.notes"; //NOI18N
+    private static final String ATTRIBUTE_ESTIMATE = "nb.estimate"; //NOI18N
+    private static final String ATTRIBUTE_DUE_DATE = "nb.due.date"; //NOI18N
+    private static final String ATTRIBUTE_SCHEDULE_DATE = "nb.schedule.date"; //NOI18N
     private BugzillaIssue issue;
     private CommentsPanel commentsPanel;
     private AttachmentsPanel attachmentsPanel;
@@ -182,7 +190,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean usingTargetMilestones;
     private OwnerInfo ownerInfo;
     private UndoRedoSupport undoRedoSupport;
-    private final Set<IssueField> unsavedFields = new HashSet<>();
+    private final Set<String> unsavedFields = new HashSet<>();
     private boolean customFieldsLoaded;
 
     static {
@@ -195,6 +203,25 @@ public class IssuePanel extends javax.swing.JPanel {
     private Action[] attributesSectionActions;
     private Action[] attachmentsSectionActions;
     private Action[] commentsSectionActions;
+    private Action[] privateSectionActions;
+    private final IDEServices.DatePickerComponent dueDatePicker;
+    private final IDEServices.DatePickerComponent scheduleDatePicker;
+    private static final NumberFormatter estimateFormatter = new NumberFormatter(new java.text.DecimalFormat("#0")) {
+
+        @Override
+        public Object stringToValue (String text) throws ParseException {
+            Number value = (Number) super.stringToValue(text);
+            if (value == null) {
+                value = 0;
+            }
+            if (value.intValue() < 0) {
+                return 0;
+            } else {
+                return value.intValue();
+            }
+        }
+
+    };
     
     public IssuePanel() {
         initComponents();
@@ -238,6 +265,22 @@ public class IssuePanel extends javax.swing.JPanel {
         ((GroupLayout) commentsSectionPanel.getLayout()).replace(dummyCommentsPanel, commentsPanel);
         ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyTimetrackingPanel, timetrackingPanel);
         ((GroupLayout) attachmentsSectionPanel.getLayout()).replace(dummyAttachmentsPanel, attachmentsPanel);
+        GroupLayout layout = (GroupLayout) privatePanel.getLayout();
+        dueDatePicker = BugtrackingUtil.createDatePickerComponent();
+        scheduleDatePicker = BugtrackingUtil.createDatePickerComponent();
+        layout.replace(dummyDueDateField, dueDatePicker.getComponent());
+        dueDateLabel.setLabelFor(dueDatePicker.getComponent());
+        layout.replace(dummyScheduleDateField, scheduleDatePicker.getComponent());
+        scheduleDateLabel.setLabelFor(scheduleDatePicker.getComponent());
+        privateNotesField.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate (CaretEvent e) {
+                makeCaretVisible(privateNotesField);
+            }
+        });
+        // A11Y - Issues 163597 and 163598
+        UIUtils.fixFocusTraversalKeys(privateNotesField);
+
         initSpellChecker();
         initDefaultButton();
 
@@ -327,10 +370,10 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 if (enableMap.isEmpty()) {
                     btnSaveChanges.setEnabled(isDirty);
-                    cancelButton.setEnabled(isModified);
+                    cancelButton.setEnabled(isModified || isDirty);
                 } else {
                     enableMap.put(btnSaveChanges, isDirty);
-                    enableMap.put(cancelButton, isModified);
+                    enableMap.put(cancelButton, isModified || isDirty);
                 }
             }
         });
@@ -529,14 +572,9 @@ public class IssuePanel extends javax.swing.JPanel {
         btnDeleteTask.setVisible(isNew);
         separatorDismissButton.setVisible(isNew);
         separatorLabel3.setVisible(!isNew);
-        addToCategoryButton.setVisible(!isNew);
-        separatorLabel2.setVisible(!isNew);
         showInBrowserButton.setVisible(!isNew);
         separatorLabel4.setVisible(!isNew);
-        if (!isNew) {
-            Border sep2Border = BorderFactory.createLineBorder(Color.BLACK);
-            separatorLabel2.setBorder(sep2Border); // IssueProvider 180431
-        }
+        privateSection.setVisible(!isNew);
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -617,6 +655,13 @@ public class IssuePanel extends javax.swing.JPanel {
                 String modifiedTxt = modification != null ? DateFormat.getDateTimeInstance().format(modification) : ""; // NOI18N
                 modifiedField.setText(modifiedTxt);
                 fixPrefSize(modifiedField);
+                
+                privateNotesField.setText(issue.getPrivateNotes());
+                dueDatePicker.setDate(issue.getDueDate());
+                NbDateRange scheduleDate = issue.getScheduleDate();
+                scheduleDatePicker.setDate(scheduleDate == null ? null : scheduleDate.getStartDate().getTime());
+                estimateField.setValue(issue.getEstimate());
+                dueDatePicker.getComponent().setEnabled(!hasTimeTracking);
                 
                 // time tracking
                 if(hasTimeTracking) {
@@ -723,7 +768,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatuses();
         updateNoSummary();
         updateMessagePanel();
-        cancelButton.setEnabled(issue.hasLocalEdits());
+        cancelButton.setEnabled(issue.hasLocalEdits() || !unsavedFields.isEmpty());
         reloading = false;
         repaint();
     }
@@ -755,7 +800,7 @@ public class IssuePanel extends javax.swing.JPanel {
         } else {
             newValue = issue.getFieldValue(field);
         }
-        boolean fieldDirty = unsavedFields.contains(field);
+        boolean fieldDirty = unsavedFields.contains(field.getKey());
         if (!fieldDirty) {
             if (component instanceof JComboBox) {
                 JComboBox combo = (JComboBox)component;
@@ -847,7 +892,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 lastSeenValue += " " + issue.getLastSeenFieldValue(field);
                 repositoryValue += " " + issue.getRepositoryFieldValue(field);
             }
-            fieldDirty |= unsavedFields.contains(field);
+            fieldDirty |= unsavedFields.contains(field.getKey());
             valueModifiedByUser |= (issue.getFieldStatus(field) & BugzillaIssue.FIELD_STATUS_OUTGOING) != 0;
             valueModifiedByServer |= (issue.getFieldStatus(field) & BugzillaIssue.FIELD_STATUS_MODIFIED) != 0;
         }
@@ -931,12 +976,23 @@ public class IssuePanel extends javax.swing.JPanel {
                 change = fieldsLocal.remove(IssueField.NB_NEW_ATTACHMENTS) != null;
             }
             updateIcon(attachmentsWarning);
-            if (unsavedFields.contains(IssueField.NB_NEW_ATTACHMENTS)) {
+            if (unsavedFields.contains(IssueField.NB_NEW_ATTACHMENTS.getKey())) {
                 attachmentsLabel.setFont(attachmentsLabel.getFont().deriveFont(attachmentsLabel.getFont().getStyle() | Font.BOLD));
             }
         }
         if (change && !reloading) {
             updateMessagePanel();
+        }
+    }
+    
+    private void updateFieldDecorations (String key, JComponent fieldLabel) {
+        boolean fieldDirty = unsavedFields.contains(key);
+        if (fieldLabel != null) {
+            if (fieldDirty) {
+                fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() | Font.BOLD));
+            } else {
+                fieldLabel.setFont(fieldLabel.getFont().deriveFont(fieldLabel.getFont().getStyle() & ~Font.BOLD));
+            }
         }
     }
 
@@ -1193,6 +1249,12 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldDecorations(addCommentArea, IssueField.COMMENT, commentWarning, newCommentSection.getLabelComponent());
         updateCustomFieldStatuses();
         updateAttachmentsStatus();
+        
+        updateFieldDecorations(ATTRIBUTE_PRIVATE_NOTES, notesLabel);
+        updateFieldDecorations(ATTRIBUTE_DUE_DATE, dueDateLabel);
+        updateFieldDecorations(ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel);
+        updateFieldDecorations(ATTRIBUTE_ESTIMATE, estimateLabel);
+        
         repaint();
     }
 
@@ -1241,7 +1303,7 @@ public class IssuePanel extends javax.swing.JPanel {
             values.add(value.toString());
         }
         if (!issue.getFieldValues(field).equals(values)) {
-            unsavedFields.add(field);
+            unsavedFields.add(field.getKey());
             issue.setFieldValues(field, values);
         }
     }
@@ -1261,7 +1323,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 issue.setFieldValue(IssueField.RESOLUTION, ""); //NOI18N
             } else if (value.equals("RESOLVED")) { // NOI18N
                 issue.resolve(resolutionCombo.getSelectedItem().toString());
-                unsavedFields.add(IssueField.RESOLUTION);
+                unsavedFields.add(IssueField.RESOLUTION.getKey());
                 issue.setFieldValue(IssueField.RESOLUTION, resolutionCombo.getSelectedItem().toString());
             } else if (value.equals("ASSIGNED")) { // NOI18N
                 issue.accept();
@@ -1275,7 +1337,7 @@ public class IssuePanel extends javax.swing.JPanel {
             if (value.equals("DUPLICATE")) {
                 issue.duplicate(duplicateField.getText().trim());
                 if (!duplicateField.getText().trim().equals(issue.getFieldValue(IssueField.DUPLICATE_ID))) {
-                    unsavedFields.add(IssueField.DUPLICATE_ID);
+                    unsavedFields.add(IssueField.DUPLICATE_ID.getKey());
                     issue.setFieldValue(IssueField.DUPLICATE_ID, duplicateField.getText().trim());
                 }
             } else {
@@ -1284,13 +1346,13 @@ public class IssuePanel extends javax.swing.JPanel {
         } else if (field == IssueField.DUPLICATE_ID && "RESOLVED".equals(statusCombo.getSelectedItem())
                 && "DUPLICATE".equals(resolutionCombo.getSelectedItem())) {
             issue.duplicate(value);
-            unsavedFields.add(field);
+            unsavedFields.add(field.getKey());
         } else if ((field == IssueField.ASSIGNED_TO) && !issue.isNew()) {
             issue.reassign(value);
-            unsavedFields.add(field);
+            unsavedFields.add(field.getKey());
         }
         if (changed || !issue.getFieldValue(field).equals(value)) {
-            unsavedFields.add(field);
+            unsavedFields.add(field.getKey());
             issue.setFieldValue(field, value);
         }
     }
@@ -1500,6 +1562,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private void initSpellChecker () {
         Spellchecker.register(summaryField);
         Spellchecker.register(addCommentArea);
+        Spellchecker.register(privateNotesField);
     }
 
     private List<CustomFieldInfo> customFields = new LinkedList<>();
@@ -1770,7 +1833,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
                 Insets insets = getInsets();
                 int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
-                dim = new Dimension(dim.width, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
+                dim = new Dimension(0, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
                 return dim;
             }
         };
@@ -1778,10 +1841,34 @@ public class IssuePanel extends javax.swing.JPanel {
         viewLogButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         commentWarning = new javax.swing.JLabel();
         messagePanel = new javax.swing.JPanel();
+        privatePanel = new javax.swing.JPanel();
+        dueDateLabel = new javax.swing.JLabel();
+        dummyDueDateField = new javax.swing.JTextField();
+        scheduleDateLabel = new javax.swing.JLabel();
+        dummyScheduleDateField = new javax.swing.JTextField();
+        estimateLabel = new javax.swing.JLabel();
+        estimateField = new javax.swing.JFormattedTextField();
+        notesLabel = new javax.swing.JLabel();
+        privateNotesScrollPane = new javax.swing.JScrollPane();
+        privateNotesField = new javax.swing.JTextArea() {
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                Dimension dim = super.getPreferredScrollableViewportSize();
+                JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+                int delta = 0;
+                if (scrollPane != null) {
+                    Component comp = scrollPane.getHorizontalScrollBar();
+                    delta = comp.isVisible() ? comp.getHeight() : 0;
+                }
+                Insets insets = getInsets();
+                int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
+                dim = new Dimension(0, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
+                return dim;
+            }
+        };
         headerPanel = new javax.swing.JPanel();
         headerField = new javax.swing.JTextField();
         buttonsPanel = new javax.swing.JPanel();
-        addToCategoryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel4 = new javax.swing.JLabel();
         separatorLabel6 = new javax.swing.JLabel();
         btnSaveChanges = new org.netbeans.modules.bugtracking.util.LinkButton();
@@ -1790,7 +1877,6 @@ public class IssuePanel extends javax.swing.JPanel {
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         cancelButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        separatorLabel2 = new javax.swing.JLabel();
         submitButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         btnDeleteTask = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel5 = new javax.swing.JLabel();
@@ -1808,6 +1894,7 @@ public class IssuePanel extends javax.swing.JPanel {
         }
         ;
         commentsSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
+        privateSection = new org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel();
 
         FormListener formListener = new FormListener();
 
@@ -2131,7 +2218,6 @@ public class IssuePanel extends javax.swing.JPanel {
                                 .addComponent(keywordsField, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(keywordsButton))
-                            .addComponent(statusWhiteboardField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(targetMilestoneCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2196,9 +2282,10 @@ public class IssuePanel extends javax.swing.JPanel {
                                             .addComponent(duplicateButton, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(dependsOnButton, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(blocksButton, javax.swing.GroupLayout.Alignment.TRAILING))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                                .addGap(18, 18, Short.MAX_VALUE)
                                 .addComponent(assignedToStatusLabel))))
-                    .addComponent(summaryField)))
+                    .addComponent(summaryField)
+                    .addComponent(statusWhiteboardField)))
             .addGroup(attributesSectionPanelLayout.createSequentialGroup()
                 .addGroup(attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(dummyLabel1)
@@ -2209,9 +2296,9 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGap(300, 300, 300))
         );
 
-        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {assignedField, ccField, componentCombo, issueTypeCombo, productCombo, qaContactField, resolutionField, statusCombo, statusWhiteboardField, targetMilestoneCombo, urlField, versionCombo});
-
         attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {osCombo, platformCombo, priorityCombo, severityCombo});
+
+        attributesSectionPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {assignedField, ccField, componentCombo, issueTypeCombo, productCombo, qaContactField, resolutionField, statusCombo, targetMilestoneCombo, urlField, versionCombo});
 
         attributesSectionPanelLayout.setVerticalGroup(
             attributesSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2432,11 +2519,13 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGroup(newCommentSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(newCommentSectionPanelLayout.createSequentialGroup()
-                        .addComponent(attachLogCheckBox)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(viewLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(scrollPane1))
+                        .addGroup(newCommentSectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(newCommentSectionPanelLayout.createSequentialGroup()
+                                .addComponent(attachLogCheckBox)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(viewLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(scrollPane1))
+                        .addGap(0, 0, 0)))
                 .addGap(0, 0, 0))
         );
         newCommentSectionPanelLayout.setVerticalGroup(
@@ -2455,6 +2544,71 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGap(0, 0, 0))
         );
 
+        privatePanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+
+        dueDateLabel.setLabelFor(dummyDueDateField);
+        org.openide.awt.Mnemonics.setLocalizedText(dueDateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueDateLabel.text")); // NOI18N
+        dueDateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueDateLabel.TTtext")); // NOI18N
+
+        scheduleDateLabel.setLabelFor(dummyScheduleDateField);
+        org.openide.awt.Mnemonics.setLocalizedText(scheduleDateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.scheduleDateLabel.text")); // NOI18N
+        scheduleDateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.scheduleDateLabel.TTtext")); // NOI18N
+
+        estimateLabel.setLabelFor(estimatedField);
+        org.openide.awt.Mnemonics.setLocalizedText(estimateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.estimateLabel.text")); // NOI18N
+        estimateLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.estimateLabel.TTtext")); // NOI18N
+
+        estimateField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(estimateFormatter));
+        estimateField.setText("0");
+        estimateField.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.estimateField.toolTipText")); // NOI18N
+
+        notesLabel.setLabelFor(privateNotesField);
+        org.openide.awt.Mnemonics.setLocalizedText(notesLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.notesLabel.text")); // NOI18N
+        notesLabel.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.notesLabel.TTtext")); // NOI18N
+
+        privateNotesField.setColumns(20);
+        privateNotesField.setLineWrap(true);
+        privateNotesField.setWrapStyleWord(true);
+        privateNotesScrollPane.setViewportView(privateNotesField);
+
+        javax.swing.GroupLayout privatePanelLayout = new javax.swing.GroupLayout(privatePanel);
+        privatePanel.setLayout(privatePanelLayout);
+        privatePanelLayout.setHorizontalGroup(
+            privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(privatePanelLayout.createSequentialGroup()
+                .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(notesLabel)
+                    .addComponent(dueDateLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(privatePanelLayout.createSequentialGroup()
+                        .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(scheduleDateLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dummyScheduleDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(estimateLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(estimateField, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(privateNotesScrollPane)))
+        );
+        privatePanelLayout.setVerticalGroup(
+            privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(privatePanelLayout.createSequentialGroup()
+                .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dueDateLabel)
+                    .addComponent(dummyDueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scheduleDateLabel)
+                    .addComponent(dummyScheduleDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(estimateLabel)
+                    .addComponent(estimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(privatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(notesLabel)
+                    .addComponent(privateNotesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+        );
+
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         headerPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
@@ -2463,9 +2617,6 @@ public class IssuePanel extends javax.swing.JPanel {
         headerField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         buttonsPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(addToCategoryButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
-        addToCategoryButton.addActionListener(formListener);
 
         separatorLabel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -2490,8 +2641,6 @@ public class IssuePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(showInBrowserButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.showInBrowserButton.text")); // NOI18N
         showInBrowserButton.addActionListener(formListener);
 
-        separatorLabel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text")); // NOI18N
         submitButton.addActionListener(formListener);
 
@@ -2507,10 +2656,6 @@ public class IssuePanel extends javax.swing.JPanel {
             buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(buttonsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(separatorLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separatorLabel3)
@@ -2541,9 +2686,7 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGroup(buttonsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(separatorLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(separatorLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addToCategoryButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(separatorLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(submitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnSaveChanges, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2554,7 +2697,7 @@ public class IssuePanel extends javax.swing.JPanel {
                     .addComponent(separatorLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
 
-        buttonsPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, separatorLabel2, separatorLabel3, showInBrowserButton});
+        buttonsPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, separatorLabel3, showInBrowserButton});
 
         refreshButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.AccessibleContext.accessibleDescription")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.cancelButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -2621,6 +2764,11 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addGap(0, 0, 0))
         );
 
+        privateSection.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
+        privateSection.setActions(getPrivateSectionActions());
+        privateSection.setContent(privatePanel);
+        privateSection.setLabel(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.privateAttributesSection.text")); // NOI18N
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -2628,8 +2776,9 @@ public class IssuePanel extends javax.swing.JPanel {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(attachmentsSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(attributesSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(attachmentsSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(privateSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(newCommentSection, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
@@ -2641,6 +2790,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 .addComponent(attributesSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(attachmentsSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(privateSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(newCommentSection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -2654,8 +2805,8 @@ public class IssuePanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mainScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)
             .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mainScrollPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2672,10 +2823,7 @@ public class IssuePanel extends javax.swing.JPanel {
     private class FormListener implements java.awt.event.ActionListener, java.awt.event.FocusListener {
         FormListener() {}
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == addToCategoryButton) {
-                IssuePanel.this.addToCategoryButtonActionPerformed(evt);
-            }
-            else if (evt.getSource() == btnSaveChanges) {
+            if (evt.getSource() == btnSaveChanges) {
                 IssuePanel.this.btnSaveChangesActionPerformed(evt);
             }
             else if (evt.getSource() == refreshButton) {
@@ -2908,7 +3056,7 @@ public class IssuePanel extends javax.swing.JPanel {
         String removedCCs = getMissingCCs(oldCCs, newCCs);
         String addedCCs = getMissingCCs(newCCs, oldCCs);
 
-        unsavedFields.add(IssueField.CC);
+        unsavedFields.add(IssueField.CC.getKey());
         issue.setFieldValues(IssueField.CC, new ArrayList<>(ccs(ccField.getText())));
         storeFieldValue(IssueField.REMOVECC, removedCCs);
         storeFieldValue(IssueField.NEWCC, addedCCs);
@@ -3110,10 +3258,6 @@ public class IssuePanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
-    private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
-        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
-    }//GEN-LAST:event_addToCategoryButtonActionPerformed
-
     private void assignedComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignedComboActionPerformed
         cancelHighlight(assignedLabel);
         if (!reloading) {
@@ -3307,7 +3451,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void run() {
                 boolean cleared = false;
                 try {
-                    cleared = issue.cancelChanges();
+                    cleared = issue.discardLocalEdits();
                 } finally {
                     final boolean fCleared = cleared;
                     EventQueue.invokeLater(new Runnable() {
@@ -3353,7 +3497,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel actualLabel;
     private javax.swing.JLabel actualWarning;
     private javax.swing.JTextArea addCommentArea;
-    private org.netbeans.modules.bugtracking.util.LinkButton addToCategoryButton;
     private javax.swing.JCheckBox assignToDefaultCheckBox;
     private javax.swing.JComboBox assignedCombo;
     private javax.swing.JTextField assignedField;
@@ -3395,17 +3538,22 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel dependsLabel;
     private javax.swing.JButton dependsOnButton;
     private javax.swing.JLabel dependsOnWarning;
+    private javax.swing.JLabel dueDateLabel;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyCommentsPanel;
+    private javax.swing.JTextField dummyDueDateField;
     private javax.swing.JLabel dummyLabel1;
     private javax.swing.JLabel dummyLabel2;
     private javax.swing.JLabel dummyLabel3;
+    private javax.swing.JTextField dummyScheduleDateField;
     private javax.swing.JLabel dummyTimetrackingLabel;
     private javax.swing.JPanel dummyTimetrackingPanel;
     private javax.swing.JButton duplicateButton;
     private javax.swing.JTextField duplicateField;
     private javax.swing.JLabel duplicateLabel;
     private javax.swing.JLabel duplicateWarning;
+    private javax.swing.JFormattedTextField estimateField;
+    private javax.swing.JLabel estimateLabel;
     private javax.swing.JTextField estimatedField;
     private javax.swing.JLabel estimatedLabel;
     private javax.swing.JLabel estimatedWarning;
@@ -3431,6 +3579,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel modifiedLabel;
     private org.netbeans.modules.bugtracking.util.SectionPanel newCommentSection;
     private javax.swing.JPanel newCommentSectionPanel;
+    private javax.swing.JLabel notesLabel;
     private javax.swing.JComboBox osCombo;
     private javax.swing.JComboBox platformCombo;
     private javax.swing.JLabel platformLabel;
@@ -3438,6 +3587,10 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JComboBox priorityCombo;
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JLabel priorityWarning;
+    private javax.swing.JTextArea privateNotesField;
+    private javax.swing.JScrollPane privateNotesScrollPane;
+    private javax.swing.JPanel privatePanel;
+    private org.netbeans.modules.bugtracking.util.CollapsibleSectionPanel privateSection;
     private javax.swing.JComboBox productCombo;
     private javax.swing.JTextField productField;
     private javax.swing.JLabel productLabel;
@@ -3456,9 +3609,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField resolutionField;
     private javax.swing.JLabel resolutionLabel;
     private javax.swing.JLabel resolutionWarning;
+    private javax.swing.JLabel scheduleDateLabel;
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JLabel separatorDismissButton;
-    private javax.swing.JLabel separatorLabel2;
     private javax.swing.JLabel separatorLabel3;
     private javax.swing.JLabel separatorLabel4;
     private javax.swing.JLabel separatorLabel5;
@@ -3581,6 +3734,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, !attributesSection.isExpanded());
         config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, !attachmentsSection.isExpanded());
         config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, !commentsSection.isExpanded());
+        config.setEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, !privateSection.isExpanded());
     }
 
     private void restoreSections () {
@@ -3590,6 +3744,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         attributesSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTRIBUTES, false));
         attachmentsSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_ATTACHMENTS, true));
         commentsSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_COMMENTS, false));
+        privateSection.setExpanded(!config.isEditorSectionCollapsed(repositoryId, taskId, SECTION_PRIVATE, true));
     }
 
     private double getDoubleValue(JComponent field) {
@@ -3656,7 +3811,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             void fieldModified () {
                 if (!(reloading || issue.isNew())) {
                     issue.setFieldValue(IssueField.COMMENT, addCommentArea.getText().trim());
-                    unsavedFields.add(IssueField.COMMENT);
+                    unsavedFields.add(IssueField.COMMENT.getKey());
                     updateDecorations();
                 }
             }
@@ -3744,11 +3899,58 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void stateChanged (ChangeEvent e) {
                 if (!reloading && attachmentsPanel.isVisible()) {
                     if (issue.setUnsubmittedAttachments(attachmentsPanel.getNewAttachments())) {
-                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS);
+                        unsavedFields.add(IssueField.NB_NEW_ATTACHMENTS.getKey());
                         updateAttachmentsStatus();
                     }
                 }
             }
+        });
+        privateNotesField.getDocument().addDocumentListener(new TaskAttributeListener(privateNotesField, ATTRIBUTE_PRIVATE_NOTES, notesLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                issue.setTaskPrivateNotes(privateNotesField.getText());
+                return true;
+            }
+        });
+        dueDatePicker.addChangeListener(new DatePickerListener(dueDatePicker,
+                ATTRIBUTE_DUE_DATE, dueDateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                issue.setTaskDueDate(dueDatePicker.getDate());
+                return true;
+            }
+        });
+        scheduleDatePicker.addChangeListener(new DatePickerListener(scheduleDatePicker,
+                ATTRIBUTE_SCHEDULE_DATE, scheduleDateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                Date date = scheduleDatePicker.getDate();
+                Calendar cal = null;
+                if (date != null) {
+                    cal = Calendar.getInstance();
+                    cal.setTime(date);
+                }
+                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                return true;
+            }
+        });
+        estimateField.getDocument().addDocumentListener(new TaskAttributeListener(estimateField,
+                ATTRIBUTE_ESTIMATE, estimateLabel) {
+
+            @Override
+            protected boolean storeValue () {
+                int value = ((Number) estimateField.getValue()).intValue();
+                if (value != issue.getEstimate()) {
+                    issue.setTaskEstimate(value);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            
         });
     }
     
@@ -3854,6 +4056,22 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             attachmentsSectionActions = actions.toArray(new Action[actions.size()]);
         }
         return attachmentsSectionActions;
+    }
+    
+    @NbBundle.Messages("IssuePanel.addToCategory.text=Add to Category")
+    private Action[] getPrivateSectionActions () {
+        if (privateSectionActions == null) {
+            privateSectionActions = new Action[] {
+                new AbstractAction(Bundle.IssuePanel_addToCategory_text()) {
+                
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
+                    }
+                }
+            };
+        }
+        return privateSectionActions;
     }
 
     private void storeFieldValueForNewIssue (IssueField f, JComponent component) {
@@ -4045,6 +4263,87 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         protected final void updateDecorations () {
             updateFieldDecorations(warningLabel, fieldLabel, fieldName, decoratedFields);
         }
+    }
+    
+    private abstract class TaskAttributeListener implements DocumentListener {
+
+        private final String attributeName;
+        private final JComponent component;
+        private final JComponent fieldLabel;
+
+        public TaskAttributeListener (JComponent component, String attributeName, JComponent fieldLabel) {
+            this.component = component;
+            this.attributeName = attributeName;
+            this.fieldLabel = fieldLabel;
+        }
+
+        @Override
+        public final void insertUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        @Override
+        public final void removeUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        @Override
+        public final void changedUpdate (DocumentEvent e) {
+            fieldModified();
+        }
+
+        void fieldModified () {
+            if (!reloading && isEnabled() && storeValue()) {
+                unsavedFields.add(attributeName);
+                updateDecorations();
+            }
+        }
+
+        public boolean isEnabled () {
+            return component.isVisible() && component.isEnabled();
+        }
+
+        protected final void updateDecorations () {
+            updateFieldDecorations(attributeName, fieldLabel);
+        }
+
+        protected abstract boolean storeValue ();
+    }
+
+    private abstract class DatePickerListener implements ChangeListener {
+
+        private final String attributeName;
+        private final IDEServices.DatePickerComponent component;
+        private final JComponent fieldLabel;
+
+        public DatePickerListener (IDEServices.DatePickerComponent component,
+                String attributeName, JComponent fieldLabel) {
+            this.component = component;
+            this.attributeName = attributeName;
+            this.fieldLabel = fieldLabel;
+        }
+
+        void fieldModified () {
+            if (!reloading && isEnabled() && storeValue()) {
+                unsavedFields.add(attributeName);
+                updateDecorations();
+            }
+        }
+
+        @Override
+        public void stateChanged (ChangeEvent e) {
+            fieldModified();
+        }
+        
+        public boolean isEnabled () {
+            return component.getComponent().isVisible() && component.getComponent().isEnabled();
+        }
+
+        protected final void updateDecorations () {
+            updateFieldDecorations(attributeName, fieldLabel);
+        }
+
+        protected abstract boolean storeValue ();
     }
 
     class CancelHighlightDocumentListener implements DocumentListener {

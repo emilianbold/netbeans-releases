@@ -106,6 +106,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
+import org.netbeans.modules.mylyn.util.NbDateRange;
 
 /**
  *
@@ -1378,6 +1379,42 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
         return getNewAttachments();
+    }
+
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskDueDate (Date date) {
+        if (hasTimeTracking()) {
+            throw new UnsupportedOperationException();
+        }
+        super.setDueDate(date);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskScheduleDate (NbDateRange date) {
+        super.setScheduleDate(date);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskEstimate (int estimate) {
+        super.setEstimate(estimate);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
     }
 
     class Comment {
