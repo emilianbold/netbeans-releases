@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.ui.SelectAppServerPanel;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -143,12 +144,23 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             err.println("NetBeans: Application Server deployment not available for Maven project '" + ProjectUtils.getInformation(project).getDisplayName() + "'"); // NOI18N
             return;
         }
-        String serverInstanceID = jmp.getServerInstanceID();
-        if (DEV_NULL.equals(serverInstanceID)) {
-            err.println();
-            err.println();
-            err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
-            return;
+
+        String serverInstanceID = null;
+
+        // First check if the one-time deployment server is set
+        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+        if (oneTimeDeployment != null) {
+            serverInstanceID = oneTimeDeployment.getServerInstanceId();
+        }
+
+        if (serverInstanceID == null) {
+            serverInstanceID = jmp.getServerInstanceID();
+            if (DEV_NULL.equals(serverInstanceID)) {
+                err.println();
+                err.println();
+                err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
+                return;
+            }
         }
         ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
@@ -232,6 +244,12 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
+        }
+
+        // Reset the value of the one-time server
+        if (oneTimeDeployment != null) {
+            oneTimeDeployment.reset();
+            MavenProjectSupport.changeServer(project, false);
         }
     }
     
