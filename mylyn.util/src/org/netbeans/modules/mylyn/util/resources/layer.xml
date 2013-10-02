@@ -5,6 +5,7 @@
         <folder name="Tasks">
             <attr name="displayName"
                   bundlevalue="org.netbeans.modules.mylyn.util.Bundle#Tasks_Import_Display_Name"/>
+            <attr name="position" intvalue="900"/>
             <file name="TaskStorage">
                 <attr name="include"
                       stringvalue="var/tasks/mylyn/.*|config/Preferences/org/netbeans/modules/mylyn/util[.]properties"/>
