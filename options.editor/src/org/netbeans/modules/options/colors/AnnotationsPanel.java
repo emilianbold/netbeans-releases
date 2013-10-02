@@ -125,7 +125,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lCategory.setLabelFor (lCategories);
         loc(lCategory, "CTL_Category");
         loc(lForeground, "CTL_Foreground_label");
-        loc(lWaveUnderlined, "CTL_Wave_underlined_label");
+        loc(lEffectColor, "CTL_Effects_color");
         loc(lbackground, "CTL_Background_label");
         
         cbEffects.addItem (loc ("CTL_Effects_None"));
@@ -148,7 +148,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lCategories = new javax.swing.JList<AttributeSet>();
         lForeground = new javax.swing.JLabel();
         lbackground = new javax.swing.JLabel();
-        lWaveUnderlined = new javax.swing.JLabel();
+        lEffectColor = new javax.swing.JLabel();
         cbForeground = new ColorComboBox();
         cbBackground = new ColorComboBox();
         cbEffectColor = new ColorComboBox();
@@ -163,7 +163,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 
         lbackground.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Background_label")); // NOI18N
 
-        lWaveUnderlined.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Wave_underlined_label")); // NOI18N
+        lEffectColor.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Effects_color")); // NOI18N
 
         lEffects.setLabelFor(cbEffects);
         lEffects.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Effects_label")); // NOI18N
@@ -176,17 +176,17 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
                         .addGap(20, 20, 20)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lbackground)
                             .addComponent(lForeground)
                             .addComponent(lEffects)
-                            .addComponent(lWaveUnderlined))
+                            .addComponent(lEffectColor))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbEffectColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 122, Short.MAX_VALUE)
+                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 138, Short.MAX_VALUE)
                             .addComponent(cbBackground, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(cbEffects, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(lCategory))
@@ -213,7 +213,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                             .addComponent(cbEffects, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lWaveUnderlined)
+                            .addComponent(lEffectColor)
                             .addComponent(cbEffectColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
@@ -232,9 +232,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
     private javax.swing.JScrollPane cpCategories;
     private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
+    private javax.swing.JLabel lEffectColor;
     private javax.swing.JLabel lEffects;
     private javax.swing.JLabel lForeground;
-    private javax.swing.JLabel lWaveUnderlined;
     private javax.swing.JLabel lbackground;
     // End of variables declaration//GEN-END:variables
     
