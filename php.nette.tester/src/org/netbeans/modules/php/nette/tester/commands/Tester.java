@@ -56,11 +56,13 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.nette.tester.TesterTestingProvider;
 import org.netbeans.modules.php.nette.tester.options.TesterOptions;
+import org.netbeans.modules.php.nette.tester.options.TesterOptionsValidator;
 import org.netbeans.modules.php.nette.tester.run.TapParser;
 import org.netbeans.modules.php.nette.tester.run.TestCaseVo;
 import org.netbeans.modules.php.nette.tester.run.TestSuiteVo;
@@ -91,6 +93,7 @@ public final class Tester {
 
     private static final String TAP_FORMAT_PARAM = "--tap"; // NOI18N
     private static final String SKIP_INFO_PARAM = "-s"; // NOI18N
+    private static final String PHP_INI_PARAM = "-c"; // NOI18N
 
     private final String testerPath;
 
@@ -101,12 +104,11 @@ public final class Tester {
     }
 
     public static Tester getDefault() throws InvalidPhpExecutableException {
-        String script = TesterOptions.getInstance().getTesterPath();
-        String error = validate(script);
+        String error = validateDefault();
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new Tester(script);
+        return new Tester(TesterOptions.getInstance().getTesterPath());
     }
 
     @CheckForNull
@@ -122,20 +124,46 @@ public final class Tester {
         File file = FileUtil.toFile(fileObject);
         assert file != null : "File not found fileobject: " + fileObject;
         String path = file.getAbsolutePath();
-        String error = validate(path);
+        String error = validatePhpModule(phpModule);
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
         return new Tester(path);
     }
 
-    @NbBundle.Messages("Tester.file.label=Tester file")
-    public static String validate(String command) {
-        return PhpExecutableValidator.validateCommand(command, Bundle.Tester_file_label());
-    }
-
     public static boolean isTestMethod(PhpClass.Method method) {
         return method.getName().startsWith("test"); // NOI18N
+    }
+
+    @CheckForNull
+    private static String validateDefault() {
+        String testerPath = TesterOptions.getInstance().getTesterPath();
+        String phpIniPath = TesterOptions.getInstance().getPhpIniPath();
+        ValidationResult result = new TesterOptionsValidator()
+                .validate(testerPath, phpIniPath)
+                .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validatePhpModule(PhpModule phpModule) {
+        String testerPath = TesterOptions.getInstance().getTesterPath();
+        String phpIniPath = TesterOptions.getInstance().getPhpIniPath();
+        ValidationResult result = new TesterOptionsValidator()
+                .validate(testerPath, phpIniPath)
+                .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validateResult(ValidationResult result) {
+        if (result.isFaultless()) {
+            return null;
+        }
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        return result.getWarnings().get(0).getMessage();
     }
 
     @CheckForNull
@@ -144,6 +172,7 @@ public final class Tester {
         List<String> params = new ArrayList<>();
         params.add(TAP_FORMAT_PARAM);
         params.add(SKIP_INFO_PARAM);
+        addPhpIni(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
             // XXX add coverage params once tester supports it
             LOGGER.info("Nette Tester currently does not support code coverage via command line");
@@ -221,6 +250,15 @@ public final class Tester {
                 //break;
             default:
                 throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
+        }
+    }
+
+    private void addPhpIni(PhpModule phpModule, List<String> params) {
+        // XXX add project specific php.ini
+        String phpIniPath = TesterOptions.getInstance().getPhpIniPath();
+        if (StringUtils.hasText(phpIniPath)) {
+            params.add(PHP_INI_PARAM);
+            params.add(phpIniPath);
         }
     }
 
