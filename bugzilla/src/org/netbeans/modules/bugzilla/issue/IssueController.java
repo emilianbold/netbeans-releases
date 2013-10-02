@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.Font;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.util.HelpCtx;
@@ -55,29 +52,18 @@ import org.openide.util.HelpCtx;
  * @author Tomas Stupka, Jan Stola
  */
 public class IssueController extends BugtrackingController {
-    private JComponent component;
-    private IssuePanel issuePanel;
+    private final IssuePanel issuePanel;
 
     public IssueController(BugzillaIssue issue) {
         IssuePanel panel = new IssuePanel();
         panel.setIssue(issue);
-        JScrollPane scrollPane = new JScrollPane(panel);
-        scrollPane.getViewport().setBackground(panel.getBackground());
-        scrollPane.setBorder(null);
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        if (font != null) {
-            int size = (int)(font.getSize()*1.5);
-            scrollPane.getHorizontalScrollBar().setUnitIncrement(size);
-            scrollPane.getVerticalScrollBar().setUnitIncrement(size);
-        }
         issuePanel = panel;
         UIUtils.keepFocusedComponentVisible(issuePanel);
-        component = scrollPane;
     }
 
     @Override
     public JComponent getComponent() {
-        return component;
+        return issuePanel;
     }
 
     @Override
