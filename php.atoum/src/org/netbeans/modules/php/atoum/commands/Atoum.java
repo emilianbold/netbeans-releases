@@ -130,7 +130,7 @@ public final class Atoum {
     }
 
     @CheckForNull
-    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) throws InvalidPhpExecutableException {
+    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         // first try the default atoum, because of validation
         InvalidPhpExecutableException defaultAtoumExc = null;
         Atoum defaultAtoum = null;
