@@ -41,8 +41,17 @@
  */
 package org.netbeans.modules.html.editor.hints;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.html.editor.spi.HintFixProvider;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -51,6 +60,10 @@ import org.netbeans.modules.csl.api.HintSeverity;
 public class Element extends PatternRule {
 
     private static final String[] PATTERNS_SOURCES = new String[]{
+        //attributes
+        "Attribute (.*?) not allowed on element (.*?) at this point",
+        "Required attributes missing on element",
+        
         //ErrorReportingTokenizer
         "The ./>. syntax on void elements is not allowed.  (This is an HTML4-only error.)",
         "No space between attributes",
@@ -68,10 +81,6 @@ public class Element extends PatternRule {
         
         "Text not allowed in element .*? in this context",
         
-        //attributes
-        "Attribute .*? not allowed on element .*? at this point",
-        "Required attributes missing on element",
-        
         //xhtml
         "XHTML element .*? not allowed as child of XHTML element .*? in this context.",
         "Attribute .*? not allowed on XHTML element .*? at this point.",
@@ -84,6 +93,8 @@ public class Element extends PatternRule {
     
     private final static Pattern[] PATTERNS = buildPatterns(PATTERNS_SOURCES);
 
+    private static final int UNKNOWN_ATTRIBUTE_PATTERN_INDEX = 0;
+    
     @Override
     public Pattern[] getPatterns() {
         return PATTERNS;
@@ -94,7 +105,39 @@ public class Element extends PatternRule {
         return HintSeverity.ERROR;
     }
     
-    
+     @Override
+    protected List<HintFix> getExtraHintFixes(org.netbeans.modules.csl.api.Error e, HtmlRuleContext context) {
+        if (matched_pattern_index == UNKNOWN_ATTRIBUTE_PATTERN_INDEX) {
+            //the "Element .*? not allowed as child of element .*? in this context." pattern
+            List<HintFix> fixes = new ArrayList<>();
+            fixes.addAll(super.getExtraHintFixes(e, context));
+            fixes.addAll(getSPIHintFixes(e, context));
+            return fixes;
+        } else {
+            return super.getExtraHintFixes(e, context);
+        }
+    }
+
+    private List<HintFix> getSPIHintFixes(org.netbeans.modules.csl.api.Error e, HtmlRuleContext context) {
+        List<HintFix> fixes = new ArrayList<>();
+        //extract the element name and name of its parent first from the error message
+        Pattern p = PATTERNS[UNKNOWN_ATTRIBUTE_PATTERN_INDEX];
+        Matcher matcher = p.matcher(e.getDescription());
+        if (matcher.matches()) {
+            String unknownElement = WebUtils.unquotedValue(matcher.group(1).trim());
+            String contextElement = WebUtils.unquotedValue(matcher.group(2).trim());
+
+            Map<String, Object> meta = new HashMap<>();
+            meta.put(HintFixProvider.UNKNOWN_ATTRIBUTE_FOUND, unknownElement);
+            meta.put(HintFixProvider.UNKNOWN_ELEMENT_CONTEXT, contextElement);
+            
+            HintFixProvider.Context ctx = new HintFixProvider.Context(context.getSnapshot(), context.getHtmlParserResult(), meta);
+            for (HintFixProvider provider : Lookup.getDefault().lookupAll(HintFixProvider.class)) {
+                fixes.addAll(provider.getHintFixes(ctx));
+            }
+        }
+        return fixes;
+    }
     
 
 }

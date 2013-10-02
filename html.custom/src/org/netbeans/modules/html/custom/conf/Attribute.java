@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.foreign;
-
-import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Named;
+package org.netbeans.modules.html.custom.conf;
 
 /**
- * Allows to resolve undeclared content in html sources.
- * 
- * @author marekfukala
+ *
+ * @author marek
  */
-public interface UndeclaredContentResolver {
-    
-     /**
-     * This method allows to bind some prefixed html source 
-     * elements and attributes to a physically undeclared namespace.
-     * 
-     * @param the html source which is being processed
-     * @return a map of namespace to prefix collection
-     */
-    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
-    
-    /**
-     * Returns true if the given element is a custom tag known to this resolver.
-     * @param element
-     * @return 
-     */
-    public boolean isCustomTag(Named element, HtmlSource source);
-   
-    /**
-     * Returns true if the given element's attribute is a custom attribute known to this resolver.
-     * 
-     * @param attribute
-     * @return 
-     */
-    public boolean isCustomAttribute(Attribute attribute, HtmlSource source);
+public class Attribute extends Element {
 
+    private final String type;
+
+    public Attribute(String name) {
+        this(name, null, null, null, null, null);
+    }
+
+    public Attribute(String name, String type, String description, String documentation, String documentationURL, Tag parent, String... contexts) {
+        super(name, description, documentation, documentationURL, parent, contexts);
+        this.type = type;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Attribute[");
+        sb.append(super.toString());
+        sb.append(',');
+        sb.append("type=");
+        sb.append(type);
+        sb.append("]");
+
+        return sb.toString();
+    }
 }

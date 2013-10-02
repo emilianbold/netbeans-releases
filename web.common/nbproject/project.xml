@@ -24,6 +24,24 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>1.76</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.47</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -224,6 +242,7 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.custom</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.html.knockout</friend>

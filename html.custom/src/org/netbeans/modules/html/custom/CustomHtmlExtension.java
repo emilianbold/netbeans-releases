@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.foreign;
+package org.netbeans.modules.html.custom;
 
-import java.util.List;
-import java.util.Map;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
- * Allows to resolve undeclared content in html sources.
- * 
- * @author marekfukala
+ *
+ * @author marek
  */
-public interface UndeclaredContentResolver {
+@MimeRegistrations({
+    @MimeRegistration(mimeType = "text/html", service = HtmlExtension.class)
+})
+public class CustomHtmlExtension extends HtmlExtension {
+
+    private Pair<HtmlSource, Configuration> cache;
+
+    @Override
+    public boolean isCustomTag(Named element, HtmlSource source) {
+        return getConfiguration(source).getRootTags().containsKey(element.name().toString());
+    }
+
+    @Override
+    public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
+        return getConfiguration(source).getRootAttributes().containsKey(attribute.name().toString());
+    }
     
-     /**
-     * This method allows to bind some prefixed html source 
-     * elements and attributes to a physically undeclared namespace.
-     * 
-     * @param the html source which is being processed
-     * @return a map of namespace to prefix collection
-     */
-    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
-    
-    /**
-     * Returns true if the given element is a custom tag known to this resolver.
-     * @param element
-     * @return 
-     */
-    public boolean isCustomTag(Named element, HtmlSource source);
-   
-    /**
-     * Returns true if the given element's attribute is a custom attribute known to this resolver.
-     * 
-     * @param attribute
-     * @return 
-     */
-    public boolean isCustomAttribute(Attribute attribute, HtmlSource source);
+    private Configuration getConfiguration(HtmlSource source) {
+        if (cache == null) {
+            //no cache - create
+            FileObject sourceFileObject = source.getSourceFileObject();
+            Project owner = FileOwnerQuery.getOwner(sourceFileObject);
+            Configuration conf = Configuration.get(owner);
+            cache = Pair.of(source, conf);
+            return cache.second();
+        } else {
+            //check if the current source is the cached one
+            if(source == cache.first()) {
+                //yes, just return cached conf
+                return cache.second();
+            } else {
+                //no, reset cache and try again
+                cache = null;
+                return getConfiguration(source);
+            }
+        }
+    }
 
 }

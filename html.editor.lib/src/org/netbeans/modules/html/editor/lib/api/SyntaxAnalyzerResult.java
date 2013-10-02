@@ -238,7 +238,7 @@ public class SyntaxAnalyzerResult {
                         case OPEN_TAG:
                         case CLOSE_TAG:
                             Named named = (Named) node;
-                            if (resolver.isCustomTag(named)) {
+                            if (resolver.isCustomTag(named, source)) {
                                 return false;
                             }
 
@@ -271,7 +271,7 @@ public class SyntaxAnalyzerResult {
             InstanceContent content = new InstanceContent();
 
             //for html5 parser
-            content.add(getMaskedAreas(FilteredContent.CUSTOM_TAGS, FilteredContent.DECLARED_FOREIGN_XHTML_CONTENT));
+            content.add(getMaskedAreas(source, FilteredContent.CUSTOM_TAGS, FilteredContent.DECLARED_FOREIGN_XHTML_CONTENT));
 
             //for SimpleXHTMLParser
             content.add(new ElementsIteratorHandle() {
@@ -451,9 +451,9 @@ public class SyntaxAnalyzerResult {
      * @since 3.18
      * @return
      */
-    public synchronized MaskedAreas getMaskedAreas(FilteredContent... filteredContent) {
+    public synchronized MaskedAreas getMaskedAreas(HtmlSource source, FilteredContent... filteredContent) {
         log("findMaskedAreas...");
-        ElementContentFilter filter = new ElementContentFilter(filteredContent);
+        ElementContentFilter filter = new ElementContentFilter(source, filteredContent);
 
         long start = System.currentTimeMillis();
         try {
@@ -688,10 +688,12 @@ public class SyntaxAnalyzerResult {
 
     private class ElementContentFilter {
 
-        private Collection<String> prefixes;
-        private Set<FilteredContent> conf;
+        private final Collection<String> prefixes;
+        private final Set<FilteredContent> conf;
+        private final HtmlSource source;
 
-        public ElementContentFilter(FilteredContent... conf) {
+        public ElementContentFilter(HtmlSource source, FilteredContent... conf) {
+            this.source = source;
             this.prefixes = getNamespacePrefixes();
             this.conf = EnumSet.of(conf[0], conf);
         }
@@ -712,7 +714,7 @@ public class SyntaxAnalyzerResult {
                                 //1. check for xmlns prefixed attrs
                                 //2. check for custom attributes
                                 if (LexerUtils.startsWith(name, "xmlns:", true, false)
-                                    || resolver.isCustomAttribute(attr)) {
+                                    || resolver.isCustomAttribute(attr, source)) {
                                     if (masks == null) {
                                         masks = new ArrayList<>();
                                     }
@@ -733,7 +735,7 @@ public class SyntaxAnalyzerResult {
 
         private boolean shouldBeFiltered(Named named) {
             //1. first check the custom tags, can be with or w/o ns prefix
-            if (conf.contains(FilteredContent.CUSTOM_TAGS) && resolver.isCustomTag(named)) {
+            if (conf.contains(FilteredContent.CUSTOM_TAGS) && resolver.isCustomTag(named, source)) {
                 return true;
             }
 
@@ -812,12 +814,12 @@ public class SyntaxAnalyzerResult {
         }
 
         @Override
-        public boolean isCustomTag(Named element) {
+        public boolean isCustomTag(Named element, HtmlSource source) {
             return false;
         }
 
         @Override
-        public boolean isCustomAttribute(Attribute attribute) {
+        public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
             return false;
         }
     
