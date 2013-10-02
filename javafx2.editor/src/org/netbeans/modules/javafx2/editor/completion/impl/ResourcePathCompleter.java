@@ -267,7 +267,7 @@ public class ResourcePathCompleter implements Completer, Completer.Factory {
         if (!FxXmlSymbols.FX_ATTR_REFERENCE_SOURCE.equals(ctx.getPropertyName())) {
             return null;
         }
-        String fxPrefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+        String fxPrefix = ctx.findFxmlNsPrefix();
         if (fxPrefix == null) {
             return null;
         }
