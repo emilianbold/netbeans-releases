@@ -65,12 +65,12 @@ import org.openide.filesystems.FileObject;
         "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
     }
 )
-public class MavenWebProjectWebRootProvider implements ProjectWebRootProvider {
+public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private WebModuleProvider webModuleProvider;
     private Project project;
 
-    public MavenWebProjectWebRootProvider(Project project) {
+    public WebProjectWebRootProvider(Project project) {
         this.project = project;
     }
 
