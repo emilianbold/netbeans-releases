@@ -499,7 +499,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                         Reformat reformat = Reformat.get(doc);
                         reformat.lock();
                         try {
-                            reformat.reformat(offset, offset + itemText.length() - 1);
+                            reformat.reformat(offset+1, offset + itemText.length() - 2);
                         } finally {
                             reformat.unlock();
                         }
