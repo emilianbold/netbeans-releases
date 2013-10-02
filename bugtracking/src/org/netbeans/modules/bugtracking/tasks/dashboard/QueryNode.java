@@ -74,8 +74,10 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private final Object LOCK = new Object();
     private TreeLabel lblSeparator;
 
+    private static final ImageIcon QUERY_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true);
+
     public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
-        super(refresh, true, parent, query.getDisplayName());
+        super(refresh, true, parent, query.getDisplayName(), QUERY_ICON);
         this.query = query;
         queryListener = new QueryListener();
     }
@@ -144,7 +146,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
-            JLabel lblIcon = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/query.png", true));
+            JLabel lblIcon = new JLabel(getIcon());
 
             panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             lblName = new TreeLabel(query.getDisplayName());
@@ -180,6 +182,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(new JLabel(), new GridBagConstraints(8, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         }
         return panel;
+    }
+
+    @Override
+    Icon getIcon() {
+        return QUERY_ICON;
     }
 
     @Override
