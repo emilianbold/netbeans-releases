@@ -267,24 +267,26 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     
     private static String createAppendText(CsmMember item, CsmClass parent, String bodyText) {
         StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
-        addTemplate(item, appendItemText);
+        addTemplate(item, parent, appendItemText);
         String type = "";
         if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
             type = returnType.getText().toString()+" "; //NOI18N
-            if (type.indexOf("::") < 0) { //NOI18N
-                CsmClassifier classifier = returnType.getClassifier();
-                if (classifier != null) {
-                    String toReplace = classifier.getName().toString();
-                    if (type.indexOf(toReplace) == 0) {
-                        CsmScope scope = classifier.getScope();
-                        if (CsmKindUtilities.isClass(scope)) {
-                            type = ((CsmClass)scope).getName()+"::"+type; //NOI18N
-                        }
-                    } else if (type.startsWith("const "+toReplace)) { //NOI18N
-                        CsmScope scope = classifier.getScope();
-                        if (CsmKindUtilities.isClass(scope)) {
-                            type = "const "+((CsmClass)scope).getName()+"::"+type.substring(6); //NOI18N
+            if (!returnType.isTemplateBased()) {
+                if (type.indexOf("::") < 0) { //NOI18N
+                    CsmClassifier classifier = returnType.getClassifier();
+                    if (classifier != null) {
+                        String toReplace = classifier.getName().toString();
+                        if (type.indexOf(toReplace) == 0) {
+                            CsmScope scope = classifier.getScope();
+                            if (CsmKindUtilities.isClass(scope)) {
+                                type = ((CsmClass)scope).getName()+"::"+type; //NOI18N
+                            }
+                        } else if (type.startsWith("const "+toReplace)) { //NOI18N
+                            CsmScope scope = classifier.getScope();
+                            if (CsmKindUtilities.isClass(scope)) {
+                                type = "const "+((CsmClass)scope).getName()+"::"+type.substring(6); //NOI18N
+                            }
                         }
                     }
                 }
@@ -292,6 +294,22 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         }
         appendItemText.append(type);
         appendItemText.append(parent.getName());
+        if (CsmKindUtilities.isTemplate(parent)) {
+            final CsmTemplate template = (CsmTemplate)parent;
+            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+            if (templateParameters.size() > 0) {
+                appendItemText.append("<");//NOI18N
+                boolean first = true;
+                for(CsmTemplateParameter param : templateParameters) {
+                    if (!first) {
+                        appendItemText.append(", "); //NOI18N
+                    }
+                    first = false;
+                    appendItemText.append(param.getName());
+                }
+                appendItemText.append(">");//NOI18N
+            }
+        }
         appendItemText.append("::"); //NOI18N
         addSignature(item, appendItemText);
         appendItemText.append(bodyText);
@@ -299,9 +317,9 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         return appendItemText.toString();
     }
 
-    private static void addTemplate(CsmMember item, StringBuilder sb) {
-        if (CsmKindUtilities.isTemplate(item)) {
-            final CsmTemplate template = (CsmTemplate)item;
+    private static void addTemplate(CsmMember item, CsmClass parent, StringBuilder sb) {
+        if (CsmKindUtilities.isTemplate(parent)) {
+            final CsmTemplate template = (CsmTemplate)parent;
             List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
             if (templateParameters.size() > 0) {
                 sb.append("template<");//NOI18N
@@ -316,8 +334,8 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                 sb.append(">\n");//NOI18N
             }
         }
-        if (CsmKindUtilities.isTemplate(item.getContainingClass())) {
-            final CsmTemplate template = (CsmTemplate)item.getContainingClass();
+        if (CsmKindUtilities.isTemplate(item)) {
+            final CsmTemplate template = (CsmTemplate)item;
             List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
             if (templateParameters.size() > 0) {
                 sb.append("template<");//NOI18N
