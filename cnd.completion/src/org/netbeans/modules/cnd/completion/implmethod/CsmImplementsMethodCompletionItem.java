@@ -267,6 +267,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
     
     private static String createAppendText(CsmMember item, CsmClass parent, String bodyText) {
         StringBuilder appendItemText = new StringBuilder("\n"); //NOI18N
+        addTemplate(item, appendItemText);
         String type = "";
         if (!CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
@@ -297,14 +298,45 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         appendItemText.append("\n"); //NOI18N
         return appendItemText.toString();
     }
+
+    private static void addTemplate(CsmMember item, StringBuilder sb) {
+        if (CsmKindUtilities.isTemplate(item)) {
+            final CsmTemplate template = (CsmTemplate)item;
+            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+            if (templateParameters.size() > 0) {
+                sb.append("template<");//NOI18N
+                boolean first = true;
+                for(CsmTemplateParameter param : templateParameters) {
+                    if (!first) {
+                        sb.append(", "); //NOI18N
+                    }
+                    first = false;
+                    sb.append(param.getText());
+                }
+                sb.append(">\n");//NOI18N
+            }
+        }
+        if (CsmKindUtilities.isTemplate(item.getContainingClass())) {
+            final CsmTemplate template = (CsmTemplate)item.getContainingClass();
+            List<CsmTemplateParameter> templateParameters = template.getTemplateParameters();
+            if (templateParameters.size() > 0) {
+                sb.append("template<");//NOI18N
+                boolean first = true;
+                for(CsmTemplateParameter param : templateParameters) {
+                    if (!first) {
+                        sb.append(", "); //NOI18N
+                    }
+                    first = false;
+                    sb.append(param.getText());
+                }
+                sb.append(">\n");//NOI18N
+            }
+        }
+    }
     
     private static void addSignature(CsmMember item, StringBuilder sb) {
         //sb.append(item.getSignature());
         sb.append(item.getName());
-        if (CsmKindUtilities.isTemplate(item)) {
-            List<CsmTemplateParameter> templateParameters = ((CsmTemplate)item).getTemplateParameters();
-            // What to do with template?
-        }
         //sb.append(parameterList.getText());
         sb.append('('); //NOI18N
         boolean first = true;
