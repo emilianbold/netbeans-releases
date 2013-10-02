@@ -87,13 +87,14 @@ import org.openide.windows.OutputWriter;
 )
 public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesChecker {
 
-    private final Project project;
-    private static final Logger LOGGER = Logger.getLogger(ExecutionChecker.class.getName());
-    public static final String DEV_NULL = "DEV-NULL"; //NOI18N
-    public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
     public static final String CLIENTURLPART = "netbeans.deploy.clientUrlPart"; //NOI18N
+    public static final String MODULEURI = "netbeans.deploy.clientModuleUri"; //NOI18N
+    public static final String DEV_NULL = "DEV-NULL"; //NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(ExecutionChecker.class.getName());
     private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+
+    private final Project project;
 
 
     public ExecutionChecker(Project prj) {
