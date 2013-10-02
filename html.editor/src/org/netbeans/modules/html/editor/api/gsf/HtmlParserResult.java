@@ -70,6 +70,7 @@ import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.MaskedAreas;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.foreign.MaskingChSReader;
@@ -282,7 +283,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             if(validator == null) {
                 return Collections.emptyList();
             }
-            MaskedAreas maskedAreas = result.getMaskedAreas(SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
+            HtmlSource source = new HtmlSource(getSnapshot());
+            MaskedAreas maskedAreas = result.getMaskedAreas(source, SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
             CharSequence original = getSnapshot().getText().toString();
             MaskingChSReader masker = new MaskingChSReader(original, maskedAreas.positions(), maskedAreas.lens());
             

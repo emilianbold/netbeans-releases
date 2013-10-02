@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.foreign;
+package org.netbeans.modules.html.custom.conf;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Named;
 
 /**
- * Allows to resolve undeclared content in html sources.
- * 
- * @author marekfukala
+ *
+ * @author marek
  */
-public interface UndeclaredContentResolver {
+public class Tag extends Element {
     
-     /**
-     * This method allows to bind some prefixed html source 
-     * elements and attributes to a physically undeclared namespace.
-     * 
-     * @param the html source which is being processed
-     * @return a map of namespace to prefix collection
-     */
-    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
-    
-    /**
-     * Returns true if the given element is a custom tag known to this resolver.
-     * @param element
-     * @return 
-     */
-    public boolean isCustomTag(Named element, HtmlSource source);
-   
-    /**
-     * Returns true if the given element's attribute is a custom attribute known to this resolver.
-     * 
-     * @param attribute
-     * @return 
-     */
-    public boolean isCustomAttribute(Attribute attribute, HtmlSource source);
+    /* attribute name to instance map*/
+    private final Map<String, Attribute> attrsMap = new HashMap<>();
+    /* tag name to instance map*/
+    private final Map<String, Tag> childrenMap = new HashMap<>();
 
+    public Tag(String name) {
+        this(name, null, null, null, null);
+    }
+    
+    public Tag(String name, String description, String documentation, String documentationURL, Tag parent, String... contexts) {
+        super(name, description, documentation, documentationURL, parent, contexts);
+    }
+
+    public void setAttributes(Collection<Attribute> attributes) {
+        for(Attribute a : attributes) {
+            this.attrsMap.put(a.getName(), a);
+        }
+    }
+    
+    /**
+     * Map of attribute name to attribute instance.
+     */
+    public Map<String, Attribute> getAttributes() {
+        return attrsMap;
+    }
+
+    public void setChildren(Collection<Tag> children) {
+        for(Tag t : children) {
+            childrenMap.put(t.getName(), t);
+        }
+    }
+
+    public Map<String, Tag> getChildren() {
+        return childrenMap;
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tag[");
+        sb.append(super.toString());
+         sb.append(',');
+        sb.append("children={");
+        for(Tag t : childrenMap.values()) {
+            sb.append(t.toString());
+            sb.append(',');
+        }
+        sb.append('}');
+        sb.append(',');
+        sb.append("attributes={");
+        for(Attribute a : attrsMap.values()) {
+            sb.append(a.toString());
+            sb.append(',');
+        }
+        sb.append('}');
+        sb.append("]");
+        
+        return sb.toString();
+    }
+    
 }
