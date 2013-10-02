@@ -43,6 +43,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
@@ -52,12 +53,15 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -285,6 +289,122 @@ public abstract class PSR1Hint extends HintRule {
         public String getDisplayName() {
             return Bundle.PSR1TypeDeclarationHintDisp();
         }
+    }
+
+    public static final class PropertyNameHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Property"; //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new PropertyNameVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class PropertyNameVisitor extends CheckVisitor {
+            private static final Pattern STUDLY_CAPS_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]*"); //NOI18N
+            private static final Pattern CAMEL_CASE_PATTERN = Pattern.compile("[a-z]+([A-Z][a-z0-9]*)*"); //NOI18N
+            private static final Pattern UNDER_SCORE_PATTERN = Pattern.compile("[a-z]+(_[a-z0-9])*"); //NOI18N
+            private List<Pattern> possiblePatterns = new ArrayList<>();
+
+            public PropertyNameVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr1hint, fileObject, baseDocument);
+            }
+
+            @Override
+            public void visit(FieldAccess node) {
+                checkProperty(node.getField());
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(SingleFieldDeclaration node) {
+                checkProperty(node.getName());
+                super.visit(node);
+            }
+
+            @NbBundle.Messages(
+                "PSR1PropertyNameHintText=Property names SHOULD be declared in $StudlyCaps, $camelCase, or $under_score format (consistently in a scope).\n"
+                    + "Previous property usage was in a different format, or this property name is absolutely wrong."
+            )
+            private void checkProperty(Variable node) {
+                String propertyName = CodeUtils.extractVariableName(node);
+                if (propertyName != null) {
+                    String normalizedPropertyName = propertyName.startsWith("$") ? propertyName.substring(1) : propertyName;
+                    if (possiblePatterns.isEmpty()) {
+                        fetchPossiblePatterns(normalizedPropertyName);
+                    }
+                    if (!isValidPropertyName(normalizedPropertyName)) {
+                        createHint(node, Bundle.PSR1PropertyNameHintText());
+                    }
+                }
+            }
+
+            private boolean isValidPropertyName(String propertyName) {
+                boolean result = true;
+                if (possiblePatterns.isEmpty()) {
+                    result = false;
+                } else {
+                    if (possiblePatterns.size() == 1) { // all property names must match
+                        Pattern pattern = possiblePatterns.get(0);
+                        Matcher matcher = pattern.matcher(propertyName);
+                        if (!matcher.matches()) {
+                            result = false;
+                        }
+                    } else {
+                        // more patterns, probably all previous properties were of unspecific name, i.e. "foobarbaz" (it matches camel and under)
+                        List<Pattern> matchingPatterns = new ArrayList<>();
+                        for (Pattern pattern : possiblePatterns) {
+                            Matcher matcher = pattern.matcher(propertyName);
+                            if (matcher.matches()) {
+                                matchingPatterns.add(pattern);
+                            }
+                        }
+                        if (matchingPatterns.isEmpty()) {
+                            result = false;
+                        } else {
+                            possiblePatterns.clear();
+                            possiblePatterns.addAll(matchingPatterns);
+                        }
+                    }
+                }
+                return result;
+            }
+
+            private void fetchPossiblePatterns(String propertyName) {
+                assert possiblePatterns.isEmpty();
+                Matcher studlyCapsMatcher = STUDLY_CAPS_PATTERN.matcher(propertyName);
+                if (studlyCapsMatcher.matches()) {
+                    possiblePatterns.add(STUDLY_CAPS_PATTERN);
+                } else {
+                    Matcher camelCaseMatcher = CAMEL_CASE_PATTERN.matcher(propertyName);
+                    if (camelCaseMatcher.matches()) {
+                        possiblePatterns.add(CAMEL_CASE_PATTERN);
+                    }
+                    Matcher underScoreMatcher = UNDER_SCORE_PATTERN.matcher(propertyName);
+                    if (underScoreMatcher.matches()) {
+                        possiblePatterns.add(UNDER_SCORE_PATTERN);
+                    }
+                }
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1PropertyNameHintDesc=Property names SHOULD be declared in $StudlyCaps, $camelCase, or $under_score format (consistently in a scope).")
+        public String getDescription() {
+            return Bundle.PSR1PropertyNameHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1PropertyNameHintDisp=Property Name")
+        public String getDisplayName() {
+            return Bundle.PSR1PropertyNameHintDisp();
+        }
+
     }
 
     private abstract static class CheckVisitor extends DefaultVisitor {
