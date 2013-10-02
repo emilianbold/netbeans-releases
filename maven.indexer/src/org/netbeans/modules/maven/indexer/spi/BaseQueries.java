@@ -68,4 +68,6 @@ public interface BaseQueries {
 
     RepositoryQueries.Result<String> filterArtifactIdForGroupId(String groupId, String prefix, List<RepositoryInfo> repos);
 
+    RepositoryQueries.Result<String> getGAVsForPackaging(String packaging, List<RepositoryInfo> repos);
+
 }
