@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.OneTimeDeployment;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
@@ -245,6 +246,11 @@ public class MavenProjectSupport {
      *    second one server ID; both can be null
      */
     public static String[] obtainServerIds (Project project) {
+        OneTimeDeployment oneTimeDeployment = project.getLookup().lookup(OneTimeDeployment.class);
+        if (oneTimeDeployment != null && oneTimeDeployment.getServerInstanceId() != null) {
+            return new String[] {oneTimeDeployment.getServerInstanceId(), null};
+        }
+
         SessionContent sc = project.getLookup().lookup(SessionContent.class);
         if (sc != null && sc.getServerInstanceId() != null) {
             return new String[] {sc.getServerInstanceId(), null};
