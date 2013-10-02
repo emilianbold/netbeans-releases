@@ -39,30 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette.tester.run;
 
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.nette.tester.commands.Tester;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+package org.netbeans.modules.php.nette.tester.util;
 
-public final class TestRunner {
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.util.FileUtils;
+import org.openide.util.NbBundle;
 
-    private final PhpModule phpModule;
+public final class TesterUtils {
 
-
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    private TesterUtils() {
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Tester tester = Tester.getForPhpModule(phpModule, true);
-        if (tester == null) {
-            return;
+    @NbBundle.Messages("TesterUtils.tester.label=Tester file")
+    @CheckForNull
+    public static String validateTesterPath(String testerPath) {
+        return PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterUtils_tester_label());
+    }
+
+    @NbBundle.Messages("TesterUtils.php.ini.error=Absolute path to file or directory must be set for php.ini.")
+    @CheckForNull
+    public static String validatePhpIniPath(@NullAllowed String phpIniPath) {
+        if (FileUtils.validateDirectory(phpIniPath, false) != null
+                && FileUtils.validateFile(phpIniPath, false) != null) {
+            return Bundle.TesterUtils_php_ini_error();
         }
-        tester.runTests(phpModule, runInfo, testSession);
+        return null;
     }
 
 }

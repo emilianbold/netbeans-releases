@@ -39,30 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette.tester.run;
 
+package org.netbeans.modules.php.nette.tester.ui.customizer;
+
+import javax.swing.JComponent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.nette.tester.commands.Tester;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.nette.tester.TesterTestingProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-public final class TestRunner {
+public class TesterCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+
+    public static final String IDENTIFIER = TesterTestingProvider.getInstance().getIdentifier();
 
     private final PhpModule phpModule;
 
 
-    public TestRunner(PhpModule phpModule) {
+    public TesterCustomizer(PhpModule phpModule) {
         assert phpModule != null;
         this.phpModule = phpModule;
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Tester tester = Tester.getForPhpModule(phpModule, true);
-        if (tester == null) {
-            return;
-        }
-        tester.runTests(phpModule, runInfo, testSession);
+    @NbBundle.Messages("TesterCustomizer.name=Nette Tester")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                IDENTIFIER,
+                Bundle.TesterCustomizer_name(),
+                null,
+                (ProjectCustomizer.Category[]) null);
+    }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        return new CustomizerTester(category, phpModule);
     }
 
 }

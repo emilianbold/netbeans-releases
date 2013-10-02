@@ -39,30 +39,46 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.nette.tester.run;
+
+package org.netbeans.modules.php.nette.tester.preferences;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.nette.tester.commands.Tester;
-import org.netbeans.modules.php.spi.testing.run.TestRunException;
-import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 
-public final class TestRunner {
+public final class TesterPreferencesValidator {
 
-    private final PhpModule phpModule;
+    private final ValidationResult result = new ValidationResult();
 
 
-    public TestRunner(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public ValidationResult getResult() {
+        return result;
     }
 
-    public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Tester tester = Tester.getForPhpModule(phpModule, true);
-        if (tester == null) {
-            return;
+    public TesterPreferencesValidator validate(PhpModule phpModule) {
+        validatePhpIni(TesterPreferences.isPhpIniEnabled(phpModule), TesterPreferences.getPhpIniPath(phpModule));
+        validateTester(TesterPreferences.isTesterEnabled(phpModule), TesterPreferences.getTesterPath(phpModule));
+        return this;
+    }
+
+    public TesterPreferencesValidator validatePhpIni(boolean phpIniEnabled, String phpIniPath) {
+        if (phpIniEnabled) {
+            String warning = TesterUtils.validatePhpIniPath(phpIniPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
+            }
         }
-        tester.runTests(phpModule, runInfo, testSession);
+        return this;
+    }
+
+    public TesterPreferencesValidator validateTester(boolean testerEnabled, String testerPath) {
+        if (testerEnabled) {
+            String warning = TesterUtils.validateTesterPath(testerPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
+            }
+        }
+        return this;
     }
 
 }

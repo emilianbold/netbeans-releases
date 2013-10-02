@@ -331,11 +331,14 @@ public class TesterOptionsPanel extends JPanel {
         }
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
-    @NbBundle.Messages("TesterOptionsPanel.php.ini.browse.title=Select php.ini")
+    @NbBundle.Messages({
+        "TesterOptionsPanel.php.ini.browse.title=Select file or folder for php.ini",
+        "TesterOptionsPanel.php.ini.browse.ok=Select",
+    })
     private void phpIniBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_phpIniBrowseButtonActionPerformed
         File file = new FileChooserBuilder(TesterOptionsPanel.class)
-                .setFilesOnly(true)
                 .setTitle(Bundle.TesterOptionsPanel_php_ini_browse_title())
+                .setApproveText(Bundle.TesterOptionsPanel_php_ini_browse_ok())
                 .showOpenDialog();
         if (file != null) {
             phpIniTextField.setText(file.getAbsolutePath());

@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.php.nette.tester.options;
 
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 
 public class TesterOptionsValidator {
 
@@ -62,23 +60,22 @@ public class TesterOptionsValidator {
         return result;
     }
 
-    @NbBundle.Messages("TesterOptionsValidator.tester.label=Tester file")
-    public void validateTesterPath(String testerPath) {
-        String warning = PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterOptionsValidator_tester_label());
+    public TesterOptionsValidator validateTesterPath(String testerPath) {
+        String warning = TesterUtils.validateTesterPath(testerPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
         }
+        return this;
     }
 
-    @NbBundle.Messages("TesterOptionsValidator.php.ini.label=php.ini")
-    public void validatePhpIniPath(String phpIniPath) {
-        if (!StringUtils.hasText(phpIniPath)) {
-            return;
+    public TesterOptionsValidator validatePhpIniPath(String phpIniPath) {
+        if (StringUtils.hasText(phpIniPath)) {
+            String warning = TesterUtils.validatePhpIniPath(phpIniPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
+            }
         }
-        String warning = FileUtils.validateFile(Bundle.TesterOptionsValidator_php_ini_label(), phpIniPath, false);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
-        }
+        return this;
     }
 
 }
