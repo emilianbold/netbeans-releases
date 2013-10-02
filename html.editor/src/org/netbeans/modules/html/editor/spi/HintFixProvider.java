@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.lib.api.foreign;
+package org.netbeans.modules.html.editor.spi;
 
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Allows to resolve undeclared content in html sources.
+ * html.custom <-> html.editor internal communication only.
  * 
- * @author marekfukala
+ * to be registered in global lookup.
+ * 
+ * @author marek
  */
-public interface UndeclaredContentResolver {
-    
-     /**
-     * This method allows to bind some prefixed html source 
-     * elements and attributes to a physically undeclared namespace.
-     * 
-     * @param the html source which is being processed
-     * @return a map of namespace to prefix collection
-     */
-    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source);
-    
-    /**
-     * Returns true if the given element is a custom tag known to this resolver.
-     * @param element
-     * @return 
-     */
-    public boolean isCustomTag(Named element, HtmlSource source);
-   
-    /**
-     * Returns true if the given element's attribute is a custom attribute known to this resolver.
-     * 
-     * @param attribute
-     * @return 
-     */
-    public boolean isCustomAttribute(Attribute attribute, HtmlSource source);
+public abstract class HintFixProvider {
 
+    /**
+     * The metadata map key for unknown attribute name.
+     */
+    public static final String UNKNOWN_ATTRIBUTE_FOUND = "unknown_attribute_found";
+
+    /**
+     * The metadata map key for unknown element name.
+     */
+    public static final String UNKNOWN_ELEMENT_FOUND = "unknown_element_found";
+    
+    /**
+     * The metadata map key for the name of the parent of the unknown element.
+     */
+    public static final String UNKNOWN_ELEMENT_CONTEXT = "unknown_element_context";
+    
+    
+    public abstract List<HintFix> getHintFixes(Context context);
+    
+    
+    public static final class Context {
+        
+        private final Snapshot snapshot;
+        private final HtmlParserResult result;
+        private final Map<String, Object> metadata;
+
+        public Context(Snapshot snapshot, HtmlParserResult result, Map<String, Object> metadata) {
+            this.snapshot = snapshot;
+            this.result = result;
+            this.metadata = metadata;
+        }
+
+        public Snapshot getSnapshot() {
+            return snapshot;
+        }
+
+        public HtmlParserResult getResult() {
+            return result;
+        }
+
+        public Map<String, Object> getMetadata() {
+            return metadata;
+        }
+        
+    }
+    
 }
