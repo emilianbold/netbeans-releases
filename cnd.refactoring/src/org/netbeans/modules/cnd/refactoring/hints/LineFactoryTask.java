@@ -134,7 +134,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 CsmExpressionStatement expression = res.expression;
                 if (expression != null) {
                     createStatementHint(expression, doc, fileObject);
-                } else if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+                } 
+                if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
                     if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
                         CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0]) {
                         try {
@@ -374,6 +375,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     if(isApplicable((CsmExpressionStatement) st, doc)) {
                         StatementResult res = new StatementResult();
                         res.expression = (CsmExpressionStatement) st;
+                        res.container = (CsmExpressionStatement) st;
                         return res;
                     } else {
                         StatementResult res = new StatementResult();
