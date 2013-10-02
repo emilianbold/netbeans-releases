@@ -63,6 +63,7 @@ import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -205,7 +206,7 @@ public class KOHtmlExtension extends HtmlExtension {
     }
 
     @Override
-    public boolean isCustomAttribute(Attribute attribute) {
+    public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
         return KOModel.isKODataBindingAttribute(attribute);
     }
 

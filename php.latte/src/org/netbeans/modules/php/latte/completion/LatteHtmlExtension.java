@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -118,12 +119,12 @@ public class LatteHtmlExtension extends HtmlExtension {
     }
 
     @Override
-    public boolean isCustomAttribute(Attribute attribute) {
+    public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
         return attribute.name().toString().startsWith("n:"); //NOI18N
     }
 
     @Override
-    public Collection<CustomAttribute> getCustomAttributes(String elementName) {
+    public Collection<CustomAttribute> getCustomAttributes(String elementName ) {
         return CUSTOM_ATTRIBUTES;
     }
 
