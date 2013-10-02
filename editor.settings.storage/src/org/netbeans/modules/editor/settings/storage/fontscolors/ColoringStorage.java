@@ -87,8 +87,8 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
     public static final String ID = "FontsColors"; //NOI18N
     /* test */ static final String MIME_TYPE = "text/x-nbeditor-fontcolorsettings"; //NOI18N
 
-    public ColoringStorage(boolean tokenColoringStorage) {
-        this.tokenColoringStorage = tokenColoringStorage;
+    public ColoringStorage(String type) {
+        this.type = type;
     }
     
     // ---------------------------------------------------------
@@ -96,7 +96,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
     // ---------------------------------------------------------
 
     public ColoringStorage() {
-        this(true);
+        this(FAV_TOKEN);
     }
     
     public String getId() {
@@ -168,8 +168,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             boolean legacyFile = ((Boolean) info[4]).booleanValue();
 
             // Skip files with wrong type of colorings
-            boolean isTokenColoringFile = isTokenColoringFile(settingFile);
-            if (isTokenColoringFile != tokenColoringStorage) {
+            if (!type.equals(getColoringFileType(settingFile))) {
                 continue;
             }
             
@@ -180,11 +179,15 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             
             // Process loaded colorings
             for(SimpleAttributeSet as : sets.values()) {
+                if (FAV_ANNOTATION.equals(type)) {
+                    fontsColorsMap.put((String) as.getAttribute(StyleConstants.NameAttribute), as);
+                    continue;
+                }
                 String name = (String) as.getAttribute(StyleConstants.NameAttribute);
                 String translatedName = null;
                 SimpleAttributeSet previous = fontsColorsMap.get(name);
 
-                if (previous == null && !modulesFile && tokenColoringStorage) {
+                if (previous == null && !modulesFile && FAV_TOKEN.equals(type)) {
                     // User files normally don't define extra colorings unless
                     // for example loading a settings file from an older version
                     // of Netbeans (or in a completely new profile!!). In this case
@@ -269,14 +272,14 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
         final String settingFileName = SettingsType.getLocator(this).getWritableFileName(
                 mimePath.getPath(), 
                 profile, 
-                tokenColoringStorage ? "-tokenColorings" : "-highlights", //NOI18N
+                FAV_TOKEN.equals(type) ? "-tokenColorings" : FAV_HIGHLIGHT.equals(type) ? "-highlights" : "-annotations", //NOI18N
                 defaults);
 
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 FileObject baseFolder = FileUtil.getConfigFile("Editors"); //NOI18N
                 FileObject f = FileUtil.createData(baseFolder, settingFileName);
-                f.setAttribute(FA_TYPE, tokenColoringStorage ? FAV_TOKEN : FAV_HIGHLIGHT);
+                f.setAttribute(FA_TYPE, type);
                 
                 Map<String, AttributeSet> added = new HashMap<String, AttributeSet>();
                 Map<String, AttributeSet> removed = new HashMap<String, AttributeSet>();
@@ -311,8 +314,7 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
                         FileObject settingFile = (FileObject) info[1];
 
                         // Skip files with wrong type of colorings
-                        boolean isTokenColoringFile = isTokenColoringFile(settingFile);
-                        if (isTokenColoringFile != tokenColoringStorage) {
+                        if (!type.equals(getColoringFileType(settingFile))) {
                             continue;
                         }
 
@@ -350,12 +352,13 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
     private static final String SYSTEM_ID = "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd"; //NOI18N
 
     private static final String FA_TYPE = "nbeditor-settings-ColoringType"; //NOI18N
-    private static final String FAV_TOKEN = "token"; //NOI18N
-    private static final String FAV_HIGHLIGHT = "highlight"; //NOI18N
+    public static final String FAV_TOKEN = "token"; //NOI18N
+    public static final String FAV_HIGHLIGHT = "highlight"; //NOI18N
+    public static final String FAV_ANNOTATION = "annotation"; //NOI18N
     
     private static final Object ATTR_MODULE_SUPPLIED = new Object();
     
-    private final boolean tokenColoringStorage;
+    private final String type;
     
     private static String findDisplayName(String name, FileObject settingFile, List<Object []> filesForLocalization) {
         // Try the settingFile first
@@ -584,13 +587,17 @@ public final class ColoringStorage implements StorageDescription<String, Attribu
             return doc;
         }
     } // End of ColoringsWriter class
-
-    private static boolean isTokenColoringFile(FileObject f) {
+    
+    private static String getColoringFileType(FileObject f) {
         Object typeValue = f.getAttribute(FA_TYPE);
         if (typeValue instanceof String) {
-            return typeValue.equals(FAV_TOKEN);
+            return (String)typeValue;
         } else {
-            return !f.getNameExt().equals(HIGHLIGHTING_FILE_NAME);
+            if (f.getNameExt().equals(HIGHLIGHTING_FILE_NAME)) {
+                return FAV_HIGHLIGHT;
+            } else {
+                return FAV_TOKEN;
+            }
         }
     }
     
