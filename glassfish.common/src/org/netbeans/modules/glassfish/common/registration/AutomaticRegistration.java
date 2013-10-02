@@ -112,7 +112,6 @@ public class AutomaticRegistration {
         if (version != null) {
             sb.append(defaultDisplayNamePrefix);
             sb.append(version.toString());
-            System.out.println(sb.toString());
         } else {
             LOGGER.log(Level.INFO, "Cannot register the default GlassFish server. " // NOI18N
                     + "The GlassFish Root directory {0} is of unknown version.", glassfishRoot); // NOI18N
