@@ -90,6 +90,7 @@ import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.DeleteBranchAction;
+import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
@@ -775,7 +776,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     GitBranch newBranchInfo = branches.get(e.getKey());
                     // do not refresh branches that don't change their active state or head id
                     if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().branch.getId()) 
-                            && newBranchInfo.isActive() == e.getValue().branch.isActive())) {
+                            && newBranchInfo.isActive() == e.getValue().branch.isActive()
+                            && equalTracking(newBranchInfo, e.getValue().branch))) {
                         branches.remove(e.getKey());
                     }
                 }
@@ -806,6 +808,18 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (remote != null) {
                 remote.refresh();
             }
+        }
+
+        private boolean equalTracking (GitBranch newBranchInfo, GitBranch branch) {
+            GitBranch tracked1 = newBranchInfo.getTrackedBranch();
+            GitBranch tracked2 = branch.getTrackedBranch();
+            boolean equal = tracked1 == tracked2;
+            if (!equal) {
+                equal = tracked1 != null && tracked2 != null
+                        && tracked1.getName().equals(tracked2.getName())
+                        && tracked1.getId().equals(tracked2.getId());
+            }
+            return equal;
         }
 
         @Override
@@ -922,6 +936,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private String lastTrackingMyId;
         private String lastTrackingOtherId;
         private final Boolean mergeStatus;
+        private final boolean remote;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
             super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
@@ -930,6 +945,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             mergeStatus = branchInfo.mergedStatus;
             branchId = branch.getId();
             trackedBranch = branch.getTrackedBranch();
+            remote = branch.isRemote();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             if (info == null) {
@@ -999,6 +1015,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         @Override
+        @NbBundle.Messages({
+            "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
+        })
         protected Action[] getPopupActions (boolean context) {
             List<Action> actions = new LinkedList<Action>();
             if (currRepository != null && branchName != null) {
@@ -1064,6 +1083,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         return !active;
                     }
                 });
+                if (!remote) {
+                    actions.add(new AbstractAction(Bundle.LBL_SetTrackedBranchAction_PopupName()) {
+                        @Override
+                        public void actionPerformed (ActionEvent e) {
+                            SystemAction.get(SetTrackingAction.class).setupTrackedBranch(currRepository, branchName,
+                                    trackedBranch == null ? null : trackedBranch.getName());
+                        }
+                    });
+                }
             }
             return actions.toArray(new Action[actions.size()]);
         }

@@ -102,11 +102,12 @@ public class RevisionDialogController implements ActionListener, DocumentListene
      * @param repository
      * @param roots
      * @param branches if this is an empty map, branches will be loaded in background
+     * @param defaultBranchName branch you want to select by default or <code>null</code> to preselect the current branch
      */
-    public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches) {
+    public RevisionDialogController (File repository, File[] roots, Map<String, GitBranch> branches, String defaultBranchName) {
         this(repository, roots);
         hideFields(new JComponent[] { panel.lblRevision, panel.revisionField, panel.btnSelectRevision });
-        setModel(branches);
+        setModel(branches, defaultBranchName);
     }
 
     private RevisionDialogController (File repository, File[] roots) {
@@ -245,9 +246,9 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     @NbBundle.Messages({
         "MSG_RevisionDialog.selectBranch=Select Branch"
     })
-    private void setModel (Map<String, GitBranch> branches) {
+    private void setModel (Map<String, GitBranch> branches, String toSelectBranchName) {
         if (branches.isEmpty()) {
-            loadBranches();
+            loadBranches(toSelectBranchName);
             return;
         }
         final List<Revision> branchList = new ArrayList<Revision>(branches.size());
@@ -255,14 +256,17 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         Revision activeBranch = null;
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             GitBranch branch = e.getValue();
+            Revision rev = null;
             if (branch.isRemote()) {
-                remoteBranchList.add(new Revision.BranchReference(branch));
+                rev = new Revision.BranchReference(branch);
+                remoteBranchList.add(rev);
             } else if (branch.getName() != GitBranch.NO_BRANCH) {
-                Revision rev = new Revision.BranchReference(branch);
+                rev = new Revision.BranchReference(branch);
                 branchList.add(rev);
-                if (branch.isActive()) {
-                    activeBranch = rev;
-                }
+            }
+            if (rev != null && (toSelectBranchName != null && toSelectBranchName.equals(branch.getName())
+                    || toSelectBranchName == null && branch.isActive())) {
+                activeBranch = rev;
             }
         }
         Comparator<Revision> comp = new Comparator<Revision>() {
@@ -319,7 +323,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     @NbBundle.Messages({
         "RevisionDialogController.loadingBranches=Loading Branches..."
     })
-    private void loadBranches () {
+    private void loadBranches (final String defaultBranch) {
         DefaultListModel model = new DefaultListModel();
         model.addElement(Bundle.RevisionDialogController_loadingBranches());
         panel.lstBranches.setModel(model);
@@ -334,7 +338,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                     @Override
                     public void run () {
                         panel.lstBranches.setEnabled(true);
-                        setModel(branches);
+                        setModel(branches, defaultBranch);
                     }
                 });
             }
