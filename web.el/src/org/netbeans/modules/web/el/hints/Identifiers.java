@@ -152,6 +152,19 @@ public final class Identifiers extends ELRule {
             return true;
         }
 
+        // don't show the hint for interface's object properties without any type
+        if (ELTypeUtilities.isRawObjectReference(info, parent, false)) {
+            String rawObject = ELTypeUtilities.getRawObjectName(node.jjtGetParent());
+            if (rawObject != null) {
+                for (ELVariableResolver.VariableInfo variableInfo : variables) {
+                    if (rawObject.equals(variableInfo.name) 
+                            && (variableInfo.clazz == null || variableInfo.clazz.equals(Object.class.getName()))) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         // EL3.0 stream method
         if (node.getImage() != null && ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
             if (parent == null) {
