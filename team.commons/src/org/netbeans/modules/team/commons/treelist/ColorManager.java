@@ -51,6 +51,11 @@ import org.openide.explorer.propertysheet.PropertySheet;
  */
 public class ColorManager {
 
+    private static final String TITLE_BACKGROUND = "TreeList.titleBackground"; // NOI18N
+    private static final String TITLE_SELECTION_BACKGROUND = "TreeList.titleSelectionBackground"; // NOI18N
+    private static final String ROOT_BACKGROUND = "TreeList.rootBackground"; // NOI18N
+    private static final String ROOT_SELECTION_BACKGROUND = "TreeList.rootSelectionBackground"; // NOI18N
+
     private static ColorManager theInstance;
     private final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); // NOI18N
     private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
@@ -65,6 +70,8 @@ public class ColorManager {
     private Color errorColor = new Color(153, 0, 0);
     private Color stableBuildColor = new Color(0, 153, 0);
     private Color unstableBuildColor = Color.yellow.darker().darker();
+    private Color titleBackground;
+    private Color titleSelectedBackground;
     private Color expandableRootBackground = null;
     private Color expandableRootForeground = null;
     private Color expandableRootSelectedBackground = null;
@@ -116,6 +123,14 @@ public class ColorManager {
         return unstableBuildColor;
     }
 
+    public Color getTitleBackground() {
+        return titleBackground;
+    }
+
+    public Color getTitleSelectedBackground() {
+        return titleSelectedBackground;
+    }
+
     public Color getExpandableRootBackground() {
         return expandableRootBackground;
     }
@@ -162,12 +177,18 @@ public class ColorManager {
         int green;
         int blue;
 
-        expandableRootBackground = UIManager.getColor("PropSheet.setBackground"); //NOI18N
-        expandableRootSelectedBackground = UIManager.getColor("PropSheet.selectedSetBackground"); //NOI18N
-
         if (isNimbus || isGtk) {
             expandableRootBackground = UIManager.getColor("Menu.background");//NOI18N
             expandableRootSelectedBackground = UIManager.getColor("Tree.selectionBackground"); //NOI18N
+        } else {
+            expandableRootBackground = UIManager.getColor(ROOT_BACKGROUND);
+            if (expandableRootBackground == null) {
+                expandableRootBackground = UIManager.getColor("PropSheet.setBackground"); //NOI18N
+            }
+            expandableRootSelectedBackground = UIManager.getColor(ROOT_SELECTION_BACKGROUND);
+            if (expandableRootSelectedBackground == null) {
+                expandableRootSelectedBackground = UIManager.getColor("PropSheet.selectedSetBackground"); //NOI18N
+            }
         }
 
         if (expandableRootBackground == null) {
@@ -194,6 +215,15 @@ public class ColorManager {
             green = adjustColorComponent(col.getGreen(), -25, -25);
             blue = adjustColorComponent(col.getBlue(), -25, -25);
             expandableRootSelectedBackground = new Color(red, green, blue);
+        }
+
+        titleBackground = UIManager.getColor(TITLE_BACKGROUND);
+        if (titleBackground == null) {
+            titleBackground = Color.gray;
+        }
+        titleSelectedBackground = UIManager.getColor(TITLE_SELECTION_BACKGROUND);
+        if (titleSelectedBackground == null) {
+            titleSelectedBackground = expandableRootSelectedBackground;
         }
 
         expandableRootForeground = UIManager.getColor("PropSheet.setForeground"); //NOI18N

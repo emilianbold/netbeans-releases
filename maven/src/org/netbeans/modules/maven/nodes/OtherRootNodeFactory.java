@@ -83,7 +83,7 @@ public class OtherRootNodeFactory implements NodeFactory {
     }
     
     private static class NList extends AbstractMavenNodeList<String> implements PropertyChangeListener, FileChangeListener {
-        private NbMavenProjectImpl project;
+        private final NbMavenProjectImpl project;
         private final FileChangeListener fcl = FileUtil.weakFileChangeListener(this, null);
         NList(NbMavenProjectImpl prj) {
             project = prj;
@@ -91,10 +91,10 @@ public class OtherRootNodeFactory implements NodeFactory {
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();
             }
-            if (NbMavenProjectImpl.PROP_RESOURCE.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName())) {
                 if (MAIN.equals(evt.getNewValue()) || TEST.equals(evt.getNewValue())) { //NOI18N
                     fireChange();
                     checkFileObject((String)evt.getNewValue());

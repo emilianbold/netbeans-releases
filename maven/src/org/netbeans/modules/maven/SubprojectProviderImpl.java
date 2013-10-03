@@ -83,7 +83,7 @@ public class SubprojectProviderImpl implements SubprojectProvider {
         project = proj;
         propertyChange = new PropertyChangeListener() {
             @Override public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     cs.fireChange();
                 }
             }
