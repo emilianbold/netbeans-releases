@@ -41,15 +41,28 @@
  */
 package org.netbeans.modules.html.custom;
 
+import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.html.custom.hints.CustomElementHint;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
@@ -73,7 +86,7 @@ public class CustomHtmlExtension extends HtmlExtension {
     public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
         return getConfiguration(source).getRootAttributes().containsKey(attribute.name().toString());
     }
-    
+
     private Configuration getConfiguration(HtmlSource source) {
         if (cache == null) {
             //no cache - create
@@ -84,7 +97,7 @@ public class CustomHtmlExtension extends HtmlExtension {
             return cache.second();
         } else {
             //check if the current source is the cached one
-            if(source == cache.first()) {
+            if (source == cache.first()) {
                 //yes, just return cached conf
                 return cache.second();
             } else {
@@ -93,6 +106,30 @@ public class CustomHtmlExtension extends HtmlExtension {
                 return getConfiguration(source);
             }
         }
+    }
+
+    @Override
+    public void computeSuggestions(HintsProvider.HintsManager manager, RuleContext context, List<Hint> hints, int caretOffset) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        Node root = result.root(SyntaxAnalyzerResult.FILTERED_CODE_NAMESPACE);
+        Snapshot snapshot = result.getSnapshot();
+        int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        Element found = ElementUtils.findByPhysicalRange(root, embeddedCaretOffset, false);
+        if (found != null) {
+            switch (found.type()) {
+                case OPEN_TAG:
+                case CLOSE_TAG:
+                    Named named = (Named) found;
+                    String elementName = named.name().toString();
+                    Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+                    if (conf.getRootTags().containsKey(elementName)) {
+                        //custom element
+                        hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
+                        
+                    }
+            }
+        }
+
     }
 
 }

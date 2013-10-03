@@ -39,46 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.custom;
+package org.netbeans.modules.html.custom.hints;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.hints.AddAttributeFix;
-import org.netbeans.modules.html.custom.hints.AddElementFix;
-import org.netbeans.modules.html.custom.hints.EditProjectsConfFix;
-import org.netbeans.modules.html.editor.spi.HintFixProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marek
  */
-@ServiceProvider(service = HintFixProvider.class)
-public class CustomHintFixProvider extends HintFixProvider {
+@NbBundle.Messages(value = "editProjectConfiguration=Edit project's editor custom elements configuration file")
+public final class EditProjectsConfFix implements HintFix {
+    private final Snapshot snapshot;
+
+    public EditProjectsConfFix(Snapshot snapshot) {
+        this.snapshot = snapshot;
+    }
 
     @Override
-    public List<HintFix> getHintFixes(Context context) {
-        List<HintFix> fixes = new ArrayList<>();
-        String elementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_FOUND);
-        String attributeName = (String)context.getMetadata().get(UNKNOWN_ATTRIBUTE_FOUND);
-        String contextElementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_CONTEXT);
-        
-        assert contextElementName != null;
-        
-        if(elementName != null) {
-            //unknown element found
-            fixes.add(new AddElementFix(elementName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-            
-        } else if(attributeName != null) {
-            //unknown attribute found
-            fixes.add(new AddAttributeFix(attributeName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-        } else {
-            throw new IllegalStateException();
-        }
-        
-        return fixes;
+    public String getDescription() {
+        return Bundle.editProjectConfiguration();
     }
+
+    @Override
+    public void implement() throws Exception {
+        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+        DataObject dobj = DataObject.find(conf.getProjectsConfigurationFile());
+        OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+        oc.open();
+    }
+
+    @Override
+    public boolean isSafe() {
+        return true;
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+    
 }

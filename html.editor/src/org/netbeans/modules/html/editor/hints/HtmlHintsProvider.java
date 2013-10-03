@@ -193,6 +193,12 @@ public class HtmlHintsProvider implements HintsProvider {
             suggestions.add(new RemoveSurroundingTag(context, new OffsetRange(context.caretOffset, context.caretOffset)));
         }
         
+        //html extensions
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
+            ext.computeSuggestions(manager, context, suggestions, caretOffset);
+        }
+        
     }
 
     /**
