@@ -72,7 +72,7 @@ public final class AddElementFix implements HintFix {
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        conf.getRootTags().put(elementName, new Tag(elementName));
+        conf.add(new Tag(elementName));
         conf.store();
         LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
     }

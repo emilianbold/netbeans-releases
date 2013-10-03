@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.html.custom.hints;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.conf.Attribute;
-import org.netbeans.modules.html.custom.conf.Configuration;
-import org.netbeans.modules.html.custom.conf.Tag;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
-@NbBundle.Messages(value = {
-    "addUnknownAttributeToProjectConfiguration=Add attribute \"{0}\" to the project's custom elements",
-    "addUnknownAttributeInElementToProjectConfiguration=Add attribute \"{0}\" into element \"{1}\" to the project's custom elements"})
-public final class AddAttributeFix implements HintFix {
-    private final String attributeName;
-    private final String elementContextName;
-    private final Snapshot snapshot;
+@NbBundle.Messages(value = "unknownAttribute=Unknown attribute")
+public class UnknownAttribute extends Hint {
 
-    public AddAttributeFix(String attributeName, String elementContextName, Snapshot snapshot) {
-        this.attributeName = attributeName;
-        this.elementContextName = elementContextName;
-        this.snapshot = snapshot;
+    private static final Rule RULE = new RuleI();
+
+    public UnknownAttribute(String attributeName, String elementName, RuleContext context, OffsetRange range) {
+        super(RULE,
+                Bundle.unknownAttribute(),
+                context.parserResult.getSnapshot().getSource().getFileObject(),
+                range,
+                getFixes(attributeName, elementName, context),
+                30);
     }
 
-    @Override
-    public String getDescription() {
-        return elementContextName == null 
-                ? Bundle.addUnknownAttributeToProjectConfiguration(attributeName)
-                : Bundle.addUnknownAttributeInElementToProjectConfiguration(attributeName, elementContextName);
-    }
-
-    @Override
-    public void implement() throws Exception {
-        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+    private static List<HintFix> getFixes(String attributeName, String elementName, RuleContext context) {
+        List<HintFix> fixes = new ArrayList<>();
+        Snapshot snap = context.parserResult.getSnapshot();
+        fixes.add(new AddAttributeFix(attributeName, elementName, snap)); //add to the parent element
+        fixes.add(new AddAttributeFix(attributeName, null, snap));  //add as contextfree
+        fixes.add(new EditProjectsConfFix(snap));
         
-        Attribute attr = new Attribute(attributeName);
-        if(elementContextName != null) {
-            //attr in context
-            Tag tag = conf.getTag(elementContextName);
-            tag.add(attr);
-        } else {
-            //contextfree attribute
-            conf.add(new Attribute(attributeName));
-        }
-        conf.store();
-        LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
-    }
-
-    @Override
-    public boolean isSafe() {
-        return true;
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
+        return fixes; 
     }
     
+    private static class RuleI implements Rule {
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return Bundle.unknownAttribute();
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return false;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.WARNING;
+        }
+    }
 }
