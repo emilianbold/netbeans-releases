@@ -192,7 +192,7 @@ public final class IssueImpl<R, I> {
     public IssueStatusProvider.Status getStatus() {
         IssueStatusProvider<I> sp = repo.getStatusProvider();
         if(sp == null) {
-            return null;
+            return IssueStatusProvider.Status.SEEN;
         } 
         return sp.getStatus(data);
     }
