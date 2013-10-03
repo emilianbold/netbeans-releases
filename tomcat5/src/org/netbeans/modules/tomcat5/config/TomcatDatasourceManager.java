@@ -46,9 +46,11 @@ package org.netbeans.modules.tomcat5.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +65,8 @@ import org.netbeans.modules.tomcat5.config.gen.GlobalNamingResources;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
 import org.netbeans.modules.tomcat5.config.gen.Server;
+import org.netbeans.modules.tomcat5.config.gen.Tomee;
+import org.openide.util.Exceptions;
 
 /**
  * DataSourceManager implementation
@@ -70,7 +74,9 @@ import org.netbeans.modules.tomcat5.config.gen.Server;
  * @author sherold
  */
 public class TomcatDatasourceManager implements DatasourceManager {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(TomcatDatasourceManager.class.getName());
+
     private final TomcatManager tm;
     
     /**
@@ -80,11 +86,49 @@ public class TomcatDatasourceManager implements DatasourceManager {
         tm = (TomcatManager) dm;
     }
 
+    public static Set<Datasource> getTomeeDatasources(Tomee actualResources) {
+        HashSet<Datasource> result = new HashSet<Datasource>();
+        int resourcesLength = actualResources.getTomeeResource().length;
+        for (int i = 0; i < resourcesLength; i++) {
+            String type = actualResources.getTomeeResourceType(i);
+            if ("javax.sql.DataSource".equals(type)) { // NOI18N
+
+                String data = actualResources.getTomeeResource(i);
+                Properties props = new Properties();
+                try {
+                    props.load(new StringReader(data));
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                    continue;
+                }
+
+                String name = actualResources.getTomeeResourceId(i);
+                String username = props.getProperty("userName"); // NOI18N
+                String url = props.getProperty("jdbcUrl"); // NOI18N
+                String password = props.getProperty("password"); // NOI18N
+                String driverClassName = props.getProperty("jdbcDriver"); // NOI18N
+                if (name != null && username != null && url != null && driverClassName != null) {
+                    // return the datasource only if all the needed params are non-null except the password param
+                    result.add(new TomcatDatasource(username, url, password, name, driverClassName));
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Set<Datasource> getDatasources() throws ConfigurationException {
+        Set<Datasource> result = new HashSet<Datasource>();
+        result.addAll(getTomcatDatasources());
+        result.addAll(getTomeeDatasources());
+        return result;
+    }
+
     /**
      * Get the global datasources defined in the GlobalNamingResources element
      * in the server.xml configuration file.
      */
-    public Set<Datasource> getDatasources() {
+    public Set<Datasource> getTomcatDatasources() {
         HashSet<Datasource> result = new HashSet<Datasource>();
         File serverXml = tm.getTomcatProperties().getServerXml();
         Server server;
@@ -153,9 +197,36 @@ public class TomcatDatasourceManager implements DatasourceManager {
         return result;
     }
 
-    public void deployDatasources(Set<Datasource> datasources) 
-    throws ConfigurationException, DatasourceAlreadyExistsException {
+    public Set<Datasource> getTomeeDatasources() {
+        if (!tm.isTomEE()) {
+            return Collections.emptySet();
+        }
+
+        File tomeeXml = tm.getTomcatProperties().getTomeeXml();
+        if (!tomeeXml.isFile()) {
+            return Collections.emptySet();
+        }
+
+        Tomee tomee;
+        try {
+            tomee = Tomee.createGraph(tomeeXml);
+        } catch (IOException e) {
+            // ok, log it and give up
+            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
+            return Collections.<Datasource>emptySet();
+        } catch (RuntimeException e) {
+            // server.xml file is most likely not parseable, log it and give up
+            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
+            return Collections.<Datasource>emptySet();
+        }
+
+        return getTomeeDatasources(tomee);
+    }
+
+    @Override
+    public void deployDatasources(Set<Datasource> datasources)
+            throws ConfigurationException, DatasourceAlreadyExistsException {
         // nothing needs to be done here
     }
-    
+
 }
