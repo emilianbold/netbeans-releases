@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.util;
 
 import java.awt.Color;
 import java.util.Collections;
+import java.util.List;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.logging.Level;
@@ -200,7 +201,8 @@ public class BugzillaUtil {
                 Bugzilla.getInstance().getQueryProvider(),
                 Bugzilla.getInstance().getIssueProvider(),
                 Bugzilla.getInstance().getStatusProvider(),
-                null, null);
+                null, 
+                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository));
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {

@@ -50,17 +50,17 @@ import org.netbeans.modules.bugtracking.IssueImpl;
  * @author Tomas Stupka
  */
 public final class IssuePriorityInfo {
+    private final String id;
     private final String displayName;
-    private final int rank;
-    private Image icon;
+    private final Image icon;
 
-    public IssuePriorityInfo(String displayName, int sortOrder) {
-        this(displayName, null, sortOrder);
+    public IssuePriorityInfo(String id, String displayName) {
+        this(id, displayName, null);
     }
     
-    public IssuePriorityInfo(String displayName, Image icon, int rank) {
+    public IssuePriorityInfo(String id, String displayName, Image icon) {
+        this.id = id;
         this.displayName = displayName;
-        this.rank = rank;
         this.icon = icon;
     }
 
@@ -68,11 +68,16 @@ public final class IssuePriorityInfo {
         return displayName;
     }
 
-    public int getRank() {
-        return rank;
-    }
-    
+    /**
+     * Returns the icon to be shown next to an Issue in the Tasks Dashboard. 
+     * 
+     * @return 
+     */
     public Image getIcon() {
         return icon;
+    }
+
+    public String getID() {
+        return id;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.spi;
+package org.netbeans.modules.jira.util;
+
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import java.util.Comparator;
+
 
 /**
  *
  * @author Tomas Stupka
  */
-public interface IssuePriorityProvider<I> {
-    
-    /**
-     * Determines the Priority of an Issue, where the returned id is expected 
-     * to match with exactly one {@link IssuePriorityInfo#getID()} which was 
-     * returned via {@link #getPriorityInfos}.
-     * 
-     * @param i
-     * @return 
-     * @see IssuePriorityInfo
-     */
-    public String getPriorityID(I i);
-    
-    /**
-     * Provides information about Issue Priorities given by a 
-     * remote server. The order in the returned array also determines the rank 
-     * of a particular item, where the item with the lowest index stands for 
-     * the highest Priority and so on.
-     * 
-     * @return 
-     * @see IssuePriorityInfo
-     */
-    public IssuePriorityInfo[] getPriorityInfos();
-    
+public class PriorityComparator implements Comparator<Priority>{
+    @Override
+    public int compare(Priority p1, Priority p2) {
+        if(p1 == null && p2 == null) return 0;
+        if(p2 == null) return 1;
+        if(p1 == null) return -1;
+        
+        // XXX there is no sort order available!
+        return p1.getId().compareTo(p2.getId());
+    }
 }

@@ -282,49 +282,11 @@ public final class IssueImpl<R, I> {
     }
     
     public String getPriority() {
-        IssuePriorityProvider<I> ipp = repo.getPriorityProvider();
-        IssuePriorityInfo pd = ipp != null ? ipp.getPriorityInfo(data) : null;
-        return pd != null ? pd.getDisplayName() : "";
-    }
-    
-    public int getPriorityRank() {
-        IssuePriorityProvider<I> ipp = repo.getPriorityProvider();
-        IssuePriorityInfo pd = ipp != null ? ipp.getPriorityInfo(data) : null;
-        return pd != null ? pd.getRank(): 0;
+        return repo.getPriorityName(data);
     }
     
     public Image getPriorityIcon() {
-        IssuePriorityProvider<I> ipp = repo.getPriorityProvider();
-        IssuePriorityInfo pd = ipp != null ? ipp.getPriorityInfo(data) : null;
-        Image icon = null;
-        if(pd != null) {
-            icon = pd.getIcon();
-            if(icon == null) {
-                icon = getIcon(pd.getRank());
-            }
-        }
-        return icon != null ? icon : getDefaultIcon();
-    }
-
-    private Image getIcon(int rank) {
-        switch(rank) {
-            case 0:
-                return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true); // NOI18N
-            case 1:
-                return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true); // NOI18N
-            case 2:
-                return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true); // NOI18N
-            case 3:
-                return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true); // NOI18N
-            case 4:
-                return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true); // NOI18N
-            default:
-                return getDefaultIcon();
-        }
-    }
-    
-    private Image getDefaultIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/task.png", true); // NOI18N
+        return repo.getPriorityIcon(data);
     }
     
 }
