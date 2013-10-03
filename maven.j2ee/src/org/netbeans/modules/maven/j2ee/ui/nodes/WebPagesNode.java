@@ -125,7 +125,7 @@ class WebPagesNode extends FilterNode {
         Image retValue = super.getIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/ui/resources/WebPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;
@@ -136,7 +136,7 @@ class WebPagesNode extends FilterNode {
         Image retValue = super.getOpenedIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/ui/resources/WebPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;
