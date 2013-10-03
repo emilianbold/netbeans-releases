@@ -253,6 +253,16 @@ public class APITestConnector extends BugtrackingConnector {
         public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public void refreshQueries(APITestRepository r, APITestQuery... queries) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void refreshIssues(APITestRepository r, APITestIssue... issues) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public static class APITestIssueProvider extends IssueProvider<APITestIssue> {

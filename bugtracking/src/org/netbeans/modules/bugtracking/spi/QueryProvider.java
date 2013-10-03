@@ -136,6 +136,7 @@ public abstract class QueryProvider<Q, I> {
      * Refreshes the given query
      * 
      * @param query
+     * XXX obsolete since repositoryprovider.refreshQueries ?
      */
     public abstract void refresh(Q query);
     

@@ -76,4 +76,8 @@ public abstract class TestRepository {
 
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
     
+    public abstract void refreshQueries(TestQuery... queries);
+
+    public abstract void refreshIssues(TestIssue... issues);
+    
 }

@@ -120,6 +120,7 @@ public abstract class IssueProvider<I> {
      * Refreshes this Issues data from its bugtracking repository
      *
      * @return true if the issue was refreshed, otherwise false
+     * XXX obsolete since repositoryprovider.refreshIssues ?
      */
     public abstract boolean refresh(I data);
 

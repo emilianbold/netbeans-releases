@@ -109,4 +109,14 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     public void addPropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
+
+    @Override
+    public void refreshQueries(TestRepository r, TestQuery... queries) {
+        r.refreshQueries(queries);
+    }
+
+    @Override
+    public void refreshIssues(TestRepository r, TestIssue... issues) {
+        r.refreshIssues(issues);
+    }
 }

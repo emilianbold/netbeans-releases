@@ -273,6 +273,16 @@ public class JiraUpdater {
         public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }
+
+        @Override
+        public void refreshQueries(Object r, Object... queries) {
+            // do nothing
+        }
+
+        @Override
+        public void refreshIssues(Object r, Object... issues) {
+            // do nothing
+        }
     }
 
     private class JiraProxyController implements RepositoryController {

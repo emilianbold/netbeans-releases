@@ -116,7 +116,7 @@ public abstract class RepositoryProvider<R, Q, I> {
      * to access the repository.
      */
     public abstract I createIssue(R r);
-
+    
     /**
      * Returns all saved queries
      * @return
@@ -142,6 +142,21 @@ public abstract class RepositoryProvider<R, Q, I> {
         return Collections.<I>emptyList();
     }
 
+    /**
+     * Bulk refresh of queries. 
+     * 
+     * @param queries 
+     */
+    public abstract void refreshQueries(R r, Q... queries);
+    
+    /**
+     * Bulk refresh of issues. 
+     * 
+     * @param issues 
+     */
+    public abstract void refreshIssues(R r, I... issues);
+    
+    
     /*********
      * EVENTS
      *********/

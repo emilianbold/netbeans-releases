@@ -137,5 +137,15 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     public TeamProject getTeamProject(ODCSRepository repository) {
         return repository.getKenaiProject();
     }
+
+    @Override
+    public void refreshQueries(ODCSRepository r, ODCSQuery... queries) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void refreshIssues(ODCSRepository r, ODCSIssue... issues) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

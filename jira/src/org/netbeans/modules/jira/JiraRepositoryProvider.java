@@ -139,4 +139,14 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
             null;
     }
 
+    @Override
+    public void refreshQueries(JiraRepository r, JiraQuery... queries) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void refreshIssues(JiraRepository r, NbJiraIssue... issues) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

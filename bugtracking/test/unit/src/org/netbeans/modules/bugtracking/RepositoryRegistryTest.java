@@ -279,6 +279,16 @@ public class RepositoryRegistryTest extends NbTestCase {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) { }
+
+        @Override
+        public void refreshQueries(TestQuery... queries) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void refreshIssues(TestIssue... issues) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
     
     private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";

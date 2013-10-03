@@ -280,6 +280,16 @@ public class QTCTestHidden extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void refreshQueries(TestQuery... queries) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void refreshIssues(TestIssue... issues) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
     }
 
     private static class MyQuery extends TestQuery {

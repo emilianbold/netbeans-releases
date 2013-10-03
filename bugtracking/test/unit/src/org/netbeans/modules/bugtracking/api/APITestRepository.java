@@ -53,6 +53,8 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -179,6 +181,16 @@ public class APITestRepository extends TestRepository {
     
     void fireAttributesChangeEvent() {
         support.firePropertyChange(new PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, null, null));
+    }
+
+    @Override
+    public void refreshQueries(TestQuery... queries) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void refreshIssues(TestIssue... issues) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     class APITestRepositoryController implements RepositoryController {
