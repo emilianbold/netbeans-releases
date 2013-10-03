@@ -109,11 +109,14 @@ public class MavenSourcesImpl implements Sources, SourceGroupModifierImplementat
     private final Project proj;
     private final ChangeSupport cs = new ChangeSupport(this);
     private final PropertyChangeListener pcl = new PropertyChangeListener() {
-        public @Override void propertyChange(PropertyChangeEvent event) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (proj.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
                 return; //let's just continue with the old value, stripping classpath for broken project and re-creating it later serves no greater good.
             }
-            checkChanges(true, true);
+             //explicitly listing both RESOURCE and PROJECT properties, it's unclear if both are required but since some other places call addWatchedPath but don't listen it's likely required
+            if (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) || NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                checkChanges(true, true);
+            }
         }
     };
     

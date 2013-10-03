@@ -94,6 +94,9 @@ public class MavenPackageModifierImpl implements PackageModifierImplementation {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                if (!NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    return;
+                }
                 try {
                     FileObject srcdir = org.netbeans.modules.maven.api.FileUtilities.convertStringToFileObject(project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory());
                     if (srcdir != null) {

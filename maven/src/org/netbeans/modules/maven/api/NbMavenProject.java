@@ -356,11 +356,17 @@ public final class NbMavenProject {
         return getMavenProject().getPackaging();
     }
     
-    
+    /**
+     * 
+     * @param relPath
+     */
     public void addWatchedPath(String relPath) {
         addWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     } 
-    
+    /**
+     * 
+     * @param uri
+     */
     public void addWatchedPath(URI uri) {
         //#110599
         boolean addListener = false;
@@ -514,6 +520,7 @@ public final class NbMavenProject {
     public void removeWatchedPath(String relPath) {
         removeWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     }
+    
     public void removeWatchedPath(URI uri) {
         //#110599
         boolean removeListener = false;

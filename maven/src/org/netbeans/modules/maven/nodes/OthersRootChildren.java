@@ -86,7 +86,7 @@ class OthersRootChildren extends Children.Keys<SourceGroup> {
         changeListener  = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     regenerateKeys();
                     refresh();
                 }

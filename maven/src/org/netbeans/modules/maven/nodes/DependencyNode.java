@@ -223,7 +223,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             listener = new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                         refreshNode();
                     }
                 }
