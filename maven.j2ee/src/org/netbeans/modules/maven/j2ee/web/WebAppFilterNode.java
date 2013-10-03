@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.awt.Image;
 import java.io.File;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
@@ -119,21 +120,9 @@ class WebAppFilterNode extends FilterNode {
          return super.getHtmlDisplayName();
     }    
     
-    
     @Override
-    public javax.swing.Action[] getActions(boolean param) {
-//        if (isTopLevelNode) {
-//            Action[] toReturn = new Action[1];
-//            toReturn[0] = CommonProjectActions.newFileAction();
-//            return toReturn;
-//        } else {
-            return super.getActions(param);
-//        }
-    }    
-
-    @Override
-    public java.awt.Image getIcon(int param) {
-        java.awt.Image retValue = super.getIcon(param);
+    public Image getIcon(int param) {
+        Image retValue = super.getIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
                                              ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
@@ -143,8 +132,8 @@ class WebAppFilterNode extends FilterNode {
     }
 
     @Override
-    public java.awt.Image getOpenedIcon(int param) {
-        java.awt.Image retValue = super.getOpenedIcon(param);
+    public Image getOpenedIcon(int param) {
+        Image retValue = super.getOpenedIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
                                              ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
