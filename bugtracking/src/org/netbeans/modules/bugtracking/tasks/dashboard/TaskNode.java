@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -74,11 +75,12 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     private Category category;
     private final TaskListener taskListener;
     private final Object LOCK = new Object();
+    private static final Icon DEFAULT_TASK_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/task.png", true);
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
         //super(task.hasSubtasks(), parent);
-        super(false, false, parent, DashboardUtils.getTaskAnotatedText(task));
+        super(false, false, parent, DashboardUtils.getTaskAnotatedText(task), DEFAULT_TASK_ICON);
         this.task = task;
         taskListener = new TaskListener();
     }
@@ -133,7 +135,7 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
-            JLabel lblIcon = new JLabel(DashboardUtils.getTaskIcon(task));
+            JLabel lblIcon = new JLabel(getIcon());
             panel.add(lblIcon, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel();
@@ -142,6 +144,11 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
             labels.add(lblName);
         }
         return panel;
+    }
+
+    @Override
+    Icon getIcon() {
+        return DashboardUtils.getTaskIcon(task);
     }
 
     @Override

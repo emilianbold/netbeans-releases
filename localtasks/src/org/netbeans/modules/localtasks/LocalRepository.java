@@ -80,7 +80,7 @@ public final class LocalRepository {
     private final Repository repository;
     private final BugtrackingFactory<LocalRepository, LocalQuery, LocalTask> fac;
     private final PropertyChangeSupport propertySuport;
-    private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png"; // NOI18N
+    private static final String ICON_PATH = "org/netbeans/modules/localtasks/resources/local_repo.png"; // NOI18N
     private final Image icon;
     private TaskRepository taskRepository;
     private final Object CACHE_LOCK = new Object();

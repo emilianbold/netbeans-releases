@@ -341,7 +341,8 @@ class OutWriter extends PrintWriter {
 
     @Override
     public synchronized void println(String s) {
-        print(s, null, false, null, null, OutputKind.OUT, true);
+        doWrite(s, 0, s.length());
+        println();
     }
 
     @Override
@@ -703,12 +704,10 @@ class OutWriter extends PrintWriter {
     }
 
     synchronized void print(CharSequence s, LineInfo info, boolean important) {
+        int line = lines.getLineCount() - 1;
+        doWrite(s, 0, s.length());
         if (info != null) {
-            int line = lines.getLineCount() - 1;
-            doWrite(s, 0, s.length());
             lines.addLineInfo(line, info, important);
-        } else {
-            print(s, null, important, null, null, OutputKind.OUT, false);
         }
         lines.checkLimits();
     }
