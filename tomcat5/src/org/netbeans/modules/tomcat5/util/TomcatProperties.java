@@ -766,6 +766,26 @@ public class TomcatProperties {
         }
         return serverXml;
     }
+
+    /**
+     * Return tomee.xml file from the catalina base folder if the base folder is used
+     * or from the catalina home folder otherwise.
+     * <p>
+     * <b>BEWARE</b>: If the catalina base folder is used but has not bee generated yet,
+     * the tomee.xml file from the catalina home folder will be returned.
+     * </p>
+     */
+    public File getTomeeXml() {
+        String confTomeeXml = "conf/tomee.xml"; // NIO18N
+        File tomeeXml = null;
+        if (baseDir != null) {
+            tomeeXml = new File(baseDir, confTomeeXml);
+        }
+        if (tomeeXml == null || !tomeeXml.exists()) {
+            tomeeXml = new File(getCatalinaHome(), confTomeeXml);
+        }
+        return tomeeXml;
+    }
     
     public String getHost () {
         String val = ip.getProperty(PROP_HOST);
