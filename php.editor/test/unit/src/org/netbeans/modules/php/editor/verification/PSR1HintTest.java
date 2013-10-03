@@ -146,6 +146,30 @@ public class PSR1HintTest extends PHPHintsTestBase {
         checkHints(new PSR1Hint.MethodDeclarationHint(), "ClassName.php");
     }
 
+    public void testPropertyName_01() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_02() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_03() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_04() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_05() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_06() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
     @Override
     protected void checkHints(Rule hint, String fileName) throws Exception {
         super.checkHints(hint, getTestDir() + "/" + fileName);
