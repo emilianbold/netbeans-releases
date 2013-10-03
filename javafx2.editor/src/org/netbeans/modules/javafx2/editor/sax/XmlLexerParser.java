@@ -80,16 +80,16 @@ import static org.netbeans.modules.javafx2.editor.sax.Bundle.*;
  * @author sdedic
  */
 public class XmlLexerParser implements ContentLocator {
-    public static final String XMLNS_PREFIX = "xmlns";
-    public static final String NO_NAMESPACE_PREFIX = "";
-    public static final char PREFIX_DELIMITER_CHAR = ':';
-    public static final String TAG_CLOSE = ">";
-    public static final String OPEN_TAG = "<";
-    public static final String OPEN_CLOSING_TAG = "</";
-    public static final String SELF_CLOSING_TAG_CLOSE = "/>";
-    public static final char TAG_START_CHAR = '<';
-    public static final char TAG_END_CHAR = '>';
-    public static final char CLOSE_TAG_CHAR = '/';
+    public static final String XMLNS_PREFIX = "xmlns"; // NOI18N
+    public static final String NO_NAMESPACE_PREFIX = ""; // NOI18N
+    public static final char PREFIX_DELIMITER_CHAR = ':'; // NOI18N
+    public static final String TAG_CLOSE = ">"; // NOI18N
+    public static final String OPEN_TAG = "<"; // NOI18N
+    public static final String OPEN_CLOSING_TAG = "</"; // NOI18N
+    public static final String SELF_CLOSING_TAG_CLOSE = "/>"; // NOI18N
+    public static final char TAG_START_CHAR = '<'; // NOI18N
+    public static final char TAG_END_CHAR = '>'; // NOI18N
+    public static final char CLOSE_TAG_CHAR = '/'; // NOI18N
     
     private LexicalHandler  lexicalHandler;
     private ContentHandler  contentHandler;
@@ -312,6 +312,10 @@ public class XmlLexerParser implements ContentLocator {
     
     private int endDocOffset = -1;
     
+    @NbBundle.Messages({
+        "# {0} - token text",
+        "ERR_UnexpectedToken=Unexpected token: {0}"
+    })
     void parse2() throws SAXException {
         boolean whitespacePossible = true;
         
@@ -378,11 +382,11 @@ public class XmlLexerParser implements ContentLocator {
                             break;
                             
                         } else {
-                            if (trimmed.startsWith("<")) {
+                            if (trimmed.startsWith("<")) { // NOI18N
                                 // error, "<" is present in the text
                                 int idx = s.indexOf(trimmed);
                                 ErrorMark mark = new ErrorMark(seq.offset() + idx, 1,
-                                        ERR_UnexpectedToken, "Unexpected character: <");
+                                        ERR_UnexpectedToken, ERR_unexpectedToken("<")); // NOI18N
                                 addError(mark);
 
                                 if (trimmed.length() == 1) {
@@ -532,7 +536,11 @@ public class XmlLexerParser implements ContentLocator {
     
     @NbBundle.Messages({
         "# {0} - tag name",
-        "ERR_unexpectedTag=Unexpected closing tag: {0}"
+        "ERR_unexpectedTag=Unexpected closing tag: {0}",
+        "# {0} - tag name",
+        "ERR_TagNotFinished=Tag is not finished: {0}",
+        "# {0} - content",
+        "ERR_InvalidTagContent=Invalid tag content: {0}"
     })
     private void parseClosingTag(String tagName) throws SAXException {
         this.elementOffset = seq.offset();
@@ -557,7 +565,7 @@ public class XmlLexerParser implements ContentLocator {
                     if (s.equals(TAG_CLOSE)) {
                         consume();
                     } else {
-                       addError(ERR_TagNotFinished, null);
+                       addError(ERR_TagNotFinished, ERR_TagNotFinished(tagName));
                        markApproxEnd();
                     }
                     break out;
@@ -567,7 +575,7 @@ public class XmlLexerParser implements ContentLocator {
                 case VALUE:
                     // just mark error, but consume and ignore
                     consume();
-                    addError(ERR_InvalidTagContent, null);
+                    addError(ERR_InvalidTagContent, ERR_InvalidTagContent(token.text()));
                     break;
                     
                 default:
@@ -880,12 +888,16 @@ public class XmlLexerParser implements ContentLocator {
         markUnexpectedToken();
     }
     
+    @NbBundle.Messages({
+        "# {0} - attribute name",
+        "ERR_DuplicateAttribute=Duplicate attribute: {0}"
+    })
     private boolean parseAttribute(Token<XMLTokenId> t) {
         String argName = t.text().toString();
         boolean ignore;
         
         if (attrs.containsKey(argName)) {
-            addError(ERR_DuplicateAttribute, null);
+            addError(ERR_DuplicateAttribute, ERR_DuplicateAttribute(argName));
             ignore = true;
         } else {
             attrOffsets.put(argName, currentAttrOffsets = new int[] { seq.offset(), -1, -1, -1 });
@@ -995,7 +1007,7 @@ public class XmlLexerParser implements ContentLocator {
         String s;
         if (currentToken != null) {
             s = currentToken.text().toString();
-            s = s.replaceAll("\\\n", TOKEN_newline()).replaceAll("\\\t", TOKEN_tab());
+            s = s.replaceAll("\\\n", TOKEN_newline()).replaceAll("\\\t", TOKEN_tab()); // NOI18N
             addError(ERR_UnexpectedToken, ERR_unexpectedToken(s));
         } else {
             addError(ERR_UnexpectedToken, ERR_UnexpectedEndOfFile());
@@ -1045,7 +1057,7 @@ public class XmlLexerParser implements ContentLocator {
                     if (cs.charAt(cs.length() - 1) != TAG_END_CHAR) {
                         // does not begin with tag start, does not end with tag end - how is it
                         // possible it is a tag ?
-                        throw new IllegalStateException("Invalid tag text: " + cs);
+                        throw new IllegalStateException("Invalid tag text: " + cs); // NOI18N
                     } else if (cs.charAt(0) == CLOSE_TAG_CHAR) {
                         selfClosed = true;
                     }
