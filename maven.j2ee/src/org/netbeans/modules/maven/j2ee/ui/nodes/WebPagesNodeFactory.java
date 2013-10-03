@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee.ui.nodes;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,9 +67,9 @@ import org.openide.nodes.Node;
  * @author Martin Janicek <mjanicek@netbeans.org>
  */
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=50)
-public class WebAppNodeFactory implements NodeFactory {
+public class WebPagesNodeFactory implements NodeFactory {
 
-    public WebAppNodeFactory() {
+    public WebPagesNodeFactory() {
     }
 
     @Override
@@ -111,7 +111,7 @@ public class WebAppNodeFactory implements NodeFactory {
                     DataFolder fold = DataFolder.findFolder(webRoot);
                     File webAppFolder = FileUtil.toFile(webRoot);
                     if (fold != null) {
-                        return new WebAppFilterNode(project, fold.getNodeDelegate().cloneNode(), webAppFolder);
+                        return new WebPagesNode(project, fold.getNodeDelegate().cloneNode(), webAppFolder);
                     }
                 }
             }

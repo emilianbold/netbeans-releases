@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee.ui.nodes;
 
 import java.awt.Image;
 import java.io.File;
@@ -61,15 +61,15 @@ import org.openide.util.NbBundle;
  * filter node for display of web sources
  * @author  Milos Kleint 
  */
-class WebAppFilterNode extends FilterNode {
+class WebPagesNode extends FilterNode {
     private boolean isTopLevelNode = false;
     private FileObject file;
     
-    WebAppFilterNode(Project proj, Node orig, File root) {
+    WebPagesNode(Project proj, Node orig, File root) {
         this(proj, orig, root, true);
     }
     
-    private WebAppFilterNode(Project proj, Node orig, File root, boolean isTopLevel) {
+    private WebPagesNode(Project proj, Node orig, File root, boolean isTopLevel) {
         //#142744 if orig child is leaf, put leave as well.
         super(orig, orig.getChildren() == Children.LEAF ? Children.LEAF : new WebAppFilterChildren(proj, orig, root));
         isTopLevelNode = isTopLevel;
@@ -81,7 +81,7 @@ class WebAppFilterNode extends FilterNode {
     @Override
     public String getDisplayName() {
         if (isTopLevelNode) {
-            String s = NbBundle.getMessage(WebAppFilterNode.class, "LBL_Web_Pages");
+            String s = NbBundle.getMessage(WebPagesNode.class, "LBL_Web_Pages");
             
             try {
                 s = file.getFileSystem().getStatus().annotateName(s, Collections.singleton(file));
@@ -105,7 +105,7 @@ class WebAppFilterNode extends FilterNode {
              if (stat instanceof FileSystem.HtmlStatus) {
                  FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
 
-                String s = NbBundle.getMessage(WebAppFilterNode.class, "LBL_Web_Pages");
+                String s = NbBundle.getMessage(WebPagesNode.class, "LBL_Web_Pages");
                  String result = hstat.annotateNameHtml (
                      s, Collections.singleton(file));
 
@@ -125,7 +125,7 @@ class WebAppFilterNode extends FilterNode {
         Image retValue = super.getIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/ui/resources/WebPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;
@@ -136,7 +136,7 @@ class WebAppFilterNode extends FilterNode {
         Image retValue = super.getOpenedIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/web/webPagesBadge.png"), //NOI18N
+                                             ImageUtilities.loadImage("org/netbeans/modules/maven/j2ee/ui/resources/WebPagesBadge.png"), //NOI18N
                                              8, 8);
         } 
         return retValue;
@@ -158,7 +158,7 @@ class WebAppFilterNode extends FilterNode {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final WebAppFilterNode other = (WebAppFilterNode) obj;
+        final WebPagesNode other = (WebPagesNode) obj;
         if (this.isTopLevelNode != other.isTopLevelNode) {
             return false;
         }
@@ -187,7 +187,7 @@ class WebAppFilterNode extends FilterNode {
                 if (!VisibilityQuery.getDefault().isVisible(fobj)) {
                     return new Node[0];
                 }
-                Node n = new WebAppFilterNode(project, obj, root, false);
+                Node n = new WebPagesNode(project, obj, root, false);
                 return new Node[] {n};
             }
             Node origos = obj;
