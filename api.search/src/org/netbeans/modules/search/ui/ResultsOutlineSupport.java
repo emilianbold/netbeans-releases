@@ -727,6 +727,16 @@ public class ResultsOutlineSupport {
         }
 
         @Override
+        public Transferable clipboardCopy() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
+        }
+
+        @Override
+        public Transferable clipboardCut() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
+        }
+
+        @Override
         public void destroy () throws IOException {
             FolderTreeItem folder = this.getLookup().lookup(FolderTreeItem.class);
             folder.remove();
