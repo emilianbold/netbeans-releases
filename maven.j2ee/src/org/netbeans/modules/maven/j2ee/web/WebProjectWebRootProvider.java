@@ -101,6 +101,7 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     @Override
     public Collection<FileObject> getWebRoots() {
+        List<FileObject> webRootsFO = new ArrayList<>();
         List<String> webRoots = PluginPropertyUtils.getPluginPropertyBuildable(
                 project,
                 Constants.GROUP_APACHE_PLUGINS,
@@ -108,15 +109,19 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
                 "war", // NOI18N
                 new WebRootsBuilder());
 
-        List<FileObject> webRootsFO = new ArrayList<>();
-        for (String webRoot : webRoots) {
-            webRootsFO.add(project.getProjectDirectory().getFileObject(webRoot));
+        if (webRoots != null) {
+            for (String webRoot : webRoots) {
+                webRootsFO.add(project.getProjectDirectory().getFileObject(webRoot));
+            }
         }
 
         // Default web resource directory is usually webapp
         // See also maven-war-plugin documentation for more details
         if (webRootsFO.isEmpty()) {
-            webRootsFO.add(getDefaultWebRoot());
+            FileObject defaultWebRoot = getDefaultWebRoot();
+            if (defaultWebRoot != null) {
+                webRootsFO.add(defaultWebRoot);
+            }
         }
 
         return webRootsFO;
