@@ -115,15 +115,5 @@ public class RepositoryProviderImpl extends RepositoryProvider<LocalRepository, 
     public LocalTask createIssue(LocalRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public void refreshQueries(LocalRepository r, LocalQuery... queries) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void refreshIssues(LocalRepository r, LocalTask... issues) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
 }
