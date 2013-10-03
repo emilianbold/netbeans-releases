@@ -51,16 +51,23 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -403,6 +410,114 @@ public abstract class PSR1Hint extends HintRule {
         @NbBundle.Messages("PSR1PropertyNameHintDisp=Property Name")
         public String getDisplayName() {
             return Bundle.PSR1PropertyNameHintDisp();
+        }
+
+    }
+
+    public static final class SideEffectHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Side.Effect"; //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new SideEffectVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class SideEffectVisitor extends CheckVisitor {
+            private boolean containsDeclaration = false;
+            private ASTNode firstSideEffectNode;
+
+            public SideEffectVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr1hint, fileObject, baseDocument);
+            }
+
+            @Override
+            public void visit(Program node) {
+                checkStatements(node.getStatements());
+                checkSideEffects();
+            }
+
+            private void checkStatements(List<Statement> statements) {
+                for (Statement statement : statements) {
+                    checkStatement(statement);
+                }
+            }
+
+            private void checkStatement(ASTNode node) {
+                if (isNamespaceDeclaration(node)) {
+                    NamespaceDeclaration namespaceDeclaration = (NamespaceDeclaration) node;
+                    checkStatements(namespaceDeclaration.getBody().getStatements());
+                } else if (isDeclaration(node)) {
+                    containsDeclaration = true;
+                } else if (isCondition(node)) {
+                    IfStatement ifStatement = (IfStatement) node;
+                    checkCondition(ifStatement.getTrueStatement());
+                    checkCondition(ifStatement.getFalseStatement());
+                } else {
+                    if (!isAllowedEverywhere(node)) {
+                        firstSideEffectNode = node;
+                    }
+                }
+            }
+
+            private void checkCondition(Statement node) {
+                if (node instanceof Block) {
+                    Block body = (Block) node;
+                    checkStatements(body.getStatements());
+                } else {
+                    checkStatement(node);
+                }
+            }
+
+            @NbBundle.Messages(
+                "PSR1SideEffectHintText=A file SHOULD declare new symbols and cause no other side effects, or it SHOULD execute logic with side effects, "
+                    + "but SHOULD NOT do both."
+            )
+            private void checkSideEffects() {
+                if (isSideEffect()) {
+                    createHint(firstSideEffectNode, Bundle.PSR1SideEffectHintText());
+                }
+            }
+
+            private boolean isSideEffect() {
+                return firstSideEffectNode != null && containsDeclaration;
+            }
+
+            private static boolean isNamespaceDeclaration(ASTNode node) {
+                return node instanceof NamespaceDeclaration;
+            }
+
+            private static boolean isCondition(ASTNode node) {
+                return node instanceof IfStatement;
+            }
+
+            private static boolean isDeclaration(ASTNode node) {
+                return node instanceof TypeDeclaration || node instanceof FunctionDeclaration || node instanceof ConstantDeclaration;
+            }
+
+            private static boolean isAllowedEverywhere(ASTNode node) {
+                return node instanceof UseStatement || node instanceof NamespaceDeclaration || node instanceof EmptyStatement;
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages(
+            "PSR1SideEffectHintDesc=A file SHOULD declare new symbols and cause no other side effects, or it SHOULD execute logic with side effects, "
+                + "but SHOULD NOT do both."
+        )
+        public String getDescription() {
+            return Bundle.PSR1SideEffectHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1SideEffectHintDisp=Side Effects")
+        public String getDisplayName() {
+            return Bundle.PSR1SideEffectHintDisp();
         }
 
     }
