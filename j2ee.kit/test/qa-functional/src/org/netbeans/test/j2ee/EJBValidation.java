@@ -104,9 +104,6 @@ public class EJBValidation extends J2eeTestCase {
         conf = addServerTests(Server.GLASSFISH, conf, AddSelectMethodTest.class,
                 "testAddSelectMethod1InEB",
                 "testAddSelectMethod2InEB");
-        conf = addServerTests(Server.GLASSFISH, conf, AddCMPFieldTest.class,
-                "testAddCMPField1InEB",
-                "testAddCMPField2InEB");
         conf = addServerTests(Server.GLASSFISH, conf, CallEJBTest.class,
                 "testCallEJBInServlet",
                 "testCallEJB1InSB");
@@ -191,13 +188,6 @@ public class EJBValidation extends J2eeTestCase {
         new OpenAction().performAPI(openFile);
         editorOper = new EditorOperator("TestingServlet.java");
         editorOper.replace("out.println(\"</body>\");", "out.println(lookupTestingSessionBeanLocal().testBusinessMethod1());");
-        
-        // select in Files view to prevent unstable scrolling in low display resolution
-        openFile = new Node(FilesTabOperator.invoke().getProjectNode(EJBValidation.EJB_PROJECT_NAME), "src|java|test|TestingEntityRemote.java");
-        new OpenAction().performAPI(openFile);
-        editorOper = new EditorOperator("TestingEntityRemote.java");
-        editorOper.replace("int getCmpTestField2x();", "int getCmpTestField2x() throws Exception;");
-        editorOper.replace("void setCmpTestField2x(int cmpTestField2x);", "void setCmpTestField2x(int cmpTestField2x) throws Exception;");
         
         String page = Utils.deploy(EAR_PROJECT_NAME, "http://localhost:8080/TestingEntApp-WebModule/TestingServlet", true);
         log(page);

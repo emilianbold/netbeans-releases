@@ -40,7 +40,6 @@ package org.netbeans.test.j2ee;
 import junit.framework.Test;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.j2ee.addmethod.AddCMPFieldTest;
 import org.netbeans.test.j2ee.addmethod.AddFinderMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddMethodTest;
 import org.netbeans.test.j2ee.addmethod.AddSelectMethodTest;
@@ -94,9 +93,6 @@ public class J2EESuite extends J2eeTestCase {
         conf = conf.addTest(AddSelectMethodTest.class,
                 "testAddSelectMethod1InEB",
                 "testAddSelectMethod2InEB");
-        conf = conf.addTest(AddCMPFieldTest.class,
-                "testAddCMPField1InEB",
-                "testAddCMPField2InEB");
         conf = conf.addTest(CallEJBTest.class,
                 "testCallEJBInServlet",
                 "testCallEJB1InSB");
