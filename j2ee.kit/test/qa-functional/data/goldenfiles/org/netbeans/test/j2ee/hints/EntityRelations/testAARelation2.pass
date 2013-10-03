@@ -1,6 +1,7 @@
 25:7-25:9:warning:The entity relationship is not defined.
 46:15-46:23:verifier:Add @Override Annotation
 52:19-52:25:verifier:Add @Override Annotation
+58:8-58:10:verifier:The if statement is redundant
 62:18-62:26:verifier:Add @Override Annotation
 Add @Override Annotation
 Add @Override Annotation
@@ -9,6 +10,7 @@ Create bidirectional ManyToOne relationship...
 Create bidirectional OneToOne relationship...
 Create unidirectional ManyToOne relationship
 Create unidirectional OneToOne relationship
+The if statement is redundant
 ---------------------
 /*
  * CC.java

@@ -4,12 +4,16 @@
     <description>description of persistence unit</description>
     <provider>javax.persistence.EntityManager</provider>
     <jta-data-source>jta_data_source</jta-data-source>
-    <properties/>
+    <properties>
+      <property name="javax.persistence.schema-generation.database.action" value="create"/>
+    </properties>
   </persistence-unit>
   <persistence-unit name="pu1" transaction-type="JTA">
     <description>description of persistence unit</description>
     <provider>javax.persistence.EntityManager</provider>
     <non-jta-data-source>nonjta_data_source</non-jta-data-source>
-    <properties/>
+    <properties>
+      <property name="javax.persistence.schema-generation.database.action" value="create"/>
+    </properties>
   </persistence-unit>
 </persistence>

@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
+
 package servlet;
 
 import java.io.IOException;
@@ -26,9 +28,8 @@ import multi.ejbs.local.LocalSessionLocalHome;
 public class ServletForEJB extends HttpServlet {
 
     /**
-     * Processes requests for both HTTP
-     * <code>GET</code> and
-     * <code>POST</code> methods.
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
      *
      * @param request servlet request
      * @param response servlet response
@@ -57,8 +58,7 @@ public class ServletForEJB extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
-     * Handles the HTTP
-     * <code>GET</code> method.
+     * Handles the HTTP <code>GET</code> method.
      *
      * @param request servlet request
      * @param response servlet response
@@ -71,8 +71,7 @@ public class ServletForEJB extends HttpServlet {
     }
 
     /**
-     * Handles the HTTP
-     * <code>POST</code> method.
+     * Handles the HTTP <code>POST</code> method.
      *
      * @param request servlet request
      * @param response servlet response
@@ -106,4 +105,5 @@ public class ServletForEJB extends HttpServlet {
             throw new RuntimeException(ce);
         }
     }
+
 }
