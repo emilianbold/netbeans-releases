@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.history;
+package org.netbeans.modules.git.ui.branch;
 
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
@@ -59,16 +59,26 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
-public final class BranchSelector {
-    protected final SelectBranchPanel panel;
+@NbBundle.Messages({
+    "# {0} - branch name", "SelectTrackedBranchPanel.error.noselection=Select tracked branch for branch \"{0}\"",
+    "# {0} - branch name", "SelectTrackedBranchPanel.error.samerevision=Select branch other than \"{0}\"",
+    "# {0} - branch name", "# {1} - tracked branch name", "SelectTrackedBranchPanel.info=Branch \"{0}\" will start tracking branch \"{1}\""
+})
+public final class SelectTrackedBranch {
+    private final SelectTrackedBranchPanel panel;
+    private final String branchName;
+    protected final SelectBranchPanel selectBranchPanel;
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;
 
-    public BranchSelector (File repository) {
+    public SelectTrackedBranch (File repository, String branchName, String preselectedBranch) {
         this.revisionPicker = new RevisionDialogController(repository, new File[0],
-                Collections.<String, GitBranch>emptyMap(), null);
-        panel = new SelectBranchPanel(revisionPicker.getPanel());
+                Collections.<String, GitBranch>emptyMap(), preselectedBranch);
+        this.branchName = branchName;
+        selectBranchPanel = new SelectBranchPanel(revisionPicker.getPanel());
+        panel = new SelectTrackedBranchPanel(selectBranchPanel);
+        panel.errorLabel.setText(Bundle.SelectTrackedBranchPanel_error_noselection(branchName));
     }
 
     public String getSelectedBranch () {
@@ -89,7 +99,17 @@ public final class BranchSelector {
             @Override
             public void propertyChange (PropertyChangeEvent evt) {
                 if (evt.getPropertyName() == RevisionDialogController.PROP_VALID) {
-                    setRevisionValid(Boolean.TRUE.equals(evt.getNewValue()));
+                    boolean valid = Boolean.TRUE.equals(evt.getNewValue());
+                    if (!valid) {
+                        panel.errorLabel.setText(Bundle.SelectTrackedBranchPanel_error_noselection(branchName));
+                    } else if (branchName.equals(revisionPicker.getRevision().getRevision())) {
+                        valid = false;
+                        panel.errorLabel.setText(Bundle.SelectTrackedBranchPanel_error_samerevision(branchName));
+                    }
+                    if (valid) {
+                        panel.errorLabel.setText(Bundle.SelectTrackedBranchPanel_info(branchName, revisionPicker.getRevision().getRevision()));
+                    }
+                    setRevisionValid(valid);
                 }
             }
         });

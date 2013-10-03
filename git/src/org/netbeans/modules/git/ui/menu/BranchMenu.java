@@ -52,6 +52,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
+import org.netbeans.modules.git.ui.branch.SetTrackingAction;
 import org.netbeans.modules.git.ui.checkout.AbstractCheckoutAction;
 import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
@@ -107,6 +108,12 @@ public final class BranchMenu extends DynamicMenu {
             Actions.connect(item, action, false);
             menu.add(item);
             
+            item = new JMenuItem();
+            action = (Action) SystemAction.get(SetTrackingAction.class);
+            Utils.setAcceleratorBindings(Annotator.ACTIONS_PATH_PREFIX, action);
+            Actions.connect(item, action, false);
+            menu.add(item);
+            
             menu.addSeparator();
             item = new JMenuItem();
             action = (Action) SystemAction.get(CreateTagAction.class);
@@ -153,6 +160,8 @@ public final class BranchMenu extends DynamicMenu {
                     }
                 }
             }
+            item = menu.add(SystemActionBridge.createAction(SystemAction.get(SetTrackingAction.class), NbBundle.getMessage(SetTrackingAction.class, "LBL_SetTrackingAction_PopupName"), lkp)); //NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
             menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateTagAction.class), NbBundle.getMessage(CreateTagAction.class, "LBL_CreateTagAction_PopupName"), lkp)); //NOI18N

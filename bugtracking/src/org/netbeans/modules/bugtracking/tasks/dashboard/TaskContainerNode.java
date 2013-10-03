@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -86,8 +87,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     private RequestProcessor rp = new RequestProcessor("Tasks Dashboard - TaskContainerNode", 10); // NOI18N
     
-    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
-        super(expandable, parent, title);
+    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title, Icon icon) {
+        super(expandable, parent, title, icon);
         this.refresh = refresh;
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
@@ -101,6 +102,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     abstract boolean isTaskLimited();
 
     abstract void refreshTaskContainer();
+
+    abstract Icon getIcon();
 
     //override if you need to adjust node during updateNodes method
     void adjustTaskNode(TaskNode taskNode) {
