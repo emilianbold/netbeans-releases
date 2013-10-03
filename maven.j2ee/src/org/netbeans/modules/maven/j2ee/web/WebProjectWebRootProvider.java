@@ -49,7 +49,6 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluatio
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -102,12 +101,7 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
     @Override
     public Collection<FileObject> getWebRoots() {
         List<FileObject> webRootsFO = new ArrayList<>();
-        List<String> webRoots = PluginPropertyUtils.getPluginPropertyBuildable(
-                project,
-                Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_WAR,
-                "war", // NOI18N
-                new WebRootsBuilder());
+        List<String> webRoots = WebProjectUtils.getPluginProperty(project, new WebRootsBuilder());
 
         if (webRoots != null) {
             for (String webRoot : webRoots) {
