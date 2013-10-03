@@ -289,6 +289,11 @@ public class RepositoryRegistryTest extends NbTestCase {
         public void refreshIssues(TestIssue... issues) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public TestIssue createIssue(String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
     
     private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";

@@ -110,12 +110,24 @@ public abstract class RepositoryProvider<R, Q, I> {
     public abstract Q createQuery(R r); 
 
     /**
-     * Creates a new IssueProvider instance. Might block for a longer time.
+     * Creates a new issue instance. Might block for a longer time.
      *
-     * @return return a new IssueProvider instance or null if it's not possible
+     * @return return a new issue instance or null if it's not possible
      * to access the repository.
      */
     public abstract I createIssue(R r);
+
+    /**
+     * Creates a new issue instance. Might block for a longer time.
+     *
+     * @param r
+     * @param summary
+     * @param description
+     * @return return a new issue instance or null if it's not possible
+     * to access the repository.
+     * XXX do we need a canCreate(...) if this is provided?
+     */
+    public abstract I createIssue(R r, String summary, String description);
     
     /**
      * Returns all saved queries

@@ -252,6 +252,11 @@ public class IssueAccessorTest extends NbTestCase {
         public void refreshIssues(TestIssue... issues) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public TestIssue createIssue(String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private static class IATestIssue extends TestIssue {
@@ -310,6 +315,11 @@ public class IssueAccessorTest extends NbTestCase {
 
         @Override
         public void setSeen(boolean seen) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public String getDescription() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }

@@ -149,4 +149,9 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public NbJiraIssue createIssue(JiraRepository r, String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

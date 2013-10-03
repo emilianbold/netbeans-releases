@@ -67,6 +67,8 @@ public abstract class TestRepository {
     public abstract TestQuery createQuery();
 
     public abstract TestIssue createIssue();
+    
+    public abstract TestIssue createIssue(String summary, String description);
 
     public abstract Collection<? extends TestQuery> getQueries();
 

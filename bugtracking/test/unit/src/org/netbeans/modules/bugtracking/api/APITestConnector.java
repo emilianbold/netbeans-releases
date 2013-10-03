@@ -263,6 +263,11 @@ public class APITestConnector extends BugtrackingConnector {
         public void refreshIssues(APITestRepository r, APITestIssue... issues) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public APITestIssue createIssue(APITestRepository r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     public static class APITestIssueProvider extends IssueProvider<APITestIssue> {

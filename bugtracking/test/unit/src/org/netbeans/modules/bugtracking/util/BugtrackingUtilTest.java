@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.TestIssue;
@@ -53,7 +52,6 @@ import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -179,6 +177,11 @@ public class BugtrackingUtilTest {
 
         @Override
         public void refreshIssues(TestIssue... issues) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public TestIssue createIssue(String summary, String description) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 

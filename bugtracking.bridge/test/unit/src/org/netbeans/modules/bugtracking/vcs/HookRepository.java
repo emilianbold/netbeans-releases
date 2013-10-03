@@ -113,6 +113,11 @@ public class HookRepository extends TestRepository {
     public void addPropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override
+    public TestIssue createIssue(String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
     public void refreshQueries(TestQuery... queries) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

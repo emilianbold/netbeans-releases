@@ -145,6 +145,12 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
+    public TestIssue createIssue(String summary, String description) {
+        newIssue = new APITestIssue(null, this, true, summary, description);
+        return newIssue;
+    }
+    
+    @Override
     public Collection<APITestQuery> getQueries() {
         if(queries == null) {
             queries = Arrays.asList(new APITestQuery[] {new APITestQuery(APITestQuery.FIRST_QUERY_NAME, this), new APITestQuery(APITestQuery.SECOND_QUERY_NAME, this)});
@@ -192,7 +198,7 @@ public class APITestRepository extends TestRepository {
     public void refreshIssues(TestIssue... issues) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
     class APITestRepositoryController implements RepositoryController {
         String name;
         String url;

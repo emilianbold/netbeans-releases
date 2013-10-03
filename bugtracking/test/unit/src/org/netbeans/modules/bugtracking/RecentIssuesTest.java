@@ -247,6 +247,11 @@ public class RecentIssuesTest extends NbTestCase {
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
         public void refreshQueries(TestQuery... queries) { throw new UnsupportedOperationException("Not supported yet."); }
         public void refreshIssues(TestIssue... issues) { throw new UnsupportedOperationException("Not supported yet."); }
+
+        @Override
+        public TestIssue createIssue(String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class RITestIssue extends TestIssue {
@@ -293,6 +298,11 @@ public class RecentIssuesTest extends NbTestCase {
 
         @Override
         public void setSeen(boolean seen) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public String getDescription() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 

@@ -228,6 +228,11 @@ public final class RepositoryImpl<R, Q, I> {
         I issueData = repositoryProvider.createIssue(r);
         return getIssue(issueData);
     }   
+    
+    public IssueImpl createNewIssue(String summary, String description) {
+        I issueData = repositoryProvider.createIssue(r, summary, description);
+        return getIssue(issueData);
+    }   
 
     public RepositoryProvider<R, Q, I> getProvider() {
         return repositoryProvider;

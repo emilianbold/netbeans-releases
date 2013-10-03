@@ -60,6 +60,8 @@ public abstract class TestIssue {
     public abstract String getID();
 
     public abstract String getSummary();
+    
+    public abstract String getDescription();
 
     public abstract boolean isNew();
 

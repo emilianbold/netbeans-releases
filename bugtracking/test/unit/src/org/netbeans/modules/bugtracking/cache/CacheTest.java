@@ -442,6 +442,11 @@ public class CacheTest extends NbTestCase {
         public void setSeen(boolean seen) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
+
+        @Override
+        public String getDescription() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class CTestRepository extends TestRepository {
@@ -489,6 +494,11 @@ public class CacheTest extends NbTestCase {
 
         @Override
         public void refreshIssues(TestIssue... issues) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public TestIssue createIssue(String summary, String description) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
