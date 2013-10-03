@@ -79,12 +79,12 @@ public class CustomHtmlExtension extends HtmlExtension {
 
     @Override
     public boolean isCustomTag(Named element, HtmlSource source) {
-        return getConfiguration(source).getRootTags().containsKey(element.name().toString());
+        return getConfiguration(source).getTagsNames().contains(element.name().toString());
     }
 
     @Override
     public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
-        return getConfiguration(source).getRootAttributes().containsKey(attribute.name().toString());
+        return getConfiguration(source).getAttributesNames().contains(attribute.name().toString());
     }
 
     private Configuration getConfiguration(HtmlSource source) {
@@ -122,7 +122,7 @@ public class CustomHtmlExtension extends HtmlExtension {
                     Named named = (Named) found;
                     String elementName = named.name().toString();
                     Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-                    if (conf.getRootTags().containsKey(elementName)) {
+                    if (conf.getTagsNames().contains(elementName)) {
                         //custom element
                         hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
                         

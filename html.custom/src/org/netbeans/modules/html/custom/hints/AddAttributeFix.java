@@ -72,7 +72,7 @@ public final class AddAttributeFix implements HintFix {
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        conf.getRootAttributes().put(attributeName, new Attribute(attributeName));
+        conf.add(new Attribute(attributeName));
         conf.store();
         LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
     }

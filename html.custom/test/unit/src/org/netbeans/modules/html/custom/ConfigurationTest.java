@@ -88,10 +88,7 @@ public class ConfigurationTest extends CslTestBase {
         assertNotNull(conf);
         
         //test elements
-        Map<String, Tag> tags = conf.getRootTags();
-        assertNotNull(tags);
-
-        Tag foo = tags.get("foo");
+        Tag foo = conf.getTag("foo");
         assertNotNull(foo);
         Collection<String> contexts = foo.getContexts();
         assertNotNull(contexts);
@@ -116,9 +113,7 @@ public class ConfigurationTest extends CslTestBase {
         assertNotNull(clazz.getDocumentationURL());
         
         //test attributes
-        Map<String, Attribute> attrs = conf.getRootAttributes();
-        assertNotNull(attrs);
-        Attribute one = attrs.get("one");
+        Attribute one = conf.getAttribute("one");
         assertNotNull(one);
         
         contexts = one.getContexts();

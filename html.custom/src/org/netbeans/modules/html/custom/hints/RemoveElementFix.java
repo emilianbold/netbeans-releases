@@ -43,6 +43,7 @@ package org.netbeans.modules.html.custom.hints;
 
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.html.custom.conf.Tag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.NbBundle;
@@ -71,9 +72,12 @@ public final class RemoveElementFix implements HintFix {
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        conf.getRootTags().remove(elementName);
-        conf.store();
-        LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
+        Tag tag = conf.getTag(elementName);
+        if(tag != null) {
+            conf.remove(tag);
+            conf.store();
+            LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
+        }
     }
 
     @Override

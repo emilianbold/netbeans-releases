@@ -156,7 +156,7 @@ public class Configuration {
         }
 
     }
-    
+
     public FileObject getProjectsConfigurationFile() {
         return configFile;
     }
@@ -170,12 +170,46 @@ public class Configuration {
         DialogDisplayer.getDefault().notifyLater(d);
     }
 
-    public Map<String, Tag> getRootTags() {
-        return TAGS;
+    /**
+     * Gets a collection of the tags registered to the root context.
+     *
+     * @return
+     */
+    public Collection<String> getTagsNames() {
+        return TAGS.keySet();
     }
 
-    public Map<String, Attribute> getRootAttributes() {
-        return ATTRS;
+    /**
+     * Gets a collection of the attributes registered to the root context.
+     *
+     * @return
+     */
+    public Collection<String> getAttributesNames() {
+        return TAGS.keySet();
+    }
+
+    public Tag getTag(String tagName) {
+        return TAGS.get(tagName);
+    }
+
+    public Attribute getAttribute(String name) {
+        return ATTRS.get(name);
+    }
+
+    public void add(Tag t) {
+        TAGS.put(t.getName(), t);
+    }
+
+    public void remove(Tag t) {
+        TAGS.remove(t.getName());
+    }
+
+    public void add(Attribute a) {
+        ATTRS.put(a.getName(), a);
+    }
+
+    public void remove(Attribute a) {
+        ATTRS.remove(a.getName());
     }
 
     private void reload() throws IOException {
@@ -302,6 +336,7 @@ public class Configuration {
         //save changes
         editorCookie.saveDocument();
 
+        //TODO reindex all affected indexers!
         return node;
     }
 
