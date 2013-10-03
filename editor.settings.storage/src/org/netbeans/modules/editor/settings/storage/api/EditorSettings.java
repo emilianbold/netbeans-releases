@@ -227,6 +227,39 @@ public abstract class EditorSettings {
     );
     
     /**
+     * Returns annotations properties for given profile or null, if the 
+     * profile is not known.
+     *
+     * @param profile a profile name
+     * @return annotations properties for given profile or null
+     */
+    public abstract Map<String, AttributeSet> getAnnotations (
+	String profile
+    );
+    
+    /**
+     * Returns defaults for annotation properties for given profile,
+     * or null if the profile is not known.
+     *
+     * @param profile a profile name
+     * @return annotation properties for given profile or null
+     */
+    public abstract Map<String, AttributeSet> getAnnotationDefaults (
+	String profile
+    );
+    
+    /**
+     * Sets annotation properties for given profile.
+     *
+     * @param profile a profile name
+     * @param annotations a annotation properties to be used
+     */
+    public abstract void setAnnotations (
+	String profile,
+	Map<String, AttributeSet> annotations
+    );
+    
+    /**
      * Returns FontColorSettings for given mimetypes.
      *
      * @param mimeTypes The mime path to get the settings for.
