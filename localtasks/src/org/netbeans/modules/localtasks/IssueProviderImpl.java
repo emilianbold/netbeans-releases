@@ -53,7 +53,6 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
  * @author Ondrej Vrabec
  */
 public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.IssueProvider<LocalTask> {
-    private IssueStatusProvider<LocalTask> statusProvider;
 
     @Override
     public String getDisplayName (LocalTask data) {
@@ -118,31 +117,6 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     @Override
     public void removePropertyChangeListener (LocalTask data, PropertyChangeListener listener) {
         data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public IssueStatusProvider getStatusProvider () {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<LocalTask>() {
-                @Override
-                public IssueStatusProvider.Status getStatus(LocalTask issue) {
-                    return Status.SEEN;
-                }
-                @Override
-                public void setSeen (LocalTask issue, boolean uptodate) {
-                    // and what should this suppose to do?
-                }
-                @Override
-                public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-                @Override
-                public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
     }
 
     @Override
