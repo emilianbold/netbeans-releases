@@ -44,14 +44,23 @@ package org.netbeans.modules.j2me.project.wizard;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.j2me.project.J2MEProjectGenerator;
+import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,20 +68,21 @@ import org.openide.util.NbBundle;
  * @author Roman Svitanic
  */
 public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-    
+
     public static enum WizardType { APPLICATION, EXISTING };
     
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
-    
     private static final String MANIFEST_FILE = "manifest.mf"; //NOI18N
+    static final String MIDLET_CLASS = "mainClass"; // NOI18N
+    static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
     private static final long serialVersionUID = 1L;
     private WizardType type;
 
     private J2MEProjectWizardIterator(WizardType type) {
         this.type = type;
     }
-    
-    @TemplateRegistration(folder="Project/JavaME", position=100, displayName="#template_app", iconBase="org/netbeans/modules/j2me/project/ui/resources/j2meProject.gif", description="../ui/resources/emptyProject.html")
+
+    @TemplateRegistration(folder = "Project/JavaME", position = 100, displayName = "#template_app", iconBase = "org/netbeans/modules/j2me/project/ui/resources/j2meProject.gif", description = "../ui/resources/emptyProject.html")
     @NbBundle.Messages("template_app=Java ME Embedded Application")
     public static J2MEProjectWizardIterator application() {
         return new J2MEProjectWizardIterator(WizardType.APPLICATION);
@@ -86,9 +96,66 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
 
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        handle.start(4);
+        Set<FileObject> resultSet = new HashSet<>();
+        File dirF = (File) wiz.getProperty("projdir"); //NOI18N
+        if (dirF == null) {
+            throw new NullPointerException("projdir == null, props:" + wiz.getProperties());
+        }
+        dirF = FileUtil.normalizeFile(dirF);
+        String name = (String) wiz.getProperty("name");        //NOI18N
+        String midletClass = (String) wiz.getProperty(MIDLET_CLASS);        //NOI18N
+        String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
+        }
+        handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_CreatingProject"), 1); //NOI18N
+        switch (type) {
+            default:
+                String midletTemplate = "Templates/j2me/Midlet.java"; //NOI18N
+                AntProjectHelper h = J2MEProjectGenerator.createProject(dirF, name, midletClass, midletTemplate, null, type == WizardType.APPLICATION ? MANIFEST_FILE : null, librariesDefinition, true);
+                handle.progress(2);
+                if (midletClass != null && !midletClass.isEmpty()) {
+                    final FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src");        //NOI18N
+                    if (sourcesRoot != null) {
+                        final FileObject midletFo = getClassFO(sourcesRoot, midletClass);
+                        if (midletFo != null) {
+                            resultSet.add(midletFo);
+                        }
+                    }
+                }
+        }
+        FileObject dir = FileUtil.toFileObject(dirF);
+        switch (type) {
+            case APPLICATION:
+                createManifest(dir, false);
+                break;
+        }
+        handle.progress(3);
+
+        // Returning FileObject of project diretory. 
+        // Project will be open and set as main
+        final Integer ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
+        if (ind != null) {
+            switch (type) {
+                case APPLICATION:
+                    WizardSettings.setNewApplicationCount(ind);
+                    break;
+            }
+        }
+        resultSet.add(dir);
+        handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
+        dirF = (dirF != null) ? dirF.getParentFile() : null;
+        if (dirF != null && dirF.exists()) {
+            ProjectChooser.setProjectsFolder(dirF);
+        }
+
+        SharableLibrariesUtils.setLastProjectSharable(librariesDefinition != null);
+        return resultSet;
     }
-    
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
@@ -174,10 +241,12 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     }
 
     @Override
-    public void addChangeListener(ChangeListener l) { }
+    public void addChangeListener(ChangeListener l) {
+    }
 
     @Override
-    public void removeChangeListener(ChangeListener l) { }
+    public void removeChangeListener(ChangeListener l) {
+    }
 
     private WizardDescriptor.Panel[] createPanels() {
         switch (type) {
@@ -194,6 +263,39 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
                 return new String[]{
                     NbBundle.getMessage(J2MEProjectWizardIterator.class, "LAB_ConfigureProject") // NOI18N
                 };
+        }
+    }
+
+    private FileObject getClassFO(FileObject sourcesRoot, String className) {
+        className = className.replace('.', '/'); // NOI18N
+        return sourcesRoot.getFileObject(className + ".java"); // NOI18N
+    }
+
+    /**
+     * Create a new application manifest file with minimal initial contents.
+     *
+     * @param dir the directory to create it in
+     * @throws IOException in case of problems
+     */
+    private static void createManifest(final FileObject dir, final boolean skipIfExists) throws IOException {
+        if (skipIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
+            return;
+        } else {
+            FileObject manifest = dir.createData(MANIFEST_FILE);
+            FileLock lock = manifest.lock();
+            try {
+                OutputStream os = manifest.getOutputStream(lock);
+                try {
+                    PrintWriter pw = new PrintWriter(os);
+                    pw.println("Manifest-Version: 1.0"); // NOI18N                    
+                    pw.println(); // safest to end in \n\n due to JRE parsing bug
+                    pw.flush();
+                } finally {
+                    os.close();
+                }
+            } finally {
+                lock.releaseLock();
+            }
         }
     }
 }

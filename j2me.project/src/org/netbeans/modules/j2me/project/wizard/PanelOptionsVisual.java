@@ -559,8 +559,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     @Override
     void store(WizardDescriptor d) {
         //TODO: store values from panel when leaving this panel
-//        d.putProperty(J2MEProjectWizardIterator.MAIN_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
-//        d.putProperty(J2MEProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
+        d.putProperty(J2MEProjectWizardIterator.MIDLET_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
+        d.putProperty(J2MEProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
 //        
 //        String platformName = getSelectedPlatform().getProperties().get(J2MEPlatformUtils.PLATFORM_ANT_NAME);
 //        d.putProperty(J2MEPlatformUtils.PROP_JAVA_PLATFORM_NAME, platformName);
