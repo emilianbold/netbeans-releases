@@ -37,13 +37,12 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
-import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import static org.netbeans.modules.bugtracking.util.BugtrackingUtil.editRepository;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
 /**
@@ -160,7 +159,11 @@ public final class BugtrackingFactory<R, Q, I> {
     public boolean editRepository(Repository repository, String errorMessage) {
         return BugtrackingUtil.editRepository(APIAccessor.IMPL.getImpl(repository), errorMessage);
     }
-        
+
+    public Image[] getPriorityIcons() {
+        return IssuePrioritySupport.getIcons();
+    }
+    
     private QueryImpl getQueryImpl(Repository repository, Q q) {
         RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
         QueryImpl impl = repositoryImpl.getQuery(q);

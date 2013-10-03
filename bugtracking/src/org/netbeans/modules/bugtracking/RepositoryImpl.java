@@ -55,7 +55,6 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.ImageUtilities;
 
 
 /**
@@ -95,7 +94,7 @@ public final class RepositoryImpl<R, Q, I> {
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
-    private PrioritySupport prioritySupport;
+    private IssuePrioritySupport prioritySupport;
     
     public RepositoryImpl(
             final R r, 
@@ -306,7 +305,7 @@ public final class RepositoryImpl<R, Q, I> {
             icon = getPrioritySupport().getIcon(issuePriorityProvider.getPriorityID(i));
         }
         if(icon == null) {
-            icon = PrioritySupport.getDefaultIcon();
+            icon = IssuePrioritySupport.getDefaultIcon();
         }
         return icon;
     }
@@ -452,68 +451,12 @@ public final class RepositoryImpl<R, Q, I> {
         support.firePropertyChange(EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
     }
 
-    private synchronized PrioritySupport getPrioritySupport() {
+    private synchronized IssuePrioritySupport getPrioritySupport() {
         if(prioritySupport == null) {
-            prioritySupport = new PrioritySupport(issuePriorityProvider.getPriorityInfos());
+            prioritySupport = new IssuePrioritySupport(issuePriorityProvider.getPriorityInfos());
         }
         return prioritySupport;
     }
-    
-    private static class PrioritySupport {
-        private final Map<String, IssuePriorityInfo> mapping = new HashMap<String, IssuePriorityInfo>(5);
         
-        private final HashMap<String, Integer> order = new HashMap<String, Integer>(5);
-        
-        private static final List<Image> icons = new ArrayList<Image>(5);
-        private static final Image defaultIcon;
-        static {
-            defaultIcon = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/task.png", true); // NOI18N
-            
-            icons.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true)); // NOI18N
-            icons.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true)); // NOI18N
-            icons.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true)); // NOI18N
-            icons.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true)); // NOI18N
-            icons.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true)); // NOI18N
-        }
-        
-        public PrioritySupport(IssuePriorityInfo[] pis) {
-            for (int i = 0; i < pis.length; i++) {
-                IssuePriorityInfo info = pis[i];
-                mapping.put(info.getID(), info);
-                order.put(info.getID(), i);
-            }
-        }
-
-        private static Image getDefaultIcon() {
-            return defaultIcon;
-        }    
-        
-        private IssuePriorityInfo getInfo(String id) {
-            return mapping != null ? mapping.get(id) : null;
-        }
-        
-        private String getName(String id) {
-            IssuePriorityInfo info = getInfo(id);
-            String name = info != null ? info.getDisplayName() : null; 
-            return name != null ? name : ""; // NOI18N
-        }
-        
-        private Image getIcon(String id) {
-            IssuePriorityInfo info = getInfo(id);
-            Image icon = null;
-            if(info != null) {
-                icon = info.getIcon();
-                if(icon == null) {
-                    Integer idx = order.get(id);
-                    icon = idx < icons.size() ? icons.get(idx) : getDefaultIcon();
-                }
-            } 
-            if(icon == null) {
-                icon = getDefaultIcon();
-            }
-            return icon;
-        }
-        
-    }
 }
 
