@@ -42,25 +42,37 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
+import org.netbeans.modules.bugtracking.IssueImpl;
+
 /**
- *
+ * 
  * @author Tomas Stupka
  */
 public final class IssuePriorityInfo {
     private final String displayName;
-    private final int sortOrder;
+    private final int rank;
+    private Image icon;
 
     public IssuePriorityInfo(String displayName, int sortOrder) {
+        this(displayName, null, sortOrder);
+    }
+    
+    public IssuePriorityInfo(String displayName, Image icon, int rank) {
         this.displayName = displayName;
-        this.sortOrder = sortOrder;
+        this.rank = rank;
+        this.icon = icon;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public int getSortOrder() {
-        return sortOrder;
+    public int getRank() {
+        return rank;
     }
     
+    public Image getIcon() {
+        return icon;
+    }
 }
