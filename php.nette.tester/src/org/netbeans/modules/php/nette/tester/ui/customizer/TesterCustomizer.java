@@ -39,40 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.ui.customizer;
+
+package org.netbeans.modules.php.nette.tester.ui.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.atoum.AtoumTestingProvider;
+import org.netbeans.modules.php.nette.tester.TesterTestingProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public class AtoumCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public class TesterCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
-    public static final String IDENTIFIER = AtoumTestingProvider.getInstance().getIdentifier();
+    public static final String IDENTIFIER = TesterTestingProvider.getInstance().getIdentifier();
 
     private final PhpModule phpModule;
 
 
-    public AtoumCustomizer(PhpModule phpModule) {
+    public TesterCustomizer(PhpModule phpModule) {
         assert phpModule != null;
         this.phpModule = phpModule;
     }
 
-    @NbBundle.Messages("AtoumCustomizer.name=atoum")
+    @NbBundle.Messages("TesterCustomizer.name=Nette Tester")
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
                 IDENTIFIER,
-                Bundle.AtoumCustomizer_name(),
+                Bundle.TesterCustomizer_name(),
                 null,
                 (ProjectCustomizer.Category[]) null);
     }
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        return new CustomizerAtoum(category, phpModule);
+        return new CustomizerTester(category, phpModule);
     }
 
 }

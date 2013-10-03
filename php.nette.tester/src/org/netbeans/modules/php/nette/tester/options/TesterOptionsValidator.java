@@ -41,16 +41,18 @@
  */
 package org.netbeans.modules.php.nette.tester.options;
 
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.nette.tester.commands.Tester;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 
 public class TesterOptionsValidator {
 
     private final ValidationResult result = new ValidationResult();
 
 
-    public TesterOptionsValidator validate(String testerPath) {
+    public TesterOptionsValidator validate(String testerPath, String phpIniPath) {
         validateTesterPath(testerPath);
+        validatePhpIniPath(phpIniPath);
         return this;
     }
 
@@ -58,11 +60,22 @@ public class TesterOptionsValidator {
         return result;
     }
 
-    private void validateTesterPath(String testerPath) {
-        String warning = Tester.validate(testerPath);
+    public TesterOptionsValidator validateTesterPath(String testerPath) {
+        String warning = TesterUtils.validateTesterPath(testerPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
         }
+        return this;
+    }
+
+    public TesterOptionsValidator validatePhpIniPath(String phpIniPath) {
+        if (StringUtils.hasText(phpIniPath)) {
+            String warning = TesterUtils.validatePhpIniPath(phpIniPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
+            }
+        }
+        return this;
     }
 
 }

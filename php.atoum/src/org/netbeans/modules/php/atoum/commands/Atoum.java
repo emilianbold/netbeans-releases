@@ -102,8 +102,6 @@ public final class Atoum {
 
     public static final Pattern LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
 
-    private static final String ATOUM_PROJECT_FILE_PATH = "vendor/atoum/atoum/bin/atoum"; // NOI18N
-
     private static final String TAP_FORMAT_PARAM = "-utr"; // NOI18N
     private static final String DIRECTORY_PARAM = "-d"; // NOI18N
     private static final String FILE_PARAM = "-f"; // NOI18N
@@ -132,7 +130,7 @@ public final class Atoum {
     }
 
     @CheckForNull
-    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) throws InvalidPhpExecutableException {
+    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         // first try the default atoum, because of validation
         InvalidPhpExecutableException defaultAtoumExc = null;
         Atoum defaultAtoum = null;

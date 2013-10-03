@@ -39,40 +39,34 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.ui.customizer;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.atoum.AtoumTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
+package org.netbeans.modules.php.nette.tester.util;
+
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.NbBundle;
 
-public class AtoumCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class TesterUtils {
 
-    public static final String IDENTIFIER = AtoumTestingProvider.getInstance().getIdentifier();
-
-    private final PhpModule phpModule;
-
-
-    public AtoumCustomizer(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    private TesterUtils() {
     }
 
-    @NbBundle.Messages("AtoumCustomizer.name=atoum")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                IDENTIFIER,
-                Bundle.AtoumCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    @NbBundle.Messages("TesterUtils.tester.label=Tester file")
+    @CheckForNull
+    public static String validateTesterPath(String testerPath) {
+        return PhpExecutableValidator.validateCommand(testerPath, Bundle.TesterUtils_tester_label());
     }
 
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        return new CustomizerAtoum(category, phpModule);
+    @NbBundle.Messages("TesterUtils.php.ini.error=Absolute path to file or directory must be set for php.ini.")
+    @CheckForNull
+    public static String validatePhpIniPath(@NullAllowed String phpIniPath) {
+        if (FileUtils.validateDirectory(phpIniPath, false) != null
+                && FileUtils.validateFile(phpIniPath, false) != null) {
+            return Bundle.TesterUtils_php_ini_error();
+        }
+        return null;
     }
 
 }

@@ -39,40 +39,46 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.atoum.ui.customizer;
 
-import javax.swing.JComponent;
+package org.netbeans.modules.php.nette.tester.preferences;
+
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.atoum.AtoumTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.nette.tester.util.TesterUtils;
 
-public class AtoumCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class TesterPreferencesValidator {
 
-    public static final String IDENTIFIER = AtoumTestingProvider.getInstance().getIdentifier();
-
-    private final PhpModule phpModule;
+    private final ValidationResult result = new ValidationResult();
 
 
-    public AtoumCustomizer(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public ValidationResult getResult() {
+        return result;
     }
 
-    @NbBundle.Messages("AtoumCustomizer.name=atoum")
-    @Override
-    public ProjectCustomizer.Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                IDENTIFIER,
-                Bundle.AtoumCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    public TesterPreferencesValidator validate(PhpModule phpModule) {
+        validatePhpIni(TesterPreferences.isPhpIniEnabled(phpModule), TesterPreferences.getPhpIniPath(phpModule));
+        validateTester(TesterPreferences.isTesterEnabled(phpModule), TesterPreferences.getTesterPath(phpModule));
+        return this;
     }
 
-    @Override
-    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        return new CustomizerAtoum(category, phpModule);
+    public TesterPreferencesValidator validatePhpIni(boolean phpIniEnabled, String phpIniPath) {
+        if (phpIniEnabled) {
+            String warning = TesterUtils.validatePhpIniPath(phpIniPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("php.ini.path", warning)); // NOI18N
+            }
+        }
+        return this;
+    }
+
+    public TesterPreferencesValidator validateTester(boolean testerEnabled, String testerPath) {
+        if (testerEnabled) {
+            String warning = TesterUtils.validateTesterPath(testerPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("tester.path", warning)); // NOI18N
+            }
+        }
+        return this;
     }
 
 }
