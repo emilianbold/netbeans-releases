@@ -181,8 +181,8 @@ class WebAppFilterNode extends FilterNode {
 
     private static class WebAppFilterChildren extends FilterNode.Children {
 
-        private File root;
-        private Project project;
+        private final File root;
+        private final Project project;
 
         private WebAppFilterChildren(Project proj, Node original, File rootpath) {
             super(original);
