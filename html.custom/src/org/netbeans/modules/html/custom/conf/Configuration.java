@@ -156,6 +156,10 @@ public class Configuration {
         }
 
     }
+    
+    public FileObject getProjectsConfigurationFile() {
+        return configFile;
+    }
 
     private void handleIOEFromReload(IOException e) {
         Project project = FileOwnerQuery.getOwner(configFile);

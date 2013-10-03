@@ -39,15 +39,48 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.html.custom.hints;
 
-import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
-import org.netbeans.spi.project.ui.support.NodeFactory;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
-public class RemoteFilesNodeRegistration {
+/**
+ *
+ * @author marek
+ */
+@NbBundle.Messages(value = "editProjectConfiguration=Edit project's editor custom elements configuration file")
+public final class EditProjectsConfFix implements HintFix {
+    private final Snapshot snapshot;
 
-    @NodeFactory.Registration(projectType="org-netbeans-modules-maven",position=57)
-    public static NodeFactory createFactory() {
-        return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
+    public EditProjectsConfFix(Snapshot snapshot) {
+        this.snapshot = snapshot;
     }
+
+    @Override
+    public String getDescription() {
+        return Bundle.editProjectConfiguration();
+    }
+
+    @Override
+    public void implement() throws Exception {
+        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+        DataObject dobj = DataObject.find(conf.getProjectsConfigurationFile());
+        OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+        oc.open();
+    }
+
+    @Override
+    public boolean isSafe() {
+        return true;
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+    
 }

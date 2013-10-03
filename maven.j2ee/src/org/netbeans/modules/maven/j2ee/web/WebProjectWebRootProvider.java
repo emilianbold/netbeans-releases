@@ -49,7 +49,6 @@ import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluatio
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -77,12 +76,14 @@ import org.openide.util.Exceptions;
 public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private final Project project;
+    private final FileObject projectDir;
     // @GuardedBy("this")
     private WebModuleProvider webModuleProvider;
 
 
     public WebProjectWebRootProvider(Project project) {
         this.project = project;
+        this.projectDir = project.getProjectDirectory();
     }
 
     private synchronized WebModuleProvider getProvider() {
@@ -101,22 +102,28 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     @Override
     public Collection<FileObject> getWebRoots() {
-        List<String> webRoots = PluginPropertyUtils.getPluginPropertyBuildable(
-                project,
-                Constants.GROUP_APACHE_PLUGINS,
-                Constants.PLUGIN_WAR,
-                "war", // NOI18N
-                new WebRootsBuilder());
-
         List<FileObject> webRootsFO = new ArrayList<>();
-        for (String webRoot : webRoots) {
-            webRootsFO.add(project.getProjectDirectory().getFileObject(webRoot));
+        List<String> webRoots = WebProjectUtils.getPluginProperty(project, new WebRootsBuilder());
+
+        if (webRoots != null) {
+            for (String webRoot : webRoots) {
+                FileObject webRootFo = projectDir.getFileObject(webRoot);
+
+                // NPE check is here because the directory might be listed in pom.xml
+                // but the directory still don't need to exist on the disk
+                if (webRootFo != null) {
+                    webRootsFO.add(webRootFo);
+                }
+            }
         }
 
         // Default web resource directory is usually webapp
         // See also maven-war-plugin documentation for more details
         if (webRootsFO.isEmpty()) {
-            webRootsFO.add(getDefaultWebRoot());
+            FileObject defaultWebRoot = getDefaultWebRoot();
+            if (defaultWebRoot != null) {
+                webRootsFO.add(defaultWebRoot);
+            }
         }
 
         return webRootsFO;

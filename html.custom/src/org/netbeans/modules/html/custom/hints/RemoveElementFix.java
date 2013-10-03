@@ -39,46 +39,51 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.custom;
+package org.netbeans.modules.html.custom.hints;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.hints.AddAttributeFix;
-import org.netbeans.modules.html.custom.hints.AddElementFix;
-import org.netbeans.modules.html.custom.hints.EditProjectsConfFix;
-import org.netbeans.modules.html.editor.spi.HintFixProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marek
  */
-@ServiceProvider(service = HintFixProvider.class)
-public class CustomHintFixProvider extends HintFixProvider {
+@NbBundle.Messages(value = "removeElementFromProjectConfiguration=Remove element \"{0}\" from the project's custom elements")
+public final class RemoveElementFix implements HintFix {
+    private final String elementName;
+    private final String elementContextName;
+    private final Snapshot snapshot;
+
+    public RemoveElementFix(String elementName, String elementContextName, Snapshot snapshot) {
+        this.elementName = elementName;
+        this.elementContextName = elementContextName;
+        this.snapshot = snapshot;
+    }
 
     @Override
-    public List<HintFix> getHintFixes(Context context) {
-        List<HintFix> fixes = new ArrayList<>();
-        String elementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_FOUND);
-        String attributeName = (String)context.getMetadata().get(UNKNOWN_ATTRIBUTE_FOUND);
-        String contextElementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_CONTEXT);
-        
-        assert contextElementName != null;
-        
-        if(elementName != null) {
-            //unknown element found
-            fixes.add(new AddElementFix(elementName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-            
-        } else if(attributeName != null) {
-            //unknown attribute found
-            fixes.add(new AddAttributeFix(attributeName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-        } else {
-            throw new IllegalStateException();
-        }
-        
-        return fixes;
+    public String getDescription() {
+        return Bundle.removeElementFromProjectConfiguration(elementName);
     }
+
+    @Override
+    public void implement() throws Exception {
+        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+        conf.getRootTags().remove(elementName);
+        conf.store();
+        LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
+    }
+
+    @Override
+    public boolean isSafe() {
+        return true;
+    }
+
+    @Override
+    public boolean isInteractive() {
+        return false;
+    }
+    
 }

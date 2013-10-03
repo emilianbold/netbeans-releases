@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.custom;
+package org.netbeans.modules.html.custom.hints;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.hints.AddAttributeFix;
-import org.netbeans.modules.html.custom.hints.AddElementFix;
-import org.netbeans.modules.html.custom.hints.EditProjectsConfFix;
-import org.netbeans.modules.html.editor.spi.HintFixProvider;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
-@ServiceProvider(service = HintFixProvider.class)
-public class CustomHintFixProvider extends HintFixProvider {
+@NbBundle.Messages(value = "customHTMLElement=Custom HTML element")
+public class CustomElementHint extends Hint {
 
-    @Override
-    public List<HintFix> getHintFixes(Context context) {
+    private static final Rule RULE = new RuleI();
+
+    public CustomElementHint(String elementName, RuleContext context, OffsetRange range) {
+        super(RULE,
+                Bundle.customHTMLElement(),
+                context.parserResult.getSnapshot().getSource().getFileObject(),
+                range,
+                getFixes(elementName, context),
+                30);
+    }
+
+    private static List<HintFix> getFixes(String elementName, RuleContext context) {
         List<HintFix> fixes = new ArrayList<>();
-        String elementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_FOUND);
-        String attributeName = (String)context.getMetadata().get(UNKNOWN_ATTRIBUTE_FOUND);
-        String contextElementName = (String)context.getMetadata().get(UNKNOWN_ELEMENT_CONTEXT);
+        Snapshot snap = context.parserResult.getSnapshot();
+        fixes.add(new RemoveElementFix(elementName, null, snap));
+        fixes.add(new EditProjectsConfFix(snap));
         
-        assert contextElementName != null;
-        
-        if(elementName != null) {
-            //unknown element found
-            fixes.add(new AddElementFix(elementName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-            
-        } else if(attributeName != null) {
-            //unknown attribute found
-            fixes.add(new AddAttributeFix(attributeName, contextElementName, context.getSnapshot()));
-            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
-        } else {
-            throw new IllegalStateException();
+        return fixes; 
+    }
+    
+    private static class RuleI implements Rule {
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
         }
-        
-        return fixes;
+
+        @Override
+        public String getDisplayName() {
+            return Bundle.customHTMLElement();
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return false;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.INFO;
+        }
     }
 }
