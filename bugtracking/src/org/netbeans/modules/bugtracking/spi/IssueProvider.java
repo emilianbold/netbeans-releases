@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -180,7 +181,7 @@ public abstract class IssueProvider<I> {
     /**
      * Provides access to private scheduling data for a given task. It is up to 
      * the particular implementation if the values eventually match with  
-     * corresponding remote repository fields or if they re merely handed 
+     * corresponding remote repository fields or if they are merely handed 
      * locally as user private.
      */
     public interface SchedulingProvider<I> {
@@ -194,12 +195,12 @@ public abstract class IssueProvider<I> {
         public void setDueDate(I i, Date date);
         
         /**
-         * Sets the schedule date
+         * Sets the schedule date. 
          * 
          * @param i
          * @param date 
          */
-        public void setScheduleDate(I i, Date date);
+        public void setSchedule(I i, ScheduleDate date);
         
         /**
          * Sets the estimate in hours
@@ -223,7 +224,7 @@ public abstract class IssueProvider<I> {
          * @param i
          * @return 
          */
-        public Date setScheduleDate(I i);
+        public ScheduleDate getSchedule(I i);
         
         /**
          * Returns the estimate in hours
@@ -231,6 +232,55 @@ public abstract class IssueProvider<I> {
          * @param i
          * @return 
          */
-        public int setEstimate(I i); 
+        public int getEstimate(I i); 
+    }
+    
+    /**
+     * Represents the date period for which an issue is scheduled. 
+     * This can be a specific day as well an interval of days. 
+     */
+    public static final class ScheduleDate {
+       
+        private final Date date;
+        private final int interval;
+
+        /**
+         * Creates a ScheduleDate representing a specific day.
+         * 
+         * @param date 
+         */
+        public ScheduleDate(Date date) {
+            this.date = date;
+            this.interval = 0;
+        }
+        
+        /**
+         * Creates a ScheduleDate representing an interval of days.
+         * 
+         * @param startDate determines the day from which this issue is scheduled
+         * @param interval determines the interval of days for which an issue is scheduled
+         */
+        public ScheduleDate(Date startDate, int interval) {
+            this.date = startDate;
+            this.interval = interval;
+        }
+        
+        /**
+         * Returns the start date of this ScheduleDate.
+         * 
+         * @return 
+         */
+        public Date getDate() {
+            return date;
+        }
+        
+        /**
+         * Returns the amount of days given by this SheduleDate.
+         * 
+         * @return 
+         */
+        public int getInterval() {
+            return interval;
+        }
     }
 }
