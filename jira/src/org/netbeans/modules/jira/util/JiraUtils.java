@@ -351,7 +351,8 @@ public class JiraUtils {
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(),
                     Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider());
+                    Jira.getInstance().getIssueProvider(), 
+                    Jira.getInstance().getStatusProvider());
         }
         return repository;
     }

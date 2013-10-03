@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.beans.PropertyChangeListener;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
@@ -53,6 +54,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -78,6 +80,7 @@ public class Bugzilla {
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
+    private IssueStatusProvider<BugzillaIssue> sp;    
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
 
     private Bugzilla() {
@@ -157,6 +160,30 @@ public class Bugzilla {
         return brp; 
     }
 
+    public IssueStatusProvider getStatusProvider() {
+        if(sp == null) {
+            sp = new IssueStatusProvider<BugzillaIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(BugzillaIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeen(BugzillaIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+            };
+        }
+        return sp;
+    }
+    
     public IssueNode.ChangesProvider<BugzillaIssue> getChangesProvider() {
         if(bcp == null) {
             bcp = new IssueNode.ChangesProvider<BugzillaIssue>() {

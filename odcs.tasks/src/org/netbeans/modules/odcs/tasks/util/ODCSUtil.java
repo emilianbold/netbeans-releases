@@ -202,7 +202,8 @@ public class ODCSUtil {
                     odcsRepository, 
                     ODCS.getInstance().getRepositoryProvider(), 
                     ODCS.getInstance().getQueryProvider(),
-                    ODCS.getInstance().getIssueProvider());
+                    ODCS.getInstance().getIssueProvider(),
+                    ODCS.getInstance().getStatusProvider());
         }
         return repository;
     }

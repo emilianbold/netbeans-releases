@@ -71,7 +71,8 @@ public class ODCSConnector extends TeamBugtrackingConnector {
                     odcsRepository, 
                     ODCS.getInstance().getRepositoryProvider(), 
                     ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+                    ODCS.getInstance().getIssueProvider(),
+                    ODCS.getInstance().getStatusProvider());
     }
 
     @Override
@@ -82,7 +83,8 @@ public class ODCSConnector extends TeamBugtrackingConnector {
                     odcsRepository, 
                     ODCS.getInstance().getRepositoryProvider(), 
                     ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+                    ODCS.getInstance().getIssueProvider(),
+                    ODCS.getInstance().getStatusProvider());
     }
 
     @Override
@@ -107,7 +109,8 @@ public class ODCSConnector extends TeamBugtrackingConnector {
                     new ODCSRepository(project), 
                     ODCS.getInstance().getRepositoryProvider(), 
                     ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+                    ODCS.getInstance().getIssueProvider(),
+                    ODCS.getInstance().getStatusProvider());
     }
 
     @Override

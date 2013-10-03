@@ -86,7 +86,8 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+                    Bugzilla.getInstance().getIssueProvider(),
+                    Bugzilla.getInstance().getStatusProvider());
     }
     
     @Override
@@ -98,7 +99,8 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+                    Bugzilla.getInstance().getIssueProvider(),
+                    Bugzilla.getInstance().getStatusProvider());
     }
 
     public static String getConnectorName() {

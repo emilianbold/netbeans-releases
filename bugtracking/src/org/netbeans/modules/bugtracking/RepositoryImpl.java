@@ -86,17 +86,20 @@ public final class RepositoryImpl<R, Q, I> {
     private final RepositoryProvider<R, Q, I> repositoryProvider;
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
+    private final IssueStatusProvider<I> issueStatusProvider;    
     private final R r;
 
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     
-    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
+    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, IssueStatusProvider<I> issueStatusProvider) {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
         this.queryProvider = queryProvider;
+        this.issueStatusProvider = issueStatusProvider;
         this.r = r;
+        
         support = new PropertyChangeSupport(this);
         repositoryProvider.addPropertyChangeListener(r, new PropertyChangeListener() {
             @Override
@@ -264,6 +267,10 @@ public final class RepositoryImpl<R, Q, I> {
         support.addPropertyChangeListener(listener);
     }
 
+    IssueStatusProvider<I> getStatusProvider() {
+        return issueStatusProvider;
+    }
+    
     /**
      * Notify listeners on this repository that a query was either removed or saved
      * XXX make use of new/old value

@@ -61,10 +61,6 @@ public abstract class IssueProvider<I> {
     static {
         SPIAccessorImpl.createAccesor();
     }
-
-    public IssueStatusProvider getStatusProvider() {
-        return null;
-    }
     
     /**
      * Returns this issues display name

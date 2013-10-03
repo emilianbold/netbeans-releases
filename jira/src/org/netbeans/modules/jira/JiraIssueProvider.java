@@ -50,7 +50,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
  * @author Tomas Stupka
  */
 public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
-    private IssueStatusProvider<NbJiraIssue> statusProvider;
 
     @Override
     public String getDisplayName(NbJiraIssue data) {
@@ -118,31 +117,6 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
     
-    @Override
-    public synchronized IssueStatusProvider getStatusProvider() {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<NbJiraIssue>() {
-                @Override
-                public Status getStatus(NbJiraIssue issue) {
-                    return issue.getStatus();
-                }
-                @Override
-                public void setSeen(NbJiraIssue issue, boolean uptodate) {
-                    issue.setUpToDate(uptodate);
-                }
-                @Override
-                public void addPropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-                @Override
-                public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
-    }
-
     @Override
     public boolean submit (NbJiraIssue data) {
         return data.submitAndRefresh();

@@ -192,7 +192,8 @@ public class BugzillaUtil {
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(),
-                    Bugzilla.getInstance().getIssueProvider());
+                    Bugzilla.getInstance().getIssueProvider(),
+                    Bugzilla.getInstance().getStatusProvider());
         }
         return repository;
     }

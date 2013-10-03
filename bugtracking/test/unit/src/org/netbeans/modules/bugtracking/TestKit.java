@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking;
 
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
@@ -55,9 +56,10 @@ public class TestKit {
                 repo, 
                 new TestRepositoryProvider(), 
                 new TestQueryProvider(),
-                new TestIssueProvider());
+                new TestIssueProvider(),
+                new TestStatusProvider());
     }
-
+    
     public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
         return repo.getIssue(issue);
     }

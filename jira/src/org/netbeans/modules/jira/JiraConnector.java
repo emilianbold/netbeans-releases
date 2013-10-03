@@ -87,7 +87,8 @@ public class JiraConnector extends TeamBugtrackingConnector {
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(), 
                     Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider());
+                    Jira.getInstance().getIssueProvider(), 
+                    Jira.getInstance().getStatusProvider());
     }
     
     @Override
@@ -107,13 +108,13 @@ public class JiraConnector extends TeamBugtrackingConnector {
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(), 
                     Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider());
+                    Jira.getInstance().getIssueProvider(), 
+                    Jira.getInstance().getStatusProvider());
     }
 
     public static String getConnectorName() {
         return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
     }
-
 
     @Override
     public IssueFinder getIssueFinder() {

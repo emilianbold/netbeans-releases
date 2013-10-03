@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
+import java.beans.PropertyChangeListener;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
@@ -76,6 +78,7 @@ public class ODCS {
     private ODCSIssueProvider odcsIssueProvider;
     private ODCSQueryProvider odcsQueryProvider;
     private ODCSRepositoryProvider odcsRepositoryProvider;
+    private IssueStatusProvider<ODCSIssue> isp;    
     private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
 
@@ -114,6 +117,30 @@ public class ODCS {
         return odcsRepositoryProvider; 
     }    
 
+    public IssueStatusProvider getStatusProvider() {
+        if(isp == null) {
+            isp = new IssueStatusProvider<ODCSIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(ODCSIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeen(ODCSIssue issue, boolean seen) {
+                    issue.setUpToDate(seen);
+                }
+                @Override
+                public void removePropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+            };
+        }
+        return isp;
+    }
+    
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
             rp = new RequestProcessor("ODCS Tasks", 1, true); // NOI18N

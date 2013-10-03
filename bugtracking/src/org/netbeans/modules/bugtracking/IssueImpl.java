@@ -56,7 +56,7 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
  *
  * @author Tomas Stupka
  */
-public final class IssueImpl<I> {
+public final class IssueImpl<R, I> {
     /** 
      * public for testing purposes
      */
@@ -65,11 +65,11 @@ public final class IssueImpl<I> {
     public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
     
     private Issue issue;
-    private final RepositoryImpl repo;
+    private final RepositoryImpl<?, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
 
-    IssueImpl(RepositoryImpl repo, IssueProvider<I> issueProvider, I data) {
+    IssueImpl(RepositoryImpl<?, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
@@ -190,15 +190,15 @@ public final class IssueImpl<I> {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<I> sp = repo.getStatusProvider();
         if(sp == null) {
             return null;
-        }
+        } 
         return sp.getStatus(data);
     }
 
     public void addIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -206,7 +206,7 @@ public final class IssueImpl<I> {
     }
 
     public void removeIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -214,7 +214,7 @@ public final class IssueImpl<I> {
     }
 
     public void setSeen(boolean isUptodate) {
-        IssueStatusProvider sp = issueProvider.getStatusProvider();
+        IssueStatusProvider<I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }

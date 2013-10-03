@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,91 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author tomas
  */
-public class TestIssueProvider extends IssueProvider<TestIssue> {
+public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
+
     @Override
-    public String[] getSubtasks(TestIssue data) {
-        return data.getSubtasks();
+    public IssueStatusProvider.Status getStatus(TestIssue issue) {
+        return issue.getStatus();
     }
 
     @Override
-    public String getDisplayName(TestIssue data) {
-        return data.getDisplayName();
+    public void setSeen(TestIssue issue, boolean seen) {
+        issue.setSeen(seen);
     }
 
     @Override
-    public String getTooltip(TestIssue data) {
-        return data.getTooltip();
+    public void removePropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
+        issue.removePropertyChangeListener(listener);
     }
 
     @Override
-    public String getID(TestIssue data) {
-        return data.getID();
-    }
-
-    @Override
-    public String getSummary(TestIssue data) {
-        return data.getSummary();
-    }
-
-    @Override
-    public boolean isNew(TestIssue data) {
-        return data.isNew();
-    }
-
-    @Override
-    public boolean isFinished(TestIssue data) {
-        return data.isFinished();
-    }
-    
-    @Override
-    public boolean refresh(TestIssue data) {
-        return data.refresh();
-    }
-
-    @Override
-    public void addComment(TestIssue data, String comment, boolean closeAsFixed) {
-        data.addComment(comment, closeAsFixed);
-    }
-
-    @Override
-    public void attachPatch(TestIssue data, File file, String description) {
-        data.attachPatch(file, description);
-    }
-
-    @Override
-    public BugtrackingController getController(TestIssue data) {
-        return data.getController();
-    }
-
-    @Override
-    public void removePropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
-        data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
-        data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void discardOutgoing(TestIssue data) {
-        data.discardOutgoing();
+    public void addPropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
+        issue.addPropertyChangeListener(listener);
     }
     
 }
