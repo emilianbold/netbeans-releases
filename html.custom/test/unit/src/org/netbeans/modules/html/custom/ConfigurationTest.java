@@ -44,7 +44,6 @@ package org.netbeans.modules.html.custom;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.json.simple.JSONObject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -88,10 +87,7 @@ public class ConfigurationTest extends CslTestBase {
         assertNotNull(conf);
         
         //test elements
-        Map<String, Tag> tags = conf.getRootTags();
-        assertNotNull(tags);
-
-        Tag foo = tags.get("foo");
+        Tag foo = conf.getTag("foo");
         assertNotNull(foo);
         Collection<String> contexts = foo.getContexts();
         assertNotNull(contexts);
@@ -103,22 +99,18 @@ public class ConfigurationTest extends CslTestBase {
         assertNotNull(foo.getDocumentation());
         assertNotNull(foo.getDocumentationURL());
         
-        Map<String, Attribute> attributes = foo.getAttributes();
-        assertNotNull(attributes);
-        Attribute cool = attributes.get("cool");
+        Attribute cool = foo.getAttribute("cool");
         assertNotNull(cool);
         assertEquals("boolean", cool.getType());
         
-        Attribute clazz = attributes.get("class");
+        Attribute clazz = foo.getAttribute("class");
         assertNotNull(clazz);
         assertEquals("css-class", clazz.getType());
         assertNotNull(clazz.getDocumentation());
         assertNotNull(clazz.getDocumentationURL());
         
         //test attributes
-        Map<String, Attribute> attrs = conf.getRootAttributes();
-        assertNotNull(attrs);
-        Attribute one = attrs.get("one");
+        Attribute one = conf.getAttribute("one");
         assertNotNull(one);
         
         contexts = one.getContexts();

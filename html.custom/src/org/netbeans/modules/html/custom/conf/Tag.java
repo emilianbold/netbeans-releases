@@ -70,11 +70,29 @@ public class Tag extends Element {
         }
     }
     
-    /**
-     * Map of attribute name to attribute instance.
+     /**
+     * Gets a collection of the attributes registered to the root context.
+     *
+     * @return
      */
-    public Map<String, Attribute> getAttributes() {
-        return attrsMap;
+    public Collection<String> getAttributesNames() {
+        return attrsMap.keySet();
+    }
+    
+    public Collection<Attribute> getAttributes() {
+        return attrsMap.values();
+    }
+    
+    public Attribute getAttribute(String name) {
+        return attrsMap.get(name);
+    }
+
+    public void add(Attribute a) {
+        attrsMap.put(a.getName(), a);
+    }
+
+    public void remove(Attribute a) {
+        attrsMap.remove(a.getName());
     }
 
     public void setChildren(Collection<Tag> children) {
@@ -83,10 +101,32 @@ public class Tag extends Element {
         }
     }
 
-    public Map<String, Tag> getChildren() {
-        return childrenMap;
+       /**
+     * Gets a collection of the tags registered to the root context.
+     *
+     * @return
+     */
+    public Collection<String> getTagsNames() {
+        return childrenMap.keySet();
+    }
+
+    public Collection<Tag> getTags() {
+        return childrenMap.values();
     }
     
+    public Tag getTag(String tagName) {
+        return childrenMap.get(tagName);
+    }
+
+    public void add(Tag t) {
+        childrenMap.put(t.getName(), t);
+    }
+
+    public void remove(Tag t) {
+        childrenMap.remove(t.getName());
+    }
+
+ 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
