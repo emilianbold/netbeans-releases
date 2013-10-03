@@ -302,55 +302,12 @@ public class QueryTableCellRendererTest {
             return "Renderer Query";
         }
 
-        @Override
-        public QueryController getController() {
-            fail("implement me!!!");
-            return null;
-        }
-
         public TestRepository getRepository() {
             return repository;
         }
 
-        public Collection<TestIssue> getIssues() {
-            fail("implement me!!!");
-            return null;
-        }
-
         public boolean contains(String id) {
             return containsIssue;
-        }
-
-//        public int getIssueStatus(String id) {
-//            return status;
-//        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }        
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-        @Override
-        public void refresh() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean canRename() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void rename(String name) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -407,79 +364,14 @@ public class QueryTableCellRendererTest {
         }
 
         @Override
-        public boolean isNew() {
-            fail("implement me!!!");
-            return false;
-        }
-        
-        @Override
-        public boolean isFinished() {
-            fail("implement me!!!");
-            return false;
-        }
-
-        @Override
-        public boolean refresh() {
-            fail("implement me!!!");
-            return false;
-        }
-
-        @Override
-        public void addComment(String comment, boolean closeAsFixed) {
-            fail("implement me!!!");
-        }
-
-        @Override
-        public void attachPatch(File file, String description) {
-            fail("implement me!!!");
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            fail("implement me!!!");
-            return null;
-        }
-
-        public IssueNode getNode() {
-            fail("implement me!!!");
-            return null;
-        }
-
-        @Override
         public String getID() {
             return id + "";
-        }
-
-        @Override
-        public String getSummary() {
-            fail("implement me!!!");
-            return null;
         }
 
         public String getRecentChanges() {
             return recentChanges;
         }
-
-        public Map<String, String> getAttributes() {
-            fail("implement me!!!");
-            return null;
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
         
-        @Override
-        public String[] getSubtasks() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }        
-
         @Override
         public IssueStatusProvider.Status getStatus() {
             IssueCache.Status s = repo.cache.getStatus(getID());
@@ -501,11 +393,6 @@ public class QueryTableCellRendererTest {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-
-        @Override
-        public String getDescription() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 
@@ -544,67 +431,10 @@ public class QueryTableCellRendererTest {
             return info;
         }
         
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public RepositoryController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public TestQuery createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public Collection<TestQuery> getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
         public Lookup getLookup() {
             return lookup; 
         }
 
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-
-        @Override
-        public void refreshQueries(TestQuery... queries) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void refreshIssues(TestIssue... issues) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public TestIssue createIssue(String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     };
 
     private void setEntryValues(RendererRepository repository, RendererIssue rendererIssue, IssueCache.Status status, boolean seen) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {

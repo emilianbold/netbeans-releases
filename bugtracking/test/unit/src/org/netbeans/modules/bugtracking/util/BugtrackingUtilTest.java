@@ -149,42 +149,6 @@ public class BugtrackingUtilTest {
         public RepositoryInfo getInfo() {
             return info;
         }
-        @Override
-        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public TestIssue createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public Collection<TestQuery> getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {  }
-
-        @Override
-        public void refreshQueries(TestQuery... queries) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void refreshIssues(TestIssue... issues) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public TestIssue createIssue(String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
     }
 
 }

@@ -53,36 +53,60 @@ import org.openide.nodes.Node;
  */
 public abstract class TestIssue {
 
+    public abstract String getID();
+    
     public abstract String getDisplayName();
 
-    public abstract String getTooltip();
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
-    public abstract String getID();
-
-    public abstract String getSummary();
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
     
-    public abstract String getDescription();
+    public String getTooltip() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isNew();
+    public String getSummary() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public String getDescription() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean refresh();
+    public boolean isNew() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void addComment(String comment, boolean closeAsFixed);
+    public boolean refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void attachPatch(File file, String description);
+    public void addComment(String comment, boolean closeAsFixed) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract BugtrackingController getController();
+    public void attachPatch(File file, String description) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+    public BugtrackingController getController() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public String[] getSubtasks() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract String[] getSubtasks();
+    public boolean isFinished() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract boolean isFinished();
+    public IssueStatusProvider.Status getStatus() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    public abstract IssueStatusProvider.Status getStatus();
-
-    public abstract void setSeen(boolean seen);
+    public void setSeen(boolean seen) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

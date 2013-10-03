@@ -416,37 +416,6 @@ public class CacheTest extends NbTestCase {
             dataArray = data.split("#");
             assertEquals(7, dataArray.length);
         }
-
-        public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
-        public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
-        public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
-        public String[] getSubtasks() {throw new UnsupportedOperationException("Not supported yet.");}
-        
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public IssueStatusProvider.Status getStatus() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void setSeen(boolean seen) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getDescription() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class CTestRepository extends TestRepository {
@@ -456,9 +425,6 @@ public class CacheTest extends NbTestCase {
         public CTestRepository(String name) {
             this.name = name;
             info = new RepositoryInfo(name, name, "http://" + name + ".org", name, name, null, null, null, null);
-        }
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
@@ -471,35 +437,6 @@ public class CacheTest extends NbTestCase {
                 cache = new TestCache(name, TestKit.getRepository(this));
             }
             return cache;
-        }
-
-        public TestIssue[] getIssues(String[] id) {throw new UnsupportedOperationException("Not supported yet.");}
-        public void remove() {throw new UnsupportedOperationException("Not supported yet.");}
-        public RepositoryController getController() {throw new UnsupportedOperationException("Not supported yet.");}
-        public TestQuery createQuery() {throw new UnsupportedOperationException("Not supported yet.");}
-        public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
-        @Override
-        public void refreshQueries(TestQuery... queries) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void refreshIssues(TestIssue... issues) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public TestIssue createIssue(String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         private class TestCache extends IssueCache<CTestIssue> {

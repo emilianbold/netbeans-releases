@@ -91,6 +91,7 @@ public class StorageTest extends NbTestCase {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         emptyStorage();
+        BugtrackingConfig.getInstance().setArchivedIssuesTTL(7); // ensure default
     }
 
     public void testStorage() throws MalformedURLException, IOException {
@@ -290,85 +291,8 @@ public class StorageTest extends NbTestCase {
         }
 
         @Override
-        public boolean refresh() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addComment(String comment, boolean closeAsFixed) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public IssueNode getNode() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public String getSummary() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public String getRecentChanges() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public String getDisplayName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getTooltip() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void attachPatch(File file, String description) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public boolean isNew() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        @Override
-        public boolean isFinished() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String[] getSubtasks() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public IssueStatusProvider.Status getStatus() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public void setSeen(boolean seen) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
-
-        @Override
-        public String getDescription() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return getID() + " - summary";
         }
     }
     

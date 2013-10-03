@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Panel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;

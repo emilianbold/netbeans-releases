@@ -51,28 +51,48 @@ import org.netbeans.modules.bugtracking.spi.QueryController;
  */
 public abstract class TestQuery {
 
-    public abstract String getDisplayName();
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
-    public abstract String getTooltip();
-
-    public abstract QueryController getController();
-
-    public abstract boolean isSaved();
-
-    public abstract Collection<? extends TestIssue> getIssues();
-
-    public abstract boolean contains(String id);
-
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void remove();
-
-    public abstract void refresh();
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
     
-    public abstract boolean canRename();
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getTooltip() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public QueryController getController() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean isSaved() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<? extends TestIssue> getIssues() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public boolean contains(String id) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public void refresh() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
-    public abstract void rename(String name);
+    public boolean canRename() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    public void rename(String name) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
     
 }
