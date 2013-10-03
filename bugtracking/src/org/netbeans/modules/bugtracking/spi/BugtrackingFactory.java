@@ -49,12 +49,15 @@ import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 /**
  *
  * @author Tomas Stupka
+ * 
+ * @param <R> the implementation specific repository type
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public final class BugtrackingFactory<R, Q, I> {
    
     /**
      * 
-     * @param info
      * @param r
      * @param rp
      * @param ip
@@ -81,7 +84,6 @@ public final class BugtrackingFactory<R, Q, I> {
     
     /**
      * 
-     * @param info
      * @param r
      * @param rp
      * @param ip

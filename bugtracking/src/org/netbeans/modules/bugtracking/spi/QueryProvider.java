@@ -46,12 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Represents an query on a bugtracking repository.
- *
+ * Provides access to an bugtracking query.
  *
  * @author Tomas Stupka
- * @param <Q>
- * @param <I>
+ * 
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public abstract class QueryProvider<Q, I> {
 

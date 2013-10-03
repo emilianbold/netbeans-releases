@@ -49,9 +49,13 @@ import java.util.Collections;
 
 /**
  * 
- * Represents a bug tracking repository (server)
+ * Represents a bugtracking repository (server).
  * 
  * @author Tomas Stupka, Jan Stola
+ * 
+ * @param <R> the implementation specific repository type
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public abstract class RepositoryProvider<R, Q, I> {
 

@@ -47,9 +47,13 @@ import java.util.Calendar;
 import java.util.Date;
 
 /**
- * Provides access to a bugtracking Issue
+ * Provides access to a bugtracking Issue.
+ * <br/>
+ * Note that an implementation of this interface is not mandatory for a 
+ * NetBeans bugtracking plugin. 
  *
  * @author Tomas Stupka
+ * @param <I> the implementation specific issue type
  */
 public abstract class IssueProvider<I> {
 

@@ -46,6 +46,9 @@ import java.awt.Image;
 import org.netbeans.modules.bugtracking.IssueImpl;
 
 /**
+ * Represents information related to one particular issue priority. 
+ * The Priority attributes are used in various Task Dashboard features 
+ * - e.g. Icon is shown next to an Issue.
  * 
  * @author Tomas Stupka
  */
@@ -54,16 +57,37 @@ public final class IssuePriorityInfo {
     private final String displayName;
     private final Image icon;
 
+    /**
+     * Creates a IssuePriorityInfo. 
+     * Note that when no icon is provided the Tasks Dashboard will 
+     * use default icons given by the order of Priority infos returned
+     * via {@link IssuePriorityProvider#getPriorityInfos()}
+     * 
+     * @param id
+     * @param displayName 
+     * @see IssuePriorityProvider#getPriorityInfos() 
+     */
     public IssuePriorityInfo(String id, String displayName) {
         this(id, displayName, null);
     }
     
+    /**
+     * 
+     * @param id
+     * @param displayName
+     * @param icon
+     */
     public IssuePriorityInfo(String id, String displayName, Image icon) {
         this.id = id;
         this.displayName = displayName;
         this.icon = icon;
     }
 
+    /**
+     * Returns the display name for this Priority.
+     * 
+     * @return display name associated with this Priority
+     */
     public String getDisplayName() {
         return displayName;
     }
@@ -71,12 +95,18 @@ public final class IssuePriorityInfo {
     /**
      * Returns the icon to be shown next to an Issue in the Tasks Dashboard. 
      * 
-     * @return 
+     * @return icon associated with this Priority
+     * @see IssuePriorityProvider#getPriorityInfos()
      */
     public Image getIcon() {
         return icon;
     }
 
+    /**
+     * Returns a unique id for this Priority.
+     * 
+     * @return a unique id
+     */
     public String getID() {
         return id;
     }
