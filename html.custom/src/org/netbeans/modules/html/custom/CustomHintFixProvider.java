@@ -50,6 +50,9 @@ import org.netbeans.modules.html.custom.conf.Tag;
 import org.netbeans.modules.html.editor.spi.HintFixProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -72,10 +75,12 @@ public class CustomHintFixProvider extends HintFixProvider {
         if(elementName != null) {
             //unknown element found
             fixes.add(new AddUnknownElementToConfiguration(elementName, contextElementName, context.getSnapshot()));
+            fixes.add(new EditProjectsConf(context.getSnapshot()));
             
         } else if(attributeName != null) {
             //unknown attribute found
             fixes.add(new AddUnknownAttributeToConfiguration(attributeName, contextElementName, context.getSnapshot()));
+            fixes.add(new EditProjectsConf(context.getSnapshot()));
         } else {
             throw new IllegalStateException();
         }
@@ -144,6 +149,41 @@ public class CustomHintFixProvider extends HintFixProvider {
             conf.getRootAttributes().put(attributeName, new Attribute(attributeName));
             conf.store();
             LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+        
+        
+    }
+    
+    @NbBundle.Messages("editProjectConfiguration=Edit project's HTML editor customization configuration file")
+    private static final class EditProjectsConf implements HintFix {
+
+        private final Snapshot snapshot;
+
+        public EditProjectsConf(Snapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+        
+        @Override
+        public String getDescription() {
+            return Bundle.editProjectConfiguration();
+        }
+
+        @Override
+        public void implement() throws Exception {
+            Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+            DataObject dobj = DataObject.find(conf.getProjectsConfigurationFile());
+            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+            oc.open();
         }
 
         @Override
