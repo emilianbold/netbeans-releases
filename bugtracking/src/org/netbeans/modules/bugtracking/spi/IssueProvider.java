@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Date;
 
 /**
  * Provides access to a bugtracking Issue
@@ -165,4 +166,70 @@ public abstract class IssueProvider<I> {
         return false;
     }
 
+    /**
+     * Returns a {@link SchedulingProvider} in case the particular implementation  
+     * support scheduling. 
+     * 
+     * @return 
+     */
+    public SchedulingProvider getSchedulingProvider() {
+        return null;
+    }
+    
+    /**
+     * Provides access to private scheduling data for a given task. It is up to 
+     * the particular implementation if the values eventually match with  
+     * corresponding remote repository fields or if they re merely handed 
+     * locally as user private.
+     */
+    public interface SchedulingProvider<I> {
+        
+        /**
+         * Sets the due date
+         * 
+         * @param i
+         * @param date 
+         */
+        public void setDueDate(I i, Date date);
+        
+        /**
+         * Sets the schedule date
+         * 
+         * @param i
+         * @param date 
+         */
+        public void setScheduleDate(I i, Date date);
+        
+        /**
+         * Sets the estimate in hours
+         * 
+         * @param i
+         * @param hours 
+         */
+        public void setEstimate(I i, int hours); 
+        
+        /**
+         * Returns the due date
+         * 
+         * @param i
+         * @return 
+         */
+        public Date getDueDate(I i);
+        
+        /**
+         * Returns the schedule date
+         * 
+         * @param i
+         * @return 
+         */
+        public Date setScheduleDate(I i);
+        
+        /**
+         * Returns the estimate in hours
+         * 
+         * @param i
+         * @return 
+         */
+        public int setEstimate(I i); 
+    }
 }
