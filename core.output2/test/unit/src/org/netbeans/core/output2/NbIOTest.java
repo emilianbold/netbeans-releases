@@ -127,7 +127,7 @@ public class NbIOTest extends TestCase {
         NbWriter nbWriter = (NbWriter) io.getOut();
         OutWriter ow = nbWriter.out();
         AbstractLines lines = (AbstractLines) ow.getLines();
-        lines.setOutputLimits(new OutputLimits(5, 1024, 3));
+        lines.setOutputLimits(new OutputLimits(6, 1024, 3));
         assertEquals(2, lines.getLineCount());
         io.getOut().println("second");
         io.getOut().println("third");
