@@ -454,7 +454,7 @@ public abstract class PSR1Hint extends HintRule {
                     checkCondition(ifStatement.getFalseStatement());
                 } else {
                     if (!isAllowedEverywhere(node)) {
-                        firstSideEffectNode = node;
+                        initSideEffect(node);
                     }
                 }
             }
@@ -465,6 +465,12 @@ public abstract class PSR1Hint extends HintRule {
                     checkStatements(body.getStatements());
                 } else {
                     checkStatement(node);
+                }
+            }
+
+            private void initSideEffect(ASTNode node) {
+                if (firstSideEffectNode == null) {
+                    firstSideEffectNode = node;
                 }
             }
 
