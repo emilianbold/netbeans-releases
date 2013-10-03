@@ -102,5 +102,15 @@ public class QueryProviderImpl extends org.netbeans.modules.bugtracking.spi.Quer
     public void removePropertyChangeListener (LocalQuery q, PropertyChangeListener listener) {
         q.removePropertyChangeListener(listener);
     }
+
+    @Override
+    public boolean canRename(LocalQuery q) {
+        return false;
+    }
+
+    @Override
+    public void rename(LocalQuery q, String displayName) {
+        throw new UnsupportedOperationException("Rename can't be called on a local teask query!");
+    }
     
 }
