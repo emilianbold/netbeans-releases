@@ -44,6 +44,7 @@ package org.netbeans.modules.web.common.api;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -52,6 +53,8 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.spi.lexer.MutableTextInput;
 import org.openide.util.Parameters;
 
 /**
@@ -59,6 +62,31 @@ import org.openide.util.Parameters;
  * @author marekfukala
  */
 public class LexerUtils {
+    
+     /**
+     * Forces to rebuild the document's {@link TokenHierarchy}.
+     * 
+     * @since 1.62
+     * 
+     * @param doc a swing document
+     */
+    public  static void rebuildTokenHierarchy(final Document doc) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
+    }
 
     /**
      * Note: The input text must contain only \n as line terminators. This is
