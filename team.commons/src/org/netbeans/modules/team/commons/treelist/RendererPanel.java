@@ -132,8 +132,8 @@ final class RendererPanel extends JPanel {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
         } else if (node.getType().equals(TreeListNode.Type.TITLE)) {
-            foreground = isSelected ? expandableRootSelectedForeground : ColorManager.getDefault().getDefaultBackground();
-            background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
+            foreground = isSelected ? expandableRootSelectedForeground : colorManager.getDefaultBackground();
+            background = isSelected ? colorManager.getTitleSelectedBackground() : colorManager.getTitleBackground();
         }
         int maxWidth = rowWidth - depth * EMPTY_ICON.getIconWidth() - (TreeList.INSETS_LEFT + nestingDepth * rowHeight / 2) - TreeList.INSETS_RIGHT;
         if (expander == null) {
