@@ -528,7 +528,8 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
                                     LOG.log(Level.FINE, null, aE);
                                 }
                             }
-                            if (noIconBase && !smallIcon) {
+                            Object allowedInToolbar = action.getValue("CanBePlacedOnMainToolbar");
+                            if ((noIconBase && !smallIcon) || Boolean.FALSE.equals(allowedInToolbar)) {
                                 return false;
                             }
                         } else if( instance instanceof JSeparator ) {
