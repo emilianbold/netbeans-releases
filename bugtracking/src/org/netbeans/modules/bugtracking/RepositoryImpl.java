@@ -87,17 +87,19 @@ public final class RepositoryImpl<R, Q, I> {
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueStatusProvider<I> issueStatusProvider;    
+    private final IssueSchedulingProvider<I> issueSchedulingProvider;    
     private final R r;
 
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     
-    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, IssueStatusProvider<I> issueStatusProvider) {
+    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, IssueStatusProvider<I> issueStatusProvider, IssueSchedulingProvider<I> issueSchedulingProvider) {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
         this.queryProvider = queryProvider;
         this.issueStatusProvider = issueStatusProvider;
+        this.issueSchedulingProvider = issueSchedulingProvider;
         this.r = r;
         
         support = new PropertyChangeSupport(this);
@@ -269,6 +271,10 @@ public final class RepositoryImpl<R, Q, I> {
 
     IssueStatusProvider<I> getStatusProvider() {
         return issueStatusProvider;
+    }
+    
+    IssueSchedulingProvider<I> getSchedulingProvider() {
+        return issueSchedulingProvider;
     }
     
     /**

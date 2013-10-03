@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,70 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
 
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+package org.netbeans.modules.bugtracking.spi;
+
+import java.util.Date;
 
 /**
- *
- * @author tomas
+ * Provides access to private scheduling data for a given task. It is up to 
+ * the particular implementation if the values eventually match with  
+ * corresponding remote repository fields or if they are merely handed 
+ * locally as user private.
+ * 
+ * @author Tomas Stupka
  */
-public class TestKit {
-    public static RepositoryImpl getRepository(TestRepository repo) {
-        return new RepositoryImpl(
-                repo, 
-                new TestRepositoryProvider(), 
-                new TestQueryProvider(),
-                new TestIssueProvider(),
-                new TestStatusProvider(),
-                null);
-    }
-    
-    public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
-        return repo.getIssue(issue);
-    }
-    
-    public static IssueImpl getIssue(Repository repo, TestIssue issue) {
-        return APIAccessor.IMPL.getImpl(repo).getIssue(issue);
-    }
+public interface IssueSchedulingProvider<I> {
+        
+    /**
+     * Sets the due date
+     * 
+     * @param i
+     * @param date 
+     */
+    public void setDueDate(I i, Date date);
 
-    public static QueryImpl getQuery(RepositoryImpl repo, TestQuery query) {
-        return repo.getQuery(query);
-    }
+    /**
+     * Sets the schedule date. 
+     * 
+     * @param i
+     * @param date 
+     */
+    public void setSchedule(I i, IssueScheduleInfo date);
 
-    public static void openQuery(Query query) {
-        QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null);
-    }
+    /**
+     * Sets the estimate in hours
+     * 
+     * @param i
+     * @param hours 
+     */
+    public void setEstimate(I i, int hours); 
+
+    /**
+     * Returns the due date
+     * 
+     * @param i
+     * @return 
+     */
+    public Date getDueDate(I i);
+
+    /**
+     * Returns the schedule date
+     * 
+     * @param i
+     * @return 
+     */
+    public IssueScheduleInfo getSchedule(I i);
+
+    /**
+     * Returns the estimate in hours
+     * 
+     * @param i
+     * @return 
+     */
+    public int getEstimate(I i); 
+    
 }
+    

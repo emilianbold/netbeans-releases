@@ -75,7 +75,7 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null, null);
         return impl.getRepository();
     }
     
@@ -86,6 +86,7 @@ public final class BugtrackingFactory<R, Q, I> {
      * @param rp
      * @param ip
      * @param isp
+     * @param iscp
      * @param qp
      * @return 
      */
@@ -93,7 +94,8 @@ public final class BugtrackingFactory<R, Q, I> {
             RepositoryProvider<R, Q, I> rp, 
             QueryProvider<Q, I> qp,
             IssueProvider<I> ip,
-            IssueStatusProvider<I> isp) 
+            IssueStatusProvider<I> isp,
+            IssueSchedulingProvider<I> iscp) 
     {
         RepositoryInfo info = rp.getInfo(r);
         if(info != null) {
@@ -104,7 +106,7 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp, iscp);
         return impl.getRepository();
     }
     

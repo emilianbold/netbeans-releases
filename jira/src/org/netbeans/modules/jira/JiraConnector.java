@@ -72,7 +72,6 @@ import org.openide.util.NbBundle;
 public class JiraConnector extends TeamBugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
-    private JiraIssueFinder issueFinder;
     private boolean alreadyLogged = false;
 
     public static final String ID = "org.netbeans.modules.jira";                                     //  NOI18N
@@ -81,14 +80,7 @@ public class JiraConnector extends TeamBugtrackingConnector {
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        JiraRepository jiraRepository = new JiraRepository(info);
-        return Jira.getInstance().getBugtrackingFactory().
-                createRepository(
-                    jiraRepository, 
-                    Jira.getInstance().getRepositoryProvider(), 
-                    Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider(), 
-                    Jira.getInstance().getStatusProvider());
+        return JiraUtils.createRepository(new JiraRepository(info));
     }
     
     @Override
@@ -102,14 +94,7 @@ public class JiraConnector extends TeamBugtrackingConnector {
             }
             return null;
         }
-        JiraRepository jiraRepository = new JiraRepository();
-        return Jira.getInstance().getBugtrackingFactory().
-                createRepository(
-                    jiraRepository, 
-                    Jira.getInstance().getRepositoryProvider(), 
-                    Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider(), 
-                    Jira.getInstance().getStatusProvider());
+        return JiraUtils.createRepository(new JiraRepository());
     }
 
     public static String getConnectorName() {

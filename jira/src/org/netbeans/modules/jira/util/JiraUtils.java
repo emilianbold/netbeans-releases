@@ -347,14 +347,19 @@ public class JiraUtils {
     public static Repository getRepository(JiraRepository jiraRepository) {
         Repository repository = Jira.getInstance().getBugtrackingFactory().getRepository(JiraConnector.ID, jiraRepository.getID());
         if(repository == null) {
-            repository = Jira.getInstance().getBugtrackingFactory().createRepository(
-                    jiraRepository, 
-                    Jira.getInstance().getRepositoryProvider(),
-                    Jira.getInstance().getQueryProvider(), 
-                    Jira.getInstance().getIssueProvider(), 
-                    Jira.getInstance().getStatusProvider());
+            repository = createRepository(jiraRepository);
         }
         return repository;
+    }
+
+    public static Repository createRepository(JiraRepository jiraRepository) {
+        return Jira.getInstance().getBugtrackingFactory().createRepository(
+                jiraRepository,
+                Jira.getInstance().getRepositoryProvider(),
+                Jira.getInstance().getQueryProvider(),
+                Jira.getInstance().getIssueProvider(),
+                Jira.getInstance().getStatusProvider(),
+                null);
     }
     
     public static void openIssue(NbJiraIssue jiraIssue) {

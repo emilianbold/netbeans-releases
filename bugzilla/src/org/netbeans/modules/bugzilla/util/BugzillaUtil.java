@@ -188,14 +188,19 @@ public class BugzillaUtil {
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
         Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
-            repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(),
-                    Bugzilla.getInstance().getIssueProvider(),
-                    Bugzilla.getInstance().getStatusProvider());
+            repository = createRepository(bugzillaRepository);
         }
         return repository;
+    }
+    
+    public static Repository createRepository(BugzillaRepository bugzillaRepository) {
+        return Bugzilla.getInstance().getBugtrackingFactory().createRepository(
+                bugzillaRepository, 
+                Bugzilla.getInstance().getRepositoryProvider(), 
+                Bugzilla.getInstance().getQueryProvider(),
+                Bugzilla.getInstance().getIssueProvider(),
+                Bugzilla.getInstance().getStatusProvider(),
+                null);
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
