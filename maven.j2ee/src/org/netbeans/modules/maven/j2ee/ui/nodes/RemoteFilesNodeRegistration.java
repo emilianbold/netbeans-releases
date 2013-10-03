@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.j2ee.web;
+package org.netbeans.modules.maven.j2ee.ui.nodes;
 
 import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactory;
