@@ -158,5 +158,10 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
         data.setOwnerInfo(info);
     }
+
+    @Override
+    public void discardOutgoing(BugzillaIssue data) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

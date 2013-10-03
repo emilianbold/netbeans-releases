@@ -327,5 +327,10 @@ public class APITestConnector extends BugtrackingConnector {
             data.addPropertyChangeListener(listener);
         }
 
+        @Override
+        public void discardOutgoing(APITestIssue data) {
+            data.discardOutgoing();
+        }
+
     }    
 }        

@@ -147,4 +147,9 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     public boolean submit (NbJiraIssue data) {
         return data.submitAndRefresh();
     }
+
+    @Override
+    public void discardOutgoing(NbJiraIssue data) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

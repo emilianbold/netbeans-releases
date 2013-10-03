@@ -144,6 +144,16 @@ public abstract class IssueProvider<I> {
     public abstract void attachPatch(I data, File file, String description);
 
     /**
+     * Discard outgoing local changes. 
+     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * 
+     * @param data 
+     */
+    public abstract void discardOutgoing(I data);
+    
+    /**
      * Returns this issues controller
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return

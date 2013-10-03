@@ -189,4 +189,8 @@ public class APITestIssue extends TestIssue {
     public boolean isFinished() {
         return idFinished;
     }
+
+    void discardOutgoing() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

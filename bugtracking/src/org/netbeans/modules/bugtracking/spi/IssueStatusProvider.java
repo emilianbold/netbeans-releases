@@ -51,6 +51,9 @@ import java.beans.PropertyChangeListener;
  */
 public interface IssueStatusProvider<I> {
 
+    /**
+     * Determines the {@link Issue} status.
+     */
     public enum Status {
         /**
          * the user hasn't seen this issue yet

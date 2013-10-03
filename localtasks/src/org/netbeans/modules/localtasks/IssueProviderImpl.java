@@ -144,5 +144,10 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
         }
         return statusProvider;
     }
+
+    @Override
+    public void discardOutgoing(LocalTask data) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

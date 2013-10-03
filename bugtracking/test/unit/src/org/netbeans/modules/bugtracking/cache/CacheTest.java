@@ -416,6 +416,10 @@ public class CacheTest extends NbTestCase {
             dataArray = data.split("#");
             assertEquals(7, dataArray.length);
         }
+
+        private void discardOutgoing() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class CTestRepository extends TestRepository {
@@ -528,6 +532,11 @@ public class CacheTest extends NbTestCase {
         }
 
         public String[] getSubtasks(CTestIssue data) {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void discardOutgoing(CTestIssue data) {
+            data.discardOutgoing();
+        }
     }
 
     private void emptyStorage() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {

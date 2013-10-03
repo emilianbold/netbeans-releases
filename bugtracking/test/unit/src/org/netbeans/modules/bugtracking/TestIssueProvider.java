@@ -128,6 +128,11 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
         }
         return statusProvider;
     }
+
+    @Override
+    public void discardOutgoing(TestIssue data) {
+        data.discardOutgoing();
+    }
     
     private class StatusProvider implements IssueStatusProvider<TestIssue> {
 
