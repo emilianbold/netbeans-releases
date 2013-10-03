@@ -110,6 +110,18 @@ public abstract class QueryProvider<Q, I> {
 
     public abstract void remove(Q q);
     
+    /**
+     * Determines if it is possible to rename the given query
+     * @return 
+     */
+    public abstract boolean canRename(Q q);
+    
+    /**
+     * Renames the given query
+     * @param q 
+     */
+    public abstract void rename(Q q, String displayName);
+    
     public abstract Collection<I> getIssues(Q q);
 
     /**

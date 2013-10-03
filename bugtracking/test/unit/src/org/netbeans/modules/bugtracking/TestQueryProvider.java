@@ -104,4 +104,14 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
         q.addPropertyChangeListener(listener);
     }
 
+    @Override
+    public boolean canRename(TestQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(TestQuery q, String displayName) {
+        q.rename(displayName);
+    }
+
 }

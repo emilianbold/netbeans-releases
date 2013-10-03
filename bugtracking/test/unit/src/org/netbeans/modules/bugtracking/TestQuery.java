@@ -71,4 +71,8 @@ public abstract class TestQuery {
 
     public abstract void refresh();
     
+    public abstract boolean canRename();
+    
+    public abstract void rename(String name);
+    
 }

@@ -51,6 +51,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import javax.swing.JTable;
 import org.junit.After;
@@ -341,6 +342,16 @@ public class QueryTableCellRendererTest {
         public void refresh() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public boolean canRename() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void rename(String name) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
     }
 
     private class ChangesProvider implements IssueNode.ChangesProvider<TestIssue>  {
@@ -507,7 +518,7 @@ public class QueryTableCellRendererTest {
                 IssueAccessor<TestIssue> issueAccessor = new IssueCache.IssueAccessor<TestIssue>() {
                     @Override
                     public Map<String, String> getAttributes(TestIssue issue) {
-                        throw new UnsupportedOperationException("Not supported yet.");
+                        return Collections.EMPTY_MAP;
                     }
                     @Override
                     public long getLastModified(TestIssue issue) {

@@ -65,7 +65,7 @@ public class APITestQuery extends TestQuery {
     
     static final String TOOLTIP_SUF = " - tooltip";
     
-    private final String name;
+    private String name;
     boolean isSaved;
     boolean wasRefreshed;
     boolean wasOpened;
@@ -150,6 +150,16 @@ public class APITestQuery extends TestQuery {
     public void refresh() {
         wasRefreshed = true;
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean canRename() {
+        return true;
+    }
+
+    @Override
+    public void rename(String name) {
+        this.name = name;
     }
     
 }

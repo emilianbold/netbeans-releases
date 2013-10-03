@@ -144,6 +144,10 @@ public class JiraQuery {
         return name;
     }
 
+    public boolean canRename() {
+        return jiraFilter != null && !(jiraFilter instanceof NamedFilter);
+    }
+    
     public String getTooltip() {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }

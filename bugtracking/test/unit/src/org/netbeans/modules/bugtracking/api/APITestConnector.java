@@ -185,6 +185,16 @@ public class APITestConnector extends BugtrackingConnector {
             q.addPropertyChangeListener(listener);
         }
 
+        @Override
+        public boolean canRename(APITestQuery q) {
+            return q.canRename();
+        }
+
+        @Override
+        public void rename(APITestQuery q, String displayName) {
+            q.rename(displayName);
+        }
+
     }
 
     public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
