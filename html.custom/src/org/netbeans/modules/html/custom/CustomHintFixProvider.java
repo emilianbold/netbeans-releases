@@ -164,7 +164,7 @@ public class CustomHintFixProvider extends HintFixProvider {
         
     }
     
-    @NbBundle.Messages("editProjectConfiguration=Edit project's HTML editor customization configuration file")
+    @NbBundle.Messages("editProjectConfiguration=Edit project's editor custom elements configuration file")
     private static final class EditProjectsConf implements HintFix {
 
         private final Snapshot snapshot;
