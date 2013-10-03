@@ -52,6 +52,7 @@ import org.netbeans.modules.php.nette.tester.create.TestCreator;
 import org.netbeans.modules.php.nette.tester.locate.TesterTestLocator;
 import org.netbeans.modules.php.nette.tester.run.TapParser;
 import org.netbeans.modules.php.nette.tester.run.TestRunner;
+import org.netbeans.modules.php.nette.tester.ui.customizer.TesterCustomizer;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -145,7 +146,7 @@ public final class TesterTestingProvider implements PhpTestingProvider {
 
     @Override
     public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
-        return null;
+        return new TesterCustomizer(phpModule);
     }
 
 }

@@ -43,9 +43,8 @@
 package org.netbeans.modules.php.analysis.ui.options;
 
 import java.awt.EventQueue;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 public final class AnalysisCategoryPanels {
 
@@ -60,11 +59,10 @@ public final class AnalysisCategoryPanels {
      */
     public static Collection<AnalysisCategoryPanel> getCategoryPanels() {
         assert EventQueue.isDispatchThread();
-        List<AnalysisCategoryPanel> categoryPanels = new ArrayList<>(2);
         // can be easily improved (e.g. Lookup.forPath())
-        categoryPanels.add(new CodeSnifferOptionsPanel());
-        categoryPanels.add(new MessDetectorOptionsPanel());
-        return categoryPanels;
+        return Arrays.asList(
+                new CodeSnifferOptionsPanel(),
+                new MessDetectorOptionsPanel());
     }
 
 }

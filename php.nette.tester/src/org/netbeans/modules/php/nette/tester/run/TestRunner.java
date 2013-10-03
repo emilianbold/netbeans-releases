@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.php.nette.tester.run;
 
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;
-import org.netbeans.modules.php.nette.tester.ui.options.TesterOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
@@ -61,14 +58,10 @@ public final class TestRunner {
     }
 
     public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Tester tester;
-        try {
-            tester = Tester.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), TesterOptionsPanelController.OPTIONS_SUB_PATH);
+        Tester tester = Tester.getForPhpModule(phpModule, true);
+        if (tester == null) {
             return;
         }
-        assert tester != null;
         tester.runTests(phpModule, runInfo, testSession);
     }
 
