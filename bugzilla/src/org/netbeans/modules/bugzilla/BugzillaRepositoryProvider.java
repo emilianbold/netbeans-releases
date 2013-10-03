@@ -139,16 +139,6 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     }
 
     @Override
-    public void refreshQueries(BugzillaRepository r, BugzillaQuery... queries) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void refreshIssues(BugzillaRepository r, BugzillaIssue... issues) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

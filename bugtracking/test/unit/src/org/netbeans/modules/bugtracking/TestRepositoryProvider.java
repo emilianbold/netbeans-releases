@@ -111,16 +111,6 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     }
 
     @Override
-    public void refreshQueries(TestRepository r, TestQuery... queries) {
-        r.refreshQueries(queries);
-    }
-
-    @Override
-    public void refreshIssues(TestRepository r, TestIssue... issues) {
-        r.refreshIssues(issues);
-    }
-
-    @Override
     public TestIssue createIssue(TestRepository r, String summary, String description) {
         return r.createIssue(summary, description);
     }

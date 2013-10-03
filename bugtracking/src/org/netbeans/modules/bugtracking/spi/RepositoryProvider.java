@@ -153,21 +153,6 @@ public abstract class RepositoryProvider<R, Q, I> {
     public Collection<I> getUnsubmittedIssues (R r) {
         return Collections.<I>emptyList();
     }
-
-    /**
-     * Bulk refresh of queries. 
-     * 
-     * @param queries 
-     */
-    public abstract void refreshQueries(R r, Q... queries);
-    
-    /**
-     * Bulk refresh of issues. 
-     * 
-     * @param issues 
-     */
-    public abstract void refreshIssues(R r, I... issues);
-    
     
     /*********
      * EVENTS

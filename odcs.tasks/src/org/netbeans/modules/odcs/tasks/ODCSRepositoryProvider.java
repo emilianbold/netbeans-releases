@@ -139,16 +139,6 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
-    public void refreshQueries(ODCSRepository r, ODCSQuery... queries) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void refreshIssues(ODCSRepository r, ODCSIssue... issues) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public ODCSIssue createIssue(ODCSRepository r, String summary, String description) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }

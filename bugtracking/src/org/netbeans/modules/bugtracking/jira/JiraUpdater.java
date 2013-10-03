@@ -275,16 +275,6 @@ public class JiraUpdater {
         }
 
         @Override
-        public void refreshQueries(Object r, Object... queries) {
-            // do nothing
-        }
-
-        @Override
-        public void refreshIssues(Object r, Object... issues) {
-            // do nothing
-        }
-
-        @Override
         public Object createIssue(Object r, String summary, String description) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
