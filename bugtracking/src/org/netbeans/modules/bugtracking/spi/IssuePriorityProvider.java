@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking;
 
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
+package org.netbeans.modules.bugtracking.spi;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class TestKit {
-    public static RepositoryImpl getRepository(TestRepository repo) {
-        return new RepositoryImpl(
-                repo, 
-                new TestRepositoryProvider(), 
-                new TestQueryProvider(),
-                new TestIssueProvider(),
-                new TestStatusProvider(),
-                null, null);
-    }
+public interface IssuePriorityProvider<I> {
     
-    public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
-        return repo.getIssue(issue);
-    }
+    public IssuePriorityInfo getPriorityInfo(I i);
     
-    public static IssueImpl getIssue(Repository repo, TestIssue issue) {
-        return APIAccessor.IMPL.getImpl(repo).getIssue(issue);
-    }
-
-    public static QueryImpl getQuery(RepositoryImpl repo, TestQuery query) {
-        return repo.getQuery(query);
-    }
-
-    public static void openQuery(Query query) {
-        QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null);
-    }
 }

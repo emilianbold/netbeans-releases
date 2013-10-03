@@ -359,7 +359,7 @@ public class JiraUtils {
                 Jira.getInstance().getQueryProvider(),
                 Jira.getInstance().getIssueProvider(),
                 Jira.getInstance().getStatusProvider(),
-                null);
+                null, null);
     }
     
     public static void openIssue(NbJiraIssue jiraIssue) {

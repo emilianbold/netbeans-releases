@@ -68,7 +68,6 @@ public abstract class IssueProvider<I> {
      */
     public abstract String getDisplayName(I data);
 
-
     /**
      * Returns this issues tooltip
      * @return

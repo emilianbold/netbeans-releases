@@ -50,6 +50,8 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -272,4 +274,23 @@ public final class IssueImpl<R, I> {
         IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
         return isp != null ? isp.getEstimate(data) : null;
     }
+    
+    public boolean providesPriority() {
+        return repo.getPriorityProvider() != null;
+    }
+    
+    public String getPriority() {
+        IssuePriorityProvider<I> ipp = repo.getPriorityProvider();
+        assert ipp != null : "do no call .getPriority() if .providesPriority() is false"; // NOI18N
+        IssuePriorityInfo pd = ipp != null ? ipp.getPriorityInfo(data) : null;
+        return pd != null ? pd.getDisplayName() : null;
+    }
+    
+    public int getPrioritySortOrder() {
+        IssuePriorityProvider<I> ipp = repo.getPriorityProvider();
+        assert ipp != null : "do no call .getPrioritySortOrder() if .providesPriority() is false"; // NOI18N
+        IssuePriorityInfo pd = ipp != null ? ipp.getPriorityInfo(data) : null;
+        return pd != null ? pd.getSortOrder(): 0;
+    }
+    
 }

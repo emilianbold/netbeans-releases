@@ -204,7 +204,7 @@ public class ODCSUtil {
                 ODCS.getInstance().getQueryProvider(),
                 ODCS.getInstance().getIssueProvider(),
                 ODCS.getInstance().getStatusProvider(),
-                null);
+                null, null);
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {

@@ -200,7 +200,7 @@ public class BugzillaUtil {
                 Bugzilla.getInstance().getQueryProvider(),
                 Bugzilla.getInstance().getIssueProvider(),
                 Bugzilla.getInstance().getStatusProvider(),
-                null);
+                null, null);
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
