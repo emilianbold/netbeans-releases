@@ -179,13 +179,20 @@ public class Configuration {
         return TAGS.keySet();
     }
 
+    public Collection<Tag> getTags() {
+        return TAGS.values();
+    }
     /**
      * Gets a collection of the attributes registered to the root context.
      *
      * @return
      */
     public Collection<String> getAttributesNames() {
-        return TAGS.keySet();
+        return ATTRS.keySet();
+    }
+    
+    public Collection<Attribute> getAttributes() {
+        return ATTRS.values();
     }
 
     public Tag getTag(String tagName) {
@@ -355,11 +362,11 @@ public class Configuration {
 
         storeElement(ctn, t);
 
-        Collection<Tag> children = t.getChildren().values();
+        Collection<Tag> children = t.getTags();
         if (!children.isEmpty()) {
             storeTags(ctn, children);
         }
-        Collection<Attribute> attributes = t.getAttributes().values();
+        Collection<Attribute> attributes = t.getAttributes();
         if (!attributes.isEmpty()) {
             storeAttributes(ctn, attributes);
         }

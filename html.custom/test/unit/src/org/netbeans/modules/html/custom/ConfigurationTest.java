@@ -44,7 +44,6 @@ package org.netbeans.modules.html.custom;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.json.simple.JSONObject;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -100,13 +99,11 @@ public class ConfigurationTest extends CslTestBase {
         assertNotNull(foo.getDocumentation());
         assertNotNull(foo.getDocumentationURL());
         
-        Map<String, Attribute> attributes = foo.getAttributes();
-        assertNotNull(attributes);
-        Attribute cool = attributes.get("cool");
+        Attribute cool = foo.getAttribute("cool");
         assertNotNull(cool);
         assertEquals("boolean", cool.getType());
         
-        Attribute clazz = attributes.get("class");
+        Attribute clazz = foo.getAttribute("class");
         assertNotNull(clazz);
         assertEquals("css-class", clazz.getType());
         assertNotNull(clazz.getDocumentation());
