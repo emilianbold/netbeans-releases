@@ -74,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanCon
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+import static org.netbeans.modules.tomcat5.config.TomcatDatasourceManager.createDatasource;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Context;
@@ -278,7 +279,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             if (tomeeVersion != null) {
                 TomeeResources actualResources = getResources(false);
                 if (actualResources != null) {
-                    result.addAll(TomcatDatasourceManager.getTomeeDatasources(actualResources));
+                    result.addAll(getTomeeDatasources(actualResources));
                 }
             }
         } else {
@@ -624,7 +625,25 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             throw new ConfigurationException(msg, e);
         }
     }
-    
+
+    private static Set<Datasource> getTomeeDatasources(TomeeResources actualResources) {
+        HashSet<Datasource> result = new HashSet<Datasource>();
+        int resourcesLength = actualResources.getTomeeResource().length;
+        for (int i = 0; i < resourcesLength; i++) {
+            String type = actualResources.getTomeeResourceType(i);
+            if ("javax.sql.DataSource".equals(type)) { // NOI18N
+
+                Datasource ds = TomcatDatasourceManager.createDatasource(
+                        actualResources.getTomeeResourceId(i),
+                        actualResources.getTomeeResource(i));
+                if (ds != null) {
+                    result.add(ds);
+                }
+            }
+        }
+        return result;
+    }
+
     private static Parameter createParameter(String name, String value) {
         Parameter parameter = new Parameter();
         parameter.setName(name);
