@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search.ui;
-
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.modules.search.Removable;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+package org.netbeans.modules.search;
 
 /**
+ * Interface that marks a node that can be removed from search results (hidden).
  *
  * @author jhavlin
  */
-@NbBundle.Messages({"HideResultAction.displayName=Hide"})
-public class HideResultAction extends NodeAction {
+public interface Removable {
 
-    public HideResultAction() {
-        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
-    }
-
-    @Override
-    public String getName() {
-        return Bundle.HideResultAction_displayName();
-    }
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        for (Node n : activatedNodes) {
-            if (n instanceof Removable) {
-                ((Removable) n).remove();
-            }
-        }
-    }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
+    /**
+     * Remove the node from search results.
+     */
+    void remove();
 }

@@ -59,6 +59,7 @@ import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.netbeans.modules.search.Removable;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author jhavlin
  */
-public class MatchingObjectNode extends AbstractNode {
+public class MatchingObjectNode extends AbstractNode implements Removable {
 
     @StaticResource
     private static final String INVALID_ICON =
@@ -237,11 +238,6 @@ public class MatchingObjectNode extends AbstractNode {
                 matchingObject.getFileObject().getNameExt());
     }
 
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
     public void clean() {
         if (original != null && origNodeListener != null && valid) {
             original.removeNodeListener(origNodeListener);
@@ -280,7 +276,7 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     @Override
-    public void destroy () throws IOException {
+    public void remove() {
         // when removing the node, the node's content is removed from model
         this.matchingObject.remove();
     }

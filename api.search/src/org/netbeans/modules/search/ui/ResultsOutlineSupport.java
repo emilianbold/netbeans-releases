@@ -75,6 +75,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.Removable;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.Selectable;
 import org.netbeans.modules.search.ui.AbstractSearchResultsPanel.RootNode;
@@ -689,7 +690,7 @@ public class ResultsOutlineSupport {
         }
     }
 
-    private class FolderTreeNode extends FilterNode {
+    private class FolderTreeNode extends FilterNode implements Removable {
 
         public FolderTreeNode(FolderTreeItem pathItem) {
             super(pathItem.getFolder().getNodeDelegate(),
@@ -727,11 +728,6 @@ public class ResultsOutlineSupport {
         }
 
         @Override
-        public boolean canDestroy () {
-            return true;
-        }
-
-        @Override
         public Transferable clipboardCopy() throws IOException {
             return UiUtils.DISABLE_TRANSFER;
         }
@@ -742,7 +738,7 @@ public class ResultsOutlineSupport {
         }
 
         @Override
-        public void destroy () throws IOException {
+        public void remove() {
             FolderTreeItem folder = this.getLookup().lookup(FolderTreeItem.class);
             folder.remove();
         }

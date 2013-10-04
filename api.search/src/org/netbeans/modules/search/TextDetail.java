@@ -485,7 +485,7 @@ public final class TextDetail implements Selectable {
      * @see  TextDetail
      */
     static final class DetailNode extends AbstractNode
-                                          implements OutputListener {
+                                          implements OutputListener, Removable {
         private static final String ICON =
                 "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
         /** Maximal lenght of displayed text detail. */
@@ -916,14 +916,9 @@ public final class TextDetail implements Selectable {
         @Override
         protected void createPasteTypes(Transferable t, List<PasteType> s) {
         }
-        
-        @Override
-        public boolean canDestroy() {
-            return true;
-        }
 
         @Override
-        public void destroy() throws IOException {
+        public void remove() {
             this.mo.removeDetail(txtDetail);
         }
     } // End of DetailNode class.
