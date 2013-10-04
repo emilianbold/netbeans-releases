@@ -95,7 +95,7 @@ final class IntListSimple {
 
     private void growArray() {
         int[] old = array;
-        array = new int[Math.round(array.length * 1.5f)];
+        array = new int[Math.round(array.length * 2)];
         System.arraycopy(old, 0, array, 0, old.length);
     }
     

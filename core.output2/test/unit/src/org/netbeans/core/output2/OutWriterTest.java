@@ -585,7 +585,7 @@ public class OutWriterTest extends NbTestCase {
     public void testLimitReached() throws IOException {
         OutWriter ow = new OutWriter();
         ((AbstractLines) ow.getLines()).setOutputLimits(
-                new OutputLimits(5, 1024, 3));
+                new OutputLimits(6, 1024, 3));
 
         ow.println("first");
         ow.println("second");

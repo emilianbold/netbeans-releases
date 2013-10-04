@@ -131,7 +131,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Set<TreeListNode> expandedNodes;
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
-    static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
+    public static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
     private final ModelListener modelListener;
     private final UnsubmittedCategoryFilter unsubmittedCategoryFilter;
 
@@ -243,6 +243,13 @@ public final class DashboardViewer implements PropertyChangeListener {
             });
         } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
             DashboardRefresher.getInstance().setupDashboardRefresh();
+        } else if (evt.getPropertyName().equals(DashboardSettings.SORT_ATTRIBUTES_SETTINGS_CHANGED)) {
+            REQUEST_PROCESSOR.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateContent(false);
+                }
+            });
         }
     }
 
