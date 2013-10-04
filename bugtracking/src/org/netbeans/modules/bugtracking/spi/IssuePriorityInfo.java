@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,77 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.test.permanentUI;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+package org.netbeans.modules.bugtracking.spi;
+
+import java.awt.Image;
+import org.netbeans.modules.bugtracking.IssueImpl;
 
 /**
- *
- * @author Lukas Hasik
+ * Represents information related to one particular issue priority. 
+ * The Priority attributes are used in various Task Dashboard features 
+ * - e.g. Icon is shown next to an Issue.
+ * 
+ * @author Tomas Stupka
  */
-public class PermanentUITest {
+public final class IssuePriorityInfo {
+    private final String id;
+    private final String displayName;
+    private final Image icon;
 
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().clusters(".*").enableModules(".*");
-        return conf
-                .addTest(MainMenuTest.class, MainMenuTest.TESTS)
-                .addTest(MainMenuJavaTest.class, MainMenuJavaTest.TESTS)
-                .addTest(TeamMenuVCSActivatedTest.class, TeamMenuVCSActivatedTest.TESTS)
-                .addTest(NewProjectTest.class)
-                .addTest(OptionsTest.class)
-                .suite();
+    /**
+     * Creates a IssuePriorityInfo. 
+     * Note that when no icon is provided the Tasks Dashboard will 
+     * use default icons given by the order of Priority infos returned
+     * via {@link IssuePriorityProvider#getPriorityInfos()}
+     * 
+     * @param id
+     * @param displayName 
+     * @see IssuePriorityProvider#getPriorityInfos() 
+     */
+    public IssuePriorityInfo(String id, String displayName) {
+        this(id, displayName, null);
+    }
+    
+    /**
+     * 
+     * @param id
+     * @param displayName
+     * @param icon
+     */
+    public IssuePriorityInfo(String id, String displayName, Image icon) {
+        this.id = id;
+        this.displayName = displayName;
+        this.icon = icon;
     }
 
+    /**
+     * Returns the display name for this Priority.
+     * 
+     * @return display name associated with this Priority
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * Returns the icon to be shown next to an Issue in the Tasks Dashboard. 
+     * 
+     * @return icon associated with this Priority
+     * @see IssuePriorityProvider#getPriorityInfos()
+     */
+    public Image getIcon() {
+        return icon;
+    }
+
+    /**
+     * Returns a unique id for this Priority.
+     * 
+     * @return a unique id
+     */
+    public String getID() {
+        return id;
+    }
 }

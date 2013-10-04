@@ -81,24 +81,13 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
         if(BugzillaUtil.isNbRepository(bugzillaRepository)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(bugzillaRepository);
         }
-        return Bugzilla.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+        return BugzillaUtil.createRepository(bugzillaRepository);
     }
     
     @Override
     public Repository createRepository() {
         Bugzilla.init();
-        BugzillaRepository bugzillaRepository = new BugzillaRepository();
-        return Bugzilla.getInstance().getBugtrackingFactory().
-                createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(), 
-                    Bugzilla.getInstance().getIssueProvider());
+        return BugzillaUtil.createRepository(new BugzillaRepository());
     }
 
     public static String getConnectorName() {

@@ -44,11 +44,17 @@ package org.netbeans.modules.jira;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -75,7 +81,10 @@ public class Jira {
     private JiraRepositoryProvider jrp;
     private JiraQueryProvider jqp;
     private JiraIssueProvider jip;
+    private IssueStatusProvider<NbJiraIssue> isp;
     private IssueNode.ChangesProvider<NbJiraIssue> jcp;
+    private IssuePriorityProvider<NbJiraIssue> ipp;
+    
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
@@ -155,6 +164,55 @@ public class Jira {
         return jrp; 
     }
 
+    public synchronized IssueStatusProvider<NbJiraIssue> getStatusProvider() {
+        if(isp == null) {
+            isp = new IssueStatusProvider<NbJiraIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(NbJiraIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeen(NbJiraIssue issue, boolean uptodate) {
+                    issue.setUpToDate(uptodate);
+                }
+                @Override
+                public void addPropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+                @Override
+                public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+            };
+        }
+        return isp;
+    }
+    
+    public synchronized IssuePriorityProvider<NbJiraIssue> getPriorityProvider(final JiraRepository repository) {
+        if(ipp == null) {
+            ipp = new IssuePriorityProvider<NbJiraIssue>() {
+                private IssuePriorityInfo[] infos;
+                @Override
+                public String getPriorityID(NbJiraIssue i) {
+                    return i.getPriorityID();
+                }
+
+                @Override
+                public IssuePriorityInfo[] getPriorityInfos() {
+                    if(infos == null) {
+                        Priority[] priorities = repository.getConfiguration().getPriorities();
+                        infos = new IssuePriorityInfo[priorities.length];
+                        for (int i = 0; i < priorities.length; i++) {
+                            infos[i] = new IssuePriorityInfo(priorities[i].getId(), priorities[i].getName());
+                        }
+                    }
+                    return infos;
+                }
+            };
+        }
+        return ipp;
+    }
+    
     public IssueNode.ChangesProvider<NbJiraIssue> getChangesProvider() {
         if(jcp == null) {
             jcp = new IssueNode.ChangesProvider<NbJiraIssue>() {

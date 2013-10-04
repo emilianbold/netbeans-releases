@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,81 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.bugtracking;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
-import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.util.Lookup;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 
 /**
  *
  * @author tomas
  */
-public class TestRepositoryProvider extends RepositoryProvider<TestRepository, TestQuery, TestIssue> {
+public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
 
     @Override
-    public RepositoryInfo getInfo(TestRepository r) {
-        return r.getInfo();
+    public IssueStatusProvider.Status getStatus(TestIssue issue) {
+        return issue.getStatus();
     }
 
     @Override
-    public Image getIcon(TestRepository r) {
-        return r.getIcon();
+    public void setSeen(TestIssue issue, boolean seen) {
+        issue.setSeen(seen);
     }
 
     @Override
-    public TestIssue[] getIssues(TestRepository r, String... ids) {
-        return r.getIssues(ids);
+    public void removePropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
+        issue.removePropertyChangeListener(listener);
     }
 
     @Override
-    public void remove(TestRepository r) {
-        r.remove();
+    public void addPropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
+        issue.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public RepositoryController getController(TestRepository r) {
-        return r.getController();
-    }
-
-    @Override
-    public TestQuery createQuery(TestRepository r) {
-        return r.createQuery();
-    }
-
-    @Override
-    public TestIssue createIssue(TestRepository r) {
-        return r.createIssue();
-    }
-
-    @Override
-    public Collection<TestQuery> getQueries(TestRepository r) {
-        return (Collection<TestQuery>) r.getQueries();
-    }
-
-    @Override
-    public Collection<TestIssue> simpleSearch(TestRepository r, String criteria) {
-        return (Collection<TestIssue>) r.simpleSearch(criteria);
-    }
-
-    @Override
-    public void removePropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
-        r.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
-        r.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public TestIssue createIssue(TestRepository r, String summary, String description) {
-        return r.createIssue(summary, description);
-    }
+    
 }

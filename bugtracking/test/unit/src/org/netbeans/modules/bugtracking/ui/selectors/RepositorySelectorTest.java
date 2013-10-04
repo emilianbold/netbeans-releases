@@ -136,16 +136,6 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public RepositoryController getController() {
             final JPanel panel = new JPanel();
             JLabel label = new JLabel();
@@ -198,40 +188,9 @@ public class RepositorySelectorTest extends NbTestCase {
             };
         }
 
-        @Override
-        public TestQuery createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestQuery> getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        protected IssueCache getIssueCache() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
         public Lookup getLookup() {
             return Lookup.EMPTY;
         }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
     }
 
 }

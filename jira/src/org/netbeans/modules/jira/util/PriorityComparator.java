@@ -37,75 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.dummies;
+package org.netbeans.modules.jira.util;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import javax.imageio.ImageIO;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
-import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
+import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
+import java.util.Comparator;
+
 
 /**
  *
- * @author Marian Petras
+ * @author Tomas Stupka
  */
-public class DummyRepository extends TestRepository {
-
-    private static final Image icon;
-
-    static {
-        try {
-            InputStream is = DummyRepository.class.getResourceAsStream(
-                    "/org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
-            icon = ImageIO.read(is);
-            is.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    
-    private final DummyBugtrackingConnector connector;
-    private final String id;
-    private RepositoryInfo info;
-
-    public DummyRepository(DummyBugtrackingConnector connector, String id) {
-        this.connector = connector;
-        this.id = id;
-        info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
-    }
-
+public class PriorityComparator implements Comparator<Priority>{
     @Override
-    public Image getIcon() {
-        return icon;
-    }
-
-    @Override
-    public RepositoryInfo getInfo() {
-        return info;
-    }
-
-    @Override
-    public void remove() {
-        connector.removeRepository(TestKit.getRepository(this));
-    }
-
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    @Override
-    public String toString() {
-        return getInfo().getDisplayName();
+    public int compare(Priority p1, Priority p2) {
+        if(p1 == null && p2 == null) return 0;
+        if(p2 == null) return 1;
+        if(p1 == null) return -1;
+        
+        // XXX there is no sort order available!
+        return p1.getId().compareTo(p2.getId());
     }
 }

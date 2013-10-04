@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.util;
 
 import java.awt.Color;
 import java.util.Collections;
+import java.util.List;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.logging.Level;
@@ -188,13 +189,20 @@ public class BugzillaUtil {
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
         Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
-            repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(),
-                    Bugzilla.getInstance().getIssueProvider());
+            repository = createRepository(bugzillaRepository);
         }
         return repository;
+    }
+    
+    public static Repository createRepository(BugzillaRepository bugzillaRepository) {
+        return Bugzilla.getInstance().getBugtrackingFactory().createRepository(
+                bugzillaRepository, 
+                Bugzilla.getInstance().getRepositoryProvider(), 
+                Bugzilla.getInstance().getQueryProvider(),
+                Bugzilla.getInstance().getIssueProvider(),
+                Bugzilla.getInstance().getStatusProvider(),
+                null, 
+                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository));
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {

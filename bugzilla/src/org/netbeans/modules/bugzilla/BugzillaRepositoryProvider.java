@@ -137,4 +137,9 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
                 ((KenaiRepository)repository).getKenaiProject() :
                 null;
     }
+
+    @Override
+    public BugzillaIssue createIssue(BugzillaRepository r, String summary, String description) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

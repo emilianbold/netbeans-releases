@@ -124,4 +124,14 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
 
+    @Override
+    public boolean canRename(JiraQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(JiraQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

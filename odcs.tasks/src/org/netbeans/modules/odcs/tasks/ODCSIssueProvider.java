@@ -54,7 +54,6 @@ import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
  * @author Tomas Stupka
  */
 public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
-    private IssueStatusProvider statusProvider;
 
     @Override
     public String getDisplayName(ODCSIssue data) {
@@ -122,34 +121,13 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public IssueStatusProvider getStatusProvider() {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<ODCSIssue>() {
-                @Override
-                public Status getStatus(ODCSIssue issue) {
-                    return issue.getStatus();
-                }
-                @Override
-                public void setSeen(ODCSIssue issue, boolean seen) {
-                    issue.setUpToDate(seen);
-                }
-                @Override
-                public void removePropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-                @Override
-                public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
-    }
-
-    @Override
     public boolean submit (ODCSIssue data) {
         return data.submitAndRefresh();
     }
-    
+
+    @Override
+    public void discardOutgoing(ODCSIssue data) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

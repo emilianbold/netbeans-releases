@@ -185,6 +185,16 @@ public class APITestConnector extends BugtrackingConnector {
             q.addPropertyChangeListener(listener);
         }
 
+        @Override
+        public boolean canRename(APITestQuery q) {
+            return q.canRename();
+        }
+
+        @Override
+        public void rename(APITestQuery q, String displayName) {
+            q.rename(displayName);
+        }
+
     }
 
     public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
@@ -241,6 +251,11 @@ public class APITestConnector extends BugtrackingConnector {
 
         @Override
         public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public APITestIssue createIssue(APITestRepository r, String summary, String description) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
@@ -310,6 +325,11 @@ public class APITestConnector extends BugtrackingConnector {
         @Override
         public void addPropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
             data.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void discardOutgoing(APITestIssue data) {
+            data.discardOutgoing();
         }
 
     }    

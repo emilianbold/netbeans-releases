@@ -41,12 +41,20 @@
  */
 package org.netbeans.modules.odcs.tasks;
 
+import com.tasktop.c2c.server.tasks.domain.Priority;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.logging.Logger;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
@@ -76,6 +84,8 @@ public class ODCS {
     private ODCSIssueProvider odcsIssueProvider;
     private ODCSQueryProvider odcsQueryProvider;
     private ODCSRepositoryProvider odcsRepositoryProvider;
+    private IssueStatusProvider<ODCSIssue> isp;    
+    private IssuePriorityProvider<ODCSIssue> ipp;    
     private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
 
@@ -114,6 +124,66 @@ public class ODCS {
         return odcsRepositoryProvider; 
     }    
 
+    public IssueStatusProvider getStatusProvider() {
+        if(isp == null) {
+            isp = new IssueStatusProvider<ODCSIssue>() {
+                @Override
+                public IssueStatusProvider.Status getStatus(ODCSIssue issue) {
+                    return issue.getStatus();
+                }
+                @Override
+                public void setSeen(ODCSIssue issue, boolean seen) {
+                    issue.setUpToDate(seen);
+                }
+                @Override
+                public void removePropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
+                    issue.addPropertyChangeListener(listener);
+                }
+            };
+        }
+        return isp;
+    }
+    
+    public IssuePriorityProvider<ODCSIssue> getPriorityProvider(final ODCSRepository repository) {
+        if(ipp == null) {
+            ipp = new IssuePriorityProvider<ODCSIssue>() {
+                private IssuePriorityInfo[] infos;
+
+                @Override
+                public String getPriorityID(ODCSIssue i) {
+                    return i.getPriorityID();
+                }
+
+                @Override
+                public IssuePriorityInfo[] getPriorityInfos() {
+                    if(infos == null) {
+                        List<Priority> priorities = repository.getRepositoryConfiguration(false).getPriorities();
+                        Collections.sort(priorities, new Comparator<Priority>() {
+                            @Override
+                            public int compare(Priority p1, Priority p2) {
+                                if(p1 == null && p2 == null) return 0;
+                                if(p1 == null) return -1;
+                                if(p2 == null) return 1;
+                                return p1.getSortkey().compareTo(p2.getSortkey());
+                            }
+                        });
+                        infos = new IssuePriorityInfo[priorities.size()];
+                        for (int i = 0; i < priorities.size(); i++) {
+                            Priority priority = priorities.get(i);
+                            infos[i] = new IssuePriorityInfo(priority.getId().toString(), priority.getValue());
+                        }
+                    }
+                    return infos;
+                }
+            };
+        }
+        return ipp;
+    }
+    
     public RequestProcessor getRequestProcessor() {
         if(rp == null) {
             rp = new RequestProcessor("ODCS Tasks", 1, true); // NOI18N

@@ -228,56 +228,13 @@ public class QTCTestHidden extends NbTestCase {
         }
 
         @Override
-        public TestIssue[] getIssues(String[] id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public RepositoryController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public TestQuery createQuery() {
             return newquery;
         }
 
         @Override
-        public TestIssue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public Collection<TestQuery> getQueries() {
             return queries;
-        }
-
-        @Override
-        public Collection<TestIssue> simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        protected IssueCache getIssueCache() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }
@@ -319,43 +276,13 @@ public class QTCTestHidden extends NbTestCase {
         public QueryController getController() {
             return controler;
         }
-        @Override
-        public Collection<TestIssue> getIssues() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public boolean contains(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
         public void setSaved(boolean saved) {
             this.saved = saved;
         }
-
         @Override
         public boolean isSaved() {
             return saved;
         }
-        
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void refresh() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
     
     @BugtrackingConnector.Registration (

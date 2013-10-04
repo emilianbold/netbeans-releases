@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,76 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.dummies;
+package org.netbeans.modules.bugtracking.spi;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import javax.imageio.ImageIO;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
-import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
+import java.util.Date;
 
 /**
- *
- * @author Marian Petras
+ * Provides access to scheduling data for a given task so that they can by used 
+ * by the Tasks Dashboard facilities - filtering or grouping by schedule date.
+ * <br/>
+ * It is up to the particular implementation if the values eventually match with  
+ * corresponding remote repository fields or if they are merely handed 
+ * locally as user private.
+ * <br/>
+ * Note that an implementation of this interface is not mandatory for a 
+ * NetBeans bugtracking plugin. 
+ * 
+ * @author Tomas Stupka
+ * @param <I> the implementation specific issue type
  */
-public class DummyRepository extends TestRepository {
+public interface IssueSchedulingProvider<I> {
+        
+    /**
+     * Sets the due date
+     * 
+     * @param i
+     * @param date 
+     */
+    public void setDueDate(I i, Date date);
 
-    private static final Image icon;
+    /**
+     * Sets the schedule date. 
+     * 
+     * @param i
+     * @param date 
+     */
+    public void setSchedule(I i, IssueScheduleInfo date);
 
-    static {
-        try {
-            InputStream is = DummyRepository.class.getResourceAsStream(
-                    "/org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
-            icon = ImageIO.read(is);
-            is.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
+    /**
+     * Sets the estimate in hours
+     * 
+     * @param i
+     * @param hours 
+     */
+    public void setEstimate(I i, int hours); 
+
+    /**
+     * Returns the due date
+     * 
+     * @param i
+     * @return 
+     */
+    public Date getDueDate(I i);
+
+    /**
+     * Returns the schedule date
+     * 
+     * @param i
+     * @return 
+     */
+    public IssueScheduleInfo getSchedule(I i);
+
+    /**
+     * Returns the estimate in hours
+     * 
+     * @param i
+     * @return 
+     */
+    public int getEstimate(I i); 
     
-    private final DummyBugtrackingConnector connector;
-    private final String id;
-    private RepositoryInfo info;
-
-    public DummyRepository(DummyBugtrackingConnector connector, String id) {
-        this.connector = connector;
-        this.id = id;
-        info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
-    }
-
-    @Override
-    public Image getIcon() {
-        return icon;
-    }
-
-    @Override
-    public RepositoryInfo getInfo() {
-        return info;
-    }
-
-    @Override
-    public void remove() {
-        connector.removeRepository(TestKit.getRepository(this));
-    }
-
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    @Override
-    public String toString() {
-        return getInfo().getDisplayName();
-    }
 }
+    

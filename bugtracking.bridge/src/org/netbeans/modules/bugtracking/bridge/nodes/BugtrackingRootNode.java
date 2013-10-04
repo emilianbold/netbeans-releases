@@ -150,12 +150,11 @@ public class BugtrackingRootNode extends AbstractNode {
             Iterator<Repository> it = repos.iterator();
             while(it.hasNext()) {
                 Repository repo = it.next();
-                if(!repo.isMutable()) {
-                    it.remove();
+                if(repo.isMutable()) {
+                    toPopulate.add(repo);
                 }
             }
             
-            toPopulate.addAll(repos);
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }

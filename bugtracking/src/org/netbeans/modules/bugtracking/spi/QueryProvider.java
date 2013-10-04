@@ -46,12 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Represents an query on a bugtracking repository.
- *
+ * Provides access to an bugtracking query.
  *
  * @author Tomas Stupka
- * @param <Q>
- * @param <I>
+ * 
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public abstract class QueryProvider<Q, I> {
 
@@ -109,6 +109,18 @@ public abstract class QueryProvider<Q, I> {
     public abstract boolean isSaved(Q q);
 
     public abstract void remove(Q q);
+    
+    /**
+     * Determines if it is possible to rename the given query
+     * @return 
+     */
+    public abstract boolean canRename(Q q);
+    
+    /**
+     * Renames the given query
+     * @param q 
+     */
+    public abstract void rename(Q q, String displayName);
     
     public abstract Collection<I> getIssues(Q q);
 

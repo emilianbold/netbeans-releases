@@ -49,6 +49,7 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 
 /**
  *
@@ -65,24 +66,12 @@ public class ODCSConnector extends TeamBugtrackingConnector {
     
     @Override
     public Repository createRepository(RepositoryInfo info) {
-        ODCSRepository odcsRepository = new ODCSRepository(info);
-        return ODCS.getInstance().getBugtrackingFactory().
-                createRepository(
-                    odcsRepository, 
-                    ODCS.getInstance().getRepositoryProvider(), 
-                    ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+        return ODCSUtil.createRepository(new ODCSRepository(info));
     }
 
     @Override
     public Repository createRepository() {
-        ODCSRepository odcsRepository = new ODCSRepository();
-        return ODCS.getInstance().getBugtrackingFactory().
-                createRepository(
-                    odcsRepository, 
-                    ODCS.getInstance().getRepositoryProvider(), 
-                    ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+        return ODCSUtil.createRepository(new ODCSRepository());
     }
 
     @Override
@@ -102,12 +91,7 @@ public class ODCSConnector extends TeamBugtrackingConnector {
         {
             return null;
         }
-        return ODCS.getInstance().getBugtrackingFactory().
-                createRepository(
-                    new ODCSRepository(project), 
-                    ODCS.getInstance().getRepositoryProvider(), 
-                    ODCS.getInstance().getQueryProvider(), 
-                    ODCS.getInstance().getIssueProvider());
+        return ODCSUtil.createRepository(new ODCSRepository(project));
     }
 
     @Override

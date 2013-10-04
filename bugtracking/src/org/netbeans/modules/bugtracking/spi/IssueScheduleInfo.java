@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.dummies;
+package org.netbeans.modules.bugtracking.spi;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collection;
-import java.util.Collections;
-import javax.imageio.ImageIO;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
-import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
+import java.util.Date;
 
 /**
- *
- * @author Marian Petras
+ * Represents the date period for which an issue is scheduled. 
+ * This can be a specific day as well an interval of days. 
+ * 
+ * @author Tomas Stupka
+ * 
  */
-public class DummyRepository extends TestRepository {
+public final class IssueScheduleInfo {
 
-    private static final Image icon;
+    private final Date date;
+    private final int interval;
 
-    static {
-        try {
-            InputStream is = DummyRepository.class.getResourceAsStream(
-                    "/org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
-            icon = ImageIO.read(is);
-            is.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-    
-    private final DummyBugtrackingConnector connector;
-    private final String id;
-    private RepositoryInfo info;
-
-    public DummyRepository(DummyBugtrackingConnector connector, String id) {
-        this.connector = connector;
-        this.id = id;
-        info = new RepositoryInfo(id, DummyBugtrackingConnector.ID, null, "Dummy repository \"" + id + '"', "dummy repository created for testing purposes", null, null, null, null);
+    /**
+     * Creates a ScheduleDate representing a specific day.
+     * 
+     * @param date 
+     */
+    public IssueScheduleInfo(Date date) {
+        this.date = date;
+        this.interval = 0;
     }
 
-    @Override
-    public Image getIcon() {
-        return icon;
+    /**
+     * Creates a ScheduleDate representing an interval of days.
+     * 
+     * @param startDate determines the day from which this issue is scheduled
+     * @param interval determines the interval of days for which an issue is scheduled
+     */
+    public IssueScheduleInfo(Date startDate, int interval) {
+        this.date = startDate;
+        this.interval = interval;
     }
 
-    @Override
-    public RepositoryInfo getInfo() {
-        return info;
+    /**
+     * Returns the start date of this ScheduleDate.
+     * 
+     * @return 
+     */
+    public Date getDate() {
+        return date;
     }
 
-    @Override
-    public void remove() {
-        connector.removeRepository(TestKit.getRepository(this));
-    }
-
-    public Lookup getLookup() {
-        return Lookup.EMPTY;
-    }
-
-    @Override
-    public String toString() {
-        return getInfo().getDisplayName();
+    /**
+     * Returns the amount of days given by this SheduleDate.
+     * 
+     * @return 
+     */
+    public int getInterval() {
+        return interval;
     }
 }
