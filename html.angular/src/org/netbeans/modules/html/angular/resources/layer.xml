@@ -3,6 +3,11 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
+            <folder name="javascript">
+                <file name="org-netbeans-modules-html-angular-index-AngularJsIndexer$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
+            </folder>    
             <folder name="html">
                 <folder name="FontsColors">
                     <folder name="NetBeans">
