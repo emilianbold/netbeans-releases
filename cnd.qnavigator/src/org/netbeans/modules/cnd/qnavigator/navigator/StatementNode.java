@@ -247,9 +247,11 @@ public final class StatementNode implements BreadcrumbsElement {
                     currElement.body = new ArrayList<CsmStatement>();
                     lastTrueStart = c.getEndOffset()+1;
                 } else {
-                    currElement.body.add(c);
-                    currElement.endOffset = c.getEndOffset();
-                    lastTrueStart = c.getEndOffset()+1;
+                    if (currElement != null) {
+                        currElement.body.add(c);
+                        currElement.endOffset = c.getEndOffset();
+                        lastTrueStart = c.getEndOffset()+1;
+                    }
                 }
             }
             if (currElement != null) {
