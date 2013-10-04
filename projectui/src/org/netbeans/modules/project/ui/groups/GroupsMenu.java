@@ -63,7 +63,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.ProjectsRootNode;
 import org.openide.DialogDescriptor;
@@ -108,7 +107,10 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        assert false;
+        //#236682 accessed by keyboard shortcut invokation.
+        //remote the assert but no real plans right now to implement a popup dialog to allow selecting groups.
+//        assert false;
+        
     }
 
     @Override
