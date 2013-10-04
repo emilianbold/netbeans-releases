@@ -57,22 +57,17 @@ import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.PopupManager;
 import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
 import org.openide.text.Line;
 import java.io.IOException;
 import java.util.HashMap;
 import org.netbeans.editor.ext.ToolTipSupport;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.AnnotationDesc;
 import java.beans.PropertyChangeListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
-import org.openide.cookies.InstanceCookie;
-import java.util.Enumeration;
-import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -80,14 +75,15 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.lib.editor.hyperlink.HyperlinkOperation;
 import org.netbeans.modules.editor.lib2.highlighting.HighlightingManager;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -366,13 +362,20 @@ public class NbToolTip extends FileChangeAdapter {
 
             if (tts != null) tts.addPropertyChangeListener(this);
 
-            final String tooltipText = resolveTooltipText();
+            final CharSequence tooltipText = resolveTooltipText();
             if (tooltipText != null && tooltipText.length() > 0 && isRequestValid()) {
                 Utilities.runInEventDispatchThread(new Runnable() {
                     public void run() {
                         final ToolTipSupport ftts = tts;
                         if (ftts != null) {
-                            ftts.setToolTipText(tooltipText);
+                            ftts.setToolTipText(tooltipText.toString());
+                            if (tooltipText instanceof HyperlinkOperation.TooltipInfo) {
+                                JComponent tt = ftts.getToolTip();
+                                if (tt instanceof JEditorPane) {
+                                    ((JEditorPane)tt).addHyperlinkListener(((HyperlinkOperation.TooltipInfo)tooltipText).getListener());
+                                    ((JEditorPane)tt).setEditable(false);
+                                }
+                            }
                         }
                     }
                 });
@@ -381,7 +384,7 @@ public class NbToolTip extends FileChangeAdapter {
             }
         }
 
-        private String resolveTooltipText() {
+        private CharSequence resolveTooltipText() {
             kit.toolTipAnnotationsLock(doc);
             try {
                 doc.readLock();
@@ -433,16 +436,16 @@ public class NbToolTip extends FileChangeAdapter {
             return getTooltipFromHighlightingLayers();
         }
 
-        private String getTooltipFromHighlightingLayers() {
+        private CharSequence getTooltipFromHighlightingLayers() {
             // Read tooltip from highlighting layers attribute
-            String tooltipFromHighlightingLayers = null;
+            CharSequence tooltipFromHighlightingLayers = null;
             {
                 if (tooltipAttributeValue != null) {
                     if (tooltipAttributeValue instanceof String) {
                         tooltipFromHighlightingLayers = (String) tooltipAttributeValue;
                     } else if (tooltipAttributeValue instanceof HighlightAttributeValue) {
                         @SuppressWarnings("unchecked") //NOI18N
-                        String value = ((HighlightAttributeValue<String>) tooltipAttributeValue).getValue(
+                        CharSequence value = ((HighlightAttributeValue<CharSequence>) tooltipAttributeValue).getValue(
                             component, doc, EditorStyleConstants.Tooltip, offset, offset + 1);
                         tooltipFromHighlightingLayers = value;
                     } else {
@@ -503,7 +506,7 @@ public class NbToolTip extends FileChangeAdapter {
                             tipText = (String) newValue;
                         } else {
                             if (isRequestValid()) {
-                                tipText = getTooltipFromHighlightingLayers();
+                                tipText = getTooltipFromHighlightingLayers().toString();
                                 if (tipText == null || tipText.isEmpty()) {
                                     return ;
                                 }
