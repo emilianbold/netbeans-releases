@@ -205,7 +205,9 @@ public class TomcatModuleConfigurationTest extends TestBase {
         conf.bindDatasourceReference("jdbc/myDerby", "jdbc/derby");
         context = conf.getContext();
         int lengthResource = context.getResource().length;
-        assertEquals(2 , lengthResource);
+        assertEquals(1 , lengthResource);
+        int lengthLink = context.getResourceLink().length;
+        assertEquals(1 , lengthLink);
         boolean myDerbyPresent = false;
         boolean derbyPresent = false;
         for (int i = 0; i < lengthResource; i++) {
@@ -228,11 +230,16 @@ public class TomcatModuleConfigurationTest extends TestBase {
         // bind global DS with the resource reference
         conf.bindDatasourceReference("jdbc/globalDerbyRef", "jdbc/globalDerby");
         context = conf.getContext();
-        assertEquals(2 , context.getResource().length);
-        assertEquals(1 , context.getResourceLink().length);
-        assertEquals("jdbc/globalDerbyRef" , context.getResourceLinkName(0));
-        assertEquals("jdbc/globalDerby" , context.getResourceLinkGlobal(0));
+        assertEquals(1 , context.getResource().length);
+        assertEquals(2 , context.getResourceLink().length);
+
+        assertEquals("jdbc/myDerby" , context.getResourceLinkName(0));
+        assertEquals("jdbc/derby" , context.getResourceLinkGlobal(0));
         assertEquals("javax.sql.DataSource" , context.getResourceLinkType(0));
+
+        assertEquals("jdbc/globalDerbyRef" , context.getResourceLinkName(1));
+        assertEquals("jdbc/globalDerby" , context.getResourceLinkGlobal(1));
+        assertEquals("javax.sql.DataSource" , context.getResourceLinkType(1));
     }
 
     public void testBindDatasourceReference50() throws Exception {
@@ -277,8 +284,10 @@ public class TomcatModuleConfigurationTest extends TestBase {
         conf.bindDatasourceReference("jdbc/myDerby", "jdbc/derby");
         context = conf.getContext();
         int lengthResource = context.getResource().length;
-        assertEquals(2 , lengthResource);
-        assertEquals(2 , context.getResourceParams().length);
+        assertEquals(1 , lengthResource);
+        int lengthLink = context.getResourceLink().length;
+        assertEquals(1 , lengthLink);
+        assertEquals(1 , context.getResourceParams().length);
         boolean myDerbyPresent = false;
         boolean myDerbyParamsPresent = false;
         boolean derbyPresent = false;
@@ -303,11 +312,16 @@ public class TomcatModuleConfigurationTest extends TestBase {
         // bind global DS with the resource reference
         conf.bindDatasourceReference("jdbc/globalDerbyRef", "jdbc/globalDerby");
         context = conf.getContext();
-        assertEquals(2 , context.getResource().length);
-        assertEquals(1 , context.getResourceLink().length);
-        assertEquals("jdbc/globalDerbyRef" , context.getResourceLinkName(0));
-        assertEquals("jdbc/globalDerby" , context.getResourceLinkGlobal(0));
+        assertEquals(1 , context.getResource().length);
+        assertEquals(2 , context.getResourceLink().length);
+
+        assertEquals("jdbc/myDerby" , context.getResourceLinkName(0));
+        assertEquals("jdbc/derby" , context.getResourceLinkGlobal(0));
         assertEquals("javax.sql.DataSource" , context.getResourceLinkType(0));
+
+        assertEquals("jdbc/globalDerbyRef" , context.getResourceLinkName(1));
+        assertEquals("jdbc/globalDerby" , context.getResourceLinkGlobal(1));
+        assertEquals("javax.sql.DataSource" , context.getResourceLinkType(1));
     }
 
         public void testGetDatasources60() throws Exception {

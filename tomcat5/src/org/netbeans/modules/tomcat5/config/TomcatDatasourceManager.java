@@ -65,8 +65,7 @@ import org.netbeans.modules.tomcat5.config.gen.GlobalNamingResources;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
 import org.netbeans.modules.tomcat5.config.gen.Server;
-import org.netbeans.modules.tomcat5.config.gen.Tomee;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.tomcat5.config.gen.TomeeResources;
 
 /**
  * DataSourceManager implementation
@@ -86,7 +85,7 @@ public class TomcatDatasourceManager implements DatasourceManager {
         tm = (TomcatManager) dm;
     }
 
-    public static Set<Datasource> getTomeeDatasources(Tomee actualResources) {
+    public static Set<Datasource> getTomeeDatasources(TomeeResources actualResources) {
         HashSet<Datasource> result = new HashSet<Datasource>();
         int resourcesLength = actualResources.getTomeeResource().length;
         for (int i = 0; i < resourcesLength; i++) {
@@ -207,9 +206,9 @@ public class TomcatDatasourceManager implements DatasourceManager {
             return Collections.emptySet();
         }
 
-        Tomee tomee;
+        TomeeResources tomee;
         try {
-            tomee = Tomee.createGraph(tomeeXml);
+            tomee = TomeeResources.createGraph(tomeeXml);
         } catch (IOException e) {
             // ok, log it and give up
             Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
