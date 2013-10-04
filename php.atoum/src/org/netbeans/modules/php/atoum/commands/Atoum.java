@@ -57,20 +57,20 @@ import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.PhpOptions;
-import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
+import org.netbeans.modules.php.atoum.options.AtoumOptionsValidator;
 import org.netbeans.modules.php.atoum.preferences.AtoumPreferences;
 import org.netbeans.modules.php.atoum.preferences.AtoumPreferencesValidator;
 import org.netbeans.modules.php.atoum.run.TapParser;
 import org.netbeans.modules.php.atoum.run.TestCaseVo;
 import org.netbeans.modules.php.atoum.run.TestSuiteVo;
+import org.netbeans.modules.php.atoum.ui.customizer.AtoumCustomizer;
 import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -121,73 +121,65 @@ public final class Atoum {
     }
 
     public static Atoum getDefault() throws InvalidPhpExecutableException {
-        String script = AtoumOptions.getInstance().getAtoumPath();
-        String error = validate(script);
+        String error = validateDefault();
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new Atoum(script);
+        return new Atoum(AtoumOptions.getInstance().getAtoumPath());
     }
 
     @CheckForNull
     public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
-        // first try the default atoum, because of validation
-        InvalidPhpExecutableException defaultAtoumExc = null;
-        Atoum defaultAtoum = null;
-        try {
-            defaultAtoum = Atoum.getDefault();
-        } catch (InvalidPhpExecutableException ex) {
-            defaultAtoumExc = ex;
-        }
-        // now, php module
-        try {
-            Atoum atoum = getForPhpModule(phpModule);
-            if (atoum != null) {
-                return atoum;
-            }
-        } catch (InvalidPhpExecutableException ex) {
+        if (validatePhpModule(phpModule) != null) {
             if (showCustomizer) {
-                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpTesting.CUSTOMIZER_IDENT, null);
-                defaultAtoumExc = null;
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(AtoumCustomizer.IDENTIFIER, null);
             }
+            return null;
         }
-        if (defaultAtoumExc != null
-                && showCustomizer) {
-            UiUtils.invalidScriptProvided(defaultAtoumExc.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+        // atoum
+        String path;
+        if (AtoumPreferences.isAtoumEnabled(phpModule)) {
+            // custom atoum
+            path = AtoumPreferences.getAtoumPath(phpModule);
+        } else {
+            // default atoum
+            String error = validateDefault();
+            if (error != null) {
+                if (showCustomizer) {
+                    UiUtils.invalidScriptProvided(error, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+                }
+                return null;
+            }
+            path = AtoumOptions.getInstance().getAtoumPath();
         }
-        return defaultAtoum;
+        return new Atoum(path);
     }
 
     @CheckForNull
-    private static Atoum getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
-        assert phpModule != null;
-        String error = validateForModule(phpModule);
-        if (error != null) {
-            throw new InvalidPhpExecutableException(error);
-        }
-        if (!AtoumPreferences.isAtoumEnabled(phpModule)) {
-            return null;
-        }
-        // we have project specific atoum
-        return new Atoum(AtoumPreferences.getAtoumPath(phpModule));
+    private static String validateDefault() {
+        ValidationResult result = new AtoumOptionsValidator()
+                .validate(AtoumOptions.getInstance().getAtoumPath())
+                .getResult();
+        return validateResult(result);
     }
 
-    @NbBundle.Messages("Atoum.file.label=atoum file")
-    public static String validate(String command) {
-        return PhpExecutableValidator.validateCommand(command, Bundle.Atoum_file_label());
-    }
-
-    public static String validateForModule(PhpModule phpModule) {
+    @CheckForNull
+    private static String validatePhpModule(PhpModule phpModule) {
         ValidationResult result = new AtoumPreferencesValidator()
                 .validate(phpModule)
                 .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validateResult(ValidationResult result) {
+        if (result.isFaultless()) {
+            return null;
+        }
         if (result.hasErrors()) {
             return result.getErrors().get(0).getMessage();
         }
-        if (result.hasWarnings()) {
-            return result.getWarnings().get(0).getMessage();
-        }
-        return null;
+        return result.getWarnings().get(0).getMessage();
     }
 
     public static boolean isTestMethod(PhpClass.Method method) {

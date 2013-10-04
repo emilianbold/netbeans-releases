@@ -42,8 +42,8 @@
 package org.netbeans.modules.php.phpunit.options;
 
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.phpunit.commands.SkeletonGenerator;
+import org.netbeans.modules.php.phpunit.util.PhpUnitUtils;
 
 /**
  * Validator for PhpUnit options.
@@ -63,18 +63,20 @@ public final class PhpUnitOptionsValidator {
         return result;
     }
 
-    private void validatePhpUnitPath(String phpUnitPath) {
-        String warning = PhpUnit.validate(phpUnitPath);
+    public PhpUnitOptionsValidator validatePhpUnitPath(String phpUnitPath) {
+        String warning = PhpUnitUtils.validatePhpUnitPath(phpUnitPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("phpUnitPath", warning)); // NOI18N
         }
+        return this;
     }
 
-    private void validateSkeletonGeneratorPath(String skeletonGeneratorPath) {
+    private PhpUnitOptionsValidator validateSkeletonGeneratorPath(String skeletonGeneratorPath) {
         String warning = SkeletonGenerator.validate(skeletonGeneratorPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("skeletonGeneratorPath", warning)); // NOI18N
         }
+        return this;
     }
 
 }
