@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package oracle.eclipse.tools.cloud.dev.tasks;
-
-import com.tasktop.c2c.server.profile.domain.project.Profile;
+package org.netbeans.modules.search;
 
 /**
+ * Interface that marks a node that can be removed from search results (hidden).
  *
- * @author tomas
+ * @author jhavlin
  */
-public class ProfileWrapper {
-    public Profile profile;
+public interface Removable {
+
+    /**
+     * Remove the node from search results.
+     */
+    void remove();
 }
