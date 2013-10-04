@@ -59,10 +59,11 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages(value = "unknownAttribute=Unknown attribute")
 public class UnknownAttribute extends Hint {
 
-    private static final Rule RULE = new RuleI();
+    private static final Rule RULE = new RuleI(false);
+    private static final Rule LINE_RULE = new RuleI(true);
 
-    public UnknownAttribute(String attributeName, String elementName, RuleContext context, OffsetRange range) {
-        super(RULE,
+    public UnknownAttribute(String attributeName, String elementName, RuleContext context, OffsetRange range, boolean lineHint) {
+        super(lineHint ? LINE_RULE : RULE,
                 Bundle.unknownAttribute(),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range,
@@ -82,6 +83,12 @@ public class UnknownAttribute extends Hint {
     
     private static class RuleI implements Rule {
 
+        private final boolean lineHint;
+
+        public RuleI(boolean lineHint) {
+            this.lineHint = lineHint;
+        }
+        
         @Override
         public boolean appliesTo(RuleContext context) {
             return true;
@@ -99,7 +106,7 @@ public class UnknownAttribute extends Hint {
 
         @Override
         public HintSeverity getDefaultSeverity() {
-            return HintSeverity.WARNING;
+            return lineHint ? HintSeverity.CURRENT_LINE_WARNING : HintSeverity.WARNING;
         }
     }
 }

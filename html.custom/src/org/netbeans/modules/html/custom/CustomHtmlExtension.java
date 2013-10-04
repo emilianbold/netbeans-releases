@@ -154,23 +154,23 @@ public class CustomHtmlExtension extends HtmlExtension {
                         Tag tagModel = conf.getTag(name);
                         //check just the custom elements
                         if (tagModel != null) {
-                            if (tagModel.getAttributesNames().isEmpty()) {
-                                //no data, do not check
-                                //=> add hint for copying existing attributes to the conf
-                            } else {
-                                //some attributes are specified in the conf, lets check
-                                Collection<Attribute> tagAttrs = ot.attributes();
-                                for (Attribute a : tagAttrs) {
-                                    String attrName = a.name().toString();
-                                    if (tagModel.getAttribute(attrName) == null) {
-                                        //not found in the context element attr list, but still may be defined as contextfree attribute
-                                        if (conf.getAttribute(attrName) == null) {
-                                            //unknown attribute in known element w/ some other attributes specified -> show error annotation
-                                            OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(a.from()), snapshot.getEmbeddedOffset(a.to()));
-                                            hints.add(new UnknownAttribute(attrName, tagModel.getName(), context, range));
-                                        }
+                            //some attributes are specified in the conf, lets check
+                            Collection<Attribute> tagAttrs = ot.attributes();
+                            for (Attribute a : tagAttrs) {
+                                String attrName = a.name().toString();
+                                if (tagModel.getAttribute(attrName) == null) {
+                                    //not found in the context element attr list, but still may be defined as contextfree attribute
+                                    if (conf.getAttribute(attrName) == null) {
+                                        //unknown attribute in known element w/ some other attributes specified -> show error annotation
+                                        OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(a.from()), snapshot.getEmbeddedOffset(a.to()));
+                                        
+                                        //if there's no attribute defined in the conf, it may be a user decision not to specify the attributes
+                                        //in such case just show the hint as linehint
+                                        boolean lineHint = tagModel.getAttributesNames().isEmpty();
+                                        hints.add(new UnknownAttribute(attrName, tagModel.getName(), context, range, lineHint));
                                     }
                                 }
+
                             }
                         }
 
