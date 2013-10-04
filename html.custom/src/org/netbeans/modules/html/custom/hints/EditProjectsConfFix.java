@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.custom.hints;
 
+import java.util.Objects;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.custom.conf.Configuration;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -82,5 +83,29 @@ public final class EditProjectsConfFix implements HintFix {
     public boolean isInteractive() {
         return false;
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + Objects.hashCode(this.snapshot);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final EditProjectsConfFix other = (EditProjectsConfFix) obj;
+        if (!Objects.equals(this.snapshot, other.snapshot)) {
+            return false;
+        }
+        return true;
+    }
+    
+    
     
 }
