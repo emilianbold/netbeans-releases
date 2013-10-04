@@ -281,6 +281,16 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
         this.matchingObject.remove();
     }
 
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        remove();
+    }
+
     /**
      * Check whether the file object is valid and a valid data object can be
      * found for it. It should be checked after original node is destroyed. It

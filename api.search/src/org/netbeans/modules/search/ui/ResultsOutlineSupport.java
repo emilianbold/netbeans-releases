@@ -744,6 +744,16 @@ public class ResultsOutlineSupport {
         }
 
         @Override
+        public boolean canDestroy() {
+            return true;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            remove();
+        }
+
+        @Override
         public Transferable drag() throws IOException {
             return UiUtils.DISABLE_TRANSFER;
         }

@@ -921,6 +921,16 @@ public final class TextDetail implements Selectable {
         public void remove() {
             this.mo.removeDetail(txtDetail);
         }
+
+        @Override
+        public boolean canDestroy() {
+            return true;
+        }
+
+        @Override
+        public void destroy() throws IOException {
+            remove();
+        }
     } // End of DetailNode class.
 
     /**
