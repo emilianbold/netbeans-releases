@@ -83,6 +83,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.Bundle.*;
@@ -115,9 +116,12 @@ public class InfiniteRecursion {
         displayName = "#DN_InfiniteRecursion",
         description = "#DESCR_InfiniteRecursion",
         enabled = true,
-        category = "bugs"
+        category = "bugs",
+        suppressWarnings = { "InfiniteRecursion" },
+        options = Hint.Options.QUERY
     )
-    @TriggerTreeKind(Tree.Kind.METHOD)
+    @UseOptions({OPTION_EXCLUDE_OVERRIDABLES})
+   @TriggerTreeKind(Tree.Kind.METHOD)
     public static ErrorDescription run(HintContext ctx) {
         Tree leaf = ctx.getPath().getLeaf();
         if (leaf.getKind() != Tree.Kind.METHOD) {
@@ -125,7 +129,7 @@ public class InfiniteRecursion {
         }
         MethodTree mt = (MethodTree)leaf;
         Element ee = ctx.getInfo().getTrees().getElement(ctx.getPath());
-        if (ee == null || ee.getKind() != ElementKind.METHOD) {
+        if (ee == null || ee.getKind() != ElementKind.METHOD || mt.getBody() == null) {
             return null;
         }
         boolean overridable = false;
