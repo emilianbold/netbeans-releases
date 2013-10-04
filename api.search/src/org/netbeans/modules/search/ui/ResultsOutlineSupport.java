@@ -162,6 +162,11 @@ public class ResultsOutlineSupport {
                 new ColumnsListener());
         outlineView.getOutline().getInputMap().remove(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)); //#209949
+        outlineView.getOutline().getInputMap().put(KeyStroke.getKeyStroke(
+                KeyEvent.VK_DELETE,
+                0), "hide"); //NOI18N
+        outlineView.getOutline().getActionMap().put("hide", SystemAction.get( //NOI18N
+                HideResultAction.class));
         outlineView.getOutline().setShowGrid(false);
         Font font = outlineView.getOutline().getFont();
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);

@@ -115,7 +115,7 @@ public class MatchingObjectNode extends AbstractNode {
             final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
         super(children, Lookups.fixed(matchingObject, checkableNode,
-                matchingObject.getFileObject()));
+                matchingObject.getFileObject(), matchingObject.getDataObject()));
         Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
@@ -168,7 +168,9 @@ public class MatchingObjectNode extends AbstractNode {
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
                         copyPath == null ? new CopyPathAction() : copyPath,
-                        SystemAction.get(HideResultAction.class)
+                        SystemAction.get(HideResultAction.class),
+                        null,
+                        SystemAction.get(MoreAction.class)
                     };
         } else {
             return new Action[0];
