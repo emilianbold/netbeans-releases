@@ -502,7 +502,7 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public String getShortDescription() {
-            return "<html>Project GAV: " + start.gav.getId() + "<br/>Location: " + start.currentProjectLocation.getAbsolutePath() + "</html>";
+            return "<html>Project GAV: " + start.gav.getId() + (start.currentProjectLocation != null ? "<br/>Location: " + start.currentProjectLocation.getAbsolutePath() : "") + "</html>";
         }
         
         
