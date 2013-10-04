@@ -108,9 +108,20 @@ public final class AddAttributeFix implements HintFix {
         
         if(elementContextName != null) {
             //attr in context
-            for(String aName : attributeNames) {
-                Tag tag = conf.getTag(elementContextName);
-                tag.add( new Attribute(aName));
+            Tag tag = conf.getTag(elementContextName);
+            if(tag == null) {
+                //no custom element found => may be html element => just create attribute as global + specify context
+                //contextfree attribute
+                for(String aName : attributeNames) {
+                    Attribute attribute = new Attribute(aName);
+                    attribute.addContext(elementContextName);
+                    conf.add(attribute);
+                }
+            } else {
+                //in custom element
+                for(String aName : attributeNames) {
+                    tag.add( new Attribute(aName));
+                }
             }
         } else {
             //contextfree attribute

@@ -44,6 +44,7 @@ package org.netbeans.modules.html.custom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -168,13 +169,13 @@ public class CustomHtmlExtension extends HtmlExtension {
                                     }
                                 }
                             }
-                            
-                            if(!unknownAttributeNames.isEmpty()) {
+
+                            if (!unknownAttributeNames.isEmpty()) {
                                 //if there's no attribute defined in the conf, it may be a user decision not to specify the attributes
                                 //in such case just show the hint as linehint
 //                                boolean lineHint = tagModel.getAttributesNames().isEmpty();
                                 boolean lineHint = false;
-                                
+
                                 //use the whole element offsetrange so multiple unknown attributes can be handled
                                 OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(ot.from()), snapshot.getEmbeddedOffset(ot.to()));
                                 hints.add(new UnknownAttributes(unknownAttributeNames, tagModel.getName(), context, range, lineHint));

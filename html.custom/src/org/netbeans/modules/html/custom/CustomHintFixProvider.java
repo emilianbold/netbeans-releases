@@ -74,6 +74,7 @@ public class CustomHintFixProvider extends HintFixProvider {
         } else if(attributeName != null) {
             //unknown attribute found
             fixes.add(new AddAttributeFix(attributeName, contextElementName, context.getSnapshot()));
+            fixes.add(new AddAttributeFix(attributeName, null, context.getSnapshot()));
             fixes.add(new EditProjectsConfFix(context.getSnapshot()));
         } else {
             throw new IllegalStateException();
