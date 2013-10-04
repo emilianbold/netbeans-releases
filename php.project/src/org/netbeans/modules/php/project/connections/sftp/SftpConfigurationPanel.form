@@ -38,7 +38,7 @@
                   <Component id="knownHostsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="keepAliveLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
@@ -50,12 +50,12 @@
                           <Component id="identityFileTextField" alignment="0" max="32767" attributes="0"/>
                           <Component id="userTextField" alignment="0" max="32767" attributes="2"/>
                           <Component id="hostTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="timeoutTextField" linkSize="3" alignment="0" min="-2" pref="185" max="-2" attributes="0"/>
+                          <Component id="timeoutTextField" alignment="0" max="32767" attributes="0"/>
                           <Component id="passwordTextField" alignment="1" max="32767" attributes="0"/>
                           <Component id="initialDirectoryTextField" alignment="1" max="32767" attributes="2"/>
-                          <Component id="keepAliveTextField" linkSize="3" alignment="0" min="-2" pref="185" max="-2" attributes="0"/>
+                          <Component id="keepAliveTextField" alignment="0" pref="150" max="32767" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
                               <Group type="102" alignment="0" attributes="1">
@@ -131,7 +131,6 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
