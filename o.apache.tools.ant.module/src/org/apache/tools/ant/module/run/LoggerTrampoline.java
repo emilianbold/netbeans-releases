@@ -101,6 +101,7 @@ public final class LoggerTrampoline {
         OutputListener createStandardHyperlink(URL file, String message, int line1, int column1, int line2, int column2);
         InputOutput getIO();
         Map<String,String> getProperties();
+        boolean isConcealed(String propertyName);
     }
     
     public interface AntEventImpl {

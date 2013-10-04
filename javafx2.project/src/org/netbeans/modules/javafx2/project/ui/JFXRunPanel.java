@@ -48,22 +48,27 @@ import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
@@ -73,12 +78,18 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.UIResource;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.netbeans.modules.javafx2.project.JFXProjectConfigurations;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
@@ -94,6 +105,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -104,6 +116,7 @@ import org.openide.util.Utilities;
 /**
  *
  * @author Petr Somol
+ * @author Roman Svitanic
  */
 public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider, LookupListener {
 
@@ -191,6 +204,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
             JFXProjectProperties.RUN_WORK_DIR,
         };
         assert data.length == keys.length;
+        updatePlatformsList();
                 
         for (int i = 0; i < data.length; i++) {
             final JTextField field = data[i];
@@ -255,6 +269,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
                     });
                 }
              });
+        comboBoxRuntimePlatform.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                final String config = getSelectedConfig();
+                final PlatformKey pk = (PlatformKey) comboBoxRuntimePlatform.getSelectedItem();
+                final String platformId = pk == null ? null : pk.getPlatformAntName();
+                configs.setProperty(config, JFXProjectProperties.PLATFORM_RUNTIME, platformId);
+                final String def = configs.getDefaultProperty(JFXProjectProperties.PLATFORM_RUNTIME);
+                setEmphasizedFont(
+                    labelRuntimePlatform,
+                    config != null && !Utilities.compareObjects(platformId != null ? platformId : "", def != null ? def : ""));
+            }
+        });
         comboConfig.setRenderer(new ConfigListCellRenderer());
         buttonAppClass.addActionListener( new MainClassListener( project, evaluator ) );
         comboBoxPreloaderClass.setModel(jfxProps.getPreloaderClassModel());
@@ -263,6 +290,24 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         //#233876 - width of width/height text fields should not be changed when panel is resized
         textFieldWidth.setMinimumSize(textFieldWidth.getPreferredSize());
         textFieldHeight.setMinimumSize(textFieldHeight.getPreferredSize());
+    }
+    
+    private java.util.List<PlatformKey> updatePlatformsList() {
+        final java.util.List<PlatformKey> platformList = new ArrayList<PlatformKey>();
+        final SpecificationVersion targetLevel = new SpecificationVersion("1.8");
+        final SourceLevelQuery.Profile targetProfile = SourceLevelQuery.Profile.COMPACT1;
+        if (targetLevel != null && targetProfile != null) {
+            for (J2SERuntimePlatformProvider rpt : project.getLookup().lookupAll(J2SERuntimePlatformProvider.class)) {
+                for (JavaPlatform jp : rpt.getPlatformType(targetLevel, targetProfile)) {
+                    platformList.add(PlatformKey.create(jp));
+                }
+            }
+            Collections.sort(platformList);
+        }
+        platformList.add(0, PlatformKey.createDefault());
+        final DefaultComboBoxModel<PlatformKey> model = new DefaultComboBoxModel<PlatformKey>(platformList.toArray(new PlatformKey[0]));
+        comboBoxRuntimePlatform.setModel(model);
+        return platformList;
     }
 
     void setEmphasizedFont(Component label, boolean emphasized) {
@@ -341,6 +386,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         comboBoxWebBrowser = new javax.swing.JComboBox();
         buttonWebBrowser = new javax.swing.JButton();
         buttonPreloaderDefault = new javax.swing.JButton();
+        labelRuntimePlatform = new javax.swing.JLabel();
+        comboBoxRuntimePlatform = new javax.swing.JComboBox();
+        buttonManagePlatforms = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setLayout(new java.awt.GridBagLayout());
@@ -424,7 +472,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(labelAppClass, gridBagConstraints);
         labelAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.AccessibleContext.accessibleName")); // NOI18N
@@ -437,7 +485,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -448,7 +496,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(buttonAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -460,7 +508,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelParams, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(labelParams, gridBagConstraints);
         labelParams.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.AccessibleContext.accessibleName")); // NOI18N
@@ -469,7 +517,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         textFieldParams.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -485,7 +533,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -497,7 +545,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelVMOptions, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(labelVMOptions, gridBagConstraints);
         labelVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.AccessibleContext.accessibleName")); // NOI18N
@@ -505,7 +553,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -518,7 +566,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelVMOptionsRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptionsRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
@@ -533,7 +581,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(checkBoxPreloader, gridBagConstraints);
         checkBoxPreloader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.AccessibleContext.accessibleName")); // NOI18N
@@ -543,7 +591,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         textFieldPreloader.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -559,7 +607,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -572,7 +620,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelPreloaderClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         mainPanel.add(labelPreloaderClass, gridBagConstraints);
         labelPreloaderClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.AccessibleContext.accessibleName")); // NOI18N
@@ -586,7 +634,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -595,7 +643,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         mainPanel.add(comboBoxPreloaderClass, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
@@ -605,7 +653,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelRunAs.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         mainPanel.add(labelRunAs, gridBagConstraints);
@@ -683,7 +731,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 0.1;
@@ -693,7 +741,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelSAProps.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelSAProps.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -705,7 +753,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelWorkDir, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 0);
         mainPanel.add(labelWorkDir, gridBagConstraints);
@@ -714,7 +762,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -730,7 +778,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -741,7 +789,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelWSBAProps.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
@@ -753,7 +801,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelWidth, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWidth, gridBagConstraints);
@@ -763,7 +811,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         textFieldWidth.setColumns(8);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldWidth, gridBagConstraints);
@@ -772,7 +820,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelHeight, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 0);
         mainPanel.add(labelHeight, gridBagConstraints);
@@ -782,7 +830,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         textFieldHeight.setColumns(8);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
@@ -792,7 +840,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelWebPage, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebPage, gridBagConstraints);
@@ -801,7 +849,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -817,7 +865,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -828,7 +876,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelWebPageRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 8, 0);
@@ -840,7 +888,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         org.openide.awt.Mnemonics.setLocalizedText(labelWebBrowser, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
@@ -854,7 +902,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
@@ -872,7 +920,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
@@ -889,13 +937,48 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonPreloaderDefault, gridBagConstraints);
         buttonPreloaderDefault.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleName")); // NOI18N
         buttonPreloaderDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleDescription")); // NOI18N
+
+        labelRuntimePlatform.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRuntimePlatform.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        mainPanel.add(labelRuntimePlatform, gridBagConstraints);
+
+        comboBoxRuntimePlatform.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        comboBoxRuntimePlatform.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxRuntimePlatformActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
+        mainPanel.add(comboBoxRuntimePlatform, gridBagConstraints);
+
+        buttonManagePlatforms.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonManagePlatforms.text")); // NOI18N
+        buttonManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonManagePlatformsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        mainPanel.add(buttonManagePlatforms, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -934,40 +1017,15 @@ private void comboConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         String config = getSelectedConfig();
         configs.setActive(config);
         configChanged(config);
+        if (config == null || config.isEmpty() || config.equals(WEBSTART_CONFIG_LABEL) || config.equals(BROWSER_CONFIG_LABEL)) {
+            comboBoxRuntimePlatform.setSelectedIndex(0);
+        }
         comboConfigActionRunning = false;
     }
 }//GEN-LAST:event_comboConfigActionPerformed
 
 private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonNewActionPerformed
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.prompt"),  // NOI18N
-                NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.title"));  // NOI18N
-        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
-            return;
-        }
-        String name = d.getInputText();
-        String config = JFXProjectUtils.makeSafe(name);
-        if (config.trim().length() == 0) {
-            //#143764
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.empty", config),  // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-            
-        }
-        if (configs.hasConfig(config)) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config),  // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE));
-            return;
-        }
-        Map<String,String> m = new HashMap<String,String>();
-        if (!name.equals(config)) {
-            m.put("$label", name); // NOI18N
-        }
-        configs.addToConfig(config, m);
-        configs.setActive(config);
-        configChanged(config);
+    createNewConfiguration(false);
 }//GEN-LAST:event_buttonNewActionPerformed
 
 private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWorkDirActionPerformed
@@ -1052,6 +1110,65 @@ private void buttonWorkDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         } else {
             setBoldFont(radioButtonBE, false);
         }
+    }
+
+    private boolean createNewConfiguration(boolean platformChanged) {
+        DialogDescriptor d = new DialogDescriptor(new CreateConfigurationPanel(platformChanged), NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.title")); //NOI18N
+        if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.OK_OPTION) {
+            return false;
+        }
+        String name = ((CreateConfigurationPanel) d.getMessage()).getConfigName();
+        String config = JFXProjectUtils.makeSafe(name);
+        if (config.trim().length() == 0) {
+            //#143764
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.empty", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+
+        }
+        if (configs.hasConfig(config)) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.duplicate", config), // NOI18N
+                    NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        }
+        Map<String, String> m = new HashMap<String, String>();
+        if (!name.equals(config)) {
+            m.put("$label", name); // NOI18N
+        }
+        configs.addToConfig(config, m);
+        configs.setActive(config);
+        configChanged(config);
+        return true;
+    }
+
+    private void showFXSpecificOptions(boolean visible) {
+        checkBoxPreloader.setVisible(visible);
+        textFieldPreloader.setVisible(visible);
+        buttonPreloader.setVisible(visible);
+        labelPreloaderClass.setVisible(visible);
+        comboBoxPreloaderClass.setVisible(visible);
+        buttonPreloaderDefault.setVisible(visible);
+        jSeparator2.setVisible(visible);
+        labelRunAs.setVisible(visible);
+        panelRunAsChoices.setVisible(visible);
+        labelSAProps.setVisible(visible);
+        labelWorkDir.setVisible(visible);
+        textFieldWorkDir.setVisible(visible);
+        buttonWorkDir.setVisible(visible);
+        labelWSBAProps.setVisible(visible);
+        labelWidth.setVisible(visible);
+        textFieldWidth.setVisible(visible);
+        labelHeight.setVisible(visible);
+        textFieldHeight.setVisible(visible);
+        labelWebPage.setVisible(visible);
+        textFieldWebPage.setVisible(visible);
+        labelWebPageRemark.setVisible(visible);
+        buttonWebPage.setVisible(visible);
+        labelWebBrowser.setVisible(visible);
+        comboBoxWebBrowser.setVisible(visible);
+        buttonWebBrowser.setVisible(visible);
     }
 
 private void buttonWebPageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonWebPageActionPerformed
@@ -1226,6 +1343,40 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         preloaderSelectionChanged(config);
     }//GEN-LAST:event_buttonPreloaderDefaultActionPerformed
 
+    private void buttonManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonManagePlatformsActionPerformed
+        PlatformKey currentPlatform = (PlatformKey) comboBoxRuntimePlatform.getSelectedItem();
+        comboBoxRuntimePlatform.setSelectedIndex(0);
+
+        JavaPlatform jp = currentPlatform.getPlatform();
+        PlatformsCustomizer.showCustomizer(jp);
+
+        java.util.List<PlatformKey> updatedPlatforms = updatePlatformsList();
+        if (updatedPlatforms.contains(currentPlatform)) {
+            comboBoxRuntimePlatform.setSelectedItem(currentPlatform);
+        }
+    }//GEN-LAST:event_buttonManagePlatformsActionPerformed
+
+    private void comboBoxRuntimePlatformActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxRuntimePlatformActionPerformed
+        String config = (String) comboConfig.getSelectedItem();
+        PlatformKey currentPlatform = ((PlatformKey) comboBoxRuntimePlatform.getSelectedItem());
+        String currentPlatformName = ((PlatformKey) comboBoxRuntimePlatform.getSelectedItem()).displayName;
+        if ((config.isEmpty() || config.equals(BROWSER_CONFIG_LABEL) || config.equals(WEBSTART_CONFIG_LABEL))
+                && !currentPlatformName.equals(NbBundle.getMessage(JFXRunPanel.class, "TXT_ActivePlatform"))) { //NOI18N
+            comboBoxRuntimePlatform.setSelectedIndex(0);
+            if (createNewConfiguration(true)) {
+                comboBoxRuntimePlatform.setSelectedItem(currentPlatform);
+            } else {
+                showFXSpecificOptions(true);
+                return;
+            }
+        }
+        if (currentPlatformName.equals(NbBundle.getMessage(JFXRunPanel.class, "TXT_ActivePlatform"))) {
+            showFXSpecificOptions(true);
+        } else {
+            showFXSpecificOptions(false);
+        }
+    }//GEN-LAST:event_comboBoxRuntimePlatformActionPerformed
+
     private void resetPreloaderProperties(String config) {
         if(config == null) {
             configs.setDefaultProperty(JFXProjectProperties.PRELOADER_ENABLED, "false"); // NOI18N
@@ -1280,6 +1431,33 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
                     data[i].setText(fill);
                     setEmphasizedFont(dataLabels[i], !JFXProjectProperties.isEqualText(fill, configs.getDefaultProperty(keys[i])));
                 }
+
+                //Runtime platform ComboBox
+                //Todo: remove spagetty code, look to J2SE CustomizerRun
+                {
+                    String platformId = configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PLATFORM_RUNTIME);
+                    if (platformId == null) {
+                        platformId = "";   //NOI18N
+                    }
+                    final ComboBoxModel<PlatformKey> runtimePlatformModel = comboBoxRuntimePlatform.getModel();
+                    PlatformKey active = null, project = null;
+                    for (int i=0; i < model.getSize(); i++) {
+                        final PlatformKey pk = runtimePlatformModel.getElementAt(i);
+                        final String pkn = pk.getPlatformAntName();
+                        if (platformId.equals(pkn)) {
+                            active = pk;
+                            break;
+                        }
+                        if (pkn.isEmpty()) {
+                            project = pk;
+                        }
+                    }
+                    if (active == null) {
+                        active = project;
+                    }
+                    comboBoxRuntimePlatform.setSelectedItem(active);
+                 }
+
                 preloaderSelectionChanged(activeConfig);
                 String runType = configs.getProperty(activeConfig, JFXProjectProperties.RUN_AS);
                 if(runType == null) {
@@ -1467,6 +1645,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JButton buttonAppClass;
     private javax.swing.JButton buttonDelete;
     private javax.swing.ButtonGroup buttonGroupRunAs;
+    private javax.swing.JButton buttonManagePlatforms;
     private javax.swing.JButton buttonNew;
     private javax.swing.JButton buttonParams;
     private javax.swing.JButton buttonPreloader;
@@ -1476,6 +1655,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JButton buttonWorkDir;
     private javax.swing.JCheckBox checkBoxPreloader;
     private javax.swing.JComboBox comboBoxPreloaderClass;
+    private javax.swing.JComboBox comboBoxRuntimePlatform;
     private javax.swing.JComboBox comboBoxWebBrowser;
     private javax.swing.JComboBox comboConfig;
     private javax.swing.JPanel configPanel;
@@ -1491,6 +1671,7 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JLabel labelParams;
     private javax.swing.JLabel labelPreloaderClass;
     private javax.swing.JLabel labelRunAs;
+    private javax.swing.JLabel labelRuntimePlatform;
     private javax.swing.JLabel labelSAProps;
     private javax.swing.JLabel labelVMOptions;
     private javax.swing.JLabel labelVMOptionsRemark;
@@ -1748,4 +1929,114 @@ private void comboBoxWebBrowserActionPerformed(java.awt.event.ActionEvent evt) {
         }
     }
 
+    private static final class PlatformKey implements Comparable<PlatformKey> {
+
+        private final JavaPlatform platform;
+        private final String displayName;
+
+        private PlatformKey() {
+            this.displayName = NbBundle.getMessage(
+                    JFXRunPanel.class,
+                    "TXT_ActivePlatform");
+            this.platform = null;
+        }
+
+        private PlatformKey(@NonNull final JavaPlatform platform) {
+            this.displayName = platform.getDisplayName();
+            this.platform = platform;
+        }
+
+        @Override
+        public String toString() {
+            return displayName;
+        }
+
+        @Override
+        public int hashCode() {
+            return platform == null ? 17 : platform.hashCode();
+        }
+
+        @Override
+        public boolean equals(@NullAllowed final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof PlatformKey)) {
+                return false;
+            }
+            final PlatformKey pk = (PlatformKey) obj;
+            return platform == null ? pk.platform == null : platform.equals(pk.platform);
+        }
+
+        @NonNull
+        String getPlatformAntName() {
+            String antName = platform == null
+                    ? "" : //NOI18N
+                    platform.getProperties().get(JFXProjectProperties.PLATFORM_ANT_NAME);
+            assert antName != null;
+            return antName;
+        }
+
+        @CheckForNull
+        JavaPlatform getPlatform() {
+            return platform;
+        }
+
+        static PlatformKey create(@NonNull final JavaPlatform platform) {
+            return new PlatformKey(platform);
+        }
+
+        static PlatformKey createDefault() {
+            return new PlatformKey();
+        }
+
+        @Override
+        public int compareTo(PlatformKey o) {
+            return this.displayName.toLowerCase().compareTo(o.displayName.toLowerCase());
+        }
+    }
+
+    private static class CreateConfigurationPanel extends JPanel {
+
+        private JLabel defaultConfigPlatformMsg = new JLabel();
+        private JLabel configNameLabel = new JLabel();
+        private JTextField configName = new JTextField();
+
+        public CreateConfigurationPanel(boolean showDefaultConfigMsg) {
+            org.openide.awt.Mnemonics.setLocalizedText(defaultConfigPlatformMsg, NbBundle.getMessage(JFXRunPanel.class, "TXT_DefaultConfigPlatformChange")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(configNameLabel, NbBundle.getMessage(JFXRunPanel.class, "JFXConfigurationProvider.input.prompt")); // NOI18N
+            configNameLabel.setLabelFor(configName);
+            defaultConfigPlatformMsg.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javafx2/project/ui/resources/info.png"))); // NOI18N
+
+            javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+            this.setLayout(layout);
+            layout.setHorizontalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(configNameLabel)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(configName, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+                    .addContainerGap()));
+            layout.setVerticalGroup(
+                    layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(defaultConfigPlatformMsg)
+                    .addGap(18, 18, 18)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(configName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(configNameLabel))));
+            defaultConfigPlatformMsg.setVisible(showDefaultConfigMsg);
+        }
+
+        public String getConfigName() {
+            return configName.getText();
+        }
+    }
 }

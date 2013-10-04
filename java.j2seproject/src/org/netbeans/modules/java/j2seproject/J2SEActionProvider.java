@@ -45,21 +45,29 @@
 package org.netbeans.modules.java.j2seproject;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.BaseActionProvider.Callback3;
+import org.netbeans.modules.java.j2seproject.api.J2SEBuildPropertiesProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
@@ -134,9 +142,14 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
     private Set<String> needJavaModelActions;
 
     public J2SEActionProvider(J2SEProject project, UpdateHelper updateHelper) {
-        super(project, updateHelper, project.evaluator(), project.getSourceRoots(),
-                project.getTestSourceRoots(), project.getAntProjectHelper(),
-                new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+        super(
+            project,
+            updateHelper,
+            project.evaluator(),
+            project.getSourceRoots(),
+            project.getTestSourceRoots(),
+            project.getAntProjectHelper(),
+            new CallbackImpl(project));
         commands = new HashMap<String,String[]>();
         // treated specially: COMMAND_{,RE}BUILD
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
@@ -231,4 +244,79 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
         return j2seActionProvider;
     }
 
+    private static final class CallbackImpl implements Callback3 {
+
+        private final J2SEProject prj;
+
+        CallbackImpl(@NonNull final J2SEProject project) {
+            Parameters.notNull("project", project); //NOI18N
+            this.prj = project;
+        }
+
+        @Override
+        @NonNull
+        public Map<String, String> createAdditionalProperties(@NonNull String command, @NonNull Lookup context) {
+            final Map<String,String> result = new HashMap<>();
+            for (J2SEBuildPropertiesProvider bpp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
+                final Map<String,String> contrib = bpp.createAdditionalProperties(command, context);
+                assert contrib != null;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(
+                        Level.FINE,
+                        "J2SEBuildPropertiesProvider: {0} added following build properties: {1}",   //NOI18N
+                        new Object[]{
+                            bpp.getClass(),
+                            contrib
+                        });
+                }
+                result.putAll(contrib);
+            }
+            return Collections.unmodifiableMap(result);
+        }
+
+        @Override
+        public Set<String> createConcealedProperties(String command, Lookup context) {
+            final Set<String> result = new HashSet<>();
+            for (J2SEBuildPropertiesProvider bpp : prj.getLookup().lookupAll(J2SEBuildPropertiesProvider.class)) {
+                final Set<String> contrib = bpp.createConcealedProperties(command, context);
+                assert contrib != null;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(
+                        Level.FINE,
+                        "J2SEBuildPropertiesProvider: {0} added following concealed properties: {1}",   //NOI18N
+                        new Object[]{
+                            bpp.getClass(),
+                            contrib
+                        });
+                }
+                result.addAll(contrib);
+            }
+            return Collections.unmodifiableSet(result);
+        }
+
+        @Override
+        public void antTargetInvocationStarted(@NonNull String command, @NonNull Lookup context) {
+        }
+
+        @Override
+        public void antTargetInvocationFinished(@NonNull String command, @NonNull Lookup context, int result) {
+        }
+
+        @Override
+        public void antTargetInvocationFailed(@NonNull String command, @NonNull Lookup context) {
+        }
+
+        @CheckForNull
+        @Override
+        public ClassPath getProjectSourcesClassPath(@NonNull String type) {
+            return prj.getClassPathProvider().getProjectSourcesClassPath(type);
+        }
+
+        @CheckForNull
+        @Override
+        public ClassPath findClassPath(@NonNull FileObject file, @NonNull String type) {
+            return prj.getClassPathProvider().findClassPath(file, type);
+        }
+
+    }
 }

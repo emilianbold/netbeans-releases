@@ -102,7 +102,6 @@ import org.w3c.dom.NodeList;
 public class J2SEProjectBuilder {
 
     private static final Logger LOG = Logger.getLogger(J2SEProjectBuilder.class.getName());
-    private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
     private static final String DEFAULT_PLATFORM_ID = "default_platform";   //NOI18N
     
     private final File projectDirectory;
@@ -308,7 +307,7 @@ public class J2SEProjectBuilder {
      */
     public J2SEProjectBuilder setJavaPlatform (@NonNull final JavaPlatform platform) {
         Parameters.notNull("platform", platform);
-        if (platform.getProperties().get(PLATFORM_ANT_NAME) == null) {
+        if (platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME) == null) {
             throw new IllegalArgumentException("Invalid platform, the platform has no platform.ant.name");  //NOI18N
         }
         this.platform = platform;
@@ -343,7 +342,7 @@ public class J2SEProjectBuilder {
                         jvmArgs.toString(),
                         toClassPathElements(compileLibraries),
                         toClassPathElements(runtimeLibraries, "${javac.classpath}:", "${build.classes.dir}"),
-                        platform.getProperties().get(PLATFORM_ANT_NAME));   //NOI18N
+                        platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME));   //NOI18N
                 final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = p.getReferenceHelper();
