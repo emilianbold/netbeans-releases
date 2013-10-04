@@ -111,6 +111,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
     private ChangeListener listener;
     private boolean isWizard;
     private ProjectModel model;
+    private File lastUsedDir; //Last used current folder in JFileChooser
 
     private static final List<String> TEST_FOLDER_PATHS = Arrays.asList("test");
 
@@ -692,13 +693,19 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
-        if (model.getBaseFolder() != null) {
-            File files[] = model.getBaseFolder().listFiles();
-            if (files != null && files.length > 0) {
-                chooser.setSelectedFile(files[0]);
-            } else {
-                chooser.setSelectedFile(model.getBaseFolder());
+        File curDir = this.lastUsedDir;
+        if (curDir == null) {
+            if (model.getBaseFolder() != null) {
+                File files[] = model.getBaseFolder().listFiles();
+                if (files != null && files.length > 0) {
+                    curDir = files[0];
+                } else {
+                    curDir = model.getBaseFolder();
+                }
             }
+        }
+        if (curDir != null) {
+            chooser.setCurrentDirectory (curDir);
         }
         if (isTests) {
             chooser.setDialogTitle(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Browse_Test_Folder"));
@@ -707,6 +714,10 @@ private void includesExcludesButtonActionPerformed(java.awt.event.ActionEvent ev
         }
         chooser.setMultiSelectionEnabled(true);
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            curDir = chooser.getCurrentDirectory();
+            if (curDir != null) {
+                this.lastUsedDir = curDir;
+            }
             File files[] = chooser.getSelectedFiles();
             model.setEncoding(encodingComboBox.getModel().getSelectedItem().toString());
             Set<File> invalidRoots = processRoots(model, files, isTests, isWizard);

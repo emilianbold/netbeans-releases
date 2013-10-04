@@ -168,6 +168,20 @@ public class HtmlExtension {
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
         //no-op
     }
+    
+     /**
+     * Creates a list of suggestion hints for the given context.
+     * 
+     * @since 2.45
+     * 
+     * @param manager instanceof {@link HintsManager}
+     * @param context instance of {@link RuleContext}
+     * @param hints list of {@link Hint}s - add the custom error hints to this list
+     * @param caretOffset caret offset
+     */
+    public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> hints, int caretOffset) {
+        //no-op
+    }
  
      /**
      * This method allows to bind some prefixed html source 
@@ -192,20 +206,27 @@ public class HtmlExtension {
   
     /**
      * Returns true if the given element is a custom tag known to this resolver.
+     * 
+     * @since 2.44
+     * 
      * @param element
+     * @param source 
      * @return 
      */
-    public boolean isCustomTag(Named element) {
+    public boolean isCustomTag(Named element, HtmlSource source) {
         return false;
     }
    
     /**
      * Returns true if the given element's attribute is a custom attribute known to this resolver.
      * 
+     * @since 2.44
+     * 
      * @param attribute
+     * @param source 
      * @return 
      */
-    public boolean isCustomAttribute(Attribute attribute) {
+    public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
         return false;
     }
     

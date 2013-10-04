@@ -103,9 +103,9 @@ public final class NbMavenProject {
      */
     public static final String PROP_RESOURCE = "RESOURCES"; //NOI18N
     
-    private NbMavenProjectImpl project;
-    private PropertyChangeSupport support;
-    private FCHSL listener = new FCHSL();
+    private final NbMavenProjectImpl project;
+    private final PropertyChangeSupport support;
+    private final FCHSL listener = new FCHSL();
     private final List<File> files = new ArrayList<File>();
     
     static {
@@ -113,8 +113,8 @@ public final class NbMavenProject {
         impl.assign();
     }
     private final RequestProcessor.Task task;
-    private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
-    private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
+    private static final RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
+    private static final RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
 
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
         
@@ -272,6 +272,7 @@ public final class NbMavenProject {
      * Should never be kept around for long but always reloaded from here, on 
      * a project change the correct instance changes as the embedder reloads it.
      * Never returns null but check {@link #isErrorPlaceholder} if necessary.
+     * @return 
      */ 
     public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
@@ -279,6 +280,7 @@ public final class NbMavenProject {
     
     /**
      * a marginally unreliable, non blocking method for figuring if the model is loaded or not.
+     * @return 
      */
     public boolean isMavenProjectLoaded() {
         return project.isMavenProjectLoaded();
@@ -342,6 +344,7 @@ public final class NbMavenProject {
      * Normally this is just the Maven model's declared packaging.
      * But {@link PackagingProvider}s can affect the decision.
      * The resulting type will be used to control most IDE functions, including packaging-specific lookup.
+     * @return 
      */
     public String getPackagingType() {
         for (PackagingProvider pp : Lookup.getDefault().lookupAll(PackagingProvider.class)) {
@@ -353,11 +356,17 @@ public final class NbMavenProject {
         return getMavenProject().getPackaging();
     }
     
-    
+    /**
+     * 
+     * @param relPath
+     */
     public void addWatchedPath(String relPath) {
         addWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     } 
-    
+    /**
+     * 
+     * @param uri
+     */
     public void addWatchedPath(URI uri) {
         //#110599
         boolean addListener = false;
@@ -511,6 +520,7 @@ public final class NbMavenProject {
     public void removeWatchedPath(String relPath) {
         removeWatchedPath(FileUtilities.getDirURI(project.getProjectDirectory(), relPath));
     }
+    
     public void removeWatchedPath(URI uri) {
         //#110599
         boolean removeListener = false;
@@ -549,6 +559,7 @@ public final class NbMavenProject {
      * utility method for triggering a maven project reload. 
      * if the project passed in is a Maven based project, will
      * fire reload of the project, otherwise will do nothing.
+     * @param prj
      */ 
     
     public static void fireMavenProjectReload(Project prj) {

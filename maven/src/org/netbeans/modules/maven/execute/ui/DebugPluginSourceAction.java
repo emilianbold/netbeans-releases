@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -99,11 +100,14 @@ public class DebugPluginSourceAction extends AbstractAction {
         URL[] urls = mojo.getClasspathURLs();
         String impl = mojo.getImplementationClass();
         if (urls != null) {
+            List<URL> normalizedUrls = new ArrayList<URL>();
             //first download the source files for the binaries..
             MavenSourceJavadocAttacher attacher = new MavenSourceJavadocAttacher();
             for (URL url : urls) {
+                //the urls are not normalized and can contain ../ path parts
                 try {
-                    url = FileUtil.urlForArchiveOrDir(Utilities.toFile(url.toURI()));
+                    url = FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(Utilities.toFile(url.toURI())));
+                    normalizedUrls.add(url);
                     List<? extends URL> ret = attacher.getSources(url, new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
@@ -134,7 +138,7 @@ public class DebugPluginSourceAction extends AbstractAction {
             if (cancel.get()) {
                 return;
             }
-            ClassPath cp = Utils.convertToSourcePath(urls);
+            ClassPath cp = Utils.convertToSourcePath(normalizedUrls.toArray(new URL[0]));
             RunConfig clone = RunUtils.cloneRunConfig(config);
             clone.setInternalProperty("jpda.additionalClasspath", cp);
             clone.setInternalProperty("jpda.stopclass", impl);

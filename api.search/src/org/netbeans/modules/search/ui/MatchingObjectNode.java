@@ -59,6 +59,7 @@ import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -162,9 +163,11 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         if (!context) {
+            Action copyPath = Actions.forID("Edit", //NOI18N
+                    "org.netbeans.modules.utilities.CopyPathToClipboard"); //NOI18N
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
-                        new CopyPathAction(),
+                        copyPath == null ? new CopyPathAction() : copyPath,
                         SystemAction.get(HideResultAction.class)
                     };
         } else {
@@ -386,6 +389,10 @@ public class MatchingObjectNode extends AbstractNode {
         }
     }
 
+    /**
+     * Fallback action for copying of file path if CopyPathToClipboard action is
+     * not available (it is in different module).
+     */
     private class CopyPathAction extends AbstractAction {
 
         public CopyPathAction() {

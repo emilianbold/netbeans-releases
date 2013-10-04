@@ -128,6 +128,18 @@ public final class ColorModel {
     // annotations .............................................................
     
     public Collection<AttributeSet> getAnnotations(String profile) {
+        Map<String, AttributeSet> annos = EditorSettings.getDefault().getAnnotations(profile);
+        List<AttributeSet> annotations = processAnnotations(annos, false);
+        return annotations;
+    }
+
+    public Collection<AttributeSet> getAnnotationsDefaults(String profile) {
+        Map<String, AttributeSet> annos = EditorSettings.getDefault().getAnnotationDefaults(profile);
+        List<AttributeSet> annotations = processAnnotations(annos, true);
+        return annotations;
+    }
+
+    private List<AttributeSet> processAnnotations(Map<String, AttributeSet> annos, boolean isdefault) {
         List<AttributeSet> annotations = new ArrayList<AttributeSet>();
         for(Iterator it = AnnotationTypes.getTypes().getAnnotationTypeNames(); it.hasNext(); ) {
             String name = (String) it.next ();
@@ -141,10 +153,10 @@ public final class ColorModel {
             if (description == null) {
                 continue;
             }
-
+            
             SimpleAttributeSet category = new SimpleAttributeSet();
             category.addAttribute(EditorStyleConstants.DisplayName, description);
-            category.addAttribute(StyleConstants.NameAttribute, description);
+            category.addAttribute(StyleConstants.NameAttribute, annotationType.getName());
             
             URL iconURL = annotationType.getGlyph ();
             Image image = null;
@@ -173,26 +185,40 @@ public final class ColorModel {
             }
             
             category.addAttribute("annotationType", annotationType); //NOI18N
+            if (annos.containsKey(name)) {
+                if (isdefault) {
+                    category.removeAttribute(StyleConstants.Background);
+                    category.removeAttribute(StyleConstants.Foreground);
+                    category.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
+                }
+                AttributeSet as = annos.get(name);
+                category.addAttributes(as);
+                
+            }
+
             annotations.add(category);
-	}
-        
-	return annotations;
+        }
+        return annotations;
     }
     
     public void setAnnotations (
 	String profile, 
 	Collection<AttributeSet> annotations
     ) {
-	//S ystem.out.println("ColorModelImpl.setAnnotations ");
+	//S ystem.out.println("ColorModelImpl.setAnnotations ");      
+        Collection<AttributeSet> annos = new ArrayList<AttributeSet>();
 	for(AttributeSet category : annotations) {
 	    AnnotationType annotationType = (AnnotationType) 
 		category.getAttribute ("annotationType");
             
+            SimpleAttributeSet c = new SimpleAttributeSet();
+            c.addAttribute(StyleConstants.NameAttribute, category.getAttribute(StyleConstants.NameAttribute));
 	    if (category.isDefined (StyleConstants.Background)) {
 		annotationType.setUseHighlightColor (true);
 		annotationType.setHighlight (
                     (Color) category.getAttribute (StyleConstants.Background)
                 );
+                c.addAttribute(StyleConstants.Background, category.getAttribute(StyleConstants.Background));
             } else
 		annotationType.setUseHighlightColor (false);
 	    if (category.isDefined (StyleConstants.Foreground)) {
@@ -200,6 +226,7 @@ public final class ColorModel {
 		annotationType.setForegroundColor (
                     (Color) category.getAttribute (StyleConstants.Foreground)
                 );
+                c.addAttribute(StyleConstants.Foreground, category.getAttribute(StyleConstants.Foreground));
             } else
 		annotationType.setInheritForegroundColor (true);
 	    if (category.isDefined (EditorStyleConstants.WaveUnderlineColor)) {
@@ -207,13 +234,15 @@ public final class ColorModel {
                 annotationType.setWaveUnderlineColor (
                     (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
                 );
+                c.addAttribute((EditorStyleConstants.WaveUnderlineColor), category.getAttribute (EditorStyleConstants.WaveUnderlineColor));
             } else
                 annotationType.setUseWaveUnderlineColor (false);
 	    //S ystem.out.println("  " + category.getDisplayName () + " : " + annotationType + " : " + annotationType.getHighlight() + " : " + annotationType.isUseHighlightColor());
+            annos.add(c);
 	}
+        
+        EditorSettings.getDefault().setAnnotations(profile, toMap(annos));
     }
-    
-    
     // editor categories .......................................................
     
     /**

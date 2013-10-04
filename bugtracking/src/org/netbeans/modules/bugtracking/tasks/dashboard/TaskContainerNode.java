@@ -52,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
@@ -60,6 +61,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.tasks.TaskSorter;
 import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
@@ -86,8 +88,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     private RequestProcessor rp = new RequestProcessor("Tasks Dashboard - TaskContainerNode", 10); // NOI18N
     
-    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title) {
-        super(expandable, parent, title);
+    public TaskContainerNode(boolean refresh, boolean expandable, TreeListNode parent, String title, Icon icon) {
+        super(expandable, parent, title, icon);
         this.refresh = refresh;
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
@@ -101,6 +103,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     abstract boolean isTaskLimited();
 
     abstract void refreshTaskContainer();
+
+    abstract Icon getIcon();
 
     //override if you need to adjust node during updateNodes method
     void adjustTaskNode(TaskNode taskNode) {
@@ -309,7 +313,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     @Override
     protected List<TreeListNode> createChildren() {
         List<TaskNode> filteredNodes = filteredTaskNodes;
-        Collections.sort(filteredNodes);
+        Collections.sort(filteredNodes, TaskSorter.getInstance().getComparator());
         List<TaskNode> taskNodesToShow;
         boolean addShowNext = false;
         int taskCountToShow = getTaskCountToShow();

@@ -1269,7 +1269,10 @@ public class Utilities {
         Runnable wrapRun = new Runnable() {
             @Override
             public void run() {
-                ((DocumentView) getDocumentView(component)).runTransaction(r);
+                View documentView = getDocumentView(component);
+                if (documentView != null) {
+                    ((DocumentView) documentView).runTransaction(r);
+                }
             }
         };
         Document doc;

@@ -250,7 +250,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
             if (provider != null) {
                 int[] offsets = provider.getHyperlinkSpan(doc, position, type);
                 if (offsets != null) {
-                    makeHyperlink(type, provider, offsets[0], offsets[1]);
+                    makeHyperlink(type, provider, offsets[0], offsets[1], position);
                 }
             } else {
                 unHyperlink(true);
@@ -324,7 +324,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         return null;
     }
     
-    private synchronized void makeHyperlink(HyperlinkType type, HyperlinkProviderExt provider, final int start, final int end) {
+    private synchronized void makeHyperlink(HyperlinkType type, HyperlinkProviderExt provider, final int start, final int end, final int offset) {
         boolean makeCursorSnapshot = true;
         
         if (hyperlinkUp) {
@@ -338,7 +338,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         AttributeSet hyperlinksHighlight = fcs.getFontColors("hyperlinks"); //NOI18N
         prepare.addHighlight(start, end, AttributesUtilities.createComposite(
             hyperlinksHighlight != null ? hyperlinksHighlight : defaultHyperlinksHighlight,
-            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver(provider, start, type))));
+            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver(provider, offset, type))));
 
         getBag(currentDocument).setHighlights(prepare);
 

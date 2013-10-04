@@ -43,15 +43,18 @@ package org.netbeans.modules.bugtracking.tasks;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.Image;
 import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.swing.ImageIcon;
+import java.util.logging.Level;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -85,8 +88,22 @@ public class DashboardUtils {
     private final static int VISIBLE_START_CHARS = 5;
     private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
     private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
-    private static final String newColor = UIUtils.getColorString(UIUtils.getTaskNewColor());
-    private static final String modifiedColor = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+    private static final String NEW_COLOR = UIUtils.getColorString(UIUtils.getTaskNewColor());
+    private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
+    private static final Map<String, Map<String, Image>> repositoryToPriorityIcons = new HashMap<String, Map<String, Image>>();
+
+    private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
+    private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
+    private static final Image DEFAULT_TASK_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/task.png", true); //NOI18
+    private static final List<Image> DEFAULT_PRIORITY_ICONS = new ArrayList<Image>(5);
+
+    static {
+        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true)); //NOI18
+        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true)); //NOI18
+        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true)); //NOI18
+        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true)); //NOI18
+        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true)); //NOI18
+    }
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -185,9 +202,9 @@ public class DashboardUtils {
 
     private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
         if (status == IssueStatusProvider.Status.INCOMING_NEW && !hasFocus) {
-            text = "<html><font color=\"" + newColor + "\">" + text + "</font></html>"; //NOI18N
+            text = "<html><font color=\"" + NEW_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.INCOMING_MODIFIED && !hasFocus) {
-            text = "<html><font color=\"" + modifiedColor + "\">" + text + "</font></html>"; //NOI18N
+            text = "<html><font color=\"" + mODIFIED_COLOR + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
             text = "<html>" + text + "</html>"; //NOI18N
         }
@@ -326,29 +343,114 @@ public class DashboardUtils {
         return null;
     }
 
-    public static ImageIcon getTaskIcon(IssueImpl issue) {
-        ImageIcon icon;
-        //TODO replace with real priority value ASA it is in issue API
-        int priorityValue = -1;
-        switch (priorityValue) {
-            case 0:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true);
-                break;
-            case 1:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true);
-                break;
-            case 2:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true);
-                break;
-            case 3:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true);
-                break;
-            case 4:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true);
-                break;
-            default:
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/task.png", true);
+    public static Icon getTaskIcon(IssueImpl issue) {
+        String priority = "";
+        Image priorityIcon = null; //TODO bugtracking specific icon returned
+        if (priorityIcon == null) {
+            if (!repositoryToPriorityIcons.containsKey(issue.getRepositoryImpl().getId())) {
+                analyzeRepositoryIcons(issue.getRepositoryImpl());
+            }
+            priorityIcon = repositoryToPriorityIcons.get(issue.getRepositoryImpl().getId()).get(priority);
         }
-        return icon;
+        priorityIcon = priorityIcon == null ? DEFAULT_TASK_ICON : priorityIcon;
+
+        Image scheduleIcon = getScheduleIcon(issue);
+        if (scheduleIcon != null) {
+            return ImageUtilities.image2Icon(ImageUtilities.mergeImages(priorityIcon, scheduleIcon, 0, 0));
+        }
+        return ImageUtilities.image2Icon(priorityIcon);
+    }
+
+    private static void analyzeRepositoryIcons(RepositoryImpl repository) {
+        Collection<String> sortedPriorities = new ArrayList<String>();
+        Map<String, Image> priorityToIcon = new HashMap<String, Image>(sortedPriorities.size());
+        Iterator<Image> iteratorIcons = DEFAULT_PRIORITY_ICONS.iterator();
+        for (String priority : sortedPriorities) {
+            if (iteratorIcons.hasNext()) {
+                priorityToIcon.put(priority, iteratorIcons.next());
+            } else {
+                priorityToIcon.put(priority, DEFAULT_TASK_ICON);
+            }
+        }
+        repositoryToPriorityIcons.put(repository.getId(), priorityToIcon);
+    }
+
+    private static Image getScheduleIcon(IssueImpl issue) {
+        boolean afterDue = false; //TODO get from issue ASA it is in API
+        boolean scheduleNow = false; //TODO get from issue ASA it is in API
+        if (afterDue) {
+            return SCHEDULE_WARNING_ICON;
+        } else if (scheduleNow) {
+            return SCHEDULE_ICON;
+        }
+        return null;
+    }
+
+    public static int compareTaskIds(String id1, String id2) {
+        int id = 0;
+        boolean isIdNumeric = true;
+        try {
+            id = Integer.parseInt(id1);
+        } catch (NumberFormatException numberFormatException) {
+            isIdNumeric = false;
+        }
+        int idOther = 0;
+        boolean isIdOtherNumberic = true;
+        try {
+            idOther = Integer.parseInt(id2);
+        } catch (NumberFormatException numberFormatException) {
+            isIdOtherNumberic = false;
+        }
+        if (isIdNumeric && isIdOtherNumberic) {
+            return compareNumericId(id, idOther);
+        } else if (isIdNumeric) {
+            return -1;
+        } else if (isIdOtherNumberic) {
+            return 1;
+        } else {
+            return compareComplexId(id1, id2);
+        }
+    }
+
+    private static int compareNumericId(int id, int idOther) {
+        if (id < idOther) {
+            return 1;
+        } else if (id > idOther) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    private static int compareComplexId(String id1, String id2) {
+        int dividerIndex1 = id1.lastIndexOf("-"); //NOI18
+        int dividerIndex2 = id2.lastIndexOf("-"); //NOI18
+        if (dividerIndex1 == -1 || dividerIndex2 == -1) {
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return id1.compareTo(id2);
+        }
+        String prefix1 = id1.subSequence(0, dividerIndex1).toString();
+        String suffix1 = id1.substring(dividerIndex1 + 1);
+
+        String prefix2 = id2.subSequence(0, dividerIndex2).toString();
+        String suffix2 = id2.substring(dividerIndex2 + 1);
+
+        //compare prefix, alphabetically
+        int comparePrefix = prefix1.compareTo(prefix2);
+        if (comparePrefix != 0) {
+            return comparePrefix;
+        }
+        //compare number suffix
+        int suffixInt1;
+        int suffixInt2;
+        try {
+            suffixInt1 = Integer.parseInt(suffix1);
+            suffixInt2 = Integer.parseInt(suffix2);
+        } catch (NumberFormatException nfe) {
+            //compare suffix alphabetically if it is not convertable to number
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return suffix1.compareTo(suffix2);
+        }
+        return compareNumericId(suffixInt1, suffixInt2);
     }
 }

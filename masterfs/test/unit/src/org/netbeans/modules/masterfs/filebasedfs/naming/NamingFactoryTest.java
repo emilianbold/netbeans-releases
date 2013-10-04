@@ -42,10 +42,12 @@
 package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.Permission;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
@@ -94,6 +96,63 @@ public class NamingFactoryTest extends NbTestCase {
         );
     }
     
+    /**
+     * Test for bug 235332.
+     *
+     * @throws java.io.IOException
+     */
+    public void testRename() throws IOException {
+
+        final File dir = getWorkDir();
+
+        File f1 = new File(dir, "f1");
+        File f2 = new File(f1, "f2");
+        File d = new File(f2, "d");
+
+        f2.mkdirs();
+        d.createNewFile();
+
+        final FileNaming nf1 = NamingFactory.fromFile(f1);
+        FileNaming[] renamed = NamingFactory.rename(nf1, "f2",
+                new ProvidedExtensions.IOHandler() {
+
+                    @Override
+                    public void handle() throws IOException {
+
+                        // Simlulate that another thread has renamed the files
+                        // concurrently.
+                        NamingFactory.rename(nf1, "f2", null);
+                        File f = new File(dir, "f2");
+                        NamingFactory.fromFile(f);
+                        NamingFactory.fromFile(new File(f, "d"));
+                    }
+                });
+
+        assertEquals("New FileNaming should be stored at index 0",
+                "f2", renamed[0].getName());
+        for (int i = 1; i < renamed.length; i++) {
+            FileNaming r = renamed[i];
+            assertTrue("All items at index > 0 should be indirect children of "
+                    + "the original FileNaming: " + r + " not below " + nf1,
+                    isBelow(r, nf1));
+        }
+    }
+
+    /**
+     * Check that child is the same object as parent, or that child is below
+     * (descendant, indirect child of) parent.
+     *
+     * @param child
+     * @param parent
+     * @return
+     */
+    private boolean isBelow(FileNaming child, FileNaming parent) {
+        FileNaming fn = child;
+        while (fn != null && fn != parent) {
+            fn = fn.getParent();
+        }
+        return fn == parent;
+    }
     
     public void testInvalidatePrevFolder() throws Exception {
         FileNaming parent = NamingFactory.fromFile(getWorkDir());

@@ -157,7 +157,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         }
         
         public @Override void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 refresh(false);
             }
         }

@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package ejbs.mdb;
 
 import javax.ejb.ActivationConfigProperty;
@@ -27,4 +29,5 @@ public class TopicMdb implements MessageListener {
     @Override
     public void onMessage(Message message) {
     }
+
 }

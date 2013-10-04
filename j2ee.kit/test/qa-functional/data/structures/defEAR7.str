@@ -12,7 +12,6 @@ def EAR app7-ejb/nbproject/project.xml
 def EAR app7-ejb/src/
 def EAR app7-ejb/src/conf/
 def EAR app7-ejb/src/conf/MANIFEST.MF
-def EAR app7-ejb/src/conf/beans.xml
 def EAR app7-ejb/src/java/
 def EAR app7-war/
 def EAR app7-war/build.xml
@@ -29,9 +28,8 @@ def EAR app7-war/src/conf/
 def EAR app7-war/src/conf/MANIFEST.MF
 def EAR app7-war/src/java/
 def EAR app7-war/web/
-def EAR app7-war/web/index.jsp
+def EAR app7-war/web/index.html
 def EAR app7-war/web/WEB-INF/
-def EAR app7-war/web/WEB-INF/beans.xml
 nbproject/
 nbproject/ant-deploy.xml
 nbproject/build-impl.xml

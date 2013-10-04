@@ -1161,15 +1161,25 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (resolution != null && !resolution.trim().isEmpty()) {
             status += "/" + resolution; //NOI18N
         }
+        String scheduledLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Scheduled_Title"); //NOI18N
+        String scheduled = "---";
 
+        String dueLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Due_Title"); //NOI18N
+        String due = "---";
+
+        String estimateLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Estimate_Title"); //NOI18N
+        String estimate = "---";
 
         String fieldTable = "<table>" //NOI18N
             + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
             + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
             + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
             + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>" //NOI18N
+                + "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>" //NOI18N
             + "</table>"; //NOI18N
-
+        
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {

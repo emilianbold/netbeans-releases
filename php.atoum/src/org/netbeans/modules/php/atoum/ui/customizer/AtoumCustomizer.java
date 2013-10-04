@@ -50,6 +50,8 @@ import org.openide.util.NbBundle;
 
 public class AtoumCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
+    public static final String IDENTIFIER = AtoumTestingProvider.getInstance().getIdentifier();
+
     private final PhpModule phpModule;
 
 
@@ -62,7 +64,7 @@ public class AtoumCustomizer implements ProjectCustomizer.CompositeCategoryProvi
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                AtoumTestingProvider.getInstance().getIdentifier(),
+                IDENTIFIER,
                 Bundle.AtoumCustomizer_name(),
                 null,
                 (ProjectCustomizer.Category[]) null);

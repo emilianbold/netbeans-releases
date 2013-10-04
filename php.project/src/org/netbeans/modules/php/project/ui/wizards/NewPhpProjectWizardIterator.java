@@ -58,7 +58,6 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -673,7 +672,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         TransferFile transferFile = TransferFile.fromFile(getRemoteClient().createRemoteClientImplementation(sourceDir.getAbsolutePath()),
                 null, sourceDir);
         TimeStamps timeStamps = new TimeStamps(project);
-        timeStamps.setSyncTimestamp(transferFile, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+        timeStamps.setSyncTimestamp(transferFile);
     }
 
     private Map<PhpFrameworkProvider, PhpModuleExtender> getFrameworkExtenders() {

@@ -1190,8 +1190,8 @@ public class DocumentFinder
                         found = true;
                         return i + retFind + ((i==0)?0:1);
                     }
-                    lineStart--;
                     lineEnd = lineStart;
+                    lineStart--;
                 }else{
                     lineStart--;                    
                 }

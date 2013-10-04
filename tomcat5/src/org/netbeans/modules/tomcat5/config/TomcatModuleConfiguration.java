@@ -278,30 +278,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             if (tomeeVersion != null) {
                 Tomee actualResources = getResources(false);
                 if (actualResources != null) {
-                    int resourcesLength = actualResources.getTomeeResource().length;
-                    for (int i = 0; i < resourcesLength; i++) {
-                        String type = actualResources.getTomeeResourceType(i);
-                        if ("javax.sql.DataSource".equals(type)) { // NOI18N
-
-                            String data = actualResources.getTomeeResource(i);
-                            Properties props = new Properties();
-                            try {
-                                props.load(new StringReader(data));
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-
-                            String name = actualResources.getTomeeResourceId(i);
-                            String username = props.getProperty("userName"); // NOI18N
-                            String url = props.getProperty("jdbcUrl"); // NOI18N
-                            String password = props.getProperty("password"); // NOI18N
-                            String driverClassName = props.getProperty("jdbcDriver"); // NOI18N
-                            if (name != null && username != null && url != null && driverClassName != null) {
-                                // return the datasource only if all the needed params are non-null except the password param
-                                result.add(new TomcatDatasource(username, url, password, name, driverClassName));
-                            }
-                        }
-                    }
+                    result.addAll(TomcatDatasourceManager.getTomeeDatasources(actualResources));
                 }
             }
         } else {
@@ -788,7 +765,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         
         // try to find a datasource whose resource name equals the given jndiName 
         for (Datasource ds : datasources) {
-            if (jndiName.equals(ds.getJndiName())) { // Tomcat DS JNDI name acts as a reference name
+            if (referenceName.equals(ds.getJndiName())) { // Tomcat DS JNDI name acts as a reference name
                 try {
                     createDatasource(referenceName, ds.getUrl(), ds.getUsername(), ds.getPassword(), ds.getDriverClassName());
                 } catch (DatasourceAlreadyExistsException ex) {
@@ -819,21 +796,32 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         Context context = getContext();
         if (context != null) {
             int lengthResource = context.getResource().length;
+            for (int i = 0; i < lengthResource; i++) {
+                if (referenceName.equals(context.getResourceName(i))) {
+                    // DS with this name is defined in context.xml, there is no
+                    // real JNDI name in Tomcat 'local' DSs, lets return reference name
+                    return referenceName;
+                }
+            }
+            // check whether a resource link of the given name is not already defined
+            int lengthResourceLink = context.getResourceLink().length;
+            for (int i = 0; i < lengthResourceLink; i++) {
+                if (referenceName.equals(context.getResourceLinkName(i))) {
+                    // return global resource name
+                    return context.getResourceLinkGlobal(i);
+                }
+            }
+        }
+        if (tomeeVersion != null) {
+            Tomee actualResources = getResources(false);
+            if (actualResources != null) {
+                int lengthResource = actualResources.getTomeeResource().length;
                 for (int i = 0; i < lengthResource; i++) {
-                    if (referenceName.equals(context.getResourceName(i))) {
-                        // DS with this name is defined in context.xml, there is no
-                        // real JNDI name in Tomcat 'local' DSs, lets return reference name
+                    if (referenceName.equals(actualResources.getTomeeResourceId(i))) {
                         return referenceName;
                     }
                 }
-                // check whether a resource link of the given name is not already defined
-                int lengthResourceLink = context.getResourceLink().length;
-                for (int i = 0; i < lengthResourceLink; i++) {
-                    if (referenceName.equals(context.getResourceLinkName(i))) {
-                        // return global resource name
-                        return context.getResourceLinkGlobal(i);
-                    }
-                }
+            }
         }
         // nothing was found
         return null;

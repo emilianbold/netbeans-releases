@@ -198,6 +198,15 @@ class ManageTags implements ListSelectionListener, ActionListener {
         if (selected != null) {
             panel.lstTags.setSelectedValue(selected, true);
         }
+        if (!model.isEmpty()) {
+            GitUtils.attachQuickSearch(Arrays.asList(tagArray), panel.tagsPanel, panel.lstTags, model, new GitUtils.SearchCallback<GitTag>() {
+
+                @Override
+                public boolean contains (GitTag item, String needle) {
+                    return item.getTagName().toLowerCase().contains(needle.toLowerCase());
+                }
+            });
+        }
     }
 
     private void setText (JTextComponent comp, String text) {

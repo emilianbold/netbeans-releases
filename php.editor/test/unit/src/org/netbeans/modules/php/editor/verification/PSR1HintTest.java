@@ -146,6 +146,70 @@ public class PSR1HintTest extends PHPHintsTestBase {
         checkHints(new PSR1Hint.MethodDeclarationHint(), "ClassName.php");
     }
 
+    public void testPropertyName_01() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_02() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_03() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_04() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_05() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testPropertyName_06() throws Exception {
+        checkHints(new PSR1Hint.PropertyNameHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_01() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_02() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_03() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_04() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_05() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_06() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_07() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_08() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_09() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
+    public void testSideEffect_10() throws Exception {
+        checkHints(new PSR1Hint.SideEffectHint(), "ClassName.php");
+    }
+
     @Override
     protected void checkHints(Rule hint, String fileName) throws Exception {
         super.checkHints(hint, getTestDir() + "/" + fileName);
