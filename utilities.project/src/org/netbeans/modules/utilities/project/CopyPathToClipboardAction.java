@@ -134,8 +134,6 @@ public final class CopyPathToClipboardAction implements ActionListener,
         for (Lookup.Provider lookupProvider : context) {
             if (lookupProvider instanceof DataObject) {
                 paths.add(getAbsolutePath((DataObject) lookupProvider));
-            } else if (lookupProvider instanceof FileObject) {
-                paths.add(getAbsolutePath((FileObject) lookupProvider));
             }
         }
         return paths;
