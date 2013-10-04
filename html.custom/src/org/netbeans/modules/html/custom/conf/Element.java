@@ -64,6 +64,11 @@ public abstract class Element {
         this.parent = parent;
 
         this.contextNames.addAll(Arrays.asList(contexts));
+        
+        //if the element is not context-free then its context is also the parent element
+        if(parent != null) {
+            contextNames.add(parent.getName());
+        }
     }
 
     public void addContext(String tagName) {
