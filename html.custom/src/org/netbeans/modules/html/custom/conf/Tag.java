@@ -57,11 +57,11 @@ public class Tag extends Element {
     private final Map<String, Tag> childrenMap = new HashMap<>();
 
     public Tag(String name) {
-        this(name, null, null, null, null);
+        this(name, null, null, null, null, false);
     }
     
-    public Tag(String name, String description, String documentation, String documentationURL, Tag parent, String... contexts) {
-        super(name, description, documentation, documentationURL, parent, contexts);
+    public Tag(String name, String description, String documentation, String documentationURL, Tag parent, boolean required, String... contexts) {
+        super(name, description, documentation, documentationURL, parent, required, contexts);
     }
 
     public void setAttributes(Collection<Attribute> attributes) {
