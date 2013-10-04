@@ -51,7 +51,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,7 +73,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanCon
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
-import static org.netbeans.modules.tomcat5.config.TomcatDatasourceManager.createDatasource;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Context;
