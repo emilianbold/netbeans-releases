@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.html.custom.hints;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.custom.conf.Attribute;
 import org.netbeans.modules.html.custom.conf.Configuration;
@@ -54,38 +57,66 @@ import org.openide.util.NbBundle;
  * @author marek
  */
 @NbBundle.Messages(value = {
-    "addUnknownAttributeToProjectConfiguration=Add attribute \"{0}\" to the project's custom elements",
-    "addUnknownAttributeInElementToProjectConfiguration=Add attribute \"{0}\" into element \"{1}\" to the project's custom elements"})
+    "declareGlobalAttr=Declare global attribute \"{0}\"",
+    "declareGlobalAttrs=Declare \"{0}\" attributes as global",
+    "declareElementAttr=Declare \"{0}\" as attribute of element \"{1}\"",
+    "declareElementAttrs=Declare \"{0}\" as attributes of element \"{1}\""})
 public final class AddAttributeFix implements HintFix {
-    private final String attributeName;
+    private final Collection<String> attributeNames;
     private final String elementContextName;
     private final Snapshot snapshot;
 
-    public AddAttributeFix(String attributeName, String elementContextName, Snapshot snapshot) {
-        this.attributeName = attributeName;
+    public AddAttributeFix(Collection<String> attributeNames, String elementContextName, Snapshot snapshot) {
+        this.attributeNames = attributeNames;
         this.elementContextName = elementContextName;
         this.snapshot = snapshot;
+    }
+    
+    public AddAttributeFix(String attributeName, String elementContextName, Snapshot snapshot) {
+        this(Collections.singleton(attributeName), elementContextName, snapshot);
     }
 
     @Override
     public String getDescription() {
-        return elementContextName == null 
-                ? Bundle.addUnknownAttributeToProjectConfiguration(attributeName)
-                : Bundle.addUnknownAttributeInElementToProjectConfiguration(attributeName, elementContextName);
+        if(elementContextName == null) {
+            return attributeNames.size() == 1 
+                    ? Bundle.declareGlobalAttr(getAttributeNamesList())
+                    : Bundle.declareGlobalAttrs(getAttributeNamesList());
+        } else {
+            return attributeNames.size() == 1
+                ? Bundle.declareElementAttr(getAttributeNamesList(), elementContextName)
+                : Bundle.declareElementAttrs(getAttributeNamesList(), elementContextName);
+        }
+    }
+    
+    private String getAttributeNamesList() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> i = attributeNames.iterator();
+        while(i.hasNext()) {
+            String aName = i.next();
+            sb.append(aName);
+            if(i.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
     }
 
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
         
-        Attribute attr = new Attribute(attributeName);
         if(elementContextName != null) {
             //attr in context
-            Tag tag = conf.getTag(elementContextName);
-            tag.add(attr);
+            for(String aName : attributeNames) {
+                Tag tag = conf.getTag(elementContextName);
+                tag.add( new Attribute(aName));
+            }
         } else {
             //contextfree attribute
-            conf.add(new Attribute(attributeName));
+            for(String aName : attributeNames) {
+                conf.add(new Attribute(aName));
+            }
         }
         conf.store();
         LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));

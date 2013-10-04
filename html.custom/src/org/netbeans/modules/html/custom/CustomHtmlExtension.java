@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.custom;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -55,7 +56,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.custom.conf.Configuration;
 import org.netbeans.modules.html.custom.conf.Tag;
 import org.netbeans.modules.html.custom.hints.CustomElementHint;
-import org.netbeans.modules.html.custom.hints.UnknownAttribute;
+import org.netbeans.modules.html.custom.hints.UnknownAttributes;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
@@ -156,21 +157,27 @@ public class CustomHtmlExtension extends HtmlExtension {
                         if (tagModel != null) {
                             //some attributes are specified in the conf, lets check
                             Collection<Attribute> tagAttrs = ot.attributes();
+                            Collection<String> unknownAttributeNames = new ArrayList<>();
                             for (Attribute a : tagAttrs) {
                                 String attrName = a.name().toString();
                                 if (tagModel.getAttribute(attrName) == null) {
                                     //not found in the context element attr list, but still may be defined as contextfree attribute
                                     if (conf.getAttribute(attrName) == null) {
                                         //unknown attribute in known element w/ some other attributes specified -> show error annotation
-                                        OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(a.from()), snapshot.getEmbeddedOffset(a.to()));
-                                        
-                                        //if there's no attribute defined in the conf, it may be a user decision not to specify the attributes
-                                        //in such case just show the hint as linehint
-                                        boolean lineHint = tagModel.getAttributesNames().isEmpty();
-                                        hints.add(new UnknownAttribute(attrName, tagModel.getName(), context, range, lineHint));
+                                        unknownAttributeNames.add(attrName);
                                     }
                                 }
-
+                            }
+                            
+                            if(!unknownAttributeNames.isEmpty()) {
+                                //if there's no attribute defined in the conf, it may be a user decision not to specify the attributes
+                                //in such case just show the hint as linehint
+//                                boolean lineHint = tagModel.getAttributesNames().isEmpty();
+                                boolean lineHint = false;
+                                
+                                //use the whole element offsetrange so multiple unknown attributes can be handled
+                                OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(ot.from()), snapshot.getEmbeddedOffset(ot.to()));
+                                hints.add(new UnknownAttributes(unknownAttributeNames, tagModel.getName(), context, range, lineHint));
                             }
                         }
 

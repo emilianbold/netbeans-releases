@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.custom.hints;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -56,26 +57,34 @@ import org.openide.util.NbBundle;
  *
  * @author mfukala@netbeans.org
  */
-@NbBundle.Messages(value = "unknownAttribute=Unknown attribute")
-public class UnknownAttribute extends Hint {
+@NbBundle.Messages(value = "unknownAttribute=Unknown attribute(s)")
+public class UnknownAttributes extends Hint {
 
     private static final Rule RULE = new RuleI(false);
     private static final Rule LINE_RULE = new RuleI(true);
 
-    public UnknownAttribute(String attributeName, String elementName, RuleContext context, OffsetRange range, boolean lineHint) {
+    public UnknownAttributes(Collection<String> attributeNames, String elementName, RuleContext context, OffsetRange range, boolean lineHint) {
         super(lineHint ? LINE_RULE : RULE,
                 Bundle.unknownAttribute(),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range,
-                getFixes(attributeName, elementName, context),
+                getFixes(attributeNames, elementName, context),
                 30);
     }
 
-    private static List<HintFix> getFixes(String attributeName, String elementName, RuleContext context) {
+    private static List<HintFix> getFixes(Collection<String> attributeNames, String elementName, RuleContext context) {
         List<HintFix> fixes = new ArrayList<>();
         Snapshot snap = context.parserResult.getSnapshot();
-        fixes.add(new AddAttributeFix(attributeName, elementName, snap)); //add to the parent element
-        fixes.add(new AddAttributeFix(attributeName, null, snap));  //add as contextfree
+        for(String aName : attributeNames) {
+            fixes.add(new AddAttributeFix(aName, elementName, snap)); //add to the parent element
+            fixes.add(new AddAttributeFix(aName, null, snap));  //add as contextfree
+        }
+        if(attributeNames.size() > 1) {
+            //add all attributes at once fix
+            fixes.add(new AddAttributeFix(attributeNames, elementName, snap));
+            fixes.add(new AddAttributeFix(attributeNames, null, snap));
+        }
+        
         fixes.add(new EditProjectsConfFix(snap));
         
         return fixes; 
