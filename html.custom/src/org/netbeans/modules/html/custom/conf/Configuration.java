@@ -94,6 +94,7 @@ public class Configuration {
     public static final String CONTEXT = "context";
     public static final String DOC = "doc";
     public static final String DOC_URL = "doc_url";
+    public static final String REQUIRED = "required";
     public static final String ELEMENTS = "elements";
     public static final String ATTRIBUTES = "attributes";
     public static final String TYPE = "type";
@@ -463,7 +464,17 @@ public class Configuration {
                 }
             }
 
-            Tag tag = new Tag(name, description, doc, docURL, parent, contexts.toArray(new String[0]));
+            boolean required = false;
+            Object _required = val.get(REQUIRED);
+            if (_required != null) {
+                if (_required instanceof String) {
+                    required = Boolean.parseBoolean((String) _required);
+                } else {
+                    LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
+                }
+            }
+
+            Tag tag = new Tag(name, description, doc, docURL, parent, required, contexts.toArray(new String[0]));
 
             //process nested elements
             Object _elements = val.get(ELEMENTS);
@@ -502,7 +513,7 @@ public class Configuration {
             if (value instanceof String) {
                 //the string value specifies just the type - boolean, string etc.
                 String type = (String) value;
-                Attribute a = new Attribute(name, type, null, null, null, tag);
+                Attribute a = new Attribute(name, type, null, null, null, tag, false);
                 attrs.add(a);
 
             } else if (value instanceof JSONObject) {
@@ -560,7 +571,17 @@ public class Configuration {
                     }
                 }
 
-                Attribute a = new Attribute(name, type, description, doc, docURL, tag, contexts.toArray(new String[0]));
+                boolean required = false;
+                Object _required = val.get(REQUIRED);
+                if (_required != null) {
+                    if (_required instanceof String) {
+                        required = Boolean.parseBoolean((String) _required);
+                    } else {
+                        LOGGER.log(Level.WARNING, "The '{0}' key needs to have a string value!", REQUIRED);
+                    }
+                }
+
+                Attribute a = new Attribute(name, type, description, doc, docURL, tag, required, contexts.toArray(new String[0]));
                 attrs.add(a);
             }
 

@@ -138,6 +138,8 @@ public class CustomHtmlExtension extends HtmlExtension {
                         hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
 
                     }
+                
+                //TODO add check + fix for missing required attributes
             }
         }
 

@@ -43,7 +43,6 @@ package org.netbeans.modules.html.custom;
 
 import java.awt.Color;
 import java.util.Iterator;
-import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 
 /**
@@ -52,12 +51,8 @@ import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
  */
 public class CustomAttributeCompletionItem extends HtmlCompletionItem {
 
-    private static final Color GRAY_COLOR = Color.GRAY;
-    private static final Color DEFAULT_FG_COLOR = new Color(0, 0, 0xFF);
+    private final org.netbeans.modules.html.custom.conf.Attribute attr;
 
-    private org.netbeans.modules.html.custom.conf.Attribute attr;
-
-    private boolean required = false;
     private boolean autocompleteQuotes = false;
 
     public CustomAttributeCompletionItem(org.netbeans.modules.html.custom.conf.Attribute attr, int substituteOffset) {
@@ -86,13 +81,13 @@ public class CustomAttributeCompletionItem extends HtmlCompletionItem {
 
     @Override
     public int getSortPriority() {
-        return super.getSortPriority() - (required ? 1 : 0);
+        return super.getSortPriority() - (attr.isRequired() ? 1 : 0);
     }
 
     @Override
     protected String getLeftHtmlText() {
         StringBuilder sb = new StringBuilder();
-        if (required) {
+        if (attr.isRequired()) {
             sb.append("<b>"); //NOI18N
         }
         sb.append("<font color=#"); //NOI18N
@@ -100,7 +95,7 @@ public class CustomAttributeCompletionItem extends HtmlCompletionItem {
         sb.append(">"); //NOI18N
         sb.append(getItemText());
         sb.append("</font>"); //NOI18N
-        if (required) {
+        if (attr.isRequired()) {
             sb.append("</b>"); //NOI18N
         }
 
@@ -134,6 +129,10 @@ public class CustomAttributeCompletionItem extends HtmlCompletionItem {
         if(description != null || documentation != null) {
             sb.append("<hr/>");
         }
+        
+        sb.append("<p><b>");
+        sb.append(attr.isRequired() ? "Required" : "Optional");
+        sb.append("</b></p>");
         
         sb.append("<p><b>Type: </b>");
         sb.append(attr.getType() != null ? attr.getType() : "undefined");
