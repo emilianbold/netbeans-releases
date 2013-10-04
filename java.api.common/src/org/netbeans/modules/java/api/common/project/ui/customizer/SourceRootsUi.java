@@ -63,7 +63,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -72,7 +71,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CellEditorListener;
@@ -89,6 +87,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -220,7 +219,6 @@ public final class SourceRootsUi {
         private final Set<File> ownedFolders;
         private DefaultTableModel rootsModel;
         private EditMediator relatedEditMediator;
-        private File lastUsedDir; //Last used current folder in JFileChooser
         
         private boolean emptyTableIsValid;
         
@@ -274,35 +272,15 @@ public final class SourceRootsUi {
             if ( source == addFolderButton ) { 
                 
                 // Let user search for the Jar file
-                JFileChooser chooser = new JFileChooser();
-                FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-                chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
-                chooser.setMultiSelectionEnabled( true );
-                
+                FileChooserBuilder builder = new FileChooserBuilder(SourceRootsUi.class).setDirectoriesOnly(true);
+                builder.setDefaultWorkingDirectory(FileUtil.toFile(this.project.getProjectDirectory()));
                 if (sourceRoots.isTest()) {
-                    chooser.setDialogTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_TestFolder_DialogTitle"));  // NOI18N
+                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_TestFolder_DialogTitle"));  // NOI18N
                 } else {
-                    chooser.setDialogTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_SourceFolder_DialogTitle")); // NOI18N
+                    builder.setTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_SourceFolder_DialogTitle")); // NOI18N
                 }
-
-                File curDir = this.lastUsedDir;
-                if (curDir == null) {
-                    curDir = FileUtil.toFile(this.project.getProjectDirectory());
-                }
-                if (curDir != null) {
-                    chooser.setCurrentDirectory (curDir);
-                }
-                int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( addFolderButton ) ); // Sow the chooser
-                
-                if ( option == JFileChooser.APPROVE_OPTION ) {
-                    curDir = chooser.getCurrentDirectory();
-                    if (curDir != null) {
-                        this.lastUsedDir = curDir;
-                        if (this.relatedEditMediator != null) {
-                            this.relatedEditMediator.lastUsedDir = curDir;
-                        }
-                    }
-                    File files[] = chooser.getSelectedFiles();
+                File files[] = builder.showMultiOpenDialog();
+                if ( files != null ) {
                     addFolders( files );
                 }
             }
