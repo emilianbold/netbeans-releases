@@ -86,7 +86,7 @@ public final class ActionUtils {
     @NonNull
     public static ExecutorTask runTarget(
             @NonNull final FileObject buildXml,
-            @NonNull final String[] targetNames,
+            @NullAllowed final String[] targetNames,
             @NullAllowed final Properties properties) throws IOException, IllegalArgumentException {
         return runTarget(buildXml, targetNames, properties, null);
     }
@@ -96,7 +96,7 @@ public final class ActionUtils {
      * @param buildXml an Ant build script
      * @param targetNames one or more targets to run; or null for the default target
      * @param properties any Ant properties to define, or null
-     * @param concealedProperties the names of the properties whose values should not be visible to the user
+     * @param concealedProperties the names of the properties whose values should not be visible to the user or null
      * @return a task tracking the progress of Ant
      * @throws IOException if there was a problem starting Ant
      * @throws IllegalArgumentException if you did not provide any targets
@@ -105,12 +105,11 @@ public final class ActionUtils {
     @NonNull
     public static ExecutorTask runTarget(
             @NonNull final FileObject buildXml,
-            @NonNull final String[] targetNames,
+            @NullAllowed final String[] targetNames,
             @NullAllowed final Properties properties,
             @NullAllowed final Set<String> concealedProperties) throws IOException, IllegalArgumentException {
         Parameters.notNull("buildXml", buildXml);   //NOI18N
-        Parameters.notNull("targetNames", targetNames); //NOI18N
-        if (targetNames.length == 0) {
+        if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
         AntProjectCookie apc = AntScriptUtils.antProjectCookieFor(buildXml);
