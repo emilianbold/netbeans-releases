@@ -55,6 +55,7 @@ import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
 import javax.swing.KeyStroke;
 import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.openide.awt.Actions;
@@ -466,7 +467,7 @@ class TabsComponent extends JPanel {
 			    }
 			}
 		    } else if (splitPane != null && e.getID() == MouseEvent.MOUSE_RELEASED
-                            && e.getButton() == MouseEvent.BUTTON1 && removeSplit ) {
+                            && e.getButton() == MouseEvent.BUTTON1 && removeSplit && e.getComponent() instanceof BasicSplitPaneDivider ) {
                         removeSplit = false;
                         TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, splitPane);
                         if( null != tc ) {

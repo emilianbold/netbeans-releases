@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -383,5 +384,73 @@ public class DashboardUtils {
             return SCHEDULE_ICON;
         }
         return null;
+    }
+
+    public static int compareTaskIds(String id1, String id2) {
+        int id = 0;
+        boolean isIdNumeric = true;
+        try {
+            id = Integer.parseInt(id1);
+        } catch (NumberFormatException numberFormatException) {
+            isIdNumeric = false;
+        }
+        int idOther = 0;
+        boolean isIdOtherNumberic = true;
+        try {
+            idOther = Integer.parseInt(id2);
+        } catch (NumberFormatException numberFormatException) {
+            isIdOtherNumberic = false;
+        }
+        if (isIdNumeric && isIdOtherNumberic) {
+            return compareNumericId(id, idOther);
+        } else if (isIdNumeric) {
+            return -1;
+        } else if (isIdOtherNumberic) {
+            return 1;
+        } else {
+            return compareComplexId(id1, id2);
+        }
+    }
+
+    private static int compareNumericId(int id, int idOther) {
+        if (id < idOther) {
+            return 1;
+        } else if (id > idOther) {
+            return -1;
+        } else {
+            return 0;
+        }
+    }
+
+    private static int compareComplexId(String id1, String id2) {
+        int dividerIndex1 = id1.lastIndexOf("-"); //NOI18
+        int dividerIndex2 = id2.lastIndexOf("-"); //NOI18
+        if (dividerIndex1 == -1 || dividerIndex2 == -1) {
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return id1.compareTo(id2);
+        }
+        String prefix1 = id1.subSequence(0, dividerIndex1).toString();
+        String suffix1 = id1.substring(dividerIndex1 + 1);
+
+        String prefix2 = id2.subSequence(0, dividerIndex2).toString();
+        String suffix2 = id2.substring(dividerIndex2 + 1);
+
+        //compare prefix, alphabetically
+        int comparePrefix = prefix1.compareTo(prefix2);
+        if (comparePrefix != 0) {
+            return comparePrefix;
+        }
+        //compare number suffix
+        int suffixInt1;
+        int suffixInt2;
+        try {
+            suffixInt1 = Integer.parseInt(suffix1);
+            suffixInt2 = Integer.parseInt(suffix2);
+        } catch (NumberFormatException nfe) {
+            //compare suffix alphabetically if it is not convertable to number
+            DashboardViewer.LOG.log(Level.WARNING, "Unsupported ID format - id1: {0}, id2: {1}", new Object[]{id1, id2});
+            return suffix1.compareTo(suffix2);
+        }
+        return compareNumericId(suffixInt1, suffixInt2);
     }
 }

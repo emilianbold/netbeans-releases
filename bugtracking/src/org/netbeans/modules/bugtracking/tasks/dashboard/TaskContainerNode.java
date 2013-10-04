@@ -61,6 +61,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.tasks.TaskSorter;
 import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
@@ -312,7 +313,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     @Override
     protected List<TreeListNode> createChildren() {
         List<TaskNode> filteredNodes = filteredTaskNodes;
-        Collections.sort(filteredNodes);
+        Collections.sort(filteredNodes, TaskSorter.getInstance().getComparator());
         List<TaskNode> taskNodesToShow;
         boolean addShowNext = false;
         int taskCountToShow = getTaskCountToShow();

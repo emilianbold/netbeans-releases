@@ -98,14 +98,14 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     private SparseIntList knownLogicalLineCounts = null;
 
     /** Offset positions of tabs */
-    private IntList tabCharOffsets = new IntList(100);
+    private IntList tabCharOffsets = new IntList(128);
     /** Sums of length of all preceding tabs (length of extra spaces) */
-    private IntListSimple tabLengthSums = new IntListSimple(100);
+    private IntListSimple tabLengthSums = new IntListSimple(128);
 
-    private final IntListSimple foldOffsets = new IntListSimple(10);
-    private final IntListSimple visibleList = new IntListSimple(100);
-    private final IntListSimple visibleToRealLine = new IntListSimple(100);
-    private final IntListSimple realToVisibleLine = new IntListSimple(100);
+    private final IntListSimple foldOffsets = new IntListSimple(16);
+    private final IntListSimple visibleList = new IntListSimple(128);
+    private final IntListSimple visibleToRealLine = new IntListSimple(128);
+    private final IntListSimple realToVisibleLine = new IntListSimple(128);
     private int hiddenLines = 0;
 
     private int currentFoldStart = -1;
@@ -319,7 +319,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     private void init() {
         knownLogicalLineCounts = null;
-        lineStartList = new IntList(100);
+        lineStartList = new IntList(128);
         lineStartList.add(0);
         lineCharLengthListWithTabs = new IntListSimple(100);
         linesToInfos = new IntMap();
@@ -679,7 +679,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         }
     }
 
-    private IntList importantLines = new IntList(10);
+    private IntList importantLines = new IntList(16);
 
     public int firstImportantListenerLine() {
         return importantLines.size() == 0 ? -1 : importantLines.get(0);
@@ -1214,8 +1214,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
     void checkLimits() {
         synchronized (readLock()) {
-            if (getLineCount() > outputLimits.getMaxLines()
-                    || getCharCount() > outputLimits.getMaxChars()) {
+            if (getLineCount() >= outputLimits.getMaxLines()
+                    || getCharCount() >= outputLimits.getMaxChars()) {
                 removeOldLines();
             }
         }
