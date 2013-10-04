@@ -71,7 +71,8 @@ import org.openide.util.NbBundle;
     description = "#DESC_MalformedXPathExpression",
     enabled = true,
     category = "bugs",
-    options = Hint.Options.QUERY
+    options = Hint.Options.QUERY,
+    suppressWarnings = { "MalformedXPath" }
 )
 public class MalformedXPathExpression {
     @TriggerPatterns({
