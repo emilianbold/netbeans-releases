@@ -74,12 +74,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanCon
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.schema2beans.Schema2BeansException;
+import static org.netbeans.modules.tomcat5.config.TomcatDatasourceManager.createDatasource;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomEEVersion;
 import org.netbeans.modules.tomcat5.deploy.TomcatManager.TomcatVersion;
 import org.netbeans.modules.tomcat5.config.gen.Context;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
-import org.netbeans.modules.tomcat5.config.gen.Tomee;
+import org.netbeans.modules.tomcat5.config.gen.TomeeResources;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -113,7 +114,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     private final File contextXml;
     private final File resourcesXml;
     private Context context;
-    private Tomee resources;
+    private TomeeResources resources;
     
     private static final String ATTR_PATH = "path"; // NOI18N
     
@@ -202,12 +203,12 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
 
     @CheckForNull
-    public synchronized Tomee getResources(final boolean create) throws ConfigurationException {
+    public synchronized TomeeResources getResources(final boolean create) throws ConfigurationException {
         if (resources == null) {
             if (resourcesXml.exists()) {
                 // load configuration if already exists
                 try {
-                    resources = Tomee.createGraph(resourcesXml);
+                    resources = TomeeResources.createGraph(resourcesXml);
                 } catch (IOException e) {
                     String msg = NbBundle.getMessage(TomcatModuleConfiguration.class, "MSG_ConfigurationXmlReadFail", resourcesXml.getPath());
                     throw new ConfigurationException(msg, e);
@@ -219,10 +220,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             } else if (create) {
                 // create resources.xml if it does not exist yet
                 resources = genereateResources();
-                TomcatModuleConfiguration.<Tomee>writeToFile(resourcesXml, new ConfigurationValue<Tomee>() {
+                TomcatModuleConfiguration.<TomeeResources>writeToFile(resourcesXml, new ConfigurationValue<TomeeResources>() {
 
                     @Override
-                    public Tomee getValue() throws ConfigurationException {
+                    public TomeeResources getValue() throws ConfigurationException {
                         return getResources(create);
                     }
                 });
@@ -276,9 +277,9 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
                 }
             }
             if (tomeeVersion != null) {
-                Tomee actualResources = getResources(false);
+                TomeeResources actualResources = getResources(false);
                 if (actualResources != null) {
-                    result.addAll(TomcatDatasourceManager.getTomeeDatasources(actualResources));
+                    result.addAll(getTomeeDatasources(actualResources));
                 }
             }
         } else {
@@ -329,12 +330,12 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         if (tomcatVersion != TomcatVersion.TOMCAT_50) {
             if (tomeeVersion != null) {
                 // we need to store it to resources.xml
-                Tomee resources = getResources(true);
+                TomeeResources resources = getResources(true);
                 assert resources != null;
                 modifyResources(new ResourcesModifier() {
 
                     @Override
-                    public void modify(Tomee tomee) {
+                    public void modify(TomeeResources tomee) {
                         Properties props = new Properties();
                         props.put("userName", username); // NOI18N
                         props.put("password", password); // NOI18N
@@ -500,8 +501,8 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
         return newContext;
     }
 
-    private Tomee genereateResources() {
-        return new Tomee();
+    private TomeeResources genereateResources() {
+        return new TomeeResources();
     }
     
     /**
@@ -539,28 +540,28 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
 
     private void modifyResources(final ResourcesModifier modifier) throws ConfigurationException {
-        TomcatModuleConfiguration.<Tomee>modifyConfiguration(resourcesDataObject, new ConfigurationModifier<Tomee>() {
+        TomcatModuleConfiguration.<TomeeResources>modifyConfiguration(resourcesDataObject, new ConfigurationModifier<TomeeResources>() {
 
             @Override
-            public void modify(Tomee configuration) {
+            public void modify(TomeeResources configuration) {
                 modifier.modify(configuration);
             }
             @Override
-            public void finished(Tomee configuration) {
+            public void finished(TomeeResources configuration) {
                 synchronized (TomcatModuleConfiguration.this) {
                     resources = configuration;
                 }
             }
-        }, new ConfigurationFactory<Tomee>() {
+        }, new ConfigurationFactory<TomeeResources>() {
 
             @Override
-            public Tomee create(byte[] content) {
-                return Tomee.createGraph(new ByteArrayInputStream(content));
+            public TomeeResources create(byte[] content) {
+                return TomeeResources.createGraph(new ByteArrayInputStream(content));
             }
-        }, new ConfigurationValue<Tomee>() {
+        }, new ConfigurationValue<TomeeResources>() {
 
             @Override
-            public Tomee getValue() throws ConfigurationException {
+            public TomeeResources getValue() throws ConfigurationException {
                 return getResources(false);
             }
         });
@@ -624,7 +625,25 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             throw new ConfigurationException(msg, e);
         }
     }
-    
+
+    private static Set<Datasource> getTomeeDatasources(TomeeResources actualResources) {
+        HashSet<Datasource> result = new HashSet<Datasource>();
+        int resourcesLength = actualResources.getTomeeResource().length;
+        for (int i = 0; i < resourcesLength; i++) {
+            String type = actualResources.getTomeeResourceType(i);
+            if ("javax.sql.DataSource".equals(type)) { // NOI18N
+
+                Datasource ds = TomcatDatasourceManager.createDatasource(
+                        actualResources.getTomeeResourceId(i),
+                        actualResources.getTomeeResource(i));
+                if (ds != null) {
+                    result.add(ds);
+                }
+            }
+        }
+        return result;
+    }
+
     private static Parameter createParameter(String name, String value) {
         Parameter parameter = new Parameter();
         parameter.setName(name);
@@ -813,7 +832,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             }
         }
         if (tomeeVersion != null) {
-            Tomee actualResources = getResources(false);
+            TomeeResources actualResources = getResources(false);
             if (actualResources != null) {
                 int lengthResource = actualResources.getTomeeResource().length;
                 for (int i = 0; i < lengthResource; i++) {
@@ -839,7 +858,7 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
     }
 
     private interface ResourcesModifier {
-        void modify(Tomee tomee);
+        void modify(TomeeResources tomee);
     }
 
     private interface ConfigurationModifier<T> {

@@ -3,7 +3,7 @@ Just artifical DTD designed to the current knowledge of tomee resources.xml.
 We didn't find a DTD or xml schema.
 -->
 
-<!ELEMENT tomee (Resource*, Container*, TransactionManager*) >
+<!ELEMENT resources (Resource*, Container*, TransactionManager*) >
 
 <!ELEMENT Resource (#PCDATA) >
 <!ATTLIST Resource id CDATA #REQUIRED>

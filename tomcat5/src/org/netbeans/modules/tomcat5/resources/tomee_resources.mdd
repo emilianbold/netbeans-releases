@@ -2,6 +2,10 @@
 
 <metaDD>
   <meta-element>
+    <dtd-name>resources</dtd-name>
+    <bean-name>TomeeResources</bean-name>
+  </meta-element>
+  <meta-element>
     <dtd-name>Resource</dtd-name>
     <bean-name>TomeeResource</bean-name>
     <wrapper-class>String</wrapper-class>
