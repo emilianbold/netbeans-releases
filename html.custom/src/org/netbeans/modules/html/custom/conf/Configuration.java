@@ -122,37 +122,37 @@ public class Configuration {
     private JSONObject root;
 
     public Configuration(Project project) {
+        //TODO fix the conf location in maven and other project types
         FileObject nbproject = project.getProjectDirectory().getFileObject("config"); //NOI18N
-        if (nbproject == null) {
-            throw new IllegalStateException(String.format("Broken project %s - missing nbproject folder!", project)); //NOI18N
-        }
-        try {
-            configFile = nbproject.getFileObject(CONF_FILE_NAME);
+        if (nbproject != null) {
+            try {
+                configFile = nbproject.getFileObject(CONF_FILE_NAME);
 
 //            if (configFile == null) {
 //                configFile = nbproject.createData(CONF_FILE_NAME); //create one if doesn't exist
 //                LOGGER.log(Level.INFO, "Created configuration file {0} ", configFile.getPath()); //NOI18N
 //            }
-            if (configFile != null) {
-                configFile.addFileChangeListener(new FileChangeAdapter() {
+                if (configFile != null) {
+                    configFile.addFileChangeListener(new FileChangeAdapter() {
 
-                    @Override
-                    public void fileChanged(FileEvent fe) {
-                        LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
-                        try {
-                            reload();
-                        } catch (IOException ex) {
-                            handleIOEFromReload(ex);
+                        @Override
+                        public void fileChanged(FileEvent fe) {
+                            LOGGER.log(Level.INFO, "Config file {0} changed - reloading configuration.", configFile.getPath()); //NOI18N
+                            try {
+                                reload();
+                            } catch (IOException ex) {
+                                handleIOEFromReload(ex);
+                            }
                         }
-                    }
 
-                });
+                    });
 
-                reload();
+                    reload();
+                }
+
+            } catch (IOException ex) {
+                handleIOEFromReload(ex);
             }
-
-        } catch (IOException ex) {
-            handleIOEFromReload(ex);
         }
 
     }
@@ -182,6 +182,7 @@ public class Configuration {
     public Collection<Tag> getTags() {
         return TAGS.values();
     }
+
     /**
      * Gets a collection of the attributes registered to the root context.
      *
@@ -190,7 +191,7 @@ public class Configuration {
     public Collection<String> getAttributesNames() {
         return ATTRS.keySet();
     }
-    
+
     public Collection<Attribute> getAttributes() {
         return ATTRS.values();
     }
