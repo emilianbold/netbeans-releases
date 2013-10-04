@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.modules.search.ui.HideResultAction;
 import org.netbeans.modules.search.ui.ReplaceCheckableNode;
 import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.netbeans.modules.search.ui.UiUtils;
@@ -82,6 +83,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -540,7 +542,10 @@ public final class TextDetail implements Selectable {
         @Override
         public Action[] getActions(boolean context) {
             if (!context) {
-                return new Action[] { getPreferredAction() };
+                return new Action[]{
+                    getPreferredAction(),
+                    SystemAction.get(HideResultAction.class)
+                };
             } else {
                 return new Action[0];
             }
