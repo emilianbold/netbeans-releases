@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.java.platform;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
@@ -75,8 +79,27 @@ public class PlatformInstallTest extends NbTestCase {
         final Lookup lkp = Lookups.forPath(INSTALLER_REGISTRY_FOLDER);
         
         lkp.lookupAll(GeneralPlatformInstall.class);
-        assertEquals(0,lkp.lookupAll(CustomPlatformInstall.class).size());
-        assertEquals(1,lkp.lookupAll(PlatformInstall.class).size());
-        assertEquals(1,lkp.lookupAll(GeneralPlatformInstall.class).size());
+        assertPlatformInstalls(
+            lkp.lookupAll(CustomPlatformInstall.class),
+            "org.netbeans.modules.java.j2seembedded.wizard.RemotePlatformInstall"); //NOI18N
+        assertPlatformInstalls(
+            lkp.lookupAll(PlatformInstall.class),
+            "org.netbeans.modules.java.j2seplatform.J2SEInstallImpl");              //NOI18N
+        assertPlatformInstalls(
+            lkp.lookupAll(GeneralPlatformInstall.class),
+            "org.netbeans.modules.java.j2seplatform.J2SEInstallImpl",               //NOI18N
+            "org.netbeans.modules.java.j2seembedded.wizard.RemotePlatformInstall"); //NOI18N
+    }
+
+    private static void assertPlatformInstalls(
+        final Collection<? extends GeneralPlatformInstall> result,
+        final String... expectedClasses) {
+        if (result.size() != expectedClasses.length) {
+            assertTrue(result.toString(), false);
+        }
+        final Set<String> expected = new HashSet<String>(Arrays.asList(expectedClasses));
+        for (GeneralPlatformInstall i : result) {
+            assertTrue(result.toString(), expected.remove(i.getClass().getName()));
+        }
     }
 }
