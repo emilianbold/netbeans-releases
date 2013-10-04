@@ -44,13 +44,10 @@ package org.netbeans.modules.html.custom;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.conf.Attribute;
-import org.netbeans.modules.html.custom.conf.Configuration;
-import org.netbeans.modules.html.custom.conf.Tag;
+import org.netbeans.modules.html.custom.hints.AddAttributeFix;
+import org.netbeans.modules.html.custom.hints.AddElementFix;
+import org.netbeans.modules.html.custom.hints.EditProjectsConfFix;
 import org.netbeans.modules.html.editor.spi.HintFixProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -71,91 +68,17 @@ public class CustomHintFixProvider extends HintFixProvider {
         
         if(elementName != null) {
             //unknown element found
-            fixes.add(new AddUnknownElementToConfiguration(elementName, contextElementName, context.getSnapshot()));
+            fixes.add(new AddElementFix(elementName, contextElementName, context.getSnapshot()));
+            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
             
         } else if(attributeName != null) {
             //unknown attribute found
-            fixes.add(new AddUnknownAttributeToConfiguration(attributeName, contextElementName, context.getSnapshot()));
+            fixes.add(new AddAttributeFix(attributeName, contextElementName, context.getSnapshot()));
+            fixes.add(new EditProjectsConfFix(context.getSnapshot()));
         } else {
             throw new IllegalStateException();
         }
         
         return fixes;
-    }
-    
-    @NbBundle.Messages("addUnknownElementToProjectConfiguration=Add element \"{0}\" to the project's custom elements")
-    private static final class AddUnknownElementToConfiguration implements HintFix {
-
-        private final String elementName, elementContextName;
-        private final Snapshot snapshot;
-
-        public AddUnknownElementToConfiguration(String elementName, String elementContextName, Snapshot snapshot) {
-            this.elementName = elementName;
-            this.elementContextName = elementContextName;
-            this.snapshot = snapshot;
-        }
-        
-        @Override
-        public String getDescription() {
-            return Bundle.addUnknownElementToProjectConfiguration(elementName);
-        }
-
-        @Override
-        public void implement() throws Exception {
-            Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-            conf.getRootTags().put(elementName, new Tag(elementName));
-            conf.store();
-            LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
-        }
-
-        @Override
-        public boolean isSafe() {
-            return true;
-        }
-
-        @Override
-        public boolean isInteractive() {
-            return false;
-        }
-        
-        
-    }
-    
-    @NbBundle.Messages("addUnknownAttributeToProjectConfiguration=Add attribute \"{0}\" to the project's custom elements")
-    private static final class AddUnknownAttributeToConfiguration implements HintFix {
-
-        private final String attributeName, elementContextName;
-        private final Snapshot snapshot;
-
-        public AddUnknownAttributeToConfiguration(String attributeName, String elementContextName, Snapshot snapshot) {
-            this.attributeName = attributeName;
-            this.elementContextName = elementContextName;
-            this.snapshot = snapshot;
-        }
-        
-        @Override
-        public String getDescription() {
-            return Bundle.addUnknownAttributeToProjectConfiguration(attributeName);
-        }
-
-        @Override
-        public void implement() throws Exception {
-            Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-            conf.getRootAttributes().put(attributeName, new Attribute(attributeName));
-            conf.store();
-            LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
-        }
-
-        @Override
-        public boolean isSafe() {
-            return true;
-        }
-
-        @Override
-        public boolean isInteractive() {
-            return false;
-        }
-        
-        
     }
 }

@@ -203,7 +203,7 @@ public class Utils {
         JTreeOperator tree = ProjectsTabOperator.invoke().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         Node node = new ProjectRootNode(tree, projectName);
-        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_RedeployAction_Name"));
+        node.performPopupAction(Bundle.getStringTrimmed("org.netbeans.modules.javaee.project.api.ant.ui.logicalview.Bundle", "LBL_RedeployAction_Name"));
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 180000);
         MainWindowOperator.getDefault().waitStatusText(Bundle.getString("org.apache.tools.ant.module.run.Bundle", "FMT_finished_target_status", new String[]{(projectNameInStatus ? projectName : "build.xml") + " (run-deploy)"}));
         if (url != null) {

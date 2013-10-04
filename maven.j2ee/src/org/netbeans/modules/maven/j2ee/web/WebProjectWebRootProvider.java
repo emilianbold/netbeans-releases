@@ -42,19 +42,27 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
+ * This class is <i>thread safe</i>.
  *
  * @author marekfukala
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
 @ProjectServiceProvider(
     service = {
@@ -67,15 +75,19 @@ import org.openide.filesystems.FileObject;
 )
 public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
+    private final Project project;
+    private final FileObject projectDir;
+    // @GuardedBy("this")
     private WebModuleProvider webModuleProvider;
-    private Project project;
+
 
     public WebProjectWebRootProvider(Project project) {
         this.project = project;
+        this.projectDir = project.getProjectDirectory();
     }
 
     private synchronized WebModuleProvider getProvider() {
-        if(webModuleProvider == null) {
+        if (webModuleProvider == null) {
             webModuleProvider = project.getLookup().lookup(WebModuleProvider.class);
         }
         return webModuleProvider;
@@ -90,19 +102,82 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     @Override
     public Collection<FileObject> getWebRoots() {
+        List<FileObject> webRootsFO = new ArrayList<>();
+        List<String> webRoots = WebProjectUtils.getPluginProperty(project, new WebRootsBuilder());
+
+        if (webRoots != null) {
+            for (String webRoot : webRoots) {
+                FileObject webRootFo = projectDir.getFileObject(webRoot);
+
+                // NPE check is here because the directory might be listed in pom.xml
+                // but the directory still don't need to exist on the disk
+                if (webRootFo != null) {
+                    webRootsFO.add(webRootFo);
+                }
+            }
+        }
+
+        // Default web resource directory is usually webapp
+        // See also maven-war-plugin documentation for more details
+        if (webRootsFO.isEmpty()) {
+            FileObject defaultWebRoot = getDefaultWebRoot();
+            if (defaultWebRoot != null) {
+                webRootsFO.add(defaultWebRoot);
+            }
+        }
+
+        return webRootsFO;
+    }
+
+    private FileObject getDefaultWebRoot() {
         WebModuleProvider provider = getProvider();
         if (provider == null) {
-            return Collections.emptyList();
+            return null;
         }
         WebModule webModule = provider.findWebModule(project.getProjectDirectory());
         if (webModule == null) {
-            return Collections.emptyList();
+            return null;
         }
         FileObject documentBase = webModule.getDocumentBase();
         if (documentBase == null) {
-            return Collections.emptyList();
+            return null;
         }
-        return Collections.singleton(documentBase);
+        return documentBase;
     }
 
+    /**
+     * Iterates through the maven-war-plugin configuration and finds out all declared web resource directories.
+     */
+    private static class WebRootsBuilder implements PluginPropertyUtils.ConfigurationBuilder<List<String>> {
+
+        @Override
+        public List<String> build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
+            List<String> webRoots = new ArrayList<>();
+
+            if (configRoot != null) {
+                Xpp3Dom webResources = configRoot.getChild("webResources"); // NOI18N
+                if (webResources != null) {
+                    Xpp3Dom[] resources = webResources.getChildren("resource"); // NOI18N
+
+                    for (Xpp3Dom resource : resources) {
+                        if (resource != null) {
+                            Xpp3Dom directory = resource.getChild("directory"); // NOI18N
+
+                            if (directory != null) {
+                                try {
+                                    String directoryValue = (String) eval.evaluate(directory.getValue());
+                                    if (directoryValue != null && !"".equals(directoryValue.trim())) { // NOI18N
+                                        webRoots.add(directoryValue);
+                                    }
+                                } catch (ExpressionEvaluationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return webRoots;
+        }
+    }
 }

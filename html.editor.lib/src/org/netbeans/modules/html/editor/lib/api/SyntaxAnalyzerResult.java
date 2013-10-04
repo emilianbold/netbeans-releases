@@ -67,6 +67,14 @@ import org.openide.util.lookup.InstanceContent;
  * @author mfukala@netbeans.org
  */
 public class SyntaxAnalyzerResult {
+    
+    /**
+     * Artificial namespace for obtaining parse tree for the code filtered by
+     * {@link UndeclaredContentResolver}s.
+     * 
+     * @since 3.25
+     */
+    public static final String FILTERED_CODE_NAMESPACE = "filtered_code"; //NOI18N
 
     private static final Logger LOG = Logger.getLogger(SyntaxAnalyzerResult.class.getSimpleName());
     /**
@@ -294,6 +302,31 @@ public class SyntaxAnalyzerResult {
         }
 
     }
+    
+    private synchronized ParseResult doParseFilteredCode() throws ParseException {
+        
+        Iterator<Element> original = getElementsIterator();
+            final Iterator<Element> filteredIterator = new FilteredIterator(original, new ElementFilter() {
+                @Override
+                public boolean accepts(Element node) {
+                    switch (node.type()) {
+                        case OPEN_TAG:
+                        case CLOSE_TAG:
+                            Named named = (Named) node;
+                            return resolver.isCustomTag(named, source);
+                    }
+                    return false;
+                }
+            });
+            
+            Node root = XmlSyntaxTreeBuilder.makeUncheckedTree(
+                    source,
+                    FILTERED_CODE_NAMESPACE,
+                    createLookupFor(filteredIterator));
+
+            return new DefaultParseResult(source, root, Collections.<ProblemDescription>emptyList());
+            
+    }
 
     public synchronized ParseResult parseEmbeddedCode(String namespace) throws ParseException {
         if (embeddedCodeParseResults == null) {
@@ -301,7 +334,11 @@ public class SyntaxAnalyzerResult {
         }
         ParseResult result = embeddedCodeParseResults.get(namespace);
         if (result == null) {
-            result = doParseEmbeddedCode(namespace);
+            if(FILTERED_CODE_NAMESPACE.equals(namespace)) {
+                result = doParseFilteredCode();
+            } else {
+                result = doParseEmbeddedCode(namespace);
+            }
             embeddedCodeParseResults.put(namespace, result);
         }
         return result;

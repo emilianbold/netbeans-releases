@@ -41,15 +41,33 @@
  */
 package org.netbeans.modules.html.custom;
 
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.custom.conf.Configuration;
+import org.netbeans.modules.html.custom.conf.Tag;
+import org.netbeans.modules.html.custom.hints.CustomElementHint;
+import org.netbeans.modules.html.custom.hints.UnknownAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
@@ -66,14 +84,14 @@ public class CustomHtmlExtension extends HtmlExtension {
 
     @Override
     public boolean isCustomTag(Named element, HtmlSource source) {
-        return getConfiguration(source).getRootTags().containsKey(element.name().toString());
+        return getConfiguration(source).getTagsNames().contains(element.name().toString());
     }
 
     @Override
     public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
-        return getConfiguration(source).getRootAttributes().containsKey(attribute.name().toString());
+        return getConfiguration(source).getAttributesNames().contains(attribute.name().toString());
     }
-    
+
     private Configuration getConfiguration(HtmlSource source) {
         if (cache == null) {
             //no cache - create
@@ -84,7 +102,7 @@ public class CustomHtmlExtension extends HtmlExtension {
             return cache.second();
         } else {
             //check if the current source is the cached one
-            if(source == cache.first()) {
+            if (source == cache.first()) {
                 //yes, just return cached conf
                 return cache.second();
             } else {
@@ -93,6 +111,73 @@ public class CustomHtmlExtension extends HtmlExtension {
                 return getConfiguration(source);
             }
         }
+    }
+
+    @Override
+    public void computeSuggestions(HintsProvider.HintsManager manager, RuleContext context, List<Hint> hints, int caretOffset) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        Node root = result.root(SyntaxAnalyzerResult.FILTERED_CODE_NAMESPACE);
+        Snapshot snapshot = result.getSnapshot();
+        int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
+        Element found = ElementUtils.findByPhysicalRange(root, embeddedCaretOffset, false);
+        if (found != null) {
+            switch (found.type()) {
+                case OPEN_TAG:
+                case CLOSE_TAG:
+                    Named named = (Named) found;
+                    String elementName = named.name().toString();
+                    Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+                    if (conf.getTagsNames().contains(elementName)) {
+                        //custom element
+                        hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
+
+                    }
+            }
+        }
+
+    }
+
+    @Override
+    public void computeErrors(HintsProvider.HintsManager manager, final RuleContext context, final List<Hint> hints, List<Error> unhandled) {
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        Node root = result.root(SyntaxAnalyzerResult.FILTERED_CODE_NAMESPACE);
+        final Snapshot snapshot = result.getSnapshot();
+        final Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
+        ElementUtils.visitChildren(root, new ElementVisitor() {
+
+            @Override
+            public void visit(Element node) {
+                switch (node.type()) {
+                    case OPEN_TAG:
+                        OpenTag ot = (OpenTag) node;
+                        String name = ot.name().toString();
+                        Tag tagModel = conf.getTag(name);
+                        //check just the custom elements
+                        if (tagModel != null) {
+                            if (tagModel.getAttributesNames().isEmpty()) {
+                                //no data, do not check
+                                //=> add hint for copying existing attributes to the conf
+                            } else {
+                                //some attributes are specified in the conf, lets check
+                                Collection<Attribute> tagAttrs = ot.attributes();
+                                for (Attribute a : tagAttrs) {
+                                    String attrName = a.name().toString();
+                                    if (tagModel.getAttribute(attrName) == null) {
+                                        //not found in the context element attr list, but still may be defined as contextfree attribute
+                                        if (conf.getAttribute(attrName) == null) {
+                                            //unknown attribute in known element w/ some other attributes specified -> show error annotation
+                                            OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(a.from()), snapshot.getEmbeddedOffset(a.to()));
+                                            hints.add(new UnknownAttribute(attrName, tagModel.getName(), context, range));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                }
+            }
+        });
+
     }
 
 }

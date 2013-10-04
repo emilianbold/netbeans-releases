@@ -54,14 +54,6 @@
       <cmp-field>
         <field-name>key</field-name>
       </cmp-field>
-            <cmp-field>
-                <description/>
-                <field-name>cmpTestField1x</field-name>
-            </cmp-field>
-            <cmp-field>
-                <description/>
-                <field-name>cmpTestField2x</field-name>
-            </cmp-field>
             <primkey-field>key</primkey-field>
             <query>
                 <query-method>

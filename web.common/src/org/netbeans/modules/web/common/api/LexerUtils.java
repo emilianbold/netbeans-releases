@@ -157,6 +157,35 @@ public class LexerUtils {
         //for position just at the length of the text
         return text.length();
     }
+    
+    /**
+     * Finds line beginning and end in the given {@link CharSequence}
+     * 
+     * @since 1.63
+     * 
+     * @param text the input text
+     * @param offset offset in the input text
+     * @return two item array containing line start/end offsets or null if the position is invalid.
+     */
+    public static int[] findLineBoundaries(CharSequence text, int offset) {
+        int l = text.length();
+        if (offset == -1 || offset > l) {
+            return null;
+        }
+        // the position is at the end of file, after a newline.
+        if (offset == l && l >= 1 && text.charAt(l - 1) == '\n') {
+            return new int[]{l - 1, l};
+        }
+        int min = offset;
+        while (min > 1 && text.charAt(min - 1) != '\n') {
+            min--;
+        }
+        int max = offset;
+        while (max < l && text.charAt(max) != '\n') {
+            max++;
+        }
+        return new int[]{min, max};
+    }
 
     public static Token followsToken(TokenSequence ts, TokenId searchedId, boolean backwards, boolean repositionBack, TokenId... skipIds) {
         return followsToken(ts, Collections.singletonList(searchedId), backwards, repositionBack, skipIds);
