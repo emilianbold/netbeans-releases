@@ -271,10 +271,10 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                             .addComponent(identityFileTextField, Alignment.LEADING)
                             .addComponent(userTextField, Alignment.LEADING)
                             .addComponent(hostTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(timeoutTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(timeoutTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(passwordTextField)
                             .addComponent(initialDirectoryTextField)
-                            .addComponent(keepAliveTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE))
+                            .addComponent(keepAliveTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addGroup(Alignment.TRAILING, layout.createParallelGroup(Alignment.LEADING, false)
@@ -292,8 +292,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {identityFileBrowseButton, knownHostsFileBrowseButton});
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {keepAliveTextField, timeoutTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -338,8 +336,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .addComponent(keepAliveLabel)
                     .addComponent(keepAliveTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(keepAliveInfoLabel)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(keepAliveInfoLabel))
         );
 
         hostLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.AccessibleContext.accessibleName")); // NOI18N
