@@ -39,44 +39,22 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.ui.customizer;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+package org.netbeans.modules.php.phpunit.util;
+
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.openide.util.NbBundle;
 
-/**
- * Project customizer for PhpUnit.
- */
-public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class PhpUnitUtils {
 
-    public static final String IDENTIFIER = PhpUnitTestingProvider.getInstance().getIdentifier();
-
-    private final PhpModule phpModule;
-
-
-    public PhpUnitCustomizer(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    private PhpUnitUtils() {
     }
 
-    @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
-    @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                IDENTIFIER,
-                Bundle.PhpUnitCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
-    }
-
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new CustomizerPhpUnit(category, phpModule);
+    @NbBundle.Messages("PhpUnitUtils.phpunit.label=PHPUnit file")
+    @CheckForNull
+    public static String validatePhpUnitPath(String phpUnitPath) {
+        return PhpExecutableValidator.validateCommand(phpUnitPath, Bundle.PhpUnitUtils_phpunit_label());
     }
 
 }
