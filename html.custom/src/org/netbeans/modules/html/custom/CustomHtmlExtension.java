@@ -43,6 +43,7 @@ package org.netbeans.modules.html.custom;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -58,18 +59,21 @@ import org.netbeans.modules.html.custom.conf.Configuration;
 import org.netbeans.modules.html.custom.conf.Tag;
 import org.netbeans.modules.html.custom.hints.CustomElementHint;
 import org.netbeans.modules.html.custom.hints.UnknownAttributes;
+import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
@@ -134,6 +138,8 @@ public class CustomHtmlExtension extends HtmlExtension {
                         hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
 
                     }
+                
+                //TODO add check + fix for missing required attributes
             }
         }
 
@@ -186,6 +192,42 @@ public class CustomHtmlExtension extends HtmlExtension {
             }
         });
 
+    }
+
+    @Override
+    public List<CompletionItem> completeOpenTags(CompletionContext context) {
+        List<CompletionItem> items = new ArrayList<>();
+        Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
+        for (Tag t : conf.getTags()) {
+            String tagName = t.getName();
+            if (tagName.startsWith(context.getPrefix())) {
+                items.add(new CustomTagCompletionItem(t, context.getCCItemStartOffset()));
+            }
+        }
+        return items;
+    }
+
+    @Override
+    public List<CompletionItem> completeAttributes(CompletionContext context) {
+        Element node = context.getCurrentNode();
+        if(node.type() != ElementType.OPEN_TAG) {
+            return Collections.emptyList();
+        }
+        
+        List<CompletionItem> items = new ArrayList<>();
+        Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
+        String tagName = ((OpenTag)node).name().toString();
+        Tag t = conf.getTag(tagName);
+        if(t != null) {
+            for(org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+                String aName = a.getName();
+                if(aName.startsWith(context.getPrefix())) {
+                    items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                }
+            }
+        }
+       
+        return items;
     }
 
 }

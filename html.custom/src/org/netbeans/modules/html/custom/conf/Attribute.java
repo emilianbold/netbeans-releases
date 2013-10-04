@@ -50,11 +50,11 @@ public class Attribute extends Element {
     private final String type;
 
     public Attribute(String name) {
-        this(name, null, null, null, null, null);
+        this(name, null, null, null, null, null, false);
     }
 
-    public Attribute(String name, String type, String description, String documentation, String documentationURL, Tag parent, String... contexts) {
-        super(name, description, documentation, documentationURL, parent, contexts);
+    public Attribute(String name, String type, String description, String documentation, String documentationURL, Tag parent, boolean required, String... contexts) {
+        super(name, description, documentation, documentationURL, parent, required, contexts);
         this.type = type;
     }
 

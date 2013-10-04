@@ -54,18 +54,28 @@ public abstract class Element {
     private final String name, description, documentation, documentationURL;
     private final Collection<String> contextNames = new ArrayList<>();
     private final Tag parent;
+    private final boolean required;
 
     
-    public Element(String name, String description, String documentation, String documentationURL, Tag parent, String... contexts) {
+    public Element(String name, String description, String documentation, String documentationURL, Tag parent, boolean required, String... contexts) {
         this.name = name;
         this.description = description;
         this.documentation = documentation;
         this.documentationURL = documentationURL;
         this.parent = parent;
-
         this.contextNames.addAll(Arrays.asList(contexts));
+        this.required = required;
+        
+        //if the element is not context-free then its context is also the parent element
+        if(parent != null) {
+            contextNames.add(parent.getName());
+        }
     }
 
+    public boolean isRequired() {
+        return required;
+    }
+    
     public void addContext(String tagName) {
         contextNames.add(tagName);
     }
