@@ -56,9 +56,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -160,9 +162,10 @@ public class BridgeImpl implements BridgeInterface {
         }
         return null;
     }
-    
+        
+    @Override
     public boolean run(File buildFile, List<String> targets, InputStream in, OutputWriter out, OutputWriter err, Map<String,String> properties,
-            int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
+            Set<? extends String> concealedProperties, int verbosity, String displayName, Runnable interestingOutputCallback, ProgressHandle handle, InputOutput io) {
         if (!classpathInitialized) {
             classpathInitialized = true;
             // #46171: Ant expects this path to have itself and whatever else you loaded with it,
@@ -189,7 +192,7 @@ public class BridgeImpl implements BridgeInterface {
         
         // first use the ProjectHelper to create the project object
         // from the given build file.
-        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, properties, interestingOutputCallback, handle, io);
+        final NbBuildLogger logger = new NbBuildLogger(buildFile, out, err, verbosity, displayName, properties, concealedProperties, interestingOutputCallback, handle, io);
         Vector<String> targs;
         try {
             project = new Project();

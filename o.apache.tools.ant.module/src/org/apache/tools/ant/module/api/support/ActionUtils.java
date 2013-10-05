@@ -50,10 +50,13 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -70,7 +73,7 @@ import org.openide.util.Parameters;
 public final class ActionUtils {
     
     private ActionUtils() {}
-    
+
     /**
      * Runs an Ant target (or a sequence of them).
      * @param buildXml an Ant build script
@@ -80,10 +83,32 @@ public final class ActionUtils {
      * @throws IOException if there was a problem starting Ant
      * @throws IllegalArgumentException if you did not provide any targets
      */
-    public static ExecutorTask runTarget(FileObject buildXml, String[] targetNames, Properties properties) throws IOException, IllegalArgumentException {
-        if (buildXml == null) {
-            throw new NullPointerException("Must pass non-null build script"); // NOI18N
-        }
+    @NonNull
+    public static ExecutorTask runTarget(
+            @NonNull final FileObject buildXml,
+            @NullAllowed final String[] targetNames,
+            @NullAllowed final Properties properties) throws IOException, IllegalArgumentException {
+        return runTarget(buildXml, targetNames, properties, null);
+    }
+
+    /**
+     * Runs an Ant target (or a sequence of them).
+     * @param buildXml an Ant build script
+     * @param targetNames one or more targets to run; or null for the default target
+     * @param properties any Ant properties to define, or null
+     * @param concealedProperties the names of the properties whose values should not be visible to the user or null
+     * @return a task tracking the progress of Ant
+     * @throws IOException if there was a problem starting Ant
+     * @throws IllegalArgumentException if you did not provide any targets
+     * @since 3.71
+     */
+    @NonNull
+    public static ExecutorTask runTarget(
+            @NonNull final FileObject buildXml,
+            @NullAllowed final String[] targetNames,
+            @NullAllowed final Properties properties,
+            @NullAllowed final Set<String> concealedProperties) throws IOException, IllegalArgumentException {
+        Parameters.notNull("buildXml", buildXml);   //NOI18N
         if (targetNames != null && targetNames.length == 0) {
             throw new IllegalArgumentException("No targets supplied"); // NOI18N
         }
@@ -93,6 +118,9 @@ public final class ActionUtils {
             Properties p = execenv.getProperties();
             p.putAll(properties);
             execenv.setProperties(p);
+        }
+        if (concealedProperties != null) {
+            execenv.setConcealedProperties(concealedProperties);
         }
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, targetNames);
     }
