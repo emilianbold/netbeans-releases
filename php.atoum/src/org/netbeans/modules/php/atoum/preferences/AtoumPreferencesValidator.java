@@ -44,6 +44,7 @@ package org.netbeans.modules.php.atoum.preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
+import org.netbeans.modules.php.atoum.util.AtoumUtils;
 import org.openide.util.NbBundle;
 
 public final class AtoumPreferencesValidator {
@@ -64,19 +65,23 @@ public final class AtoumPreferencesValidator {
 
     @NbBundle.Messages("AtoumPreferencesValidator.bootstrap.label=Bootstrap")
     public AtoumPreferencesValidator validateBootstrap(boolean bootstrapEnabled, String bootstrapPath) {
-        validatePath(bootstrapEnabled, bootstrapPath, Bundle.AtoumPreferencesValidator_bootstrap_label(), "bootstrapPath"); // NOI18N
+        validatePath(bootstrapEnabled, bootstrapPath, Bundle.AtoumPreferencesValidator_bootstrap_label(), "bootstrap.path"); // NOI18N
         return this;
     }
 
     @NbBundle.Messages("AtoumPreferencesValidator.configuration.label=Configuration")
     public AtoumPreferencesValidator validateConfiguration(boolean configurationEnabled, String configurationPath) {
-        validatePath(configurationEnabled, configurationPath, Bundle.AtoumPreferencesValidator_configuration_label(), "configurationPath"); // NOI18N
+        validatePath(configurationEnabled, configurationPath, Bundle.AtoumPreferencesValidator_configuration_label(), "configuration.path"); // NOI18N
         return this;
     }
 
-    @NbBundle.Messages("AtoumPreferencesValidator.atoum.label=Custom atoum")
     public AtoumPreferencesValidator validateAtoum(boolean atoumEnabled, String atoumPath) {
-        validatePath(atoumEnabled, atoumPath, Bundle.AtoumPreferencesValidator_atoum_label(), "atoumPath"); // NOI18N
+        if (atoumEnabled) {
+            String warning = AtoumUtils.validateAtoumPath(atoumPath);
+            if (warning != null) {
+                result.addWarning(new ValidationResult.Message("atoum.path", warning)); // NOI18N
+            }
+        }
         return this;
     }
 

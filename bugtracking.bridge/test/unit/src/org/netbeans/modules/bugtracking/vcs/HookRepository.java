@@ -47,12 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -77,39 +73,7 @@ public class HookRepository extends TestRepository {
     }
 
     @Override
-    public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryController getController() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public TestQuery createQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public TestIssue createIssue() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Collection<TestQuery> getQueries() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public Collection<TestIssue> simpleSearch(String criteria) {
         return Arrays.asList(new TestIssue[] {HookIssue.instance});
     }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
 }

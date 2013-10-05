@@ -76,6 +76,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -140,7 +141,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/odcs/tasks/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
-
+    
     public ODCSIssue(NbTask task, ODCSRepository repo) {
         super(task);
         this.repository = repo;
@@ -901,6 +902,10 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     void delete () {
         deleteTask();
+    }
+
+    public String getPriorityID() {
+        return getPriority().getId().toString();
     }
 
     private static class IssueFieldColumnDescriptor extends ColumnDescriptor<String> {

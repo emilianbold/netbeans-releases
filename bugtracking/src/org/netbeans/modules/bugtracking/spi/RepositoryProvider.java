@@ -49,9 +49,13 @@ import java.util.Collections;
 
 /**
  * 
- * Represents a bug tracking repository (server)
+ * Represents a bugtracking repository (server).
  * 
  * @author Tomas Stupka, Jan Stola
+ * 
+ * @param <R> the implementation specific repository type
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public abstract class RepositoryProvider<R, Q, I> {
 
@@ -110,13 +114,25 @@ public abstract class RepositoryProvider<R, Q, I> {
     public abstract Q createQuery(R r); 
 
     /**
-     * Creates a new IssueProvider instance. Might block for a longer time.
+     * Creates a new issue instance. Might block for a longer time.
      *
-     * @return return a new IssueProvider instance or null if it's not possible
+     * @return return a new issue instance or null if it's not possible
      * to access the repository.
      */
     public abstract I createIssue(R r);
 
+    /**
+     * Creates a new issue instance. Might block for a longer time.
+     *
+     * @param r
+     * @param summary
+     * @param description
+     * @return return a new issue instance or null if it's not possible
+     * to access the repository.
+     * XXX do we need a canCreate(...) if this is provided?
+     */
+    public abstract I createIssue(R r, String summary, String description);
+    
     /**
      * Returns all saved queries
      * @return
@@ -141,7 +157,7 @@ public abstract class RepositoryProvider<R, Q, I> {
     public Collection<I> getUnsubmittedIssues (R r) {
         return Collections.<I>emptyList();
     }
-
+    
     /*********
      * EVENTS
      *********/

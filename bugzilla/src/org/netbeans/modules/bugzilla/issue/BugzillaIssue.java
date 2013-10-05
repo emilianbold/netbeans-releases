@@ -1427,6 +1427,10 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         return cancelChanges();
     }
 
+    public String getPriority() {
+        return getRepositoryFieldValue(IssueField.PRIORITY);
+    }
+
     class Comment {
         private final Date when;
         private final String author;

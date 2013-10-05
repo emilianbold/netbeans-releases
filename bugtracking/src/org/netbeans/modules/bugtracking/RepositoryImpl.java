@@ -86,17 +86,33 @@ public final class RepositoryImpl<R, Q, I> {
     private final RepositoryProvider<R, Q, I> repositoryProvider;
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
+    private final IssueStatusProvider<I> issueStatusProvider;    
+    private final IssueSchedulingProvider<I> issueSchedulingProvider;    
+    private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
+    private IssuePrioritySupport prioritySupport;
     
-    public RepositoryImpl(final R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
+    public RepositoryImpl(
+            final R r, 
+            RepositoryProvider<R, Q, I> repositoryProvider, 
+            QueryProvider<Q, I> queryProvider, 
+            IssueProvider<I> issueProvider, 
+            IssueStatusProvider<I> issueStatusProvider, 
+            IssueSchedulingProvider<I> issueSchedulingProvider,
+            IssuePriorityProvider<I> issuePriorityProvider) 
+    {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
         this.queryProvider = queryProvider;
+        this.issueStatusProvider = issueStatusProvider;
+        this.issueSchedulingProvider = issueSchedulingProvider;
+        this.issuePriorityProvider = issuePriorityProvider;
         this.r = r;
+        
         support = new PropertyChangeSupport(this);
         repositoryProvider.addPropertyChangeListener(r, new PropertyChangeListener() {
             @Override
@@ -228,6 +244,11 @@ public final class RepositoryImpl<R, Q, I> {
         I issueData = repositoryProvider.createIssue(r);
         return getIssue(issueData);
     }   
+    
+    public IssueImpl createNewIssue(String summary, String description) {
+        I issueData = repositoryProvider.createIssue(r, summary, description);
+        return getIssue(issueData);
+    }   
 
     public RepositoryProvider<R, Q, I> getProvider() {
         return repositoryProvider;
@@ -259,6 +280,36 @@ public final class RepositoryImpl<R, Q, I> {
         support.addPropertyChangeListener(listener);
     }
 
+    IssueStatusProvider<I> getStatusProvider() {
+        return issueStatusProvider;
+    }
+    
+    IssueSchedulingProvider<I> getSchedulingProvider() {
+        return issueSchedulingProvider;
+    }
+    
+    IssuePriorityProvider<I> getPriorityProvider() {
+        return issuePriorityProvider;
+    }
+
+    String getPriorityName(I i) {
+        return issuePriorityProvider != null ? 
+                getPrioritySupport().getName(issuePriorityProvider.getPriorityID(i)) :
+                ""; // NOI18N
+        
+    }
+    
+    Image getPriorityIcon(I i) {
+        Image icon = null;
+        if(issuePriorityProvider != null) {
+            icon = getPrioritySupport().getIcon(issuePriorityProvider.getPriorityID(i));
+        }
+        if(icon == null) {
+            icon = IssuePrioritySupport.getDefaultIcon();
+        }
+        return icon;
+    }
+    
     /**
      * Notify listeners on this repository that a query was either removed or saved
      * XXX make use of new/old value
@@ -399,5 +450,13 @@ public final class RepositoryImpl<R, Q, I> {
     private void fireUnsubmittedIssuesChanged() {
         support.firePropertyChange(EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
     }
+
+    private synchronized IssuePrioritySupport getPrioritySupport() {
+        if(prioritySupport == null) {
+            prioritySupport = new IssuePrioritySupport(issuePriorityProvider.getPriorityInfos());
+        }
+        return prioritySupport;
+    }
+        
 }
 

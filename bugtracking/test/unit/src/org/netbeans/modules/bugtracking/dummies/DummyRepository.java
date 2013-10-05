@@ -96,44 +96,8 @@ public class DummyRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue[] getIssues(String[] id) {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
     public void remove() {
         connector.removeRepository(TestKit.getRepository(this));
-    }
-
-    @Override
-    public RepositoryController getController() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public TestQuery createQuery() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public TestIssue createIssue() {
-        assert false : "This was assumed to be never called.";
-        return null;
-    }
-
-    @Override
-    public Collection<TestQuery> getQueries() {
-        assert false : "This was assumed to be never called.";
-        return Collections.emptyList();
-    }
-    
-    @Override
-    public Collection<TestIssue> simpleSearch(String criteria) {
-        assert false : "This was assumed to be never called.";
-        return Collections.emptyList();
     }
 
     public Lookup getLookup() {
@@ -144,11 +108,4 @@ public class DummyRepository extends TestRepository {
     public String toString() {
         return getInfo().getDisplayName();
     }
-
-    @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) { }
-
-    @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) { }
-
 }

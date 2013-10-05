@@ -351,7 +351,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                         }
                     }
                 }
-                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+                fireOpenedProjects();
             }
         });
     }
@@ -369,7 +369,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         }
         if(removed) {
             project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
-            changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+            fireOpenedProjects();
         }
     }
 
@@ -482,6 +482,10 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 switchContent();
             }
         }
+        fireOpenedProjects();
+    }
+
+    private void fireOpenedProjects() {
         changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
@@ -658,7 +662,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+        fireOpenedProjects();
     }
 
     void switchProject(ProjectHandle ph, ListNode node, boolean hideMenu) {

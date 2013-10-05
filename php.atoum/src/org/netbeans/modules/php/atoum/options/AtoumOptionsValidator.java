@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.atoum.options;
 
 import org.netbeans.modules.php.api.validation.ValidationResult;
-import org.netbeans.modules.php.atoum.commands.Atoum;
+import org.netbeans.modules.php.atoum.util.AtoumUtils;
 
 public class AtoumOptionsValidator {
 
@@ -59,7 +59,7 @@ public class AtoumOptionsValidator {
     }
 
     private void validateAtoumPath(String atoumPath) {
-        String warning = Atoum.validate(atoumPath);
+        String warning = AtoumUtils.validateAtoumPath(atoumPath);
         if (warning != null) {
             result.addWarning(new ValidationResult.Message("atoum.path", warning)); // NOI18N
         }

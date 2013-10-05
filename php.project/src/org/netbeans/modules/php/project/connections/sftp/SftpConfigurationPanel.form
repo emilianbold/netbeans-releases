@@ -26,7 +26,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="passwordLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
@@ -40,40 +40,40 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="knownHostsFileTextField" alignment="1" max="32767" attributes="0"/>
-                          <Component id="identityFileTextField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="userTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="hostTextField" alignment="0" max="32767" attributes="2"/>
-                          <Component id="timeoutTextField" linkSize="3" alignment="0" min="-2" pref="185" max="-2" attributes="0"/>
-                          <Component id="passwordTextField" alignment="1" max="32767" attributes="0"/>
-                          <Component id="initialDirectoryTextField" alignment="1" max="32767" attributes="2"/>
-                          <Component id="keepAliveTextField" linkSize="3" alignment="0" min="-2" pref="185" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" alignment="1" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="102" alignment="0" attributes="1">
-                                  <Component id="portLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Component id="portTextField" max="32767" attributes="0"/>
-                              </Group>
-                              <Component id="identityFileBrowseButton" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="knownHostsFileBrowseButton" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="hostTextField" max="32767" attributes="2"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="portLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="portTextField" linkSize="4" pref="50" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="userTextField" alignment="0" max="32767" attributes="2"/>
+                  <Component id="passwordTextField" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="identityFileTextField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="identityFileBrowseButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="knownHostsFileTextField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="knownHostsFileBrowseButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="initialDirectoryTextField" alignment="0" max="32767" attributes="2"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="sshAgentInfoLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="timeoutTextField" linkSize="4" pref="35" max="32767" attributes="0"/>
+                                  <Component id="keepAliveTextField" linkSize="4" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -111,8 +111,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="knownHostsFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="knownHostsFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="knownHostsFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="knownHostsFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -128,10 +128,9 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="keepAliveLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="keepAliveTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepAliveInfoLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="keepAliveInfoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -152,24 +151,6 @@
         </Property>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.hostLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="knownHostsFileLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="knownHostsFileTextField"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
@@ -342,6 +323,24 @@
           <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.sshAgentInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="knownHostsFileLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="knownHostsFileTextField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/connections/sftp/Bundle.properties" key="SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="knownHostsFileTextField">
       <AccessibilityProperties>

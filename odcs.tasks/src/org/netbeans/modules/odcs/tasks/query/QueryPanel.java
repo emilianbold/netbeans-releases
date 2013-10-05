@@ -1278,14 +1278,15 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchPanel.setVisible(b);
         cancelChangesButton.setVisible(b);
         saveChangesButton.setVisible(b);
+        
+        webButton.setVisible(b);
+        separatorLabel3.setVisible(b);
 
         tableFieldsPanel.setVisible(!b);
         searchButton.setVisible(!b);
         saveButton.setVisible(!b);
-        webButton.setVisible(!b);
-
+        
         separatorLabel1.setVisible(!b);
-        separatorLabel3.setVisible(!b);
     }
 
     void setSaved(String name, String lastRefresh) {

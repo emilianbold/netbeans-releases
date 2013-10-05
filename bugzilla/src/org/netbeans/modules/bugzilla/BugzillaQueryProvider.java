@@ -119,4 +119,14 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
 
+    @Override
+    public boolean canRename(BugzillaQuery q) {
+        return true;
+    }
+
+    @Override
+    public void rename(BugzillaQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }

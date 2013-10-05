@@ -1407,14 +1407,15 @@ public class QueryPanel extends javax.swing.JPanel {
                 cancelChangesButton.setVisible(b);
                 saveChangesButton.setVisible(b);
                 
+                webButton.setVisible(b);
+                separatorLabel2.setVisible(b);
+                
                 tableFieldsPanel.setVisible(!b);
                 searchButton.setVisible(!b);
                 saveButton.setVisible(!b);
-                webButton.setVisible(!b);
                 urlToggleButton.setVisible(!b);
                 
                 separatorLabel1.setVisible(!b);
-                separatorLabel2.setVisible(!b);
                 separatorLabel3.setVisible(!b);
             }
         });

@@ -185,7 +185,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
-
+   
     @Override
     protected void taskDeleted (NbTask task) {
         getRepository().taskDeleted(getKey(task));
@@ -318,6 +318,19 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return getNewAttachments();
     }
 
+
+    public String getPriorityID() {
+        return getPriority().getId();
+    }
+    
+    int getSortOrder() {
+        return getSortOrder(getPriority());
+    }
+
+    private int getSortOrder(Priority priority) {
+        return repository.getConfiguration().getPrioritySortOrder(priority);
+    }
+    
     public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
         SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),

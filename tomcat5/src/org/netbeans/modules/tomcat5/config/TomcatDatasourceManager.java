@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.tomcat5.config;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +58,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
@@ -65,8 +72,9 @@ import org.netbeans.modules.tomcat5.config.gen.GlobalNamingResources;
 import org.netbeans.modules.tomcat5.config.gen.Parameter;
 import org.netbeans.modules.tomcat5.config.gen.ResourceParams;
 import org.netbeans.modules.tomcat5.config.gen.Server;
-import org.netbeans.modules.tomcat5.config.gen.Tomee;
-import org.openide.util.Exceptions;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * DataSourceManager implementation
@@ -86,34 +94,25 @@ public class TomcatDatasourceManager implements DatasourceManager {
         tm = (TomcatManager) dm;
     }
 
-    public static Set<Datasource> getTomeeDatasources(Tomee actualResources) {
-        HashSet<Datasource> result = new HashSet<Datasource>();
-        int resourcesLength = actualResources.getTomeeResource().length;
-        for (int i = 0; i < resourcesLength; i++) {
-            String type = actualResources.getTomeeResourceType(i);
-            if ("javax.sql.DataSource".equals(type)) { // NOI18N
-
-                String data = actualResources.getTomeeResource(i);
-                Properties props = new Properties();
-                try {
-                    props.load(new StringReader(data));
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                    continue;
-                }
-
-                String name = actualResources.getTomeeResourceId(i);
-                String username = props.getProperty("userName"); // NOI18N
-                String url = props.getProperty("jdbcUrl"); // NOI18N
-                String password = props.getProperty("password"); // NOI18N
-                String driverClassName = props.getProperty("jdbcDriver"); // NOI18N
-                if (name != null && username != null && url != null && driverClassName != null) {
-                    // return the datasource only if all the needed params are non-null except the password param
-                    result.add(new TomcatDatasource(username, url, password, name, driverClassName));
-                }
-            }
+    @CheckForNull
+    public static Datasource createDatasource(String name, String data) {
+        Properties props = new Properties();
+        try {
+            props.load(new StringReader(data));
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return null;
         }
-        return result;
+
+        String username = props.getProperty("userName"); // NOI18N
+        String url = props.getProperty("jdbcUrl"); // NOI18N
+        String password = props.getProperty("password"); // NOI18N
+        String driverClassName = props.getProperty("jdbcDriver"); // NOI18N
+        if (name != null && username != null && url != null && driverClassName != null) {
+            // return the datasource only if all the needed params are non-null except the password param
+           return new TomcatDatasource(username, url, password, name, driverClassName);
+        }
+        return null;
     }
 
     @Override
@@ -203,24 +202,27 @@ public class TomcatDatasourceManager implements DatasourceManager {
         }
 
         File tomeeXml = tm.getTomcatProperties().getTomeeXml();
-        if (!tomeeXml.isFile()) {
+        if (tomeeXml == null) {
             return Collections.emptySet();
         }
 
-        Tomee tomee;
         try {
-            tomee = Tomee.createGraph(tomeeXml);
-        } catch (IOException e) {
-            // ok, log it and give up
-            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
-            return Collections.<Datasource>emptySet();
-        } catch (RuntimeException e) {
-            // server.xml file is most likely not parseable, log it and give up
-            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
-            return Collections.<Datasource>emptySet();
-        }
+            try (InputStream is = new BufferedInputStream(new FileInputStream(tomeeXml))) {
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                SAXParser saxParser = factory.newSAXParser();
+                DatasourceHandler handler = new DatasourceHandler();
+                saxParser.parse(is, handler);
 
-        return getTomeeDatasources(tomee);
+                return handler.getDataSources();
+            } catch (IOException e) {
+                // ok, log it and give up
+                Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, e);
+            }
+        } catch (ParserConfigurationException | SAXException ex) {
+            // ok, log it and give up
+            Logger.getLogger(TomcatDatasourceManager.class.getName()).log(Level.INFO, null, ex);
+        }
+        return Collections.<Datasource>emptySet();
     }
 
     @Override
@@ -229,4 +231,48 @@ public class TomcatDatasourceManager implements DatasourceManager {
         // nothing needs to be done here
     }
 
+    private static class DatasourceHandler extends DefaultHandler {
+
+        private final StringBuilder content = new StringBuilder();
+
+        private final Set<Datasource> dataSources = new HashSet<>();
+
+        private boolean isResource = false;
+
+        private String name;
+
+        public Set<Datasource> getDataSources() {
+            return dataSources;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            content.setLength(0);
+            if ("Resource".equals(qName) // NOI18N
+                    && "javax.sql.DataSource".equals(attributes.getValue("type"))  // NOI18N
+                    && attributes.getValue("id") != null) {  // NOI18N
+                isResource = true;
+                name = attributes.getValue("id");  // NOI18N
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (isResource) {
+                if ("Resource".equals(qName)) {  // NOI18N
+                    dataSources.add(createDatasource(name, content.toString()));
+                    isResource = false;
+                    name = null;
+                }
+            }
+        }
+
+        @Override
+        public void characters(char[] ch, int start, int length) throws SAXException {
+            if (isResource) {
+                content.append(ch, start, length);
+            }
+        }
+
+    }
 }

@@ -73,7 +73,7 @@ public class CordovaPlatform {
         return instance;
     }
     
-    private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+");
+    private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+.*");
     
     public Version getVersion() {
         if (version == null) {

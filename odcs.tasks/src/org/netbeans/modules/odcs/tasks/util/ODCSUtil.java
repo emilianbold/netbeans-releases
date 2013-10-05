@@ -189,22 +189,23 @@ public class ODCSUtil {
             repository = TeamUtil.getRepository(teamProject);
         }
         if (repository == null) {
-            
-            repository = createRepository(odcsRepository);
+            repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
+            if(repository == null) {
+                repository = createRepository(odcsRepository);
+            }
         }
         return repository;
     }
 
-    public static Repository createRepository (ODCSRepository odcsRepository) {
-        Repository repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
-        if(repository == null) {
-            repository = ODCS.getInstance().getBugtrackingFactory().createRepository(
-                    odcsRepository, 
-                    ODCS.getInstance().getRepositoryProvider(), 
-                    ODCS.getInstance().getQueryProvider(),
-                    ODCS.getInstance().getIssueProvider());
-        }
-        return repository;
+    public static Repository createRepository(ODCSRepository odcsRepository) {
+        return ODCS.getInstance().getBugtrackingFactory().createRepository(
+                odcsRepository,
+                ODCS.getInstance().getRepositoryProvider(),
+                ODCS.getInstance().getQueryProvider(),
+                ODCS.getInstance().getIssueProvider(),
+                ODCS.getInstance().getStatusProvider(),
+                null, 
+                ODCS.getInstance().getPriorityProvider(odcsRepository));
     }
 
     public static TaskResolution getResolutionByValue(RepositoryConfiguration rc, String value) {

@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.awt.Panel;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Arrays;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -65,7 +63,7 @@ public class APITestQuery extends TestQuery {
     
     static final String TOOLTIP_SUF = " - tooltip";
     
-    private final String name;
+    private String name;
     boolean isSaved;
     boolean wasRefreshed;
     boolean wasOpened;
@@ -150,6 +148,16 @@ public class APITestQuery extends TestQuery {
     public void refresh() {
         wasRefreshed = true;
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }
+
+    @Override
+    public boolean canRename() {
+        return true;
+    }
+
+    @Override
+    public void rename(String name) {
+        this.name = name;
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.test.permanentUI;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+package org.netbeans.modules.php.atoum.util;
 
-/**
- *
- * @author Lukas Hasik
- */
-public class PermanentUITest {
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.openide.util.NbBundle;
 
-    public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().clusters(".*").enableModules(".*");
-        return conf
-                .addTest(MainMenuTest.class, MainMenuTest.TESTS)
-                .addTest(MainMenuJavaTest.class, MainMenuJavaTest.TESTS)
-                .addTest(TeamMenuVCSActivatedTest.class, TeamMenuVCSActivatedTest.TESTS)
-                .addTest(NewProjectTest.class)
-                .addTest(OptionsTest.class)
-                .suite();
+public final class AtoumUtils {
+
+    private AtoumUtils() {
+    }
+
+    @NbBundle.Messages("AtoumUtils.atoum.label=atoum file")
+    @CheckForNull
+    public static String validateAtoumPath(String atoumPath) {
+        return PhpExecutableValidator.validateCommand(atoumPath, Bundle.AtoumUtils_atoum_label());
     }
 
 }

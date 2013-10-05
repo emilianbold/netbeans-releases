@@ -77,15 +77,23 @@ public class APITestIssue extends TestIssue {
     File attachedFile;
     private BugtrackingController controller;
     private final APITestRepository repo;
+    private String summary;
+    private String description;
 
     public APITestIssue(String id, APITestRepository repo) {
         this(id, repo, false);
     }
     
     public APITestIssue(String id, APITestRepository repo, boolean isNew) {
+        this(id, repo, isNew, id + SUMMARY_SUF, null);
+    }
+    
+    public APITestIssue(String id, APITestRepository repo, boolean isNew, String summary, String description) {
         this.id = id;
         this.isNew = isNew;
         this.repo = repo;
+        this.summary = summary;
+        this.description = description;
     }
     
     @Override
@@ -105,7 +113,12 @@ public class APITestIssue extends TestIssue {
 
     @Override
     public String getSummary() {
-        return id + SUMMARY_SUF;
+        return summary;
+    }
+    
+    @Override
+    public String getDescription() {
+        return description;
     }
 
     @Override
@@ -177,14 +190,7 @@ public class APITestIssue extends TestIssue {
         return idFinished;
     }
 
-    @Override
-    public IssueStatusProvider.Status getStatus() {
+    void discardOutgoing() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-
-    @Override
-    public void setSeen(boolean seen) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }

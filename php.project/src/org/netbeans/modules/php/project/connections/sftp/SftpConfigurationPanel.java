@@ -169,7 +169,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
     private void initComponents() {
 
         hostLabel = new JLabel();
-        knownHostsFileLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
         portTextField = new JTextField();
@@ -182,6 +181,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileTextField = new JTextField();
         identityFileBrowseButton = new JButton();
         sshAgentInfoLabel = new JLabel();
+        knownHostsFileLabel = new JLabel();
         knownHostsFileTextField = new JTextField();
         knownHostsFileBrowseButton = new JButton();
         initialDirectoryLabel = new JLabel();
@@ -194,9 +194,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
         hostLabel.setLabelFor(hostTextField);
         Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.text")); // NOI18N
-
-        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
-        Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text")); // NOI18N
 
         hostTextField.setMinimumSize(new Dimension(150, 19));
 
@@ -224,6 +221,9 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
         Mnemonics.setLocalizedText(sshAgentInfoLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.sshAgentInfoLabel.text")); // NOI18N
 
+        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
+        Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(knownHostsFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.text")); // NOI18N
         knownHostsFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -250,7 +250,7 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(passwordLabel)
-                .addContainerGap())
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(hostLabel)
@@ -262,38 +262,37 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                     .addComponent(keepAliveLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(passwordLabelInfo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                            .addComponent(knownHostsFileTextField)
-                            .addComponent(identityFileTextField, Alignment.LEADING)
-                            .addComponent(userTextField, Alignment.LEADING)
-                            .addComponent(hostTextField, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(timeoutTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE)
-                            .addComponent(passwordTextField)
-                            .addComponent(initialDirectoryTextField)
-                            .addComponent(keepAliveTextField, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 185, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(hostTextField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addGroup(Alignment.TRAILING, layout.createParallelGroup(Alignment.LEADING, false)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(portLabel)
-                                    .addPreferredGap(ComponentPlacement.RELATED)
-                                    .addComponent(portTextField))
-                                .addComponent(identityFileBrowseButton))
-                            .addComponent(knownHostsFileBrowseButton, Alignment.TRAILING)))
+                        .addComponent(portLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(portTextField, GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE))
+                    .addComponent(userTextField)
+                    .addComponent(passwordTextField)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(identityFileTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(identityFileBrowseButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(knownHostsFileTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(knownHostsFileBrowseButton))
+                    .addComponent(initialDirectoryTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(sshAgentInfoLabel)
-                            .addComponent(keepAliveInfoLabel))
-                        .addGap(0, 0, Short.MAX_VALUE))))
+                            .addComponent(passwordLabelInfo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+                                    .addComponent(timeoutTextField, GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE)
+                                    .addComponent(keepAliveTextField))
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(keepAliveInfoLabel)))
+                        .addContainerGap())))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {identityFileBrowseButton, knownHostsFileBrowseButton});
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {keepAliveTextField, timeoutTextField});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {keepAliveTextField, portTextField, timeoutTextField});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -323,8 +322,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(knownHostsFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(knownHostsFileBrowseButton)
-                    .addComponent(knownHostsFileLabel))
+                    .addComponent(knownHostsFileLabel)
+                    .addComponent(knownHostsFileBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(initialDirectoryLabel)
@@ -336,16 +335,13 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(keepAliveLabel)
-                    .addComponent(keepAliveTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(keepAliveInfoLabel)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(keepAliveTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(keepAliveInfoLabel))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         hostLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.AccessibleContext.accessibleName")); // NOI18N
         hostLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        knownHostsFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleName")); // NOI18N
-        knownHostsFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
         hostTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleName")); // NOI18N
         hostTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostTextField.AccessibleContext.accessibleDescription")); // NOI18N
         portLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -368,6 +364,8 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         identityFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
         identityFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N
         identityFileBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
+        knownHostsFileLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleName")); // NOI18N
+        knownHostsFileLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.AccessibleContext.accessibleDescription")); // NOI18N
         knownHostsFileTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.AccessibleContext.accessibleName")); // NOI18N
         knownHostsFileTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.AccessibleContext.accessibleDescription")); // NOI18N
         knownHostsFileBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.AccessibleContext.accessibleName")); // NOI18N

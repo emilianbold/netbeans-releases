@@ -59,6 +59,7 @@ import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.netbeans.modules.search.Removable;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author jhavlin
  */
-public class MatchingObjectNode extends AbstractNode {
+public class MatchingObjectNode extends AbstractNode implements Removable {
 
     @StaticResource
     private static final String INVALID_ICON =
@@ -115,7 +116,7 @@ public class MatchingObjectNode extends AbstractNode {
             final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
         super(children, Lookups.fixed(matchingObject, checkableNode,
-                matchingObject.getFileObject()));
+                matchingObject.getFileObject(), matchingObject.getDataObject()));
         Parameters.notNull("original", original);                       //NOI18N
         this.matchingObject = matchingObject;
         if (matchingObject.isObjectValid()) {
@@ -168,7 +169,9 @@ public class MatchingObjectNode extends AbstractNode {
             return new Action[]{
                         SystemAction.get(OpenMatchingObjectsAction.class),
                         copyPath == null ? new CopyPathAction() : copyPath,
-                        SystemAction.get(HideResultAction.class)
+                        SystemAction.get(HideResultAction.class),
+                        null,
+                        SystemAction.get(MoreAction.class)
                     };
         } else {
             return new Action[0];
@@ -235,11 +238,6 @@ public class MatchingObjectNode extends AbstractNode {
                 matchingObject.getFileObject().getNameExt());
     }
 
-    @Override
-    public boolean canDestroy() {
-        return true;
-    }
-
     public void clean() {
         if (original != null && origNodeListener != null && valid) {
             original.removeNodeListener(origNodeListener);
@@ -278,9 +276,19 @@ public class MatchingObjectNode extends AbstractNode {
     }
 
     @Override
-    public void destroy () throws IOException {
+    public void remove() {
         // when removing the node, the node's content is removed from model
         this.matchingObject.remove();
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return true;
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        remove();
     }
 
     /**

@@ -41,25 +41,23 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.event.ActionEvent;
-import org.openide.actions.DeleteAction;
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
+import org.netbeans.modules.search.Removable;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author jhavlin
  */
 @NbBundle.Messages({"HideResultAction.displayName=Hide"})
-public class HideResultAction extends CallbackSystemAction {
+public class HideResultAction extends NodeAction {
 
-    CallbackSystemAction delegate = SystemAction.get(DeleteAction.class);
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        delegate.actionPerformed(e);
+    public HideResultAction() {
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     }
 
     @Override
@@ -68,12 +66,21 @@ public class HideResultAction extends CallbackSystemAction {
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return delegate.getHelpCtx();
+    protected void performAction(Node[] activatedNodes) {
+        for (Node n : activatedNodes) {
+            if (n instanceof Removable) {
+                ((Removable) n).remove();
+            }
+        }
     }
 
     @Override
-    public boolean isEnabled() {
+    protected boolean enable(Node[] activatedNodes) {
         return true;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
     }
 }

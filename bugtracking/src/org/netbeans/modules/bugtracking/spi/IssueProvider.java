@@ -43,11 +43,17 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
- * Provides access to a bugtracking Issue
+ * Provides access to a bugtracking Issue.
+ * <br/>
+ * Note that an implementation of this interface is not mandatory for a 
+ * NetBeans bugtracking plugin. 
  *
  * @author Tomas Stupka
+ * @param <I> the implementation specific issue type
  */
 public abstract class IssueProvider<I> {
 
@@ -59,17 +65,12 @@ public abstract class IssueProvider<I> {
     static {
         SPIAccessorImpl.createAccesor();
     }
-
-    public IssueStatusProvider getStatusProvider() {
-        return null;
-    }
     
     /**
      * Returns this issues display name
      * @return
      */
     public abstract String getDisplayName(I data);
-
 
     /**
      * Returns this issues tooltip
@@ -142,6 +143,16 @@ public abstract class IssueProvider<I> {
     public abstract void attachPatch(I data, File file, String description);
 
     /**
+     * Discard outgoing local changes. 
+     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * 
+     * @param data 
+     */
+    public abstract void discardOutgoing(I data);
+    
+    /**
      * Returns this issues controller
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
@@ -164,5 +175,5 @@ public abstract class IssueProvider<I> {
     public boolean submit (I data) {
         return false;
     }
-
+    
 }

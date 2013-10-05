@@ -57,7 +57,6 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -69,6 +68,7 @@ import org.netbeans.modules.php.nette.tester.preferences.TesterPreferencesValida
 import org.netbeans.modules.php.nette.tester.run.TapParser;
 import org.netbeans.modules.php.nette.tester.run.TestCaseVo;
 import org.netbeans.modules.php.nette.tester.run.TestSuiteVo;
+import org.netbeans.modules.php.nette.tester.ui.customizer.TesterCustomizer;
 import org.netbeans.modules.php.nette.tester.ui.options.TesterOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -117,7 +117,7 @@ public final class Tester {
     public static Tester getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
         if (validatePhpModule(phpModule) != null) {
             if (showCustomizer) {
-                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(PhpTesting.CUSTOMIZER_IDENT, null);
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(TesterCustomizer.IDENTIFIER, null);
             }
             return null;
         }

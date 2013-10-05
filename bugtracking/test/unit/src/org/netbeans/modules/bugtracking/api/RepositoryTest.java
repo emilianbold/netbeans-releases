@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.TestIssue;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -83,6 +84,15 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(APITestRepository.URL, repo.getUrl());
         assertEquals(APITestRepository.ID, repo.getId());
         assertEquals(APITestRepository.ICON, repo.getIcon());
+    }
+    
+    public void testCreateIssueSumDesc() {
+        APITestRepository apiRepo = getApiRepo();
+        final String summary = "testsum";
+        final String desc = "testdesc";
+        TestIssue issue = apiRepo.createIssue(summary, desc);
+        assertEquals(summary, issue.getSummary());
+        assertEquals(desc, issue.getDescription());
     }
     
     public void testGetQueries() {
