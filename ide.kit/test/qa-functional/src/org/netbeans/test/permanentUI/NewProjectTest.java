@@ -50,6 +50,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.diff.LineDiff;
+import org.netbeans.test.permanentUI.utils.ProjectContext;
 import org.netbeans.test.permanentUI.utils.Utilities;
 
 /**
@@ -91,6 +92,7 @@ public class NewProjectTest extends PermUITestCase {
         if(npwo == null || !npwo.isVisible()){
             npwo = NewProjectWizardOperator.invoke();
         }
+        context = ProjectContext.NONE;
     }
 
     @Override

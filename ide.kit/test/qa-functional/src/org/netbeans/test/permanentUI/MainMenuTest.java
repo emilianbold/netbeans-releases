@@ -70,7 +70,6 @@ public class MainMenuTest extends PermUITestCase {
      */
     public MainMenuTest(String name) {
         super(name);
-        context = ProjectContext.NONE;
     }
 
     public static Test suite() {
@@ -120,6 +119,7 @@ public class MainMenuTest extends PermUITestCase {
 
     @Override
     public void initialize() throws IOException {
+        context = ProjectContext.NONE;
         // do nothing
     }
 

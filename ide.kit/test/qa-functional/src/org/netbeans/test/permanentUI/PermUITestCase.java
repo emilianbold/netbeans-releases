@@ -89,7 +89,6 @@ public abstract class PermUITestCase extends JellyTestCase {
      */
     @Override
     public void setUp() {
-        System.out.println("########  " + " CONTEXT -> " + context.toString() + " - " + getName() + "  #######");
         try {
             System.setErr(new PrintStream(new File(getWorkDir(), getName() + ".error")));
             clearWorkDir();
@@ -101,6 +100,7 @@ public abstract class PermUITestCase extends JellyTestCase {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+        System.out.println("########  " + " CONTEXT -> " + context.toString() + " - " + getName() + "  #######");
     }
 
     public abstract void initialize() throws IOException;

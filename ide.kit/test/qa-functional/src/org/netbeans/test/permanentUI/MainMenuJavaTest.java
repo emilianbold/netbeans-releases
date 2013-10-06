@@ -52,7 +52,6 @@ public class MainMenuJavaTest extends MainMenuTest {
 
     public MainMenuJavaTest(String name) {
         super(name);
-        context = ProjectContext.JAVA;
     }
 
     public static Test suite() {
@@ -71,6 +70,7 @@ public class MainMenuJavaTest extends MainMenuTest {
 
     @Override
     public void initialize() {
+        context = ProjectContext.JAVA;
         openFile("SampleProject", org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + TREE_SEPARATOR + "sample1", "SampleClass1.java");
     }
     

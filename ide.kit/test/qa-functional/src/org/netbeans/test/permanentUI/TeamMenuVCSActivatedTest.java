@@ -62,7 +62,6 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
      */
     public TeamMenuVCSActivatedTest(String name) {
         super(name);
-        context = ProjectContext.VERSIONING_ACTIVATED;
     }
 
     public static Test suite() {
@@ -83,6 +82,7 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
 
     @Override
     public void initialize() {
+        context = ProjectContext.VERSIONING_ACTIVATED;
         String newProject = "SampleProject";
         assertEquals("VCS activation of: \"" + newProject + "\" FAILURED", true, openVersioningJavaEEProject(newProject));
     }
