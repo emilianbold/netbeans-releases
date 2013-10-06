@@ -169,7 +169,10 @@ public final class NbTaskDataModel {
         // this is needed because after refresh() the unsaved changes no longer
         // belong to the local taskdata (they're reinstantiated)
         delegateModel.revert();
-        Set<TaskAttribute> changedAttributes = unsavedChangedAttributes;
+        Set<TaskAttribute> changedAttributes;
+        synchronized (unsavedChangedAttributes) {
+            changedAttributes = new HashSet<TaskAttribute>(unsavedChangedAttributes);
+        }
         for (TaskAttribute ta : changedAttributes) {
             // there are still local unsaved changes, keep them in local taskdata
             TaskData td = getLocalTaskData();
