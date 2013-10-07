@@ -74,8 +74,8 @@ public class SelectInAction extends NodeAction implements Presenter.Popup {
     protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1
                 && (getAction(SEL_IN_FILES) != null
-                || getAction(SEL_IN_PROJECTS) != null)
-                || getAction(SEL_IN_FAVS) != null;
+                || getAction(SEL_IN_PROJECTS) != null
+                || getAction(SEL_IN_FAVS) != null);
     }
 
     @NbBundle.Messages("SelectInAction.name=Select In")
