@@ -43,6 +43,7 @@ package org.netbeans.modules.html.custom;
 
 import org.netbeans.modules.html.custom.hints.CheckerElementVisitor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -175,7 +176,23 @@ public class CustomHtmlExtension extends HtmlExtension {
         String tagName = ((OpenTag) node).name().toString();
         Tag t = conf.getTag(tagName);
         if (t != null) {
+            //complete attribute specific for the element
             for (org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+                //do not complete already existing attributes
+                String aName = a.getName();
+                if (ot.getAttribute(aName) == null) {
+                    if (aName.startsWith(context.getPrefix())) {
+                        items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                    }
+                }
+            }
+        }
+
+        //complete global attributes
+        for (org.netbeans.modules.html.custom.conf.Attribute a : conf.getAttributes()) {
+            Collection<String> contexts = a.getContexts();
+            //complete either contextfree attribute or if the current element is the attribute context
+            if (contexts.isEmpty() || contexts.contains(tagName)) {
                 //do not complete already existing attributes
                 String aName = a.getName();
                 if (ot.getAttribute(aName) == null) {
