@@ -507,9 +507,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         Map<String, DirEntry> newEntries = new HashMap<String, DirEntry>();            
         boolean canLs = canLs();
         if (canLs) {
-            DirectoryReader directoryReader = new DirectoryReaderSftp(getExecutionEnvironment(), getPath());
-            directoryReader.readDirectory();
-            for (DirEntry entry : directoryReader.getEntries()) {
+            DirectoryReader directoryReader = DirectoryReaderSftp.getInstance(getExecutionEnvironment());
+            for (DirEntry entry : directoryReader.readDirectory(getPath())) {
                 newEntries.put(entry.getName(), entry);
             }
             

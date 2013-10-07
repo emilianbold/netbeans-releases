@@ -51,7 +51,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -67,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -89,11 +87,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
 
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        CompletionSupport sup = CompletionSupport.get(component);
-        if (sup == null) {
-            return 0;
-        }
-        return COMPLETION_QUERY_TYPE;
+        return 0;
     }
 
     @Override
@@ -253,7 +247,11 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         if (definition == null) {
                                             items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, member));
                                         } else if (method == definition){
-                                            items.add(CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member));
+                                            final CsmImplementsMethodCompletionItem item =
+                                                    CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, member);
+                                            if (item != null) {
+                                                items.add(item);
+                                            }
                                         }
                                     }
                                 }
