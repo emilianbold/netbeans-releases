@@ -53,11 +53,12 @@ public class CustomAttributeCompletionItem extends HtmlCompletionItem {
 
     private final org.netbeans.modules.html.custom.conf.Attribute attr;
 
-    private boolean autocompleteQuotes = false;
+    private final boolean autocompleteQuotes;
 
     public CustomAttributeCompletionItem(org.netbeans.modules.html.custom.conf.Attribute attr, int substituteOffset) {
         super(attr.getName(), substituteOffset);
         this.attr = attr;
+        this.autocompleteQuotes = !"boolean".equals(attr.getType()); //NOI18N
     }
 
     protected Color getAttributeColor() {
@@ -81,7 +82,9 @@ public class CustomAttributeCompletionItem extends HtmlCompletionItem {
 
     @Override
     public int getSortPriority() {
-        return super.getSortPriority() - (attr.isRequired() ? 1 : 0);
+        //required attributes are higher in the cc list
+        //context attributes (defined parent) are higher in the cc list
+        return super.getSortPriority() - (attr.isRequired() ? 1 : 0) - (attr.getParent() != null ? 1 : 0);
     }
 
     @Override
