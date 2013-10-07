@@ -116,7 +116,7 @@ public class JPAAnnotsOnlyOnAccesor {
                                 hc,
                                 underlineSpan.getStartOffset(),
                                 underlineSpan.getEndOffset(),
-                                NbBundle.getMessage(LegalCombinationOfAnnotations.class, "JPAAnnotsOnlyOnAccesor", ModelUtils.shortAnnotationName(annotName)));
+                                NbBundle.getMessage(LegalCombinationOfAnnotations.class, "MSG_JPAAnnotsOnlyOnAccesor", ModelUtils.shortAnnotationName(annotName)));
 
 
                         problemsFound.add(error);

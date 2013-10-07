@@ -39,55 +39,62 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.custom.hints;
+package org.netbeans.modules.html.editor.api;
 
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.conf.Configuration;
-import org.netbeans.modules.html.custom.conf.Tag;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.NbBundle;
 
 /**
- *
+ * @since 2.46
  * @author marek
  */
-@NbBundle.Messages(value = {
-    "# {0} - element name",
-    "addUnknownElementToProjectConfiguration=Add element \"{0}\" to the project's custom elements"
-})
-public final class AddElementFix implements HintFix {
-    private final String elementName;
-    private final String elementContextName;
-    private final Snapshot snapshot;
-
-    public AddElementFix(String elementName, String elementContextName, Snapshot snapshot) {
-        this.elementName = elementName;
-        this.elementContextName = elementContextName;
-        this.snapshot = snapshot;
+public class HtmlEditorUtils {
+ 
+    /**
+     * Gets {@link OffsetRange} for the given {@link Element}.
+     * 
+     * @param element
+     * @return {@link OffsetRange#NONE} if the offsets pair is erroneous.
+     */
+     public static OffsetRange getOffsetRange(Element element) {
+        int from = element.from();
+        int to = element.to();
+        if(from < 0 || to < 0) {
+            return OffsetRange.NONE;
+        }
+        if(from > to) {
+            return OffsetRange.NONE;
+        }
+        return new OffsetRange(from, to);
     }
-
-    @Override
-    public String getDescription() {
-        return Bundle.addUnknownElementToProjectConfiguration(elementName);
-    }
-
-    @Override
-    public void implement() throws Exception {
-        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        conf.add(new Tag(elementName));
-        conf.store();
-        LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
-    }
-
-    @Override
-    public boolean isSafe() {
-        return true;
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
+    
+     /**
+     * Gets document {@link OffsetRange} for the given {@link Element}.
+     * 
+     * @param element
+     * @param snapshot
+     * @return {@link OffsetRange#NONE} if the offsets pair is erroneous or can't be converted to document offsets.
+     */
+    public static OffsetRange getDocumentOffsetRange(Element element, Snapshot snapshot) {
+        int from = element.from();
+        int to = element.to();
+        if(from < 0 || to < 0) {
+            return OffsetRange.NONE;
+        }
+        if(from > to) {
+            return OffsetRange.NONE;
+        }
+        int origFrom = snapshot.getOriginalOffset(from);
+        int origTo = snapshot.getOriginalOffset(to);
+        if(origFrom < 0 || origTo < 0) {
+            return OffsetRange.NONE;
+        }
+        if(origFrom > origTo) {
+            return OffsetRange.NONE;
+        }
+        
+        return new OffsetRange(origFrom, origTo);
     }
     
 }
