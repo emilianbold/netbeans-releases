@@ -72,6 +72,15 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
+/**
+ * Extended version of {@link CopyOnSave} used by Web project's.
+ *
+ * Does everything related to the deploy on save and copy on save for static resources.
+ * In combination with standard copy on save provides ability to have server side files
+ * synchronized with the working ones.
+ *
+ * @author Martin Janicek<mjanicek@netbeans.org>
+ */
 @ProjectServiceProvider(
     service = {
         CopyOnSave.class,
