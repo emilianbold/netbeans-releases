@@ -1,6 +1,6 @@
-(function () { // generated function for scope SettingsController
-SettingsController();
-var checked;
-var button;
-var checked;
-});
+var $scope1 = SettingsController.$scope;
+with ($scope1) { 
+checked;
+button;
+checked;
+};

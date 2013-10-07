@@ -1,4 +1,4 @@
-(function () { // generated function for scope Ctrl
-Ctrl();
+var $scope1 = Ctrl.$scope;
+with ($scope1) { 
 printAttempt.;
-});
+};
