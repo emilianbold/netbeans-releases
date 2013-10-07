@@ -237,6 +237,7 @@ public final class NbTaskDataModel {
     public void clearUnsavedChanges () {
         if (isDirty()) {
             delegateModel.revert();
+            unsavedChangedAttributes.clear();            
         }
     }
 
