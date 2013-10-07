@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="Cygwin_4.x" display="GNU Compiler Collection from Cygwin" family="GNU" qmakespec="cygwin-g++"/>
+    <toolchain name="Cygwin_4.x" display="GNU Cygwin" family="GNU" qmakespec="cygwin-g++"/>
     <platforms stringvalue="windows"/>
     <drive_letter_prefix stringvalue="/cygdrive/"/>
     <base_folders>

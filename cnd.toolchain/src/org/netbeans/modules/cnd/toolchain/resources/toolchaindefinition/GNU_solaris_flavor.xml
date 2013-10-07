@@ -45,6 +45,6 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="GNU" display="GNU Solaris Compiler Collection" family="GNU" qmakespec="solaris-g++"/>
+    <toolchain name="GNU" display="GNU Solaris" family="GNU" qmakespec="solaris-g++"/>
     <platforms stringvalue="sun_intel,sun_sparc"/>
 </toolchaindefinition>

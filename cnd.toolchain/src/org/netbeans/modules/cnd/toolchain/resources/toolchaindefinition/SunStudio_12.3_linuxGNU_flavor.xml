@@ -44,7 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudio_12.3_linuxCompatGNU" display="Oracle Solaris Studio 12.3 Compiler Collection in GNU compatibility mode" family="SunStudio"/>
+    <toolchain name="OracleSolarisStudio_12.3_linuxCompatGNU" display="Oracle Solaris Studio 12.3 in GNU compatibility mode" family="SunStudio"/>
     <platforms stringvalue="linux"/>
     <default_locations>
         <platform os="linux" directory="/opt/oracle/solarisstudio12.3/bin"/>
