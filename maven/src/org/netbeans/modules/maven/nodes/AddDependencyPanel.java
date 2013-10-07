@@ -83,6 +83,7 @@ import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -123,6 +124,8 @@ import org.openide.util.lookup.InstanceContent;
  * @author  mkleint
  */
 public class AddDependencyPanel extends javax.swing.JPanel {
+    private static final @StaticResource String EMPTY_ICON = "org/netbeans/modules/maven/resources/empty.png";
+    private static final @StaticResource String WAIT_ICON = "org/netbeans/modules/maven/resources/wait.gif";
 
     /**
      * Shows the Add Dependency dialog.
@@ -901,7 +904,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_ICON); //NOI18N
                     }
 
                 @Override
@@ -925,8 +928,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/wait.gif"); //NOI18N
-                    }
+                    return ImageUtilities.loadImage(WAIT_ICON); //NOI18N
+                }
 
                 @Override
                 public Image getOpenedIcon(int arg0) {
@@ -949,7 +952,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_ICON); //NOI18N
                     }
 
                 @Override
@@ -1413,7 +1416,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     AbstractNode nd = new AbstractNode(Children.LEAF) {
                         @Override
                         public Image getIcon(int arg0) {
-                            return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/empty.png"); //NOI18N
+                            return ImageUtilities.loadImage(EMPTY_ICON); //NOI18N
                         }
                         @Override
                         public Image getOpenedIcon(int arg0) {

@@ -45,6 +45,7 @@ import java.awt.Image;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 
 import org.openide.nodes.AbstractNode;
@@ -57,6 +58,7 @@ import org.openide.util.ImageUtilities;
  * @author Anuradha G
  */
 public class ArtifactNode extends AbstractNode {
+    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/hints/ArtifactBadge.png";
 
     private List<NBVersionInfo> versionInfos;
     private final ArtifactNodeChildren myChildren;
@@ -71,9 +73,7 @@ public class ArtifactNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/hints/ArtifactBadge.png", true); //NOI18N
-
-        return badge;
+        return ImageUtilities.loadImage(ARTIFACT_BADGE, true); //NOI18N
     }
 
     @Override

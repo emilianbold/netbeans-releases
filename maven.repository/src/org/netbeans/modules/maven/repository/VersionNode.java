@@ -88,6 +88,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.repository.Bundle.*;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -97,9 +98,6 @@ import org.openide.util.datatransfer.ExTransferable;
  */
 public class VersionNode extends AbstractNode {
 
-    private static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png";
-    private static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/repository/DependencySrcIncluded.png";
-
     private static final RequestProcessor RP = new RequestProcessor(VersionNode.class);
 
     private NBVersionInfo record;
@@ -108,9 +106,9 @@ public class VersionNode extends AbstractNode {
     private RepositoryInfo info;
     private FileObject localArtifact;
 
-    private static String toolTipJavadoc = "<img src=\"" + VersionNode.class.getClassLoader().getResource(JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipJavadoc = "<img src=\"" + VersionNode.class.getClassLoader().getResource(IconResources.JAVADOC_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(VersionNode.class, "ICON_JavadocBadge");//NOI18N
-    private static String toolTipSource = "<img src=\"" + VersionNode.class.getClassLoader().getResource(SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
+    private static String toolTipSource = "<img src=\"" + VersionNode.class.getClassLoader().getResource(IconResources.SOURCE_BADGE_ICON) + "\">&nbsp;" //NOI18N
             + NbBundle.getMessage(VersionNode.class, "ICON_SourceBadge");//NOI18N
 
     private static FileObject findLocalArtifact(RepositoryInfo info, NBVersionInfo record) {
@@ -148,7 +146,7 @@ public class VersionNode extends AbstractNode {
         } else {
             setDisplayName(versionInfo.getGroupId() + ":" + versionInfo.getArtifactId() + ":" + versionInfo.getVersion()); //NOI18N
         }
-        setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
+        setIconBaseWithExtension(IconResources.ICON_DEPENDENCY_JAR);
         setLocalArtifact(localArtifact);
     }
 
@@ -214,12 +212,12 @@ public class VersionNode extends AbstractNode {
     public Image getIcon(int param) {
         java.awt.Image retValue = super.getIcon(param);
         if (hasJavadoc) {
-            Image ann = ImageUtilities.loadImage(JAVADOC_BADGE_ICON); //NOI18N
+            Image ann = ImageUtilities.loadImage(IconResources.JAVADOC_BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipJavadoc);
             retValue = ImageUtilities.mergeImages(retValue, ann, 12, 0);//NOI18N
         }
         if (hasSources) {
-            Image ann = ImageUtilities.loadImage(SOURCE_BADGE_ICON); //NOI18N
+            Image ann = ImageUtilities.loadImage(IconResources.SOURCE_BADGE_ICON); //NOI18N
             ann = ImageUtilities.addToolTipToImage(ann, toolTipSource);
             retValue = ImageUtilities.mergeImages(retValue, ann, 12, 8);//NOI18N
         }

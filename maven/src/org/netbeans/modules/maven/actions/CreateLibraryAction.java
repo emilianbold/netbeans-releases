@@ -65,6 +65,7 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
@@ -95,8 +96,9 @@ import org.openide.util.Utilities;
  * @author mkleint
  */
 public class CreateLibraryAction extends AbstractAction implements LookupListener {
-    private Lookup lookup;
-    private Lookup.Result<DependencyNode> result;
+    private final Lookup lookup;
+    private final Lookup.Result<DependencyNode> result;
+    private final static @StaticResource String LIBRARIES_ICON = "org/netbeans/modules/maven/actions/libraries.gif";;
 
     @Messages("ACT_Library=Create Library")
     @java.lang.SuppressWarnings("LeakingThisInConstructor")
@@ -104,7 +106,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         this.lookup = lkp;
         putValue(NAME, ACT_Library());
         //TODO proper icon
-        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/actions/libraries.gif", true))); //NOI18N
+        putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage(LIBRARIES_ICON, true))); //NOI18N
         putValue("iconBase", "org/netbeans/modules/maven/actions/libraries.gif"); //NOI18N
         result = lookup.lookupResult(DependencyNode.class);
         setEnabled(result.allInstances().size() > 0);

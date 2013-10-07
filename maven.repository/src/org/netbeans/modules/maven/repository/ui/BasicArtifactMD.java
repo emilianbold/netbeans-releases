@@ -49,6 +49,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import static org.netbeans.modules.maven.repository.ui.Bundle.*;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -81,7 +82,7 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
 
     @Override
     public Image getIcon() {
-        return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
+        return ImageUtilities.loadImage(IconResources.ICON_DEPENDENCY_JAR, true);
     }
 
     @Override

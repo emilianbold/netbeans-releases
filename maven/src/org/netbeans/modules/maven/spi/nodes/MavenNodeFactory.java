@@ -46,7 +46,9 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.maven.model.DependencyManagement;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -58,6 +60,7 @@ import org.openide.util.lookup.Lookups;
  * @author Dafe Simonek
  */
 public final class MavenNodeFactory {
+    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/resources/ArtifactBadge.png";
 
     private static final String DELIMITER = " : ";
 
@@ -74,8 +77,8 @@ public final class MavenNodeFactory {
 
     public static class VersionNode extends AbstractNode {
 
-        private NBVersionInfo nbvi;
-        private boolean fromDepMng;
+        private final NBVersionInfo nbvi;
+        private final boolean fromDepMng;
 
         /** Creates a new instance of VersionNode */
         public VersionNode(NBVersionInfo versionInfo, boolean fromDepMng) {
@@ -111,7 +114,7 @@ public final class MavenNodeFactory {
 
             setDisplayName(sb.toString());
 
-            setIconBaseWithExtension(NodeUtils.ICON_DEPENDENCY_JAR);
+            setIconBaseWithExtension(IconResources.ICON_DEPENDENCY_JAR);
 
         }
 
@@ -145,7 +148,7 @@ public final class MavenNodeFactory {
     public static class ArtifactNode extends AbstractNode {
 
         private List<NBVersionInfo> versionInfos;
-        private ArtifactNodeChildren myChildren;
+        private final ArtifactNodeChildren myChildren;
 
         public ArtifactNode(String name, final List<NBVersionInfo> list) {
             super(new ArtifactNodeChildren(list));
@@ -157,7 +160,7 @@ public final class MavenNodeFactory {
 
         @Override
         public Image getIcon(int arg0) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/resources/ArtifactBadge.png", true); //NOI18N
+            Image badge = ImageUtilities.loadImage(ARTIFACT_BADGE, true); //NOI18N
 
             return badge;
         }
