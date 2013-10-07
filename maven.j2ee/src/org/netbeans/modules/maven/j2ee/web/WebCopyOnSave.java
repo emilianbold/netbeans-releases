@@ -125,22 +125,6 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         return null;
     }
 
-    private boolean isInPlace() throws IOException {
-        final WebModule webModule = getWebModule();
-        final J2eeModule j2eeModule = getJ2eeModule();
-
-        if (j2eeModule == null || webModule == null) {
-            return false;
-        }
-
-        final FileObject fo = j2eeModule.getContentDirectory();
-
-        if (fo == null) {
-            return false;
-        }
-        return fo.equals(webModule.getDocumentBase());
-    }
-
     @Override
     public void initialize() {
         if (!active) {
@@ -286,13 +270,6 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
         }
 
-        private boolean isStaticResource(String fileExt) {
-            if (staticResources.contains(fileExt)) {
-                return true;
-            }
-            return false;
-        }
-
         @Override
         public void fileDataCreated(final FileEvent fe) {
             if (SwingUtilities.isEventDispatchThread()) {//#167740
@@ -377,6 +354,22 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             }
         }
 
+        private boolean isInPlace() throws IOException {
+            final WebModule webModule = getWebModule();
+            final J2eeModule j2eeModule = getJ2eeModule();
+
+            if (j2eeModule == null || webModule == null) {
+                return false;
+            }
+
+            final FileObject fo = j2eeModule.getContentDirectory();
+
+            if (fo == null) {
+                return false;
+            }
+            return fo.equals(webModule.getDocumentBase());
+        }
+
         private void handleFileCopying(FileObject fo) throws IOException {
             boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
             boolean deployOnSave;
@@ -424,58 +417,19 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 }
             }
         }
-    }
 
-
-    private boolean isSynchronizationAppropriate(String filePath) {
-        if (filePath.startsWith("WEB-INF/classes")) { //NOI18N
+        private boolean isStaticResource(String fileExt) {
+            if (staticResources.contains(fileExt)) {
+                return true;
+            }
             return false;
         }
-        if (filePath.startsWith("WEB-INF/src")) { //NOI18N
-            return false;
-        }
-        if (filePath.startsWith("WEB-INF/lib")) { //NOI18N
-            return false;
-        }
-        return true;
-    }
 
-    private void deleteFileToDestDir(FileObject fo, String path) throws IOException {
-        final FileObject root = findWebDocRoot(fo);
-        if (root != null) {
-            // inside docbase
-            path = path != null ? path : FileUtil.getRelativePath(root, fo);
-            if (!isSynchronizationAppropriate(path)) {
-                return;
-            }
-            
-            final J2eeModule j2eeModule = getJ2eeModule();
-            if (j2eeModule == null) {
-                return;
-            }
-
-            final FileObject webBuildBase = j2eeModule.getContentDirectory();
-            if (webBuildBase != null) {
-                // project was built
-                FileObject toDelete = webBuildBase.getFileObject(path);
-                if (toDelete != null) {
-                    File fil = FileUtil.normalizeFile(FileUtil.toFile(toDelete));
-                    toDelete.delete();
-                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
-                }
-            }
-        }
-    }
-
-    /** Copies a content file to an appropriate  destination directory,
-     * if applicable and relevant.
-     */
-    private void copyFileToDestDir(FileObject fo) throws IOException {
-        if (!fo.isVirtual()) {
-            final FileObject documentBase = findWebDocRoot(fo);
-            if (documentBase != null) {
+        private void deleteFileToDestDir(FileObject fo, String path) throws IOException {
+            final FileObject root = findWebDocRoot(fo);
+            if (root != null) {
                 // inside docbase
-                final String path = FileUtil.getRelativePath(documentBase, fo);
+                path = path != null ? path : FileUtil.getRelativePath(root, fo);
                 if (!isSynchronizationAppropriate(path)) {
                     return;
                 }
@@ -484,33 +438,78 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 if (j2eeModule == null) {
                     return;
                 }
-                
+
                 final FileObject webBuildBase = j2eeModule.getContentDirectory();
                 if (webBuildBase != null) {
                     // project was built
-                    if (FileUtil.isParentOf(documentBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, documentBase)) {
-                        //cannot copy into self
-                        return;
+                    FileObject toDelete = webBuildBase.getFileObject(path);
+                    if (toDelete != null) {
+                        File fil = FileUtil.normalizeFile(FileUtil.toFile(toDelete));
+                        toDelete.delete();
+                        fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                     }
-                    FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
-                    File fil = FileUtil.normalizeFile(FileUtil.toFile(destFile));
-                    copySrcToDest(fo, destFile);
-                    fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
                 }
             }
         }
-    }
 
-    private FileObject findWebDocRoot(FileObject child) {
-        WebModule webModule = getWebModule();
+        /** Copies a content file to an appropriate  destination directory,
+         * if applicable and relevant.
+         */
+        private void copyFileToDestDir(FileObject fo) throws IOException {
+            if (!fo.isVirtual()) {
+                final FileObject documentBase = findWebDocRoot(fo);
+                if (documentBase != null) {
+                    // inside docbase
+                    final String path = FileUtil.getRelativePath(documentBase, fo);
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
 
-        if (webModule != null) {
-            FileObject documentBase = webModule.getDocumentBase();
-            if (documentBase != null && FileUtil.isParentOf(documentBase, child)) {
-                return documentBase;
+                    final J2eeModule j2eeModule = getJ2eeModule();
+                    if (j2eeModule == null) {
+                        return;
+                    }
+
+                    final FileObject webBuildBase = j2eeModule.getContentDirectory();
+                    if (webBuildBase != null) {
+                        // project was built
+                        if (FileUtil.isParentOf(documentBase, webBuildBase) || FileUtil.isParentOf(webBuildBase, documentBase)) {
+                            //cannot copy into self
+                            return;
+                        }
+                        FileObject destFile = ensureDestinationFileExists(webBuildBase, path, fo.isFolder());
+                        File fil = FileUtil.normalizeFile(FileUtil.toFile(destFile));
+                        copySrcToDest(fo, destFile);
+                        fireArtifactChange(Collections.singleton(ArtifactListener.Artifact.forFile(fil)));
+                    }
+                }
             }
         }
-        return null;
+
+        private boolean isSynchronizationAppropriate(String filePath) {
+            if (filePath.startsWith("WEB-INF/classes")) { //NOI18N
+                return false;
+            }
+            if (filePath.startsWith("WEB-INF/src")) { //NOI18N
+                return false;
+            }
+            if (filePath.startsWith("WEB-INF/lib")) { //NOI18N
+                return false;
+            }
+            return true;
+        }
+
+        private FileObject findWebDocRoot(FileObject child) {
+            WebModule webModule = getWebModule();
+
+            if (webModule != null) {
+                FileObject documentBase = webModule.getDocumentBase();
+                if (documentBase != null && FileUtil.isParentOf(documentBase, child)) {
+                    return documentBase;
+                }
+            }
+            return null;
+        }
     }
 
     @Override
