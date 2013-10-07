@@ -171,6 +171,7 @@ public class MatchingObjectNode extends AbstractNode implements Removable {
                         copyPath == null ? new CopyPathAction() : copyPath,
                         SystemAction.get(HideResultAction.class),
                         null,
+                        SystemAction.get(SelectInAction.class),
                         SystemAction.get(MoreAction.class)
                     };
         } else {

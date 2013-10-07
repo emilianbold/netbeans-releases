@@ -58,6 +58,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.hints.ui.Bundle.*;
@@ -88,6 +89,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 @Messages("BTN_Add=Add")
 public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerManager.Provider {
+    private static final @StaticResource String WAIT = "org/netbeans/modules/maven/hints/wait.gif";
+    private static final @StaticResource String EMPTY_IMAGE = "org/netbeans/modules/maven/hints/empty.png";
 
     private ExplorerManager explorerManager = new ExplorerManager();
     private JButton addButton = new JButton(BTN_Add());
@@ -403,7 +406,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/hints/wait.gif"); //NOI18N
+                    return ImageUtilities.loadImage(WAIT); //NOI18N
                 }
 
                 @Override
@@ -427,7 +430,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/hints/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_IMAGE); //NOI18N
                 }
 
                 @Override
@@ -451,7 +454,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/hints/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_IMAGE); //NOI18N
                     }
 
                 @Override

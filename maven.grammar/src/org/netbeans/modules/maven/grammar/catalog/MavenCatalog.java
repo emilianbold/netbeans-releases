@@ -46,6 +46,7 @@ package org.netbeans.modules.maven.grammar.catalog;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -54,6 +55,7 @@ import org.openide.util.NbBundle;
  * @author Milos Kleint
  */
 public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax.EntityResolver {
+    private static final String MAVEN2_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
 
     private static final String POM_4_0_0 = "http://maven.apache.org/maven-v4_0_0.xsd"; // NOI18N
     private static final String POM_ALT_4_0_0 = "http://maven.apache.org/xsd/maven-4.0.0.xsd"; // NOI18N
@@ -181,7 +183,7 @@ public class MavenCatalog implements CatalogReader, CatalogDescriptor, org.xml.s
      */
     @Override
     public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/Maven2Icon.gif"); // NOI18N
+        return ImageUtilities.loadImage(MAVEN2_ICON); // NOI18N
     }
     
     /**
