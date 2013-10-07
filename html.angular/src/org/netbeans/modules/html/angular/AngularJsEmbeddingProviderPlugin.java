@@ -259,11 +259,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
-        for (AngularJsController controller : controllers) {
-            if (controller.getName().equals(controllerName)) {
-                fqn = controller.getFqn();
-                break;
+        if (index != null) {
+            Collection<AngularJsController> controllers = index.getControllers(controllerName, true);
+            for (AngularJsController controller : controllers) {
+                if (controller.getName().equals(controllerName)) {
+                    fqn = controller.getFqn();
+                    break;
+                }
             }
         }
         sb.append(fqn);

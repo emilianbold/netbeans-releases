@@ -67,7 +67,7 @@ public class AngularJsIndex {
     
     public static AngularJsIndex get(Project project) throws IOException {
         if(project == null) {
-            throw new NullPointerException();
+            return null;
         }
         synchronized (INDEXES) {
             AngularJsIndex index = INDEXES.get(project);

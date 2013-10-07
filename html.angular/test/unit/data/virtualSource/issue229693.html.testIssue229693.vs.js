@@ -1,8 +1,9 @@
-(function () { // generated function for scope list
-list();
+var $scope1 = list.$scope;
+with ($scope1) { 
 for (var item in items) {
 item.celejmeno();
 }
-(function () { // generated function for scope ();
-});
-});
+var $scope1 = .$scope;
+with ($scope1) { 
+};
+};
