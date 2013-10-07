@@ -219,6 +219,7 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
     }
 
     private synchronized void updateTabs() {
+        int oldSelectedIndex = tabbedPane.getSelectedIndex();
         tabbedPane.removeAll();
         CompilerSetPresenter csp = ((CompilerSetPresenter) compilerCollectionComboBox.getSelectedItem());
         if (csp == null || csp.cs == null) {
@@ -248,6 +249,9 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
                 predefinedPanel.updateCompiler((AbstractCompiler) tool, csp.env);
             }
             tabbedPane.addTab(tool.getDisplayName(), predefinedPanel);
+        }
+        if (oldSelectedIndex >= 0 && tabbedPane.getTabCount() > oldSelectedIndex) {
+            tabbedPane.setSelectedIndex(oldSelectedIndex);
         }
     }
 

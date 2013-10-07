@@ -133,9 +133,11 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 CsmExpressionStatement expression = res.expression;
                 if (expression != null) {
                     createStatementHint(expression, doc, fileObject);
-                } else if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+                } 
+                if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
                     if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] == 
-                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0]) {
+                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                        isExpressionSelection(doc, selectionStart, selectionEnd)) {
                         try {
                             final String text = doc.getText(selectionStart, selectionEnd-selectionStart);
                             if(text.length() > 0) {
@@ -338,6 +340,13 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                 }
                 return null;
             }
+            case RETURN:
+            case DECLARATION:
+            {
+                StatementResult res = new StatementResult();
+                res.container = st;
+                return res;
+            }
             case EXPRESSION:
             {
                 final int startOffset = st.getStartOffset();
@@ -366,11 +375,15 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     if(isApplicable((CsmExpressionStatement) st, doc)) {
                         StatementResult res = new StatementResult();
                         res.expression = (CsmExpressionStatement) st;
+                        res.container = (CsmExpressionStatement) st;
                         return res;
                     } else {
-                        return null;
+                        StatementResult res = new StatementResult();
+                        res.container = (CsmExpressionStatement) st;
+                        return res;
                     }
                 }
+                return null;
             }
         }
         return null;
@@ -419,11 +432,71 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         if (resolveType == null) {
             return false;
         }
-        final String typeText = resolveType.getCanonicalText().toString();
+        //final String typeText = resolveType.getCanonicalText().toString();
+        final String typeText = resolveType.getText().toString();
         if ("void".equals(typeText)) { //NOI18N
             return false;
         }
         return true;
+    }
+    
+    private boolean isExpressionSelection(final Document doc, final int startOffset, final int endOffset) {
+        final AtomicBoolean applicableSelection = new AtomicBoolean(false);
+        if (startOffset < endOffset) {
+            doc.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    TokenHierarchy<? extends Document> hi = TokenHierarchy.get(doc);
+                    TokenSequence<?> ts = hi.tokenSequence();
+                    // selection end between tokens?
+                    ts.move(endOffset);
+                    boolean res = false;
+                    if(ts.moveNext()) {
+                        int from = ts.offset();
+                        if (endOffset == from) {
+                            res = true;
+                        }
+                    }
+                    if (!res) {
+                        return;
+                    }
+                    // selection start between tokens?
+                    ts.move(startOffset);
+                    res = false;
+                    if(ts.movePrevious()) {
+                        Token<?> token = ts.token();
+                        int to = ts.offset()+token.length();
+                        if (startOffset == to) {
+                            res = true;
+                        }
+                    }
+                    if (!res) {
+                        return;
+                    }
+                    // finally count paren balance
+                    ts.move(startOffset);
+                    int count = 0;
+                    while(ts.moveNext()) {
+                        Token<?> token = ts.token();
+                        if (ts.offset() >= endOffset) {
+                            break;
+                        }
+                        if (token.id() == CppTokenId.LPAREN) {
+                            count++;
+                        }
+                        if (token.id() == CppTokenId.RPAREN) {
+                            count--;
+                        }
+                    }
+                    if (count != 0) {
+                        return;
+                    }
+                    applicableSelection.set(true);
+                }
+            });
+        }
+        return applicableSelection.get();
     }
     
     private void createStatementHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
@@ -559,7 +632,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (resolveType == null) {
                 return null;
             }
-            final String typeText = resolveType.getCanonicalText().toString();
+            //final String typeText = resolveType.getCanonicalText().toString();
+            final String typeText = resolveType.getText().toString();
             if ("void".equals(typeText)) { //NOI18N
                 return null;
             }
@@ -606,7 +680,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             if (resolveType == null) {
                 return null;
             }
-            final String typeText = resolveType.getCanonicalText().toString();
+            //final String typeText = resolveType.getCanonicalText().toString();
+            final String typeText = resolveType.getText().toString();
             if ("void".equals(typeText)) { //NOI18N
                 return null;
             }
