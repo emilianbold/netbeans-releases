@@ -279,27 +279,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 checkPreprocessors(fe.getFile());
                 
                 if (!isInPlace()) {
-                    boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
-                    boolean deployOnSave;
-                    if (!compileOnSave) {
-                        // If compile on save is set to false, then deploy on save doesn't make any sense
-                        deployOnSave = false;
-                    } else {
-                        deployOnSave = MavenProjectSupport.isDeployOnSave(project);
-                    }
-                    boolean copyStaticResourcesOnSave = MavenProjectSupport.isCopyStaticResourcesOnSave(project);
-
-                    // DoS is enabled and copy static resource too --> handle all files
-                    if (deployOnSave && copyStaticResourcesOnSave) {
-                        handleCopyFileToDestDir(fe.getFile());
-                    }
-
-                    if (!deployOnSave && copyStaticResourcesOnSave) {
-                        // DoS is disabled --> handle only static resources
-                        if (isStaticResource(fe.getFile().getExt())) {
-                            handleCopyFileToDestDir(fe.getFile());
-                        }
-                    }
+                    handleFileCopying(fe.getFile());
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -328,7 +308,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 checkPreprocessors(fe.getFile());
                 
                 if (!isInPlace()) {
-                    handleCopyFileToDestDir(fe.getFile());
+                    handleFileCopying(fe.getFile());
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -356,7 +336,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 FileObject fo = fe.getFile();
                 FileObject base = findWebDocRoot(fo);
                 if (base != null) {
-                    handleCopyFileToDestDir(fo);
+                    handleFileCopying(fo);
                     FileObject parent = fo.getParent();
                     String path;
                     if (FileUtil.isParentOf(base, parent)) {
@@ -368,7 +348,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                     if (!isSynchronizationAppropriate(path)) {
                         return;
                     }
-                    handleDeleteFileInDestDir(fo, path);
+                    handleFileDeletion(fo, path);
                 }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
@@ -389,13 +369,59 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             try {
                 checkPreprocessors(fe.getFile());
                 
-                if (isInPlace()) {
-                    return;
+                if (!isInPlace()) {
+                    handleFileDeletion(fe.getFile(), null);
                 }
-                FileObject fo = fe.getFile();
-                handleDeleteFileInDestDir(fo, null);
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+
+        private void handleFileCopying(FileObject fo) throws IOException {
+            boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
+            boolean deployOnSave;
+            if (!compileOnSave) {
+                // If compile on save is set to false, then deploy on save doesn't make any sense
+                deployOnSave = false;
+            } else {
+                deployOnSave = MavenProjectSupport.isDeployOnSave(project);
+            }
+            boolean copyStaticResourcesOnSave = MavenProjectSupport.isCopyStaticResourcesOnSave(project);
+
+            // DoS is enabled and copy static resource too --> handle all files
+            if (deployOnSave && copyStaticResourcesOnSave) {
+                copyFileToDestDir(fo);
+            }
+
+            if (!deployOnSave && copyStaticResourcesOnSave) {
+                // DoS is disabled --> handle only static resources
+                if (isStaticResource(fo.getExt())) {
+                    copyFileToDestDir(fo);
+                }
+            }
+        }
+
+        private void handleFileDeletion(FileObject fo, String path) throws IOException {
+            boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
+            boolean deployOnSave;
+            if (!compileOnSave) {
+                // If compile on save is set to false, then deploy on save doesn't make any sense
+                deployOnSave = false;
+            } else {
+                deployOnSave = MavenProjectSupport.isDeployOnSave(project);
+            }
+            boolean copyStaticResourcesOnSave = MavenProjectSupport.isCopyStaticResourcesOnSave(project);
+
+            // DoS is enabled and copy static resource too --> handle all files
+            if (deployOnSave && copyStaticResourcesOnSave) {
+                deleteFileToDestDir(fo, path);
+            }
+
+            if (!deployOnSave && copyStaticResourcesOnSave) {
+                // DoS is disabled --> handle only static resources
+                if (isStaticResource(fo.getExt())) {
+                    deleteFileToDestDir(fo, path);
+                }
             }
         }
     }
@@ -414,7 +440,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
         return true;
     }
 
-    private void handleDeleteFileInDestDir(FileObject fo, String path) throws IOException {
+    private void deleteFileToDestDir(FileObject fo, String path) throws IOException {
         final FileObject root = findWebDocRoot(fo);
         if (root != null) {
             // inside docbase
@@ -444,7 +470,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
     /** Copies a content file to an appropriate  destination directory,
      * if applicable and relevant.
      */
-    private void handleCopyFileToDestDir(FileObject fo) throws IOException {
+    private void copyFileToDestDir(FileObject fo) throws IOException {
         if (!fo.isVirtual()) {
             final FileObject documentBase = findWebDocRoot(fo);
             if (documentBase != null) {
