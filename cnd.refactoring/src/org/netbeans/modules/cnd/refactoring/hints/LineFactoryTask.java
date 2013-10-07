@@ -699,7 +699,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             final String aName = suggestName();
             final String exprText = expression.getText().toString();
             final ChangeInfo changeInfo = new ChangeInfo();
-            final String text = typeText+" "+aName+" = "+expression.getText()+";\n"; //NOI18N
+            final String typeTextPrefix = typeText+" ";//NOI18N
+            final String text = typeTextPrefix+aName+" = "+expression.getText()+";\n"; //NOI18N
             doc.runAtomicAsUser(new Runnable() {
                 @Override
                 public void run() {
@@ -710,8 +711,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                         Position exprEnd = NbDocument.createPosition(doc, expression.getStartOffset() + aName.length(), Position.Bias.Backward);
                         changeInfo.add(fo, exprStart, exprEnd);
                         doc.insertString(st.getStartOffset(), text, null);
-                        Position stmtStart = NbDocument.createPosition(doc, st.getStartOffset() + (typeText+" ").length(), Position.Bias.Forward);
-                        Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + (typeText+" "+aName).length(), Position.Bias.Backward);
+                        Position stmtStart = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length(), Position.Bias.Forward);
+                        Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length() +aName.length(), Position.Bias.Backward);
                         changeInfo.add(fo, stmtStart, stmtEnd);
                         Indent indent = Indent.get(doc);
                         indent.lock();
