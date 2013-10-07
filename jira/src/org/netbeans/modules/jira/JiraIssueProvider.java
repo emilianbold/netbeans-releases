@@ -42,7 +42,6 @@ import java.io.File;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
@@ -124,6 +123,6 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
 
     @Override
     public void discardOutgoing(NbJiraIssue data) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        data.discardLocalEdits();
     }
 }

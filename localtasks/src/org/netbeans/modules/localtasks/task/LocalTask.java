@@ -218,7 +218,7 @@ public final class LocalTask extends AbstractLocalTask {
         });
     }
 
-    void delete () {
+    public void delete () {
         deleteTask();
     }
 
