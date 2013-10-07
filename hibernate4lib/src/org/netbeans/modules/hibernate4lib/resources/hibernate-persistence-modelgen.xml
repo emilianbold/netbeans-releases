@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/hibernate4lib/resources/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-jpamodelgen-1.2.0.Final.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernate4lib/modules/ext/hibernate4/hibernate-jpamodelgen-1.3.0.Final.jar!/</resource>
     </volume>
     <!-- Have them later
     <volume>
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.hibernate:hibernate-jpamodelgen-1.2.0.Final:jar
+                org.hibernate:hibernate-jpamodelgen-1.3.0.Final:jar
             </value>
         </property>
     </properties>
