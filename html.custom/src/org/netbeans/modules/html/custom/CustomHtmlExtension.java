@@ -134,7 +134,7 @@ public class CustomHtmlExtension extends HtmlExtension {
                         hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
 
                     }
-                
+
                 //TODO add check + fix for missing required attributes
             }
         }
@@ -166,23 +166,26 @@ public class CustomHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         Element node = context.getCurrentNode();
-        if(node.type() != ElementType.OPEN_TAG) {
+        if (node.type() != ElementType.OPEN_TAG) {
             return Collections.emptyList();
         }
-        
+        OpenTag ot = (OpenTag) node;
         List<CompletionItem> items = new ArrayList<>();
         Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
-        String tagName = ((OpenTag)node).name().toString();
+        String tagName = ((OpenTag) node).name().toString();
         Tag t = conf.getTag(tagName);
-        if(t != null) {
-            for(org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+        if (t != null) {
+            for (org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+                //do not complete already existing attributes
                 String aName = a.getName();
-                if(aName.startsWith(context.getPrefix())) {
-                    items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                if (ot.getAttribute(aName) == null) {
+                    if (aName.startsWith(context.getPrefix())) {
+                        items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                    }
                 }
             }
         }
-       
+
         return items;
     }
 

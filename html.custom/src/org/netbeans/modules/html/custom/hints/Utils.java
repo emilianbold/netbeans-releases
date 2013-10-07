@@ -58,7 +58,7 @@ public class Utils {
             String aName = i.next();
             sb.append(aName);
             if (i.hasNext()) {
-                sb.append(", ");
+                sb.append(", "); //NOI18N
             }
         }
         return sb.toString();
@@ -71,7 +71,7 @@ public class Utils {
             String aName = i.next().getName();
             sb.append(aName);
             if (i.hasNext()) {
-                sb.append(", ");
+                sb.append(", "); //NOI18N
             }
         }
         return sb.toString();

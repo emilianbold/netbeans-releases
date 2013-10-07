@@ -52,7 +52,10 @@ import org.openide.util.NbBundle;
  *
  * @author marek
  */
-@NbBundle.Messages(value = "addUnknownElementToProjectConfiguration=Add element \"{0}\" to the project's custom elements")
+@NbBundle.Messages(value = {
+    "# {0} - element name",
+    "addUnknownElementToProjectConfiguration=Add element \"{0}\" to the project's custom elements"
+})
 public final class AddElementFix implements HintFix {
     private final String elementName;
     private final String elementContextName;
