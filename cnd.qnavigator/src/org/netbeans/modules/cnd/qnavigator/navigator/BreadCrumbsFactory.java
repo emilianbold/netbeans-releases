@@ -91,10 +91,12 @@ public final class BreadCrumbsFactory {
             boolean found = false;
             node = list.removeFirst();
             for(BreadcrumbsElement b : breadcrumbsElement.getChildren()) {
-                if (((BreadcrumbsElementImpl)b).getNode() == node) {
-                    breadcrumbsElement = (BreadcrumbsElementImpl) b;
-                    found = true;
-                    break;
+                if (b instanceof BreadcrumbsElementImpl) {
+                    if (((BreadcrumbsElementImpl)b).getNode() == node) {
+                        breadcrumbsElement = (BreadcrumbsElementImpl) b;
+                        found = true;
+                        break;
+                    }
                 }
             }
             if (!found) {

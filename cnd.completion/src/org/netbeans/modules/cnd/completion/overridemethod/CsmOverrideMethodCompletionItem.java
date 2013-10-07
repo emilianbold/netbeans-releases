@@ -155,7 +155,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         } else if (CsmKindUtilities.isConstructor(item)) {
             return "";
         } else {
-            return ((CsmFunction)item).getReturnType().getCanonicalText().toString();
+            return ((CsmFunction)item).getReturnType().getText().toString();
         }
     }
     
@@ -164,7 +164,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
         String type = "";
         if (item != null && !CsmKindUtilities.isConstructor(item) && !CsmKindUtilities.isDestructor(item)) {
             final CsmType returnType = ((CsmFunction)item).getReturnType();
-            type = returnType.getCanonicalText().toString()+" "; //NOI18N
+            type = returnType.getText().toString()+" "; //NOI18N
             if (type.indexOf("::") < 0) { //NOI18N
                 CsmClassifier classifier = returnType.getClassifier();
                 if (classifier != null) {
@@ -221,7 +221,7 @@ public class CsmOverrideMethodCompletionItem implements CompletionItem {
                 } else {
                     CsmType type = param.getType();
                     if (type != null) {
-                        sb.append(type.getCanonicalText());
+                        sb.append(type.getText());
                         sb.append(' ');
                         sb.append(param.getName());
                     }
