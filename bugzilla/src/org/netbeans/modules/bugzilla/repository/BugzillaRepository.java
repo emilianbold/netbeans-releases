@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
@@ -205,6 +206,12 @@ public class BugzillaRepository {
         try {
             task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping(product, component));
             return getIssueForTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            Bugzilla.LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
             return null;

@@ -72,13 +72,11 @@ public abstract class PermUITestCase extends JellyTestCase {
 
     protected static final char TREE_SEPARATOR = '|';
     protected static final boolean screen = false;
-    protected static ProjectRootNode testProjectRootNode = null;
-    private static ProjectsTabOperator pto = null;
 
     //context says what kind of project is open
-    protected static ProjectContext context = ProjectContext.NONE;
+    protected ProjectContext context = ProjectContext.NONE;
 
-    protected static boolean initialized = false;
+    protected boolean initialized = false;
 
     public PermUITestCase(String name) {
         super(name);
@@ -166,14 +164,15 @@ public abstract class PermUITestCase extends JellyTestCase {
         waitForChildNode(project, treeSubPackagePathToFile, fileName);
         // end of fix of issue #51191
 
-        Node node = new Node(testProjectRootNode, treeSubPackagePathToFile + TREE_SEPARATOR + fileName);
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(project);
+        Node node = new Node(projectNode, treeSubPackagePathToFile + TREE_SEPARATOR + fileName);
         //node.performPopupAction("Open");
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
     }
 
     private void waitForChildNode(String project, String parentPath, String childName) {
-        openProject(project);
-        Node parent = new Node(testProjectRootNode, parentPath);
+        ProjectRootNode projectNode = openProject(project);
+        Node parent = new Node(projectNode, parentPath);
         final String finalFileName = childName;
         try {
             // wait for max. 3 seconds for the file node to appear
@@ -194,46 +193,37 @@ public abstract class PermUITestCase extends JellyTestCase {
         }
     }
 
-    protected void openProject(String projectName) {
-        if (pto == null) {
-            pto = ProjectsTabOperator.invoke();
-        }
+    protected ProjectRootNode openProject(String projectName) {
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
 
-        if (testProjectRootNode == null) {
-            try {
-                openDataProjects(projectName);
-                testProjectRootNode = pto.getProjectRootNode(projectName);
-                testProjectRootNode.select();
-            } catch (IOException ex) {
-                throw new JemmyException("Open project [" + projectName + "] fails !!!", ex);
-            }
-        } else {
-            log("Project is opened!");
+        ProjectRootNode rootNode;
+        try {
+            openDataProjects(projectName);
+            rootNode = pto.getProjectRootNode(projectName);
+            rootNode.select();
+        } catch (IOException ex) {
+            throw new JemmyException("Open project [" + projectName + "] fails !!!", ex);
         }
+        return rootNode;
     }
 
-/**    @Override
-    protected void tearDown() throws Exception {
-        getRef().flush();
-        getRef().close();
-        assertFile("Golden file differs ", getReferencFile(), getGoldenFile(), getWorkDir(), new LineDiff());
-        //compareReferenceFiles();
-        File diffFile = getDiffFile(getReferencFile().getAbsolutePath(), getWorkDir());
-        System.out.println("+++++++++ Diff file [" + diffFile.getAbsolutePath() + "] exists=" + diffFile.exists());
-        if (diffFile.exists()) {
-            System.out.println("============= DIFF >>>> =======================================");
-            FileReader fr = new FileReader(diffFile);
-            int oneByte;
-            while ((oneByte = fr.read()) != -1) {
-                System.out.print((char) oneByte);
-            }
-            System.out.flush();
-            System.out.println("============= <<<< DIFF =======================================");
-        }
-
-        System.out.println("Test " + getName() + " finished !");
-    }
-*/
+    /**
+     * @Override protected void tearDown() throws Exception { getRef().flush();
+     * getRef().close(); assertFile("Golden file differs ", getReferencFile(),
+     * getGoldenFile(), getWorkDir(), new LineDiff());
+     * //compareReferenceFiles(); File diffFile =
+     * getDiffFile(getReferencFile().getAbsolutePath(), getWorkDir());
+     * System.out.println("+++++++++ Diff file [" + diffFile.getAbsolutePath() +
+     * "] exists=" + diffFile.exists()); if (diffFile.exists()) {
+     * System.out.println("============= DIFF >>>>
+     * ======================================="); FileReader fr = new
+     * FileReader(diffFile); int oneByte; while ((oneByte = fr.read()) != -1) {
+     * System.out.print((char) oneByte); } System.out.flush();
+     * System.out.println("============= <<<< DIFF
+     * ======================================="); }
+     *
+     * System.out.println("Test " + getName() + " finished !"); }
+     */
     protected File getGoldenFile(String category, String fileName) {
         return new File(getDataDir() + File.separator + "permanentUI" + File.separator + category + File.separator + fileName + ".txt");
     }

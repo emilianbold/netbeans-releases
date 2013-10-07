@@ -77,6 +77,7 @@ import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.git.ui.repository.remote.Bundle.*;
 
 /**
  *
@@ -222,6 +223,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
 
     @Override
+    @NbBundle.Messages({
+        "# {0} - repository URL", "MSG_SelectUriStep.errorCredentials=Incorrect credentials for repository at {0}",
+        "# {0} - repository URL", "MSG_SelectUriStep.errorCannotConnect=Cannot connect to the remote repository at {0}"
+    })
     protected final boolean validateBeforeNext () {
         boolean valid = true;
         Message msg = null;
@@ -259,12 +264,15 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         if (!isCanceled() && mode == Mode.PUSH) {
                             remoteTags = client.listRemoteTags(uri, getProgressMonitor());
                         }
+                    } catch (GitException.AuthorizationException ex) {
+                        Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Auth failed when accessing " + uri, ex); //NOI18N
+                        message[0] = new Message(Bundle.MSG_SelectUriStep_errorCredentials(uri), false);
                     } catch (GitException ex) {
                         if (panel.rbCreateNew.isSelected()) {
                             GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
                         }
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
-                        message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
+                        message[0] = new Message(Bundle.MSG_SelectUriStep_errorCannotConnect(uri), false);
                     } finally {
                         if (client != null) {
                             client.release();

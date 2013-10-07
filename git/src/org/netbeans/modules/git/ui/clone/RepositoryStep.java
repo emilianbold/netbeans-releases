@@ -145,7 +145,6 @@ public class RepositoryStep extends AbstractWizardPanel implements ChangeListene
                 support = new RepositoryStepProgressSupport(panel.progressPanel, uri);        
                 RequestProcessor.Task task = support.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(RepositoryStep.class, "BK2012"));
                 task.waitFinished();
-                GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
                 final Message message = support.message;
                 valid = isValid();
                 if (message != null) {
@@ -301,6 +300,12 @@ public class RepositoryStep extends AbstractWizardPanel implements ChangeListene
     public void changedUpdate (DocumentEvent e) {
     }
 
+    @NbBundle.Messages({
+        "# {0} - repository URL",
+        "MSG_RepositoryStep.errorCredentials=Incorrect credentials for repository at {0}",
+        "# {0} - repository URL",
+        "MSG_RepositoryStep.errorCannotConnect=Cannot connect to repository at {0}"
+    })
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
         private final GitURI uri;
         private Message message;
@@ -318,14 +323,14 @@ public class RepositoryStep extends AbstractWizardPanel implements ChangeListene
                 client.init(getProgressMonitor());
                 branches = new HashMap<String, GitBranch>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), getProgressMonitor()));
+            } catch (GitException.AuthorizationException ex) {
+                GitClientExceptionHandler.notifyException(ex, false);
+                message = new Message(Bundle.MSG_RepositoryStep_errorCredentials(uri.toString()), false);
+                setValid(false, message);
             } catch (final GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);
-                String str = ex.getMessage();
-                if (str.startsWith("/")) { //NOI18N
-                    // hack for dialog wizard, it does not display the error messages otherwise
-                    str = " " + str; //NOI18N
-                }
-                message = new Message(str, false);
+                message = new Message(Bundle.MSG_RepositoryStep_errorCannotConnect(uri.toString()), false);
+                GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
                 setValid(false, message);
             } finally {
                 if (client != null) {

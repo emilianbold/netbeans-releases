@@ -41,13 +41,12 @@
  */
 package org.netbeans.test.permanentUI;
 
-import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 import org.netbeans.test.permanentUI.utils.Utilities;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,9 +81,8 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
 
     @Override
     public void initialize() {
-        context = ProjectContext.VERSIONING_ACTIVATED;
-        String newProject = "SampleProject";
-        assertEquals("VCS activation of: \"" + newProject + "\" FAILURED", true, openVersioningJavaEEProject(newProject));
+        openVersioningJavaEEProject("SampleProject");
+        this.context = ProjectContext.VERSIONING_ACTIVATED;
     }
 
     @Override
@@ -141,18 +139,13 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
      * @return name of currently created project.
      */
     public boolean openVersioningJavaEEProject(String projectName) {
-        try {
-            openDataProjects(projectName);
-            waitScanFinished();
-            new ProjectsTabOperator().getProjectRootNode(projectName).select();
-            if (!isVersioningProject(projectName)) {
-                versioningActivation(projectName);
-            }
-            return true;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        ProjectRootNode projectNode = openProject(projectName);
+        waitScanFinished();
+        projectNode.select();
+        if (!isVersioningProject(projectName)) {
+            versioningActivation(projectName);
         }
-        return false;
+        return true;
     }
 
     /**
@@ -161,8 +154,8 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
      * @param projectName
      */
     public void versioningActivation(String projectName) {
-        testProjectRootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-        testProjectRootNode.callPopup().showMenuItem("Versioning|Initialize Mercurial Repository...").push();
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
+        projectNode.callPopup().showMenuItem("Versioning|Initialize Mercurial Repository...").push();
         WizardOperator wo2 = new WizardOperator("Initialize a Mercurial Repository");
         wo2.ok();
     }

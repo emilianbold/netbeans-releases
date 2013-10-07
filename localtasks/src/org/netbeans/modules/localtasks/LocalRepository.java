@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.api.Repository;
@@ -204,6 +205,12 @@ public final class LocalRepository {
             });
             LocalQuery.getInstance().fireTasksChanged();
             return getLocalTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             LOG.log(Level.WARNING, null, ex);
             return null;
