@@ -45,7 +45,7 @@ function checkSystemversion() {
 	var version;	
         if(!(/* >= */ system.compareVersions(system.version.ProductVersion, '10.7.3') >= 0)) {
             my.result.title = 'OS X Lion required';
-            my.result.message = 'This Installer is supported only on OS X Lion (10.7.3)';
+            my.result.message = 'This Installer is supported only on OS X Lion (10.7.3) or Later';
             my.result.type = 'Fatal';
             return false;
         }
@@ -74,39 +74,35 @@ function checkChoiceUpgradeAction() {
 /* js:pkmk:end */
 </script>
 
-<script>var bundle = system.files.bundleAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin");
-
+<script>// check if this is a downgrade from current version installed, return true
 function isDowngrade() {
-// No files present
-if(!system.files.plistAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Info.plist"))
-{
-	return false;
+    try {
+        var tInstallVersion = "1.@JDK_VERSION_NUMBER@.@JDK_UPDATE_NUMBER@.@JDK_BUILD_NUMBER@";
+        // get current installed JavaAppletPlugin bundle
+        var bundle = system.files.bundleAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin");
+        if(bundle != null) {
+            // check if Info.plist file is present, we need this in case the plugin was not installed properly
+            if(!system.files.plistAtPath("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Info.plist")) {
+                return false;
+            }
+            // check if Oracle JRE is installed not by someone else
+            if (bundle.CFBundleIdentifier &amp;&amp; 'com.oracle.java.JavaAppletPlugin') {
+                var tCurrentVersion = bundle.CFBundleShortVersionString;
+                // check if current plugin being installed is a downgrade
+                var tVersionResult = system.compareVersions(bundle.CFBundleVersion, tInstallVersion);
+                if(tVersionResult > 0) {
+                    // This is a downgrade return true
+                    return true;
+                }
+            }
+        }
+    } catch(e) {
+        // an exception just occurred
+        return (true);
+    }
+    return false;
 }
-
-// check if Oracle JRE is installed
-if (bundle &amp;&amp; (bundle.CFBundleIdentifier != "com.oracle.java.JavaAppletPlugin"))
-{
-	// means JRE/Plugin is never installed or is Apple's plugin and which means this is a fresh install
-	return false;
-}
-else
-{
-	// check if it is a downgrade
-	
-	tVersionResult = system.compareVersions(bundle.CFBundleVersion, "1.@JDK_VERSION_NUMBER@.@JDK_UPDATE_NUMBER@.@JDK_BUILD_NUMBER@");
-	if (tVersionResult == 1) 
-	{
-		// Means installed version > current payload
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-} 
-
-
+    
 function pm_choice1_selected() {
   result = true;
   result = result &amp;&amp; (isDowngrade() == false);
@@ -146,10 +142,24 @@ function pm_choice1_enabled() {
     <choice id="extide" title="extide-title" description="extide-description" start_selected="true" start_enabled="true" start_visible="false" selected="choices.extide.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.extide"/>
     </choice>
-    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="239120" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
-    <pkg-ref id="com.oracle.jre" installKBytes="147320" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@" installKBytes="288196" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#jdk1@JDK_VERSION_NUMBER@0@JDK_UPDATE_NUMBER@.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk@JDK_VERSION_NUMBER@u@JDK_UPDATE_NUMBER@">
+        <relocate search-id="pkmktoken6">
+            <bundle id="com.oracle.jmc"/>
+        </relocate>
+    </pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="147476" version="1.1" auth="Root">file:./Contents/Packages/JDK%20@JDK_VERSION_NUMBER@%20Update%20@JDK_UPDATE_NUMBER@.pkg#javaappletplugin.pkg</pkg-ref>
     <pkg-ref id="com.oracle.jre">
         <relocate search-id="pkmktoken18">
+            <bundle id="org.andymatuschak.sparkle.finish-installation"/>
+        </relocate>
+        <relocate search-id="pkmktoken22">
+            <bundle id="org.andymatuschak.sparkle.finish-installation"/>
+        </relocate>
+        <relocate search-id="pkmktoken26">
+            <bundle id="org.andymatuschak.sparkle.finish-installation"/>
+        </relocate>
+        <relocate search-id="pkmktoken34">
             <bundle id="com.oracle.java.Java-Updater"/>
         </relocate>
     </pkg-ref>
@@ -157,8 +167,34 @@ function pm_choice1_enabled() {
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.extide" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/extide-@NB_ID@.pkg</pkg-ref>
     <locator>
+        <search id="pkmktoken6-1" type="component">
+            <bundle CFBundleIdentifier="com.oracle.jmc" path="/Library/Java/JavaVirtualMachines/jdk1.@JDK_VERSION_NUMBER@.0_@JDK_UPDATE_NUMBER@.jdk/Contents/Home/lib/missioncontrol/Java Mission Control.app"/>
+        </search>
+        <search id="pkmktoken6-0" type="script" script="pkmktoken6_combined()">
+            <script>
+function pkmktoken6_combined() {
+	function pkmk_add_results_to_array(results, array) {
+		for(i = 0; i &lt; results.length; i++)
+			array.push(results[i]);
+	}
+	var result = new Array();
+	var search;
+	search = my.search.results['pkmktoken6-1'];
+	if(search) pkmk_add_results_to_array(search, result);
+	return result;
+}
+</script>
+        </search>
+        <search type="script" id="pkmktoken6" script="pkmktoken6_final()">
+            <script>
+function pkmktoken6_final() {
+	var combined = my.search.results['pkmktoken6-0'];
+	return combined;
+}
+</script>
+        </search>
         <search id="pkmktoken18-1" type="component">
-            <bundle CFBundleIdentifier="com.oracle.java.Java-Updater" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/Java Updater.app"/>
+            <bundle CFBundleIdentifier="org.andymatuschak.sparkle.finish-installation" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Frameworks/Sparkle.framework/Resources/finish_installation.app"/>
         </search>
         <search id="pkmktoken18-0" type="script" script="pkmktoken18_combined()">
             <script>
@@ -179,6 +215,84 @@ function pkmktoken18_combined() {
             <script>
 function pkmktoken18_final() {
 	var combined = my.search.results['pkmktoken18-0'];
+	return combined;
+}
+</script>
+        </search>
+        <search id="pkmktoken22-1" type="component">
+            <bundle CFBundleIdentifier="org.andymatuschak.sparkle.finish-installation" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Frameworks/Sparkle.framework/Versions/A/Resources/finish_installation.app"/>
+        </search>
+        <search id="pkmktoken22-0" type="script" script="pkmktoken22_combined()">
+            <script>
+function pkmktoken22_combined() {
+	function pkmk_add_results_to_array(results, array) {
+		for(i = 0; i &lt; results.length; i++)
+			array.push(results[i]);
+	}
+	var result = new Array();
+	var search;
+	search = my.search.results['pkmktoken22-1'];
+	if(search) pkmk_add_results_to_array(search, result);
+	return result;
+}
+</script>
+        </search>
+        <search type="script" id="pkmktoken22" script="pkmktoken22_final()">
+            <script>
+function pkmktoken22_final() {
+	var combined = my.search.results['pkmktoken22-0'];
+	return combined;
+}
+</script>
+        </search>
+        <search id="pkmktoken26-1" type="component">
+            <bundle CFBundleIdentifier="org.andymatuschak.sparkle.finish-installation" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Frameworks/Sparkle.framework/Versions/Current/Resources/finish_installation.app"/>
+        </search>
+        <search id="pkmktoken26-0" type="script" script="pkmktoken26_combined()">
+            <script>
+function pkmktoken26_combined() {
+	function pkmk_add_results_to_array(results, array) {
+		for(i = 0; i &lt; results.length; i++)
+			array.push(results[i]);
+	}
+	var result = new Array();
+	var search;
+	search = my.search.results['pkmktoken26-1'];
+	if(search) pkmk_add_results_to_array(search, result);
+	return result;
+}
+</script>
+        </search>
+        <search type="script" id="pkmktoken26" script="pkmktoken26_final()">
+            <script>
+function pkmktoken26_final() {
+	var combined = my.search.results['pkmktoken26-0'];
+	return combined;
+}
+</script>
+        </search>
+        <search id="pkmktoken34-1" type="component">
+            <bundle CFBundleIdentifier="com.oracle.java.Java-Updater" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/Java Updater.app"/>
+        </search>
+        <search id="pkmktoken34-0" type="script" script="pkmktoken34_combined()">
+            <script>
+function pkmktoken34_combined() {
+	function pkmk_add_results_to_array(results, array) {
+		for(i = 0; i &lt; results.length; i++)
+			array.push(results[i]);
+	}
+	var result = new Array();
+	var search;
+	search = my.search.results['pkmktoken34-1'];
+	if(search) pkmk_add_results_to_array(search, result);
+	return result;
+}
+</script>
+        </search>
+        <search type="script" id="pkmktoken34" script="pkmktoken34_final()">
+            <script>
+function pkmktoken34_final() {
+	var combined = my.search.results['pkmktoken34-0'];
 	return combined;
 }
 </script>
