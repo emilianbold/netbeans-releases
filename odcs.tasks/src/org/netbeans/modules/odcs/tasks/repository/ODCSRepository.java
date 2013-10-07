@@ -44,7 +44,6 @@ package org.netbeans.modules.odcs.tasks.repository;
 import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
-import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.awt.Image;
@@ -70,6 +69,7 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevConstants;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -495,6 +495,12 @@ public class ODCSRepository implements PropertyChangeListener {
         try {
             task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping());
             return getIssueForTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            ODCS.LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             ODCS.LOG.log(Level.WARNING, null, ex);
             return null;

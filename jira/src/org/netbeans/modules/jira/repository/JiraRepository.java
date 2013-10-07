@@ -71,6 +71,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -213,6 +214,12 @@ public class JiraRepository {
                 }
             });
             return getIssueForTask(task);
+        } catch (OperationCanceledException ex) {
+            // creation of new task may be immediately canceled
+            // happens when more repositories are available and
+            // the RepoComboSupport immediately switches to another repo
+            Jira.LOG.log(Level.FINE, null, ex);
+            return null;
         } catch (CoreException ex) {
             Jira.LOG.log(Level.WARNING, null, ex);
             return null;
