@@ -81,7 +81,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -193,6 +192,19 @@ public class J2SEProjectProperties {
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     //Files excluded from dist.jar
     public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
+    //Runtime platform
+    public static final String PLATFORM_RUNTIME = "platform.runtime";   //NOI18N
+
+    //Name of ant platform name property
+    public static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
+
+    private static final String[] CONFIG_AWARE_PROPERTIES = {
+        ProjectProperties.MAIN_CLASS,
+        ProjectProperties.APPLICATION_ARGS,
+        ProjectProperties.RUN_JVM_ARGS,
+        ProjectProperties.RUN_WORK_DIR,
+        PLATFORM_RUNTIME
+    };
     
     ClassPathSupport cs;
     
@@ -865,7 +877,7 @@ public class J2SEProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
             String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -914,7 +926,7 @@ public class J2SEProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
             String v = def.get(prop);
             EditableProperties ep =
                     (prop.equals(ProjectProperties.APPLICATION_ARGS) ||

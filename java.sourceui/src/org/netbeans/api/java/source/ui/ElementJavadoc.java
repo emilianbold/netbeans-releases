@@ -612,7 +612,6 @@ public class ElementJavadoc {
                                 throwsTypes, inheritedThrowsTags, inheritedThrowsInlineTags, cancel, sync, ctx);
                                 if (s != null) {
                                     sb.append(s);
-                                    sb.append("</p>"); //NOI18N
                                     return new Now(sb.toString());
                                 }
                         }
@@ -697,19 +696,17 @@ public class ElementJavadoc {
                         if (inlineTags.length > 0 || doc.tags().length > 0) {
                             sb.append(getDeprecatedTag(doc, ctx));
                             sb.append(inlineTags(doc, inlineTags, ctx));
-                            sb.append("</p><p>"); //NOI18N
+                            sb.append("<p>"); //NOI18N
                             sb.append(getMethodTags(mdoc, returnTags, paramTags,
                                     throwsTags, throwsInlineTags, ctx));
-                            sb.append("</p>"); //NOI18N
                             return new Now(sb.toString());
                         }
                     } else {
                         if (inlineTags.length > 0 || doc.tags().length > 0) {
                             sb.append(getDeprecatedTag(doc, ctx));
                             sb.append(inlineTags(doc, inlineTags, ctx));
-                            sb.append("</p><p>"); //NOI18N
+                            sb.append("<p>"); //NOI18N
                             sb.append(getTags(doc, ctx));
-                            sb.append("</p>"); //NOI18N
                             return new Now(sb.toString());
                         }
                     }
@@ -723,7 +720,6 @@ public class ElementJavadoc {
                             sb.append(jdText);
                         else
                             sb.append(noJavadocFound()); //NOI18N
-                        sb.append("</p>"); //NOI18N
                         return sb.toString();
                     }
                 };
@@ -882,7 +878,7 @@ public class ElementJavadoc {
                     sb.append(", "); //NOI18N
             }
         }
-        sb.append("</tt></p>"); //NOI18N
+        sb.append("</tt>"); //NOI18N
         return sb;
     }
     
@@ -897,7 +893,7 @@ public class ElementJavadoc {
             sb.append(' '); //NOI18N
         appendType(sb, fdoc.type(), false, false, false, ctx);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
-        sb.append("</tt></p>"); //NOI18N
+        sb.append("</tt>"); //NOI18N
         return sb;
     }
     
@@ -949,7 +945,7 @@ public class ElementJavadoc {
                 }
             }
         }
-        sb.append("</tt></p>"); //NOI18N
+        sb.append("</tt>"); //NOI18N
         return sb;
     }
     
@@ -958,7 +954,7 @@ public class ElementJavadoc {
         sb.append("<p><tt>"); //NOI18N
         sb.append(getAnnotations(pdoc.annotations(), ctx));
         sb.append("package <b>").append(pdoc.name()).append("</b>"); //NOI18N
-        sb.append("</tt></p>"); //NOI18N
+        sb.append("</tt>"); //NOI18N
         return sb;
     }
     
@@ -1232,7 +1228,7 @@ public class ElementJavadoc {
         StringBuilder sb = new StringBuilder();
         for (Tag tag : doc.tags()) {
             if (DEPRECATED_TAG.equals(tag.kind())) {
-                sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(doc, tag.inlineTags(),ctx)).append("</i></p><p>"); //NOI18N
+                sb.append("<b>").append(NbBundle.getMessage(ElementJavadoc.class, "JCD-deprecated")).append("</b> <i>").append(inlineTags(doc, tag.inlineTags(),ctx)).append("</i><p>"); //NOI18N
                 break;
             }
         }

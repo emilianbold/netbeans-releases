@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project default="default" basedir=".." xmlns:remote="http://www.netbeans.org/ns/j2se-project/remote-platform/1" xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3">
+
+    <target name="default">
+        <echo message="Default target is not set, you must specify which target you want to run."/>
+    </target>
+
+    <target name="-init-remote-platform-properties" depends="init">
+        <fail unless="platform.runtime">Runtime platform (platform.runtime) must be set.</fail>
+        <j2seproject1:property name="remote.platform.home.dir" value="platforms.${platform.runtime}.platform.install.folder"/>
+        <j2seproject1:property name="remote.platform.work.dir" value="platforms.${platform.runtime}.platform.work.folder"/>
+        <j2seproject1:property name="remote.platform.host" value="platforms.${platform.runtime}.platform.host"/>
+        <j2seproject1:property name="remote.platform.port" value="platforms.${platform.runtime}.platform.port"/>
+        <j2seproject1:property name="remote.platform.user" value="platforms.${platform.runtime}.platform.auth.username"/>
+        <j2seproject1:property name="remote.platform.auth" value="platforms.${platform.runtime}.platform.auth.kind"/>
+        <j2seproject1:property name="remote.platform.keyfile" value="platforms.${platform.runtime}.platform.auth.keystore"/>
+        <fail unless="remote.platform.home.dir">Must set remote.platform.home.dir</fail>
+        <fail unless="remote.platform.work.dir">Must set remote.platform.work.dir</fail>
+        <fail unless="remote.platform.host">Must set remote.platform.host</fail>
+        <fail unless="remote.platform.port">Must set remote.platform.port</fail>
+        <fail unless="remote.platform.user">Must set remote.platform.user</fail>
+        <fail unless="remote.platform.auth">Must set remote.platform.auth</fail>
+        <condition property="remote.platform.auth.passwd">
+            <equals arg1="${remote.platform.auth}" arg2="PASSWORD"/>
+        </condition>
+        <condition property="remote.platform.auth.key">
+            <equals arg1="${remote.platform.auth}" arg2="KEY"/>
+        </condition>
+        <basename file="${basedir}" property="remote.project.name"/>
+        <basename file="${dist.dir}" property="remote.dist.dir.name"/>
+        <basename file="${dist.jar}" property="remote.dist.jar.name"/>
+        <property name="remote.project.dir" value="${remote.platform.work.dir}/${remote.project.name}"/>
+        <property name="remote.dist.dir" value="${remote.project.dir}/${remote.dist.dir.name}"/>
+        <property name="remote.dist.jar" value="${remote.dist.dir}/${remote.dist.jar.name}"/>
+        <property name="remote.java.executable" value="${remote.platform.home.dir}/bin/java"/>
+        <scriptdef name="addressport" language="javascript">
+            <attribute name="address" />
+            <attribute name="property" />
+         <![CDATA[
+           var address = attributes.get("address");
+           project.setProperty(attributes.get("property"), address.split(":")[1]);
+         ]]>
+      </scriptdef>
+      <macrodef name="runwithpasswd" uri="http://www.netbeans.org/ns/j2se-project/remote-platform/1">
+            <attribute name="additionaljvmargs" default=""/>
+            <sequential>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" command="mkdir -p '${remote.dist.dir}'"/>
+                <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" password="${remote.platform.password}" trust="true">
+                    <fileset dir="${dist.dir}"/>
+                </scp>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true" usepty="true"
+                    command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+            </sequential>
+        </macrodef>
+        <macrodef name="runwithkey" uri="http://www.netbeans.org/ns/j2se-project/remote-platform/1">
+            <attribute name="additionaljvmargs" default=""/>
+            <sequential>
+                <fail unless="remote.platform.keyfile">Must set remote.platform.keyfile</fail>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" command="mkdir -p '${remote.dist.dir}'"/>
+                <scp todir="${remote.platform.user}@${remote.platform.host}:${remote.dist.dir}" port="${remote.platform.port}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true">
+                    <fileset dir="${dist.dir}"/>
+                </scp>
+                <sshexec host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true" usepty="true"
+                    command="cd '${remote.project.dir}'; '${remote.java.executable}' @{additionaljvmargs} -Dfile.encoding=${runtime.encoding} ${run.jvmargs} ${run.jvmargs.ide} -jar ${remote.dist.jar} ${application.args}"/>
+            </sequential>
+        </macrodef>
+    </target>
+
+    <target name="-check-vm-debug" depends="init, -init-remote-platform-properties">
+        <j2seproject1:property name="remote.platform.jvm.debug" value="platforms.${platform.runtime}.platform.jvm.debug"/>
+        <condition property="remote.platform.jvm.debug.available" value="true">
+            <or>
+                <contains string="${remote.platform.jvm.debug}" substring="$${platforms."/>
+                <istrue value="${remote.platform.jvm.debug}"/>
+            </or>
+        </condition>
+        <fail unless="remote.platform.jvm.debug.available" message="The Runtime JVM ${remote.platform.host}:${remote.platform.home.dir} does not support debugging."/>
+    </target>
+
+    <target name="-ask-password" unless="remote.platform.password" if="remote.platform.auth.passwd">
+        <input message="Password ${remote.platform.user}@${remote.platform.host}:" addproperty="remote.platform.password">
+            <handler type="secure"/>
+        </input>
+    </target>
+
+    <target name="-ask-passphrase" unless="remote.platform.passphrase" if="remote.platform.auth.key">
+        <input message="Passphrase ${remote.platform.user}@${remote.platform.host}:" addproperty="remote.platform.passphrase">
+            <handler type="secure"/>
+        </input>
+    </target>
+
+    <target name="-run-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password" if="remote.platform.auth.passwd">
+        <remote:runwithpasswd/>
+    </target>
+
+    <target name="-debug-remote-passwd" depends="init, jar, -init-remote-platform-properties, -ask-password, -debug-start-debugger" if="remote.platform.auth.passwd">
+        <addressport address="${jpda.address}" property="jpda.port"/>
+        <sshsession host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" password="${remote.platform.password}" trust="true">
+            <remotetunnel lport="${jpda.port}" lhost="localhost" rport="${jpda.port}"/>
+            <sequential>
+                <remote:runwithpasswd additionaljvmargs="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            </sequential>
+        </sshsession>
+    </target>
+
+    <target name="-run-remote-key" depends="init, jar, -init-remote-platform-properties, -ask-passphrase" if="remote.platform.auth.key">
+        <remote:runwithkey/>
+    </target>
+
+    <target name="-debug-remote-key" depends="init, jar, -init-remote-platform-properties, -ask-passphrase, -debug-start-debugger" if="remote.platform.auth.key">
+        <addressport address="${jpda.address}" property="jpda.port"/>
+        <sshsession host="${remote.platform.host}" port="${remote.platform.port}" username="${remote.platform.user}" keyfile="${remote.platform.keyfile}" passphrase="${remote.platform.passphrase}" trust="true">
+            <remotetunnel lport="${jpda.port}" lhost="localhost" rport="${jpda.port}"/>
+            <sequential>
+                <remote:runwithkey additionaljvmargs="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
+            </sequential>
+        </sshsession>
+    </target>
+
+    <target name="run-remote" depends="init, jar, -init-remote-platform-properties, -run-remote-passwd, -run-remote-key"/>
+    <target name="debug-remote" depends="init, jar, -init-remote-platform-properties, -check-vm-debug, -debug-remote-passwd, -debug-remote-key"/>
+</project>
