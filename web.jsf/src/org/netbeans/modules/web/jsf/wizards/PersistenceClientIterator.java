@@ -449,7 +449,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", UTIL_CLASS_NAMES2[i] + "."+JAVA_EXT); //NOI18N
                 progressContributor.progress(progressMsg, progressIndex++);
                 progressPanel.setText(progressMsg);
-                FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/"+UTIL_CLASS_NAMES2[i] + ".ftl");
+                FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/StandardJSF/"+UTIL_CLASS_NAMES2[i] + ".ftl");
                 FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES2[i] + "."+JAVA_EXT);//NOI18N
                 HashMap<String, Object> params = new HashMap<String, Object>();
                 params.put("packageName", utilPackage);
@@ -685,7 +685,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static void expandSingleJSFTemplate(String templateName, String entityClass,
             String jsfFolder, FileObject webRoot, String name, Map<String, Object> params,
             ProgressContributor progressContributor, ProgressPanel progressPanel, int progressIndex) throws IOException {
-        FileObject template = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/"+templateName);
+        FileObject template = FileUtil.getConfigRoot().getFileObject("/Templates/JSF/JSF_From_Entity_Wizard/StandardJSF/"+templateName);
         String fileName = getJsfFileName(entityClass, jsfFolder, name);
         String  progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", fileName); //NOI18N
         progressContributor.progress(progressMsg, progressIndex);
