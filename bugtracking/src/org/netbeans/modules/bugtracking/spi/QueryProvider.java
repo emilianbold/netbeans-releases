@@ -130,6 +130,7 @@ public abstract class QueryProvider<Q, I> {
      * @param id
      * @return
      */
+    // XXX used only by query table - get rid of this
     public abstract boolean contains(Q q, String id);
 
     /**
