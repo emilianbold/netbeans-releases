@@ -70,7 +70,7 @@ public class MainMenuJavaTest extends MainMenuTest {
 
     @Override
     public void initialize() {
-        context = ProjectContext.JAVA;
+        this.context = ProjectContext.JAVA;
         openFile("SampleProject", org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + TREE_SEPARATOR + "sample1", "SampleClass1.java");
     }
     

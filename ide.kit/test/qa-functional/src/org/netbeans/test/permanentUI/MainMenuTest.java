@@ -93,7 +93,7 @@ public class MainMenuTest extends PermUITestCase {
                 addTest(MainMenuTest.class, "testFile_ImportProjectSubMenu").
                 addTest(MainMenuTest.class, "testFile_ExportProjectSubMenu").
                 addTest(MainMenuTest.class, "testNavigate_InspectSubMenu").
-                addTest(MainMenuTest.class, "testView_CodeFoldsSubMenu").
+                // Submenu disabled - do nothing addTest(MainMenuTest.class, "testView_CodeFoldsSubMenu").
                 addTest(MainMenuTest.class, "testView_ToolbarsSubMenu").
                 addTest(MainMenuTest.class, "testProfile_AdvancedCommandsSubMenu").
                 addTest(MainMenuTest.class, "testDebug_StackSubMenu").
@@ -119,7 +119,7 @@ public class MainMenuTest extends PermUITestCase {
 
     @Override
     public void initialize() throws IOException {
-        context = ProjectContext.NONE;
+        this.context = ProjectContext.NONE;
         // do nothing
     }
 

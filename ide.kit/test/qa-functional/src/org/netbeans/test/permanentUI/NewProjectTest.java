@@ -92,7 +92,7 @@ public class NewProjectTest extends PermUITestCase {
         if(npwo == null || !npwo.isVisible()){
             npwo = NewProjectWizardOperator.invoke();
         }
-        context = ProjectContext.NONE;
+        this.context = ProjectContext.NONE;
     }
 
     @Override
