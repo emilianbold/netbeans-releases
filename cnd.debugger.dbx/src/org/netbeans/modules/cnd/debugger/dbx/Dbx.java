@@ -667,6 +667,7 @@ public final class Dbx extends CommonDbx {
     protected final void clone(int argc, String argv[],
 			       boolean cloned_to_follow) {
 
+        debugger.getNDI().setTarget("");
 	debugger.clone(argv, cloned_to_follow);
     }
 
