@@ -126,10 +126,10 @@ public final class BugtrackingFactory<R, Q, I> {
         return BugtrackingUtil.isOpened(query);
     }
     
-    public void openQuery(Repository repository, Q q) {
+    public void editQuery(Repository repository, Q q) {
         QueryImpl query = getQueryImpl(repository, q);
         if(query != null) {
-            query.openShowAll(false);
+            query.open(QueryController.QueryMode.EDIT);
         }
     }
     

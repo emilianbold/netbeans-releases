@@ -62,14 +62,12 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
     private final Query query;
     private final String label;
     private final String tooltip;
-    private final Query.QueryMode queryMode;
     private final ResultType type;
 
-    QueryResultHandleImpl(Query query, String label, String tooltip, Query.QueryMode mode, ResultType type) {
+    QueryResultHandleImpl(Query query, String label, String tooltip, ResultType type) {
         this.query = query;
         this.label = label;
         this.tooltip = tooltip;
-        this.queryMode = mode;
         this.type = type;
     }
 
@@ -90,7 +88,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, queryMode, true);
+        TeamUtil.openQuery(query, true);
     }
 
     @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}"})
@@ -101,7 +99,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 LBL_QueryResultTotal(issueCount),
                 getTotalTooltip(issueCount),
-                Query.QueryMode.SHOW_ALL,
                 ResultType.NAMED_RESULT);
     }
     
@@ -130,7 +127,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 label,
                 tooltip,
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.NAMED_RESULT);
 
     }
@@ -155,7 +151,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.ALL_CHANGES_RESULT);
     }
 

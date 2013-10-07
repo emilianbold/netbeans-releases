@@ -745,7 +745,7 @@ public class Actions {
         private QueryController.QueryMode mode;
 
         public OpenQueryAction(QueryNode... queryNodes) {
-            this(QueryController.QueryMode.SHOW_ALL, queryNodes);
+            this(QueryController.QueryMode.VIEW, queryNodes);
         }
 
         public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
@@ -756,7 +756,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(mode);
             }
         }
 
@@ -781,7 +781,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(mode);
             }
         }
 

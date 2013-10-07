@@ -370,7 +370,7 @@ public class JiraUtils {
 
     public static void openQuery(JiraQuery jiraQuery) {
         Repository repository = getRepository(jiraQuery.getRepository());
-        Jira.getInstance().getBugtrackingFactory().openQuery(repository, jiraQuery);
+        Jira.getInstance().getBugtrackingFactory().editQuery(repository, jiraQuery);
     }    
     
     public static void runInAWT(Runnable r) {

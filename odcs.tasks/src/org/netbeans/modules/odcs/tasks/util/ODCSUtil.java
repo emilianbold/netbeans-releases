@@ -172,7 +172,7 @@ public class ODCSUtil {
     }
     
     public static void openQuery(ODCSQuery odcsQuery) {
-        ODCS.getInstance().getBugtrackingFactory().openQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
+        ODCS.getInstance().getBugtrackingFactory().editQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
     }
 
     public static Repository getRepository(ODCSRepository odcsRepository) {

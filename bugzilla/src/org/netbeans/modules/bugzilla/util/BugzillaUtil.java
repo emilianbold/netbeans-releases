@@ -210,7 +210,7 @@ public class BugzillaUtil {
     }
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
-        Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+        Bugzilla.getInstance().getBugtrackingFactory().editQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
 
     public static void runInAWT(Runnable r) {

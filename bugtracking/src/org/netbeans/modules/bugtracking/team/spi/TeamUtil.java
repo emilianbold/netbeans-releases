@@ -368,7 +368,7 @@ public class TeamUtil {
         QueryAction.openQuery(null, APIAccessor.IMPL.getImpl(repository), suggestedSelectionOnly);
     }
     
-    public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final Query query, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         DashboardTopComponent.findInstance().select(queryImpl, true);
     }

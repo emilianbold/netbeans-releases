@@ -51,12 +51,26 @@ import org.openide.util.HelpCtx;
  */
 public abstract class QueryController {
 
+    /**
+     * The mode in which this controllers component is shown.
+     */
     public enum QueryMode {
-        SHOW_ALL,
-        SHOW_NEW_OR_CHANGED,
-        EDIT
+        
+        /**
+         * The Controller Component is in query edit mode. Mandatory for 
+         */
+        EDIT,
+        
+        /**
+         * The controller Component is view results modes
+         */
+        VIEW
     }
 
+    /**
+     * 
+     * @param mode 
+     */
     public abstract void setMode(QueryMode mode);
     
     /**
@@ -73,7 +87,7 @@ public abstract class QueryController {
     public abstract HelpCtx getHelpCtx();
 
     /**
-     * Called when this controller was openened
+     * Called when this controller was opened
      */
     public void opened() {
 

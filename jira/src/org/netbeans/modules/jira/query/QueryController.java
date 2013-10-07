@@ -654,13 +654,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             case EDIT:
                 onModify();
                 break;                        
-            case SHOW_ALL:
+            case VIEW:
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);

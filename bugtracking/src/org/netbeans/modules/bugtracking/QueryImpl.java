@@ -118,13 +118,9 @@ public final class QueryImpl<Q, I>  {
         QueryAction.openQuery(null, repository);
     }
     
-    public void openShowAll(final boolean suggestedSelectionOnly) {
-        open(suggestedSelectionOnly, QueryController.QueryMode.SHOW_ALL);
-    }
-    
-    public void open(final boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
+    public void open(QueryController.QueryMode mode) {
         queryProvider.getController(data).setMode(mode);
-        QueryAction.openQuery(this, repository, suggestedSelectionOnly);
+        QueryAction.openQuery(this, repository, false);
     }
     
     public boolean isSaved() {
