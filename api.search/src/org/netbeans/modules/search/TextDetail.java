@@ -515,8 +515,6 @@ public final class TextDetail implements Selectable {
             this.txtDetail = txtDetail;
             this.mo = mo;
             
-            setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
-                     DetailNode.getFullDesc(txtDetail));
             // A workaround for #124559 - when the detail becomes visible,
             // get the Line object. Later - if the user jumps to the document,
             // changes it and saves - the Line objects are not created for the
@@ -935,6 +933,15 @@ public final class TextDetail implements Selectable {
         @Override
         public void destroy() throws IOException {
             remove();
+        }
+
+        @Override
+        public Object getValue(String attributeName) {
+            if (SearchDisplayer.ATTR_OUTPUT_LINE.equals(attributeName)) {
+                return DetailNode.getFullDesc(txtDetail); // #236805
+            } else {
+                return super.getValue(attributeName);
+            }
         }
     } // End of DetailNode class.
 
