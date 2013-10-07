@@ -51,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -82,6 +83,8 @@ import static org.netbeans.modules.maven.apisupport.Bundle.*;
 public class ImportantFilesNodeFactory implements NodeFactory {
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
+    
+    private static final @StaticResource String CONFIG_BADGE = "org/netbeans/modules/maven/apisupport/config-badge.gif";
     
     static final String LAYER = "LAYER-FILE.PLACEHOLDER"; //NOI18N
     /** Package private for unit tests only. */
@@ -135,6 +138,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         public void removeNotify() {
         }
     }
+    
     /**
      * Show node "Important Files" with various config and docs files beneath it.
      */
@@ -155,7 +159,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private Image getIcon(boolean opened) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/apisupport/config-badge.gif", true); //NOI18N
+            Image badge = ImageUtilities.loadImage(CONFIG_BADGE, true); //NOI18N
             return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
         }
         

@@ -52,6 +52,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,6 +65,7 @@ import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.NotificationLineSupport;
 import org.openide.explorer.ExplorerManager;
@@ -81,6 +83,7 @@ import org.openide.util.RequestProcessor;
  * @author Anuradha G (theanuradha-at-netbeans.org)
  */
 public final class UsagesUI extends javax.swing.JPanel implements ExplorerManager.Provider {
+    private static final @StaticResource String ARTIFACT_BADGE = "org/netbeans/modules/maven/actions/usages/ArtifactBadge.png";
 
     static final int TYPE_DEPENDENCY = 0;
     static final int TYPE_COMPILE = 1;
@@ -443,7 +446,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
 
         @Override
         public Image getIcon(int arg0) {
-            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/actions/usages/ArtifactBadge.png", true); //NOI18N
+            Image badge = ImageUtilities.loadImage(ARTIFACT_BADGE, true); //NOI18N
             return badge;
         }
 
@@ -465,7 +468,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
         public VersionNode(NBVersionInfo version) {
             super(Children.LEAF);
             this.version = version;
-            setIconBaseWithExtension("org/netbeans/modules/maven/DependencyIcon.png"); //NOI18N
+            setIconBaseWithExtension(IconResources.DEPENDENCY_ICON); //NOI18N
         }
 
         @Override

@@ -43,7 +43,6 @@ package org.netbeans.modules.html.custom.hints;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.html.custom.conf.Attribute;
 import org.netbeans.modules.html.custom.conf.Configuration;
@@ -57,9 +56,15 @@ import org.openide.util.NbBundle;
  * @author marek
  */
 @NbBundle.Messages(value = {
+    "# {0} - attribute name",
     "declareGlobalAttr=Declare global attribute \"{0}\"",
+    "# {0} - attribute names list",
     "declareGlobalAttrs=Declare \"{0}\" attributes as global",
+    "# {0} - attribute name",
+    "# {1} - element name",
     "declareElementAttr=Declare \"{0}\" as attribute of element \"{1}\"",
+    "# {0} - attribute names list",
+    "# {1} - element name",
     "declareElementAttrs=Declare \"{0}\" as attributes of element \"{1}\""})
 public final class AddAttributeFix implements HintFix {
     private final Collection<String> attributeNames;
@@ -78,30 +83,18 @@ public final class AddAttributeFix implements HintFix {
 
     @Override
     public String getDescription() {
+        String attrNamesList = Utils.attributeNames2String(attributeNames);
         if(elementContextName == null) {
             return attributeNames.size() == 1 
-                    ? Bundle.declareGlobalAttr(getAttributeNamesList())
-                    : Bundle.declareGlobalAttrs(getAttributeNamesList());
+                    ? Bundle.declareGlobalAttr(attrNamesList)
+                    : Bundle.declareGlobalAttrs(attrNamesList);
         } else {
             return attributeNames.size() == 1
-                ? Bundle.declareElementAttr(getAttributeNamesList(), elementContextName)
-                : Bundle.declareElementAttrs(getAttributeNamesList(), elementContextName);
+                ? Bundle.declareElementAttr(attrNamesList, elementContextName)
+                : Bundle.declareElementAttrs(attrNamesList, elementContextName);
         }
     }
-    
-    private String getAttributeNamesList() {
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> i = attributeNames.iterator();
-        while(i.hasNext()) {
-            String aName = i.next();
-            sb.append(aName);
-            if(i.hasNext()) {
-                sb.append(", ");
-            }
-        }
-        return sb.toString();
-    }
-
+  
     @Override
     public void implement() throws Exception {
         Configuration conf = Configuration.get(snapshot.getSource().getFileObject());

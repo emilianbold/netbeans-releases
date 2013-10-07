@@ -694,7 +694,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     
     private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final File repository;
-        private java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
+        private final java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (File repository) {
@@ -790,7 +790,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         Boolean mergedStatus = null;
                         if (branchMergeWith != null) {
                             GitRevisionInfo commonAncestor = client.getCommonAncestor(new String[] { branchMergeWith, e.getValue().getId()}, GitUtils.NULL_PROGRESS_MONITOR);
-                            mergedStatus = commonAncestor.getRevision().equals(e.getValue().getId());
+                            mergedStatus = commonAncestor != null && commonAncestor.getRevision().equals(e.getValue().getId());
                         }
                         BranchesTopChildren.this.branches.put(e.getKey(), new GitBranchInfo(e.getValue(), mergedStatus));
                     }

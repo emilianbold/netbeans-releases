@@ -39,55 +39,33 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.custom.hints;
 
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.conf.Configuration;
-import org.netbeans.modules.html.custom.conf.Tag;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.maven.spi;
+
+import org.netbeans.api.annotations.common.StaticResource;
 
 /**
- *
- * @author marek
+ * static resources pointing to maven specific icons worth reusing (file an issue if you need some others)
+ * @author mkleint
+ * @since 2.93
  */
-@NbBundle.Messages(value = {
-    "# {0} - element name",
-    "addUnknownElementToProjectConfiguration=Add element \"{0}\" to the project's custom elements"
-})
-public final class AddElementFix implements HintFix {
-    private final String elementName;
-    private final String elementContextName;
-    private final Snapshot snapshot;
+public class IconResources {
+    public static final @StaticResource String JAVADOC_BADGE_ICON = "org/netbeans/modules/maven/DependencyJavadocIncluded.png"; //NOI18N
+    public static final @StaticResource String SOURCE_BADGE_ICON = "org/netbeans/modules/maven/DependencySrcIncluded.png"; //NOI18N
+    public static final @StaticResource String MAVEN_ICON = "org/netbeans/modules/maven/resources/Maven2Icon.gif";
+    public static final @StaticResource String MANAGED_BADGE_ICON = "org/netbeans/modules/maven/DependencyManaged.png"; //NOI18N
+    public static final @StaticResource String ARTIFACT_ICON = "org/netbeans/modules/maven/ArtifactIcon.png";
+    public static final @StaticResource String DEPENDENCY_ICON = "org/netbeans/modules/maven/DependencyIcon.png";
+    public static final @StaticResource String BROKEN_PROJECT_BADGE_ICON = "org/netbeans/modules/maven/brokenProjectBadge.png"; //NOI18N
+    /**
+     * Icon for a dependency JAR file.
+     */
+    public static final @StaticResource String ICON_DEPENDENCY_JAR = "org/netbeans/modules/maven/spi/nodes/DependencyJar.gif";
+    public static final @StaticResource String TRANSITIVE_ARTIFACT_ICON = "org/netbeans/modules/maven/TransitiveArtifactIcon.png";
+    public static final @StaticResource String TRANSITIVE_DEPENDENCY_ICON = "org/netbeans/modules/maven/TransitiveDependencyIcon.png";
+    public static final @StaticResource String TRANSITIVE_MAVEN_ICON = "org/netbeans/modules/maven/TransitiveMaven2Icon.png";
 
-    public AddElementFix(String elementName, String elementContextName, Snapshot snapshot) {
-        this.elementName = elementName;
-        this.elementContextName = elementContextName;
-        this.snapshot = snapshot;
+    private IconResources() {
     }
 
-    @Override
-    public String getDescription() {
-        return Bundle.addUnknownElementToProjectConfiguration(elementName);
-    }
-
-    @Override
-    public void implement() throws Exception {
-        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        conf.add(new Tag(elementName));
-        conf.store();
-        LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
-    }
-
-    @Override
-    public boolean isSafe() {
-        return true;
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
-    }
-    
 }

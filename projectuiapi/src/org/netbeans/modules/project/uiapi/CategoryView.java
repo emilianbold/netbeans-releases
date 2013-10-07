@@ -52,6 +52,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import javax.swing.JPanel;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -66,6 +67,7 @@ import org.openide.util.lookup.Lookups;
  * @author Petr Hrebejk
  */
 public class CategoryView extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
+    private static final @StaticResource String DEFAULT_CATEGORY = "org/netbeans/modules/project/uiapi/defaultCategory.gif";
 
     private ExplorerManager manager;
     private BeanTreeView btv;
@@ -195,9 +197,9 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
      */
     private static class CategoryNode extends AbstractNode implements PropertyChangeListener {
 
-        private Image icon = ImageUtilities.loadImage( "org/netbeans/modules/project/uiapi/defaultCategory.gif" ); // NOI18N
+        private Image icon = ImageUtilities.loadImage( DEFAULT_CATEGORY); // NOI18N
 
-        private ProjectCustomizer.Category category;
+        private final ProjectCustomizer.Category category;
 
         public CategoryNode( ProjectCustomizer.Category category ) {
             super( ( category.getSubcategories() == null || category.getSubcategories().length == 0 ) ?
@@ -213,22 +215,26 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
             Utilities.getCategoryChangeSupport(category).addPropertyChangeListener(this);
         }
 
+        @Override
         public String getHtmlDisplayName() {
             return category.isValid() ? null :
                 "<html><font color=\"!nb.errorForeground\">" + // NOI18N
                     category.getDisplayName() + "</font></html>"; // NOI18N
         }
 
+        @Override
         public Image getIcon( int type ) {
             return this.icon;
         }
 
+        @Override
         public Image getOpenedIcon( int type ) {
             return getIcon( type );
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName() == CategoryChangeSupport.VALID_PROPERTY) {
+            if (CategoryChangeSupport.VALID_PROPERTY.equals(evt.getPropertyName())) {
                 fireDisplayNameChange(null, null);
             }
         }
@@ -239,7 +245,7 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
      */
     private static class CategoryChildren extends Children.Keys<ProjectCustomizer.Category> {
 
-        private ProjectCustomizer.Category[] descriptions;
+        private final ProjectCustomizer.Category[] descriptions;
 
         public CategoryChildren( ProjectCustomizer.Category[] descriptions ) {
             this.descriptions = descriptions;
@@ -247,14 +253,17 @@ public class CategoryView extends JPanel implements ExplorerManager.Provider, Pr
 
         // Children.Keys impl --------------------------------------------------
 
+        @Override
         public void addNotify() {
             setKeys( descriptions );
         }
 
+        @Override
         public void removeNotify() {
             setKeys(new ProjectCustomizer.Category[0]);
         }
 
+        @Override
         protected Node[] createNodes(ProjectCustomizer.Category c) {
             return new Node[] {new CategoryNode(c)};
         }

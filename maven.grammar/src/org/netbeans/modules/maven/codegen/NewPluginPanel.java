@@ -74,6 +74,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.PluginIndexManager;
@@ -101,15 +102,16 @@ import org.openide.util.TaskListener;
  */
 public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener,
         Comparator<String> {
+    private static final @StaticResource String EMPTY_ICON = "org/netbeans/modules/maven/codegen/empty.png";
 
     private static final Object LOCK = new Object();
     private static Node noResultsRoot;
 
     private String curTypedText;
-    private Color defSearchC;
+    private final Color defSearchC;
     private String lastQueryText, inProgressText;
-    private QueryPanel queryPanel;
-    private DefaultListModel listModel;
+    private final QueryPanel queryPanel;
+    private final DefaultListModel listModel;
 
     private NBVersionInfo selVi;
     private NotificationLineSupport support;
@@ -324,7 +326,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
 
                 @Override
                 public Image getIcon(int arg0) {
-                    return ImageUtilities.loadImage("org/netbeans/modules/maven/codegen/empty.png"); //NOI18N
+                    return ImageUtilities.loadImage(EMPTY_ICON); //NOI18N
                 }
 
                 @Override

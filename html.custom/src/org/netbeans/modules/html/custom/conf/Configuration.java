@@ -403,7 +403,22 @@ public class Configuration {
         if (t.getDocumentationURL() != null) {
             ctn.put(DOC_URL, t.getDocumentationURL());
         }
+        if (t.isRequired()) {
+            ctn.put(REQUIRED, Boolean.TRUE.toString());
+        }
+        
+        //filter parent from contexts for storing
         Collection<String> contexts = t.getContexts();
+        if(t.getParent() != null) {
+            Collection<String> noParentInContexts = new ArrayList<>();
+            for(String ctx : contexts) {
+                if(!ctx.equals(t.getParent().getName())) {
+                    noParentInContexts.add(ctx);
+                }
+            }
+            contexts = noParentInContexts;
+        }
+        
         if (!contexts.isEmpty()) {
             if (contexts.size() == 1) {
                 //as string
