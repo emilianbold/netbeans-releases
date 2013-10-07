@@ -84,7 +84,7 @@ public abstract class PatternSandbox extends JPanel
     private static final RequestProcessor RP
             = new RequestProcessor(PatternSandbox.class);
 
-    protected JComboBox cboxPattern;
+    protected JComboBox<String> cboxPattern;
     private JLabel lblPattern;
     protected JLabel lblHint;
     private JLabel lblOptions;
@@ -102,7 +102,7 @@ public abstract class PatternSandbox extends JPanel
      */
     protected void initComponents() {
 
-        cboxPattern = new JComboBox();
+        cboxPattern = new JComboBox<String>();
         cboxPattern.setEditable(true);
         cboxPattern.setRenderer(new ShorteningCellRenderer());
         lblPattern = new JLabel();
@@ -391,7 +391,7 @@ public abstract class PatternSandbox extends JPanel
     /**
      * Get current pattern as a string. Never returns null.
      */
-    private static String getSelectedItemAsString(JComboBox cbox) {
+    private static String getSelectedItemAsString(JComboBox<String> cbox) {
         if (cbox.getSelectedItem() != null) {
             return cbox.getSelectedItem().toString();
         } else {
@@ -1035,7 +1035,7 @@ public abstract class PatternSandbox extends JPanel
         private static final String THREE_DOTS = "...";                 //NOI18N
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value,
+        public Component getListCellRendererComponent(JList<?> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             Component component = super.getListCellRendererComponent(list,
                     value, index, isSelected, cellHasFocus);
