@@ -43,23 +43,17 @@
  */
 package org.netbeans.modules.j2me.project.wizard;
 
+import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.StringTokenizer;
-import javax.swing.ComboBoxModel;
-import javax.swing.ListCellRenderer;
-import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2me.project.J2MEProjectUtils;
 import org.netbeans.modules.j2me.project.wizard.J2MEProjectWizardIterator.WizardType;
-import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
@@ -75,12 +69,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
     private final WizardType type;
     private PanelConfigureProject panel;
-    private ComboBoxModel platformsModel;
-    private ListCellRenderer platformsCellRenderer;
-    private JavaPlatformChangeListener jpcl;
     private String currentLibrariesLocation;
     private String projectLocation;
     private boolean isMainClassValid;
+
+    private PlatformDevicesPanel platformDevicesPanel;
 
     PanelOptionsVisual(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
@@ -92,19 +85,11 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void preInitComponents() {
-        platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
-        platformsCellRenderer = J2MEProjectUtils.createPlatformListCellRenderer();
     }
 
     private void postInitComponents() {
-        // copied from CustomizerLibraries
-        if (!UIManager.getLookAndFeel().getClass().getName().toUpperCase().contains("AQUA")) {  //NOI18N
-            platformComboBox.putClientProperty("JComboBox.isTableCellEditor", Boolean.TRUE); // NOI18N
-        }
-        jpcl = new JavaPlatformChangeListener();
-        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
-
-        selectJavaMEEnabledPlatform();
+        platformDevicesPanel = new PlatformDevicesPanel(panel, type);
+        platformDevicesContainer.add(platformDevicesPanel, BorderLayout.CENTER);
 
         currentLibrariesLocation = "." + File.separatorChar + "lib"; // NOI18N
         txtLibFolder.setText(currentLibrariesLocation);
@@ -218,23 +203,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         return pkg.length() == 0 ? main.toString() : String.format("%s.%s", pkg.toString(), main.toString()); // NOI18N
     }
 
-    private JavaPlatform getSelectedPlatform() {
-        Object selectedItem = this.platformComboBox.getSelectedItem();
-        JavaPlatform platform = (selectedItem == null ? null : PlatformUiSupport.getPlatform(selectedItem));
-        return platform;
-    }
-
-    private void selectJavaMEEnabledPlatform() {
-        //TODO: Preselect JavaME platform
-//        for (int i = 0; i < platformsModel.getSize(); i++) {
-//            JavaPlatform platform = PlatformUiSupport.getPlatform(platformsModel.getElementAt(i));
-//            if (J2MEPlatformUtils.isJavaMEEnabled(platform)) {
-//                platformComboBox.setSelectedIndex(i);
-//                break;
-//            }
-//        }
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -248,9 +216,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         lblLibFolder = new javax.swing.JLabel();
         createMainCheckBox = new javax.swing.JCheckBox();
         mainClassTextField = new javax.swing.JTextField();
-        lblPlatform = new javax.swing.JLabel();
-        platformComboBox = new javax.swing.JComboBox();
-        btnManagePlatforms = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         btnLibFolder = new javax.swing.JButton();
@@ -261,6 +226,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         jPanel2 = new javax.swing.JPanel();
         progressLabel = new javax.swing.JLabel();
         progressPanel = new javax.swing.JPanel();
+        platformDevicesContainer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -273,7 +239,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -285,7 +251,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         org.openide.awt.Mnemonics.setLocalizedText(lblLibFolder, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 5);
@@ -302,7 +268,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(25, 0, 0, 10);
         add(createMainCheckBox, gridBagConstraints);
@@ -312,7 +278,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         mainClassTextField.setText("com.myapp.Midlet");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
@@ -322,52 +288,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         mainClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCN_mainClassTextFiled")); // NOI18N
         mainClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("ASCD_mainClassTextFiled")); // NOI18N
 
-        lblPlatform.setLabelFor(platformComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(lblPlatform, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Platform_ComboBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
-        add(lblPlatform, gridBagConstraints);
-        lblPlatform.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_labelPlatform")); // NOI18N
-        lblPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_labelPlatform")); // NOI18N
-
-        platformComboBox.setModel(platformsModel);
-        platformComboBox.setRenderer(platformsCellRenderer);
-        platformComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                platformComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.weightx = 0.1;
-        add(platformComboBox, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnManagePlatforms, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Manage_Button")); // NOI18N
-        btnManagePlatforms.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnManagePlatformsActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
-        add(btnManagePlatforms, gridBagConstraints);
-        btnManagePlatforms.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_buttonManagePlatforms")); // NOI18N
-        btnManagePlatforms.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_buttonManagePlatforms")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 13, 0);
@@ -411,7 +334,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -419,16 +342,19 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         gridBagConstraints.weightx = 0.2;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jPanel1, gridBagConstraints);
-        add(filler1, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 6;
+        add(filler1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 0.1;
         add(filler2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -439,7 +365,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         org.openide.awt.Mnemonics.setLocalizedText(progressLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Progress_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(progressLabel, gridBagConstraints);
@@ -448,11 +374,19 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 0.1;
         add(progressPanel, gridBagConstraints);
+
+        platformDevicesContainer.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        add(platformDevicesContainer, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -483,14 +417,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         }
 }//GEN-LAST:event_btnLibFolderActionPerformed
 
-private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
-    PlatformsCustomizer.showCustomizer(getSelectedPlatform());
-}//GEN-LAST:event_btnManagePlatformsActionPerformed
-
-private void platformComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_platformComboBoxItemStateChanged
-    this.panel.fireChangeEvent();
-}//GEN-LAST:event_platformComboBoxItemStateChanged
-
 private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_createMainCheckBoxItemStateChanged
     lastMainClassCheck = createMainCheckBox.isSelected();
     mainClassTextField.setEnabled(lastMainClassCheck);
@@ -506,18 +432,11 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         lblHint.setVisible(visible);
         createMainCheckBox.setVisible(visible);
         mainClassTextField.setVisible(visible);
+        jSeparator2.setVisible(visible);
     }
 
     @Override
     boolean valid(WizardDescriptor settings) {
-        //TODO: check whether at least one valid J2ME platform is available
-
-//        if (!J2MEPlatformUtils.isJavaMEEnabled(getSelectedPlatform())) {
-//            setBottomPanelAreaVisible(false);
-//            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-//                NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
-//            return false;
-//        }
         setBottomPanelAreaVisible(true);
 
         if (cbSharable.isSelected()) {
@@ -544,16 +463,17 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 return false;
             }
         }
-        return true;
+        return true && platformDevicesPanel.valid(settings);
     }
 
     @Override
     synchronized void read(WizardDescriptor d) {
+        platformDevicesPanel.read(d);
     }
 
     @Override
     void validate(WizardDescriptor d) throws WizardValidationException {
-        // nothing to validate
+        platformDevicesPanel.validate(d);
     }
 
     @Override
@@ -561,13 +481,10 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         //TODO: store values from panel when leaving this panel
         d.putProperty(J2MEProjectWizardIterator.MIDLET_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
         d.putProperty(J2MEProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
-//        
-//        String platformName = getSelectedPlatform().getProperties().get(J2MEPlatformUtils.PLATFORM_ANT_NAME);
-//        d.putProperty(J2MEPlatformUtils.PROP_JAVA_PLATFORM_NAME, platformName);
     }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnLibFolder;
-    private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JCheckBox cbSharable;
     private javax.swing.JCheckBox createMainCheckBox;
     private javax.swing.Box.Filler filler1;
@@ -577,9 +494,8 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblLibFolder;
-    private javax.swing.JLabel lblPlatform;
     private javax.swing.JTextField mainClassTextField;
-    private javax.swing.JComboBox platformComboBox;
+    private javax.swing.JPanel platformDevicesContainer;
     private javax.swing.JLabel progressLabel;
     private javax.swing.JPanel progressPanel;
     private javax.swing.JTextField txtLibFolder;
@@ -602,13 +518,5 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     private void librariesLocationChanged() {
         panel.fireChangeEvent();
-    }
-
-    private class JavaPlatformChangeListener implements PropertyChangeListener {
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            PanelOptionsVisual.this.panel.fireChangeEvent();
-        }
     }
 }

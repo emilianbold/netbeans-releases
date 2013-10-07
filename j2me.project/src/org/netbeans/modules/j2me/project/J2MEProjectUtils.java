@@ -41,10 +41,22 @@
  */
 package org.netbeans.modules.j2me.project;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JCheckBox;
+import javax.swing.JRadioButton;
 import javax.swing.ListCellRenderer;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Profile;
+import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 
 /**
  *
@@ -52,12 +64,123 @@ import javax.swing.ListCellRenderer;
  */
 public class J2MEProjectUtils {
 
+    private static JavaPlatform[] platforms;
+    private static ButtonGroup configurationsGroup;
+    private static ButtonGroup profilesGroup;
+    private static ArrayList<JCheckBox> optionalPackages;
+    private static HashMap<String,J2MEPlatform.J2MEProfile> name2profileAll;
+
     public static ComboBoxModel createPlatformComboBoxModel() {
-        return new DefaultComboBoxModel();
+        readPlatforms();
+        return new DefaultComboBoxModel(platforms);
     }
 
     public static ListCellRenderer createPlatformListCellRenderer() {
         return new DefaultListCellRenderer();
+    }
+    
+    public static ButtonGroup getConfigurationsButtonGroup() {
+        return configurationsGroup;
+}
+
+    public static ButtonGroup getProfilesButtonGroup() {
+        return profilesGroup;
+    }
+
+    public static ArrayList<JCheckBox> getOptionalPackages() {
+        return optionalPackages;
+    }
+    
+    private static void readPlatforms() {
+        configurationsGroup = new ButtonGroup();
+        profilesGroup = new ButtonGroup();
+        optionalPackages = new ArrayList<>();
+        name2profileAll = new HashMap<>();
+        // Read defined platforms and all configurations, profiles and optional packages
+        platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+        Arrays.sort(platforms, new Comparator<JavaPlatform>() {
+            @Override
+            public int compare(final JavaPlatform o1, final JavaPlatform o2) {
+                return o1.getDisplayName().compareTo(o2.getDisplayName());
+            }
+        });
+        HashMap<J2MEPlatform.J2MEProfile, J2MEPlatform.J2MEProfile> cfg = new HashMap<>(),
+                prof = new HashMap<>(), 
+                opt = new HashMap<>();
+        for (int i = 0; i < platforms.length; i++) {
+            if (platforms[i] instanceof J2MEPlatform) {
+                J2MEPlatform platform = (J2MEPlatform) platforms[i];
+                Profile profiles[] = platform.getSpecification().getProfiles();
+                for (int j = 0; j < profiles.length; j++) {
+                    if (profiles[j] instanceof J2MEPlatform.J2MEProfile) {
+                        J2MEPlatform.J2MEProfile p = (J2MEPlatform.J2MEProfile) profiles[j];
+                        switch (p.getType()) {
+                            case J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION:
+                                p = takeBetter(p, cfg.remove(p));
+                                cfg.put(p, p);
+                                break;
+                            case J2MEPlatform.J2MEProfile.TYPE_PROFILE:
+                                p = takeBetter(p, prof.remove(p));
+                                prof.put(p, p);
+                                break;
+                            case J2MEPlatform.J2MEProfile.TYPE_OPTIONAL:
+                                p = takeBetter(p, opt.remove(p));
+                                opt.put(p, p);
+                                name2profileAll.put(p.toString(), p);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        J2MEPlatform.J2MEProfile arr[] = cfg.values().toArray(new J2MEPlatform.J2MEProfile[cfg.size()]);
+        initAllConfigurations(arr);
+        arr = prof.values().toArray(new J2MEPlatform.J2MEProfile[prof.size()]);
+        initAllProfiles(arr);
+        arr = opt.values().toArray(new J2MEPlatform.J2MEProfile[opt.size()]);
+        initAllOptionalPackages(arr);
+    }
+    
+    private static J2MEPlatform.J2MEProfile takeBetter(final J2MEPlatform.J2MEProfile p1, final J2MEPlatform.J2MEProfile p2) {
+        if (p1 == null) return p2;
+        if (p2 == null) return p1;
+        return p1.getDisplayNameWithVersion().length() > p2.getDisplayNameWithVersion().length() ? p1 : p2;
+    }
+    
+    private static void initAllConfigurations(final J2MEPlatform.J2MEProfile cfgs[]) {
+        Arrays.sort(cfgs);
+        for (int i=0; i<cfgs.length; i++) {
+            final JRadioButton btn = new JRadioButton(cfgs[i].toString()); // TO DO some text formating
+            btn.setToolTipText(cfgs[i].getDisplayNameWithVersion());
+            btn.setActionCommand(cfgs[i].toString());
+            configurationsGroup.add(btn);
+        }
+    }
+    
+    private static void initAllProfiles(final J2MEPlatform.J2MEProfile profs[]) {
+        Arrays.sort(profs);
+        for (int i=0; i<profs.length; i++) {
+            final JRadioButton btn = new JRadioButton(profs[i].toString()); // TO DO some text formating
+            btn.setToolTipText(profs[i].getDisplayNameWithVersion());
+            btn.setActionCommand(profs[i].toString());
+            profilesGroup.add(btn);
+        }
+    }
+    
+    private static void initAllOptionalPackages(final J2MEPlatform.J2MEProfile opts[]) {
+        Arrays.sort(opts, new Comparator<J2MEPlatform.J2MEProfile>() {
+            @Override
+            public int compare(final J2MEPlatform.J2MEProfile o1, final J2MEPlatform.J2MEProfile o2) {
+                return o1.getDisplayNameWithVersion().compareTo(o2.getDisplayNameWithVersion());
+            }
+        });
+        for (int i = 0; i < opts.length; i++) {
+            final String dName = opts[i].isNameIsJarFileName() ? opts[i].getDisplayName() : opts[i].getDisplayNameWithVersion();
+            final JCheckBox cb = new JCheckBox(dName);
+            cb.setToolTipText(dName);
+            cb.setActionCommand(opts[i].toString());
+            optionalPackages.add(cb);
+        }
     }
     
 }

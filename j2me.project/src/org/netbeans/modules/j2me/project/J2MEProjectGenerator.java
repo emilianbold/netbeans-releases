@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
 import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -89,7 +90,7 @@ public class J2MEProjectGenerator {
                 setJavaPlatform(getDefaultPlatform()).
                 build();
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty("javame.enabled", "true"); //NOI18N
+        ep.setProperty(J2MEProjectProperties.JAVAME_ENABLED, "true"); //NOI18N
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         return h;
     }
