@@ -249,7 +249,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private boolean processController(String controllerName) {
         StringBuilder sb = new StringBuilder();
         
-        sb.append("var $scope1 = ");
+        sb.append("$scope = "); //NOI18N
         
         Project project = FileOwnerQuery.getOwner(snapshot.getSource().getFileObject());
         String fqn = controllerName;

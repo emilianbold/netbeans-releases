@@ -1,4 +1,4 @@
-var $scope1 = TestContr.$scope;
+$scope = TestContr.$scope;
 with ($scope1) { 
 val;
 val;

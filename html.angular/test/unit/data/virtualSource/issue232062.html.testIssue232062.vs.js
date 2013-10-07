@@ -1,4 +1,4 @@
-var $scope1 = Ctrl.$scope;
+$scope = Ctrl.$scope;
 with ($scope1) { 
 printAttempt.;
 };

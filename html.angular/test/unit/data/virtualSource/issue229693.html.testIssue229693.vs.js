@@ -1,9 +1,9 @@
-var $scope1 = list.$scope;
+$scope = list.$scope;
 with ($scope1) { 
 for (var item in items) {
 item.celejmeno();
 }
-var $scope1 = .$scope;
+$scope = .$scope;
 with ($scope1) { 
 };
 };

@@ -1,4 +1,4 @@
-var $scope1 = SettingsController.$scope;
+$scope = SettingsController.$scope;
 with ($scope1) { 
 checked;
 button;
