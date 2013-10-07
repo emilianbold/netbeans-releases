@@ -1422,7 +1422,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
     }
     
-    boolean discardLocalEdits () {
+    public boolean discardLocalEdits () {
         clearUnsavedChanges();
         return cancelChanges();
     }

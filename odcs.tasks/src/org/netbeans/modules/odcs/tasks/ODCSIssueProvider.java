@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
 /**
@@ -127,7 +126,7 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
 
     @Override
     public void discardOutgoing(ODCSIssue data) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        data.discardLocalEdits();
     }
     
 }

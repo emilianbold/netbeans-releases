@@ -285,6 +285,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     void delete () {
         deleteTask();
     }
+    
+    public boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
+    }
 
     NbJiraIssue createSubtask () {
         assert !EventQueue.isDispatchThread();

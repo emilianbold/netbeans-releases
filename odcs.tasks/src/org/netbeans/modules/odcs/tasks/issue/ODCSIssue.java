@@ -903,6 +903,11 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     void delete () {
         deleteTask();
     }
+    
+    public boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
+    }
 
     public String getPriorityID() {
         return getPriority().getId().toString();
