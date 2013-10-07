@@ -41,56 +41,40 @@
  */
 package org.netbeans.modules.html.custom.hints;
 
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.html.custom.conf.Configuration;
-import org.netbeans.modules.html.custom.conf.Tag;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.NbBundle;
+import java.util.Collection;
+import java.util.Iterator;
+import org.netbeans.modules.html.custom.conf.Attribute;
 
 /**
  *
  * @author marek
  */
-@NbBundle.Messages(value = {
-    "# {0} - element name",
-    "removeElementFromProjectConfiguration=Remove element \"{0}\" from the project's custom elements"
-})
-public final class RemoveElementFix implements HintFix {
-    private final String elementName;
-    private final String elementContextName;
-    private final Snapshot snapshot;
+public class Utils {
 
-    public RemoveElementFix(String elementName, String elementContextName, Snapshot snapshot) {
-        this.elementName = elementName;
-        this.elementContextName = elementContextName;
-        this.snapshot = snapshot;
-    }
-
-    @Override
-    public String getDescription() {
-        return Bundle.removeElementFromProjectConfiguration(elementName);
-    }
-
-    @Override
-    public void implement() throws Exception {
-        Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        Tag tag = conf.getTag(elementName);
-        if(tag != null) {
-            conf.remove(tag);
-            conf.store();
-            LexerUtils.rebuildTokenHierarchy(snapshot.getSource().getDocument(true));
+     static String attributeNames2String(Collection<String> attributes) {
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> i = attributes.iterator();
+        while (i.hasNext()) {
+            String aName = i.next();
+            sb.append(aName);
+            if (i.hasNext()) {
+                sb.append(", ");
+            }
         }
-    }
-
-    @Override
-    public boolean isSafe() {
-        return true;
-    }
-
-    @Override
-    public boolean isInteractive() {
-        return false;
+        return sb.toString();
     }
     
+    static String attributes2String(Collection<Attribute> attributes) {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Attribute> i = attributes.iterator();
+        while (i.hasNext()) {
+            String aName = i.next().getName();
+            sb.append(aName);
+            if (i.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+
 }
