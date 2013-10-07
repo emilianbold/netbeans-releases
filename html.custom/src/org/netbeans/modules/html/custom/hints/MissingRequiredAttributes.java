@@ -50,6 +50,8 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.custom.conf.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.NbBundle;
 
@@ -58,38 +60,35 @@ import org.openide.util.NbBundle;
  * @author mfukala@netbeans.org
  */
 @NbBundle.Messages(value = {
-    "# {0} - list of unknown attributes names",
-    "unknownAttribute=Unknown attribute(s): \"{0}\"",
-    "unknownAttributeRule=Unknown attributes"
+    "# {0} - a comma separated list of attribute names",
+    "missingRequiredAttributes=Missing required attribute(s) \"{0}\"",
+    "missingRequiredAttributesRule=Missing required attribute(s)"
 })
-public class UnknownAttributes extends Hint {
+public class MissingRequiredAttributes extends Hint {
 
     private static final Rule RULE = new RuleI(false);
     private static final Rule LINE_RULE = new RuleI(true);
 
-    public UnknownAttributes(Collection<String> attributeNames, String elementName, RuleContext context, OffsetRange range, boolean lineHint) {
+    public MissingRequiredAttributes(Collection<Attribute> attributes, OpenTag element, RuleContext context, OffsetRange range, boolean lineHint) {
         super(lineHint ? LINE_RULE : RULE,
-                Bundle.unknownAttribute(Utils.attributeNames2String(attributeNames)),
+                Bundle.missingRequiredAttributes(Utils.attributes2String(attributes)),
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 range,
-                getFixes(attributeNames, elementName, context),
+                getFixes(attributes, element, context),
                 30);
     }
 
-    private static List<HintFix> getFixes(Collection<String> attributeNames, String elementName, RuleContext context) {
+    private static List<HintFix> getFixes(Collection<Attribute> attributes, OpenTag element, RuleContext context) {
         List<HintFix> fixes = new ArrayList<>();
         Snapshot snap = context.parserResult.getSnapshot();
-        for(String aName : attributeNames) {
-            fixes.add(new AddAttributeFix(aName, elementName, snap)); //add to the parent element
-            fixes.add(new AddAttributeFix(aName, null, snap));  //add as contextfree
-        }
-        if(attributeNames.size() > 1) {
-            //add all attributes at once fix
-            fixes.add(new AddAttributeFix(attributeNames, elementName, snap));
-            fixes.add(new AddAttributeFix(attributeNames, null, snap));
-        }
         
-        fixes.add(new EditProjectsConfFix(snap));
+        for(Attribute aName : attributes) {
+            fixes.add(new AddAttributeToSourceFix(aName, element, snap));
+        }
+        if(attributes.size() > 1) {
+            //add all attributes at once fix
+            fixes.add(new AddAttributeToSourceFix(attributes, element, snap));
+        }
         
         return fixes; 
     }
@@ -109,7 +108,7 @@ public class UnknownAttributes extends Hint {
 
         @Override
         public String getDisplayName() {
-            return Bundle.unknownAttributeRule();
+            return Bundle.missingRequiredAttributesRule();
         }
 
         @Override

@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.html.custom;
 
+import org.netbeans.modules.html.custom.hints.CheckerElementVisitor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.TreeSet;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -58,8 +58,6 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.custom.conf.Configuration;
 import org.netbeans.modules.html.custom.conf.Tag;
 import org.netbeans.modules.html.custom.hints.CustomElementHint;
-import org.netbeans.modules.html.custom.hints.UnknownAttributes;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
@@ -68,7 +66,6 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
 import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -138,7 +135,7 @@ public class CustomHtmlExtension extends HtmlExtension {
                         hints.add(new CustomElementHint(elementName, context, new OffsetRange(snapshot.getOriginalOffset(found.from()), snapshot.getOriginalOffset(found.to()))));
 
                     }
-                
+
                 //TODO add check + fix for missing required attributes
             }
         }
@@ -151,47 +148,7 @@ public class CustomHtmlExtension extends HtmlExtension {
         Node root = result.root(SyntaxAnalyzerResult.FILTERED_CODE_NAMESPACE);
         final Snapshot snapshot = result.getSnapshot();
         final Configuration conf = Configuration.get(snapshot.getSource().getFileObject());
-        ElementUtils.visitChildren(root, new ElementVisitor() {
-
-            @Override
-            public void visit(Element node) {
-                switch (node.type()) {
-                    case OPEN_TAG:
-                        OpenTag ot = (OpenTag) node;
-                        String name = ot.name().toString();
-                        Tag tagModel = conf.getTag(name);
-                        //check just the custom elements
-                        if (tagModel != null) {
-                            //some attributes are specified in the conf, lets check
-                            Collection<Attribute> tagAttrs = ot.attributes();
-                            Collection<String> unknownAttributeNames = new ArrayList<>();
-                            for (Attribute a : tagAttrs) {
-                                String attrName = a.name().toString();
-                                if (tagModel.getAttribute(attrName) == null) {
-                                    //not found in the context element attr list, but still may be defined as contextfree attribute
-                                    if (conf.getAttribute(attrName) == null) {
-                                        //unknown attribute in known element w/ some other attributes specified -> show error annotation
-                                        unknownAttributeNames.add(attrName);
-                                    }
-                                }
-                            }
-
-                            if (!unknownAttributeNames.isEmpty()) {
-                                //if there's no attribute defined in the conf, it may be a user decision not to specify the attributes
-                                //in such case just show the hint as linehint
-//                                boolean lineHint = tagModel.getAttributesNames().isEmpty();
-                                boolean lineHint = false;
-
-                                //use the whole element offsetrange so multiple unknown attributes can be handled
-                                OffsetRange range = new OffsetRange(snapshot.getEmbeddedOffset(ot.from()), snapshot.getEmbeddedOffset(ot.to()));
-                                hints.add(new UnknownAttributes(unknownAttributeNames, tagModel.getName(), context, range, lineHint));
-                            }
-                        }
-
-                }
-            }
-        });
-
+        ElementUtils.visitChildren(root, CheckerElementVisitor.getChecker(context, conf, snapshot, hints));
     }
 
     @Override
@@ -210,23 +167,42 @@ public class CustomHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeAttributes(CompletionContext context) {
         Element node = context.getCurrentNode();
-        if(node.type() != ElementType.OPEN_TAG) {
+        if (node.type() != ElementType.OPEN_TAG) {
             return Collections.emptyList();
         }
-        
+        OpenTag ot = (OpenTag) node;
         List<CompletionItem> items = new ArrayList<>();
         Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
-        String tagName = ((OpenTag)node).name().toString();
+        String tagName = ((OpenTag) node).name().toString();
         Tag t = conf.getTag(tagName);
-        if(t != null) {
-            for(org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+        if (t != null) {
+            //complete attribute specific for the element
+            for (org.netbeans.modules.html.custom.conf.Attribute a : t.getAttributes()) {
+                //do not complete already existing attributes
                 String aName = a.getName();
-                if(aName.startsWith(context.getPrefix())) {
-                    items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                if (ot.getAttribute(aName) == null) {
+                    if (aName.startsWith(context.getPrefix())) {
+                        items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                    }
                 }
             }
         }
-       
+
+        //complete global attributes
+        for (org.netbeans.modules.html.custom.conf.Attribute a : conf.getAttributes()) {
+            Collection<String> contexts = a.getContexts();
+            //complete either contextfree attribute or if the current element is the attribute context
+            if (contexts.isEmpty() || contexts.contains(tagName)) {
+                //do not complete already existing attributes
+                String aName = a.getName();
+                if (ot.getAttribute(aName) == null) {
+                    if (aName.startsWith(context.getPrefix())) {
+                        items.add(new CustomAttributeCompletionItem(a, context.getCCItemStartOffset()));
+                    }
+                }
+            }
+        }
+
         return items;
     }
 

@@ -52,7 +52,10 @@ import org.openide.util.NbBundle;
  *
  * @author marek
  */
-@NbBundle.Messages(value = "removeElementFromProjectConfiguration=Remove element \"{0}\" from the project's custom elements")
+@NbBundle.Messages(value = {
+    "# {0} - element name",
+    "removeElementFromProjectConfiguration=Remove element \"{0}\" from the project's custom elements"
+})
 public final class RemoveElementFix implements HintFix {
     private final String elementName;
     private final String elementContextName;
