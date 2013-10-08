@@ -88,6 +88,16 @@ public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue
     }
 
     @Override
+    public boolean canRename(ODCSQuery q) {
+        return true;
+    }
+
+    @Override
+    public void rename(ODCSQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    @Override
     public Collection<ODCSIssue> getIssues(ODCSQuery q) {
         return q.getIssues();
     }
@@ -127,15 +137,4 @@ public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue
     public void setOwnerInfo (ODCSQuery q, OwnerInfo info) {
         q.setOwnerInfo(info);
     }
-
-    @Override
-    public boolean canRename(ODCSQuery q) {
-        return true;
-    }
-
-    @Override
-    public void rename(ODCSQuery q, String displayName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
 }

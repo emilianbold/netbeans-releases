@@ -84,6 +84,16 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
     public void remove(JiraQuery q) {
         q.remove();
     }
+
+    @Override
+    public boolean canRename(JiraQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(JiraQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
     @Override
     public Collection<NbJiraIssue> getIssues(JiraQuery query) {
@@ -128,15 +138,4 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
         JiraRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
-
-    @Override
-    public boolean canRename(JiraQuery q) {
-        return q.canRename();
-    }
-
-    @Override
-    public void rename(JiraQuery q, String displayName) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 }
