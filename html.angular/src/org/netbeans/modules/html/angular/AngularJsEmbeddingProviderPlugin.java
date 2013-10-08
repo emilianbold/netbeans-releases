@@ -174,7 +174,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
-                            stack.push(new StackItem(lastTagOpen, "};\n")); //NOI18N
+                            stack.push(new StackItem(lastTagOpen, "}\n});\n")); //NOI18N
                             break;
                         case model:
                         case disabled:
@@ -249,7 +249,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private boolean processController(String controllerName) {
         StringBuilder sb = new StringBuilder();
         
-        sb.append("$scope = "); //NOI18N
+        sb.append("(function () {\n$scope = "); //NOI18N
         
         Project project = FileOwnerQuery.getOwner(snapshot.getSource().getFileObject());
         String fqn = controllerName;
@@ -276,7 +276,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
         //embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
         sb = new StringBuilder();
-        sb.append("with ($scope1) { \n");
+        sb.append("with ($scope) { \n");
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
         return true;
     }
