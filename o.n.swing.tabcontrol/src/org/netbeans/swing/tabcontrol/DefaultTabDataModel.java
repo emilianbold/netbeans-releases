@@ -157,6 +157,17 @@ public class DefaultTabDataModel implements TabDataModel {
             return false;
         }
     }
+    
+    /**
+     * Adjust the tooltip at given index.
+     * @param index
+     * @param tooltip 
+     * @since 1.49
+     */
+    public void setToolTipTextAt(int index, String tooltip) {
+        TabData data = getTab(index);
+        data.tip = tooltip;
+    }
 
     @Override
     public void setText(int index, String txt) {
