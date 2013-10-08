@@ -57,6 +57,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
+import org.openide.modules.SpecificationVersion;
 
 /**
  *
@@ -97,7 +98,7 @@ public class J2MEProjectUtils {
         optionalPackages = new ArrayList<>();
         name2profileAll = new HashMap<>();
         // Read defined platforms and all configurations, profiles and optional packages
-        platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
+        platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, new SpecificationVersion("8.0"))); //NOI18N
         Arrays.sort(platforms, new Comparator<JavaPlatform>() {
             @Override
             public int compare(final JavaPlatform o1, final JavaPlatform o2) {

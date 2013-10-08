@@ -51,6 +51,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2me.project.J2MEProjectGenerator;
@@ -75,6 +76,10 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     private static final String MANIFEST_FILE = "manifest.mf"; //NOI18N
     static final String MIDLET_CLASS = "mainClass"; // NOI18N
     static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+    static final String PLATFORM = "platform"; //NOI18N
+    static final String DEVICE = "device"; //NOI18N
+    static final String CONFIGURATION = "config"; //NOI18N
+    static final String PROFILE = "profile"; //NOI18N
     private static final long serialVersionUID = 1L;
     private WizardType type;
 
@@ -90,7 +95,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
 
     @Override
     public Set<?> instantiate() throws IOException {
-        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator.";
+        assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
         return null;
     }
 
@@ -100,12 +105,13 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         Set<FileObject> resultSet = new HashSet<>();
         File dirF = (File) wiz.getProperty("projdir"); //NOI18N
         if (dirF == null) {
-            throw new NullPointerException("projdir == null, props:" + wiz.getProperties());
+            throw new NullPointerException("projdir == null, props:" + wiz.getProperties()); //NOI18N
         }
         dirF = FileUtil.normalizeFile(dirF);
-        String name = (String) wiz.getProperty("name");        //NOI18N
-        String midletClass = (String) wiz.getProperty(MIDLET_CLASS);        //NOI18N
+        String name = (String) wiz.getProperty("name"); //NOI18N
+        String midletClass = (String) wiz.getProperty(MIDLET_CLASS); //NOI18N
         String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
+        JavaPlatform platform = (JavaPlatform) wiz.getProperty(PLATFORM);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -116,10 +122,10 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         switch (type) {
             default:
                 String midletTemplate = "Templates/j2me/Midlet.java"; //NOI18N
-                AntProjectHelper h = J2MEProjectGenerator.createProject(dirF, name, midletClass, midletTemplate, null, type == WizardType.APPLICATION ? MANIFEST_FILE : null, librariesDefinition, true);
+                AntProjectHelper h = J2MEProjectGenerator.createProject(dirF, name, midletClass, midletTemplate, platform, type == WizardType.APPLICATION ? MANIFEST_FILE : null, librariesDefinition, true);
                 handle.progress(2);
                 if (midletClass != null && !midletClass.isEmpty()) {
-                    final FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src");        //NOI18N
+                    final FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); //NOI18N
                     if (sourcesRoot != null) {
                         final FileObject midletFo = getClassFO(sourcesRoot, midletClass);
                         if (midletFo != null) {
@@ -147,7 +153,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             }
         }
         resultSet.add(dir);
-        handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4);
+        handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_PreparingToOpen"), 4); //NOI18N
         dirF = (dirF != null) ? dirF.getParentFile() : null;
         if (dirF != null && dirF.exists()) {
             ProjectChooser.setProjectsFolder(dirF);
@@ -193,7 +199,12 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         if (this.wiz != null) {
             this.wiz.putProperty("projdir", null); //NOI18N
             this.wiz.putProperty("name", null); //NOI18N
-            this.wiz.putProperty("mainClass", null); //NOI18N
+            this.wiz.putProperty(MIDLET_CLASS, null); //NOI18N
+            this.wiz.putProperty(SHARED_LIBRARIES, null); //NOI18N
+            this.wiz.putProperty(PLATFORM, null); //NOI18N
+            this.wiz.putProperty(DEVICE, null); //NOI18N
+            this.wiz.putProperty(CONFIGURATION, null); //NOI18N
+            this.wiz.putProperty(PROFILE, null); //NOI18N
             switch (type) {
                 case EXISTING:
                     this.wiz.putProperty("sourceRoot", null); //NOI18N

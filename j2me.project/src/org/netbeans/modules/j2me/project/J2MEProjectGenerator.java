@@ -44,10 +44,8 @@ package org.netbeans.modules.j2me.project;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectBuilder;
-import org.netbeans.spi.java.project.support.PreferredProjectPlatform;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.modules.SpecificationVersion;
@@ -87,7 +85,7 @@ public class J2MEProjectGenerator {
                 setManifest(manifestFile).
                 setLibrariesDefinitionFile(librariesDefinition).
                 setSourceLevel(defaultSourceLevel).
-                setJavaPlatform(getDefaultPlatform()).
+                setJavaPlatform(javaPlatform).
                 build();
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty(J2MEProjectProperties.JAVAME_ENABLED, "true"); //NOI18N
@@ -129,16 +127,5 @@ public class J2MEProjectGenerator {
      */
     public static void setDefaultSourceLevel(SpecificationVersion version) {
         defaultSourceLevel = version;
-    }
-
-    /**
-     * Gets default Java Platform. This method should not be used in J2ME
-     * Project when J2ME platform implementation will be finished.
-     *
-     * @return Default Java Platform
-     */
-    private static JavaPlatform getDefaultPlatform() {
-        return PreferredProjectPlatform.getPreferredPlatform(
-                JavaPlatformManager.getDefault().getDefaultPlatform().getSpecification().getName());
     }
 }

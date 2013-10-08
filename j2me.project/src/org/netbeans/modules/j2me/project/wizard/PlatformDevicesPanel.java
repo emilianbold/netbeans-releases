@@ -77,10 +77,6 @@ import org.openide.util.*;
  */
 public class PlatformDevicesPanel extends SettingsPanel {
 
-    public static final String PROP_PLATFORM_NAME = "platform"; //NOI18N
-    public static final String PROP_DEVICE_NAME = "device"; //NOI18N
-    public static final String PROP_CONFIGURATION_NAME = "configuration"; //NOI18N
-    public static final String PROP_PROFILE_NAME = "profile"; //NOI18N
     private final WizardType type;
     private PanelConfigureProject panel;
     private ComboBoxModel platformsModel;
@@ -180,7 +176,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
             }
         }
     }
-    
+
     private void initDeviceProfiles() {
         profilePanel.removeAll();
         Enumeration<AbstractButton> profiles = profilesGroup.getElements();
@@ -190,7 +186,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
             profilePanel.add(btn);
         }
     }
-    
+
     private void initOptionalPackages() {
         optionalPackagesPanel.removeAll();
         for (JCheckBox cb : optionalPackages) {
@@ -369,7 +365,6 @@ public class PlatformDevicesPanel extends SettingsPanel {
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSD_PanelOptionsVisual")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-	
     private void deviceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboBoxActionPerformed
         updateConfigsAndProfiles();
     }//GEN-LAST:event_deviceComboBoxActionPerformed
@@ -386,7 +381,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
             panel.fireChangeEvent();
         }
     }//GEN-LAST:event_btnManagePlatformsActionPerformed
-  
+
     private synchronized void updateDevices() {
         boolean embedded = false;
         final J2MEPlatform platform = getPlatform();
@@ -403,14 +398,14 @@ public class PlatformDevicesPanel extends SettingsPanel {
                         devicesModel.addElement(devices[i]);
                         if (devices[i].getName().equals(deviceName)) {
                             devicesModel.setSelectedItem(devices[i]);
-             }
+                        }
                         if (select == null) {
                             select = devices[i];
-         }
+                        }
                         j = p.length;
                     }
                 }
- 
+
             }
             if (embedded && select == null) { // NOI18N
                 // no NG embedded support in this SDK
@@ -429,7 +424,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
                             j = p.length;
                         }
                     }
- 
+
                 }
             }
             if (devicesModel.getSelectedItem() == null && select != null) {
@@ -439,7 +434,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         updateConfigsAndProfiles();
         updateOptionalPackages();
     }
- 
+
     private synchronized void updateConfigsAndProfiles() {
         final J2MEPlatform.Device device = getDevice();
         String defCfg = null, defProf = null;
@@ -460,7 +455,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         updateGroup(configurationsGroup, name2profile.keySet(), defCfg);
         updateGroup(profilesGroup, name2profile.keySet(), defProf);
     }
- 
+
     private synchronized void updateOptionalPackages() {
         final J2MEPlatform.Device device = getDevice();
         String defCfg = null, defProf = null;
@@ -474,14 +469,14 @@ public class PlatformDevicesPanel extends SettingsPanel {
                         defCfg = p[i].toString();
                     } else if (J2MEPlatform.J2MEProfile.TYPE_PROFILE.equals(p[i].getType())) {
                         defProf = p[i].toString();
-     }
+                    }
                 }
             }
         }
         updateGroup(configurationsGroup, name2profile.keySet(), defCfg);
         updateGroup(profilesGroup, name2profile.keySet(), defProf);
     }
- 
+
     private void updateGroup(final ButtonGroup grp, final Set<String> enabled, final String def) {
         final Enumeration en = grp.getElements();
         JRadioButton defB = null;
@@ -498,24 +493,24 @@ public class PlatformDevicesPanel extends SettingsPanel {
             grp.setSelected(defB.getModel(), true);
         }
     }
- 
+
     private J2MEPlatform getPlatform() {
         return (J2MEPlatform) platformComboBox.getSelectedItem();
     }
- 
+
     private J2MEPlatform.Device getDevice() {
         return (J2MEPlatform.Device) devicesModel.getSelectedItem();
-                     }
+    }
 
     private String getConfiguration() {
         final ButtonModel m = configurationsGroup.getSelection();
         return m == null ? "" : m.getActionCommand();
-                 }
+    }
 
     private String getProfile() {
         final ButtonModel m = profilesGroup.getSelection();
         return m == null ? "" : m.getActionCommand();
-             }
+    }
 
     private void setBottomPanelAreaVisible(boolean visible) {
         jSeparator1.setVisible(visible);
@@ -525,34 +520,45 @@ public class PlatformDevicesPanel extends SettingsPanel {
         deviceComboBox.setVisible(visible);
         configurationPanel.setVisible(visible);
         profilePanel.setVisible(visible);
-         }
- 
+    }
+
     @Override
     boolean valid(WizardDescriptor settings) {
         //TODO: check whether at least one valid J2ME platform is available
 
         if (getPlatform() == null) {
             setBottomPanelAreaVisible(false);
-                 settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                NbBundle.getMessage(PlatformDevicesPanel.class, "WARN_PanelOptionsVisual.noMEPlatform")); // NOI18N
-                 return false;
-             }
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PlatformDevicesPanel.class, "WARN_PanelOptionsVisual.noMEPlatform")); // NOI18N
+            return false;
+        }
         setBottomPanelAreaVisible(true);
-         return true;
-     }
- 
-     @Override
-     synchronized void read(WizardDescriptor d) {
-        String platform = getPreferences().get(PROP_PLATFORM_NAME, null);
-        String device = getPreferences().get(PROP_DEVICE_NAME, null);
-        String configuration = getPreferences().get(PROP_CONFIGURATION_NAME, null);
-        String profile = getPreferences().get(PROP_PROFILE_NAME, null);
+        return true;
+    }
+
+    @Override
+    synchronized void read(WizardDescriptor d) {
+        String platform = d.getProperty(J2MEProjectWizardIterator.PLATFORM) != null
+                ? ((J2MEPlatform) d.getProperty(J2MEProjectWizardIterator.PLATFORM)).getName()
+                : getPreferences().get(J2MEProjectWizardIterator.PLATFORM, null);
+        String device = (String) d.getProperty(J2MEProjectWizardIterator.DEVICE);
+        if (device == null) {
+            device = getPreferences().get(J2MEProjectWizardIterator.DEVICE, null);
+        }
+        String configuration = (String) d.getProperty(J2MEProjectWizardIterator.CONFIGURATION);
+        if (configuration == null) {
+            configuration = getPreferences().get(J2MEProjectWizardIterator.CONFIGURATION, null);
+        }
+        String profile = (String) d.getProperty(J2MEProjectWizardIterator.PROFILE);
+        if (profile == null) {
+            profile = getPreferences().get(J2MEProjectWizardIterator.PROFILE, null);
+        }
         if (platform != null) {
             for (int i = 0; i < platformComboBox.getItemCount(); i++) {
                 J2MEPlatform itemAt = (J2MEPlatform) platformComboBox.getItemAt(i);
                 if (platform.equals(itemAt.getName())) {
                     platformComboBox.setSelectedItem(itemAt);
-     }
+                }
             }
         }
         if (device != null) {
@@ -584,26 +590,28 @@ public class PlatformDevicesPanel extends SettingsPanel {
             }
         }
     }
- 
-     @Override
-     void validate(WizardDescriptor d) throws WizardValidationException {
+
+    @Override
+    void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
-     }
- 
-     @Override
-     void store(WizardDescriptor d) {
-        getPreferences().put(PROP_PLATFORM_NAME, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
-        getPreferences().put(PROP_DEVICE_NAME, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
-        getPreferences().put(PROP_CONFIGURATION_NAME, getConfiguration());
-        getPreferences().put(PROP_PROFILE_NAME, getProfile());
-     }
+    }
+
+    @Override
+    void store(WizardDescriptor d) {
+        d.putProperty(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform());
+        d.putProperty(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
+        d.putProperty(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
+        d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
+
+        getPreferences().put(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
+        getPreferences().put(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
+        getPreferences().put(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
+        getPreferences().put(J2MEProjectWizardIterator.PROFILE, getProfile());
+    }
 
     protected final Preferences getPreferences() {
         return NbPreferences.forModule(PlatformDevicesPanel.class);
     }
-
-    
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnManagePlatforms;
     private javax.swing.JPanel configurationPanel;

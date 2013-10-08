@@ -154,7 +154,7 @@ public final class J2MEPlatform extends JavaPlatform {
                 return url;
             }
         } catch (MalformedURLException e) {}
-        return (fragment.startsWith(PLATFORM_STRING_PREFIX) ? new File(homeFile, fragment.substring(PLATFORM_STRING_PREFIX.length())) : new File(fragment)).toURI().toURL();
+        return Utilities.toURI((fragment.startsWith(PLATFORM_STRING_PREFIX) ? new File(homeFile, fragment.substring(PLATFORM_STRING_PREFIX.length())) : new File(fragment))).toURL();
     }
     
     public URL resolveRelativePathToURL(final String path) {
@@ -175,7 +175,7 @@ public final class J2MEPlatform extends JavaPlatform {
     
     public static URL localfilepath2url(final String path) {
         try {
-            return new File(path).toURI().toURL();
+            return Utilities.toURI(new File(path)).toURL();
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;
@@ -184,7 +184,7 @@ public final class J2MEPlatform extends JavaPlatform {
     
     public static URL localfilepath2url(final File file) {
         try {
-            return file.toURI().toURL();
+            return Utilities.toURI(file).toURL();
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;
@@ -251,6 +251,7 @@ public final class J2MEPlatform extends JavaPlatform {
      * implements JavaPlatform
      * @return empty ClassPath
      */
+    @Override
     public ClassPath getStandardLibraries() {
         if (standardLibs == null) {
             standardLibs = ClassPathSupport.createClassPath(new ArrayList<PathResourceImplementation>());
@@ -262,6 +263,7 @@ public final class J2MEPlatform extends JavaPlatform {
      * implements JavaPlatform
      * @return complete ClassPath over all APIs and all devices
      */
+    @Override
     public ClassPath getBootstrapLibraries() {
         if (bootstrapLibs == null) {
             bootstrapLibs = ClassPathSupport.createClassPath(getAllLibraries());
@@ -280,6 +282,7 @@ public final class J2MEPlatform extends JavaPlatform {
         return fobs.toArray(new FileObject[fobs.size()]);
     }
     
+    @Override
     public String getDisplayName() {
         return displayName;
     }
@@ -292,10 +295,12 @@ public final class J2MEPlatform extends JavaPlatform {
         this.name = name;
     }
     
+    @Override
     public String toString() {
         return getDisplayName();
     }
     
+    @Override
     public String getVendor() {
         return displayName;
     }
@@ -351,6 +356,7 @@ public final class J2MEPlatform extends JavaPlatform {
         }
     }
     
+    @Override
     public Collection<FileObject> getInstallFolders() {
         if (home == null) home = FileUtil.toFileObject(homeFile);
         Collection<FileObject> folders;
@@ -361,6 +367,7 @@ public final class J2MEPlatform extends JavaPlatform {
         return Collections.EMPTY_SET;
     }
     
+    @Override
     public List<URL> getJavadocFolders() {
         return Collections.unmodifiableList(javadocs);
     }
@@ -428,19 +435,24 @@ public final class J2MEPlatform extends JavaPlatform {
         return toRelativePaths(Arrays.asList(sources.getRoots()));
     }
     
+    @Override
     public Map<String,String> getProperties() {
         return Collections.singletonMap("platform.ant.name", getName()); //NOI18N
     }
     
+    @Override
     public synchronized Specification getSpecification() {
         if (spec == null) {
             final HashSet<J2MEProfile> profs = new HashSet<J2MEProfile>();
             for (int i=0; i<devices.length; i++) {
                 final J2MEProfile[] profiles = devices[i].getProfiles();
-                for (int j=0; j<profiles.length; j++)
-                    profs.add(profiles[j]);
+                profs.addAll(Arrays.asList(profiles));
             }
-            spec = new Specification(SPECIFICATION_NAME, null, NbBundle.getMessage(J2MEPlatform.class, "TXT_J2MEDisplayName"), profs.toArray(new Profile[profs.size()])); //NOI18N
+            SpecificationVersion sv = new SpecificationVersion("8.0"); //NOI18N
+            if (isMe3Platform()) {
+                sv = new SpecificationVersion("3.0"); //NOI18N
+            }
+            spec = new Specification(SPECIFICATION_NAME, sv, NbBundle.getMessage(J2MEPlatform.class, "TXT_J2MEDisplayName"), profs.toArray(new Profile[profs.size()])); //NOI18N
         }
         return spec;
     }
@@ -534,6 +546,7 @@ public final class J2MEPlatform extends JavaPlatform {
             return this.name;
         }
         
+        @Override
         public String toString() {
             return getName();
         }
@@ -645,14 +658,14 @@ public final class J2MEPlatform extends JavaPlatform {
             this.bitDepth = (Integer) o;
             
             try {
-                o = new Boolean(color);
+                o = Boolean.valueOf(color);
             } catch (NumberFormatException e) {
                 o = null;
             }
             this.color = (Boolean) o;
             
             try {
-                o = new Boolean(touch);
+                o = Boolean.valueOf(touch);
             } catch (NumberFormatException e) {
                 o = null;
             }
@@ -679,6 +692,7 @@ public final class J2MEPlatform extends JavaPlatform {
             return width;
         }
         
+        @Override
         public boolean equals(Object obj) {
             if (obj instanceof Screen) {
                 Integer width = ((Screen) obj).getWidth();
@@ -696,6 +710,17 @@ public final class J2MEPlatform extends JavaPlatform {
                 return ret;
             }
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 71 * hash + (this.width != null ? this.width.hashCode() : 0);
+            hash = 71 * hash + (this.height != null ? this.height.hashCode() : 0);
+            hash = 71 * hash + (this.bitDepth != null ? this.bitDepth.hashCode() : 0);
+            hash = 71 * hash + (this.color != null ? this.color.hashCode() : 0);
+            hash = 71 * hash + (this.touch != null ? this.touch.hashCode() : 0);
+            return hash;
         }
     }
     
@@ -767,10 +792,12 @@ public final class J2MEPlatform extends JavaPlatform {
             return classPath.equals(PLATFORM_STRING_PREFIX + displayName);
         }
         
+        @Override
         public String toString() {
             return isNameIsJarFileName() || "IMP-NG".equalsIgnoreCase(getName()) ? getName() : getName() + '-' + getVersion().toString(); //NOI18N
         }
         
+        @Override
         public int compareTo(final Object o) {
             final Profile p = (Profile)o;
             final int r = getName().compareTo(p.getName());
@@ -811,6 +838,7 @@ public final class J2MEPlatform extends JavaPlatform {
         return null;
     }
     
+    @Override
     public FileObject findTool(final String toolName) {
         return findTool(toolName, this.getInstallFolders());
     }

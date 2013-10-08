@@ -481,6 +481,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         //TODO: store values from panel when leaving this panel
         d.putProperty(J2MEProjectWizardIterator.MIDLET_CLASS, createMainCheckBox.isSelected() && createMainCheckBox.isVisible() ? mainClassTextField.getText() : null);
         d.putProperty(J2MEProjectWizardIterator.SHARED_LIBRARIES, cbSharable.isSelected() ? txtLibFolder.getText() : null);
+        platformDevicesPanel.store(d);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
