@@ -65,6 +65,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -152,9 +153,15 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         fullPathListener = new ChangeListener() {
             @Override
             public void stateChanged( ChangeEvent e ) {
-                updateFullPath();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateFullPath();
+                    }
+                });
             }
         };
+        tabModel.addChangeListener(fullPathListener);
     }
 
     private void configureScrollPane( JScrollPane scrollPane ) {
@@ -215,7 +222,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
             return;
         String text = null;
         int selIndex = controller.getSelectedIndex();
-        if( selIndex >= 0 ) {
+        if( selIndex >= 0 && selIndex < tabModel.size() ) {
             TabData tab = tabModel.getTab( selIndex );
             if( null != tab ) {
                 text = tab.getTooltip();
