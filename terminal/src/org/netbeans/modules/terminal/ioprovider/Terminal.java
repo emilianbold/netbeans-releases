@@ -298,7 +298,7 @@ public final class Terminal extends JComponent {
         findState = new DefaultFindState(term);
 
         term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");	// NOI18N
+        term.setEmulation("xterm");	// NOI18N
         term .setBackground(Color.white);
         term.setHistorySize(4000);
         term.setRenderingHints(getRenderingHints());
