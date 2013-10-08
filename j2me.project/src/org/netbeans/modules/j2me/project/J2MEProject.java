@@ -175,6 +175,7 @@ public class J2MEProject implements Project {
                     sourceRoots,
                     testRoots,
                     helper),
+                cpProvider,
                 QuerySupport.createFileEncodingQuery(eval, J2MEProjectProperties.SOURCE_ENCODING),
                 QuerySupport.createSourceLevelQuery2(eval),
                 QuerySupport.createSources(
