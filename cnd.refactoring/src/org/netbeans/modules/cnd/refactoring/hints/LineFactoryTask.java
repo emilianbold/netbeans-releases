@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -61,10 +60,10 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
-import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -79,12 +78,13 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmTypeResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmTypes;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.indent.api.Indent;
@@ -103,7 +103,6 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
-import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -620,6 +619,29 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
             }
             return name;
         }
+
+        protected CharSequence getExpressionType() {
+            CsmCacheManager.enter();
+            try {
+                CharSequence typeText;
+                CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
+                if (resolveType == null) {
+                    return null;
+                }
+//                if (resolveType.isTemplateBased()) {
+//                    CsmClassifier classifier = CsmBaseUtilities.getClassifier(resolveType, expression.getContainingFile(), expression.getStartOffset(), true);
+//                    if (!CsmKindUtilities.isTemplate(classifier)) {
+//                        CsmTypes.TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(resolveType.isConst(), resolveType.isReference(), resolveType.getPointerDepth(), resolveType.getArrayDepth());
+//                        CsmTypes.OffsetDescriptor offsetDescriptor = new CsmTypes.OffsetDescriptor(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset());
+//                        resolveType = CsmTypes.createType(classifier, typeDescriptor, offsetDescriptor);
+//                    }
+//                }
+                typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(resolveType);
+                return typeText;
+            } finally {
+                CsmCacheManager.leave();
+            }
+        }
     }
     
     private static final class AssignmentFixImpl extends BaseFixImpl {
@@ -637,13 +659,8 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
-            if (resolveType == null) {
-                return null;
-            }
-            //final String typeText = resolveType.getCanonicalText().toString();
-            final String typeText = resolveType.getText().toString();
-            if ("void".equals(typeText)) { //NOI18N
+            final CharSequence typeText = getExpressionType();
+            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
                 return null;
             }
             final String aName = suggestName();
@@ -687,15 +704,10 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
         
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmType resolveType = CsmTypeResolver.resolveType(expression, null);
-            if (resolveType == null) {
+            final CharSequence typeText = getExpressionType();
+            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
                 return null;
-            }
-            //final String typeText = resolveType.getCanonicalText().toString();
-            final String typeText = resolveType.getText().toString();
-            if ("void".equals(typeText)) { //NOI18N
-                return null;
-            }
+            }            
             final String aName = suggestName();
             final String exprText = expression.getText().toString();
             final ChangeInfo changeInfo = new ChangeInfo();
@@ -738,7 +750,7 @@ public class LineFactoryTask extends ParserResultTask<CndParserResult> {
                     }
                 });
             }
-            return new ChangeInfo();
+            return changeInfo;
         }        
     }
 
