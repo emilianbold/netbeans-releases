@@ -432,180 +432,291 @@ public final class CompilerSetImpl extends CompilerSet {
     }
     
     private static class UnknownCompilerDescriptor implements CompilerDescriptor {
+        private final CompilerDescriptor proxy;
+        
+        UnknownCompilerDescriptor(CompilerDescriptor proxy){
+            this.proxy = proxy;
+        }
 
         @Override
         public String getPathPattern() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getPathPattern();
         }
 
         @Override
         public String getExistFolder() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getExistFolder();
         }
 
         @Override
         public String getIncludeFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getIncludeFlags();
         }
 
         @Override
         public String getUserIncludeFlag() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getUserIncludeFlag();
         }
 
         @Override
         public String getIncludeParser() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getIncludeParser();
         }
 
         @Override
         public String getRemoveIncludePathPrefix() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getRemoveIncludePathPrefix();
         }
 
         @Override
         public String getRemoveIncludeOutputPrefix() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getRemoveIncludeOutputPrefix();
         }
 
         @Override
         public String getMacroFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getMacroFlags();
         }
 
         @Override
         public String getMacroParser() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getMacroParser();
         }
 
         @Override
         public List<PredefinedMacro> getPredefinedMacros() {
-            return Collections.emptyList();
+            if (proxy == null) {
+                return Collections.emptyList();
+            }
+            return proxy.getPredefinedMacros();
         }
 
         @Override
         public String getUserMacroFlag() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getUserMacroFlag();
         }
 
         @Override
         public String[] getDevelopmentModeFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getDevelopmentModeFlags();
         }
 
         @Override
         public String[] getWarningLevelFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getWarningLevelFlags();
         }
 
         @Override
         public String[] getArchitectureFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getArchitectureFlags();
         }
 
         @Override
         public String getStripFlag() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getStripFlag();
         }
 
         @Override
         public String[] getMultithreadingFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getMultithreadingFlags();
         }
 
         @Override
         public String[] getStandardFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getStandardFlags();
         }
 
         @Override
         public String[] getLanguageExtensionFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getLanguageExtensionFlags();
         }
 
         @Override
         public String[] getCppStandardFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getCppStandardFlags();
         }
 
         @Override
         public String[] getCStandardFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getCStandardFlags();
         }
 
         @Override
         public String[] getLibraryFlags() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getLibraryFlags();
         }
 
         @Override
         public String getOutputObjectFileFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getOutputObjectFileFlags();
         }
 
         @Override
         public String getDependencyGenerationFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getDependencyGenerationFlags();
         }
 
         @Override
         public String getPrecompiledHeaderFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getPrecompiledHeaderFlags();
         }
 
         @Override
         public String getPrecompiledHeaderSuffix() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getPrecompiledHeaderSuffix();
         }
 
         @Override
         public boolean getPrecompiledHeaderSuffixAppend() {
-            return false;
+            if (proxy == null) {
+                return false;
+            }
+            return proxy.getPrecompiledHeaderSuffixAppend();
         }
 
         @Override
         public String[] getNames() {
-            return new String[0];
+            if (proxy == null) {
+                return new String[0];
+            }
+            return proxy.getNames();
         }
 
         @Override
         public String getVersionFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getVersionFlags();
         }
 
         @Override
         public String getVersionPattern() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getVersionPattern();
         }
 
         @Override
         public String getFingerPrintFlags() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getFingerPrintFlags();
         }
 
         @Override
         public String getFingerPrintPattern() {
-            return "";//NOI18N
+            if (proxy == null) {
+                return "";//NOI18N
+            }
+            return proxy.getFingerPrintPattern();
         }
 
         @Override
         public boolean skipSearch() {
-            return true;
+            if (proxy == null) {
+                return true;
+            }
+            return proxy.skipSearch();
         }
 
         @Override
         public AlternativePath[] getAlternativePath() {
-            return new AlternativePath[0];
+            if (proxy == null) {
+                return new AlternativePath[0];
+            }
+            return proxy.getAlternativePath();
         }
-
     }
 
     public static class UnknownToolchainDescriptor implements ToolchainDescriptor {
-        CompilerDescriptor unknowDescriptor = new UnknownCompilerDescriptor();
+        private static final CompilerDescriptor unknowDescriptor = new UnknownCompilerDescriptor(null);
+        private final ToolchainDescriptor proxy;
+        
+        UnknownToolchainDescriptor(ToolchainDescriptor proxy) {
+            this.proxy = proxy;
+        }
 
         @Override
         public String getFileName() {
-            return ""; // NOI18N
+            if (proxy == null) {
+                return ""; // NOI18N
+            }
+            return proxy.getFileName();
         }
 
         @Override
@@ -615,312 +726,389 @@ public final class CompilerSetImpl extends CompilerSet {
 
         @Override
         public String getDisplayName() {
-            return NbBundle.getMessage(null, "UnknownToolCollection"); // NOI18N
+            return NbBundle.getMessage(UnknownToolchainDescriptor.class, "UnknownToolCollection"); // NOI18N
         }
 
         @Override
         public String[] getFamily() {
-            return new String[]{};
+            if (proxy == null) {
+                return new String[]{};
+            }
+            return proxy.getFamily();
         }
 
         @Override
         public String[] getPlatforms() {
-            return new String[]{};
+            if (proxy == null) {
+                return new String[]{};
+            }
+            return proxy.getPlatforms();
         }
 
         @Override
         public String getUpdateCenterUrl() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getUpdateCenterUrl();
         }
 
         @Override
         public String getUpdateCenterDisplayName() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getUpdateCenterDisplayName();
         }
 
         @Override
         public String getUpgradeUrl() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getUpgradeUrl();
         }
 
         @Override
         public String getModuleID() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getModuleID();
         }
 
         @Override
         public boolean isAbstract() {
-            return true;
+            if (proxy == null) {
+                return true;
+            }
+            return proxy.isAbstract();
         }
 
         @Override
         public boolean isAutoDetected() {
-            return true;
+            if (proxy == null) {
+                return true;
+            }
+            return proxy.isAutoDetected();
         }
 
         @Override
         public String[] getAliases() {
-            return new String[]{};
+            if (proxy == null) {
+                return new String[]{};
+            }
+            return proxy.getAliases();
         }
 
         @Override
         public String getSubsitute() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getSubsitute();
         }
 
         @Override
         public String getDriveLetterPrefix() {
-            return "/"; // NOI18N
+            if (proxy == null) {
+                return "/"; // NOI18N
+            }
+            return proxy.getDriveLetterPrefix();
         }
 
         @Override
         public List<BaseFolder> getBaseFolders() {
-            return Collections.<BaseFolder>emptyList();
+            if (proxy == null) {
+                return Collections.<BaseFolder>emptyList();
+            }
+            return proxy.getBaseFolders();
         }
 
         @Override
         public List<BaseFolder> getCommandFolders() {
-            return Collections.<BaseFolder>emptyList();
+            if (proxy == null) {
+                return Collections.<BaseFolder>emptyList();
+            }
+            return proxy.getCommandFolders();
         }
 
         @Override
         public String getQmakeSpec() {
-            return ""; // NOI18N
+            if (proxy == null) {
+                return ""; // NOI18N
+            }
+            return proxy.getQmakeSpec();
         }
 
         @Override
         public CompilerDescriptor getC() {
-            return unknowDescriptor;
+            if (proxy == null) {
+                return unknowDescriptor;
+            }
+            return proxy.getC();
         }
 
         @Override
         public CompilerDescriptor getCpp() {
-            return unknowDescriptor;
+            if (proxy == null) {
+                return unknowDescriptor;
+            }
+            return proxy.getCpp();
         }
 
         @Override
         public CompilerDescriptor getFortran() {
-            return unknowDescriptor;
+            if (proxy == null) {
+                return unknowDescriptor;
+            }
+            return proxy.getFortran();
         }
 
         @Override
         public CompilerDescriptor getAssembler() {
-            return unknowDescriptor;
+            if (proxy == null) {
+                return unknowDescriptor;
+            }
+            return proxy.getAssembler();
         }
 
         @Override
         public ScannerDescriptor getScanner() {
-            return new ScannerDescriptor() {
+            if (proxy == null) {
+                return new ScannerDescriptor() {
 
-                @Override
-                public String getID() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getID() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public List<ScannerPattern> getPatterns() {
-                    return Collections.emptyList();
-                }
+                    @Override
+                    public List<ScannerPattern> getPatterns() {
+                        return Collections.emptyList();
+                    }
 
-                @Override
-                public String getChangeDirectoryPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getChangeDirectoryPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getEnterDirectoryPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getEnterDirectoryPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getLeaveDirectoryPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getLeaveDirectoryPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getMakeAllInDirectoryPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getMakeAllInDirectoryPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getStackHeaderPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getStackHeaderPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getStackNextPattern() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getStackNextPattern() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public List<String> getFilterOutPatterns() {
-                    return Collections.emptyList();
-                }
-            };
+                    @Override
+                    public List<String> getFilterOutPatterns() {
+                        return Collections.emptyList();
+                    }
+                };
+            }
+            return proxy.getScanner();
         }
 
         @Override
         public LinkerDescriptor getLinker() {
-            return new LinkerDescriptor(){
+            if (proxy == null) {
+                return new LinkerDescriptor(){
 
-                @Override
-                public String getLibraryPrefix() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getLibraryPrefix() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getLibrarySearchFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getLibrarySearchFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getDynamicLibrarySearchFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getDynamicLibrarySearchFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getLibraryFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getLibraryFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getPICFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getPICFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getStaticLibraryFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getStaticLibraryFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getDynamicLibraryFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getDynamicLibraryFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getDynamicLibraryBasicFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getDynamicLibraryBasicFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getOutputFileFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getOutputFileFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getStripFlag() {
-                    return ""; // NOI18N
-                }
+                    @Override
+                    public String getStripFlag() {
+                        return ""; // NOI18N
+                    }
 
-                @Override
-                public String getPreferredCompiler() {
-                    return ""; // NOI18N
-                }
-            };
+                    @Override
+                    public String getPreferredCompiler() {
+                        return ""; // NOI18N
+                    }
+                };
+            }
+            return proxy.getLinker();
         }
 
         @Override
         public MakeDescriptor getMake() {
-            return null;            
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getMake();
         }
 
         @Override
         public Map<String, List<String>> getDefaultLocations() {
-            return Collections.<String, List<String>>emptyMap();
+            if (proxy == null) {
+                return Collections.<String, List<String>>emptyMap();
+            }
+            return proxy.getDefaultLocations();
         }
 
         @Override
         public DebuggerDescriptor getDebugger() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getDebugger();
         }
 
         @Override
         public String getMakefileWriter() {
-            return null;
+            if (proxy == null) {
+                return null;
+            }
+            return proxy.getMakefileWriter();
         }
 
         @Override
         public QMakeDescriptor getQMake() {
-            return new QMakeDescriptor() {
+            if (proxy == null) {
+                return new QMakeDescriptor() {
 
-                @Override
-                public String[] getNames() {
-                    return new String[0];
-                }
+                    @Override
+                    public String[] getNames() {
+                        return new String[0];
+                    }
 
-                @Override
-                public String getVersionFlags() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getVersionFlags() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public String getVersionPattern() {
-                    return ""; //NOI18N
-                }
-                
-                @Override
-                public String getFingerPrintFlags() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getVersionPattern() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public String getFingerPrintPattern() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getFingerPrintFlags() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public boolean skipSearch() {
-                    return true;
-                }
+                    @Override
+                    public String getFingerPrintPattern() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public AlternativePath[] getAlternativePath() {
-                    return new AlternativePath[0];
-                }
+                    @Override
+                    public boolean skipSearch() {
+                        return true;
+                    }
 
-            };
+                    @Override
+                    public AlternativePath[] getAlternativePath() {
+                        return new AlternativePath[0];
+                    }
+                };
+            }
+            return proxy.getQMake();
         }
 
         @Override
         public CMakeDescriptor getCMake() {
-            return new CMakeDescriptor() {
+            if (proxy == null) {
+                return new CMakeDescriptor() {
 
-                @Override
-                public String[] getNames() {
-                    return new String[0];
-                }
+                    @Override
+                    public String[] getNames() {
+                        return new String[0];
+                    }
 
-                @Override
-                public String getVersionFlags() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getVersionFlags() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public String getVersionPattern() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getVersionPattern() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public String getFingerPrintFlags() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getFingerPrintFlags() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public String getFingerPrintPattern() {
-                    return ""; //NOI18N
-                }
+                    @Override
+                    public String getFingerPrintPattern() {
+                        return ""; //NOI18N
+                    }
 
-                @Override
-                public boolean skipSearch() {
-                    return true;
-                }
+                    @Override
+                    public boolean skipSearch() {
+                        return true;
+                    }
 
-                @Override
-                public AlternativePath[] getAlternativePath() {
-                    return new AlternativePath[0];
-                }
-            };
+                    @Override
+                    public AlternativePath[] getAlternativePath() {
+                        return new AlternativePath[0];
+                    }
+                };
+            }
+            return proxy.getCMake();
         }
     }
 }
