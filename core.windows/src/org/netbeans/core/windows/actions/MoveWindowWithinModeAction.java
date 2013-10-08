@@ -52,6 +52,7 @@ import org.openide.windows.TopComponent;
 import javax.swing.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.netbeans.core.windows.EditorOnlyDisplayer;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 
@@ -116,6 +117,9 @@ implements PropertyChangeListener {
     
     @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
+        if( EditorOnlyDisplayer.getInstance().isActive() ) {
+            return;
+        }
         TopComponent contextTc = null == tc ? TopComponent.getRegistry().getActivated() : tc;
         if( null == contextTc )
             return;
@@ -153,6 +157,10 @@ implements PropertyChangeListener {
         }
         if( position == mode.getOpenedTopComponents().size()-1 && !moveLeft ) {
             setEnabled( false );
+            return;
+        }
+        if( EditorOnlyDisplayer.getInstance().isActive() ) {
+            setEnabled( false) ;
             return;
         }
         setEnabled( true );
