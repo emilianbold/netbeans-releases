@@ -39,38 +39,53 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2me.project.ui.customizer;
 
-import java.util.Map;
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.spi.project.ProjectServiceProvider;
+package org.netbeans.modules.j2me.project;
+
+import java.io.IOException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Parameters;
+import org.w3c.dom.Element;
 
 /**
  *
- * @author Theofanis Oikonomou
+ * @author Tomas Zezula
  */
-@ProjectServiceProvider(service=J2SECategoryExtensionProvider.class, projectType="org-netbeans-modules-java-j2seproject")
-public class J2MECompilingCategoryExtensionProvider implements J2SECategoryExtensionProvider {
+class J2MEProjectUpdates implements UpdateImplementation {
 
-    @Override
-    public ExtensibleCategory getCategory() {
-        return ExtensibleCategory.COMPILING;
+    private final AntProjectHelper helper;
+
+    J2MEProjectUpdates(@NonNull final AntProjectHelper helper) {
+        Parameters.notNull("helper", helper);   //NOI18N
+        this.helper = helper;
     }
 
     @Override
-    public JComponent createComponent(Project p, ConfigChangeListener listener) {
-        boolean meDisabled = false;
-        if (p != null) {
-            final J2SEPropertyEvaluator j2sepe = p.getLookup().lookup(J2SEPropertyEvaluator.class);
-            meDisabled = !J2MEProjectProperties.isTrue(j2sepe.evaluator().getProperty(J2MEProjectProperties.JAVAME_ENABLED));
-        }
-        return meDisabled ? null : J2MEProjectProperties.getInstance(p.getLookup()).getCompilingPanel();
+    public boolean isCurrent() {
+        return true;
     }
 
     @Override
-    public void configUpdated(Map<String, String> props) { }
-    
+    public boolean canUpdate() {
+        return false;
+    }
+
+    @Override
+    public void saveUpdate(EditableProperties props) throws IOException {
+        throw new IllegalStateException("Nothing to update.");  //NOI18N
+    }
+
+    @Override
+    public Element getUpdatedSharedConfigurationData() {
+        return helper.getPrimaryConfigurationData(true);
+    }
+
+    @Override
+    public EditableProperties getUpdatedProjectProperties() {
+        return helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    }
+
 }

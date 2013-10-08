@@ -291,13 +291,13 @@
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2me.project</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javafx.profiler</friend>
                 <friend>org.netbeans.modules.javafx.project</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
-                <friend>org.netbeans.modules.j2me.project</friend>
                 <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.maven</friend>

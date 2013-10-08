@@ -42,98 +42,66 @@
 package org.netbeans.modules.j2me.project.ui.customizer;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
+
+
+
 
 /**
  *
- * @author Theofanis Oikonomou
+ * @author Tomas Zezula
  */
 public final class J2MEProjectProperties {
-    
-    public static final String JAVAME_ENABLED = "javame.enabled"; // NOI18N
 
-    /**
-     * Keeps singleton instance of JFXProjectProperties for any fx project for
-     * which property customizer is opened at once
-     */
-    private static Map<String, J2MEProjectProperties> propInstance = new HashMap<String, J2MEProjectProperties>();
+    public static final String DIST_JAR ="dist.jar";    //NOI18N //Todo: move to ProjectProperties
+    public static final String DIST_DIR ="dist.dir";    //NOI18N //Todo: move to ProjectProperties
+    public static final String JAR_COMPRESS = "jar.compress";   //NOI18N    //Todo: move to ProjectProperties
+    public static final String DEBUG_CLASSPATH = "debug.classpath"; //NOI18N    //Todo: move to ProjectProperties
+    public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; //NOI18N    //Todo: move to ProjectProperties
+    public static final String JAVAC_SOURCE = "javac.source"; //NOI18N    //Todo: move to ProjectProperties
+    public static final String JAVAC_TARGET = "javac.target"; //NOI18N    //Todo: move to ProjectProperties
+    public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N    //Todo: move to ProjectProperties
+    public static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N //Todo: move to ProjectProperties
+    public static final String BUILD_GENERATED_SOURCES_DIR = "build.generated.sources.dir"; //NOI18N //Todo: move to ProjectProperties
+    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N //Todo: move to ProjectProperties
 
-    // Project related references
-    private J2SEPropertyEvaluator j2sePropEval;
-    private PropertyEvaluator evaluator;
-    private Project project;
+    public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N  //Todo: move to ProjectProperties
+    public static final String JAVADOC_USE="javadoc.use"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_NO_INDEX="javadoc.noindex"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_AUTHOR="javadoc.author"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N //Todo: move to ProjectProperties
+    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N //Todo: move to ProjectProperties
 
-    public Project getProject() {
+    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N  //Todo: move to ProjectProperties
+    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N  //Todo: move to ProjectProperties
+    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N //Todo: move to ProjectProperties
+
+    public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
+
+
+    private final J2MEProject project;
+
+    public J2MEProject getProject() {
         return project;
     }
 
     public PropertyEvaluator getEvaluator() {
-        return evaluator;
-    }
-
-    static J2MEProjectProperties getInstance(Lookup lookup) {
-        Project proj = lookup.lookup(Project.class);
-        String projDir = proj.getProjectDirectory().getPath();
-        J2MEProjectProperties prop = propInstance.get(projDir);
-        if (prop == null) {
-            prop = new J2MEProjectProperties(lookup);
-            propInstance.put(projDir, prop);
-        }
-        return prop;
-    }
+        return project.evaluator();
+    }   
 
     /**
      * Creates a new instance of J2MEProjectProperties
      */
-    private J2MEProjectProperties(Lookup context) {
-
-        //defaultInstance = provider.getJFXProjectProperties();
-        project = context.lookup(Project.class);
-
-        if (project != null) {
-            j2sePropEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            evaluator = j2sePropEval.evaluator();
-
-//            // Packaging
-//            binaryEncodeCSS = fxPropGroup.createToggleButtonModel(evaluator, JAVAFX_BINARY_ENCODE_CSS); // set true by default in JFXProjectGenerator
-//
-//            // Deployment
-//            allowOfflineModel = fxPropGroup.createToggleButtonModel(evaluator, ALLOW_OFFLINE); // set true by default in JFXProjectGenerator            
-//            backgroundUpdateCheck = fxPropGroup.createToggleButtonModel(evaluator, UPDATE_MODE_BACKGROUND); // set true by default in JFXProjectGenerator
-//            installPermanently = fxPropGroup.createToggleButtonModel(evaluator, INSTALL_PERMANENTLY);
-//            addDesktopShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_DESKTOP_SHORTCUT);
-//            addStartMenuShortcut = fxPropGroup.createToggleButtonModel(evaluator, ADD_STARTMENU_SHORTCUT);
-//            disableProxy = fxPropGroup.createToggleButtonModel(evaluator, DISABLE_PROXY);
-//
-//            // CustomizerRun
-//            CONFIGS = new JFXConfigs();
-//            CONFIGS.read();
-//            initPreloaderArtifacts(project, CONFIGS);
-//            CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
-//            preloaderClassModel = new PreloaderClassComboBoxModel();
-//
-//            initVersion(evaluator);
-//            initIcons(evaluator);
-//            initSigning(evaluator);
-//            initNativeBundling(evaluator);
-//            initResources(evaluator, project, CONFIGS);
-//            initJSCallbacks(evaluator);
-//            initRest(evaluator);
-        }
+    public J2MEProjectProperties(@NonNull final J2MEProject project) {
+        this.project = project;
     }
     
     public static boolean isTrue(final String value) {
@@ -142,104 +110,9 @@ public final class J2MEProjectProperties {
                  value.equalsIgnoreCase("yes") ||   //NOI18N
                  value.equalsIgnoreCase("on"));     //NOI18N
     }
-    
-    /** Getter method */
-    public static J2MEProjectProperties getInstanceIfExists(Project proj) {
-        assert proj != null;
-        String projDir = proj.getProjectDirectory().getPath();
-        J2MEProjectProperties prop = propInstance.get(projDir);
-        if(prop != null) {
-            return prop;
-        }
-        return null;
-    }
-
-    /** Getter method */
-    public static J2MEProjectProperties getInstanceIfExists(Lookup context) {
-        Project proj = context.lookup(Project.class);
-        return getInstanceIfExists(proj);
-    }
-
-    public static void cleanup(Lookup context) {
-        Project proj = context.lookup(Project.class);
-        String projDir = proj.getProjectDirectory().getPath();
-        propInstance.remove(projDir);
-    }
-        
+           
     public void store() throws IOException {
-        String meEnabled = evaluator.getProperty(JAVAME_ENABLED);
-        if(isTrue(meEnabled)) {
-            storeME();
-        }
-    }
-    
-    private void storeME() throws IOException {
-//        updatePreloaderDependencies(CONFIGS);
-//        CONFIGS.storeActive();
-        final EditableProperties ep = new EditableProperties(true);
-        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        final EditableProperties pep = new EditableProperties(true);
-        final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);        
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    final InputStream is = projPropsFO.getInputStream();
-                    final InputStream pis = privPropsFO.getInputStream();
-                    try {
-                        ep.load(is);
-                    } finally {
-                        if (is != null) {
-                            is.close();
-                        }
-                    }
-                    try {
-                        pep.load(pis);
-                    } finally {
-                        if (pis != null) {
-                            pis.close();
-                        }
-                    }
-                    
-//                    fxPropGroup.store(ep);
-//                    storeRest(ep, pep);
-//                    CONFIGS.store(ep, pep);
-//                    updatePreloaderComment(ep);
-//                    logProps(ep);
-
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = projPropsFO.lock();
-                        os = projPropsFO.getOutputStream(lock);
-                        ep.store(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                    try {
-                        lock = privPropsFO.lock();
-                        os = privPropsFO.getOutputStream(lock);
-                        pep.store(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                    }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
-        }
-    }
+    }    
     
     private J2MECompilingPanel compilingPanel = null;
     public J2MECompilingPanel getCompilingPanel() {

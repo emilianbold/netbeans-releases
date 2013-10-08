@@ -48,8 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -79,84 +78,44 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
         "LBL_Category_Signing=Signing"})
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ProjectCustomizer.Category toReturn = null;
-        boolean meEnabled = false;
-        final Project project = context.lookup(Project.class);
-        if (project != null && name != null) {
-            final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            meEnabled = J2MEProjectProperties.isTrue(j2sepe.evaluator().getProperty(J2MEProjectProperties.JAVAME_ENABLED));
+        final J2MEProject project = context.lookup(J2MEProject.class);
+        assert project != null;
+        assert name != null;
+        switch (name) {
+            case PLATFORM:
+                toReturn = ProjectCustomizer.Category.create(
+                        PLATFORM,
+                        Bundle.LBL_Category_Platform(),
+                        null);
+                break;
+            case APPLICATION_DESCRIPTOR:
+                toReturn = ProjectCustomizer.Category.create(
+                        APPLICATION_DESCRIPTOR,
+                        Bundle.LBL_Category_Application_Descriptor(),
+                        null);
+                break;
+            case OBFUSCATING:
+                toReturn = ProjectCustomizer.Category.create(
+                        OBFUSCATING,
+                        Bundle.LBL_Category_Obfuscating(),
+                        null);
+                break;
+            case SIGNING:
+                toReturn = ProjectCustomizer.Category.create(
+                        SIGNING,
+                        Bundle.LBL_Category_Signing(),
+                        null);
+                break;
         }
-        if (meEnabled) {
-            switch (name) {
-                case PLATFORM:
-                    toReturn = ProjectCustomizer.Category.create(
-                            PLATFORM,
-                            Bundle.LBL_Category_Platform(),
-                            null);
-                    break;
-                case APPLICATION_DESCRIPTOR:
-                    toReturn = ProjectCustomizer.Category.create(
-                            APPLICATION_DESCRIPTOR,
-                            Bundle.LBL_Category_Application_Descriptor(),
-                            null);
-                    break;
-                case OBFUSCATING:
-                    toReturn = ProjectCustomizer.Category.create(
-                            OBFUSCATING,
-                            Bundle.LBL_Category_Obfuscating(),
-                            null);
-                    break;
-                case SIGNING:
-                    toReturn = ProjectCustomizer.Category.create(
-                            SIGNING,
-                            Bundle.LBL_Category_Signing(),
-                            null);
-                    break;
-            }
-            assert toReturn != null : "No category for name:" + name;
-            toReturn.setOkButtonListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (project != null) {
-                        J2MEProjectProperties prop = J2MEProjectProperties.getInstanceIfExists(project.getLookup());
-                        if (prop != null) {
-                            projectProperties.put(project.getProjectDirectory().getPath(), prop);
-                        }
-                    }
-                }
-            });
-            toReturn.setStoreListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (project != null) {
-                        J2MEProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
-                        if (prop != null) {
-                            try {
-                                prop.store();
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                        projectProperties.remove(project.getProjectDirectory().getPath());
-                    }
-                }
-            });
-            toReturn.setCloseListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (project != null) {
-                        J2MEProjectProperties.cleanup(project.getLookup());
-                    }
-                }
-            });
-            return toReturn;
-        }
-        return null;
+        assert toReturn != null : "No category for name:" + name;            
+        return toReturn;        
     }
 
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, final Lookup context) {
         String nm = category.getName();
-        final J2MEProjectProperties uiProps = J2MEProjectProperties.getInstance(context);
+        final J2MEProjectProperties uiProps = context.lookup(J2MEProjectProperties.class);
+        assert uiProps != null;
         switch (nm) {
             case PLATFORM:
                 return new J2MEPlatformPanel(uiProps);

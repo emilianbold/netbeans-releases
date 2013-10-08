@@ -54,7 +54,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.j2me.project.J2MEProjectGenerator;
+import org.netbeans.modules.j2me.project.api.J2MEProjectBuilder;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -122,7 +122,12 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         switch (type) {
             default:
                 String midletTemplate = "Templates/j2me/Midlet.java"; //NOI18N
-                AntProjectHelper h = J2MEProjectGenerator.createProject(dirF, name, midletClass, midletTemplate, platform, type == WizardType.APPLICATION ? MANIFEST_FILE : null, librariesDefinition, true);
+                AntProjectHelper h = J2MEProjectBuilder.forDirectory(dirF, name, platform).
+                        addDefaultSourceRoots().
+                        setMainMIDLetName(midletClass).
+                        setMainMIDLetTemplate(midletTemplate).
+                        setLibrariesDefinitionFile(librariesDefinition).
+                        build();
                 handle.progress(2);
                 if (midletClass != null && !midletClass.isEmpty()) {
                     final FileObject sourcesRoot = h.getProjectDirectory().getFileObject("src"); //NOI18N
