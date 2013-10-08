@@ -55,7 +55,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {

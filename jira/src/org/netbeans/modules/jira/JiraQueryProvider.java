@@ -53,7 +53,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue> {
+public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIssue> {
 
     @Override
     public String getDisplayName(JiraQuery query) {

@@ -53,7 +53,7 @@ import java.util.Collection;
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
  */
-public abstract class QueryProvider<Q, I> {
+public interface QueryProvider<Q, I> {
 
     /**
      * queries issue list was changed
@@ -70,43 +70,33 @@ public abstract class QueryProvider<Q, I> {
      */
     public final static String EVENT_QUERY_REMOVED = "bugtracking.query.removed";     // NOI18N
 
-    static {
-        SPIAccessorImpl.createAccesor();
-    }
-    
-    /**
-     * Creates a query
-     */
-    public QueryProvider() {
-    }
-
     /**
      * Returns the queries display name
      * @param q
      * @return
      */
-    public abstract String getDisplayName(Q q);
+    public String getDisplayName(Q q);
 
     /**
      * Returns the queries tooltip
      * @param q 
      * @return
      */
-    public abstract String getTooltip(Q q);
+    public String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
      * @param q the implementation specific query type
      * @return
      */
-    public abstract QueryController getController(Q q);
+    public QueryController getController(Q q);
 
     /**
      * Returns true if query is saved
      * @param q the implementation specific query type
      * @return
      */
-    public abstract boolean isSaved(Q q);
+    public boolean isSaved(Q q);
 
     /**
      * Determines whether it is possible to remove the given Query.
@@ -114,21 +104,21 @@ public abstract class QueryProvider<Q, I> {
      * @param q 
      * @return  
      */
-    public abstract boolean canRemove(Q q);
+    public boolean canRemove(Q q);
     
     /** 
      * Removes the given query.
      * 
      * @param q 
      */
-    public abstract void remove(Q q);
+    public void remove(Q q);
     
     /**
      * Determines whether it is possible to rename the given Query
      * @param q
      * @return 
      */
-    public abstract boolean canRename(Q q);
+    public boolean canRename(Q q);
     
     /**
      * Renames the given query.
@@ -136,9 +126,9 @@ public abstract class QueryProvider<Q, I> {
      * @param q 
      * @param newName 
      */
-    public abstract void rename(Q q, String newName);
+    public void rename(Q q, String newName);
     
-    public abstract Collection<I> getIssues(Q q);
+    public Collection<I> getIssues(Q q);
 
     /**
      * Returns true if the issue does belong to the query
@@ -147,14 +137,14 @@ public abstract class QueryProvider<Q, I> {
      * @return
      */
     // XXX used only by query table - get rid of this
-    public abstract boolean contains(Q q, String id);
+    public boolean contains(Q q, String id);
 
     /**
      * Refreshes the given query
      * 
      * @param query
      */
-    public abstract void refresh(Q query);
+    public void refresh(Q query);
     
     /*********
      * EVENTS
@@ -165,13 +155,13 @@ public abstract class QueryProvider<Q, I> {
      * @param q
      * @param listener 
      */
-    public abstract void removePropertyChangeListener(Q q, PropertyChangeListener listener);
+    public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
     /**
      * 
      * @param q
      * @param listener 
      */
-    public abstract void addPropertyChangeListener(Q q, PropertyChangeListener listener);
+    public void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
 }

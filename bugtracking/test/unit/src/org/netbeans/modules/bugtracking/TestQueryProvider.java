@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author tomas
  */
-public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
+public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
 
     @Override
     public String getDisplayName(TestQuery q) {

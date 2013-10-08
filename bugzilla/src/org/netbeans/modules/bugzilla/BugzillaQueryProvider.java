@@ -51,7 +51,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider implements TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {

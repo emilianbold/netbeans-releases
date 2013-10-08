@@ -133,7 +133,7 @@ public class APITestConnector extends BugtrackingConnector {
             APITestRepository.TOOLTIP);
     }
     
-    public static class APITestQueryProvider extends QueryProvider<APITestQuery, APITestIssue> {
+    public static class APITestQueryProvider implements QueryProvider<APITestQuery, APITestIssue> {
 
         @Override
         public String getDisplayName(APITestQuery q) {
