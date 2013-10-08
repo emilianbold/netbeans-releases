@@ -112,6 +112,9 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
                 setBackground( backColor );
                 setOpaque( true );
             }
+            Color white = Color.white;
+            white = white.darker();
+            lblFullPath.setForeground(white);
         }
         switch( tabsLocation ) {
             case JTabbedPane.TOP:
