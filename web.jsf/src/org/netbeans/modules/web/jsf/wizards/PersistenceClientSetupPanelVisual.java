@@ -46,10 +46,7 @@ package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -72,9 +69,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils.OpenTemplateAction;
+import org.netbeans.modules.web.jsf.JsfTemplateUtils.TemplateType;
 import org.netbeans.modules.web.jsf.dialogs.BrowseFolders;
 import org.netbeans.modules.web.jsf.palette.items.CancellableDialog;
-import org.netbeans.modules.web.jsf.palette.items.ManagedBeanCustomizer.OpenTemplateAction;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -89,23 +88,6 @@ import org.openide.util.NbBundle;
  */
 public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implements DocumentListener, CancellableDialog {
 
-    /** Base path within the layer.xml for definition of templates. */
-    public static final String BASE_TEMPLATE_PATH = "/Templates/JSF/JSF_From_Entity_Wizard"; //NOI18N
-
-    /** Path of the Standard JavaServer Faces templates. */
-    public static final String STANDARD_TEMPLATE_PATH = "StandardJSF"; //NOI18N
-
-    public static final String VIEW_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/view.ftl"; // NOI18N
-    public static final String LIST_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/list.ftl"; // NOI18N
-    public static final String CREATE_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/create.ftl"; // NOI18N
-    public static final String EDIT_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/edit.ftl"; // NOI18N
-    public static final String CONTROLLER_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/controller.ftl"; // NOI18N
-    public static final String PAGINATION_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/PaginationHelper.ftl"; // NOI18N
-    public static final String UTIL_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/JsfUtil.ftl"; // NOI18N
-    public static final String BUNDLE_TEMPLATE = BASE_TEMPLATE_PATH + "/" + STANDARD_TEMPLATE_PATH + "/bundle.ftl"; // NOI18N
-
-    private static final String LOCALIZING_BUNDLE = "SystemFileSystem.localizingBundle"; //NOI18N
-
     private WizardDescriptor wizard;
     private Project project;
     private JTextComponent jpaPackageComboBoxEditor, jsfPackageComboBoxEditor;
@@ -118,13 +100,10 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         initComponents();
 
         // templates comboBox
-        FileObject templateRoot = FileUtil.getConfigRoot().getFileObject(BASE_TEMPLATE_PATH);
-        assert templateRoot != null; // at least the base templates should be registered
-        Enumeration<? extends FileObject> children = templateRoot.getChildren(false);
-        while (children.hasMoreElements()) {
-            FileObject template = children.nextElement();
-            templatesComboBox.addItem(getLocalizedName(template));
+        for (JsfTemplateUtils.Template template : JsfTemplateUtils.getTemplates(TemplateType.PAGES)) {
+            templatesComboBox.addItem(template);
         }
+        templatesComboBox.setRenderer(new JsfTemplateUtils.TemplateCellRenderer());
 
         // listeners
         jpaPackageComboBoxEditor = (JTextComponent)jpaPackageComboBox.getEditor().getEditorComponent();
@@ -363,19 +342,27 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     }//GEN-LAST:event_overrideExistingCheckBoxActionPerformed
 
     private void customizeTemplatesLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_customizeTemplatesLabelMouseClicked
+        String viewTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.VIEW_TEMPLATE);
+        String editTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.EDIT_TEMPLATE);
+        String createTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.CREATE_TEMPLATE);
+        String listTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.LIST_TEMPLATE);
+        String controllerTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.CONTROLLER_TEMPLATE);
+        String paginationTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.PAGINATION_TEMPLATE);
+        String utilTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.UTIL_TEMPLATE);
+        String bundleTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.BUNDLE_TEMPLATE);
+
         JPopupMenu menu = new JPopupMenu();
         menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.allTemplates"),
-                VIEW_TEMPLATE, EDIT_TEMPLATE, CREATE_TEMPLATE, LIST_TEMPLATE, UTIL_TEMPLATE, CONTROLLER_TEMPLATE, PAGINATION_TEMPLATE, BUNDLE_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.viewTemplate"), VIEW_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"), EDIT_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"), CREATE_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.listTemplate"), LIST_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"), CONTROLLER_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"), PAGINATION_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"), UTIL_TEMPLATE));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.bundleTemplate"), BUNDLE_TEMPLATE));
+                viewTemplatePath, editTemplatePath, createTemplatePath, listTemplatePath, controllerTemplatePath, paginationTemplatePath, utilTemplatePath, bundleTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.viewTemplate"), viewTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"), editTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"), createTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.listTemplate"), listTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"), controllerTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"), paginationTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"), utilTemplatePath));
+        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.bundleTemplate"), bundleTemplatePath));
         menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
-
     }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
         
     
@@ -525,6 +512,10 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         return jpaPackageComboBoxEditor.getText();
     }
 
+    public String getTemplatesStyle() {
+        return ((JsfTemplateUtils.Template) templatesComboBox.getSelectedItem()).getName();
+    }
+
     private void locationChanged() {
         updateSourceGroupPackages();
 //        changeSupport.fireChange();
@@ -571,6 +562,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         settings.putProperty(WizardProperties.AJAXIFY_JSF_CRUD, Boolean.valueOf(ajaxifyCheckbox.isSelected()));
         settings.putProperty(WizardProperties.JAVA_PACKAGE_ROOT_FILE_OBJECT, getLocationValue().getRootFolder());
         settings.putProperty(WizardProperties.LOCALIZATION_BUNDLE_NAME, localizationBundleTextField.getText());
+        settings.putProperty(WizardProperties.TEMPLATE_STYLE, getTemplatesStyle());
     }
 
     private void updateSourceGroupPackages() {
@@ -604,25 +596,6 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     
     public boolean isCancelled() {
         return cancelled;
-    }
-
-    private static String getLocalizedName(FileObject fo) {
-        String name = fo.getNameExt();
-        String bundleName = (String) fo.getAttribute(LOCALIZING_BUNDLE);
-        if (bundleName != null) {
-            try {
-                bundleName = org.openide.util.Utilities.translate(bundleName);
-                ResourceBundle b = NbBundle.getBundle(bundleName);
-                String localizedName = b.getString(fo.getPath());
-                if (localizedName != null) {
-                    name = localizedName;
-                }
-            } catch (MissingResourceException ex) {
-            // ignore
-            }
-        }
-
-        return name;
     }
 
 }
