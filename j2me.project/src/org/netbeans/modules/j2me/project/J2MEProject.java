@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
+import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
@@ -172,7 +174,16 @@ public class J2MEProject implements Project {
                     eval,
                     sourceRoots,
                     testRoots,
-                    helper)
+                    helper),
+                QuerySupport.createFileEncodingQuery(eval, J2MEProjectProperties.SOURCE_ENCODING),
+                QuerySupport.createSourceLevelQuery2(eval),
+                QuerySupport.createSources(
+                    this,
+                    helper,
+                    eval,
+                    sourceRoots,
+                    testRoots,
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2MEProjectProperties.DIST_DIR))
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
