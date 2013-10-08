@@ -141,9 +141,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
                         d = list.get(0);
                     }
                 }
-                if (d == null) {
-                    d = new CompilerSetImpl.UnknownToolchainDescriptor();
-                }
+                d = new CompilerSetImpl.UnknownToolchainDescriptor(d);
                 unknownFlavor = new CompilerFlavorImpl(d);
                 unknown.put(platform, unknownFlavor);
             }
