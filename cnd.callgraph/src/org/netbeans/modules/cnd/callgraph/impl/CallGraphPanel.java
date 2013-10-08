@@ -176,7 +176,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                         double width = jSplitPane1.getWidth();
                         double size = jSplitPane1.getDividerSize();
                         double location = jSplitPane1.getDividerLocation();
-                        if (width < size) {
+                        if (width <= size) {
                             return;
                         }
                         double x =  location/(width-size);
