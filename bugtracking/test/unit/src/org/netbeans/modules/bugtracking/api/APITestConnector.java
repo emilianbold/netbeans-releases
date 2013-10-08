@@ -195,6 +195,11 @@ public class APITestConnector extends BugtrackingConnector {
             q.rename(displayName);
         }
 
+        @Override
+        public boolean canRemove(APITestQuery q) {
+            return q.canRemove();
+        }
+
     }
 
     public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {

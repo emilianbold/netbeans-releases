@@ -89,38 +89,54 @@ public abstract class QueryProvider<Q, I> {
 
     /**
      * Returns the queries tooltip
-     * @param q
+     * @param q 
      * @return
      */
     public abstract String getTooltip(Q q);
 
     /**
      * Returns the {@link QueryController} for this query
-     * @param q
+     * @param q the implementation specific query type
      * @return
      */
     public abstract QueryController getController(Q q);
 
     /**
      * Returns true if query is saved
-     * @param q
+     * @param q the implementation specific query type
      * @return
      */
     public abstract boolean isSaved(Q q);
 
+    /**
+     * Determines whether it is possible to remove the given Query.
+     * 
+     * @param q 
+     * @return  
+     */
+    public abstract boolean canRemove(Q q);
+    
+    /** 
+     * Removes the given query.
+     * 
+     * @param q 
+     */
     public abstract void remove(Q q);
     
     /**
-     * Determines if it is possible to rename the given query
+     * Determines whether it is possible to rename the given Query
+     * @param q
      * @return 
      */
     public abstract boolean canRename(Q q);
     
     /**
-     * Renames the given query
+     * Renames the given query.
+     * 
      * @param q 
+     * @param newName 
      */
-    public abstract void rename(Q q, String displayName);
+    public abstract void rename(Q q, String newName);
     
     public abstract Collection<I> getIssues(Q q);
 

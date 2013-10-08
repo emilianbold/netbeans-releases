@@ -114,4 +114,9 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
         q.rename(displayName);
     }
 
+    @Override
+    public boolean canRemove(TestQuery q) {
+        return q.canRemove();
+    }
+
 }

@@ -69,6 +69,11 @@ public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, Bugz
     }
 
     @Override
+    public boolean canRemove(BugzillaQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(BugzillaQuery q) {
         q.remove();
     }

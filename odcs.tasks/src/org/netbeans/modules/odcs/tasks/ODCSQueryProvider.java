@@ -78,6 +78,11 @@ public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
     }
 
     @Override
+    public boolean canRemove(ODCSQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(ODCSQuery q) {
         q.remove();
     }

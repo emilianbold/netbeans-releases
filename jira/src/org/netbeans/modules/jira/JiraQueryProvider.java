@@ -76,6 +76,11 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
     }
 
     @Override
+    public boolean canRemove(JiraQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(JiraQuery q) {
         q.remove();
     }

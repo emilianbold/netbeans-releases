@@ -126,6 +126,10 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.isSaved(data);
     }
 
+    public boolean canRemove() {
+        return queryProvider.canRemove(data);
+    }
+    
     public void remove() {
         queryProvider.remove(data);
     }

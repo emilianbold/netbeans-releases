@@ -164,5 +164,9 @@ public class APITestQuery extends TestQuery {
     public void rename(String name) {
         this.name = name;
     }
+
+    boolean canRemove() {
+        return true;
+    }
     
 }

@@ -145,7 +145,7 @@ public class JiraQuery {
     }
 
     public boolean canRename() {
-        return jiraFilter != null && !(jiraFilter instanceof NamedFilter);
+        return jiraFilter != null && !(isModifiable(jiraFilter));
     }
     
     public String getTooltip() {
@@ -166,10 +166,14 @@ public class JiraQuery {
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
-        } else if(jiraFilter instanceof NamedFilter) {
+        } else if(isModifiable(jiraFilter)) {
             return new QueryController(r, q, jiraFilter, false);
         }
         throw new IllegalStateException("wrong filter type : " + jiraFilter.getClass().getName());
+    }
+
+    private static boolean isModifiable(JiraFilter jiraFilter) {
+        return jiraFilter instanceof NamedFilter;
     }
 
     public ColumnDescriptor[] getColumnDescriptors() {
@@ -292,6 +296,10 @@ public class JiraQuery {
         refreshIntern(autoReresh);
     }
 
+    public boolean canRemove() {
+        return isModifiable(jiraFilter);
+    }
+        
     public void remove() {
         if(QueryController.isNamedFilter(jiraFilter)) {
             // Serverside filter. Can't remove.
