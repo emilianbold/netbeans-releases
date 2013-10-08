@@ -97,15 +97,15 @@ public final class Server implements Comparable<Server> {
     public int compareTo(Server wrapper) {
         // <No Server> option should be always the last one
         if (ExecutionChecker.DEV_NULL.equals(this.serverInstanceId)) {
-            return -1;
+            return 1;
         }
 
         // If one server is an GF instance and the second one is not, always return GF
         if (this.serverInstanceId.contains("gf") && !wrapper.serverInstanceId.contains("gf")) { //NOI18N
-            return 1;
+            return -1;
         }
         if (!this.serverInstanceId.contains("gf") && wrapper.serverInstanceId.contains("gf")) { //NOI18N
-            return -1;
+            return 1;
         }
 
         // Otherwise compare just by String name
