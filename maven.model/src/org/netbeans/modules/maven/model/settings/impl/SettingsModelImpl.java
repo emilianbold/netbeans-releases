@@ -47,6 +47,7 @@ import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsComponentFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsQName;
+import org.netbeans.modules.maven.model.settings.SettingsQName.Version;
 import org.netbeans.modules.maven.model.settings.SettingsQNames;
 import org.netbeans.modules.maven.model.settings.visitor.ChildComponentUpdateVisitor;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -61,11 +62,8 @@ import org.w3c.dom.Element;
 public class SettingsModelImpl extends SettingsModel {
     
     private SettingsComponent rootComponent;
-    private SettingsComponentFactory componentFactory;
+    private final SettingsComponentFactory componentFactory;
     private SettingsQNames settingsQNames;
-    private QName ROOT_NS = SettingsQName.createQName("settings", true, false); ///NOI18N
-    private QName ROOT_NS_OLD = SettingsQName.createQName("settings", true, true); ///NOI18N
-    private QName ROOT = SettingsQName.createQName("settings", false, false); ///NOI18N
     
     public SettingsModelImpl(ModelSource source) {
         super(source);
@@ -91,16 +89,13 @@ public class SettingsModelImpl extends SettingsModel {
     public SettingsComponent createRootComponent(Element root) {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
-            if (ROOT.equals(q)) {
-                settingsQNames = new SettingsQNames(false, false);
-                rootComponent = new SettingsImpl(this, root);
-            } else if (ROOT_NS.equals(q)) {
-                settingsQNames = new SettingsQNames(true, false);
-                rootComponent = new SettingsImpl(this, root);
-            } else if (ROOT_NS_OLD.equals(q)) {
-                settingsQNames = new SettingsQNames(true, true);
-                rootComponent = new SettingsImpl(this, root);
+            for (Version v : Version.values()) {
+                if (SettingsQName.createQName("settings", v).equals(q)) {
+                    settingsQNames = new SettingsQNames(v);
+                    rootComponent = new SettingsImpl(this, root);
+                }
             }
+            
         } 
         
         return getRootComponent();

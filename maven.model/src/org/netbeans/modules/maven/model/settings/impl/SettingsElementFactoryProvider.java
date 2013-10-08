@@ -62,6 +62,7 @@ import org.netbeans.modules.maven.model.settings.Settings;
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsExtensibilityElement;
 import org.netbeans.modules.maven.model.settings.SettingsQName;
+import org.netbeans.modules.maven.model.settings.SettingsQName.Version;
 import org.netbeans.modules.maven.model.settings.SettingsQNames;
 import org.netbeans.modules.maven.model.settings.StringList;
 import org.netbeans.modules.maven.model.settings.spi.ElementFactory;
@@ -80,17 +81,14 @@ import org.w3c.dom.Element;
 @ServiceProvider(service=ElementFactory.class)
 public class SettingsElementFactoryProvider implements ElementFactory {
 
-    private SettingsQNames ns = new SettingsQNames(true, false);
-    private SettingsQNames nsold = new SettingsQNames(true, true);
-    private SettingsQNames nonns = new SettingsQNames(false, false);
-    private Set<QName> all;
+    private final Set<QName> all;
 
 
     public SettingsElementFactoryProvider() {
         all = new HashSet<QName>();
-        all.addAll(ns.getElementQNames());
-        all.addAll(nonns.getElementQNames());
-        all.addAll(nsold.getElementQNames());
+        for (Version v : Version.values()) {
+            all.addAll(new SettingsQNames(v).getElementQNames());
+        }
     }
 
     @Override

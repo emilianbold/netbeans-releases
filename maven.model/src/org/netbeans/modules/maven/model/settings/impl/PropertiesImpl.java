@@ -73,14 +73,14 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
 
     @Override
     public void setProperty(String key, String value) {
-        QName qname = SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS());
+        QName qname = SettingsQName.createQName(key, getModel().getSettingsQNames().getNamespaceVersion());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
     @Override
     public String getProperty(String key) {
-        return getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS()));
+        return getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().getNamespaceVersion()));
     }
 
     @Override
@@ -90,7 +90,7 @@ public class PropertiesImpl extends SettingsComponentImpl implements Properties 
         for (SettingsComponent pc : chlds) {
             Element el = pc.getPeer();
             String key = el.getLocalName();
-            String val = getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().isNSAware(), getModel().getSettingsQNames().isOldNS()));
+            String val = getChildElementText(SettingsQName.createQName(key, getModel().getSettingsQNames().getNamespaceVersion()));
             toRet.put(key, val);
         }
         return toRet;
