@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -91,8 +91,10 @@ public class J2MEProject implements Project {
     private final AuxiliaryConfiguration auxCfg;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
+    private final ClassPathProviderImpl cpProvider;
     private final Lookup lkp;
-    private SourceRoots sourceRoots;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
 
     public J2MEProject(@NonNull final AntProjectHelper helper) {
         Parameters.notNull("helper", helper);   //NOI18N
@@ -101,6 +103,13 @@ public class J2MEProject implements Project {
         this.auxCfg = helper.createAuxiliaryConfiguration();
         this.eval = createPropertyEvaluator();
         this.refHelper = new ReferenceHelper(helper, auxCfg, eval);
+        this.sourceRoots = createRoots(false);
+        this.testRoots = createRoots(true);
+        this.cpProvider = new ClassPathProviderImpl(
+                helper,
+                eval,
+                sourceRoots,
+                testRoots);
         this.lkp = createLookup();
     }
 
@@ -122,23 +131,30 @@ public class J2MEProject implements Project {
     }
 
     @NonNull
-    public synchronized SourceRoots getSourceRoots() {
-        if (this.sourceRoots == null) {
-            this.sourceRoots = SourceRoots.create(
-                updateHelper,
-                eval,
-                refHelper,
-                PROJECT_CONFIGURATION_NAMESPACE,
-                "source-roots", //NOI18N
-                false,
-                "src.{0}{1}.dir"); //NOI18N
-       }
-        return this.sourceRoots;
+    public SourceRoots getSourceRoots() {
+        return sourceRoots;
     }
 
     @NonNull
     public PropertyEvaluator evaluator() {
         return eval;
+    }
+
+    @NonNull
+    ClassPathProviderImpl getClassPathProvider() {
+        return cpProvider;
+    }
+
+    @NonNull
+    private SourceRoots createRoots(final boolean tests) {
+        return SourceRoots.create(
+            updateHelper,
+            eval,
+            refHelper,
+            PROJECT_CONFIGURATION_NAMESPACE,
+            tests ? "test-roots" : "source-roots", //NOI18N
+            tests,
+            tests ? "test.{0}{1}.dir" : "src.{0}{1}.dir"); //NOI18N
     }
 
     @NonNull
@@ -154,8 +170,8 @@ public class J2MEProject implements Project {
                     this,
                     updateHelper,
                     eval,
-                    getSourceRoots(),
-                    null,
+                    sourceRoots,
+                    testRoots,
                     helper)
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);

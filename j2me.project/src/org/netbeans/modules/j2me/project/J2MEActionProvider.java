@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.j2me.project;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
@@ -115,6 +117,20 @@ class J2MEActionProvider extends BaseActionProvider {
         commands = Collections.unmodifiableMap(tmp);
     }
 
+    private static final Set<String> bkgScanSensitiveActions = Collections.unmodifiableSet(
+        new HashSet<String>(Arrays.asList(
+        COMMAND_RUN,
+        COMMAND_RUN_SINGLE,
+        COMMAND_DEBUG,
+        COMMAND_DEBUG_SINGLE,
+        COMMAND_DEBUG_STEP_INTO
+    )));
+
+    private static final Set<String>  needJavaModelActions = Collections.unmodifiableSet(
+        new HashSet<String>(Arrays.asList(
+        JavaProjectConstants.COMMAND_DEBUG_FIX
+    )));
+
     J2MEActionProvider(
         @NonNull J2MEProject project,
         @NonNull UpdateHelper updateHelper,
@@ -122,7 +138,14 @@ class J2MEActionProvider extends BaseActionProvider {
         @NonNull SourceRoots src,
         @NonNull SourceRoots test,
         @NonNull AntProjectHelper helper) {
-        super(project, updateHelper, eval, src, test, helper, null);
+        super(
+            project,
+            updateHelper,
+            eval,
+            src,
+            test,
+            helper,
+            new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
     }
 
     @Override
@@ -142,12 +165,12 @@ class J2MEActionProvider extends BaseActionProvider {
 
     @Override
     protected Set<String> getScanSensitiveActions() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return bkgScanSensitiveActions;
     }
 
     @Override
     protected Set<String> getJavaModelActions() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return needJavaModelActions;
     }
 
     @Override

@@ -95,6 +95,7 @@ public final class J2MEProjectBuilder {
 
     private static final Logger LOG = Logger.getLogger(J2MEProjectBuilder.class.getName());
     private static final String DEFAULT_MAIN_TEMPLATE = "Templates/j2me/Midlet.java";  //NOI18N
+    private static final SpecificationVersion VERSION_8 = new SpecificationVersion("8.0"); //NOI18N
     
     private final File projectDirectory;
     private final String name;
@@ -288,7 +289,12 @@ public final class J2MEProjectBuilder {
 
     @NonNull
     private SpecificationVersion getSourceLevel() {
-        return platform.getSpecification().getVersion();
+        final SpecificationVersion specVersion = platform.getSpecification().getVersion();
+        if (VERSION_8.compareTo(specVersion) <= 0) {
+            return new SpecificationVersion("1.8"); //NOI18N
+        } else {
+            return new SpecificationVersion("1.3"); //NOI18N
+        }
     }
     
         private static void registerRoots(
@@ -370,7 +376,7 @@ public final class J2MEProjectBuilder {
         if (!"j2me".equals(spec.getName())) {   //NOI18N
             throw new IllegalArgumentException("Invalid Java Platform type: " + spec.getName());    //NOI18N
         }
-        if (new SpecificationVersion("1.8").compareTo(spec.getVersion()) > 0) {   //NOI18N
+        if (VERSION_8.compareTo(spec.getVersion()) > 0) {   //NOI18N
             throw new IllegalArgumentException("Invalid Specification Version: " + spec.getVersion());    //NOI18N
         }
     }
@@ -406,7 +412,9 @@ public final class J2MEProjectBuilder {
             sourceRoots.appendChild(root);
             ep.setProperty("src.dir", srcRoot); // NOI18N
         }
-        data.appendChild (sourceRoots);        
+        data.appendChild (sourceRoots);
+        Element testRoots = doc.createElementNS(J2MEProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+        data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);        
         //Dist folder
         ep.setProperty(J2MEProjectProperties.DIST_DIR, distFolder != null ? distFolder : "dist"); // NOI18N
