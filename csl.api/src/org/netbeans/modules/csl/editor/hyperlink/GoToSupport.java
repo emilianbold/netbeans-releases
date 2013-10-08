@@ -66,6 +66,8 @@ import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionHandler2;
+import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
@@ -176,9 +178,19 @@ public class GoToSupport {
                         if (location[0] != DeclarationLocation.NONE && completer != null) {
                             ElementHandle element = location[0].getElement();
                             if (element != null) {
-                                String documentation = completer.document(info, element);
-                                if (documentation != null) {
-                                    result[0] = "<html><body>" + documentation; // NOI18N
+                                String documentationContent;
+                                if (completer instanceof CodeCompletionHandler2) {
+                                    Documentation documentation = ((CodeCompletionHandler2) completer).documentElement(info, element);
+                                    if (documentation != null) {
+                                        documentationContent = documentation.getContent();
+                                    } else {
+                                        documentationContent = completer.document(info, element);
+                                    }
+                                } else {
+                                    documentationContent = completer.document(info, element);
+                                }
+                                if (documentationContent != null) {
+                                    result[0] = "<html><body>" + documentationContent; // NOI18N
                                 }
                             }
                         }
