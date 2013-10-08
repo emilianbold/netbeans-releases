@@ -156,7 +156,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
         if (serverInstanceID == null) {
             serverInstanceID = jmp.getServerInstanceID();
-            if (DEV_NULL.equals(serverInstanceID)) {
+            if (DEV_NULL.equals(serverInstanceID) || serverInstanceID == null) {
                 err.println();
                 err.println();
                 err.println("NetBeans: No suitable Deployment Server is defined for the project or globally."); // NOI18N
