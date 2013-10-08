@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.model.settings.SettingsQName.Version;
 
 /**
@@ -110,9 +111,18 @@ public final class SettingsQNames {
     public final SettingsQName INTERACTIVEMODE; //NOI18N
     public final SettingsQName USEPLUGINREGISTRY; //NOI18N
     public final SettingsQName LOCALREPOSITORY; //NOI18N
-
+    
+    /** 
+     * in 1.1.0 schema only
+     */
+    public final @NullAllowed SettingsQName MIRROR_LAYOUT_110;
+    /** 
+     * in 1.1.0 schema only
+     */
+    public final @NullAllowed SettingsQName MIRROR_OF_LAYOUTS_110;
   
     private final Version version;
+    
     
     @Deprecated
     public SettingsQNames(boolean ns, boolean old) {
@@ -182,6 +192,14 @@ public final class SettingsQNames {
         USEPLUGINREGISTRY = new SettingsQName(SettingsQName.createQName("usePluginRegistry",version)); //NOI18N
         LOCALREPOSITORY = new SettingsQName(SettingsQName.createQName("localRepository",version)); //NOI18N
         INTERACTIVEMODE = new SettingsQName(SettingsQName.createQName("interactiveMode",version)); //NOI18N
+        
+        if (Version.NEW_110.equals(version)) {
+            MIRROR_LAYOUT_110 = new SettingsQName(SettingsQName.createQName("layout",version)); //NOI18N
+            MIRROR_OF_LAYOUTS_110 = new SettingsQName(SettingsQName.createQName("mirrorOfLayouts",version)); //NOI18N
+        } else {
+            MIRROR_LAYOUT_110 = null;
+            MIRROR_OF_LAYOUTS_110 = null;
+        }
 
     }
 
@@ -251,7 +269,14 @@ public final class SettingsQNames {
             LOCALREPOSITORY.getQName(),
         };
         List<QName> list = Arrays.asList(names);
-        return new HashSet<QName>(list);
+        HashSet<QName> toret = new HashSet<QName>(list);
+        if (MIRROR_LAYOUT_110 != null) { //in 1.1.0+
+            toret.add(MIRROR_LAYOUT_110.getQName());
+        }
+        if (MIRROR_OF_LAYOUTS_110 != null) {//in 1.1.0+
+            toret.add(MIRROR_OF_LAYOUTS_110.getQName());
+        }
+        return toret;
     }
     
 }
