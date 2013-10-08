@@ -67,6 +67,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigInternalValidator;
+import org.netbeans.modules.php.project.ui.actions.support.FileRunner;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
@@ -278,6 +279,7 @@ public final class InternalWebServer implements PropertyChangeListener {
                 // #225093
                 .showProgress(false)
                 .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
+                .outConvertorFactory(FileRunner.PHP_LINE_CONVERTOR_FACTORY)
                 .preExecution(new Runnable() {
                     @Override
                     public void run() {
