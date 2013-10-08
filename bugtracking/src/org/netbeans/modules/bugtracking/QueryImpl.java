@@ -134,6 +134,14 @@ public final class QueryImpl<Q, I>  {
         queryProvider.remove(data);
     }
     
+    public boolean canRename() {
+        return queryProvider.canRename(data);
+    }
+    
+    public void rename(String newName) {
+        queryProvider.rename(data, newName);
+    }
+    
     public String getTooltip() {
         return queryProvider.getTooltip(data);
     }
