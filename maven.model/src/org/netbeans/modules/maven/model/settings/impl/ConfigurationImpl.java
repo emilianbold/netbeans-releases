@@ -94,8 +94,7 @@ public class ConfigurationImpl extends SettingsComponentImpl implements Configur
             SettingsExtensibilityElement el = getModel().getFactory().createSettingsExtensibilityElement(
                     SettingsQName.createQName(
                         parameter,
-                        getModel().getSettingsQNames().isNSAware(),
-                        getModel().getSettingsQNames().isOldNS()));
+                        getModel().getSettingsQNames().getNamespaceVersion()));
             el.setElementText(value);
             addExtensibilityElement(el);
         }

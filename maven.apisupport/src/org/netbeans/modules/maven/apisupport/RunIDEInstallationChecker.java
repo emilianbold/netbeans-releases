@@ -96,6 +96,15 @@ public class RunIDEInstallationChecker implements PrerequisitesChecker {
         }
         return true;
     }
+    
+    static void setRunningIDEAsInstallation() {
+        String netbeansInstallation = new File(System.getProperty("netbeans.home")).getParent();
+        try {
+            defineIDE(netbeansInstallation);
+        } catch (IOException x) {
+            Exceptions.printStackTrace(x);
+        }
+    }
 
     private static void defineIDE(final String netbeansInstallation) throws IOException {
         FileObject settingsXml = FileUtil.toFileObject(MavenCli.DEFAULT_USER_SETTINGS_FILE);
@@ -112,7 +121,7 @@ public class RunIDEInstallationChecker implements PrerequisitesChecker {
                 netbeansIde.setId("netbeans-ide");
                 Activation activation = model.getFactory().createActivation();
                 // XXX why does the model not have this property??
-                QName ACTIVE_BY_DEFAULT = SettingsQName.createQName("activeByDefault", true, false);
+                QName ACTIVE_BY_DEFAULT = SettingsQName.createQName("activeByDefault", model.getSettingsQNames().getNamespaceVersion());
                 activation.setChildElementText("activeByDefault", "true", ACTIVE_BY_DEFAULT);
                 netbeansIde.setActivation(activation);
                 org.netbeans.modules.maven.model.settings.Properties properties = model.getFactory().createProperties();
