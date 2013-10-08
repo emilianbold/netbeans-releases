@@ -204,7 +204,7 @@ public final class POMQNames {
 
 
 
-    private boolean ns;
+    private final boolean ns;
 
     public POMQNames(boolean ns) {
         this.ns = ns;
