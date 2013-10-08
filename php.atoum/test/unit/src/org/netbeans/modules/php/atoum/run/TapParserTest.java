@@ -153,7 +153,7 @@ public class TapParserTest extends NbTestCase {
 
         TestSuiteVo suite3 = suites.get(2);
         assertEquals("my\\project\\tests\\units\\helloWorld", suite3.getName());
-        assertEquals("/home/gapon/NetBeansProjects/atoum/test/helloWorld.php", suite3.getFile());
+        assertEquals("C:\\\\My Documents\\\\myproject\\\\test\\\\helloWorld.php", suite3.getFile());
 
         List<TestCaseVo> testCases3 = suite3.getTestCases();
         assertEquals(1, testCases3.size());
@@ -164,7 +164,7 @@ public class TapParserTest extends NbTestCase {
         assertEquals("strings are not equals", testCase10.getMessage());
         assertEquals("string(10) \"Bye World!\"", testCase10.getDiff().getExpected());
         assertEquals("string(6) \"Hello!\"", testCase10.getDiff().getActual());
-        assertEquals("/home/gapon/NetBeansProjects/atoum/test/helloWorld.php", testCase10.getFile());
+        assertEquals("C:\\\\My Documents\\\\myproject\\\\test\\\\helloWorld.php", testCase10.getFile());
         assertEquals(31, testCase10.getLine());
         assertEquals(100L, testCase10.getTime());
     }
