@@ -78,8 +78,13 @@ public final class TapParser {
     public TapParser() {
     }
 
+    public static boolean isTestCaseStart(String line) {
+        return line.startsWith(OK_PREFIX)
+                || line.startsWith(NOT_OK_PREFIX);
+    }
+
     public TestSuiteVo parse(String input, long runtime) {
-        for (String line : input.split("\n|\r")) { // NOI18N
+        for (String line : input.split("\\r?\\n|\\r")) { // NOI18N
             parseLine(line.trim());
         }
         processComments();
