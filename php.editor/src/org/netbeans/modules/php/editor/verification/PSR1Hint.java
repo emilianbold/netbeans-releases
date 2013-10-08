@@ -144,7 +144,7 @@ public abstract class PSR1Hint extends HintRule {
     public static class MethodDeclarationHint extends PSR1Hint {
         private static final String HINT_ID = "PSR1.Hint.Method"; //NOI18N
         private static final String MAGIC_METHODS = "__(construct|destruct|call|callStatic|get|set|isset|unset|sleep|wakeup|toString|invoke|set_state|clone)"; //NOI18N
-        private static final Pattern CONSTANT_PATTERN = Pattern.compile("([a-z]|" + MAGIC_METHODS + ")[a-zA-Z0-9]*"); //NOI18N
+        private static final Pattern METHOD_PATTERN = Pattern.compile("([a-z]|" + MAGIC_METHODS + ")[a-zA-Z0-9]*"); //NOI18N
 
         @Override
         CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
@@ -162,7 +162,7 @@ public abstract class PSR1Hint extends HintRule {
             public void visit(MethodDeclaration node) {
                 Identifier functionNameNode = node.getFunction().getFunctionName();
                 String methodName = functionNameNode.getName();
-                if (methodName != null && !CONSTANT_PATTERN.matcher(methodName).matches()) {
+                if (methodName != null && !METHOD_PATTERN.matcher(methodName).matches()) {
                     createHint(functionNameNode, Bundle.PSR1MethodDeclarationHintText());
                 }
             }
@@ -204,8 +204,8 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         private static final class TypeDeclarationVisitor extends CheckVisitor {
-            private static final Pattern PHP52_NAME_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*_)+[A-Z][a-zA-Z0-9]+"); //NOI18N
-            private static final Pattern PHP53_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
+            private static final Pattern PHP52_TYPE_NAME_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*_)+[A-Z][a-zA-Z0-9]+"); //NOI18N
+            private static final Pattern PHP53_TYPE_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
             private final boolean isPhp52;
             private boolean isInNamedNamespaceDeclaration = false;
             private boolean isDeclaredType = false;
@@ -258,7 +258,7 @@ public abstract class PSR1Hint extends HintRule {
             @NbBundle.Messages("PSR1TypeDeclaration52HintText=Type names SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names.")
             private void checkPhp52Violations(Identifier typeNameNode) {
                 String typeName = typeNameNode.getName();
-                if (typeName != null && !PHP52_NAME_PATTERN.matcher(typeName).matches()) {
+                if (typeName != null && !PHP52_TYPE_NAME_PATTERN.matcher(typeName).matches()) {
                     createHint(typeNameNode, Bundle.PSR1TypeDeclaration52HintText());
                 }
             }
@@ -272,7 +272,7 @@ public abstract class PSR1Hint extends HintRule {
                 if (!isInNamedNamespaceDeclaration) {
                     createHint(typeNameNode, Bundle.PSR1TypeDeclaration53NoNsHintText());
                 } else {
-                    if (typeName != null && !PHP53_NAME_PATTERN.matcher(typeName).matches()) {
+                    if (typeName != null && !PHP53_TYPE_NAME_PATTERN.matcher(typeName).matches()) {
                         createHint(typeNameNode, Bundle.PSR1TypeDeclaration53HintText());
                     }
                 }

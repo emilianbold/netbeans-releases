@@ -45,6 +45,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.awt.Desktop;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -221,7 +222,8 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         }
 
         @Override
-        protected void loadURLInBrowser(URL url) {
+        protected void loadURLInBrowserInternal(URL url) {
+            assert !EventQueue.isDispatchThread();
             URL extURL = URLUtil.createExternalURL(url, false);
             try {
                 URI uri = extURL.toURI();
