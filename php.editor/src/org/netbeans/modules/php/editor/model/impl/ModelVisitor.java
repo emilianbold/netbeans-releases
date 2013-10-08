@@ -168,8 +168,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private volatile CodeMarkerBuilder markerBuilder;
     private final ModelBuilder modelBuilder;
     private final PHPParseResult info;
-    //@GuardedBy("this")
+    //@GuardedBy("lock")
     private boolean  askForEditorExtensions = true;
+    private final Object lock = new Object();
     private List<PhpBaseElement> baseElements;
     private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<>();
 
@@ -197,7 +198,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public List<PhpBaseElement> extendedElements() {
-        synchronized (this) {
+        synchronized (lock) {
             if (!askForEditorExtensions) {
                 return new ArrayList<>(baseElements);
             }
