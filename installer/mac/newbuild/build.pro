@@ -100,7 +100,7 @@
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
     <property name="mpkg.version_jdk" value=" ${jdk.version.number} Update ${jdk.update.number}"/> 
     <property name="jdk.bundle.files.prefix" value="jdk-${jdk.version.number}u${jdk.update.number}"/>
-    <property name="jdk.bundle.files.suffix" value="nb-dev"/>
+    <property name="jdk.bundle.files.suffix" value="nb-7_4"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.${jdk.version.number}.0_${jdk.update.number}.jdk/Contents/Home"/>
     <property name="jdk_bits_location" value="${jdk_builds_host}/${jdk7_builds_path}/all/b${jdk.build.number}/bundles/macosx-x64/jdk-${jdk.version.number}u${jdk.update.number}-${jdk.ea.text}macosx-x64.dmg"/>
