@@ -1,6 +1,14 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
 
+	changeset   : 265081:ccb1fab67b20
+
+	summary     : Switch from "ansi" to "xterm" as the default terminal
+	emulation type ($TERM)
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
 	op_ind() and op_cud() are now part of Ops.
 
 	op_line_feed() now implemented in terms of op_ind().
