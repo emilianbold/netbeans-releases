@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.net.*;
 
 import javax.swing.*;
@@ -160,7 +161,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     @Override
-    protected void loadURLInBrowser(URL url) {
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDdeBrowserImpl.setUrl: " + url); // NOI18N
         }

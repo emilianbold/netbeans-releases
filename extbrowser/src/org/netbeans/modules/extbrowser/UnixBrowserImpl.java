@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.io.*;
 import java.net.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
 
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.NbProcessDescriptor;
@@ -74,8 +74,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
     protected static final int CMD_TIMEOUT = 6;
     
     private static RequestProcessor RP = new RequestProcessor();
-    
-    private RequestProcessor outOfSwingProcessor;
     
     /** Creates modified NbProcessDescriptor that can be used to start
      * browser process when <CODE>-remote openURL()</CODE> options
@@ -143,17 +141,9 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
      *
      * @param url URL to show in the browser.
      */
-    protected void loadURLInBrowser(URL url) {
-        if (SwingUtilities.isEventDispatchThread ()) {
-            final URL newUrl = url;
-            getOutOfSwingProcessor().post (
-                new Runnable () {
-                    public void run () {
-                        UnixBrowserImpl.this.loadURLInBrowser (newUrl);
-                    }
-            });
-            return;
-        }
+    @Override
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
         
         NbProcessDescriptor cmd = extBrowserFactory.getBrowserExecutable ();    // NOI18N
         Process p;
@@ -189,15 +179,6 @@ public class UnixBrowserImpl extends ExtBrowserImpl {
         }
     }
     
-    private RequestProcessor getOutOfSwingProcessor(){
-        // Method has to be called only in Swing thread 
-        assert SwingUtilities.isEventDispatchThread();
-        if ( outOfSwingProcessor == null){
-            outOfSwingProcessor = new RequestProcessor(UnixBrowserImpl.class);
-        }
-        return outOfSwingProcessor;
-    }
-   
     /** Object that checks execution result
      * of browser invocation request.
      * <p>It can made another attempt to start the browser

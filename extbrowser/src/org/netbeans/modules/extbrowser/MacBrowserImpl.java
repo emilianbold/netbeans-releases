@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,7 +75,8 @@ public class MacBrowserImpl extends ExtBrowserImpl {
       *  Configured process is started to satisfy this request. 
       */
     @Override
-    protected void loadURLInBrowser(URL url) {
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
         if (url == null) {
             return;
         }
