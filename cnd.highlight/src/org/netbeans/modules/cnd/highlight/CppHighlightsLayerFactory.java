@@ -73,7 +73,12 @@ public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
                     SemanticHighlighter.class.getName(), 
                     ZOrder.SYNTAX_RACK.forPosition(2000),
                     true,
-                    SemanticHighlighter.getHighlightsBag(context.getDocument())),
+                    SemanticHighlighter.getHighlightsBag(context.getDocument(), false)),
+                HighlightsLayer.create(
+                    SemanticHighlighter.class.getName(), 
+                    ZOrder.SYNTAX_RACK.forPosition(1500),
+                    true,
+                    SemanticHighlighter.getHighlightsBag(context.getDocument(), true)),
                 HighlightsLayer.create(
                     MarkOccurrencesHighlighter.class.getName(), 
                     ZOrder.CARET_RACK.forPosition(1000),
