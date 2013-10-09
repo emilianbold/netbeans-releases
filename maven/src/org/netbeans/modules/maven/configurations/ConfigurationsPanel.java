@@ -315,7 +315,7 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     if (conf != null) {
         NewConfigurationPanel pnl = new NewConfigurationPanel();
         pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Clone_Config"));
-//        pnl.setConfigurationId(conf.getId());
+        pnl.setConfigurationId(conf.getId() + "_clone");
         pnl.setProfiles(conf.getActivatedProfiles());
         pnl.setProperties(ActionMappings.createPropertiesList(conf.getProperties()));
         pnl.setShared(conf.isShared());
