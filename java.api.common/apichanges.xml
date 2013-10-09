@@ -105,6 +105,22 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="BootClassPathImplementation-platform-type">
+            <api name="java-api-common"/>
+            <summary>Extended <code>BootClassPathImplementation</code> and <code>ClassPathProviderImpl</code> to support non j2se platforms</summary>
+            <version major="1" minor="59"/>
+            <date day="9" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extended <code>BootClassPathImplementation</code> and <code>ClassPathProviderImpl</code> to support non j2se platforms.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathProviderImpl"/>
+            <class package="org.netbeans.modules.java.api.common.classpath" name="ClassPathSupportFactory"/>
+            <class package="org.netbeans.modules.java.api.common.util" name="CommonProjectUtils"/>
+        </change>
         <change id="BaseActionProvider.Callback3">
             <api name="java-api-common"/>
             <summary>Added <code>BaseActionProvider.Callback3</code> with a method providing additional build properties.</summary>
