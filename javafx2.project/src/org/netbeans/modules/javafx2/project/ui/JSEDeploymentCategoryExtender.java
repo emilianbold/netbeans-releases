@@ -80,9 +80,7 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
         boolean seProject = false;
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            boolean fxEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
-            boolean meEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAME_ENABLED));
-            seProject = !fxEnabled && !meEnabled;
+            seProject = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
 
             if(seProject) {
                 final JFXProjectProperties props = JFXProjectProperties.getInstance(project.getLookup());
