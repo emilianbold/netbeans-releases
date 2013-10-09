@@ -22,15 +22,18 @@
                   <Component id="jScrollPane1" pref="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="btnAdd" linkSize="1" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnActivate" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="btnEdit" linkSize="1" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="103" groupAlignment="1" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="btnAdd" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnActivate" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="btnRemove" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="btnRemove" linkSize="1" alignment="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnEdit" linkSize="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnClone" linkSize="1" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -41,17 +44,19 @@
               <Component id="lblConfigurations" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Component id="jScrollPane1" pref="227" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="btnActivate" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="btnAdd" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnClone" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnEdit" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnRemove" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="81" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
-                  <Component id="jScrollPane1" pref="211" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -170,6 +175,16 @@
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnClone">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/configurations/Bundle.properties" key="ConfigurationsPanel.btnClone.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCloneActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
