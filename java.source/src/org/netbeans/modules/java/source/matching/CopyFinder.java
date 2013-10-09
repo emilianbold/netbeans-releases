@@ -364,10 +364,19 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 if (designed != null && designed.getKind() != TypeKind.ERROR) {
                     TypeMirror real = info.getTrees().getTypeMirror(currentPath);
 
-                    if (real != null && !IGNORE_KINDS.contains(real.getKind()))
-                        bind = info.getTypes().isAssignable(real, designed);
-                    else
+                    if (real != null && !IGNORE_KINDS.contains(real.getKind())) {
+                        // special hack: if the designed type is DECLARED (assuming a boxed primitive) and the real type is 
+                        // not DECLARED or is null (assuming a real primitive), do not treat them as assignable.
+                        // this will stop matching constraint to boxed types against primitive subexpressions
+                        if (designed.getKind() == TypeKind.DECLARED &&
+                            real.getKind().ordinal() <= TypeKind.DOUBLE.ordinal()) {
+                            bind = false;
+                        } else {
+                            bind = info.getTypes().isAssignable(real, designed);
+                        }
+                    } else {
                         bind = false;
+                    }
                 } else {
                     bind = designed == null;
                 }
