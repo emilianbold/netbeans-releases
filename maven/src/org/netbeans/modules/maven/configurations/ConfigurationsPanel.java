@@ -314,12 +314,12 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
     if (conf != null) {
         NewConfigurationPanel pnl = new NewConfigurationPanel();
-        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Edit_Config"));
+        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Clone_Config"));
 //        pnl.setConfigurationId(conf.getId());
         pnl.setProfiles(conf.getActivatedProfiles());
         pnl.setProperties(ActionMappings.createPropertiesList(conf.getProperties()));
         pnl.setShared(conf.isShared());
-        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Edit_Config"));
+        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Clone_Config"));
         Object ret = DialogDisplayer.getDefault().notify(dd);
         if (ret == DialogDescriptor.OK_OPTION) {
             ModelHandle2.Configuration newconf = ModelHandle2.createCustomConfiguration(pnl.getConfigurationId());
