@@ -72,6 +72,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.api.J2SECustomPropertySaver;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
@@ -167,8 +168,8 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
         Parameters.notNull("evt", evt); //NOI18N
         final String propName = evt.getPropertyName();
         if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName) ||
-            J2SEProjectProperties.JAVAC_TARGET.equals(propName) ||
-            J2SEProjectProperties.JAVAC_PROFILE.equals(propName)) {
+            ProjectProperties.JAVAC_TARGET.equals(propName) ||
+            ProjectProperties.JAVAC_PROFILE.equals(propName)) {
             resetAndFire();
         }
     }
@@ -527,13 +528,13 @@ public class RuntimePlatformProblemsProvider implements ProjectProblemsProvider,
                     final J2SEProject j2sePrj = prj.getLookup().lookup(J2SEProject.class);
                     if (j2sePrj != null) {
                         final EditableProperties props = j2sePrj.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.setProperty(J2SEProjectProperties.JAVAC_SOURCE, jp.getSpecification().getVersion().toString());
-                        props.setProperty(J2SEProjectProperties.JAVAC_TARGET, jp.getSpecification().getVersion().toString());
+                        props.setProperty(ProjectProperties.JAVAC_SOURCE, jp.getSpecification().getVersion().toString());
+                        props.setProperty(ProjectProperties.JAVAC_TARGET, jp.getSpecification().getVersion().toString());
                         final SourceLevelQuery.Profile profile = getPlatformProfile(jp);
                         if (profile == SourceLevelQuery.Profile.DEFAULT) {
-                            props.remove(J2SEProjectProperties.JAVAC_PROFILE);
+                            props.remove(ProjectProperties.JAVAC_PROFILE);
                         } else {
-                            props.setProperty(J2SEProjectProperties.JAVAC_PROFILE, profile.getName());
+                            props.setProperty(ProjectProperties.JAVAC_PROFILE, profile.getName());
                         }
                         j2sePrj.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                         ProjectManager.getDefault().saveProject(prj);

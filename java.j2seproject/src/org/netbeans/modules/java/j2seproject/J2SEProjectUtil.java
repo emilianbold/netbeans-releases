@@ -52,7 +52,6 @@ import java.util.Map.Entry;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -114,7 +113,7 @@ public class J2SEProjectUtil {
     
     public static String getBuildXmlName (final J2SEProject project) {
         assert project != null;
-        String buildScriptPath = project.evaluator().getProperty(J2SEProjectProperties.BUILD_SCRIPT);
+        String buildScriptPath = project.evaluator().getProperty(ProjectProperties.BUILD_SCRIPT);
         if (buildScriptPath == null) {
             buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
         }

@@ -98,7 +98,6 @@ import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -151,7 +150,6 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.RequestProcessor;
-import org.openide.xml.XMLUtil;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -362,7 +360,7 @@ public final class J2SEProject implements Project {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux, final J2SEProjectOperations ops) {
-        final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
+        final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
         final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
@@ -382,7 +380,7 @@ public final class J2SEProject implements Project {
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
-            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2SEProjectProperties.DIST_DIR)),
+            QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
             QuerySupport.createSharabilityQuery2(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new CoSAwareFileBuiltQueryImpl(QuerySupport.createFileBuiltQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()), this),
             new RecommendedTemplatesImpl (this.updateHelper),
@@ -407,8 +405,8 @@ public final class J2SEProject implements Project {
             LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
-            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
-            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, J2SEProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
+            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
             new J2SEProjectPlatformImpl(this)
         );
@@ -672,7 +670,7 @@ public final class J2SEProject implements Project {
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
-            String prop = evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
+            String prop = evaluator().getProperty(ProjectProperties.SOURCE_ENCODING);
             if (prop != null) {
                 try {
                     Charset.forName(prop);
@@ -737,7 +735,7 @@ public final class J2SEProject implements Project {
         @Override
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", J2SEProjectProperties.BUILD_SCRIPT), // NOI18N
+                helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR, "dist.jar", evaluator(), "jar", "clean", ProjectProperties.BUILD_SCRIPT), // NOI18N
             };
         }
 
