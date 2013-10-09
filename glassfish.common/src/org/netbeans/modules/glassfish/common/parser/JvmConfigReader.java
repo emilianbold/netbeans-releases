@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.glassfish.common;
+package org.netbeans.modules.glassfish.common.parser;
 
 import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
@@ -51,7 +51,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
