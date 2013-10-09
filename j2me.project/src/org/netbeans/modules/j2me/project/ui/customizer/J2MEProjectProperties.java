@@ -55,35 +55,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
  * @author Tomas Zezula
  */
 public final class J2MEProjectProperties {
-
-    public static final String DIST_JAR ="dist.jar";    //NOI18N //Todo: move to ProjectProperties
-    public static final String DIST_DIR ="dist.dir";    //NOI18N //Todo: move to ProjectProperties
-    public static final String JAR_COMPRESS = "jar.compress";   //NOI18N    //Todo: move to ProjectProperties
-    public static final String DEBUG_CLASSPATH = "debug.classpath"; //NOI18N    //Todo: move to ProjectProperties
-    public static final String JAVAC_COMPILERARGS = "javac.compilerargs"; //NOI18N    //Todo: move to ProjectProperties
-    public static final String JAVAC_SOURCE = "javac.source"; //NOI18N    //Todo: move to ProjectProperties
-    public static final String JAVAC_TARGET = "javac.target"; //NOI18N    //Todo: move to ProjectProperties
-    public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N    //Todo: move to ProjectProperties
-    public static final String PLATFORM_ACTIVE = "platform.active"; //NOI18N //Todo: move to ProjectProperties
-    public static final String BUILD_GENERATED_SOURCES_DIR = "build.generated.sources.dir"; //NOI18N //Todo: move to ProjectProperties
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; //NOI18N //Todo: move to ProjectProperties
-
-    public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N  //Todo: move to ProjectProperties
-    public static final String JAVADOC_USE="javadoc.use"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_NO_INDEX="javadoc.noindex"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_AUTHOR="javadoc.author"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N //Todo: move to ProjectProperties
-    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N //Todo: move to ProjectProperties
-
-    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N  //Todo: move to ProjectProperties
-    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N  //Todo: move to ProjectProperties
-    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N //Todo: move to ProjectProperties
-
+        
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
 

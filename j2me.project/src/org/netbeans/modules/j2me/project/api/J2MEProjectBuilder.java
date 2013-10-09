@@ -417,22 +417,22 @@ public final class J2MEProjectBuilder {
         data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);        
         //Dist folder
-        ep.setProperty(J2MEProjectProperties.DIST_DIR, distFolder != null ? distFolder : "dist"); // NOI18N
-        ep.setComment(J2MEProjectProperties.DIST_DIR, new String[] {"# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.dir")}, false); // NOI18N
-        ep.setProperty(J2MEProjectProperties.DIST_JAR, "${"+J2MEProjectProperties.DIST_DIR+"}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
+        ep.setProperty(ProjectProperties.DIST_DIR, distFolder != null ? distFolder : "dist"); // NOI18N
+        ep.setComment(ProjectProperties.DIST_DIR, new String[] {"# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.dir")}, false); // NOI18N
+        ep.setProperty(ProjectProperties.DIST_JAR, "${"+ProjectProperties.DIST_DIR+"}/" + PropertyUtils.getUsablePropertyName(name) + ".jar"); // NOI18N
         //Classpaths
         ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, compileClassPath); // NOI18N
         ep.setProperty(ProjectProperties.JAVAC_PROCESSORPATH, new String[] {"${"+ProjectProperties.JAVAC_CLASSPATH+"}"}); // NOI18N
         ep.setProperty(ProjectProperties.RUN_CLASSPATH, runtimeClassPath);
-        ep.setProperty(J2MEProjectProperties.DEBUG_CLASSPATH, new String[] { // NOI18N
+        ep.setProperty(ProjectProperties.DEBUG_CLASSPATH, new String[] { // NOI18N
             "${"+ProjectProperties.RUN_CLASSPATH+"}", // NOI18N
         });
-        ep.setComment(J2MEProjectProperties.DEBUG_CLASSPATH, new String[] { // NOI18N
+        ep.setComment(ProjectProperties.DEBUG_CLASSPATH, new String[] { // NOI18N
             "# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_debug.transport"),    //NOI18N
             "#debug.transport=dt_socket"    //NOI18N
         }, false);
         //Jar options
-        ep.setProperty(J2MEProjectProperties.JAR_COMPRESS, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAR_COMPRESS, "false"); // NOI18N
         //Main class
         ep.setProperty(
             ProjectProperties.MAIN_CLASS,
@@ -446,13 +446,13 @@ public final class J2MEProjectBuilder {
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ""); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, "${build.generated.sources.dir}/ap-source-output"); // NOI18N
         ep.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, ""); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVAC_COMPILERARGS, ""); // NOI18N
-        ep.setComment(J2MEProjectProperties.JAVAC_COMPILERARGS, new String[] {
+        ep.setProperty(ProjectProperties.JAVAC_COMPILERARGS, ""); // NOI18N
+        ep.setComment(ProjectProperties.JAVAC_COMPILERARGS, new String[] {
             "# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_javac.compilerargs"), // NOI18N
         }, false);
-        ep.setProperty(J2MEProjectProperties.JAVAC_SOURCE, sourceLevel.toString());
-        ep.setProperty(J2MEProjectProperties.JAVAC_TARGET, sourceLevel.toString());
-        ep.setProperty(J2MEProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVAC_SOURCE, sourceLevel.toString());
+        ep.setProperty(ProjectProperties.JAVAC_TARGET, sourceLevel.toString());
+        ep.setProperty(ProjectProperties.JAVAC_DEPRECATION, "false"); // NOI18N
 
         //Build properties
         ep.setProperty("build.generated.dir", "${build.dir}/generated"); // NOI18N
@@ -460,38 +460,38 @@ public final class J2MEProjectBuilder {
         ep.setProperty(ProjectProperties.BUILD_DIR, "build"); // NOI18N
         ep.setComment(ProjectProperties.BUILD_DIR, new String[] {"# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_build.dir")}, false); // NOI18N
         ep.setProperty(ProjectProperties.BUILD_CLASSES_DIR, "${"+ProjectProperties.BUILD_DIR+"}/classes"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.BUILD_GENERATED_SOURCES_DIR, "${"+ProjectProperties.BUILD_DIR+"}/generated-sources"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_GENERATED_SOURCES_DIR, "${"+ProjectProperties.BUILD_DIR+"}/generated-sources"); // NOI18N
+        ep.setProperty(ProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
 
         //Platform
-        ep.setProperty(J2MEProjectProperties.PLATFORM_ACTIVE, platformId); // NOI18N
+        ep.setProperty(ProjectProperties.PLATFORM_ACTIVE, platformId); // NOI18N
 
         //Javadoc Properties
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_USE, "true"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_ENCODING, "${"+J2MEProjectProperties.SOURCE_ENCODING+"}"); // NOI18N
-        ep.setProperty(J2MEProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_USE, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_NAVBAR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_NO_INDEX, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_SPLIT_INDEX, "true"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_AUTHOR, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_VERSION, "false"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_WINDOW_TITLE, ""); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_ENCODING, "${"+ProjectProperties.SOURCE_ENCODING+"}"); // NOI18N
+        ep.setProperty(ProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         Charset enc = FileEncodingQuery.getDefaultEncoding();
-        ep.setProperty(J2MEProjectProperties.SOURCE_ENCODING, enc.name());
+        ep.setProperty(ProjectProperties.SOURCE_ENCODING, enc.name());
 
         //Manifest file
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
         if (buildXmlName != null) {
-            ep.put(J2MEProjectProperties.BUILD_SCRIPT, buildXmlName);
+            ep.put(ProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
 
-        ep.setProperty(J2MEProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
-        ep.setComment(J2MEProjectProperties.DIST_ARCHIVE_EXCLUDES,
+        ep.setProperty(ProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
+        ep.setComment(ProjectProperties.DIST_ARCHIVE_EXCLUDES,
                 new String[] {
                     "# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.archive.excludes") //NOI18N
                 },

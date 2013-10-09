@@ -178,7 +178,7 @@ public class J2MEProject implements Project {
                     testRoots,
                     helper),
                 cpProvider,
-                QuerySupport.createFileEncodingQuery(eval, J2MEProjectProperties.SOURCE_ENCODING),
+                QuerySupport.createFileEncodingQuery(eval, ProjectProperties.SOURCE_ENCODING),
                 QuerySupport.createSourceLevelQuery2(eval),
                 QuerySupport.createSources(
                     this,
@@ -186,7 +186,7 @@ public class J2MEProject implements Project {
                     eval,
                     sourceRoots,
                     testRoots,
-                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, J2MEProjectProperties.DIST_DIR))
+                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR))
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
