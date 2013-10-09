@@ -43,25 +43,25 @@
  */
 package org.netbeans.performance.j2se;
 
-import org.netbeans.performance.j2se.prepare.*;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.performance.j2se.prepare.PrepareIDEForComplexMeasurements;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
 public class MeasureJ2SEPrepareTest {
-
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Prepare suite");
         System.setProperty("suitename", MeasureJ2SEPrepareTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(PrepareIDEForComplexMeasurements.class, ".*", ".*"));
-
+        suite.addTest(JellyTestCase.emptyConfiguration()
+                .addTest(PrepareIDEForComplexMeasurements.class)
+                .suite());
         return suite;
     }
 }
