@@ -412,6 +412,36 @@ public final class PlatformUiSupport {
     }
 
     /**
+     * Return a {@link SourceLevelQuery.Profile} for an item obtained from the ComboBoxModel created by
+     * the {@link PlatformUiSupport#createProfileComboBoxModel} method.
+     * This method can return <code>null</code> if the profile is broken.
+     * @param profileKey an item obtained from {@link ComboBoxModel} created by
+     *                    {@link PlatformUiSupport#createProfileComboBoxModel}.
+     * @return {@link SourceLevelQuery.Profile} or <code>null</code> in case when profile is broken.
+     * @throws IllegalArgumentException if the input parameter is not an object created by profile combobox model.
+     * @since 1.57
+     */
+    @CheckForNull
+    public static SourceLevelQuery.Profile getProfile(@NonNull final Object profileKey) {
+        Parameters.notNull("profileKey", profileKey);   //NOI18N
+        if (profileKey instanceof Union2) {
+            final Union2 u2 = (Union2)profileKey;
+            if (u2.hasFirst()) {
+                final Object profile = u2.first();
+                if (profile instanceof SourceLevelQuery.Profile) {
+                    return (SourceLevelQuery.Profile) profile;
+                } else {
+                    throw new IllegalArgumentException(profile.getClass().getName());
+                }
+            } else {
+                return null;
+            }
+        } else {
+            throw  new IllegalArgumentException(profileKey.getClass().getName());
+        }
+    }
+
+    /**
      * Create {@link ComboBoxModel} of source levels for active platform.
      * The model listens on the platform's {@link ComboBoxModel} and update its
      * state according to the changes. It is possible to define minimal JDK version.
@@ -1044,6 +1074,7 @@ public final class PlatformUiSupport {
         public void setSelectedItem(@NullAllowed final Object anItem) {
             assert anItem == null || anItem instanceof Union2 : anItem;
             selectedItem = (Union2<SourceLevelQuery.Profile,String>) anItem;
+            fireContentsChanged(this, -1, -1);
         }
 
         @Override

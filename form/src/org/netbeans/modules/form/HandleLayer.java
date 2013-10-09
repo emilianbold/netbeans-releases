@@ -1975,7 +1975,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 } else {
                     selectOtherComponentsNode();
                 }
-                showContextMenu(p);
+                showContextMenu(p); // context menu on Windows on mouse release
             }
         }
 
@@ -2043,8 +2043,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     } else {
                         selectOtherComponentsNode();
                     }
-                    if (popup) {
-                        showContextMenu(p); // on Mac show context menu on Ctrl+left mouse press (not release)
+                    if (popup) { // context menu on Mac on Ctrl+left mouse press, on Linux on right mouse press
+                        showContextMenu(p); 
                     }
                 }
                 draggingEnded = false; // reset flag preventing dragging from start
