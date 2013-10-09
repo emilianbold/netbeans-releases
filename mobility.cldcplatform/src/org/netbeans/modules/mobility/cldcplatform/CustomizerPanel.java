@@ -139,8 +139,17 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         initComponents();
         infoPanel.setEditorKitForContentType("text/html", new HTMLEditorKit()); // NOI18N
         infoPanel.setContentType("text/html;charset=UTF-8"); // NOI18N
-        if (platform.getType().equalsIgnoreCase( "custom")) jTabbedPane1.remove(jPanel5); //NOI18N
-        else jTabbedPane1.remove(jPanel6);
+        if (platform.getType().equalsIgnoreCase("custom")) {
+            jTabbedPane1.remove(jPanel5); //NOI18N
+            if (platform.isMe3Platform()) {
+                jTextFieldPreverify.setEnabled(true);
+            }
+        } else {
+            jTabbedPane1.remove(jPanel6);
+        }
+        if (!platform.isMe3Platform()) {
+            jTabbedPane1.remove(jPanel3);
+        }
         mSources = new DefaultListModel();
         lSourcePaths.setModel(mSources);
         mJavaDocs = new DefaultListModel();
@@ -543,6 +552,8 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 6, 0, 0);
         jPanel6.add(jLabel7, gridBagConstraints);
+
+        jTextFieldPreverify.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;

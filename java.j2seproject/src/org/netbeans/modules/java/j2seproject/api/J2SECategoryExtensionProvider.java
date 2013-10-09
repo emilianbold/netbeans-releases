@@ -64,7 +64,7 @@ public interface J2SECategoryExtensionProvider {
     /**
      * Enumeration of categories for which extension is currently allowed
      */
-    enum ExtensibleCategory { PACKAGING, RUN, APPLICATION, DEPLOYMENT }
+    enum ExtensibleCategory { COMPILING, PACKAGING, RUN, APPLICATION, DEPLOYMENT }
             
     /**
      * Provides identifier of category whose panel should be extended by this component provider
