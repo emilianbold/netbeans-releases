@@ -41,42 +41,44 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.j2se.startup;
 
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 /**
- * Measure startup time by org.netbeans.core.perftool.StartLog.
- * Number of starts with new userdir is defined by property
+ * Measure startup time by org.netbeans.core.perftool.StartLog. Number of starts
+ * with new userdir is defined by property
  * <br> <code> org.netbeans.performance.repeat.with.new.userdir </code>
  * <br> and number of starts with old userdir is defined by property
- * <br> <code> org.netbeans.performance.repeat </code>
- * Run measurement defined number times, but forget first measured value,
- * it's a attempt to have still the same testing conditions with
- * loaded and cached files.
+ * <br> <code> org.netbeans.performance.repeat </code> Run measurement defined
+ * number times, but forget first measured value, it's a attempt to have still
+ * the same testing conditions with loaded and cached files.
  *
  * @author mmirilovic@netbeans.org
  */
 public class ComplexJavaProjectStartup extends MeasureStartupTimeTestCase {
 
-    public static final String suiteName="J2SE Startup suite";
-    
-    /** Define testcase
-     * @param testName name of the testcase
+    public static final String suiteName = "J2SE Startup suite";
+
+    /**
+     * Define test case
+     *
+     * @param testName name of the test case
      */
     public ComplexJavaProjectStartup(String testName) {
         super(testName);
     }
-    
-    /** Testing start of IDE with measurement of the startup time.
-     * @throws IOException
+
+    /**
+     * Testing start of IDE with measurement of the startup time.
+     *
+     * @throws java.io.IOException
      */
     public void testStartIDEWithOpenedFiles() throws java.io.IOException {
         measureComplexStartupTime("Startup Time with 10 opened java files");
         PerformanceData[] pData = this.getPerformanceData();
-        for (int i = 0; i < pData.length; i++) {
-            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData[i]);
+        for (PerformanceData pData1 : pData) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData1);
         }
     }
 }

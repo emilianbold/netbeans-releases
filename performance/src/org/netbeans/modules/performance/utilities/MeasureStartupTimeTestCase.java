@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -191,7 +191,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
         try {
             long startTime = runIDE(getIdeHome(), userdir, measureFile, timeout);
-            Hashtable measuredValues = parseMeasuredValues(measureFile);
+            HashMap<String, Long> measuredValues = parseMeasuredValues(measureFile);
 
             Object tempValue = measuredValues.get("IDE starts t = ");
             long runTime = 0;
@@ -220,7 +220,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
             for (String[] data : STARTUP_DATA) {
                 if (measuredValues.containsKey(data[1])) {
-                    long value = ((Long) measuredValues.get(data[1])).longValue();
+                    long value = measuredValues.get(data[1]);
                     System.out.println(data[0] + "=" + value);
                     reportPerformance(performanceDataName + " | " + data[0], value, "ms", 1);
                 } else {
@@ -368,9 +368,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {
             ie.printStackTrace(System.err);
-            IOException ioe = new IOException("Caught InterruptedException :" + ie.getMessage());
-            ioe.initCause(ie);
-            throw ioe;
+            throw new IOException("Caught InterruptedException :" + ie.getMessage(), ie);
         }
 
         return startTime;
@@ -408,7 +406,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                 File nbjunit = new File(MeasureStartupTimeTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 File harness = nbjunit.getParentFile().getParentFile();
                 Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
-                TreeSet<File> sorted = new TreeSet<File>();
+                TreeSet<File> sorted = new TreeSet<>();
                 for (File p : harness.getParentFile().listFiles()) {
                     if (p.getName().startsWith("platform")) {
                         sorted.add(p);
@@ -485,11 +483,13 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      *
      * @param measuredFile file where the startup time is stored
      * @return measured startup time
+     * @throws
+     * org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase.CantParseMeasuredValuesException
      */
-    protected static Hashtable parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
-        Hashtable<String, Long> measuredValues = new Hashtable<String, Long>();
+    protected static HashMap<String, Long> parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
+        HashMap<String, Long> measuredValues = new HashMap<>();
 
-        Hashtable<String, String> startup_data = new Hashtable<String, String>(STARTUP_DATA.length);
+        HashMap<String, String> startup_data = new HashMap<>(STARTUP_DATA.length);
         for (String[] data : STARTUP_DATA) {
             startup_data.put(data[1], data[2]);
         }
@@ -548,8 +548,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
     public static class ThreadReader implements Runnable {
 
         private Thread thread;
-        private BufferedReader br;
-        private PrintStream out;
+        private final BufferedReader br;
+        private final PrintStream out;
         private String s;
 
         public ThreadReader(InputStream in, PrintStream out) {
