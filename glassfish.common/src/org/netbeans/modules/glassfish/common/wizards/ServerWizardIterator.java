@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common.wizards;
 
+import org.netbeans.modules.glassfish.common.ServerDetails;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;

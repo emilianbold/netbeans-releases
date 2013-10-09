@@ -60,6 +60,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
+import org.netbeans.modules.glassfish.common.parser.DomainXMLChangeListener;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
 import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.Util;
@@ -735,6 +736,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      *  is not running at all. */
     private transient volatile Process process;
 
+    /** Configuration changes listener watching <code>domain.xml</code> file. */
+    private transient final DomainXMLChangeListener domainXMLListener;
+
     private transient InstanceContent ic;
     private transient Lookup localLookup;
     private transient Lookup full;
@@ -774,6 +778,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 ip.put(GlassfishModule.HTTPPORT_ATTR,
                         Integer.toString(pc.getHttpPort()));
             }
+            domainXMLListener = new DomainXMLChangeListener(this, 
+                    ServerUtils.getDomainConfigFile(domainDirPath, domainName));
+        } else {
+            domainXMLListener = null;
         }
         this.properties = prepareProperties(ip);
         if (!isPublicAccess()) {
@@ -851,6 +859,17 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Get GlassFish configuration file <code>domain.xml</code> changes
+     * listener.
+     * <p/>
+     * @return GlassFish configuration file <code>domain.xml</code> changes
+     *         listener. 
+     */
+    public DomainXMLChangeListener getDomainXMLChangeListener() {
+        return domainXMLListener;
+    }
+
+    /**
      * Set process information of local running server started from IDE.
      * <p/>
      * @param process Process information of local running server started
@@ -895,13 +914,35 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
-     * Get GlassFish server port from stored properties.
+     * Get GlassFish server HTTP port from stored properties.
      * <p/>
-     * @return GlassFish server port.
+     * @return GlassFish server HTTP port.
      */
     @Override
     public int getPort() {
         return intProperty(GlassfishModule.HTTPPORT_ATTR);
+    }
+
+    /**
+     * Set GlassFish server HTTP port in stored properties.
+     * <p/>
+     * @param httpPort GlassFish server HTTP port to be stored.
+     * @throws NumberFormatException if <code>httpPort</code> does not contain
+     *                               valid integer value.
+     */
+    public void setHttpPort(String httpPort) {
+        Integer.parseInt(httpPort);
+        properties.put(GlassfishModule.HTTPPORT_ATTR, httpPort);
+    }
+
+    /**
+     * Set GlassFish server HTTP port in stored properties.
+     * <p/>
+     * @param httpPort GlassFish server HTTP port to be stored.
+     */
+    public void setHttpPort(int httpPort) {
+        properties.put(
+                GlassfishModule.HTTPPORT_ATTR, Integer.toString(httpPort));
     }
 
     /**
@@ -912,6 +953,27 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     @Override
     public int getAdminPort() {
         return intProperty(GlassfishModule.ADMINPORT_ATTR);
+    }
+
+    /**
+     * Set GlassFish server administration port in stored properties.
+     * <p/>
+     * @param adminPort GlassFish server administration port to be stored.
+     * @throws NumberFormatException if <code>httadminPortpPort</code> does not contain
+     *                               valid integer value.
+     */
+    public void setAdminPort(String adminPort) {
+        properties.put(GlassfishModule.ADMINPORT_ATTR, adminPort);
+    }
+
+    /**
+     * Set GlassFish server administration port in stored properties.
+     * <p/>
+     * @param adminPort GlassFish server administration port to be stored.
+     */
+    public void setAdminPort(int adminPort) {
+        properties.put(
+                GlassfishModule.ADMINPORT_ATTR, Integer.toString(adminPort));
     }
 
     /**

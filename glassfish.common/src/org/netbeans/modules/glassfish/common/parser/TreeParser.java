@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.spi;
+package org.netbeans.modules.glassfish.common.parser;
 
 import java.io.File;
 import java.io.FileReader;
