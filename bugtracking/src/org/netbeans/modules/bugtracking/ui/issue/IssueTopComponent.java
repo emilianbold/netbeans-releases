@@ -70,7 +70,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -330,7 +330,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
-    private BugtrackingController controller;
+    private IssueController controller;
     private void onRepoSelected() {
         if(prepareTask != null) {
             prepareTask.cancel();
@@ -555,7 +555,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         }
     }
 
-    private BugtrackingController getController() {
+    private IssueController getController() {
         return issue.getController();
     }
 

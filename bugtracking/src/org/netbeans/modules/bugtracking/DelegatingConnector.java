@@ -132,12 +132,6 @@ public class DelegatingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public IssueFinder getIssueFinder() {
-        BugtrackingConnector d = getDelegate();
-        return d != null ? d.getIssueFinder() : null;
-    }
-
-    @Override
     public Repository createRepository() {
         BugtrackingConnector d = getDelegate();
         return d != null ? d.createRepository() : null;

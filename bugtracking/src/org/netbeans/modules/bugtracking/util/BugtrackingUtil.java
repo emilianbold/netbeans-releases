@@ -392,10 +392,6 @@ public class BugtrackingUtil {
         return false;
     }
 
-    public static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly) {
-        QueryAction.openQuery(query, repository, suggestedSelectionOnly);
-    }
-
     public static void openIssue(File file, String issueId) {
         IssueAction.openIssue(file, issueId);
     }

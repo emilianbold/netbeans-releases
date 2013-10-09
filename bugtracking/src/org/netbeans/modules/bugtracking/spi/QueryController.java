@@ -46,44 +46,71 @@ import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
- *
+ * Provides access to a {@link Query}-s UI.
+ * <br/>
+ * Typically a Query UI should provide at least a query criteria 
+ * editor available when creating new queries or modifying existing ones. 
+ * In case it isn't possible to create or modify a query on the client it is 
+ * possible to provide no QueryController and no UI at all - e.g. an immutable 
+ * server defined query with no remote api to modify the criteria.
+ * <br/>
+ * The results of an query (see {@link QueryProvider<Q>#getIssues(java.lang.Object)}  
+ * are always presented in the TaskDashboard, but eventually, in case the need appears,
+ * it is also possible for the bugtracking plugin implementation to provide a
+ * customized result view - e.g a table listing more attributes than then TasksDashboard does.
+ * 
  * @author Tomas Stupka
  */
-public abstract class QueryController {
+public interface QueryController {
 
+    /**
+     * The mode in which this controllers component is shown.
+     * 
+     * @see #providesMode(org.netbeans.modules.bugtracking.spi.QueryController.QueryMode) 
+     */
     public enum QueryMode {
-        SHOW_ALL,
-        SHOW_NEW_OR_CHANGED,
-        EDIT
+        /**
+         * Determines the Controller Component to create or edit a Query.
+         */
+        EDIT,
+        /**
+         * Determines the Controller Component to view the Query results. 
+         */
+        VIEW
     }
 
-    public abstract void setMode(QueryMode mode);
-    
     /**
-     * Returns a visual component representing the bugtracking entity this controller is meant for
-     * e.g. Repository, Query, ...
-     * @return a visual component representing a bugtracking entity
+     * Determines if the Query provides an Editor or a Result view.
+     * Depending on the returned value the Query Open (view) and Edit actions will be 
+     * enabled on a query node in the TasksDashboard.
+     * 
+     * @param mode
+     * @return 
      */
-    public abstract JComponent getComponent() ;
+    public boolean providesMode(QueryMode mode);
+
+    /**
+     * Returns a visual Query component.
+     * 
+     * @param mode
+     * @return a visual component representing a bugtracking query
+     */
+    public JComponent getComponent(QueryMode mode);
     
     /**
      * Returns the help context associated with this controllers visual component
      * @return
      */
-    public abstract HelpCtx getHelpCtx();
+    public HelpCtx getHelpCtx();
 
     /**
-     * Called when this controller was openened
+     * Called when the component returned by this controller was opened.
      */
-    public void opened() {
-
-    }
+    public void opened();
 
     /**
-     * Called when this controller was closed
+     * Called when the component returned by this controller was closed.
      */
-    public void closed() {
-
-    }
+    public void closed();
 
 }

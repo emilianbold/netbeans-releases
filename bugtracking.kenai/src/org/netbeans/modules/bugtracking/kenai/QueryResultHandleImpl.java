@@ -62,21 +62,18 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
     private final Query query;
     private final String label;
     private final String tooltip;
-    private final Query.QueryMode queryMode;
     private final ResultType type;
 
-    private static MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
-    private static MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
-    private static MessageFormat newFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNew"));           // NOI18N
-    private static MessageFormat totalTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotalTooltip"));       // NOI18N
-    private static MessageFormat unseenTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseenTooltip"));     // NOI18N
-    private static MessageFormat newTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNewTooltip"));           // NOI18N
+    private static final MessageFormat totalFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotal"));       // NOI18N
+    private static final MessageFormat unseenFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseen"));     // NOI18N
+    private static final MessageFormat totalTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultTotalTooltip"));       // NOI18N
+    private static final MessageFormat unseenTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultUnseenTooltip"));     // NOI18N
+    private static final MessageFormat newTooltipFormat = new MessageFormat(NbBundle.getMessage(QueryResultHandleImpl.class, "LBL_QueryResultNewTooltip"));           // NOI18N
 
-    QueryResultHandleImpl(Query query, String label, String tooltip, Query.QueryMode mode, ResultType type) {
+    QueryResultHandleImpl(Query query, String label, String tooltip, ResultType type) {
         this.query = query;
         this.label = label;
         this.tooltip = tooltip;
-        this.queryMode = mode;
         this.type = type;
     }
 
@@ -96,7 +93,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
     }
 
     public void actionPerformed(ActionEvent e) {
-        TeamUtil.openQuery(query, queryMode, true);
+        TeamUtil.openQuery(query, true);
     }
 
     static QueryResultHandleImpl forAllStatus(Query query) {
@@ -106,7 +103,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 totalFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
                 getTotalTooltip(issueCount),
-                Query.QueryMode.SHOW_ALL,
                 ResultType.NAMED_RESULT);
     }
     
@@ -132,7 +128,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 label,
                 tooltip,
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.NAMED_RESULT);
     }
 
@@ -156,7 +151,6 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Query.QueryMode.SHOW_NEW_OR_CHANGED,
                 ResultType.ALL_CHANGES_RESULT);
     }
 

@@ -115,24 +115,31 @@ public final class QueryImpl<Q, I>  {
      * @param query
      */
     public static void openNew(RepositoryImpl repository) {
-        QueryAction.openQuery(null, repository);
+        QueryAction.createNewQuery(repository);
     }
     
-    public void openShowAll(final boolean suggestedSelectionOnly) {
-        open(suggestedSelectionOnly, QueryController.QueryMode.SHOW_ALL);
-    }
-    
-    public void open(final boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
-        queryProvider.getController(data).setMode(mode);
-        QueryAction.openQuery(this, repository, suggestedSelectionOnly);
+    public void open(QueryController.QueryMode mode) {
+        QueryAction.openQuery(this, repository, mode);
     }
     
     public boolean isSaved() {
         return queryProvider.isSaved(data);
     }
 
+    public boolean canRemove() {
+        return queryProvider.canRemove(data);
+    }
+    
     public void remove() {
         queryProvider.remove(data);
+    }
+    
+    public boolean canRename() {
+        return queryProvider.canRename(data);
+    }
+    
+    public void rename(String newName) {
+        queryProvider.rename(data, newName);
     }
     
     public String getTooltip() {
@@ -182,6 +189,11 @@ public final class QueryImpl<Q, I>  {
         return data == obj;
     }
 
+    public boolean providesMode(QueryController.QueryMode queryMode) {
+        QueryController controller = queryProvider.getController(data);
+        return controller != null ? controller.providesMode(queryMode) : false;
+    }
+    
     Q getData() {
         return data;
     }

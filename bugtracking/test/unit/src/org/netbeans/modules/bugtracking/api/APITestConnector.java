@@ -53,7 +53,7 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.TestKit;
 import static org.netbeans.modules.bugtracking.api.APITestKit.getAPIRepo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -133,7 +133,7 @@ public class APITestConnector extends BugtrackingConnector {
             APITestRepository.TOOLTIP);
     }
     
-    public static class APITestQueryProvider extends QueryProvider<APITestQuery, APITestIssue> {
+    public static class APITestQueryProvider implements QueryProvider<APITestQuery, APITestIssue> {
 
         @Override
         public String getDisplayName(APITestQuery q) {
@@ -193,6 +193,11 @@ public class APITestConnector extends BugtrackingConnector {
         @Override
         public void rename(APITestQuery q, String displayName) {
             q.rename(displayName);
+        }
+
+        @Override
+        public boolean canRemove(APITestQuery q) {
+            return q.canRemove();
         }
 
     }
@@ -313,7 +318,7 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public BugtrackingController getController(APITestIssue data) {
+        public IssueController getController(APITestIssue data) {
             return data.getController();
         }
 

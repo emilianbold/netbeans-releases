@@ -89,4 +89,8 @@ public class KenaiQuery extends BugzillaQuery {
         return super.getStoredQueryName() + "-" + product;
     }
 
+    @Override
+    public boolean canRemove() {
+        return predefinedQuery ? false : super.canRemove();
+    }
 }

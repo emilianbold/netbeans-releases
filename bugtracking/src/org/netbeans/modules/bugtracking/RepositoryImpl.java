@@ -95,6 +95,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     private IssuePrioritySupport prioritySupport;
+    private final IssueFinder issueFinder;
     
     public RepositoryImpl(
             final R r, 
@@ -103,7 +104,8 @@ public final class RepositoryImpl<R, Q, I> {
             IssueProvider<I> issueProvider, 
             IssueStatusProvider<I> issueStatusProvider, 
             IssueSchedulingProvider<I> issueSchedulingProvider,
-            IssuePriorityProvider<I> issuePriorityProvider) 
+            IssuePriorityProvider<I> issuePriorityProvider,
+            IssueFinder issueFinder) 
     {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
@@ -111,6 +113,7 @@ public final class RepositoryImpl<R, Q, I> {
         this.issueStatusProvider = issueStatusProvider;
         this.issueSchedulingProvider = issueSchedulingProvider;
         this.issuePriorityProvider = issuePriorityProvider;
+        this.issueFinder = issueFinder;
         this.r = r;
         
         support = new PropertyChangeSupport(this);
@@ -160,6 +163,10 @@ public final class RepositoryImpl<R, Q, I> {
             repository = APIAccessor.IMPL.createRepository(this);
         }
         return repository;
+    }
+    
+    public IssueFinder getIssueFinder() {
+        return issueFinder;
     }
     
     /**

@@ -209,7 +209,7 @@ public class QTCTestHidden extends NbTestCase {
         MyQuery newquery;
         private static int c = 0;
         private final int i;
-        private RepositoryInfo info;
+        private final RepositoryInfo info;
         public MyRepository() {
             this.newquery = new MyQuery();
             this.i = c++;
@@ -243,20 +243,26 @@ public class QTCTestHidden extends NbTestCase {
         private static int c = 0;
         private final int i;
 
-        private QueryController controler = new QueryController() {
+        private final QueryController controler = new QueryController() {
+            private final JPanel panel = new JPanel();
+            
             @Override
-            public void setMode(QueryMode mode) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            private JPanel panel = new JPanel();
-            @Override
-            public JComponent getComponent() {
+            public JComponent getComponent(QueryMode mode) {
                 return panel;
             }
             @Override
             public HelpCtx getHelpCtx() {
                 return null;
             }
+
+            @Override
+            public boolean providesMode(QueryMode mode) {
+                return true;
+            }
+
+            @Override public void opened() { }
+            @Override public void closed() { }
+
         };
         private boolean saved;
 
@@ -292,7 +298,6 @@ public class QTCTestHidden extends NbTestCase {
     )
     public static class MyConnector extends BugtrackingConnector {
         final static String ID = "QTCconector";
-        private static MyRepository repo = new MyRepository();
 
         public MyConnector() {
         }
