@@ -106,16 +106,16 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     
     private static final RequestProcessor RP = new RequestProcessor(DependencyGraphScene.class);
     private LayerWidget mainLayer;
-    private LayerWidget connectionLayer;
+    private final LayerWidget connectionLayer;
     private ArtifactGraphNode rootNode;
     private final AllActionsProvider allActionsP = new AllActionsProvider();
     
 //    private GraphLayout layout;
-    private WidgetAction moveAction = ActionFactory.createMoveAction(null, allActionsP);
-    private WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(allActionsP);
-    private WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
-    private WidgetAction panAction = ActionFactory.createPanAction();
-    private WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
+    private final WidgetAction moveAction = ActionFactory.createMoveAction(null, allActionsP);
+    private final WidgetAction popupMenuAction = ActionFactory.createPopupMenuAction(allActionsP);
+    private final WidgetAction zoomAction = ActionFactory.createMouseCenteredZoomAction(1.1);
+    private final WidgetAction panAction = ActionFactory.createPanAction();
+    private final WidgetAction editAction = ActionFactory.createEditAction(allActionsP);
     WidgetAction hoverAction = ActionFactory.createHoverAction(new HoverController());
 
     Action sceneZoomToFitAction = new SceneZoomToFitAction();
@@ -128,8 +128,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private final DependencyGraphTopComponent tc;
     private FitToViewLayout fitViewL;
 
-    private static Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
-    private POMModel model;
+    private static final Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
+    private final POMModel model;
     
     /** Creates a new instance ofla DependencyGraphScene */
     DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc,
@@ -142,6 +142,31 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         addChild(mainLayer);
         connectionLayer = new LayerWidget(this);
         addChild(connectionLayer);
+        
+        //this glasspane thing is only here to get rid of connection lines across widgets
+        Widget glasspane = new LayerWidget(this) {
+
+            @Override
+            protected void paintChildren() {
+                if (isCheckClipping()) {
+                    Rectangle clipBounds = DependencyGraphScene.this.getGraphics().getClipBounds();
+                    for (Widget child : mainLayer.getChildren()) {
+                        Point location = child.getLocation();
+                        Rectangle bounds = child.getBounds();
+                        bounds.translate(location.x, location.y);
+                        if (clipBounds == null || bounds.intersects(clipBounds)) {
+                            child.paint();
+                        }
+                    }
+                } else {
+                    for (Widget child : mainLayer.getChildren()) {
+                        child.paint();
+                    }
+                }
+            }
+
+        };
+        addChild(glasspane);
         //getActions().addAction(this.createObjectHoverAction());
         getActions().addAction(hoverAction);
         getActions().addAction(ActionFactory.createSelectAction(allActionsP));
@@ -451,7 +476,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private static class FitToViewLayout extends SceneLayout {
 
         private List<? extends Widget> widgets = null;
-        private DependencyGraphScene depScene;
+        private final DependencyGraphScene depScene;
 
         FitToViewLayout(DependencyGraphScene scene) {
             super(scene);
@@ -790,8 +815,8 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     private class FixVersionConflictAction extends AbstractAction {
 
-        private ArtifactGraphNode node;
-        private Artifact nodeArtif;
+        private final ArtifactGraphNode node;
+        private final Artifact nodeArtif;
 
         FixVersionConflictAction(ArtifactGraphNode node) {
             this.node = node;
