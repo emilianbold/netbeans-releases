@@ -309,12 +309,13 @@ import org.openide.util.Utilities;
         btMakeBrowse.setVisible(!isUrl);
         btQMakeBrowse.setVisible(!isUrl);
         
-        final CompilerFlavor compilerFlavor = cs.getCompilerFlavor();
-        if (compilerFlavor instanceof CompilerFlavorImpl) {
-            lbFamilyValue.setText(((CompilerFlavorImpl)compilerFlavor).getDisplayName());
-        } else {
-            lbFamilyValue.setText(compilerFlavor.toString());
-        }
+        lbFamilyValue.setText(cs.getDisplayName());
+        //final CompilerFlavor compilerFlavor = cs.getCompilerFlavor();
+        //if (compilerFlavor instanceof CompilerFlavorImpl) {
+        //    lbFamilyValue.setText(((CompilerFlavorImpl)compilerFlavor).getDisplayName());
+        //} else {
+        //    lbFamilyValue.setText(compilerFlavor.toString());
+        //}
     }
 
     void changeCompilerSet(CompilerSet cs) {
