@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ProjectProperties">
+            <api name="java-api-common"/>
+            <summary>Extended <code>ProjectProperties</code> by additional common project properties</summary>
+            <version major="1" minor="60"/>
+            <date day="9" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extended <code>ProjectProperties</code> by additional common project properties used by shared queries and
+                    project generators.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectProperties"/>
+        </change>
         <change id="BootClassPathImplementation-platform-type">
             <api name="java-api-common"/>
             <summary>Extended <code>BootClassPathImplementation</code> and <code>ClassPathProviderImpl</code> to support non j2se platforms</summary>

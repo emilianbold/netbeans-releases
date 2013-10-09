@@ -57,6 +57,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
@@ -146,7 +147,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         this.profile.setRenderer(uiProperties.JAVAC_PROFILE_RENDERER);
         enableSourceLevel ();
         enableProfiles();
-        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(J2SEProjectProperties.SOURCE_ENCODING);
+        this.originalEncoding = this.uiProperties.getProject().evaluator().getProperty(ProjectProperties.SOURCE_ENCODING);
         if (this.originalEncoding == null) {
             this.originalEncoding = Charset.defaultCharset().name();
         }
@@ -244,7 +245,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                         NbBundle.getMessage(CustomizerSources.class,"MSG_EncodingWarning"), NotifyDescriptor.WARNING_MESSAGE));
                 notified=true;
             }
-            this.uiProperties.putAdditionalProperty(J2SEProjectProperties.SOURCE_ENCODING, encName);
+            this.uiProperties.putAdditionalProperty(ProjectProperties.SOURCE_ENCODING, encName);
     }
 
     public HelpCtx getHelpCtx() {

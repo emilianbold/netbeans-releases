@@ -68,7 +68,6 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -113,9 +112,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private static final String[] BREAKABLE_PROPERTIES = {
         ProjectProperties.JAVAC_CLASSPATH,
         ProjectProperties.RUN_CLASSPATH,
-        J2SEProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.DEBUG_CLASSPATH,
         ProjectProperties.RUN_TEST_CLASSPATH,
-        J2SEProjectProperties.DEBUG_TEST_CLASSPATH,
+        ProjectProperties.DEBUG_TEST_CLASSPATH,
         ProjectProperties.ENDORSED_CLASSPATH,
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
@@ -319,7 +318,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     }
 
     public String[] getPlatformProperties() {
-        return new String[] {J2SEProjectProperties.JAVA_PLATFORM};
+        return new String[] {ProjectProperties.PLATFORM_ACTIVE};
     }
     
     private boolean isCompileOnSaveDisabled() {

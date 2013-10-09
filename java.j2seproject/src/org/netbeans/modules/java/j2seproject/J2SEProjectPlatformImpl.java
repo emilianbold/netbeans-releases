@@ -51,6 +51,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -91,7 +92,7 @@ class J2SEProjectPlatformImpl implements J2SEProjectPlatform, PropertyChangeList
             @Override
             public JavaPlatform run() {
                 return CommonProjectUtils.getActivePlatform(
-                    project.evaluator().getProperty(J2SEProjectProperties.JAVA_PLATFORM));
+                    project.evaluator().getProperty(ProjectProperties.PLATFORM_ACTIVE));
             }
         });
     }
@@ -119,7 +120,7 @@ class J2SEProjectPlatformImpl implements J2SEProjectPlatform, PropertyChangeList
                     final String platformId = platform.getProperties().get(J2SEProjectProperties.PROP_PLATFORM_ANT_NAME);
                     final UpdateHelper uh = project.getUpdateHelper();
                     final EditableProperties props = uh.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    props.setProperty(J2SEProjectProperties.JAVA_PLATFORM, platformId);
+                    props.setProperty(ProjectProperties.PLATFORM_ACTIVE, platformId);
                     uh.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                     updateProjectXml(platform, uh);
                     ProjectManager.getDefault().saveProject(project);
@@ -146,7 +147,7 @@ class J2SEProjectPlatformImpl implements J2SEProjectPlatform, PropertyChangeList
     @Override
     public void propertyChange(@NonNull final PropertyChangeEvent event) {
         final String propName = event.getPropertyName();
-        if (propName == null || J2SEProjectProperties.JAVA_PLATFORM.equals(propName)) {
+        if (propName == null || ProjectProperties.PLATFORM_ACTIVE.equals(propName)) {
             support.firePropertyChange(PROP_PROJECT_PLATFORM, null, null);
         }
     }
