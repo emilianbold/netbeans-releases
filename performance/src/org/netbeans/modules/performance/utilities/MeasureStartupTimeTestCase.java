@@ -271,10 +271,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         }
 
         //add guitracker on classpath
-        String classpath = System.getProperty("performance.testutilities.dist.jar");
-        if (classpath == null) {
-            classpath = ideHome.getAbsolutePath() + separator + "extra" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
-        }
+        String classpath = ideHome.getAbsolutePath() + separator + "java" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
 
         //add property on command line
         String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");

@@ -127,13 +127,7 @@ public class MeasureWarmUp extends MeasureStartupTimeTestCase {
         }
 
         //add guitracker on classpath
-        String classpath = System.getProperty("performance.testutilities.dist.jar");
-        if (classpath == null) {
-            classpath = ideHome.getAbsolutePath() + separator + "extra" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
-        }
-
-        //add property on command line
-        String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
+        String classpath = ideHome.getAbsolutePath() + separator + "java" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
 
         // create jdkhome switch
         String jdkhome = System.getProperty("java.home");
@@ -177,15 +171,7 @@ public class MeasureWarmUp extends MeasureStartupTimeTestCase {
         cmd.append(" -J-Dnetbeans.close=true");
         // close the IDE after warmup
         cmd.append(" -J-Dnetbeans.warm.close=true");
-        // wait after startup, need to set longer time for complex startup because rescan rises
-//        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup="+timeout);
         cmd.append(" -J-Dnetbeans.logger.console=false");
-        // disable rescaning after startup
-//        cmd.append(" -J-Dnetbeans.javacore.noscan=true");
-        // test command line suffix
-        if (test_cmd_suffix != null && !test_cmd_suffix.equalsIgnoreCase("${xtest.perf.commandline.suffix}")) {
-            cmd.append(" ").append(test_cmd_suffix.replace('\'', ' ').trim());
-        }
 //        cmd.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=localhost:1234");  //debugging
 
         System.out.println("Running: " + cmd);
