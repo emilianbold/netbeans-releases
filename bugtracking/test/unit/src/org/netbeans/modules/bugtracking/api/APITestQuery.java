@@ -98,16 +98,21 @@ public class APITestQuery extends TestQuery {
                 }
                 JPanel panel;
                 @Override
-                public JComponent getComponent() {
+                public JComponent getComponent(QueryMode mode) {
+                    openedMode = mode;
                     if(panel == null) {
                         panel = new JPanel();
                     }
                     return panel;
                 }
-                @Override public void setMode(QueryController.QueryMode mode) { 
-                    openedMode = mode;
-                }
+                
+                @Override public void closed() {  }                
                 @Override public HelpCtx getHelpCtx() { return null; }
+
+                @Override
+                public boolean providesMode(QueryController.QueryMode mode) {
+                    return true;
+                }
             }; 
         }
         return controller;

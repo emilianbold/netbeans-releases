@@ -101,7 +101,7 @@ public final class Query {
      * @param query
      */
     public static void openNew(Repository repository) {
-        QueryAction.openQuery(null, repository.getImpl());
+        QueryAction.createNewQuery(repository.getImpl());
     }
     
     QueryImpl getImpl() {

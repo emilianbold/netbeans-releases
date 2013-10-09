@@ -115,12 +115,11 @@ public final class QueryImpl<Q, I>  {
      * @param query
      */
     public static void openNew(RepositoryImpl repository) {
-        QueryAction.openQuery(null, repository);
+        QueryAction.createNewQuery(repository);
     }
     
     public void open(QueryController.QueryMode mode) {
-        queryProvider.getController(data).setMode(mode);
-        QueryAction.openQuery(this, repository, false);
+        QueryAction.openQuery(this, repository, mode);
     }
     
     public boolean isSaved() {
@@ -178,6 +177,11 @@ public final class QueryImpl<Q, I>  {
         return data == obj;
     }
 
+    public boolean providesMode(QueryController.QueryMode queryMode) {
+        QueryController controller = queryProvider.getController(data);
+        return controller != null ? controller.providesMode(queryMode) : false;
+    }
+    
     Q getData() {
         return data;
     }
