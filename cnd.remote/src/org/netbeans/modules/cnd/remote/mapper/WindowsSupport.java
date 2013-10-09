@@ -185,10 +185,10 @@ public class WindowsSupport {
                     currentElement.setRemotePath(value);
                     break;
                 case "ConnectionState"://NOI18N
-                    currentElement.isConnected = !"Disconnected".equals(value);//NOI18N
                     if (currentElement == null) {
                         break;
                     }                    
+                    currentElement.isConnected = !"Disconnected".equals(value);//NOI18N
                     break;
                 case "ProviderName"://NOI18N
                     if (currentElement == null) {
