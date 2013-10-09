@@ -42,9 +42,8 @@
 
 package org.netbeans.modules.localtasks.task;
 
-import java.io.IOException;
 import javax.swing.JComponent;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 
@@ -52,7 +51,7 @@ import org.openide.util.Mutex;
  *
  * @author Ondrej Vrabec
  */
-final class TaskController extends BugtrackingController {
+final class TaskController implements IssueController {
     private final LocalTask task;
     private final TaskPanel panel;
     private boolean opened;
@@ -70,17 +69,6 @@ final class TaskController extends BugtrackingController {
     @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx("org.netbeans.modules.localtasks.editor.TaskPanel"); //NOI18N
-    }
-
-    @Override
-    public boolean isValid () {
-        // ???
-        return true;
-    }
-
-    @Override
-    public void applyChanges () throws IOException {
-        // ???
     }
 
     @Override
