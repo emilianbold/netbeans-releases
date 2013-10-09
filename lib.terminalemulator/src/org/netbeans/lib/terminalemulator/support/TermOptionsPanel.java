@@ -262,11 +262,11 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
         fontSizeLabel = new javax.swing.JLabel();
         fontSizeSpinner = new javax.swing.JSpinner();
         foregroundLabel = new javax.swing.JLabel();
-        foregroundComboBox = new javax.swing.JComboBox();
+        foregroundComboBox = new javax.swing.JComboBox<ColorValue>();
         backgroundLabel = new javax.swing.JLabel();
-        backgroundComboBox = new javax.swing.JComboBox();
+        backgroundComboBox = new javax.swing.JComboBox<ColorValue>();
         selectionLabel = new javax.swing.JLabel();
-        selectionComboBox = new javax.swing.JComboBox();
+        selectionComboBox = new javax.swing.JComboBox<ColorValue>();
         historySizeLabel = new javax.swing.JLabel();
         historySizeSpinner = new javax.swing.JSpinner();
         tabSizeLabel = new javax.swing.JLabel();
@@ -696,7 +696,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox backgroundComboBox;
+    private javax.swing.JComboBox<ColorValue> backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JCheckBox clickToTypeCheckBox;
     private javax.swing.JLabel descriptionLabel;
@@ -705,7 +705,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fontSizeLabel;
     private javax.swing.JSpinner fontSizeSpinner;
     private javax.swing.JTextField fontText;
-    private javax.swing.JComboBox foregroundComboBox;
+    private javax.swing.JComboBox<ColorValue> foregroundComboBox;
     private javax.swing.JLabel foregroundLabel;
     private javax.swing.JLabel historySizeLabel;
     private javax.swing.JSpinner historySizeSpinner;
@@ -716,7 +716,7 @@ public final class TermOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JButton restoreButton;
     private javax.swing.JCheckBox scrollOnInputCheckBox;
     private javax.swing.JCheckBox scrollOnOutputCheckBox;
-    private javax.swing.JComboBox selectionComboBox;
+    private javax.swing.JComboBox<ColorValue> selectionComboBox;
     private javax.swing.JLabel selectionLabel;
     private javax.swing.JLabel tabSizeLabel;
     private javax.swing.JSpinner tabSizeSpinner;
