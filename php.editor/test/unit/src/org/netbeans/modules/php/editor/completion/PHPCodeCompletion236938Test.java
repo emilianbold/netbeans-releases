@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.completion;
 
-package org.netbeans.modules.web.jsf.palette.items;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
-import org.netbeans.modules.web.jsf.JsfTemplateUtils;
-import org.netbeans.modules.web.jsf.JsfTemplateUtils.TemplateType;
-import org.netbeans.modules.web.jsf.api.palette.PaletteItem;
-import org.openide.text.ActiveEditorDrop;
-import org.openide.util.NbBundle;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class PHPCodeCompletion236938Test extends PHPCodeCompletionTestBase {
 
-public final class JsfFormFromEntity extends FromEntityBase implements ActiveEditorDrop, PaletteItem {
-
-    public JsfFormFromEntity() {
+    public PHPCodeCompletion236938Test(String testName) {
+        super(testName);
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(JsfForm.class, "NAME_jsp-JsfFormFromEntity"); // NOI18N
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests236938/issue236938.php", "public function fnc(\\Blah\\Cl^) { //CC", false);
     }
 
-    @Override
-    protected boolean isCollectionComponent() {
-        return false;
-    }
-
-    @Override
-    protected boolean showReadOnlyFormFlag() {
-        return true;
-    }
-
-    @Override
-    protected String getDialogTitle() {
-        return NbBundle.getMessage(JsfFormFromEntity.class, "JFFE_DialogTitle"); // NOI18N
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests236938/issue236938.php", "public function fnc(\\Blah\\C^l) { //CC", false);
     }
 
     @Override
-    protected String getTemplate(String templatesStyle) {
-        if (isReadOnlyForm()) {
-            return JsfTemplateUtils.getTemplatePath(TemplateType.SNIPPETS, templatesStyle, ManagedBeanCustomizer.VIEW_TEMPLATE);
-        } else {
-            return JsfTemplateUtils.getTemplatePath(TemplateType.SNIPPETS, templatesStyle, ManagedBeanCustomizer.EDIT_TEMPLATE);
-        }
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests236938/"))
+            })
+        );
     }
 
 }

@@ -103,6 +103,10 @@ public class ApacheConfLexerTest extends ApacheConfLexerTestBase {
         performTest("issue215891");
     }
 
+    public void testIssue2236943() throws Exception {
+        performTest("issue236943");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = ApacheConfLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".conf"));
