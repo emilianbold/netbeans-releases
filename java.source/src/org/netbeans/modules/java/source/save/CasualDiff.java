@@ -2321,13 +2321,14 @@ public class CasualDiff {
 
     protected int diffFieldGroup(FieldGroupTree oldT, FieldGroupTree newT, int[] bounds) {
         if (!listsMatch(oldT.getVariables(), newT.getVariables())) {
-            copyTo(bounds[0], oldT.getStartPosition());
+            int localpointer = getCommentCorrectedOldPos(oldT.getVariables().get(0));
+            copyTo(bounds[0], localpointer);
             if (oldT.isEnum()) {
-                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
+                int pos = diffParameterList(oldT.getVariables(), newT.getVariables(), null, localpointer, Measure.ARGUMENT, diffContext.style.spaceBeforeComma(), diffContext.style.spaceAfterComma(), true, ",");  //NOI18N
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             } else {
-                int pos = diffVarGroup(oldT.getVariables(), newT.getVariables(), null, oldT.getStartPosition(), Measure.GROUP_VAR_MEASURE);
+                int pos = diffVarGroup(oldT.getVariables(), newT.getVariables(), null, localpointer, Measure.GROUP_VAR_MEASURE);
                 copyTo(pos, bounds[1]);
                 return bounds[1];
             }
@@ -2777,7 +2778,7 @@ public class CasualDiff {
             switch (item.operation) {
                 case MODIFY: {
                     JCTree tree = oldList.get(oldIndex++);
-                    int[] bounds = getBounds(tree);
+                    int[] bounds = getCommentCorrectedBounds(tree);
                     tokenSequence.move(bounds[0]);
                     if (oldIndex != 1 && !separator.isEmpty()) {
                         moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
