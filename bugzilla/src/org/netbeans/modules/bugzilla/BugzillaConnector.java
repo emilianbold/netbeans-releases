@@ -94,11 +94,6 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
         return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorName");           // NOI18N
     }
 
-    @Override
-    public IssueFinder getIssueFinder() {
-        return SimpleIssueFinder.getInstance();
-    }
-
     /******************************************************************************
      * Kenai
      ******************************************************************************/

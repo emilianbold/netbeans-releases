@@ -59,7 +59,7 @@ public class TestKit {
                 new TestQueryProvider(),
                 new TestIssueProvider(),
                 new TestStatusProvider(),
-                null, null);
+                null, null, null);
     }
     
     public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
