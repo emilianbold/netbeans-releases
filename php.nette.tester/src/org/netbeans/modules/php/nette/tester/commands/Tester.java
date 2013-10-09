@@ -244,7 +244,9 @@ public final class Tester {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(TesterOptionsPanelController.OPTIONS_PATH)
-                .showProgress(true);
+                .showProgress(true)
+                .outLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
