@@ -289,7 +289,7 @@ public abstract class ConfigurationDescriptorProvider {
         String[] families;
         if (compilerSet != null) {
             families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
-            flavor = compilerSet.getCompilerFlavor().toString();
+            flavor = compilerSet.getCompilerFlavor().getToolchainDescriptor().getName();
         } else {
             families = new String[0];
             if (makeConfiguration.getCompilerSet() != null) {

@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio" qmakespec="${os}-cc"  abstract="true"/>
+    <toolchain name="SunStudio" display="Sun Studio" family="SunStudio" qmakespec="${os}-cc"  abstract="true"/>
     <platforms stringvalue="sun_intel,sun_sparc,linux"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
 </toolchaindefinition>
