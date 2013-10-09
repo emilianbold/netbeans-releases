@@ -276,7 +276,7 @@
              value="${nb.files.prefix}-${build.number}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-dev"/>
+             value="nb-7_4"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
