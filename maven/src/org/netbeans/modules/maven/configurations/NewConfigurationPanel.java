@@ -85,7 +85,7 @@ public class NewConfigurationPanel extends javax.swing.JPanel implements Documen
         String val = ""; //NOI18N
         if (profiles != null) {
             for (String prf : profiles) {
-                val = val + prf;
+                val = val + prf + " ";
             }
         }
         txtActivate.setText(val);
