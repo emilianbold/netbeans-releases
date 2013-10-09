@@ -43,16 +43,36 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<project name="performance" default="netbeans" basedir=".">
-<description>Builds, tests, and runs the project org.netbeans.performance</description>
-
-    <property name="test.timeout" value="7200000"/>
-    <property name="test.run.args" value="-client 
-            -Xss4m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m 
-            -Dnetbeans.keyring.no.master=true 
-            -Xverify:none -Dsun.java2d.noddraw=true"/>
-
-    <import file="../nbbuild/templates/projectized.xml"/>
-
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.modules.performance.ergonomics</code-name-base>
+            <module-dependencies/>
+            <test-dependencies>
+                <test-type>
+                    <name>unit</name>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
+                        <recursive/>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.ide.ergonomics</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.performance</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                </test-type>
+            </test-dependencies>
+            <public-packages/>
+        </data>
+    </configuration>
 </project>
