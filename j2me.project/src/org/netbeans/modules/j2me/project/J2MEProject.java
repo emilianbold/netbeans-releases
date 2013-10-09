@@ -107,11 +107,13 @@ public class J2MEProject implements Project {
         this.refHelper = new ReferenceHelper(helper, auxCfg, eval);
         this.sourceRoots = createRoots(false);
         this.testRoots = createRoots(true);
-        this.cpProvider = new ClassPathProviderImpl(
+        this.cpProvider = ClassPathProviderImpl.Builder.create(
                 helper,
                 eval,
                 sourceRoots,
-                testRoots);
+                testRoots).
+            setPlatformType(J2MEProjectProperties.PLATFORM_TYPE_J2ME).
+            build();
         this.lkp = createLookup();
     }
 

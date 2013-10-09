@@ -85,6 +85,7 @@ public final class J2MEProjectProperties {
     public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N //Todo: move to ProjectProperties
 
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
+    public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
 
 
     private final J2MEProject project;
