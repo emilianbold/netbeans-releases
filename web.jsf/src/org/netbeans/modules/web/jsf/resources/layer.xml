@@ -137,6 +137,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="93"/>
                 <attr name="templateCategory" stringvalue="always-hidden"/>
                 <folder name="StandardJSF">
+                    <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                     <file name="PaginationHelper.ftl" url="templates/PaginationHelper.ftl">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>

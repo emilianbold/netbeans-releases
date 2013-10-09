@@ -51,15 +51,13 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
-import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * This class is <i>thread safe</i>.
+ * This class is immutable and thus <i>thread safe</i>.
  *
  * @author marekfukala
  * @author Martin Janicek <mjanicek@netbeans.org>
@@ -77,8 +75,6 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private final Project project;
     private final FileObject projectDir;
-    // @GuardedBy("this")
-    private WebModuleProvider webModuleProvider;
 
 
     public WebProjectWebRootProvider(Project project) {
@@ -86,18 +82,9 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
         this.projectDir = project.getProjectDirectory();
     }
 
-    private synchronized WebModuleProvider getProvider() {
-        if (webModuleProvider == null) {
-            webModuleProvider = project.getLookup().lookup(WebModuleProvider.class);
-        }
-        return webModuleProvider;
-    }
-
     @Override
     public FileObject getWebRoot(FileObject file) {
-        WebModuleProvider provider = getProvider();
-        WebModule wm = provider != null ? provider.findWebModule(file) : null;
-        return wm != null ? wm.getDocumentBase() : null;
+        return getDefaultWebRoot();
     }
 
     @Override
@@ -130,19 +117,11 @@ public class WebProjectWebRootProvider implements ProjectWebRootProvider {
     }
 
     private FileObject getDefaultWebRoot() {
-        WebModuleProvider provider = getProvider();
-        if (provider == null) {
-            return null;
+        String webSourceDir = WebProjectUtils.getPluginProperty(project, "warSourceDirectory"); // NOI18N
+        if (webSourceDir == null) {
+            webSourceDir = "src/main/webapp"; // NOI18N
         }
-        WebModule webModule = provider.findWebModule(project.getProjectDirectory());
-        if (webModule == null) {
-            return null;
-        }
-        FileObject documentBase = webModule.getDocumentBase();
-        if (documentBase == null) {
-            return null;
-        }
-        return documentBase;
+        return projectDir.getFileObject(webSourceDir);
     }
 
     /**

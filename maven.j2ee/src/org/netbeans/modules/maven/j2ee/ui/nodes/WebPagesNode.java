@@ -55,12 +55,14 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.j2ee.ui.nodes.Bundle.*;
 
 
 /**
  * filter node for display of web sources
  * @author  Milos Kleint 
  */
+@NbBundle.Messages("LBL_Web_Pages=Web Pages")
 class WebPagesNode extends FilterNode {
     private boolean isTopLevelNode = false;
     private FileObject file;
@@ -81,15 +83,23 @@ class WebPagesNode extends FilterNode {
     @Override
     public String getDisplayName() {
         if (isTopLevelNode) {
-            String s = NbBundle.getMessage(WebPagesNode.class, "LBL_Web_Pages");
-            
+            String webRootName = file.getName();
+            String displayName;
+
+            // To preserve current behavior, don't show web root name in the node name for default "webapp"
+            if ("webapp".equals(webRootName)) { // NOI18N
+                displayName = LBL_Web_Pages();
+            } else {
+                displayName = LBL_Web_Pages() + " (" + file.getName() + ")"; // NOI18N
+            }
+
             try {
-                s = file.getFileSystem().getStatus().annotateName(s, Collections.singleton(file));
+                displayName = file.getFileSystem().getStatus().annotateName(displayName, Collections.singleton(file));
             } catch (FileStateInvalidException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
-            return s;
+            return displayName;
         }
         return getOriginal().getDisplayName();
         
@@ -105,7 +115,7 @@ class WebPagesNode extends FilterNode {
              if (stat instanceof FileSystem.HtmlStatus) {
                  FileSystem.HtmlStatus hstat = (FileSystem.HtmlStatus) stat;
 
-                String s = NbBundle.getMessage(WebPagesNode.class, "LBL_Web_Pages");
+                 String s = LBL_Web_Pages();
                  String result = hstat.annotateNameHtml (
                      s, Collections.singleton(file));
 
