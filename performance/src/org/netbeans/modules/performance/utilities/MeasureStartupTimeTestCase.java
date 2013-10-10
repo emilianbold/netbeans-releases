@@ -265,11 +265,6 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
     }
 
     static long runIDE(File ideHome, File userdir, File measureFile, long timeout, File[] clusters) throws IOException {
-        //check <userdir>/lock file
-        if (new File(userdir, "lock").exists()) {
-            fail("Original Userdir is locked!");
-        }
-
         //add guitracker on classpath
         String classpath = ideHome.getAbsolutePath() + separator + "java" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
 
@@ -337,8 +332,6 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // wait after startup, need to set longer time for complex startup because rescan rises
 //        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
         cmd.append(" -J-Dnetbeans.logger.console=false");
-        // disable rescaning after startup
-        //        cmd.append(" -J-Dnetbeans.javacore.noscan=true";
         // disable status line displayer - issue 90542
         cmd.append(" -J-Dorg.openide.awt.StatusDisplayer.DISPLAY_TIME=0");
         // test command line suffix
@@ -431,17 +424,18 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
     /**
      * Get User directory. User directory is prepared and defined by property
-     * <br> <code> userdir.prepared </code> + "/sys/ide"
+     * <br> <code> userdir.prepared </code>.
      *
      * @throws IOException
      * @return User directory
      */
     protected File getUserdirFile() throws IOException {
         String usdPrep = System.getProperty("userdir.prepared");
-        if (!(usdPrep == null)) {
-            return new File(new File(usdPrep, "sys"), "ide");
+        System.err.println("\n\n\nUSERDIR=" + usdPrep);
+        if (usdPrep != null) {
+            return new File(usdPrep);
         }
-        return new File(new File(getWorkDir().getAbsolutePath(), "sys"), "ide");
+        return new File(getWorkDir(), "userdir0");
     }
 
     /**

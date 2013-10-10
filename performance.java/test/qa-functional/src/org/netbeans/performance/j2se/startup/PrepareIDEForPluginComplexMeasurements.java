@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.prepare;
+package org.netbeans.performance.j2se.startup;
 
 import java.io.File;
 import org.netbeans.jellytools.EditorOperator;
@@ -53,7 +53,6 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.performance.j2se.Utilities;
 
 /**
  * Prepare user directory for complex measurements (startup time and memory
@@ -61,7 +60,7 @@ import org.netbeans.performance.j2se.Utilities;
  * ide. Created user directory will be used to measure startup time and memory
  * consumption of IDE with opened files.
  *
- * @author Marian.Mirilovic@sun.com
+ * @author Marian Mirilovic
  */
 public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplexMeasurements {
 
@@ -99,14 +98,8 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
      */
     @Override
     public void testOpenFiles() {
-        File parentDir = getDataDir().getParentFile().getParentFile();
-        File funcData = new File(parentDir, "qa-functional" + File.separator + "data");
         try {
-            Utilities.openProject("SystemProperties", funcData);
-        } catch (Exception e) {
-            System.err.println(e.getLocalizedMessage());
-        }
-        try {
+            openDataProjects("SystemProperties");
             String[][] files_path = {
                 {"org.myorg.systemproperties", "AllPropsChildren.java"},
                 {"org.myorg.systemproperties", "AllPropsNode.java"},

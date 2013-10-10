@@ -43,6 +43,8 @@
  */
 package org.netbeans.performance.j2se.startup;
 
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 /**
@@ -56,7 +58,7 @@ import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
  *
  * @author mmirilovic@netbeans.org
  */
-public class ComplexNBProjectStartup extends MeasureStartupTimeTestCase {
+public class ComplexJavaProjectStartup extends MeasureStartupTimeTestCase {
 
     public static final String suiteName = "J2SE Startup suite";
 
@@ -65,8 +67,22 @@ public class ComplexNBProjectStartup extends MeasureStartupTimeTestCase {
      *
      * @param testName name of the test case
      */
-    public ComplexNBProjectStartup(String testName) {
+    public ComplexJavaProjectStartup(String testName) {
         super(testName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite("Java Complex Measurements Suite");
+        System.setProperty("suitename", ComplexJavaProjectStartup.class.getCanonicalName());
+        suite.addTest(JellyTestCase.emptyConfiguration()
+                .addTest(PrepareIDEForComplexMeasurements.class)
+                .addTest("testCloseAllDocuments")
+                .addTest("testCloseMemoryToolbar")
+                .addTest("testOpenFiles")
+                .addTest("testSaveStatus")
+                .suite());
+        suite.addTestSuite(ComplexJavaProjectStartup.class);
+        return suite;
     }
 
     /**
@@ -74,8 +90,8 @@ public class ComplexNBProjectStartup extends MeasureStartupTimeTestCase {
      *
      * @throws java.io.IOException
      */
-    public void testStartIDEWithOpenedFilesNBproject() throws java.io.IOException {
-        measureComplexStartupTime("Startup Time with opened NB project");
+    public void testStartIDEWithOpenedFiles() throws java.io.IOException {
+        measureComplexStartupTime("Startup Time with 10 opened java files");
         PerformanceData[] pData = this.getPerformanceData();
         for (PerformanceData pData1 : pData) {
             org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData1);

@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se.prepare;
+package org.netbeans.performance.j2se.startup;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,9 +51,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.actions.CloseAllDocumentsAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -62,9 +60,6 @@ import org.netbeans.jemmy.operators.JMenuItemOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
-import org.netbeans.performance.j2se.Utilities;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  * Prepare user directory for complex measurements (startup time and memory
@@ -131,16 +126,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      * Close All Documents.
      */
     public void testCloseAllDocuments() {
-
-        if (new Action("Window|Close All Documents", null).isEnabled()) {
-            try {
-                new CloseAllDocumentsAction().perform();
-            } catch (Exception exc) {
-                test_failed = true;
-                fail(exc);
-            }
-        }
-
+        EditorOperator.closeDiscardAll();
     }
 
     /**
@@ -170,16 +156,9 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      */
     public void testOpenFiles() {
         String zipPath = Utilities.projectOpen("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip", "jEdit41.zip");
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
+        Utilities.unzip(new File(zipPath), getWorkDirPath());
         try {
-            Utilities.openProject("jEdit", getWorkDir());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        waitScanFinished();
-        JellyTestCase.closeAllModal();
-        try {
+            openProjects(getWorkDirPath() + "/jEdit");
             String[][] files_path = {
                 {"bsh", "Interpreter.java"},
                 {"bsh", "JThis.java"},
@@ -252,6 +231,7 @@ public class PrepareIDEForComplexMeasurements extends JellyTestCase {
      * @throws IOException
      */
     public void testSaveStatus() throws IOException {
+        System.setProperty("userdir.prepared", System.getProperty("netbeans.user"));
         if (test_failed) {
             MeasureStartupTimeTestCase.createStatusFile();
         }
