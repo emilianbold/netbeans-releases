@@ -55,8 +55,10 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -66,6 +68,7 @@ import org.openide.util.Lookup;
 public abstract class CndFileSystemProvider {
 
     private static final CndFileSystemProvider DEFAULT = new DefaultProvider();
+    private static FileSystem rootFileSystem = null;
 
     public static class FileInfo {
         public final String absolutePath;
@@ -140,6 +143,10 @@ public abstract class CndFileSystemProvider {
     public static FileObject urlToFileObject(CharSequence url) {
         return getDefault().urlToFileObjectImpl(url);
     }
+    
+    public static FileSystem urlToFileSystem(CharSequence url) {
+        return getDefault().urlToFileSystemImpl(url);
+    }
 
     public static CharSequence toUrl(FSPath fsPath) {
         return getDefault().toUrlImpl(fsPath);
@@ -206,6 +213,7 @@ public abstract class CndFileSystemProvider {
     protected abstract CharSequence toUrlImpl(FSPath fSPath);
     protected abstract CharSequence toUrlImpl(FileSystem fileSystem, CharSequence absPath);
     protected abstract FileObject urlToFileObjectImpl(CharSequence url);
+    protected abstract FileSystem urlToFileSystemImpl(CharSequence url);
     protected abstract FileObject toFileObjectImpl(File file);
 
     protected abstract CharSequence getCanonicalPathImpl(FileSystem fileSystem, CharSequence absPath) throws IOException;
@@ -331,6 +339,62 @@ public abstract class CndFileSystemProvider {
             }
             return FileUtil.toFileObject(file);
         }
+        
+        @Override
+        protected FileSystem urlToFileSystemImpl(CharSequence url) {
+            for (CndFileSystemProvider provider : cache) {
+                FileSystem fs = provider.urlToFileSystemImpl(url);
+                if (fs != null) {
+                    return fs;
+                }
+            }
+            if (url.length() == 0) {
+                return getRootFileSystem();
+            }
+            String path = url.toString();
+            File file;
+            if (path.startsWith(FILE_PROTOCOL_PREFIX)) {
+                try {
+                    URL u = new URL(path);
+                    file = FileUtil.normalizeFile(new File(u.toURI()));
+                } catch (IllegalArgumentException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
+                } catch (URISyntaxException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
+                } catch (MalformedURLException ex) {
+                    CndUtils.getLogger().log(Level.WARNING, "CndFileSystemProvider.urlToFileObjectImpl can not convert {0}:\n{1}", new Object[]{path, ex.getLocalizedMessage()});
+                    return null;
+                }       
+            } else {
+                file = new File(FileUtil.normalizePath(path));
+            }
+            try {
+                return FileUtil.toFileObject(file).getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                return null;
+            }
+        }
+        
+        private FileSystem getRootFileSystem() {
+            if (rootFileSystem == null) {
+                File tmpFile = null;
+                try {
+                    tmpFile = File.createTempFile("NetBeans", ".tmp"); //NOI18N
+                    tmpFile = FileUtil.normalizeFile(tmpFile);
+                    FileObject fo = FileUtil.toFileObject(tmpFile);
+                    rootFileSystem = fo.getFileSystem();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (tmpFile != null) {
+                        tmpFile.delete();
+                    }
+                }
+            }
+            return rootFileSystem;
+        }
 
         @Override
         protected CharSequence fileObjectToUrlImpl(FileObject fileObject) {
@@ -342,7 +406,7 @@ public abstract class CndFileSystemProvider {
             }
             return fileObject.getPath();
         }
-        
+
         @Override
         protected CharSequence toUrlImpl(FSPath fSPath) {
             for (CndFileSystemProvider provider : cache) {
