@@ -1,5 +1,243 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+
+	changeset   : 265081:ccb1fab67b20
+
+	summary     : Switch from "ansi" to "xterm" as the default terminal
+	emulation type ($TERM)
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	op_ind() and op_cud() are now part of Ops.
+
+	op_line_feed() now implemented in terms of op_ind().
+
+	Fine tune op_cuu(0 and op_cud().
+
+	op_full-reset() clears history.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242713:1841c687fb7b	Refactoring before tackling
+						IND and CUD.
+
+	Implement
+		IND (Index)		\ESCD		scrolls
+		line feed		\LF		== IND
+		CUD (CUrsor Down)	\ESC[%dB	doesn't scroll
+	using op_ind() and op_cud(). op_line_feed() maps to op_ind() for
+	bwd compatibility.
+
+	This fixes a bug where \ESC[%dB would previously scroll.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242712:a9901f0515a4
+
+	Implement
+		RI (Reverse Index)	\ESCM		scrolls
+		CUU (Cursor up)		\ESC[%dA	doesn't scroll
+	using op_ri() and op_cuu(). op_up() maps to op_ri() for bwd
+	compatibility.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	Implement
+		CBT (Cursor Backward Tabulation)\ESC[%dZ op_cbt
+		CHT (Cursor Horizontal Tab) 	\ESC[%dI op_cht
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242710:7d3b4c76fb2a
+	
+	Implement ED (Erase in Display) and reimplement \ESC[%dJ in terms
+	of op_ed() instead of op_cd() or op_cl().
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset:   242709:a0c447ec4b2c
+
+	Fix EL (Erase in Line) and ECH (Erase CHaracters) especially wrt
+	retaining background color in erased regions.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242708:8e56a4a57a11
+
+	While fixing cursor show/hide discovered that the real problem is
+	that for DEC private actions didn't correct handle multiple
+	;-separated numbers - last one was dropped.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242707:b9d72096f34f
+
+	Implement
+		\ESC[%dG	CHA
+		\ESC[%dX	ECH
+		\ESC[%dd	VPA
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242706:f2e980336ed7
+
+	- Handle unsupported Toolkit.getLockingKeyState().
+	  See comment in InterpProtoANSIX.numLock().
+	- Accept multiple numbers for \ESC[?
+	- Parse \ESC[> family in InterpXTerm but leave actions for
+	  later except for \ESC[>c.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset:   242705:ba366f6407ec
+
+	Emit correct sequences for function, edit, numpad and arrow keys
+	for InterpProtoANSIX ("xterm" and "dtterm").
+
+		This comes at a slight price of regresions in Term
+		accessibility - for the above terminal types only.
+		PageUp, PageDown, Ctl-UpArrow and Ctl-DnArrow will no
+		longer scroll according to Swing L&F conventions.
+		This is acceptable if you consider Term to be the ultimate
+		keyboard accessibility mechanism where terminal conventions
+		override those of Swing L&F.
+
+	Implement DECPAM, DECPNM and DECCKM to control alternative
+	key sequences that get sent from above.
+
+	InterpANSI also emits special sequences for arrow keys and 
+	Insert and Home keys.
+
+	InterpProtoANSIX now keep's it's own state to keep tyrack of
+	PAM and CKM as opposed to using State.
+
+	Implementation depends on new method
+		Interp.keyPressed(KeyEvent e)
+	which, in turn, depends on
+		Ops.send_chars(String sequence)
+
+	Because state is now kept in interpreters had to add 
+		Interp.softReset().
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset:   242704:6f3266eb5908
+
+	- \ESC[%dl implementation moved from 'ansi' to 'protoansi'.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	changeset   : 242703:674b8a6f08a4
+
+	- \ESC7 and \ESC8 implementation moved from 'ansi' to 'protoansi'.
+
+	- Implement all codes (012) for \ESC[%dK.
+	  Uses new Ops.op_el(int code).
+	  Ope.op_ce() now just delegates to op_el(0).
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	- Implement sequences for ProtoANSI
+		  \ESCn
+		  \ESCo
+
+		  \ESC(B	\ESC(0
+		  \ESC)B	\ESC)0
+		  \ESC*B	\ESC*0
+		  \ESC+B	\ESC+0
+	  These utilize Ops.setG() and selectGL().
+
+	- Font selection is now done in a slightly more complex, two-step,
+	  process. Sequences \ESC(, ), * and + assign a font to one of 
+	  graphics sets G0, G1, G2 or G3. Then the sequences
+	  \SI, \SO, \ESCn and \ESCo choose one of G[0123] as the rendered
+	  font.
+	  All this info is now kept in State and State.font() returns 
+	  the "current font".
+
+	- For "ansi" emulation fonts are set using \ESC%dm.
+	  Previosuly this used to go through Ops.set_attr() but now it
+	  goes via Ops.op_setG() in InterpANSI.dispatchAttr().
+
+	- Attr used to store font info but that was only used by State not by 
+	  actual buffer cells. Now that font state is more complex it's stored
+	  explicitly in State and all Attr font handling becomes dead code.
+	  Removed the dead code.
+
+	- Fixed rendition of the diamond ACS graphic character.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+
+	- Increment spec version to 1.25
+
+	- InterpProtoANSI and InterpProtoANSIX were supposed to be
+	  package private.
+
+	- Add ability to customize Alternative Character Set (ACS) encoding
+	  by Interp.
+
+	  The key is
+		char Interp.mapACS(char)
+	  which will take an interp-specific encoding and return a
+	  canonical encoding or '\0' which means the passed in char
+	  does not encode an ACS.
+	  The canonical encodings correspond to curses ACS_ variables
+	  and characters used by the 'acsc' terminfo attribute.
+
+	  For example "infocmp ansi" will yield:
+		acsc=+\020\,\021-\030.^Y0\333`\004a\261f\370g\361 ...
+	  and therefore mapACS for ANSI should return '-' when
+	  passed \030.
+
+	  This is the main fix needed for 187345. That is, if "xterm"
+	  emulation is chosen for a Term it will handle the rendition of
+	  graphic characters correctly.
+
+	  However handling of _switching_ to the ACS font will take a
+	  bit more doing because "ansi" terminals honor \ESC10m and
+	  \ESC11m but "xterm"s require \ESC(0 and \ESC(B and then 
+	  \SO and \SI.
+
+	- Add ability to customize responses to attribute codes by Interp.
+
+	  The sequence \ESC%dm is a general attribute setting mechanism.
+	  However, the values accepted by "xterm", "ansi" and "dtterm" 
+	  differ wildly. Yet, fortunately, there's no overlap in functionality
+	  so we can still leave the ultimate implementation of the code up to
+	  Term/Ops/Attr.
+
+	  Handling of the actual value of %d is now delegated to Interps via
+	  	boolean InterpProtoANSI.dispatchAttr(AbstractInterp ai, int n)
+	  which check for valid values of 'n' and call ops.op_attr().
+
+	  Incidentally added a couple of missing codes to Attr.setAttribute().
+	  3 and 6 are now accepted although they fall back on simulations.
+
+	  This is all private to the terminalemulator package and only
+	  applies to Interp's derived from InterpProtoANSI.
+
+	- Using an intermediate private Term.mapACS() as a trampoline
+	  between mapChar() and Interp.mapACS() didn't quite work out right.
+	  Need to test for '\0' directly in mapChar().
+
+	- Added additional ACS support for arrows and blocks.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
 	Distribute "text parameter" sequence interpretation properly
 	between InterpXTerm and InterpProtoANSIX.
 
