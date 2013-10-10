@@ -178,6 +178,28 @@ public class ModelUtils {
                     break;
                 }
             }
+            if (object instanceof JsArray) {
+                JsArray array = (JsArray)object;
+                JsObject global = getGlobalObject(object);
+                for (TypeUsage type : array.getTypesInArray()) {
+                    if (type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)) {
+                        int anonymOffset = Integer.parseInt(type.getType().substring(SemiTypeResolverVisitor.ST_ANONYM.length()));
+                        if (anonymOffset > 0) {
+                            DeclarationScope scope = getDeclarationScope(array);
+                            for (JsObject property : ((JsObject)scope).getProperties().values()) {
+                                JsElement.Kind kind = property.getJSKind();
+                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
+                                    tmpObject = findJsObject(property, offset);
+                                }
+                                if (tmpObject != null) {
+                                    result = tmpObject;
+                                    break;
+                                }
+                            }
+                        }   
+                    }
+                }
+            }
         }
         return result;
     }
