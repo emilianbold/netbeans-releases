@@ -55,6 +55,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -248,7 +249,13 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
 
     private SourceGroup[] getProjectDocumentSourceGroups() {
         Sources sources = ProjectUtils.getSources(Templates.getProject(wizardDescriptor));
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] docSourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
+        SourceGroup[] sourceGroups;
+        if (docSourceGroups.length == 0) {
+            sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        } else {
+            sourceGroups = docSourceGroups;
+        }
         return sourceGroups;
     }
 
