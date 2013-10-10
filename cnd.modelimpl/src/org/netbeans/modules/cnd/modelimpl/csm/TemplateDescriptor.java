@@ -110,8 +110,8 @@ public final class TemplateDescriptor {
     }
 
     public List<CsmTemplateParameter> getTemplateParameters() {
-        if (templateParams != null) {
-            List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>();
+        if (templateParams != null && !templateParams.isEmpty()) {
+            List<CsmTemplateParameter> res = new ArrayList<CsmTemplateParameter>(templateParams.size());
             for(CsmTemplateParameter par : UIDCsmConverter.UIDsToCsmObjects(templateParams)){
                 res.add(par);
             }
