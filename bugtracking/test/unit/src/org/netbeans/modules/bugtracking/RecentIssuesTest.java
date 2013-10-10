@@ -262,7 +262,7 @@ public class RecentIssuesTest extends NbTestCase {
         }
     }
 
-    private class RITestConector extends BugtrackingConnector {
+    private class RITestConector implements BugtrackingConnector {
         @Override
         public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");

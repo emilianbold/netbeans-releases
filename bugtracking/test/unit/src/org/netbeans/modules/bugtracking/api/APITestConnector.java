@@ -71,7 +71,7 @@ import org.openide.util.Lookup;
     id=APITestConnector.ID_CONNECTOR,
     displayName=APITestConnector.ID_CONNECTOR,
     tooltip=APITestConnector.ID_CONNECTOR)    
-public class APITestConnector extends BugtrackingConnector {
+public class APITestConnector implements BugtrackingConnector {
     
     private static final BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue> factory = 
             new BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue>();

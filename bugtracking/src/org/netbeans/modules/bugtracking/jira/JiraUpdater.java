@@ -219,7 +219,7 @@ public class JiraUpdater {
         return panel;
     }
     
-    private class JiraProxyConector extends BugtrackingConnector {
+    private class JiraProxyConector implements BugtrackingConnector {
         private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
         public Repository createRepository() {
