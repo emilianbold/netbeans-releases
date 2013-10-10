@@ -313,6 +313,11 @@ public class InfiniteRecursion {
             return s == null ? State.NO : s;
         }
         
+        public State scan(Iterable<? extends Tree> nodes, Void p) {
+            State s = super.scan(nodes, p);
+            return s == null ? State.NO : s;
+        }
+        
         @Override
         public State reduce(State r1, State r2) {
             if (knownResult != null) {
