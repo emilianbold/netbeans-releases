@@ -691,7 +691,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(evaluator, getEndorsedClasspath()));
+            cp = ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(evaluator, getEndorsedClasspath(), platformType));
             cache[7] = cp;
         }
         return cp;

@@ -164,12 +164,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 && activePlatformName != null) {
             // platform definitions were changed, check if the platform was not resolved or deleted
             if (isActivePlatformValid) {
-                if (CommonProjectUtils.getActivePlatform(activePlatformName) == null) {
+                if (CommonProjectUtils.getActivePlatform(activePlatformName, platformType) == null) {
                     // the platform was not removed
                     resetCache();
                 }
             } else {
-                if (CommonProjectUtils.getActivePlatform(activePlatformName) != null) {
+                if (CommonProjectUtils.getActivePlatform(activePlatformName, platformType) != null) {
                     resetCache();
                 }
             }
@@ -184,7 +184,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
         }
         activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName);
+        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName, platformType);
         isActivePlatformValid = activePlatform != null;
         return activePlatform;
     }
