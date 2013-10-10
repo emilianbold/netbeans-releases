@@ -247,7 +247,11 @@ public class TypesCompletion extends BaseCompletion {
             List<ImportNode> importNodes = moduleNode.getStarImports();
 
             for (ImportNode wildcardImport : importNodes) {
-                localDefaultImports.add(wildcardImport.getPackageName());
+                String packageName = wildcardImport.getPackageName();
+                if (packageName.endsWith(".")) {
+                    packageName = packageName.substring(0, packageName.length() - 1);
+                }
+                localDefaultImports.add(packageName);
             }
         }
 
