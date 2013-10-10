@@ -90,7 +90,7 @@ import org.openide.util.NbCollections;
  * @author Jiri Rechtacek
  */
 public class InstallSupportImpl {
-    private InstallSupport support;
+    private final InstallSupport support;
     private boolean progressRunning = false;
     private static final Logger LOG = Logger.getLogger (InstallSupportImpl.class.getName ());
     
@@ -118,9 +118,9 @@ public class InstallSupportImpl {
     private STEP currentStep = STEP.NOTSTARTED;
     
     // validation results
-    private Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
-    private Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
-    private Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
+    private final Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
+    private final Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
+    private final Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
     private List<? extends OperationInfo> infos = null;
     
     private ExecutorService es = null;
@@ -1129,7 +1129,7 @@ public class InstallSupportImpl {
     }
     
     private static final class RefreshModulesListener implements PropertyChangeListener, Runnable  {
-        private ProgressHandle handle;
+        private final ProgressHandle handle;
         private int i;
         private PropertyChangeEvent ev;
         

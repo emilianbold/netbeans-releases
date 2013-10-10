@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -235,7 +237,9 @@ public class NetworkAccess {
                     }
                 });
                 https.setSSLSocketFactory(sslContext.getSocketFactory());
-            } catch (Exception ex) {
+            } catch (KeyManagementException ex) {
+                throw new IOException(ex);
+            } catch (NoSuchAlgorithmException ex) {
                 throw new IOException(ex);
             }
         }
