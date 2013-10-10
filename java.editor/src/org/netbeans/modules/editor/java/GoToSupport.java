@@ -428,6 +428,10 @@ public class GoToSupport {
                 result = result.substring(0, idx + 3);
                 result += "<a href='***'>more...</a>"; //NOI18N
             }
+            idx = result.indexOf("<p id=\"not-found\">"); //NOI18N
+            if (idx >= 0) {
+                result = result.substring(0, idx);
+            }
             doc.putProperty("TooltipResolver.hyperlinkListener", new HyperlinkListener() { //NOI18N
                 @Override
                 public void hyperlinkUpdate(HyperlinkEvent e) {                    

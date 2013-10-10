@@ -291,8 +291,8 @@ public class GoToSupportTest extends NbTestCase {
         String code = "package test; public class Test {enum EE {A} class CC {} EE a; CC c;}";
         int[] offset = new int[] {82, 88};
         String[] golden = new String[] {
-            "<html><body>static final enum test.Test.<b>EE</b>",
-            "<html><body>class test.Test.<b>CC</b>",
+            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><p><tt>static enum <b>EE</b> extends <a href='*1'>Enum</a>&lt;<a href='*2'>Test.EE</a>&gt;</tt>",
+            "<html><body><base href=\"file:" + getWorkDirPath() + "/src/test/Test.java\"></base><font size='+0'><b><a href='*0'>test.&#x200B;Test</a></b></font><p><tt> class <b>CC</b> extends <a href='*1'>Object</a></tt>",
         };
         assertEquals(offset.length, golden.length);
         for (int cntr = 0; cntr < offset.length; cntr++) {
@@ -1013,7 +1013,7 @@ public class GoToSupportTest extends NbTestCase {
         int offset = code.indexOf('|');
         code = code.replaceAll(Pattern.quote("|"), "");
         assertNotSame(-1, offset);
-        String golden = "<html><body>public  <b>ArrayList</b>&lt;java.lang.String&gt;()";
+        String golden = "<html><body><font size='+0'><b><a href='*0'>java.&#x200B;util.&#x200B;ArrayList</a></b></font><p><tt>public <b>ArrayList</b>()</tt>";
 
         String tooltip = performTest(code, offset, new OrigUiUtilsCaller() {
             public void open(FileObject fo, int pos) {

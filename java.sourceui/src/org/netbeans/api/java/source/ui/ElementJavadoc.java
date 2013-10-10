@@ -383,7 +383,10 @@ public class ElementJavadoc {
             final FileObject fo = compilationInfo.getFileObject();
             if (fo == null || JavaSource.forFileObject(fo) == null) {
                 final StringBuilder sb = new StringBuilder(content);
-                sb.append(noJavadocFound()); //NOI18N
+                if (sb.indexOf("<p>", sb.length() - 3) == sb.length() - 3) { //NOI18N
+                    sb.delete(sb.length() - 3, sb.length());
+                }
+                sb.append(noJavadocFound());
                 this.content = new Now (sb.toString());
                 return;
             }
@@ -716,10 +719,14 @@ public class ElementJavadoc {
                     @Override
                     public String call() throws Exception {
                         String jdText = page != null ? HTMLJavadocParser.getJavadocText(page, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
-                        if (jdText != null)
+                        if (jdText != null) {
                             sb.append(jdText);
-                        else
-                            sb.append(noJavadocFound()); //NOI18N
+                        } else {
+                            if (sb.indexOf("<p>", sb.length() - 3) == sb.length() - 3) { //NOI18N
+                                sb.delete(sb.length() - 3, sb.length());
+                            }
+                            sb.append(noJavadocFound());
+                        }
                         return sb.toString();
                     }
                 };
@@ -730,6 +737,9 @@ public class ElementJavadoc {
                     task.run();
                 }
                 return task;
+            }
+            if (sb.indexOf("<p>", sb.length() - 3) == sb.length() - 3) { //NOI18N
+                sb.delete(sb.length() - 3, sb.length());
             }
             sb.append(noJavadocFound()); //NOI18N
             return new Now (sb.toString());
