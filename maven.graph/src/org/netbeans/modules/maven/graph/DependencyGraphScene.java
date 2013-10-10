@@ -65,6 +65,7 @@ import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.EditProvider;
@@ -80,10 +81,7 @@ import org.netbeans.api.visual.export.SceneExporter;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
-import org.netbeans.api.visual.graph.layout.GraphLayoutListener;
 import org.netbeans.api.visual.graph.layout.GraphLayoutSupport;
-import org.netbeans.api.visual.graph.layout.UniversalGraph;
-import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -494,21 +492,14 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
 
     private static class FitToViewLayout  {
 
-        private List<? extends Widget> widgets = null;
         private final DependencyGraphScene depScene;
 
         FitToViewLayout(DependencyGraphScene scene) {
-            
             this.depScene = scene;
         }
 
-        /** Sets list of widgets to fit or null for fitting whole scene */
-        public void setWidgetsToFit (List<? extends Widget> widgets) {
-            this.widgets = widgets;
-        }
-
         
-        protected void performLayout() {
+        protected void fitToView(@NullAllowed List<? extends Widget> widgets) {
             Rectangle rectangle = null;
             List<? extends Widget> toFit = widgets != null ? widgets : depScene.getChildren();
             if (toFit == null) {
@@ -558,9 +549,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            FitToViewLayout ftvl = DependencyGraphScene.this.getFitToViewLayout();
-            ftvl.setWidgetsToFit(null);
-            ftvl.performLayout();;
+            DependencyGraphScene.this.getFitToViewLayout().fitToView(null);
         }
     };
 
@@ -582,10 +571,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                     aws.add(aw);
                 }
             }
-
-            FitToViewLayout ftvl = DependencyGraphScene.this.getFitToViewLayout();
-            ftvl.setWidgetsToFit(aws);
-            ftvl.performLayout();
+            DependencyGraphScene.this.getFitToViewLayout().fitToView(aws);
         }
     };
 
