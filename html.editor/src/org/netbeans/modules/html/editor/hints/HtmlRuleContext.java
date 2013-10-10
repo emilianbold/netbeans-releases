@@ -68,14 +68,14 @@ import org.openide.util.Exceptions;
  */
 public class HtmlRuleContext {
 
-    private SyntaxAnalyzerResult syntaxAnalyzerResult;
-    private HtmlParserResult parserResult;
-    private List<HintFix> defaultFixes;
-    private List<? extends Error> leftDiagnostics;
+    private final SyntaxAnalyzerResult syntaxAnalyzerResult;
+    private final HtmlParserResult parserResult;
+    private final List<HintFix> defaultFixes;
+    private final List<? extends Error> leftDiagnostics;
     private CssIndex cssIndex;
     private DependenciesGraph cssDependencies;
     private final Lines lines;
-    private Collection<Integer> linesWithHints;
+    private final Collection<Integer> linesWithHints;
 
     public HtmlRuleContext(HtmlParserResult parserResult, SyntaxAnalyzerResult syntaxAnalyzerResult, List<HintFix> defaultFixes) {
         this.parserResult = parserResult;

@@ -57,6 +57,7 @@ import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.cli.MavenCli;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -84,7 +85,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class ProjectFilesNode extends AnnotatedAbstractNode {
     
-    private NbMavenProjectImpl project;
+    private static final @StaticResource String PF_BADGE = "org/netbeans/modules/maven/projectfiles-badge.png";
+    private final NbMavenProjectImpl project;
 
     @Messages("LBL_Project_Files=Project Files")
     public ProjectFilesNode(NbMavenProjectImpl project) {
@@ -105,7 +107,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
     }
     
     private Image getIcon(boolean opened) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/projectfiles-badge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage(PF_BADGE, true); //NOI18N
         Image img = ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
         return img;
     }
@@ -157,7 +159,7 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         }
         
         public @Override void propertyChange(PropertyChangeEvent evt) {
-            if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 refresh(false);
             }
         }

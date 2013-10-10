@@ -1,7 +1,9 @@
 /*
+ * To change this license header, choose License Headers in Project Properties.
  * To change this template, choose Tools | Templates and open the template in
  * the editor.
  */
+
 package ejbs.local;
 
 import javax.ejb.SessionBean;
@@ -57,6 +59,7 @@ public class LocalSession implements SessionBean {
         // spanning all methods can be performed here such as home interfaces
         // and data sources.
     }
+
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method" or "Web Service > Add Operation")
 }

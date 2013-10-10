@@ -585,7 +585,7 @@ public class OutWriterTest extends NbTestCase {
     public void testLimitReached() throws IOException {
         OutWriter ow = new OutWriter();
         ((AbstractLines) ow.getLines()).setOutputLimits(
-                new OutputLimits(5, 1024, 3));
+                new OutputLimits(6, 1024, 3));
 
         ow.println("first");
         ow.println("second");
@@ -598,6 +598,41 @@ public class OutWriterTest extends NbTestCase {
         assertEquals("fourth\n", ow.getLines().getLine(0));
         assertEquals("fifth\n", ow.getLines().getLine(1));
         assertEquals("", ow.getLines().getLine(2));
+    }
+
+    /**
+     * Test for bug 232547 - There are LineInfo object even for lines that has
+     * no special properties.
+     */
+    public void testNoExtraLineInfoObjectsByPrintln() {
+
+        OutWriter ow = new OutWriter();
+        ow.println("Months:\nJanuary\nFebruary\rMarch\r\nApril\n\rMay");
+        assertNoLineInfo(ow);
+    }
+
+    /**
+     * Test for bug 232547 - There are LineInfo object even for lines that has
+     * no special properties.
+     */
+    public void testNoExtraLineInfoObjectsByPrint() {
+
+        OutWriter ow = new OutWriter();
+        ow.print("Months:\nJanuary\nFebruary\rMarch\r\nApril\n\rMay",
+                null, false);
+        assertNoLineInfo(ow);
+    }
+
+    /**
+     * Assert that no line in the OutWriter has assigned a LineInfo object. That
+     * would be waste of memory if the lines have no special properties.
+     */
+    private void assertNoLineInfo(OutWriter ow) {
+        AbstractLines lines = (AbstractLines) ow.getLines();
+        for (int i = 0; i < lines.getLineCount(); i++) {
+            assertNull("No LineInfo for basic line",
+                    lines.getExistingLineInfo(i));
+        }
     }
 
     void processEQ() {

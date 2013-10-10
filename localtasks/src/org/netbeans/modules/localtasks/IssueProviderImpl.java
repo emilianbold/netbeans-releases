@@ -45,7 +45,7 @@ package org.netbeans.modules.localtasks;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 
 /**
@@ -53,7 +53,6 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
  * @author Ondrej Vrabec
  */
 public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.IssueProvider<LocalTask> {
-    private IssueStatusProvider<LocalTask> statusProvider;
 
     @Override
     public String getDisplayName (LocalTask data) {
@@ -106,7 +105,7 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public BugtrackingController getController (LocalTask data) {
+    public IssueController getController (LocalTask data) {
         return data.getController();
     }
 
@@ -121,28 +120,8 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public IssueStatusProvider getStatusProvider () {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<LocalTask>() {
-                @Override
-                public IssueStatusProvider.Status getStatus(LocalTask issue) {
-                    return Status.SEEN;
-                }
-                @Override
-                public void setSeen (LocalTask issue, boolean uptodate) {
-                    // and what should this suppose to do?
-                }
-                @Override
-                public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-                @Override
-                public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
+    public void discardOutgoing(LocalTask data) {
+        data.delete();
     }
     
 }

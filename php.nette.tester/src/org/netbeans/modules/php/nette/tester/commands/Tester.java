@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.nette.tester.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,17 +52,24 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.nette.tester.TesterTestingProvider;
 import org.netbeans.modules.php.nette.tester.options.TesterOptions;
+import org.netbeans.modules.php.nette.tester.options.TesterOptionsValidator;
+import org.netbeans.modules.php.nette.tester.preferences.TesterPreferences;
+import org.netbeans.modules.php.nette.tester.preferences.TesterPreferencesValidator;
 import org.netbeans.modules.php.nette.tester.run.TapParser;
 import org.netbeans.modules.php.nette.tester.run.TestCaseVo;
 import org.netbeans.modules.php.nette.tester.run.TestSuiteVo;
+import org.netbeans.modules.php.nette.tester.ui.customizer.TesterCustomizer;
 import org.netbeans.modules.php.nette.tester.ui.options.TesterOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -71,6 +77,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -87,10 +94,9 @@ public final class Tester {
 
     public static final String TESTER_FILE_NAME = "tester"; // NOI18N
 
-    private static final String TESTER_PROJECT_FILE_PATH = "vendor/nette/tester/Tester/tester"; // NOI18N
-
     private static final String TAP_FORMAT_PARAM = "--tap"; // NOI18N
     private static final String SKIP_INFO_PARAM = "-s"; // NOI18N
+    private static final String PHP_INI_PARAM = "-c"; // NOI18N
 
     private final String testerPath;
 
@@ -101,41 +107,83 @@ public final class Tester {
     }
 
     public static Tester getDefault() throws InvalidPhpExecutableException {
-        String script = TesterOptions.getInstance().getTesterPath();
-        String error = validate(script);
+        String error = validateDefault(true, true);
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new Tester(script);
+        return new Tester(TesterOptions.getInstance().getTesterPath());
     }
 
     @CheckForNull
-    public static Tester getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
+    public static Tester getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
+        if (validatePhpModule(phpModule) != null) {
+            if (showCustomizer) {
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(TesterCustomizer.IDENTIFIER, null);
+            }
             return null;
         }
-        FileObject fileObject = sourceDirectory.getFileObject(TESTER_PROJECT_FILE_PATH);
-        if (fileObject == null) {
-            return getDefault();
+        // possibly php.ini
+        if (!TesterPreferences.isPhpIniEnabled(phpModule)) {
+            String error = validateDefault(false, true);
+            if (error != null) {
+                if (showCustomizer) {
+                    UiUtils.invalidScriptProvided(error, TesterOptionsPanelController.OPTIONS_SUB_PATH);
+                }
+                return null;
+            }
         }
-        File file = FileUtil.toFile(fileObject);
-        assert file != null : "File not found fileobject: " + fileObject;
-        String path = file.getAbsolutePath();
-        String error = validate(path);
-        if (error != null) {
-            throw new InvalidPhpExecutableException(error);
+        // tester
+        String path;
+        if (TesterPreferences.isTesterEnabled(phpModule)) {
+            // custom tester
+            path = TesterPreferences.getTesterPath(phpModule);
+        } else {
+            // default tester
+            String error = validateDefault(true, false);
+            if (error != null) {
+                if (showCustomizer) {
+                    UiUtils.invalidScriptProvided(error, TesterOptionsPanelController.OPTIONS_SUB_PATH);
+                }
+                return null;
+            }
+            path = TesterOptions.getInstance().getTesterPath();
         }
         return new Tester(path);
     }
 
-    @NbBundle.Messages("Tester.file.label=Tester file")
-    public static String validate(String command) {
-        return PhpExecutableValidator.validateCommand(command, Bundle.Tester_file_label());
-    }
-
     public static boolean isTestMethod(PhpClass.Method method) {
         return method.getName().startsWith("test"); // NOI18N
+    }
+
+    @CheckForNull
+    private static String validateDefault(boolean validateTester, boolean validatePhpIni) {
+        TesterOptionsValidator validator = new TesterOptionsValidator();
+        if (validateTester) {
+            validator.validateTesterPath(TesterOptions.getInstance().getTesterPath());
+        }
+        if (validatePhpIni) {
+            validator.validatePhpIniPath(TesterOptions.getInstance().getPhpIniPath());
+        }
+        return validateResult(validator.getResult());
+    }
+
+    @CheckForNull
+    private static String validatePhpModule(PhpModule phpModule) {
+        ValidationResult result = new TesterPreferencesValidator()
+                .validate(phpModule)
+                .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validateResult(ValidationResult result) {
+        if (result.isFaultless()) {
+            return null;
+        }
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        return result.getWarnings().get(0).getMessage();
     }
 
     @CheckForNull
@@ -144,6 +192,7 @@ public final class Tester {
         List<String> params = new ArrayList<>();
         params.add(TAP_FORMAT_PARAM);
         params.add(SKIP_INFO_PARAM);
+        addPhpIni(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
             // XXX add coverage params once tester supports it
             LOGGER.info("Nette Tester currently does not support code coverage via command line");
@@ -195,7 +244,9 @@ public final class Tester {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(TesterOptionsPanelController.OPTIONS_PATH)
-                .showProgress(true);
+                .showProgress(true)
+                .outLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
@@ -224,6 +275,19 @@ public final class Tester {
         }
     }
 
+    private void addPhpIni(PhpModule phpModule, List<String> params) {
+        String phpIniPath;
+        if (TesterPreferences.isPhpIniEnabled(phpModule)) {
+            phpIniPath = TesterPreferences.getPhpIniPath(phpModule);
+        } else {
+            phpIniPath = TesterOptions.getInstance().getPhpIniPath();
+        }
+        if (StringUtils.hasText(phpIniPath)) {
+            params.add(PHP_INI_PARAM);
+            params.add(phpIniPath);
+        }
+    }
+
     //~ Inner classes
 
     private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory {
@@ -238,16 +302,17 @@ public final class Tester {
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return new ParsingProcessor(testSession);
+            return InputProcessors.bridge(new ParsingProcessor(testSession));
         }
 
     }
 
-    private static final class ParsingProcessor implements InputProcessor {
+    private static final class ParsingProcessor implements LineProcessor {
 
         private static final Logger LOGGER = Logger.getLogger(ParsingProcessor.class.getName());
 
         private final TestSession testSession;
+        private final StringBuilder buffer = new StringBuilder();
 
         private TestSuite testSuite = null;
         private long currentMillis = currentMillis();
@@ -264,9 +329,38 @@ public final class Tester {
         }
 
         @Override
-        public void processInput(char[] chars) throws IOException {
-            String input = new String(chars);
-            LOGGER.log(Level.FINEST, "Processing input {0}", input);
+        public void processLine(String line) {
+            LOGGER.log(Level.FINEST, "Processing line: {0}", line);
+            if (TapParser.isTestCaseStart(line)) {
+                process(buffer.toString());
+                buffer.setLength(0);
+            }
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        @Override
+        public void reset() {
+            LOGGER.fine("Resetting processor");
+            finish();
+        }
+
+        @Override
+        public void close() {
+            LOGGER.fine("Closing processor");
+            finish();
+        }
+
+        private void finish() {
+            process(buffer.toString());
+            if (testSuite != null) {
+                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuite);
+                testSuite.finish(testSuiteTime);
+            }
+        }
+
+        public void process(String input) {
+            LOGGER.log(Level.FINEST, "Parsing input:\n{0}", input);
             TestSuiteVo suite = new TapParser()
                     .parse(input, currentMillis() - currentMillis);
             LOGGER.log(Level.FINE, "Parsed test suites: {0}", suite);
@@ -277,20 +371,6 @@ public final class Tester {
                 LOGGER.log(Level.WARNING, null, throwable);
             }
             currentMillis = currentMillis();
-        }
-
-        @Override
-        public void reset() throws IOException {
-            // noop
-        }
-
-        @Override
-        public void close() throws IOException {
-            LOGGER.fine("Closing processor");
-            if (testSuite != null) {
-                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuite);
-                testSuite.finish(testSuiteTime);
-            }
         }
 
         private void process(TestSuiteVo suite) {
@@ -304,7 +384,7 @@ public final class Tester {
             if (path == null) {
                 return null;
             }
-            FileObject fileObject = FileUtil.toFileObject(new File(path));
+            FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
             assert fileObject != null : "Cannot find file object for: " + path;
             return fileObject;
         }

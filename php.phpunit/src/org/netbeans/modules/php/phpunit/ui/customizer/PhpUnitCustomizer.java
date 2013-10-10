@@ -54,6 +54,8 @@ import org.openide.util.NbBundle;
  */
 public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
+    public static final String IDENTIFIER = PhpUnitTestingProvider.getInstance().getIdentifier();
+
     private final PhpModule phpModule;
 
 
@@ -66,7 +68,7 @@ public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryPro
     @Override
     public Category createCategory(Lookup context) {
         return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.getInstance().getIdentifier(),
+                IDENTIFIER,
                 Bundle.PhpUnitCustomizer_name(),
                 null,
                 (ProjectCustomizer.Category[]) null);

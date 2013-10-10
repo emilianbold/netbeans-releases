@@ -284,15 +284,15 @@ final class CompletionContextFinder {
         } else if (isInsideClassDeclarationBlock(info, caretOffset, tokenSequence)) {
             if (acceptTokenChains(tokenSequence, METHOD_NAME_TOKENCHAINS, moveNextSucces)) {
                 return CompletionContext.METHOD_NAME;
-            } else if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
-                return CompletionContext.CLASS_CONTEXT_KEYWORDS;
             } else {
                 CompletionContext paramContext = getParamaterContext(token, caretOffset, tokenSequence);
                 if (paramContext != null) {
                     return paramContext;
+                } else if (acceptTokenChains(tokenSequence, CLASS_CONTEXT_KEYWORDS_TOKENCHAINS, moveNextSucces)) {
+                    return CompletionContext.CLASS_CONTEXT_KEYWORDS;
                 }
+                return CompletionContext.NONE;
             }
-            return CompletionContext.NONE;
         } else if (acceptTokenChains(tokenSequence, FUNCTION_NAME_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.NONE;
         } else if (isCommonCommentToken(tokenSequence)) {

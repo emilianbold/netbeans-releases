@@ -76,7 +76,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -106,6 +106,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.bugzilla.issue.Bundle.*;
+import org.netbeans.modules.mylyn.util.NbDateRange;
 
 /**
  *
@@ -121,7 +122,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     private final BugzillaRepository repository;
 
-    private IssueController controller;
+    private BugzillaIssueController controller;
     private BugzillaIssueNode node;
     private OwnerInfo info;
 
@@ -380,9 +381,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if (controller == null) {
-            controller = new IssueController(this);
+            controller = new BugzillaIssueController(this);
         }
         return controller;
     }
@@ -1160,15 +1161,25 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (resolution != null && !resolution.trim().isEmpty()) {
             status += "/" + resolution; //NOI18N
         }
+        String scheduledLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Scheduled_Title"); //NOI18N
+        String scheduled = "---";
 
+        String dueLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Due_Title"); //NOI18N
+        String due = "---";
+
+        String estimateLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Estimate_Title"); //NOI18N
+        String estimate = "---";
 
         String fieldTable = "<table>" //NOI18N
             + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
             + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
             + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
             + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>" //NOI18N
+                + "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>" //NOI18N
             + "</table>"; //NOI18N
-
+        
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {
@@ -1378,6 +1389,46 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     List<AttachmentsPanel.AttachmentInfo> getUnsubmittedAttachments () {
         return getNewAttachments();
+    }
+
+    void setTaskPrivateNotes (String notes) {
+        super.setPrivateNotes(notes);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskDueDate (Date date) {
+        if (hasTimeTracking()) {
+            throw new UnsupportedOperationException();
+        }
+        super.setDueDate(date);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskScheduleDate (NbDateRange date) {
+        super.setScheduleDate(date);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    void setTaskEstimate (int estimate) {
+        super.setEstimate(estimate);
+        if (controller != null) {
+            controller.modelStateChanged(true, hasLocalEdits());
+        }
+    }
+    
+    public boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
+    }
+
+    public String getPriority() {
+        return getRepositoryFieldValue(IssueField.PRIORITY);
     }
 
     class Comment {

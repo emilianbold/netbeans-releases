@@ -179,7 +179,7 @@ SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 MACRO="if" | "elseif" | "else" | "ifset" | "elseifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" |
         "capture" | "cache" | "syntax" | "_" | "block" | "form" | "label" | "snippet" | "continueIf" | "breakIf" | "var" | "default" |
         "include" | "use" | "l" | "r" | "contentType" | "status" | "define" | "includeblock" | "layout" | "extends" | "link" | "plink" |
-        "control" | "input" | "dump" | "debugbreak"
+        "control" | "input" | "dump" | "debugbreak" | "widget"
 END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" | "capture" | "cache" |
         "syntax" | "_" | "block" | "form" | "label" | "snippet"
 
@@ -235,13 +235,13 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
         return LatteMarkupTokenId.T_STRING;
     }
     {STRICT_CHAR} {
-        return LatteMarkupTokenId.T_STRICT_CHAR;
+        return LatteMarkupTokenId.T_CHAR;
     }
     {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
     }
     {GLOBAL_CHAR} {
-        return LatteMarkupTokenId.T_GLOBAL_CHAR;
+        return LatteMarkupTokenId.T_CHAR;
     }
 }
 

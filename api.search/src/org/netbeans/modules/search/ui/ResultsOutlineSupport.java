@@ -75,6 +75,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.Removable;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.Selectable;
 import org.netbeans.modules.search.ui.AbstractSearchResultsPanel.RootNode;
@@ -162,6 +163,11 @@ public class ResultsOutlineSupport {
                 new ColumnsListener());
         outlineView.getOutline().getInputMap().remove(
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)); //#209949
+        outlineView.getOutline().getInputMap().put(KeyStroke.getKeyStroke(
+                KeyEvent.VK_DELETE,
+                0), "hide"); //NOI18N
+        outlineView.getOutline().getActionMap().put("hide", SystemAction.get( //NOI18N
+                HideResultAction.class));
         outlineView.getOutline().setShowGrid(false);
         Font font = outlineView.getOutline().getFont();
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
@@ -684,7 +690,7 @@ public class ResultsOutlineSupport {
         }
     }
 
-    private class FolderTreeNode extends FilterNode {
+    private class FolderTreeNode extends FilterNode implements Removable {
 
         public FolderTreeNode(FolderTreeItem pathItem) {
             super(pathItem.getFolder().getNodeDelegate(),
@@ -722,14 +728,29 @@ public class ResultsOutlineSupport {
         }
 
         @Override
-        public boolean canDestroy () {
+        public Transferable clipboardCopy() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
+        }
+
+        @Override
+        public Transferable clipboardCut() throws IOException {
+            return UiUtils.DISABLE_TRANSFER;
+        }
+
+        @Override
+        public void remove() {
+            FolderTreeItem folder = this.getLookup().lookup(FolderTreeItem.class);
+            folder.remove();
+        }
+
+        @Override
+        public boolean canDestroy() {
             return true;
         }
 
         @Override
-        public void destroy () throws IOException {
-            FolderTreeItem folder = this.getLookup().lookup(FolderTreeItem.class);
-            folder.remove();
+        public void destroy() throws IOException {
+            remove();
         }
 
         @Override

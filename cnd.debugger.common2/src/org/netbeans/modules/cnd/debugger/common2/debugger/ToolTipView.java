@@ -62,6 +62,7 @@ import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
@@ -101,8 +102,13 @@ public final class ToolTipView extends JComponent implements ExplorerManager.Pro
     public ToolTipView() {
         final OutlineView ov = new OutlineView();
         ov.setPropertyColumns("value", "Value"); //NOI18N
-        ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Property"); //NOI18N
+        ov.getOutline().getColumnModel().getColumn(0).setHeaderValue("Name"); //NOI18N
         ov.getOutline().setRootVisible(true);
+        ov.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(getForeground()),
+                BorderFactory.createEmptyBorder(0, 0, 0, 0)));
 
         setLayout(new BorderLayout());
         add(ov, BorderLayout.CENTER);

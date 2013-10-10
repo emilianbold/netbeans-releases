@@ -53,7 +53,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue> {
+public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIssue> {
 
     @Override
     public String getDisplayName(JiraQuery query) {
@@ -76,8 +76,23 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
     }
 
     @Override
+    public boolean canRemove(JiraQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(JiraQuery q) {
         q.remove();
+    }
+
+    @Override
+    public boolean canRename(JiraQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(JiraQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
     @Override
@@ -123,5 +138,4 @@ public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue>
         JiraRepository repository = query.getRepository();
         return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
-
 }

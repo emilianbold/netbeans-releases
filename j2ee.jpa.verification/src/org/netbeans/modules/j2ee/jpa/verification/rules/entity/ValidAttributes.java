@@ -123,8 +123,8 @@ public class ValidAttributes {//TODO: split at least problems with default error
 
         TypeElement subject = ctx.getJavaClass();
 
-        List<ErrorDescription> problemsFound = new ArrayList<ErrorDescription>();
-        final List<AttributeWrapper> attrs = new ArrayList<AttributeWrapper>();
+        List<ErrorDescription> problemsFound = new ArrayList<>();
+        final List<AttributeWrapper> attrs = new ArrayList<>();
 
         try {
             MetadataModel<EntityMappingsMetadata> model = ModelUtils.getModel(hc.getInfo().getFileObject());

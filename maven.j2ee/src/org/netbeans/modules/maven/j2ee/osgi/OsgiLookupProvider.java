@@ -58,7 +58,7 @@ import org.netbeans.modules.maven.j2ee.JavaEEProjectSettingsImpl;
 import org.netbeans.modules.maven.j2ee.JsfSupportHandleImpl;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
-import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
+import org.netbeans.modules.maven.j2ee.web.WebProjectWebRootProvider;
 import org.netbeans.modules.maven.j2ee.web.WebCopyOnSave;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
@@ -83,7 +83,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     private InstanceContent ic;
 
     private PersistenceProviderSupplier persistenceProviderSupplier;
-    private MavenWebProjectWebRootProvider mavenWebProjectWebRootProvider;
+    private WebProjectWebRootProvider mavenWebProjectWebRootProvider;
     private WebReplaceTokenProvider webReplaceTokenProvider;
     private EntRefContainerImpl entRefContainerImpl;
     private EntityManagerGenerationStrategyResolver eMGSResolverImpl;
@@ -99,7 +99,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         ic = new InstanceContent();
 
         persistenceProviderSupplier = new PersistenceProviderSupplierImpl(project);
-        mavenWebProjectWebRootProvider = new MavenWebProjectWebRootProvider(project);
+        mavenWebProjectWebRootProvider = new WebProjectWebRootProvider(project);
         webReplaceTokenProvider = new WebReplaceTokenProvider(project);
         entRefContainerImpl = new EntRefContainerImpl(project);
         eMGSResolverImpl = EntityManagerGenerationStrategyResolverFactory.createInstance(project);

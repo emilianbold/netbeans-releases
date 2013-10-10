@@ -236,6 +236,7 @@ public abstract class FromEntityBase {
             TypeElement bean, String managedBeanProperty, boolean collectionComponent, boolean initValueGetters) {
         List<TemplateData> templateData = new ArrayList<TemplateData>();
         List<FieldDesc> fields = new ArrayList<FieldDesc>();
+        String idFieldName = "";
         if (bean != null) {
             ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
             JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = null;
@@ -250,6 +251,7 @@ public abstract class FromEntityBase {
                     int relationship = fd.getRelationship();
                     if (EntityClass.isId(method, fd.isFieldAccess())) {
                         fd.setPrimaryKey();
+                        idFieldName = fd.getPropertyName();
                         TypeMirror rType = method.getReturnType();
                         if (TypeKind.DECLARED == rType.getKind()) {
                             DeclaredType rTypeDeclared = (DeclaredType)rType;
@@ -290,6 +292,7 @@ public abstract class FromEntityBase {
         params.put("entityDescriptors", templateData); // NOI18N
         params.put("item", ITEM_VAR); // NOI18N
         params.put("comment", Boolean.FALSE); // NOI18N
+        params.put("entityIdField", idFieldName); //NOI18N
     }
 
     private static ExecutableElement findPrimaryKeyGetter(CompilationController controller, TypeElement bean) {

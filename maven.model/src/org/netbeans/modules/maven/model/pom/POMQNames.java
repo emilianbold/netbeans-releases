@@ -204,159 +204,159 @@ public final class POMQNames {
 
 
 
-    private boolean ns;
+    private final boolean ns;
 
     public POMQNames(boolean ns) {
         this.ns = ns;
-        PROJECT = new POMQName(POMQName.createQName("project",ns)); // NOI18N
-        PARENT = new POMQName(POMQName.createQName("parent",ns)); // NOI18N
-        ORGANIZATION = new POMQName(POMQName.createQName("organization",ns)); // NOI18N
-        DISTRIBUTIONMANAGEMENT = new POMQName(POMQName.createQName("distributionManagement",ns)); // NOI18N
-        SITE = new POMQName(POMQName.createQName("site",ns)); // NOI18N
-        DIST_REPOSITORY = new POMQName(POMQName.createQName("repository",ns)); // NOI18N
-        DIST_SNAPSHOTREPOSITORY = new POMQName(POMQName.createQName("snapshotRepository",ns)); // NOI18N
-        PREREQUISITES = new POMQName(POMQName.createQName("prerequisites",ns)); // NOI18N
-        CONTRIBUTOR = new POMQName(POMQName.createQName("contributor",ns)); // NOI18N
-        SCM = new POMQName(POMQName.createQName("scm",ns)); // NOI18N
-        ISSUEMANAGEMENT = new POMQName(POMQName.createQName("issueManagement",ns)); // NOI18N
-        CIMANAGEMENT = new POMQName(POMQName.createQName("ciManagement",ns)); // NOI18N
-        NOTIFIER = new POMQName(POMQName.createQName("notifier",ns)); // NOI18N
-        REPOSITORY = new POMQName(POMQName.createQName("repository",ns)); // NOI18N
-        PLUGINREPOSITORY = new POMQName(POMQName.createQName("pluginRepository",ns)); // NOI18N
-        RELEASES = new POMQName(POMQName.createQName("releases",ns)); // NOI18N
-        SNAPSHOTS = new POMQName(POMQName.createQName("snapshots",ns)); // NOI18N
-        PROFILE = new POMQName(POMQName.createQName("profile",ns)); // NOI18N
-        PLUGIN = new POMQName(POMQName.createQName("plugin",ns)); // NOI18N
-        DEPENDENCY = new POMQName(POMQName.createQName("dependency",ns)); // NOI18N
-        EXCLUSION = new POMQName(POMQName.createQName("exclusion",ns)); // NOI18N
-        EXECUTION = new POMQName(POMQName.createQName("execution",ns)); // NOI18N
-        RESOURCE = new POMQName(POMQName.createQName("resource",ns)); // NOI18N
-        TESTRESOURCE = new POMQName(POMQName.createQName("testResource",ns)); // NOI18N
-        PLUGINMANAGEMENT = new POMQName(POMQName.createQName("pluginManagement",ns)); // NOI18N
-        REPORTING = new POMQName(POMQName.createQName("reporting",ns)); // NOI18N
-        REPORTPLUGIN = new POMQName(POMQName.createQName("plugin",ns)); // NOI18N
-        REPORTSET = new POMQName(POMQName.createQName("reportSet",ns)); // NOI18N
-        ACTIVATION = new POMQName(POMQName.createQName("activation",ns)); // NOI18N
-        ACTIVATIONPROPERTY = new POMQName(POMQName.createQName("property",ns)); // NOI18N
-        ACTIVATIONOS = new POMQName(POMQName.createQName("os",ns)); // NOI18N
-        ACTIVATIONFILE = new POMQName(POMQName.createQName("file",ns)); // NOI18N
-        ACTIVATIONCUSTOM = new POMQName(POMQName.createQName("custom",ns)); // NOI18N
-        DEPENDENCYMANAGEMENT = new POMQName(POMQName.createQName("dependencyManagement",ns)); // NOI18N
-        BUILD = new POMQName(POMQName.createQName("build",ns)); // NOI18N
-        EXTENSION = new POMQName(POMQName.createQName("extension",ns)); // NOI18N
-        LICENSE = new POMQName(POMQName.createQName("license",ns)); // NOI18N
-        MAILINGLIST = new POMQName(POMQName.createQName("mailingList",ns)); // NOI18N
-        DEVELOPER = new POMQName(POMQName.createQName("developer",ns)); // NOI18N
+        PROJECT = new POMQName("project",ns);
+        PARENT = new POMQName("parent",ns);
+        ORGANIZATION = new POMQName("organization",ns);
+        DISTRIBUTIONMANAGEMENT = new POMQName("distributionManagement",ns);
+        SITE = new POMQName("site",ns);
+        DIST_REPOSITORY = new POMQName("repository",ns);
+        DIST_SNAPSHOTREPOSITORY = new POMQName("snapshotRepository",ns);
+        PREREQUISITES = new POMQName("prerequisites",ns);
+        CONTRIBUTOR = new POMQName("contributor",ns);
+        SCM = new POMQName("scm",ns);
+        ISSUEMANAGEMENT = new POMQName("issueManagement",ns);
+        CIMANAGEMENT = new POMQName("ciManagement",ns);
+        NOTIFIER = new POMQName("notifier",ns);
+        REPOSITORY = new POMQName("repository",ns);
+        PLUGINREPOSITORY = new POMQName("pluginRepository",ns);
+        RELEASES = new POMQName("releases",ns);
+        SNAPSHOTS = new POMQName("snapshots",ns);
+        PROFILE = new POMQName("profile",ns);
+        PLUGIN = new POMQName("plugin",ns);
+        DEPENDENCY = new POMQName("dependency",ns);
+        EXCLUSION = new POMQName("exclusion",ns);
+        EXECUTION = new POMQName("execution",ns);
+        RESOURCE = new POMQName("resource",ns);
+        TESTRESOURCE = new POMQName("testResource",ns);
+        PLUGINMANAGEMENT = new POMQName("pluginManagement",ns);
+        REPORTING = new POMQName("reporting",ns);
+        REPORTPLUGIN = new POMQName("plugin",ns);
+        REPORTSET = new POMQName("reportSet",ns);
+        ACTIVATION = new POMQName("activation",ns);
+        ACTIVATIONPROPERTY = new POMQName("property",ns);
+        ACTIVATIONOS = new POMQName("os",ns);
+        ACTIVATIONFILE = new POMQName("file",ns);
+        ACTIVATIONCUSTOM = new POMQName("custom",ns);
+        DEPENDENCYMANAGEMENT = new POMQName("dependencyManagement",ns);
+        BUILD = new POMQName("build",ns);
+        EXTENSION = new POMQName("extension",ns);
+        LICENSE = new POMQName("license",ns);
+        MAILINGLIST = new POMQName("mailingList",ns);
+        DEVELOPER = new POMQName("developer",ns);
 
-        MAILINGLISTS = new POMQName(POMQName.createQName("mailingLists",ns)); // NOI18N
-        DEPENDENCIES = new POMQName(POMQName.createQName("dependencies",ns)); // NOI18N
-        DEVELOPERS = new POMQName(POMQName.createQName("developers",ns)); // NOI18N
-        CONTRIBUTORS = new POMQName(POMQName.createQName("contributors",ns)); // NOI18N
-        LICENSES = new POMQName(POMQName.createQName("licenses",ns)); // NOI18N
-        PROFILES = new POMQName(POMQName.createQName("profiles",ns)); // NOI18N
-        REPOSITORIES = new POMQName(POMQName.createQName("repositories",ns)); // NOI18N
-        PLUGINREPOSITORIES = new POMQName(POMQName.createQName("pluginRepositories",ns)); // NOI18N
-        EXCLUSIONS = new POMQName(POMQName.createQName("exclusions",ns)); // NOI18N
-        EXECUTIONS = new POMQName(POMQName.createQName("executions",ns)); // NOI18N
-        PLUGINS = new POMQName(POMQName.createQName("plugins",ns)); // NOI18N
-        EXTENSIONS = new POMQName(POMQName.createQName("extensions",ns)); // NOI18N
-        RESOURCES = new POMQName(POMQName.createQName("resources",ns)); // NOI18N
-        TESTRESOURCES = new POMQName(POMQName.createQName("testResources",ns)); // NOI18N
-        REPORTPLUGINS = new POMQName(POMQName.createQName("plugins",ns)); // NOI18N
-        REPORTSETS = new POMQName(POMQName.createQName("reportSets",ns)); // NOI18N
+        MAILINGLISTS = new POMQName("mailingLists",ns);
+        DEPENDENCIES = new POMQName("dependencies",ns);
+        DEVELOPERS = new POMQName("developers",ns);
+        CONTRIBUTORS = new POMQName("contributors",ns);
+        LICENSES = new POMQName("licenses",ns);
+        PROFILES = new POMQName("profiles",ns);
+        REPOSITORIES = new POMQName("repositories",ns);
+        PLUGINREPOSITORIES = new POMQName("pluginRepositories",ns);
+        EXCLUSIONS = new POMQName("exclusions",ns);
+        EXECUTIONS = new POMQName("executions",ns);
+        PLUGINS = new POMQName("plugins",ns);
+        EXTENSIONS = new POMQName("extensions",ns);
+        RESOURCES = new POMQName("resources",ns);
+        TESTRESOURCES = new POMQName("testResources",ns);
+        REPORTPLUGINS = new POMQName("plugins",ns);
+        REPORTSETS = new POMQName("reportSets",ns);
 
 
-        ID = new POMQName(POMQName.createQName("id",ns)); //NOI18N
-        GROUPID = new POMQName(POMQName.createQName("groupId",ns)); //NOI18N
-        ARTIFACTID = new POMQName(POMQName.createQName("artifactId",ns)); //NOI18N
-        VERSION = new POMQName(POMQName.createQName("version",ns)); //NOI18N
-        CONFIGURATION = new POMQName(POMQName.createQName("configuration",ns)); //NOI18N
-        PROPERTIES = new POMQName(POMQName.createQName("properties",ns)); //NOI18N
+        ID = new POMQName("id",ns);
+        GROUPID = new POMQName("groupId",ns);
+        ARTIFACTID = new POMQName("artifactId",ns);
+        VERSION = new POMQName("version",ns);
+        CONFIGURATION = new POMQName("configuration",ns);
+        PROPERTIES = new POMQName("properties",ns);
 
-        RELATIVEPATH = new POMQName(POMQName.createQName("relativePath",ns)); //NOI18N
+        RELATIVEPATH = new POMQName("relativePath",ns);
 
-        MODELVERSION = new POMQName(POMQName.createQName("modelVersion",ns)); //NOI18N
-        PACKAGING = new POMQName(POMQName.createQName("packaging",ns)); //NOI18N
-        URL = new POMQName(POMQName.createQName("url",ns)); //NOI18N
-        NAME = new POMQName(POMQName.createQName("name",ns)); //NOI18N
-        DESCRIPTION = new POMQName(POMQName.createQName("description",ns)); //NOI18N
-        INCEPTIONYEAR = new POMQName(POMQName.createQName("inceptionYear",ns)); //NOI18N
+        MODELVERSION = new POMQName("modelVersion",ns);
+        PACKAGING = new POMQName("packaging",ns);
+        URL = new POMQName("url",ns);
+        NAME = new POMQName("name",ns);
+        DESCRIPTION = new POMQName("description",ns);
+        INCEPTIONYEAR = new POMQName("inceptionYear",ns);
 
-        TYPE = new POMQName(POMQName.createQName("type",ns)); //NOI18N
-        CLASSIFIER = new POMQName(POMQName.createQName("classifier",ns)); //NOI18N
-        SCOPE = new POMQName(POMQName.createQName("scope",ns)); //NOI18N
-        SYSTEMPATH = new POMQName(POMQName.createQName("systemPath",ns)); //NOI18N
-        OPTIONAL = new POMQName(POMQName.createQName("optional",ns)); //NOI18N
+        TYPE = new POMQName("type",ns);
+        CLASSIFIER = new POMQName("classifier",ns);
+        SCOPE = new POMQName("scope",ns);
+        SYSTEMPATH = new POMQName("systemPath",ns);
+        OPTIONAL = new POMQName("optional",ns);
 
-        INHERITED = new POMQName(POMQName.createQName("inherited",ns)); //NOI18N
-        PHASE = new POMQName(POMQName.createQName("phase",ns)); //NOI18N
+        INHERITED = new POMQName("inherited",ns);
+        PHASE = new POMQName("phase",ns);
 
-        CIMANAG_SYSTEM = new POMQName(POMQName.createQName("system",ns)); //NOI18N
+        CIMANAG_SYSTEM = new POMQName("system",ns);
 
-        DIRECTORY = new POMQName(POMQName.createQName("directory",ns)); //NOI18N
-        DEFAULTGOAL = new POMQName(POMQName.createQName("defaultGoal",ns)); //NOI18N
-        FINALNAME = new POMQName(POMQName.createQName("finalName",ns)); //NOI18N
+        DIRECTORY = new POMQName("directory",ns);
+        DEFAULTGOAL = new POMQName("defaultGoal",ns);
+        FINALNAME = new POMQName("finalName",ns);
 
-        SOURCEDIRECTORY = new POMQName(POMQName.createQName("sourceDirectory",ns)); //NOI18N
-        SCRIPTSOURCEDIRECTORY = new POMQName(POMQName.createQName("scriptSourceDirectory",ns)); //NOI18N
-        TESTSOURCEDIRECTORY = new POMQName(POMQName.createQName("testSourceDirectory",ns)); //NOI18N
-        OUTPUTDIRECTORY = new POMQName(POMQName.createQName("outputDirectory",ns)); //NOI18N
-        TESTOUTPUTDIRECTORY = new POMQName(POMQName.createQName("testOutputDirectory",ns)); //NOI18N
+        SOURCEDIRECTORY = new POMQName("sourceDirectory",ns);
+        SCRIPTSOURCEDIRECTORY = new POMQName("scriptSourceDirectory",ns);
+        TESTSOURCEDIRECTORY = new POMQName("testSourceDirectory",ns);
+        OUTPUTDIRECTORY = new POMQName("outputDirectory",ns);
+        TESTOUTPUTDIRECTORY = new POMQName("testOutputDirectory",ns);
 
-        EXCLUDEDEFAULTS = new POMQName(POMQName.createQName("excludeDefaults",ns)); //NOI18N
+        EXCLUDEDEFAULTS = new POMQName("excludeDefaults",ns);
 
-        VALUE = new POMQName(POMQName.createQName("value",ns)); //NOI18N
+        VALUE = new POMQName("value",ns);
 
-        LAYOUT = new POMQName(POMQName.createQName("layout",ns)); //NOI18N
+        LAYOUT = new POMQName("layout",ns);
 
-        GOALS = new POMQName(POMQName.createQName("goals",ns)); //NOI18N
-        GOAL = new POMQName(POMQName.createQName("goal",ns)); //NOI18N
+        GOALS = new POMQName("goals",ns);
+        GOAL = new POMQName("goal",ns);
 
-        MODULES = new POMQName(POMQName.createQName("modules",ns)); //NOI18N
-        MODULE = new POMQName(POMQName.createQName("module",ns)); //NOI18N
+        MODULES = new POMQName("modules",ns);
+        MODULE = new POMQName("module",ns);
 
-        EXISTS = new POMQName(POMQName.createQName("exists",ns)); //NOI18N
-        MISSING = new POMQName(POMQName.createQName("missing",ns)); //NOI18N
+        EXISTS = new POMQName("exists",ns);
+        MISSING = new POMQName("missing",ns);
 
-        FAMILY = new POMQName(POMQName.createQName("family",ns)); //NOI18N
-        ARCH = new POMQName(POMQName.createQName("arch",ns)); //NOI18N
+        FAMILY = new POMQName("family",ns);
+        ARCH = new POMQName("arch",ns);
 
-        TARGETPATH = new POMQName(POMQName.createQName("targetPath",ns)); //NOI18N
-        FILTERING = new POMQName(POMQName.createQName("filtering",ns)); //NOI18N
-        INCLUDES = new POMQName(POMQName.createQName("includes",ns)); //NOI18N
-        INCLUDE = new POMQName(POMQName.createQName("include",ns)); //NOI18N
-        EXCLUDES = new POMQName(POMQName.createQName("excludes",ns)); //NOI18N
-        EXCLUDE = new POMQName(POMQName.createQName("exclude",ns)); //NOI18N
+        TARGETPATH = new POMQName("targetPath",ns);
+        FILTERING = new POMQName("filtering",ns);
+        INCLUDES = new POMQName("includes",ns);
+        INCLUDE = new POMQName("include",ns);
+        EXCLUDES = new POMQName("excludes",ns);
+        EXCLUDE = new POMQName("exclude",ns);
 
-        TAG = new POMQName(POMQName.createQName("tag",ns)); //NOI18N
-        CONNECTION = new POMQName(POMQName.createQName("connection",ns)); //NOI18N
-        DEVELOPERCONNECTION = new POMQName(POMQName.createQName("developerConnection",ns)); //NOI18N
+        TAG = new POMQName("tag",ns);
+        CONNECTION = new POMQName("connection",ns);
+        DEVELOPERCONNECTION = new POMQName("developerConnection",ns);
 
-        SYSTEM = new POMQName(POMQName.createQName("system",ns)); //NOI18N
+        SYSTEM = new POMQName("system",ns);
 
-        ORGANIZATIONURL = new POMQName(POMQName.createQName("organizationUrl",ns)); //NOI18N
-        EMAIL = new POMQName(POMQName.createQName("email",ns)); //NOI18N
-        TIMEZONE = new POMQName(POMQName.createQName("timezone",ns)); //NOI18N
+        ORGANIZATIONURL = new POMQName("organizationUrl",ns);
+        EMAIL = new POMQName("email",ns);
+        TIMEZONE = new POMQName("timezone",ns);
         //when adding items here, need to add them to the set below as well.
 
-        SUBSCRIBE = new POMQName(POMQName.createQName("subscribe",ns)); //NOI18N
-        UNSUBSCRIBE = new POMQName(POMQName.createQName("unsubscribe",ns)); //NOI18N
-        POST = new POMQName(POMQName.createQName("post",ns)); //NOI18N
-        ARCHIVE = new POMQName(POMQName.createQName("archive",ns)); //NOI18N
+        SUBSCRIBE = new POMQName("subscribe",ns);
+        UNSUBSCRIBE = new POMQName("unsubscribe",ns);
+        POST = new POMQName("post",ns);
+        ARCHIVE = new POMQName("archive",ns);
 
-        DOWNLOADURL = new POMQName(POMQName.createQName("downloadUrl",ns)); //NOI18N
+        DOWNLOADURL = new POMQName("downloadUrl",ns);
 
-        MAVEN = new POMQName(POMQName.createQName("maven",ns)); //NOI18N
+        MAVEN = new POMQName("maven",ns);
 
-        REPORTS = new POMQName(POMQName.createQName("reports",ns)); //NOI18N
-        REPORT = new POMQName(POMQName.createQName("report",ns)); //NOI18N
+        REPORTS = new POMQName("reports",ns);
+        REPORT = new POMQName("report",ns);
 
-        ENABLED = new POMQName(POMQName.createQName("enabled",ns)); //NOI18N
-        UPDATEPOLICY = new POMQName(POMQName.createQName("updatePolicy",ns)); //NOI18N
-        CHECKSUMPOLICY = new POMQName(POMQName.createQName("checksumPolicy",ns)); //NOI18N
-        COMMENTS = new POMQName(POMQName.createQName("comments",ns)); //NOI18N
-        ROLES = new POMQName(POMQName.createQName("roles",ns)); //NOI18N
-        ROLE = new POMQName(POMQName.createQName("role",ns)); //NOI18N
+        ENABLED = new POMQName("enabled",ns);
+        UPDATEPOLICY = new POMQName("updatePolicy",ns);
+        CHECKSUMPOLICY = new POMQName("checksumPolicy",ns);
+        COMMENTS = new POMQName("comments",ns);
+        ROLES = new POMQName("roles",ns);
+        ROLE = new POMQName("role",ns);
     }
 
     public boolean isNSAware() {

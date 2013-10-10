@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.grammar;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
@@ -89,7 +90,7 @@ public class POMDataObject extends MultiDataObject {
 
     public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
 
-    static final String POM_ICON = "org/netbeans/modules/maven/grammar/xmlObject.gif";
+    static final @StaticResource String POM_ICON = "org/netbeans/modules/maven/grammar/xmlObject.gif";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 

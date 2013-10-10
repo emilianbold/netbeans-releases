@@ -58,6 +58,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
@@ -765,6 +766,38 @@ public class TomcatProperties {
             serverXml = new File(getCatalinaHome(), confServerXml);
         }
         return serverXml;
+    }
+
+    /**
+     * Return tomee.xml/openejb.xml file from the catalina base folder if the base
+     * folder is used or from the catalina home folder otherwise. The file must
+     * exist otherwise <code>null</code> is returned.
+     * <p>
+     * <b>BEWARE</b>: If the catalina base folder is used but has not bee generated
+     * yet, the file from the catalina home folder will be returned.
+     * </p>
+     */
+    @CheckForNull
+    public File getTomeeXml() {
+        String confTomeeXml = "conf/tomee.xml"; // NIO18N
+        String confOpenejbXml = "conf/openejb.xml"; // NIO18N
+        File tomeeXml = null;
+        if (baseDir != null) {
+            tomeeXml = new File(baseDir, confTomeeXml);
+            if (!tomeeXml.isFile()) {
+                tomeeXml = new File(baseDir, confOpenejbXml);
+            }
+        }
+        if (tomeeXml == null || !tomeeXml.isFile()) {
+            tomeeXml = new File(getCatalinaHome(), confTomeeXml);
+            if (!tomeeXml.isFile()) {
+                tomeeXml = new File(getCatalinaHome(), confOpenejbXml);
+            }
+        }
+        if (tomeeXml.isFile()) {
+            return tomeeXml;
+        }
+        return null;
     }
     
     public String getHost () {

@@ -84,21 +84,26 @@ public class Utils {
     private Utils() {
     }
     
-    static MethodBreakpoint createBreakpoint(String stopClassName) {
+    public static MethodBreakpoint createBreakpoint(String stopClassName) {
+        return createBreakpoint(stopClassName, "*");
+    }
+    
+    public static MethodBreakpoint createBreakpoint(String stopClassName, String methodName) {
         MethodBreakpoint breakpoint = MethodBreakpoint.create(
                 stopClassName,
-                "*" //NOI18N
+                methodName
                 );
-        breakpoint.setHidden(true);
+//        breakpoint.setHidden(true);
         DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
         return breakpoint;
     }
     
-    public static File[] convertStringsToNormalizedFiles(Collection<String> strings) {
-        File[] fos = new File[strings.size()];
+    
+    public static URL[] convertStringsToURL(Collection<String> strings) {
+        URL[] fos = new URL[strings.size()];
         int index = 0;
         for (String str : strings) {
-            fos[index] = FileUtilities.convertStringToFile(str);
+            fos[index] = fileToURL(FileUtilities.convertStringToFile(str));
             index++;
         }
         return fos;
@@ -141,7 +146,7 @@ public class Utils {
     }
     
     static ClassPath createSourcePath(Project project) {
-        File[] roots;
+        URL[] roots;
         ClassPath cp;
         AdditionalDebuggedProjects adds = project.getLookup().lookup(AdditionalDebuggedProjects.class);
         try {
@@ -152,7 +157,7 @@ public class Utils {
                 }
             }
             col.remove(null); // MNG-5209
-            roots = convertStringsToNormalizedFiles(col);
+            roots = convertStringsToURL(col);
             cp = convertToSourcePath(roots);
         } catch (DependencyResolutionRequiredException ex) {
             ex.printStackTrace();
@@ -164,8 +169,8 @@ public class Utils {
                 col.addAll(collectSourceRoots(prj));
             }
         }
-        roots = convertStringsToNormalizedFiles(col);
-        ClassPath sp = convertToClassPath(roots);
+        roots = convertStringsToURL(col);
+        ClassPath sp = ClassPathSupport.createClassPath(roots);
         
         ClassPath sourcePath = ClassPathSupport.createProxyClassPath(
                 new ClassPath[] {cp, sp}
@@ -182,27 +187,17 @@ public class Utils {
         return jp.getSourceFolders();
     }
     
-    private static ClassPath convertToClassPath(File[] roots) {
-        List<URL> l = new ArrayList<URL>();
-        for (int i = 0; i < roots.length; i++) {
-            URL url = Utils.fileToURL(roots[i]);
-            l.add(url);
-        }
-        URL[] urls = l.toArray(new URL[l.size()]);
-        return ClassPathSupport.createClassPath(urls);
-    }
-    
     /**
      * This method uses SourceForBinaryQuery to find sources for each
      * path item and returns them as ClassPath instance. All path items for which
      * the sources were not found are omitted.
      *
      */
-    private static ClassPath convertToSourcePath(File[] fs)  {
+    public static ClassPath convertToSourcePath(URL[] fs)  {
         List<PathResourceImplementation> lst = new ArrayList<PathResourceImplementation>();
         Set<URL> existingSrc = new HashSet<URL>();
         for (int i = 0; i < fs.length; i++) {
-            URL url = Utils.fileToURL(fs[i]);
+            URL url = FileUtil.isArchiveFile(fs[i]) ? FileUtil.getArchiveRoot(fs[i]) : fs[i];
             try {
                 FileObject[] srcfos = SourceForBinaryQuery.findSourceRoots(url).getRoots();
                 for (int j = 0; j < srcfos.length; j++) {

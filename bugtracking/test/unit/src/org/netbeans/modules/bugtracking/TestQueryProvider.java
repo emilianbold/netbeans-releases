@@ -52,7 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author tomas
  */
-public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
+public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
 
     @Override
     public String getDisplayName(TestQuery q) {
@@ -102,6 +102,21 @@ public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
     @Override
     public void addPropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
         q.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public boolean canRename(TestQuery q) {
+        return q.canRename();
+    }
+
+    @Override
+    public void rename(TestQuery q, String displayName) {
+        q.rename(displayName);
+    }
+
+    @Override
+    public boolean canRemove(TestQuery q) {
+        return q.canRemove();
     }
 
 }

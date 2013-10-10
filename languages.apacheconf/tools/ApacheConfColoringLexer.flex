@@ -198,10 +198,6 @@ DIRECTIVE_PARAM_TOKEN=[^"\r""\n""\r\n""\t"" "]
     return ApacheConfTokenId.AC_WHITESPACE;
 }
 
-<YYINITIAL, ST_IN_OPEN_TAG, ST_IN_DIRECTIVE>{COMMENT} {
-    return ApacheConfTokenId.AC_COMMENT;
-}
-
 <YYINITIAL> {
     {CLOSE_TAG} {
         return ApacheConfTokenId.AC_TAG;
@@ -216,6 +212,9 @@ DIRECTIVE_PARAM_TOKEN=[^"\r""\n""\r\n""\t"" "]
     }
     {NEWLINE} {
         return ApacheConfTokenId.AC_WHITESPACE;
+    }
+    {COMMENT} {
+        return ApacheConfTokenId.AC_COMMENT;
     }
 }
 

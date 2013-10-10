@@ -102,7 +102,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         active = DEFAULT;
         propertyChange = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
                     }

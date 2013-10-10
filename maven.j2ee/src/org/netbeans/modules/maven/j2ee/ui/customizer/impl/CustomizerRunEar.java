@@ -101,7 +101,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
 
     @Override
     public void applyChanges() {
-        changeServer(comServer);
+        serverUpdater.storeValue();
 
         EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
         if (earProvider != null) {

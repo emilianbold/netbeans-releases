@@ -43,10 +43,16 @@
 package org.netbeans.modules.maven.execute.cmd;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.maven.execution.ExecutionEvent;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.codehaus.plexus.util.Base64;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.openide.util.Exceptions;
 
@@ -61,6 +67,9 @@ public class ExecMojo extends ExecutionEventObject {
         public final String executionId;
         private String errorMessage;
         private InputLocation location;
+        private URL[] classpathURLs;
+        private String implementationClass;
+
 
     public ExecMojo(String goal, GAV plugin, String phase, String executionId, ExecutionEvent.Type type) {
         super(type);
@@ -104,6 +113,21 @@ public class ExecMojo extends ExecutionEventObject {
             InputLocation location = new InputLocation(lineNumber.intValue(), columnNumber.intValue(), is);
             toRet.setLocation(location);
         }
+        JSONArray urls = (JSONArray)mojo.get("urls");
+        if (urls != null) {
+            List<URL> urlList = new ArrayList<URL>();
+            Iterator it = urls.iterator();
+            while (it.hasNext()) {
+                String url = (String) it.next();
+                try {
+                    urlList.add(new URL(url));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            toRet.setClasspathURLs(urlList.toArray(new URL[0]));
+        }
+        toRet.setImplementationClass((String) mojo.get("impl"));
         return toRet;
     }
 
@@ -130,6 +154,32 @@ public class ExecMojo extends ExecutionEventObject {
         this.location = location;
     }
     
+    public URL[] getClasspathURLs() {
+        return classpathURLs;
+    }
+
+    public void setClasspathURLs(URL[] classpathURLs) {
+        this.classpathURLs = classpathURLs;
+    }
     
-    
+    public URL getPluginJarURL() {
+        if (classpathURLs != null) {
+            String name = "/" + plugin.artifactId + "-" + plugin.version + ".jar";
+            for (URL url : classpathURLs) {
+                //simple if enough, the plugin jar should always be the first item..
+                if (url.toExternalForm().endsWith(name)) {
+                    return url;
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getImplementationClass() {
+        return implementationClass;
+    }
+
+    void setImplementationClass(String implementationClass) {
+        this.implementationClass = implementationClass;
+    }
 }

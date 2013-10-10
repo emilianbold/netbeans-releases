@@ -121,7 +121,7 @@ public class CompletionUtils {
      * @param h token hierarchy - to find the root element
      */
     public static Callable<String> makeFxNamespaceCreator(CompletionContext ctx) {
-        final String existingPrefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+        final String existingPrefix = ctx.findFxmlNsPrefix();
         if (existingPrefix != null) {
             return new Callable<String>() {
 
@@ -133,7 +133,7 @@ public class CompletionUtils {
             };
         }
         
-        final String prefix = ctx.findPrefixString(JavaFXEditorUtils.FXML_FX_NAMESPACE, 
+        final String prefix = ctx.findPrefixString(JavaFXEditorUtils.FXML_FX_NAMESPACE_CURRENT, 
                 JavaFXEditorUtils.FXML_FX_PREFIX);
         final Document doc = ctx.getDoc();
         Position pos;
@@ -152,7 +152,7 @@ public class CompletionUtils {
                     return prefix;
                 }
                 doc.insertString(finalPos.getOffset(), "xmlns:" + prefix + "=\"" +
-                        JavaFXEditorUtils.FXML_FX_NAMESPACE + "\" ", null);
+                        JavaFXEditorUtils.FXML_FX_NAMESPACE_CURRENT + "\" ", null);
                 return prefix;
             }
         };

@@ -81,8 +81,11 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
         NbMavenProject.addPropertyChangeListener(project, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                synchronized (LOCK) {
-                    classpath = null;
+                 //explicitly listing both RESOURCE and PROJECT properties, it's unclear if both are required but since some other places call addWatchedPath but don't listen it's likely required
+                if (NbMavenProject.PROP_RESOURCE.equals(evt.getPropertyName()) || NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    synchronized (LOCK) {
+                        classpath = null;
+                    }
                 }
             }
         });

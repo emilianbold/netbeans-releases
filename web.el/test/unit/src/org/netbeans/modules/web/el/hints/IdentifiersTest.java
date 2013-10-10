@@ -150,4 +150,8 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue234832_2.xhtml", null);
     }
 
+    public void testIssue236450_1() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue236450_1.xhtml", null);
+    }
+
 }

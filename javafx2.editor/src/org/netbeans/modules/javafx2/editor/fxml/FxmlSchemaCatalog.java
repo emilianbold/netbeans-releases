@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
@@ -67,6 +68,7 @@ public class FxmlSchemaCatalog implements CatalogReader, CatalogDescriptor, Enti
      * XML instance schema
      */
     private static final String FXML_INSTANCE_URI = "http://javafx.com/fxml"; // NOI18N
+    private static final String FXML_INSTANCE_URI2 = "http://javafx.com/javafx/2.2"; // NOI18N
     private static final String FXML_INSTANCE_LOCAL = "nbres:/org/netbeans/modules/javafx2/editor/resources/fxml.xsd"; // NOI18N
     
     /**
@@ -77,6 +79,8 @@ public class FxmlSchemaCatalog implements CatalogReader, CatalogDescriptor, Enti
     public FxmlSchemaCatalog() {
         Map m = new HashMap<String, String>();
         m.put(FXML_INSTANCE_URI, FXML_INSTANCE_LOCAL);
+        m.put(FXML_INSTANCE_URI2, FXML_INSTANCE_LOCAL);
+        m.put(JavaFXEditorUtils.FXML_FX_NAMESPACE_CURRENT, FXML_INSTANCE_LOCAL);
         
         publicIdMap = Collections.unmodifiableMap(m);
     }

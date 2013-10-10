@@ -73,14 +73,14 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public final class ProjectImpl implements ProjectProperties {
-    private static boolean gatherFolders = true;
+    private static final boolean gatherFolders = true;
     
-    private ItemProperties.LanguageKind language;
-    private Set<String> userIncludes = new LinkedHashSet<String>();
-    private Set<String> systemIncludes = new LinkedHashSet<String>();
-    private Map<String,String> userMacros = new HashMap<String,String>();
-    private Set<String> undefinedMacros = new LinkedHashSet<String>();
-    private Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
+    private final ItemProperties.LanguageKind language;
+    private final Set<String> userIncludes = new LinkedHashSet<String>();
+    private final Set<String> systemIncludes = new LinkedHashSet<String>();
+    private final Map<String,String> userMacros = new HashMap<String,String>();
+    private final Set<String> undefinedMacros = new LinkedHashSet<String>();
+    private final Map<String,FolderProperties> folders = new HashMap<String,FolderProperties>();
     
     /** Creates a new instance of DwarfProject */
     public ProjectImpl(ItemProperties.LanguageKind language) {
@@ -111,6 +111,7 @@ public final class ProjectImpl implements ProjectProperties {
     public static List<ProjectProperties> divideByLanguage(List<SourceFileProperties> sources, ProjectProxy project) {
         ProjectImpl cProp = null;
         ProjectImpl cppProp = null;
+        ProjectImpl fortranProp = null;
         if (sources.size() > 0) {
             if (project != null && project.mergeProjectProperties()) {
                 sources = mergeLists(sources, project);
@@ -124,11 +125,18 @@ public final class ProjectImpl implements ProjectProperties {
                     cProp = new ProjectImpl(lang);
                 }
                 current = cProp;
-            } else {
+            } else if (lang == ItemProperties.LanguageKind.CPP) {
                 if (cppProp == null) {
                     cppProp = new ProjectImpl(lang);
                 }
                 current = cppProp;
+            } else if (lang == ItemProperties.LanguageKind.Fortran) {
+                if (fortranProp == null) {
+                    fortranProp = new ProjectImpl(lang);
+                }
+                current = fortranProp;
+            } else {
+                continue;
             }
             current.update(source);
         }
@@ -138,6 +146,9 @@ public final class ProjectImpl implements ProjectProperties {
         }
         if (cppProp != null) {
             languages.add(cppProp);
+        }
+        if (fortranProp != null) {
+            languages.add(fortranProp);
         }
         return languages;
     }

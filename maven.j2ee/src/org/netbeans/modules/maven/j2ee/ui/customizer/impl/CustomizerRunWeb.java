@@ -42,12 +42,20 @@
 
 package org.netbeans.modules.maven.j2ee.ui.customizer.impl;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
@@ -58,8 +66,13 @@ import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
-import org.netbeans.modules.maven.j2ee.ui.util.CopyStaticResourcesOnSaveCheckBoxUpdater;
+import org.netbeans.modules.maven.j2ee.ui.customizer.CheckBoxUpdater;
+import org.netbeans.modules.maven.j2ee.ui.customizer.ComboBoxUpdater;
+import static org.netbeans.modules.maven.j2ee.ui.customizer.impl.Bundle.*;
+import org.netbeans.modules.maven.j2ee.ui.util.WarningPanel;
+import org.netbeans.modules.maven.j2ee.ui.util.WarningPanelSupport;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
@@ -68,8 +81,11 @@ import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -79,7 +95,12 @@ import org.openide.util.NbBundle;
 public class CustomizerRunWeb extends BaseRunCustomizer {
 
     public static final String PROP_SHOW_IN_BROWSER = "netbeans.deploy.showBrowser"; //NOI18N
+    private static final Set<Profile> WEB_PROFILES;
+    private static final Set<Profile> FULL_PROFILES;
 
+    private final CheckBoxUpdater copyStaticResourcesUpdater;
+    private final CheckBoxUpdater showBrowserUpdater;
+    private final ComboBoxUpdater versionUpdater;
     private final boolean noServer;
 
     private BrowserComboBoxModel browserModel;
@@ -97,8 +118,26 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     private String oldUrl;
     private String oldContextPath;
 
+    static {
+        WEB_PROFILES = new TreeSet<>(Profile.UI_COMPARATOR);
+        WEB_PROFILES.add(Profile.JAVA_EE_5);
+        WEB_PROFILES.add(Profile.JAVA_EE_6_WEB);
+        WEB_PROFILES.add(Profile.JAVA_EE_7_WEB);
 
-    public CustomizerRunWeb(final ModelHandle2 handle, Project project) {
+        FULL_PROFILES = new TreeSet<>(Profile.UI_COMPARATOR);
+        FULL_PROFILES.add(Profile.JAVA_EE_5);
+        FULL_PROFILES.add(Profile.JAVA_EE_6_FULL);
+        FULL_PROFILES.add(Profile.JAVA_EE_7_FULL);
+    }
+
+    @Messages({
+        "WARNING_ChangingJavaEEVersion=<html>You are changing Java EE version. <b>Please be aware about "
+            + "possible consequences</b>. Your project might not be deployable anymore if the selected "
+            + "server doesn't support choosen version.<br><br>Also note that changing this value doesn't "
+            + "make any changes in your project configuration (pom.xml will still reffer to the original "
+            + "Java EE jar file etc.)</html>."
+    })
+    public CustomizerRunWeb(final ModelHandle2 handle, final Project project) {
         super(handle, project);
         initComponents();
 
@@ -110,27 +149,44 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         noServer = ExecutionChecker.DEV_NULL.equals(ServerUtils.findServer(project).getServerID());
 
         initValues();
-        initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
-        initVersionModel(javaeeVersionCBox, javaeeVersionLabel, J2eeModule.Type.WAR);
-        initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
+        initServerModel(jCBServer, serverLabel, J2eeModule.Type.WAR);
+        initDeployOnSave(jCBDeployOnSave, dosDescription);
 
-        CopyStaticResourcesOnSaveCheckBoxUpdater.create(project, jCheckBoxCopyStaticResources);
+        copyStaticResourcesUpdater = CheckBoxUpdater.create(jCBCopyStaticResources, MavenProjectSupport.isCopyStaticResourcesOnSave(project), new CheckBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(boolean value) {
+                MavenProjectSupport.setCopyStaticResourcesOnSave(project, value);
+            }
+        });
+
+        String browser = (String) project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
+        boolean showBrowser = browser != null ? Boolean.parseBoolean(browser) : true;
+        showBrowserUpdater = CheckBoxUpdater.create(jCBshowBrowser, showBrowser, new CheckBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(boolean value) {
+                try {
+                    if (value) {
+                        project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, null);
+                    } else {
+                        project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, Boolean.FALSE.toString());
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        versionUpdater = createVersionUpdater(J2eeModule.Type.WAR);
     }
     
     @Override
     public void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
-        try {
-            if (showBrowserCheckBox.isSelected()) {
-                project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, null);
-            } else {
-                project.getProjectDirectory().setAttribute(PROP_SHOW_IN_BROWSER, Boolean.FALSE.toString());
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        showBrowserUpdater.storeValue();
 
-        Object obj = serverCBox.getSelectedItem();
+        Object obj = jCBServer.getSelectedItem();
         if (obj != null) {
             LoggingUtils.logUsage(CustomizerRunWeb.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] {obj.toString() }, "maven"); //NOI18N
         }
@@ -138,12 +194,16 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
     @Override
     public void applyChanges() {
-        changeServer(serverCBox);
         changeContextPath();
+
+        serverUpdater.storeValue();
+        versionUpdater.storeValue();
+        deployOnSaveUpdater.storeValue();
+        copyStaticResourcesUpdater.storeValue();
 
         JavaEEProjectSettings.setBrowserID(project, browserModel.getSelectedBrowserId());
     }
-    
+
     private void initValues() {
         List<NetbeansActionMapping> actionMappings = handle.getActionMappings(handle.getActiveConfiguration()).getActions();
 
@@ -201,13 +261,70 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
             }
         });
 
-
-        String browser = (String) project.getProjectDirectory().getAttribute(PROP_SHOW_IN_BROWSER);
-        boolean bool = browser != null ? Boolean.parseBoolean(browser) : true;
-        showBrowserCheckBox.setSelected(bool);
         updateContextPathEnablement();
     }
 
+    private ComboBoxUpdater createVersionUpdater(J2eeModule.Type projectType) {
+        if (J2eeModule.Type.WAR.equals(projectType)) {
+            jCBJavaeeVersion.setModel(new DefaultComboBoxModel(WEB_PROFILES.toArray()));
+        } else {
+            jCBJavaeeVersion.setModel(new DefaultComboBoxModel(FULL_PROFILES.toArray()));
+        }
+
+        final ListCellRenderer delegate = jCBJavaeeVersion.getRenderer();
+        jCBJavaeeVersion.setRenderer(new DefaultListCellRenderer() {
+
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                return delegate.getListCellRendererComponent(list, ((Profile) value).getDisplayName(), index, isSelected, cellHasFocus);
+            }
+
+        });
+
+        ComboBoxUpdater.Store store = new ComboBoxUpdater.Store() {
+
+            @Override
+            public void storeValue(Object profile) {
+                if (profile != null) {
+                    JavaEEProjectSettings.setProfile(project, (Profile) profile);
+                }
+            }
+        };
+
+        ComboBoxUpdater.Verify verifier = new ComboBoxUpdater.Verify() {
+
+            @Override
+            public boolean verifyValue(Object value) {
+                if (WarningPanelSupport.isJavaEEChangeWarningActivated()) {
+                    WarningPanel panel = new WarningPanel(WARNING_ChangingJavaEEVersion());
+                    NotifyDescriptor dd = new NotifyDescriptor.Message(panel, NotifyDescriptor.OK_CANCEL_OPTION);
+                    DialogDisplayer.getDefault().notify(dd);
+
+                    if (dd.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+                        return false;
+                    }
+
+                    if (panel.disabledWarning()) {
+                        WarningPanelSupport.dontShowJavaEEChangeWarning();
+                    }
+                }
+                return true;
+            }
+        };
+
+        Profile defaultProfile = JavaEEProjectSettings.getProfile(project);
+        if (defaultProfile == null) {
+            WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+            if (webModuleProvider != null) {
+                WebModuleImpl webModule = webModuleProvider.getModuleImpl();
+                if (webModule != null) {
+                    defaultProfile = webModule.getJ2eeProfile();
+                }
+            }
+        }
+
+        return ComboBoxUpdater.create(jCBJavaeeVersion, javaeeVersionLabel, defaultProfile, store, verifier);
+    }
 
     private boolean checkMapping(NetbeansActionMapping map) {
         if (map != null) {
@@ -255,11 +372,11 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     private JComboBox<WebBrowser> createBrowserComboBox() {
         String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
-        browserCBox = BrowserUISupport.createBrowserPickerComboBox(browserModel.getSelectedBrowserId(), true, false, browserModel);
-        browserCBox.setModel(browserModel);
-        browserCBox.setRenderer(BrowserUISupport.createBrowserRenderer());
+        jCBBrowser = BrowserUISupport.createBrowserPickerComboBox(browserModel.getSelectedBrowserId(), true, false, browserModel);
+        jCBBrowser.setModel(browserModel);
+        jCBBrowser.setRenderer(BrowserUISupport.createBrowserRenderer());
 
-        return browserCBox;
+        return jCBBrowser;
     }
 
     /** This method is called from within the constructor to
@@ -271,31 +388,29 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     private void initComponents() {
 
         serverLabel = new javax.swing.JLabel();
-        serverCBox = new javax.swing.JComboBox();
+        jCBServer = new javax.swing.JComboBox();
         javaeeVersionLabel = new javax.swing.JLabel();
         contextPathLabel = new javax.swing.JLabel();
         contextPathTField = new javax.swing.JTextField();
-        showBrowserCheckBox = new javax.swing.JCheckBox();
+        jCBshowBrowser = new javax.swing.JCheckBox();
         lblRelativeUrl = new javax.swing.JLabel();
         txtRelativeUrl = new javax.swing.JTextField();
         lblHint2 = new javax.swing.JLabel();
-        jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        jCBDeployOnSave = new javax.swing.JCheckBox();
         dosDescription = new javax.swing.JLabel();
-        javaeeVersionCBox = new javax.swing.JComboBox();
+        jCBJavaeeVersion = new javax.swing.JComboBox();
         browserLabel = new javax.swing.JLabel();
-        browserCBox = createBrowserComboBox();
-        jCheckBoxCopyStaticResources = new javax.swing.JCheckBox();
+        jCBBrowser = createBrowserComboBox();
+        jCBCopyStaticResources = new javax.swing.JCheckBox();
 
-        serverLabel.setLabelFor(serverCBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N
 
-        serverCBox.addActionListener(new java.awt.event.ActionListener() {
+        jCBServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                serverCBoxActionPerformed(evt);
+                jCBServerActionPerformed(evt);
             }
         });
 
-        javaeeVersionLabel.setLabelFor(javaeeVersionCBox);
         org.openide.awt.Mnemonics.setLocalizedText(javaeeVersionLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_J2EE_Version")); // NOI18N
 
         contextPathLabel.setLabelFor(contextPathTField);
@@ -304,7 +419,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         contextPathTField.setMinimumSize(new java.awt.Dimension(4, 24));
         contextPathTField.setPreferredSize(new java.awt.Dimension(4, 24));
 
-        org.openide.awt.Mnemonics.setLocalizedText(showBrowserCheckBox, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCBshowBrowser, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Display_on_Run")); // NOI18N
 
         lblRelativeUrl.setLabelFor(txtRelativeUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lblRelativeUrl, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Relative_URL")); // NOI18N
@@ -314,14 +429,14 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblHint2, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Hint2")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxDeployOnSave.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCBDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBDeployOnSave.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.dosDescription.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(browserLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.browserLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCopyStaticResources, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.text")); // NOI18N
-        jCheckBoxCopyStaticResources.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCheckBoxCopyStaticResources.toolTipText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCBCopyStaticResources, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBCopyStaticResources.text")); // NOI18N
+        jCBCopyStaticResources.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "CustomizerRunWeb.jCBCopyStaticResources.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -339,22 +454,22 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                             .addComponent(contextPathLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(serverCBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jCBServer, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(contextPathTField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(javaeeVersionCBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jCBJavaeeVersion, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(lblHint2, javax.swing.GroupLayout.DEFAULT_SIZE, 517, Short.MAX_VALUE)
                             .addComponent(txtRelativeUrl, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(browserCBox, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jCBBrowser, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jCheckBoxDeployOnSave)
+                        .addComponent(jCBDeployOnSave)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(showBrowserCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jCheckBoxCopyStaticResources, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jCBshowBrowser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jCBCopyStaticResources, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
@@ -363,10 +478,10 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverLabel)
-                    .addComponent(serverCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jCBServer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(javaeeVersionCBox, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCBJavaeeVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(javaeeVersionLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -381,29 +496,29 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(browserLabel)
-                    .addComponent(browserCBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jCBBrowser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(showBrowserCheckBox)
+                .addComponent(jCBshowBrowser)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBoxCopyStaticResources)
+                .addComponent(jCBCopyStaticResources)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jCheckBoxDeployOnSave)
+                .addComponent(jCBDeployOnSave)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(dosDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         contextPathTField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtContextPath.AccessibleContext.accessibleDescription")); // NOI18N
-        showBrowserCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
+        jCBshowBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.cbBrowser.AccessibleContext.accessibleDescription")); // NOI18N
         txtRelativeUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "WebRunCustomizerPanel.txtRelativeUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void serverCBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverCBoxActionPerformed
+    private void jCBServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCBServerActionPerformed
         updateContextPathEnablement();
-    }//GEN-LAST:event_serverCBoxActionPerformed
+    }//GEN-LAST:event_jCBServerActionPerformed
 
     private void updateContextPathEnablement() {
-        Server wp = (Server) serverCBox.getSelectedItem();
+        Server wp = (Server) jCBServer.getSelectedItem();
         if (wp == null || ExecutionChecker.DEV_NULL.equals(wp.getServerID())) {
             if (contextPathTField.isEnabled()) {
                 contextPathTField.setEnabled(false);
@@ -427,20 +542,20 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox browserCBox;
     private javax.swing.JLabel browserLabel;
     private javax.swing.JLabel contextPathLabel;
     private javax.swing.JTextField contextPathTField;
     private javax.swing.JLabel dosDescription;
-    private javax.swing.JCheckBox jCheckBoxCopyStaticResources;
-    private javax.swing.JCheckBox jCheckBoxDeployOnSave;
-    private javax.swing.JComboBox javaeeVersionCBox;
+    private javax.swing.JComboBox jCBBrowser;
+    private javax.swing.JCheckBox jCBCopyStaticResources;
+    private javax.swing.JCheckBox jCBDeployOnSave;
+    private javax.swing.JComboBox jCBJavaeeVersion;
+    private javax.swing.JComboBox jCBServer;
+    private javax.swing.JCheckBox jCBshowBrowser;
     private javax.swing.JLabel javaeeVersionLabel;
     private javax.swing.JLabel lblHint2;
     private javax.swing.JLabel lblRelativeUrl;
-    private javax.swing.JComboBox serverCBox;
     private javax.swing.JLabel serverLabel;
-    private javax.swing.JCheckBox showBrowserCheckBox;
     private javax.swing.JTextField txtRelativeUrl;
     // End of variables declaration//GEN-END:variables
 

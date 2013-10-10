@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.completion.completors;
 
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.lang.model.element.TypeElement;
@@ -61,6 +62,7 @@ import org.netbeans.modules.spring.java.JavaUtils;
 import org.netbeans.modules.spring.java.MatchType;
 import org.netbeans.modules.spring.java.Property;
 import org.netbeans.modules.spring.java.PropertyFinder;
+import org.netbeans.modules.spring.java.PropertyType;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
@@ -147,8 +149,12 @@ public class PropertyCompletor extends Completor {
 
                 Property[] props = new PropertyFinder(startType, setterPrefix, eu, MatchType.PREFIX).findProperties();
 
+                final EnumSet<PropertyType> typeWithSetters = EnumSet.of(PropertyType.READ_WRITE, PropertyType.WRITE_ONLY);
                 for (Property prop : props) {
-                    addCacheItem(SpringXMLConfigCompletionItem.createPropertyItem(getAnchorOffset(), prop));
+                    final boolean hasSetter = typeWithSetters.contains(prop.getType());
+                    if (hasSetter) {
+                        addCacheItem(SpringXMLConfigCompletionItem.createPropertyItem(getAnchorOffset(), prop));
+                    }
                 }
             }
         }, false);

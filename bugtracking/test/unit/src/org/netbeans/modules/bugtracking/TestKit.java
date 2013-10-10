@@ -43,6 +43,8 @@ package org.netbeans.modules.bugtracking;
 
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
@@ -55,9 +57,11 @@ public class TestKit {
                 repo, 
                 new TestRepositoryProvider(), 
                 new TestQueryProvider(),
-                new TestIssueProvider());
+                new TestIssueProvider(),
+                new TestStatusProvider(),
+                null, null, null);
     }
-
+    
     public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
         return repo.getIssue(issue);
     }
@@ -71,6 +75,6 @@ public class TestKit {
     }
 
     public static void openQuery(Query query) {
-        QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null);
+        QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null, QueryController.QueryMode.EDIT);
     }
 }

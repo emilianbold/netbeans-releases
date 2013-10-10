@@ -40,9 +40,8 @@ package org.netbeans.modules.jira;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
@@ -50,7 +49,6 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
  * @author Tomas Stupka
  */
 public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
-    private IssueStatusProvider<NbJiraIssue> statusProvider;
 
     @Override
     public String getDisplayName(NbJiraIssue data) {
@@ -104,7 +102,7 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public BugtrackingController getController(NbJiraIssue data) {
+    public IssueController getController(NbJiraIssue data) {
         return data.getController();
     }
 
@@ -119,32 +117,12 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     }
     
     @Override
-    public synchronized IssueStatusProvider getStatusProvider() {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<NbJiraIssue>() {
-                @Override
-                public Status getStatus(NbJiraIssue issue) {
-                    return issue.getStatus();
-                }
-                @Override
-                public void setSeen(NbJiraIssue issue, boolean uptodate) {
-                    issue.setUpToDate(uptodate);
-                }
-                @Override
-                public void addPropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-                @Override
-                public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
+    public boolean submit (NbJiraIssue data) {
+        return data.submitAndRefresh();
     }
 
     @Override
-    public boolean submit (NbJiraIssue data) {
-        return data.submitAndRefresh();
+    public void discardOutgoing(NbJiraIssue data) {
+        data.discardLocalEdits();
     }
 }

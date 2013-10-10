@@ -227,6 +227,24 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         ));
     }
     
+    private boolean isFxmlNamespaceUri(String uri) {
+        if (uri == null || !uri.startsWith(FXML_FX_NAMESPACE)) {
+            return false;
+        }
+        if (uri.length() == FXML_FX_NAMESPACE.length()) {
+            return true;
+        }
+        if (uri.charAt(FXML_FX_NAMESPACE.length()) == '/') {
+            try {
+                Integer.parseInt(uri.substring(FXML_FX_NAMESPACE.length() + 1));
+                return true;
+            } catch (NumberFormatException ex) {
+                // expected, invalid NS URI
+            }
+        }
+        return false;
+    }
+    
     @NbBundle.Messages({
         "# {0} - tag name",
         "ERR_tagNotJavaIdentifier=Invalid class name: {0}",
@@ -243,7 +261,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         
         for (int i = 0; i < atts.getLength(); i++) {
             String uri = atts.getURI(i);
-            if (!FXML_FX_NAMESPACE.equals(uri)) {
+            if (!isFxmlNamespaceUri(uri)) {
                 // no special attribute
                 continue;
             }
@@ -340,7 +358,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                 continue;
             }
             
-            if (FXML_FX_NAMESPACE.equals(uri)) {
+            if (isFxmlNamespaceUri(uri)) {
                 if (!FxXmlSymbols.isFxReservedAttribute(name)) {
                     addAttributeError(qname, "error-unsupported-attribute", 
                             ERR_unsupportedAttribute(qname, tagName), 
@@ -542,7 +560,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         for (int i = 0; i < atts.getLength(); i++) {
             String ns = atts.getURI(i);
             String name = atts.getLocalName(i);
-            if (!FXML_FX_NAMESPACE.equals(ns)) {
+            if (!isFxmlNamespaceUri(ns)) {
                 if (FX_ATTR_REFERENCE_SOURCE.equals(name) && refId == null) {
                     refId = atts.getValue(i);
                 } else if (!copy) {
@@ -692,7 +710,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             newElement = accessor.createErrorElement(localName);
         } else if ("".equals(localName)) {
             newElement = accessor.createErrorElement(localName);
-        } else if (FXML_FX_NAMESPACE.equals(uri)) {
+        } else if (isFxmlNamespaceUri(uri)) {
             newElement = handleFxmlElement(localName, atts);
         } else {
             // non-fx namespace, should be either an instance, or a property or an event
@@ -1148,7 +1166,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                 include = atts.getValue(i);
                 continue;
             }
-            if (FXML_FX_NAMESPACE.equals(uri)) {
+            if (isFxmlNamespaceUri(uri)) {
                 if (FX_ID.equals(attName)) {
                     id = atts.getValue(i);
                 } else {

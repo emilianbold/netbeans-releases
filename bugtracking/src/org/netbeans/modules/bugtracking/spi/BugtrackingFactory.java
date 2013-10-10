@@ -37,24 +37,26 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
+import java.awt.Image;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
-import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import static org.netbeans.modules.bugtracking.util.BugtrackingUtil.editRepository;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
 /**
  *
  * @author Tomas Stupka
+ * 
+ * @param <R> the implementation specific repository type
+ * @param <Q> the implementation specific query type
+ * @param <I> the implementation specific issue type
  */
 public final class BugtrackingFactory<R, Q, I> {
    
     /**
      * 
-     * @param info
      * @param r
      * @param rp
      * @param ip
@@ -75,7 +77,41 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null, null, null, null);
+        return impl.getRepository();
+    }
+    
+    /**
+     * 
+     * @param r
+     * @param rp
+     * @param ip
+     * @param isp
+     * @param iscp
+     * @param ipp
+     * @param qp
+     * @param isf
+     * @return 
+     */
+    public Repository createRepository(R r, 
+            RepositoryProvider<R, Q, I> rp, 
+            QueryProvider<Q, I> qp,
+            IssueProvider<I> ip,
+            IssueStatusProvider<I> isp,
+            IssueSchedulingProvider<I> iscp, 
+            IssuePriorityProvider<I> ipp,
+            IssueFinder isf)
+    {
+        RepositoryInfo info = rp.getInfo(r);
+        if(info != null) {
+            String repositoryId = info.getId();
+            String connectorId = rp.getInfo(r).getConnectorId();
+            Repository repo = getRepository(connectorId, repositoryId);
+            if(repo != null) {
+                return repo;
+            }
+        }
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp, iscp, ipp, isf);
         return impl.getRepository();
     }
     
@@ -92,10 +128,10 @@ public final class BugtrackingFactory<R, Q, I> {
         return BugtrackingUtil.isOpened(query);
     }
     
-    public void openQuery(Repository repository, Q q) {
+    public void editQuery(Repository repository, Q q) {
         QueryImpl query = getQueryImpl(repository, q);
         if(query != null) {
-            query.openShowAll(false);
+            query.open(QueryController.QueryMode.EDIT);
         }
     }
     
@@ -125,7 +161,11 @@ public final class BugtrackingFactory<R, Q, I> {
     public boolean editRepository(Repository repository, String errorMessage) {
         return BugtrackingUtil.editRepository(APIAccessor.IMPL.getImpl(repository), errorMessage);
     }
-        
+
+    public Image[] getPriorityIcons() {
+        return IssuePrioritySupport.getIcons();
+    }
+    
     private QueryImpl getQueryImpl(Repository repository, Q q) {
         RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
         QueryImpl impl = repositoryImpl.getQuery(q);

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.net.URL;
 import org.openide.util.Utilities;
 
@@ -111,8 +112,9 @@ public class DelegatingWebBrowserImpl extends ExtBrowserImpl {
      * @param url URL to show in the browser.
      */
     @Override
-    protected void loadURLInBrowser(URL url) {
-        getImplementation().loadURLInBrowser(url);        
+    protected void loadURLInBrowserInternal(URL url) {
+        assert !EventQueue.isDispatchThread();
+        getImplementation().loadURLInBrowserInternal(url);
     }
         
 }

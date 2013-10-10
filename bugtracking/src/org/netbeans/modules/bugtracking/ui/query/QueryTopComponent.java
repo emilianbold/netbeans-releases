@@ -81,10 +81,10 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
-import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.NoContentPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
@@ -114,6 +114,7 @@ public final class QueryTopComponent extends TopComponent
     private RequestProcessor.Task prepareTask;
     private RepositoryComboSupport rs;
     private File context;
+    private QueryController.QueryMode mode;
 
     QueryTopComponent() {
         initComponents();
@@ -179,10 +180,17 @@ public final class QueryTopComponent extends TopComponent
         return query;
     }
 
-    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly) {
+    void setMode(QueryMode mode) {
+        this.mode = mode;
+        QueryController c = getController(query);
+        addQueryComponent(c);
+    }
+    
+    void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
         this.query = query;
         this.context = context;
-
+        this.mode = mode;
+        
         setNameAndTooltip();
 
         if(suggestedSelectionOnly) {
@@ -504,7 +512,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void addQueryComponent(QueryController controller) {
-        JComponent cmp = controller.getComponent();
+        JComponent cmp = controller.getComponent(mode != null ? mode : QueryMode.EDIT);
         queryPanel.removeAll();
         queryPanel.add(cmp);
         controller.opened();

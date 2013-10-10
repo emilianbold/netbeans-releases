@@ -44,7 +44,7 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.nodes.Node;
@@ -54,8 +54,6 @@ import org.openide.nodes.Node;
  * @author tomas
  */
 public class TestIssueProvider extends IssueProvider<TestIssue> {
-    private StatusProvider statusProvider;
-
     @Override
     public String[] getSubtasks(TestIssue data) {
         return data.getSubtasks();
@@ -107,7 +105,7 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
-    public BugtrackingController getController(TestIssue data) {
+    public IssueController getController(TestIssue data) {
         return data.getController();
     }
 
@@ -122,35 +120,8 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
-    public IssueStatusProvider getStatusProvider() {
-        if(statusProvider == null) {
-            statusProvider = new StatusProvider();
-        }
-        return statusProvider;
-    }
-    
-    private class StatusProvider implements IssueStatusProvider<TestIssue> {
-
-        @Override
-        public Status getStatus(TestIssue issue) {
-            return issue.getStatus();
-        }
-
-        @Override
-        public void setSeen(TestIssue issue, boolean seen) {
-            issue.setSeen(seen);
-        }
-
-        @Override
-        public void removePropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
-            issue.removePropertyChangeListener(listener);
-        }
-
-        @Override
-        public void addPropertyChangeListener(TestIssue issue, PropertyChangeListener listener) {
-            issue.addPropertyChangeListener(listener);
-        }
-        
+    public void discardOutgoing(TestIssue data) {
+        data.discardOutgoing();
     }
     
 }

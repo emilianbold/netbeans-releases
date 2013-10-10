@@ -92,7 +92,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
@@ -185,7 +185,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/conflict.png"); //NOI18N
     private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/jira/resources/unsubmitted.png"); //NOI18N
     private boolean loading;
-
+   
     @Override
     protected void taskDeleted (NbTask task) {
         getRepository().taskDeleted(getKey(task));
@@ -285,6 +285,11 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     void delete () {
         deleteTask();
     }
+    
+    public boolean discardLocalEdits () {
+        clearUnsavedChanges();
+        return cancelChanges();
+    }
 
     NbJiraIssue createSubtask () {
         assert !EventQueue.isDispatchThread();
@@ -318,6 +323,19 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         return getNewAttachments();
     }
 
+
+    public String getPriorityID() {
+        return getPriority().getId();
+    }
+    
+    int getSortOrder() {
+        return getSortOrder(getPriority());
+    }
+
+    private int getSortOrder(Priority priority) {
+        return repository.getConfiguration().getPrioritySortOrder(priority);
+    }
+    
     public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
         SUMMARY(JiraAttribute.SUMMARY.id(), "LBL_SUMMARY"),
@@ -1102,7 +1120,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         addAttachment(file, comment, null);
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
             controller = new Controller();
         }
@@ -1162,13 +1180,24 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             if (resolution != null && !resolution.trim().isEmpty()) {
                 status += "/" + resolution; //NOI18N
             }
+            String scheduledLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Scheduled_Title"); //NOI18N
+            String scheduled = "---";
+
+            String dueLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Due_Title"); //NOI18N
+            String due = "---";
+
+            String estimateLabel = NbBundle.getMessage(NbJiraIssue.class, "CTL_Issue_Estimate_Title_Short"); //NOI18N
+            String estimate = "---";
 
             String fieldTable = "<table>" //NOI18N
-                + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
-                + "<tr><td><b>" + projectLabel + ":</b></td><td>" + project + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
-                + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
-                + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
-                + "</table>"; //NOI18N
+                    + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
+                    + "<tr><td><b>" + projectLabel + ":</b></td><td>" + project + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
+                    + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
+                    + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+                    + "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>" //NOI18N
+                    + "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>" //NOI18N
+                    + "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>" //NOI18N
+                    + "</table>"; //NOI18N
             sb.append("<hr>"); //NOI18N
             sb.append(fieldTable);
         }
@@ -1867,7 +1896,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         }
     }
 
-    private class Controller extends BugtrackingController {
+    private class Controller implements IssueController {
         private JComponent component;
         private IssuePanel issuePanel;
 
@@ -1909,15 +1938,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
         }
 
-        @Override
-        public boolean isValid() {
-            return true; // PENDING
-        }
-
-        @Override
-        public void applyChanges() {
-        }
-
         private void refreshViewData (final boolean force) {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
@@ -1931,7 +1951,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
+            return new HelpCtx("org.netbeans.modules.jira.issue.NbJiraIssue"); // NOI18N
         }
 
         private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {

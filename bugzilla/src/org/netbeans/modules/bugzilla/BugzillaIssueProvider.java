@@ -40,10 +40,9 @@ package org.netbeans.modules.bugzilla;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 
@@ -52,7 +51,6 @@ import org.netbeans.modules.bugzilla.repository.IssueField;
  * @author Tomas Stupka
  */
 public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
-    private IssueStatusProvider<BugzillaIssue> statusProvider;
 
     @Override
     public String getDisplayName(BugzillaIssue data) {
@@ -106,7 +104,7 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public BugtrackingController getController(BugzillaIssue data) {
+    public IssueController getController(BugzillaIssue data) {
         return data.getController();
     }
 
@@ -118,31 +116,6 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     @Override
     public void addPropertyChangeListener(BugzillaIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public synchronized IssueStatusProvider getStatusProvider() {
-        if(statusProvider == null) {
-            statusProvider = new IssueStatusProvider<BugzillaIssue>() {
-                @Override
-                public IssueStatusProvider.Status getStatus(BugzillaIssue issue) {
-                    return issue.getStatus();
-                }
-                @Override
-                public void setSeen(BugzillaIssue issue, boolean uptodate) {
-                    issue.setUpToDate(uptodate);
-                }
-                @Override
-                public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
-                    issue.removePropertyChangeListener(listener);
-                }
-                @Override
-                public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
-                    issue.addPropertyChangeListener(listener);
-                }
-            };
-        }
-        return statusProvider;
     }
 
     @Override
@@ -158,5 +131,10 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
         data.setOwnerInfo(info);
     }
-    
+
+    @Override
+    public void discardOutgoing(BugzillaIssue data) {
+        data.discardLocalEdits();
+    }
+
 }

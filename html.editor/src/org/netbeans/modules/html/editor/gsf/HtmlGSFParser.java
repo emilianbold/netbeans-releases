@@ -128,13 +128,13 @@ public class HtmlGSFParser extends Parser {
                 }
 
                 @Override
-                public boolean isCustomTag(Named element) {
-                    return ex.isCustomTag(element);
+                public boolean isCustomTag(Named element, HtmlSource source) {
+                    return ex.isCustomTag(element, source);
                 }
 
                 @Override
-                public boolean isCustomAttribute(Attribute attribute) {
-                    return ex.isCustomAttribute(attribute);
+                public boolean isCustomAttribute(Attribute attribute, HtmlSource source) {
+                    return ex.isCustomAttribute(attribute, source);
                 }
 
             });
@@ -171,9 +171,9 @@ public class HtmlGSFParser extends Parser {
         }
 
         @Override
-        public boolean isCustomTag(Named element) {
+        public boolean isCustomTag(Named element, HtmlSource source) {
             for (UndeclaredContentResolver r : resolvers) {
-                if (r.isCustomTag(element)) {
+                if (r.isCustomTag(element, source)) {
                     return true;
                 }
             }
@@ -181,9 +181,9 @@ public class HtmlGSFParser extends Parser {
         }
 
         @Override
-        public boolean isCustomAttribute(Attribute attr) {
+        public boolean isCustomAttribute(Attribute attr, HtmlSource source) {
             for (UndeclaredContentResolver r : resolvers) {
-                if (r.isCustomAttribute(attr)) {
+                if (r.isCustomAttribute(attr, source)) {
                     return true;
                 }
             }

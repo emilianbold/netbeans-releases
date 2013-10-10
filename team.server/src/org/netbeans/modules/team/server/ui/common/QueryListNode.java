@@ -58,6 +58,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.commons.treelist.LeafNode;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
@@ -106,7 +107,7 @@ public class QueryListNode<P> extends SectionNode {
                 if (null == panel) {
                     panel = new JPanel(new GridBagLayout());
                     panel.setOpaque(false);
-                    btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_FindIssue"), getDefaultAction()); //NOI18N
+                    btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_FindIssue"), getDefaultAction(), false); //NOI18N
                     panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 }
@@ -137,7 +138,7 @@ public class QueryListNode<P> extends SectionNode {
                 if (null == panel) {
                     panel = new JPanel(new GridBagLayout());
                     panel.setOpaque(false);
-                    btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_NewIssue"), getDefaultAction()); //NOI18N
+                    btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_NewIssue"), getDefaultAction(), false); //NOI18N
                     panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                     panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 }

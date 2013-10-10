@@ -67,7 +67,7 @@ import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
 import org.netbeans.modules.glassfish.javaee.*;
-import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;

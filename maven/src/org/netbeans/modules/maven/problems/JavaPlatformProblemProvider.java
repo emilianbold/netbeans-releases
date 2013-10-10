@@ -87,7 +87,9 @@ public class JavaPlatformProblemProvider implements ProjectProblemsProvider {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                support.fireProblemsChange(); //always fire or first calculate and then fire?
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    support.fireProblemsChange(); //always fire or first calculate and then fire?
+                }
             }
         };
     }

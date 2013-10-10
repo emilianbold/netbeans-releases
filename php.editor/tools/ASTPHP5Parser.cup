@@ -850,6 +850,15 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = new EmptyStatement(tokenleft, tokenright);
 :}
 
+| T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_FINALLY:finally_word T_CURLY_OPEN:finallyBlockStart inner_statement_list:finallyList T_CURLY_CLOSE:finallyBlockEnd
+{:
+	Block tryBlock = new Block(tryBlockStartleft, tryBlockEndright, tryList);
+    Block finallyBlock = new Block(finallyBlockStartleft, finallyBlockEndright, finallyList);
+	FinallyClause finallyClause = new FinallyClause(finally_wordleft, finallyBlockEndright, finallyBlock);
+	TryStatement tryStatement = new TryStatement(startleft, finallyBlockEndright, tryBlock, null, finallyClause);
+	RESULT = tryStatement;
+:}
+
 | T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className tracked_variable:var T_CLOSE_PARENTHESE
 T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList additional_finally:finallyBlock
 {:

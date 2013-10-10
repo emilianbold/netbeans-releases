@@ -315,7 +315,9 @@ public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeLis
     
     private void handleConnectionFactory() {
         MessageDestination messageDestination = getDestination();
-        if (ejbJar.getJ2eeProfile() != null && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_7_WEB)) {
+        if (ejbJar != null
+                && ejbJar.getJ2eeProfile() != null
+                && ejbJar.getJ2eeProfile().isAtLeast(Profile.JAVA_EE_7_WEB)) {
             // JavaEE7 specification - section EE.5.21.1
             // set the factory by default - message destination can be custom
             connectionFactoryTextField.setText(DEFAULT_JMS_CONNECTION_FACTORY);

@@ -75,44 +75,43 @@ import org.openide.util.lookup.Lookups;
  * @author Alexander Simon
  */
 public final class StatementNode implements BreadcrumbsElement {
-    private final List<CsmStatement> statements;
-    private final List<List<CsmStatement>> bodies;
-    private final List<String> decorations;
+    private final List<CsmTrueElement> trueCsmElements;
     private List<BreadcrumbsElement> children;
     private final BreadcrumbsElement parent;
     private final CharSequence displayName;
-    private final int startOffset;
-    private final int endOffset;
     private final Lookup lookup;
     private final DataObject cdo;
+    private final int openOffset;
+    private int startOffset;
+    private int endOffset;
 
     static StatementNode createStatementNode(CsmStatement statement, String decoration, BreadcrumbsElement parent, DataObject cdo) {
         switch (statement.getKind()) {
             case COMPOUND:
                 return createBodyNode((CsmCompoundStatement) statement, decoration, parent, cdo);
             case IF:
-                return createIfNode((CsmIfStatement) statement, parent, cdo);
+                return createIfNode((CsmIfStatement) statement, decoration, parent, cdo);
             case TRY_CATCH:
-                return createTryNode((CsmTryCatchStatement) statement, parent, cdo);
+                return createTryNode((CsmTryCatchStatement) statement, decoration, parent, cdo);
             case CATCH:
                 return createBodyNode((CsmExceptionHandler) statement, decoration, parent, cdo);
             case DECLARATION:
-                return createDeclarationNode((CsmDeclarationStatement) statement, parent, cdo);
+                return createDeclarationNode((CsmDeclarationStatement) statement, decoration, parent, cdo);
             case WHILE:
             case DO_WHILE:
-                return createLoopNode((CsmLoopStatement) statement, parent, cdo);
+                return createLoopNode((CsmLoopStatement) statement, decoration, parent, cdo);
             case FOR:
-                return createForNode((CsmForStatement) statement, parent, cdo);
+                return createForNode((CsmForStatement) statement, decoration, parent, cdo);
             case RANGE_FOR:
-                return createRangeForNode((CsmRangeForStatement) statement, parent, cdo);
+                return createRangeForNode((CsmRangeForStatement) statement, decoration, parent, cdo);
             case SWITCH:
-                return createSwitchNode((CsmSwitchStatement) statement, parent, cdo);
+                return createSwitchNode((CsmSwitchStatement) statement, decoration, parent, cdo);
             case EXPRESSION:
-                return createExpressionNode((CsmExpressionStatement) statement, parent, cdo);
+                return createExpressionNode((CsmExpressionStatement) statement, decoration, parent, cdo);
             case RETURN:
-                return createReturnNode((CsmReturnStatement) statement, parent, cdo);
+                return createReturnNode((CsmReturnStatement) statement, decoration, parent, cdo);
             case CASE:
-                return createCaseNode((CsmCaseStatement) statement, parent, cdo);
+                return createCaseNode((CsmCaseStatement) statement, decoration, parent, cdo);
             case DEFAULT:
             case BREAK:
             case CONTINUE:
@@ -124,127 +123,168 @@ public final class StatementNode implements BreadcrumbsElement {
     }
 
     private static StatementNode createBodyNode(CsmCompoundStatement body, String decoration, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(body, decoration, body.getStatements(), null, null, parent, cdo);
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
+        for(CsmStatement s : ((CsmCompoundStatement)body).getStatements()) {
+            st.add(new CsmTrueElement(s));
+        }
+        return new StatementNode(body, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createIfNode(CsmIfStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
-        List<String> decorations = new ArrayList<String>();
-        if (stmt.getThen() != null) {
-            st.add(stmt.getThen());
-            decorations.add("");
+    private static StatementNode createIfNode(CsmIfStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
+        final CsmStatement thenStmt = stmt.getThen();
+        int lastThenOffset = -1;
+        if (thenStmt != null) {
+            CsmTrueElement csmTrueElement = new CsmTrueElement(thenStmt);
+            st.add(csmTrueElement);
+            csmTrueElement.decoration = "then "; //NOI18N
+            final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+            list.add(thenStmt);
+            csmTrueElement.body = list;
+            lastThenOffset = thenStmt.getEndOffset();
         }
-        if (stmt.getElse() != null) {
-            st.add(stmt.getElse());
-            decorations.add("else ");//NOI18N
+        CsmStatement elseStmt = stmt.getElse();
+        while(elseStmt != null && elseStmt.getKind() == CsmStatement.Kind.IF) {
+            CsmIfStatement elseIfStmt =  (CsmIfStatement) elseStmt;
+            CsmTrueElement csmTrueElement = new CsmTrueElement(elseIfStmt);
+            st.add(csmTrueElement);
+            csmTrueElement.decoration = "else ";//NOI18N
+            final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+            csmTrueElement.body = list;
+            CsmStatement elifThenStmt = elseIfStmt.getThen();
+            if (elifThenStmt != null) {
+                list.add(elifThenStmt);
+                if (lastThenOffset >= 0) {
+                    csmTrueElement.startOffset = lastThenOffset + 1;
+                } else {
+                    csmTrueElement.startOffset = elseStmt.getStartOffset();
+                }
+                csmTrueElement.endOffset = elifThenStmt.getEndOffset();
+                lastThenOffset = elifThenStmt.getEndOffset();
+            }
+            elseStmt = elseIfStmt.getElse();
         }
-        return new StatementNode(stmt, null, st, null, decorations, parent, cdo);
+        if (elseStmt != null) {
+            CsmTrueElement csmTrueElement = new CsmTrueElement(elseStmt);
+            st.add(csmTrueElement);
+            csmTrueElement.decoration = "else ";//NOI18N
+            if (lastThenOffset >= 0) {
+                csmTrueElement.startOffset = lastThenOffset + 1;
+            }
+            final ArrayList<CsmStatement> list = new ArrayList<CsmStatement>();
+            list.add(elseStmt);
+            csmTrueElement.body = list;
+        }
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createTryNode(CsmTryCatchStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
+    private static StatementNode createTryNode(CsmTryCatchStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
         if (stmt.getTryStatement() != null) {
-            st.add(stmt.getTryStatement());
+            st.add(new CsmTrueElement(stmt.getTryStatement()));
         }
         for (CsmExceptionHandler handler : stmt.getHandlers()) {
-            st.add(handler);
+            st.add(new CsmTrueElement(handler));
         }
-        return new StatementNode(stmt, null, st, null, null, parent, cdo);
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createLoopNode(CsmLoopStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
+    private static StatementNode createLoopNode(CsmLoopStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
         final CsmStatement body = stmt.getBody();
         if (CsmKindUtilities.isCompoundStatement(body)) {
-            st.addAll(((CsmCompoundStatement)body).getStatements());
+            for(CsmStatement s : ((CsmCompoundStatement)body).getStatements()) {
+                st.add(new CsmTrueElement(s));
+            }
         } else if (body != null) {
-            st.add(body);
+            st.add(new CsmTrueElement(stmt.getBody()));
         }
-        return new StatementNode(stmt, null, st, null, null, parent, cdo);
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createForNode(CsmForStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
+    private static StatementNode createForNode(CsmForStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
         final CsmStatement body = stmt.getBody();
         if (CsmKindUtilities.isCompoundStatement(body)) {
-            st.addAll(((CsmCompoundStatement)body).getStatements());
+            for(CsmStatement s : ((CsmCompoundStatement)body).getStatements()) {
+                st.add(new CsmTrueElement(s));
+            }
         } else if (body != null) {
-            st.add(body);
+            st.add(new CsmTrueElement(stmt.getBody()));
         }
-        return new StatementNode(stmt, null, st, null, null, parent, cdo);
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createRangeForNode(CsmRangeForStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
+    private static StatementNode createRangeForNode(CsmRangeForStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
         if (stmt.getDeclaration() != null) {
-            st.add(stmt.getDeclaration());
+            st.add(new CsmTrueElement(stmt.getDeclaration()));
         }
         if (stmt.getBody() != null) {
-            st.add(stmt.getBody());
+            st.add(new CsmTrueElement(stmt.getBody()));
         }
-        return new StatementNode(stmt, null, st, null, null, parent, cdo);
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createSwitchNode(CsmSwitchStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        List<CsmStatement> st = new ArrayList<CsmStatement>();
-        List<List<CsmStatement>> bodies = new ArrayList<List<CsmStatement>>();
-        List<String> decorations = new ArrayList<String>();
+    private static StatementNode createSwitchNode(CsmSwitchStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        List<CsmTrueElement> st = new ArrayList<CsmTrueElement>();
         final CsmStatement body = stmt.getBody();
         if (CsmKindUtilities.isCompoundStatement(body)) {
-            CsmStatement currentCase = null;
-            List<CsmStatement> currentCaseList = null;
+            CsmTrueElement currElement = null;
+            int lastTrueStart = body.getStartOffset()+1;
             for (CsmStatement c : ((CsmCompoundStatement) body).getStatements()) {
                 if (c.getKind() == CsmStatement.Kind.CASE || c.getKind() == CsmStatement.Kind.DEFAULT) {
-                    if (currentCase != null) {
-                        st.add(currentCase);
-                        bodies.add(currentCaseList);
-                        if (currentCase.getKind() == CsmStatement.Kind.CASE) {
-                            decorations.add("case "); //NOI18N
-                        } else {
-                            decorations.add("default "); //NOI18N
-                        }
+                    if (currElement != null) {
+                        st.add(currElement);
                     }
-                    currentCase = c;
-                    currentCaseList = new ArrayList<CsmStatement>();
+                    currElement = new CsmTrueElement(c);
+                    currElement.startOffset = lastTrueStart;
+                    if (c.getKind() == CsmStatement.Kind.CASE) {
+                        currElement.decoration = "case "; //NOI18N
+                    } else {
+                        currElement.decoration = "default "; //NOI18N
+                    }
+                    currElement.body = new ArrayList<CsmStatement>();
+                    lastTrueStart = c.getEndOffset()+1;
                 } else {
-                    if (currentCaseList != null) {
-                        currentCaseList.add(c);
+                    if (currElement != null) {
+                        currElement.body.add(c);
+                        currElement.endOffset = c.getEndOffset();
+                        lastTrueStart = c.getEndOffset()+1;
                     }
                 }
             }
-            if (currentCase != null) {
-                st.add(currentCase);
-                bodies.add(currentCaseList);
-                if (currentCase.getKind() == CsmStatement.Kind.CASE) {
-                    decorations.add("case "); //NOI18N
-                } else {
-                    decorations.add("default "); //NOI18N
-                }
+            if (currElement != null) {
+                st.add(currElement);
             }
         }
-        return new StatementNode(stmt, null, st, bodies, decorations, parent, cdo);
+        return new StatementNode(stmt, decoration, st, parent, cdo);
     }
 
-    private static StatementNode createExpressionNode(CsmExpressionStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
+    private static StatementNode createExpressionNode(CsmExpressionStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        return new StatementNode(stmt, decoration, Collections.<CsmTrueElement>emptyList(), parent, cdo);
     }
 
-    private static StatementNode createReturnNode(CsmReturnStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
+    private static StatementNode createReturnNode(CsmReturnStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        return new StatementNode(stmt, decoration, Collections.<CsmTrueElement>emptyList(), parent, cdo);
     }
 
-    private static StatementNode createDeclarationNode(CsmDeclarationStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
+    private static StatementNode createDeclarationNode(CsmDeclarationStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        return new StatementNode(stmt, decoration, Collections.<CsmTrueElement>emptyList(), parent, cdo);
     }
 
-    private static StatementNode createCaseNode(CsmCaseStatement stmt, BreadcrumbsElement parent, DataObject cdo) {
-        return new StatementNode(stmt, null, Collections.<CsmStatement>emptyList(), null, null,parent, cdo);
+    private static StatementNode createCaseNode(CsmCaseStatement stmt, String decoration, BreadcrumbsElement parent, DataObject cdo) {
+        return new StatementNode(stmt, decoration, Collections.<CsmTrueElement>emptyList(), parent, cdo);
     }
 
-    private StatementNode(CsmStatement owner, String decoration, List<CsmStatement> statements, List<List<CsmStatement>> bodies, List<String> decorations, BreadcrumbsElement parent, DataObject cdo) {
-        this.statements = statements;
-        this.decorations = decorations;
-        this.bodies = bodies;
+    private StatementNode(CsmTrueElement owner, String decoration, List<CsmTrueElement> trueCsmElements, BreadcrumbsElement parent, DataObject cdo) {
+        this(owner.statement, decoration, trueCsmElements, parent, cdo);
+        startOffset = owner.startOffset;
+        endOffset = owner.endOffset;
+    }
+
+    private StatementNode(CsmStatement owner, String decoration, List<CsmTrueElement> trueCsmElements, BreadcrumbsElement parent, DataObject cdo) {
+        this.trueCsmElements = trueCsmElements;
         this.parent = parent;
         StringBuilder buf = new StringBuilder();
         if (decoration != null) {
@@ -275,19 +315,29 @@ public final class StatementNode implements BreadcrumbsElement {
                 case '&':
                     buf.append("&amp;"); //NOI18N
                     break;
+                case '/':
+                    if (i+1 < text.length() && text.charAt(i) == '/')  {
+                        break loop;
+                    }
+                    break;
                 default:
                     buf.append(c);
             }
         }
-        startOffset = owner.getStartOffset();
+        openOffset = owner.getStartOffset();
+        startOffset = owner.getStartOffset();    
         int end = owner.getEndOffset();
-        for(CsmStatement s : statements) {
-            if (s.getEndOffset() > end) {
-                end = s.getEndOffset();
+        for(CsmTrueElement s : trueCsmElements) {
+            if (s.endOffset > end) {
+                end = s.endOffset;
             }
         }
         endOffset = end;
-        displayName = CharSequences.create(buf);
+        int i = buf.indexOf("{"); //NOI18N
+        if (i > 0) {
+            buf.setLength(i);
+        }
+        displayName = CharSequences.create(buf.toString().trim());
         this.cdo = cdo;
         lookup =  Lookups.fixed(new OpenableImpl(this));
     }
@@ -311,20 +361,32 @@ public final class StatementNode implements BreadcrumbsElement {
     public List<BreadcrumbsElement> getChildren() {
         if (children == null) {
             children = new ArrayList<BreadcrumbsElement>();
-            for(int i = 0; i < statements.size(); i++) {
-                List<CsmStatement> body = null;
-                if (bodies != null) {
-                    body = bodies.get(i);
-                }
-                String decoration = null;
-                if (decorations != null) {
-                    decoration = decorations.get(i);
-                }
+            for(CsmTrueElement s : trueCsmElements) {
+                List<CsmStatement> body = s.body;
+                String decoration = s.decoration;
                 StatementNode node;
                 if (body != null) {
-                    node = new StatementNode(statements.get(i), decoration, body, null, null, this, cdo);
+                    if (body.size() == 1) {
+                        CsmStatement content = body.get(0);
+                        if (content.getKind() == CsmStatement.Kind.COMPOUND) {
+                            body = ((CsmCompoundStatement)content).getStatements();
+                        }
+                    }
+                    if (body.size() == 1 && s.statement == body.get(0)) {
+                        node = createStatementNode(s.statement, decoration, this, cdo);
+                        if (node != null) {
+                            node.startOffset = s.startOffset;
+                            node.endOffset = s.endOffset;
+                        }
+                    } else {
+                        List<CsmTrueElement> sts = new ArrayList<CsmTrueElement>();
+                        for(CsmStatement st : body) {
+                            sts.add(new CsmTrueElement(st));
+                        }
+                        node = new StatementNode(s, decoration, sts, this, cdo);
+                    }
                 } else {
-                    node = createStatementNode(statements.get(i), decoration, this, cdo);
+                    node = createStatementNode(s.statement, decoration, this, cdo);
                 }
                 if (node != null) {
                     children.add(node);
@@ -362,7 +424,34 @@ public final class StatementNode implements BreadcrumbsElement {
 
         @Override
         public void open() {
-            CsmUtilities.openSource(node.cdo.getPrimaryFile(), node.startOffset);
+            CsmUtilities.openSource(node.cdo.getPrimaryFile(), node.openOffset);
+        }
+    }
+    
+    private static final class CsmTrueElement {
+        final CsmStatement statement;
+        List<CsmStatement> body;
+        String decoration;
+        int startOffset;
+        int endOffset;
+        
+        private CsmTrueElement(CsmStatement statement) {
+            this.statement = statement;
+            startOffset = statement.getStartOffset();
+            endOffset = statement.getEndOffset();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder buf = new StringBuilder();
+            buf.append(Integer.toString(startOffset));
+            buf.append('-');
+            buf.append(Integer.toString(endOffset));
+            buf.append(' ');
+            if (decoration != null) {
+                buf.append(decoration);
+            }
+            return buf.toString();
         }
     }
 }

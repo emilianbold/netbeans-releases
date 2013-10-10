@@ -68,7 +68,7 @@ public final class Util {
      * @return 
      */
     public static void createNewQuery(Repository repository) {
-        QueryAction.openQuery(null, repository.getImpl());
+        QueryAction.createNewQuery(repository.getImpl());
     }
 
     /**

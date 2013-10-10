@@ -70,19 +70,6 @@ public abstract class BugtrackingConnector {
      */
     public abstract Repository createRepository();
 
-    /**
-     * Returns an {@code IssueFinder} for the connector, or {@code null}
-     * if no {@code IssueFinder} is available.
-     * The default implementation returns {@code null}.
-     *
-     * @return  an instance of {@code IssueFinder} corresponding to this
-     *          type of bugtracker, or {@code null}
-     */
-    // XXX provide via lookup
-    public IssueFinder getIssueFinder() {
-        return null;
-    }
-
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    

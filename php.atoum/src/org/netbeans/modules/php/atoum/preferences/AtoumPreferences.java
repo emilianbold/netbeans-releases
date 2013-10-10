@@ -58,6 +58,8 @@ public final class AtoumPreferences {
     private static final String BOOTSTRAP_PATH = "bootstrap.path"; // NOI18N
     private static final String CONFIGURATION_ENABLED = "configuration.enabled"; // NOI18N
     private static final String CONFIGURATION_PATH = "configuration.path"; // NOI18N
+    private static final String ATOUM_ENABLED = "atoum.enabled"; // NOI18N
+    private static final String ATOUM_PATH = "atoum.path"; // NOI18N
 
 
     private AtoumPreferences() {
@@ -93,6 +95,22 @@ public final class AtoumPreferences {
 
     public static void setConfigurationPath(PhpModule phpModule, String configurationPath) {
         getPreferences(phpModule).put(CONFIGURATION_PATH, relativizePath(phpModule, configurationPath));
+    }
+
+    public static boolean isAtoumEnabled(PhpModule phpModule) {
+        return getPreferences(phpModule).getBoolean(ATOUM_ENABLED, false);
+    }
+
+    public static void setAtoumEnabled(PhpModule phpModule, boolean atoumEnabled) {
+        getPreferences(phpModule).putBoolean(ATOUM_ENABLED, atoumEnabled);
+    }
+
+    public static String getAtoumPath(PhpModule phpModule) {
+        return resolvePath(phpModule, getPreferences(phpModule).get(ATOUM_PATH, null));
+    }
+
+    public static void setAtoumPath(PhpModule phpModule, String atoumPath) {
+        getPreferences(phpModule).put(ATOUM_PATH, relativizePath(phpModule, atoumPath));
     }
 
     private static Preferences getPreferences(PhpModule module) {

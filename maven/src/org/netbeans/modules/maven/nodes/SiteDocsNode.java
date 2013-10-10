@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.nodes;
 
 import java.util.Collections;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -66,6 +67,8 @@ import org.openide.util.NbBundle.Messages;
  * @author  Milos Kleint
  */
 class SiteDocsNode extends FilterNode {
+    private static final @StaticResource String PSITE_BADGE = "org/netbeans/modules/maven/projectsite-badge.png";
+    
     private NbMavenProjectImpl project;
     private boolean isTopLevelNode = false;
     
@@ -152,7 +155,7 @@ class SiteDocsNode extends FilterNode {
         java.awt.Image retValue = super.getIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/projectsite-badge.png"), //NOI18N
+                                             ImageUtilities.loadImage(PSITE_BADGE), //NOI18N
                                              8, 8);
         } 
         return retValue;
@@ -163,14 +166,14 @@ class SiteDocsNode extends FilterNode {
         java.awt.Image retValue = super.getOpenedIcon(param);
         if (isTopLevelNode) {
             retValue = ImageUtilities.mergeImages(retValue,
-                                             ImageUtilities.loadImage("org/netbeans/modules/maven/projectsite-badge.png"), //NOI18N
+                                             ImageUtilities.loadImage(PSITE_BADGE), //NOI18N
                                              8, 8);
         } 
         return retValue;
     }
     
     static class SiteFilterChildren extends FilterNode.Children {
-        private NbMavenProjectImpl project;
+        private final NbMavenProjectImpl project;
         SiteFilterChildren(NbMavenProjectImpl proj, Node original) {
             super(original);
             project = proj;

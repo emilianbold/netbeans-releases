@@ -55,6 +55,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -188,13 +189,21 @@ public class BugzillaUtil {
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
         Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
-            repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
-                    bugzillaRepository, 
-                    Bugzilla.getInstance().getRepositoryProvider(), 
-                    Bugzilla.getInstance().getQueryProvider(),
-                    Bugzilla.getInstance().getIssueProvider());
+            repository = createRepository(bugzillaRepository);
         }
         return repository;
+    }
+    
+    public static Repository createRepository(BugzillaRepository bugzillaRepository) {
+        return Bugzilla.getInstance().getBugtrackingFactory().createRepository(
+                bugzillaRepository, 
+                Bugzilla.getInstance().getRepositoryProvider(), 
+                Bugzilla.getInstance().getQueryProvider(),
+                Bugzilla.getInstance().getIssueProvider(),
+                Bugzilla.getInstance().getStatusProvider(),
+                null, 
+                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository),
+                SimpleIssueFinder.getInstance());
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
@@ -202,7 +211,7 @@ public class BugzillaUtil {
     }
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
-        Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+        Bugzilla.getInstance().getBugtrackingFactory().editQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
 
     public static void runInAWT(Runnable r) {

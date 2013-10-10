@@ -64,12 +64,13 @@ public class TryStatement extends Statement {
 
     private TryStatement(int start, int end, Block tryStatement, CatchClause[] catchClauses, FinallyClause finallyClause) {
         super(start, end);
-
-        if (tryStatement == null || catchClauses == null) {
+        if (tryStatement == null) {
             throw new IllegalArgumentException();
         }
         this.tryStatement = tryStatement;
-        this.catchClauses.addAll(Arrays.asList(catchClauses));
+        if (catchClauses != null) {
+            this.catchClauses.addAll(Arrays.asList(catchClauses));
+        }
         this.finallyClause = finallyClause;
     }
 

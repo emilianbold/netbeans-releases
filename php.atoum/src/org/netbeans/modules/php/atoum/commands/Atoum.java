@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.atoum.commands;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -54,20 +53,25 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
-import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
+import org.netbeans.modules.php.atoum.options.AtoumOptionsValidator;
 import org.netbeans.modules.php.atoum.preferences.AtoumPreferences;
+import org.netbeans.modules.php.atoum.preferences.AtoumPreferencesValidator;
 import org.netbeans.modules.php.atoum.run.TapParser;
 import org.netbeans.modules.php.atoum.run.TestCaseVo;
 import org.netbeans.modules.php.atoum.run.TestSuiteVo;
+import org.netbeans.modules.php.atoum.ui.customizer.AtoumCustomizer;
 import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
@@ -75,6 +79,7 @@ import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -96,9 +101,7 @@ public final class Atoum {
     public static final String BOOTSTRAP_FILE_NAME = ".bootstrap.atoum.php"; // NOI18N
     public static final String CONFIGURATION_FILE_NAME = ".atoum.php"; // NOI18N
 
-    public static final Pattern LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
-
-    private static final String ATOUM_PROJECT_FILE_PATH = "vendor/atoum/atoum/bin/atoum"; // NOI18N
+    public static final Pattern LINE_PATTERN = Pattern.compile("(.+):(\\d+)"); // NOI18N
 
     private static final String TAP_FORMAT_PARAM = "-utr"; // NOI18N
     private static final String DIRECTORY_PARAM = "-d"; // NOI18N
@@ -119,37 +122,65 @@ public final class Atoum {
     }
 
     public static Atoum getDefault() throws InvalidPhpExecutableException {
-        String script = AtoumOptions.getInstance().getAtoumPath();
-        String error = validate(script);
+        String error = validateDefault();
         if (error != null) {
             throw new InvalidPhpExecutableException(error);
         }
-        return new Atoum(script);
+        return new Atoum(AtoumOptions.getInstance().getAtoumPath());
     }
 
     @CheckForNull
-    public static Atoum getForPhpModule(PhpModule phpModule) throws InvalidPhpExecutableException {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
+    public static Atoum getForPhpModule(PhpModule phpModule, boolean showCustomizer) {
+        if (validatePhpModule(phpModule) != null) {
+            if (showCustomizer) {
+                phpModule.getLookup().lookup(CustomizerProvider2.class).showCustomizer(AtoumCustomizer.IDENTIFIER, null);
+            }
             return null;
         }
-        FileObject fileObject = sourceDirectory.getFileObject(ATOUM_PROJECT_FILE_PATH);
-        if (fileObject == null) {
-            return getDefault();
-        }
-        File file = FileUtil.toFile(fileObject);
-        assert file != null : "File not found fileobject: " + fileObject;
-        String path = file.getAbsolutePath();
-        String error = validate(path);
-        if (error != null) {
-            throw new InvalidPhpExecutableException(error);
+        // atoum
+        String path;
+        if (AtoumPreferences.isAtoumEnabled(phpModule)) {
+            // custom atoum
+            path = AtoumPreferences.getAtoumPath(phpModule);
+        } else {
+            // default atoum
+            String error = validateDefault();
+            if (error != null) {
+                if (showCustomizer) {
+                    UiUtils.invalidScriptProvided(error, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+                }
+                return null;
+            }
+            path = AtoumOptions.getInstance().getAtoumPath();
         }
         return new Atoum(path);
     }
 
-    @NbBundle.Messages("Atoum.file.label=atoum file")
-    public static String validate(String command) {
-        return PhpExecutableValidator.validateCommand(command, Bundle.Atoum_file_label());
+    @CheckForNull
+    private static String validateDefault() {
+        ValidationResult result = new AtoumOptionsValidator()
+                .validate(AtoumOptions.getInstance().getAtoumPath())
+                .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validatePhpModule(PhpModule phpModule) {
+        ValidationResult result = new AtoumPreferencesValidator()
+                .validate(phpModule)
+                .getResult();
+        return validateResult(result);
+    }
+
+    @CheckForNull
+    private static String validateResult(ValidationResult result) {
+        if (result.isFaultless()) {
+            return null;
+        }
+        if (result.hasErrors()) {
+            return result.getErrors().get(0).getMessage();
+        }
+        return result.getWarnings().get(0).getMessage();
     }
 
     public static boolean isTestMethod(PhpClass.Method method) {
@@ -280,7 +311,9 @@ public final class Atoum {
         // #236397 - cannot be controllable
         return new ExecutionDescriptor()
                 .optionsPath(AtoumOptionsPanelController.OPTIONS_PATH)
-                .showProgress(true);
+                .showProgress(true)
+                .outLineBased(true)
+                .errLineBased(true);
     }
 
     @NbBundle.Messages({
@@ -344,16 +377,17 @@ public final class Atoum {
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            return new ParsingProcessor(testSession);
+            return InputProcessors.bridge(new ParsingProcessor(testSession));
         }
 
     }
 
-    private static final class ParsingProcessor implements InputProcessor {
+    private static final class ParsingProcessor implements LineProcessor {
 
         private static final Logger LOGGER = Logger.getLogger(ParsingProcessor.class.getName());
 
         private final TestSession testSession;
+        private final StringBuilder buffer = new StringBuilder();
 
         private String testSuiteName = null;
         private TestSuite testSuite = null;
@@ -371,9 +405,39 @@ public final class Atoum {
         }
 
         @Override
-        public void processInput(char[] chars) throws IOException {
-            String input = new String(chars);
-            LOGGER.log(Level.FINEST, "Processing input {0}", input);
+        public void processLine(String line) {
+            LOGGER.log(Level.FINEST, "Processing line: {0}", line);
+            if (TapParser.isTestCaseStart(line)) {
+                process(buffer.toString());
+                buffer.setLength(0);
+            }
+            buffer.append(line);
+            buffer.append("\n"); // NOI18N
+        }
+
+        @Override
+        public void reset() {
+            LOGGER.fine("Resetting processor");
+            finish();
+        }
+
+        @Override
+        public void close() {
+            LOGGER.fine("Closing processor");
+            finish();
+        }
+
+        private void finish() {
+            process(buffer.toString());
+            if (testSuite != null) {
+                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
+                testSuite.finish(testSuiteTime);
+                testSuite = null;
+            }
+        }
+
+        private void process(String input) {
+            LOGGER.log(Level.FINEST, "Parsing input:\n{0}", input);
             List<TestSuiteVo> suites = new TapParser()
                     .parse(input, currentMillis() - currentMillis);
             LOGGER.log(Level.FINE, "Parsed test suites: {0}", suites);
@@ -384,21 +448,6 @@ public final class Atoum {
                 LOGGER.log(Level.WARNING, null, throwable);
             }
             currentMillis = currentMillis();
-        }
-
-        @Override
-        public void reset() throws IOException {
-            // noop
-        }
-
-        @Override
-        public void close() throws IOException {
-            LOGGER.fine("Closing processor");
-            if (testSuite != null) {
-                LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
-                testSuite.finish(testSuiteTime);
-                testSuite = null;
-            }
         }
 
         private void process(List<TestSuiteVo> suites) {

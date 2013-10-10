@@ -74,6 +74,7 @@ import org.openide.util.Parameters;
  * @author jhavlin
  * @since api.search/1.1
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public final class SearchPatternController
         extends ComponentController<JComboBox> {
 

@@ -364,6 +364,15 @@ public class AttachmentsPanel extends JPanel {
     public final void createAttachment () {
         createNewButton.doClick();
     }
+    
+    /**
+     * Programmatically calls attach log method
+     */
+    public final void createNbLogAttachment () {
+        if (attachLogFileButton != null) {
+            attachLogFileButton.doClick();
+        }
+    }
 
     private JPopupMenu menuFor(Attachment attachment, LinkButton patchButton) {
         JPopupMenu menu = new JPopupMenu();

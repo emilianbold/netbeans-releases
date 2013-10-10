@@ -88,6 +88,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -141,9 +142,11 @@ public class ProjectTab extends TopComponent
                 
     public static final String ID_LOGICAL = "projectTabLogical_tc"; // NOI18N                            
     public static final String ID_PHYSICAL = "projectTab_tc"; // NOI18N                        
+    private static final @StaticResource String PROJECT_TAB = "org/netbeans/modules/project/ui/resources/projectTab.png";
+    private static final @StaticResource String FILES_TAB = "org/netbeans/modules/project/ui/resources/filesTab.png";
     
-    private static final Image ICON_LOGICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" );
-    private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" );
+    private static final Image ICON_LOGICAL = ImageUtilities.loadImage( PROJECT_TAB);
+    private static final Image ICON_PHYSICAL = ImageUtilities.loadImage( FILES_TAB);
 
     private static final Logger LOG = Logger.getLogger(ProjectTab.class.getName());
 

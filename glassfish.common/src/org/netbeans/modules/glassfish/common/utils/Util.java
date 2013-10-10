@@ -52,7 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.PortCollection;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;

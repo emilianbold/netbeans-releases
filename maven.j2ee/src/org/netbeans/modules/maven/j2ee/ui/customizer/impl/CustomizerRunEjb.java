@@ -78,7 +78,7 @@ public class CustomizerRunEjb extends BaseRunCustomizer {
 
     @Override
     public void applyChanges() {
-        changeServer(comServer);
+        serverUpdater.storeValue();
     }
 
     /** This method is called from within the constructor to

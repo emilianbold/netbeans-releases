@@ -43,8 +43,8 @@ package org.netbeans.modules.cnd.completion.cplusplus;
 
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
@@ -57,13 +57,13 @@ import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation
 public final class CsmTypeResolverImpl implements CsmTypeResolverImplementation {
 
     @Override
-    public CsmType resolveType(CsmExpression expression, List<CsmInstantiation> instantiations) {
+    public CsmType resolveType(CsmOffsetable expression, List<CsmInstantiation> instantiations) {
         CsmCompletionQuery query = getCompletionQuery(expression);
         CsmType type = query.queryType(expression, instantiations);
         return type;
     }    
     
-    private static CsmCompletionQuery getCompletionQuery(CsmExpression expression) {
+    private static CsmCompletionQuery getCompletionQuery(CsmOffsetable expression) {
         return CsmCompletionProvider.createCompletionResolver(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
     }    
 }

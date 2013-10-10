@@ -198,10 +198,6 @@ public class EntityRelations extends J2eeTestCase {
         hintTest(f, 0, "Create", 2);
     }
 
-    public void testMakePublic() throws Exception {
-        hintTest(new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/MakePublic.java"), 0, null, 1);
-    }
-
     public void testDefaultConstructor() throws Exception {
         File f = new File(getDataDir(), "projects/EntityHintsEJB/src/java/hints/DefaultConstructor.java");
         hintTest(f, 0, null, 1);

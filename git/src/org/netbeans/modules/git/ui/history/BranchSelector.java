@@ -67,7 +67,7 @@ public final class BranchSelector {
 
     public BranchSelector (File repository) {
         this.revisionPicker = new RevisionDialogController(repository, new File[0],
-                Collections.<String, GitBranch>emptyMap());
+                Collections.<String, GitBranch>emptyMap(), null);
         panel = new SelectBranchPanel(revisionPicker.getPanel());
     }
 

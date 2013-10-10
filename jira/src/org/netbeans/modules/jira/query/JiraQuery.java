@@ -79,8 +79,8 @@ public class JiraQuery {
     private String name;
     private final JiraRepository repository;
     protected QueryController controller;
-    private final Set<String> issues = new HashSet<String>();
-    private Set<String> archivedIssues = new HashSet<String>();
+    private final Set<String> issues = new HashSet<>();
+    private final Set<String> archivedIssues = new HashSet<>();
 
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
@@ -144,6 +144,10 @@ public class JiraQuery {
         return name;
     }
 
+    public boolean canRename() {
+        return jiraFilter != null && !(isModifiable(jiraFilter));
+    }
+    
     public String getTooltip() {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
@@ -162,10 +166,14 @@ public class JiraQuery {
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
-        } else if(jiraFilter instanceof NamedFilter) {
+        } else if(isModifiable(jiraFilter)) {
             return new QueryController(r, q, jiraFilter, false);
         }
-        throw new IllegalStateException("wrong fileter type : " + jiraFilter.getClass().getName());
+        throw new IllegalStateException("wrong filter type : " + jiraFilter.getClass().getName());
+    }
+
+    private static boolean isModifiable(JiraFilter jiraFilter) {
+        return jiraFilter instanceof NamedFilter;
     }
 
     public ColumnDescriptor[] getColumnDescriptors() {
@@ -183,6 +191,7 @@ public class JiraQuery {
 
         final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
+            @Override
             public void run() {
                 Jira.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/ }); // NOI18N
                 MylynSupport supp = MylynSupport.getInstance();
@@ -195,8 +204,8 @@ public class JiraQuery {
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
-                        if(!wasRun() && issues.size() != 0) {
-                                Jira.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
+                        if(!wasRun() && !issues.isEmpty()) {
+                                Jira.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                                 assert false;
                         }
                         // read the stored state ...
@@ -287,6 +296,10 @@ public class JiraQuery {
         refreshIntern(autoReresh);
     }
 
+    public boolean canRemove() {
+        return isModifiable(jiraFilter);
+    }
+        
     public void remove() {
         if(QueryController.isNamedFilter(jiraFilter)) {
             // Serverside filter. Can't remove.
@@ -337,13 +350,13 @@ public class JiraQuery {
         if (issues == null) {
             return Collections.emptyList();
         }
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
         synchronized (issues) {
             ids.addAll(issues);
         }
         
         IssueCache<NbJiraIssue> cache = repository.getIssueCache();
-        List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
+        List<NbJiraIssue> ret = new ArrayList<>();
         for (String id : ids) {
             IssueCache.Status status = getIssueStatus(id);
             if(includeStatus.contains(status)) {
@@ -368,7 +381,7 @@ public class JiraQuery {
     public long getLastRefresh() {
         return lastRefresh;
     }
-    
+
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
         
         private final Set<String> addedIds = new HashSet<>();
@@ -508,7 +521,7 @@ public class JiraQuery {
     private List<QueryNotifyListener> notifyListeners;
     private List<QueryNotifyListener> getNotifyListeners() {
         if(notifyListeners == null) {
-            notifyListeners = new ArrayList<QueryNotifyListener>();
+            notifyListeners = new ArrayList<>();
         }
         return notifyListeners;
     }     

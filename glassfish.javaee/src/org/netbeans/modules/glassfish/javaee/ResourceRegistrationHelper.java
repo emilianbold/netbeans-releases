@@ -52,7 +52,7 @@ import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.TreeParser;
+import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
 import org.openide.filesystems.FileObject;

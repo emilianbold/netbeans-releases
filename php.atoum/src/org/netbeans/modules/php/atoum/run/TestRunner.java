@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.php.atoum.run;
 
-import java.util.logging.Logger;
-import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.atoum.commands.Atoum;
-import org.netbeans.modules.php.atoum.ui.options.AtoumOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
@@ -62,14 +58,10 @@ public final class TestRunner {
     }
 
     public void runTests(TestRunInfo runInfo, TestSession testSession) throws TestRunException {
-        Atoum atoum;
-        try {
-            atoum = Atoum.getForPhpModule(phpModule);
-        } catch (InvalidPhpExecutableException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+        Atoum atoum = Atoum.getForPhpModule(phpModule, true);
+        if (atoum == null) {
             return;
         }
-        assert atoum != null;
         Integer result = atoum.runTests(phpModule, runInfo, testSession);
         // 255 - some error
         // 1 - some test failed

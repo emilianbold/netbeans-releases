@@ -55,7 +55,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {
@@ -78,10 +78,25 @@ public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
     }
 
     @Override
+    public boolean canRemove(ODCSQuery q) {
+        return q.canRemove();
+    }
+    
+    @Override
     public void remove(ODCSQuery q) {
         q.remove();
     }
 
+    @Override
+    public boolean canRename(ODCSQuery q) {
+        return true;
+    }
+
+    @Override
+    public void rename(ODCSQuery q, String displayName) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
     @Override
     public Collection<ODCSIssue> getIssues(ODCSQuery q) {
         return q.getIssues();
@@ -122,5 +137,4 @@ public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
     public void setOwnerInfo (ODCSQuery q, OwnerInfo info) {
         q.setOwnerInfo(info);
     }
-    
 }

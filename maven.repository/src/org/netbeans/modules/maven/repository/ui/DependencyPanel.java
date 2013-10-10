@@ -72,6 +72,7 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Actions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -85,9 +86,6 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener {
-
-    private static final @StaticResource String DEPENDENCY = "org/netbeans/modules/maven/repository/ui/DependencyIcon.png";
-    private static final @StaticResource String TRANSITIVE_DEPENDENCY = "org/netbeans/modules/maven/repository/ui/TransitiveDependencyIcon.png";
 
     private Lookup.Result<DependencyNode> result;
     private JToolBar toolbar;
@@ -356,9 +354,9 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
                 @SuppressWarnings("unchecked")
                 List<DependencyNode> dirs = (List<DependencyNode>)list.getClientProperty("directs");
                 if (dirs.contains(d)) {
-                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(DEPENDENCY, true)));
+                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.DEPENDENCY_ICON, true)));
                 } else {
-                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(TRANSITIVE_DEPENDENCY, true)));
+                    lbl.setIcon(ImageUtilities.image2Icon(ImageUtilities.loadImage(IconResources.TRANSITIVE_DEPENDENCY_ICON, true)));
                 }
             }
             return cmp;

@@ -1,2 +1,0 @@
-# cluster incompatible release version - for webcommon cluster
-9

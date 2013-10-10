@@ -107,11 +107,11 @@ import org.openide.util.RequestProcessor;
  */
 @ProjectServiceProvider(service=NbModuleProvider.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class MavenNbModuleImpl implements NbModuleProvider {
-    private Project project;
-    private DependencyAdder dependencyAdder = new DependencyAdder();
+    private final Project project;
+    private final DependencyAdder dependencyAdder = new DependencyAdder();
     private static final RequestProcessor RP = new RequestProcessor(MavenNbModuleImpl.class);
     
-    private RequestProcessor.Task tsk = RP.create(dependencyAdder);
+    private final RequestProcessor.Task tsk = RP.create(dependencyAdder);
     
     public static final String NETBEANS_REPO_ID = "netbeans";
     /**
@@ -193,7 +193,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                         return val;
                     }
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (XmlPullParserException e) {
                 e.printStackTrace();
             }
             MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
@@ -250,7 +252,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                     path = cnb.getValue();
                 }
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (XmlPullParserException e) {
             e.printStackTrace();
         }
         return project.getProjectDirectory().getFileObject(path);
@@ -567,10 +571,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      * Looks for the configured location of the IDE installation for a standalone or suite module.
      */
     static @CheckForNull File findIDEInstallation(Project project) {
-        String installProp = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
-        if (installProp == null) {
-            installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide", "netbeans.installation");
-        }
+        String installProp = PluginPropertyUtils.getPluginProperty(project, GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide", PROP_NETBEANS_INSTALL);
         if (installProp != null) {
             return FileUtilities.convertStringToFile(installProp);
         } else {

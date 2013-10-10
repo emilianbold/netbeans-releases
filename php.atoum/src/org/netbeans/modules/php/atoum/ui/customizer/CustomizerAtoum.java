@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.atoum.ui.customizer;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -76,8 +77,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.util.RequestProcessor;
 
 public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
+
+    private static final RequestProcessor RP = new RequestProcessor(CustomizerAtoum.class);
 
     private final ProjectCustomizer.Category category;
     private final PhpModule phpModule;
@@ -101,9 +105,13 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         initFile(AtoumPreferences.isConfigurationEnabled(phpModule),
                 AtoumPreferences.getConfigurationPath(phpModule),
                 configurationCheckBox, configurationTextField);
+        initFile(AtoumPreferences.isAtoumEnabled(phpModule),
+                AtoumPreferences.getAtoumPath(phpModule),
+                scriptCheckBox, scriptTextField);
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapBrowseButton);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationBrowseButton, configurationWarningLabel);
+        enableFile(scriptCheckBox.isSelected(), scriptLabel, scriptTextField, scriptBrowseButton);
 
         addListeners();
         validateData();
@@ -130,6 +138,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         ValidationResult result = new AtoumPreferencesValidator()
                 .validateBootstrap(bootstrapCheckBox.isSelected(), bootstrapTextField.getText())
                 .validateConfiguration(configurationCheckBox.isSelected(), configurationTextField.getText())
+                .validateAtoum(scriptCheckBox.isSelected(), scriptTextField.getText())
                 .getResult();
         for (ValidationResult.Message message : result.getErrors()) {
             category.setErrorMessage(message.getMessage());
@@ -150,6 +159,8 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         AtoumPreferences.setBootstrapPath(phpModule, bootstrapTextField.getText());
         AtoumPreferences.setConfigurationEnabled(phpModule, configurationCheckBox.isSelected());
         AtoumPreferences.setConfigurationPath(phpModule, configurationTextField.getText());
+        AtoumPreferences.setAtoumEnabled(phpModule, scriptCheckBox.isSelected());
+        AtoumPreferences.setAtoumPath(phpModule, scriptTextField.getText());
     }
 
     private void initFile(boolean enabled, String file, JCheckBox checkBox, JTextField textField) {
@@ -178,6 +189,15 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
             }
         });
         configurationTextField.getDocument().addDocumentListener(defaultDocumentListener);
+
+        scriptCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                enableFile(e.getStateChange() == ItemEvent.SELECTED, scriptLabel, scriptTextField, scriptBrowseButton);
+                validateData();
+            }
+        });
+        scriptTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     private File getDefaultDirectory() {
@@ -203,7 +223,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         return true;
     }
 
-    private boolean checkFile(File file, String errorMessage) {
+    boolean checkFile(File file, String errorMessage) {
         assert file != null;
         if (file.exists()) {
             informUser(errorMessage);
@@ -232,6 +252,10 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         configurationTextField = new JTextField();
         configurationBrowseButton = new JButton();
         configurationWarningLabel = new JLabel();
+        scriptCheckBox = new JCheckBox();
+        scriptLabel = new JLabel();
+        scriptTextField = new JTextField();
+        scriptBrowseButton = new JButton();
         createLabel = new JLabel();
         createButton = new JButton();
 
@@ -265,6 +289,20 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
 
         Mnemonics.setLocalizedText(configurationWarningLabel, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.configurationWarningLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.scriptCheckBox.text")); // NOI18N
+
+        scriptLabel.setLabelFor(scriptTextField);
+        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.scriptLabel.text")); // NOI18N
+
+        scriptTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.scriptBrowseButton.text")); // NOI18N
+        scriptBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                scriptBrowseButtonActionPerformed(evt);
+            }
+        });
+
         Mnemonics.setLocalizedText(createLabel, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.createLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(createButton, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.createButton.text")); // NOI18N
@@ -279,14 +317,15 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(bootstrapCheckBox)
-                    .addComponent(configurationCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addComponent(createLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(createButton))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(bootstrapCheckBox)
+                    .addComponent(configurationCheckBox)
+                    .addComponent(scriptCheckBox))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -304,10 +343,16 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configurationTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configurationBrowseButton))))
+                        .addComponent(configurationBrowseButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scriptLabel)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(scriptTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(scriptBrowseButton))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, configurationBrowseButton, createButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, configurationBrowseButton, createButton, scriptBrowseButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -327,6 +372,13 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                     .addComponent(configurationBrowseButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(configurationWarningLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(scriptCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(scriptLabel)
+                    .addComponent(scriptTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scriptBrowseButton))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(createLabel)
@@ -367,43 +419,66 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         "CustomizerAtoum.error.configuration.exists=Configuration {0} already exists.",
     })
     private void createButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
-        if (checkTestDirectory()) {
-            // check
-            File bootstrap = Atoum.getDefaultBootstrap(phpModule);
-            assert bootstrap != null;
-            if (!checkFile(bootstrap, Bundle.CustomizerAtoum_error_bootstrap_exists(bootstrap.getAbsolutePath()))) {
-                return;
-            }
-            File configuration = Atoum.getDefaultConfiguration(phpModule);
-            assert configuration != null;
-            if (!checkFile(configuration, Bundle.CustomizerAtoum_error_configuration_exists(configuration.getAbsolutePath()))) {
-                return;
-            }
-            // run
-            Atoum atoum;
-            try {
-                atoum = Atoum.getForPhpModule(phpModule);
-            } catch (InvalidPhpExecutableException ex) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
-                return;
-            }
-            assert atoum != null;
-            Pair<File, File> files = atoum.init(phpModule);
-            if (files == null) {
-                return;
-            }
-            // set
-            assert bootstrap.equals(files.first()) : bootstrap + " should equal " + files.first();
-            assert bootstrap.isFile();
-            bootstrapCheckBox.setSelected(true);
-            bootstrapTextField.setText(bootstrap.getAbsolutePath());
-            assert configuration.equals(files.second()) : configuration + " should equal " + files.second();
-            assert configuration.isFile();
-            configurationCheckBox.setSelected(true);
-            configurationTextField.setText(configuration.getAbsolutePath());
+        if (!checkTestDirectory()) {
+            return;
         }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // check
+                final File bootstrap = Atoum.getDefaultBootstrap(phpModule);
+                assert bootstrap != null;
+                if (!checkFile(bootstrap, Bundle.CustomizerAtoum_error_bootstrap_exists(bootstrap.getAbsolutePath()))) {
+                    return;
+                }
+                final File configuration = Atoum.getDefaultConfiguration(phpModule);
+                assert configuration != null;
+                if (!checkFile(configuration, Bundle.CustomizerAtoum_error_configuration_exists(configuration.getAbsolutePath()))) {
+                    return;
+                }
+                // run
+                Atoum atoum;
+                try {
+                    atoum = Atoum.getDefault();
+                } catch (InvalidPhpExecutableException ex) {
+                    UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), AtoumOptionsPanelController.OPTIONS_SUB_PATH);
+                    return;
+                }
+                assert atoum != null;
+                final Pair<File, File> files = atoum.init(phpModule);
+                if (files == null) {
+                    return;
+                }
+                // set
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        assert bootstrap.equals(files.first()) : bootstrap + " should equal " + files.first();
+                        assert bootstrap.isFile();
+                        bootstrapCheckBox.setSelected(true);
+                        bootstrapTextField.setText(bootstrap.getAbsolutePath());
+                        assert configuration.equals(files.second()) : configuration + " should equal " + files.second();
+                        assert configuration.isFile();
+                        configurationCheckBox.setSelected(true);
+                        configurationTextField.setText(configuration.getAbsolutePath());
+                    }
+                });
+            }
+        });
     }//GEN-LAST:event_createButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerAtoum.chooser.atoum=Select atoum file")
+    private void scriptBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_scriptBrowseButtonActionPerformed
+        File file = new FileChooserBuilder(CustomizerAtoum.class)
+                .setTitle(Bundle.CustomizerAtoum_chooser_atoum())
+                .setFilesOnly(true)
+                .setDefaultWorkingDirectory(getDefaultDirectory())
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (file != null) {
+            scriptTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_scriptBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton bootstrapBrowseButton;
@@ -417,6 +492,10 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
     private JLabel configurationWarningLabel;
     private JButton createButton;
     private JLabel createLabel;
+    private JButton scriptBrowseButton;
+    private JCheckBox scriptCheckBox;
+    private JLabel scriptLabel;
+    private JTextField scriptTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

@@ -45,6 +45,7 @@ import org.netbeans.modules.maven.model.settings.Mirror;
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
 import org.netbeans.modules.maven.model.settings.SettingsComponentVisitor;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsQName;
 import org.w3c.dom.Element;
 
 /**
@@ -118,6 +119,46 @@ public class MirrorImpl extends SettingsComponentImpl implements Mirror {
     public void setId(String id) {
         setChildElementText(getModel().getSettingsQNames().ID.getName(), id,
                 getModel().getSettingsQNames().ID.getQName());
+    }
+
+    @Override
+    public String getLayout() {
+        final SettingsQName MIRROR_LAYOUT = getModel().getSettingsQNames().MIRROR_LAYOUT_110;
+        if (MIRROR_LAYOUT != null) {
+            return getChildElementText(MIRROR_LAYOUT.getQName());
+        }
+        return null;
+    }
+
+    @Override
+    public void setLayout(String layout) {
+        final SettingsQName MIRROR_LAYOUT = getModel().getSettingsQNames().MIRROR_LAYOUT_110;
+        if (MIRROR_LAYOUT != null) {
+           setChildElementText(MIRROR_LAYOUT.getName(), layout, 
+                MIRROR_LAYOUT.getQName()); 
+        } else {
+            //log somehow?
+        }
+    }
+
+    @Override
+    public String getMirrorOfLayouts() {
+        final SettingsQName MIRROR_OF_LAYOUTS = getModel().getSettingsQNames().MIRROR_OF_LAYOUTS_110;
+        if (MIRROR_OF_LAYOUTS != null) {
+            return getChildElementText(MIRROR_OF_LAYOUTS.getQName());
+        }
+        return null;
+    }
+
+    @Override
+    public void setMirrorOfLayouts(String mirrorOf) {
+        final SettingsQName MIRROR_OF_LAYOUTS = getModel().getSettingsQNames().MIRROR_OF_LAYOUTS_110;
+        if (MIRROR_OF_LAYOUTS != null) {
+           setChildElementText(MIRROR_OF_LAYOUTS.getName(), mirrorOf, 
+                MIRROR_OF_LAYOUTS.getQName()); 
+        } else {
+            //log somehow?
+        }
     }
 
 

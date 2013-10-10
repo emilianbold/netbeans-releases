@@ -56,6 +56,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -91,6 +92,7 @@ import org.openide.util.WeakListeners;
  */
 public class ModulesNode extends AbstractNode {
 
+    private static final @StaticResource String MODULES_BADGE = "org/netbeans/modules/maven/modules-badge.png";
     private final NbMavenProjectImpl proj;
 
     @Messages("LBL_Modules=Modules")
@@ -110,7 +112,7 @@ public class ModulesNode extends AbstractNode {
     }
 
     private Image getIcon(boolean opened) {
-        Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/modules-badge.png", true); //NOI18N
+        Image badge = ImageUtilities.loadImage(MODULES_BADGE, true); //NOI18N
         return ImageUtilities.mergeImages(NodeUtils.getTreeFolderIcon(opened), badge, 8, 8);
     }
 
@@ -142,7 +144,7 @@ public class ModulesNode extends AbstractNode {
             listener = new PropertyChangeListener() {
                                        @Override
                                        public void propertyChange(PropertyChangeEvent evt) {
-                                           if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                                           if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                                                refresh(false);
                                            }
                                        }
@@ -192,8 +194,8 @@ public class ModulesNode extends AbstractNode {
   
     private static class ProjectFilterNode extends FilterNode {
 
-        private NbMavenProjectImpl project;
-        private NbMavenProjectImpl parent;
+        private final NbMavenProjectImpl project;
+        private final NbMavenProjectImpl parent;
 
         ProjectFilterNode(NbMavenProjectImpl parent, NbMavenProjectImpl proj, Node original, boolean isAggregator) {
             super(original, isAggregator ? Children.create(new ModulesChildFactory(proj), true) : Children.LEAF);
@@ -220,8 +222,8 @@ public class ModulesNode extends AbstractNode {
 
     private static class RemoveModuleAction extends AbstractAction {
 
-        private NbMavenProjectImpl project;
-        private NbMavenProjectImpl parent;
+        private final NbMavenProjectImpl project;
+        private final NbMavenProjectImpl parent;
 
         @Messages("BTN_Remove_Module=Remove Module")
         RemoveModuleAction(NbMavenProjectImpl parent, NbMavenProjectImpl proj) {
