@@ -803,10 +803,10 @@ public class ModelUtils {
                             
                             for (TypeUsage typeUsage : typeFromWith) {
                                 String sType = typeUsage.getType();
-                            if (sType.startsWith("@exp;")) {
-                                sType = sType.substring(5);
-                                sType = sType.replace("@pro;", ".");
-                            }   
+                                if (sType.startsWith("@exp;")) {
+                                    sType = sType.substring(5);
+                                    sType = sType.replace("@pro;", ".");
+                                }   
                                 ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
                                     lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
