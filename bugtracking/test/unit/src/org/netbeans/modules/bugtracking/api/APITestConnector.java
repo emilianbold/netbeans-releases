@@ -202,7 +202,7 @@ public class APITestConnector implements BugtrackingConnector {
 
     }
 
-    public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
+    public static class APITestRepositoryProvider implements RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
 
         @Override
         public RepositoryInfo getInfo(APITestRepository r) {
@@ -256,12 +256,17 @@ public class APITestConnector implements BugtrackingConnector {
 
         @Override
         public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.simpleSearch(criteria);
         }
 
         @Override
         public APITestIssue createIssue(APITestRepository r, String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createIssue(summary, description);
+        }
+
+        @Override
+        public Collection<APITestIssue> getUnsubmittedIssues(APITestRepository r) {
+            return r.getUnsubmittedIssues();
         }
     }
 

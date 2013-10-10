@@ -57,7 +57,7 @@ import java.util.Collections;
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
  */
-public abstract class RepositoryProvider<R, Q, I> {
+public interface RepositoryProvider<R, Q, I> {
 
     /**
      * A query from this repository was saved or removed
@@ -75,13 +75,13 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @param r
      * @return 
      */
-    public abstract RepositoryInfo getInfo(R r);
+    public RepositoryInfo getInfo(R r);
     
     /**
      * Returns the icon for this repository
      * @return
      */
-    public abstract Image getIcon(R r);
+    public Image getIcon(R r);
 
     /**
      * Returns an issue with the given ID
@@ -91,19 +91,19 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @param id
      * @return
      */
-    public abstract I[] getIssues(R r, String... ids);
+    public I[] getIssues(R r, String... ids);
 
     /**
      * Removes this repository from its connector
      *
      */
-    public abstract void remove(R r);
+    public void remove(R r);
 
     /**
      * Returns the {@link BugtrackignController} for this repository
      * @return
      */
-    public abstract RepositoryController getController(R r);
+    public RepositoryController getController(R r);
 
     /**
      * Creates a new query instance. Might block for a longer time.
@@ -111,7 +111,7 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @return a new QueryProvider instance or null if it's not possible
      * to access the repository.
      */
-    public abstract Q createQuery(R r); 
+    public Q createQuery(R r); 
 
     /**
      * Creates a new issue instance. Might block for a longer time.
@@ -119,7 +119,7 @@ public abstract class RepositoryProvider<R, Q, I> {
      * @return return a new issue instance or null if it's not possible
      * to access the repository.
      */
-    public abstract I createIssue(R r);
+    public I createIssue(R r);
 
     /**
      * Creates a new issue instance. Might block for a longer time.
@@ -131,13 +131,13 @@ public abstract class RepositoryProvider<R, Q, I> {
      * to access the repository.
      * XXX do we need a canCreate(...) if this is provided?
      */
-    public abstract I createIssue(R r, String summary, String description);
+    public I createIssue(R r, String summary, String description);
     
     /**
      * Returns all saved queries
      * @return
      */
-    public abstract Collection<Q> getQueries(R r);
+    public Collection<Q> getQueries(R r);
 
     /**
      * Runs a query against the bugtracking repository to get all issues
@@ -147,22 +147,20 @@ public abstract class RepositoryProvider<R, Q, I> {
      *
      * @param criteria
      */
-    public abstract Collection<I> simpleSearch(R r, String criteria);
+    public Collection<I> simpleSearch(R r, String criteria);
     
     /**
      * Returns unsubmitted issues for the given repository.
      * @param r repository
      * @return collection of unsubmitted issues
      */
-    public Collection<I> getUnsubmittedIssues (R r) {
-        return Collections.<I>emptyList();
-    }
+    public Collection<I> getUnsubmittedIssues (R r);
     
     /*********
      * EVENTS
      *********/
 
-    public abstract void removePropertyChangeListener(R r, PropertyChangeListener listener);
+    public void removePropertyChangeListener(R r, PropertyChangeListener listener);
 
-    public abstract void addPropertyChangeListener(R r, PropertyChangeListener listener);    
+    public void addPropertyChangeListener(R r, PropertyChangeListener listener);    
 }
