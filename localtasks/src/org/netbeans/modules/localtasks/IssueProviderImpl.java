@@ -45,7 +45,7 @@ package org.netbeans.modules.localtasks;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 
 /**
@@ -105,7 +105,7 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     }
 
     @Override
-    public BugtrackingController getController (LocalTask data) {
+    public IssueController getController (LocalTask data) {
         return data.getController();
     }
 

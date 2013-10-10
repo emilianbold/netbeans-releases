@@ -48,7 +48,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
@@ -75,7 +75,7 @@ public class APITestIssue extends TestIssue {
     String attachedPatchDesc;
     boolean idFinished;
     File attachedFile;
-    private BugtrackingController controller;
+    private IssueController controller;
     private final APITestRepository repo;
     private String summary;
     private String description;
@@ -146,9 +146,9 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
-            controller = new BugtrackingController() {
+            controller = new IssueController() {
                 @Override
                 public void opened() {
                     wasOpened = true;
@@ -162,8 +162,7 @@ public class APITestIssue extends TestIssue {
                     return panel;
                 }
                 @Override public HelpCtx getHelpCtx() { return null; }
-                @Override public boolean isValid() { return true; }
-                @Override public void applyChanges() throws IOException { }
+                @Override public void closed() { }
             };
         }
         return controller;

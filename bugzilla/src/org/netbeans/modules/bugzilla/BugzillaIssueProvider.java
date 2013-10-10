@@ -40,9 +40,9 @@ package org.netbeans.modules.bugzilla;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.List;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 
@@ -104,7 +104,7 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public BugtrackingController getController(BugzillaIssue data) {
+    public IssueController getController(BugzillaIssue data) {
         return data.getController();
     }
 

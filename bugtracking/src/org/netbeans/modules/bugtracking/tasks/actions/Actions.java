@@ -53,6 +53,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
@@ -659,7 +660,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                org.netbeans.modules.bugtracking.ui.query.QueryAction.openQuery(null, repositoryNode.getRepository());
+                org.netbeans.modules.bugtracking.ui.query.QueryAction.createNewQuery(repositoryNode.getRepository());
             }
         }
 
@@ -691,9 +692,28 @@ public class Actions {
     //</editor-fold>
 
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
+        boolean editPossible = true;
+        boolean openPossible = true;
+        
+        for (QueryNode queryNode : queryNodes) {
+            QueryImpl q = queryNode.getQuery();
+            if(!q.providesMode(QueryController.QueryMode.EDIT)) {
+                editPossible = false;
+            }
+            if(!q.providesMode(QueryController.QueryMode.VIEW)) {
+                editPossible = false;
+            }
+            if(!editPossible && !openPossible) {
+                break;
+            }
+        }        
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new EditQueryAction(queryNodes));  
-        actions.add(new OpenQueryAction(queryNodes));
+        if(editPossible) {
+            actions.add(new EditQueryAction(queryNodes));
+        }  
+        if (openPossible) {
+            actions.add(new OpenQueryAction(queryNodes));
+        }
         actions.add(new DeleteQueryAction(queryNodes));
         //actions.add(new NotificationQueryAction(queryNodes));
         return actions;
@@ -742,21 +762,14 @@ public class Actions {
 
     public static class OpenQueryAction extends QueryAction {
 
-        private QueryController.QueryMode mode;
-
         public OpenQueryAction(QueryNode... queryNodes) {
-            this(QueryController.QueryMode.SHOW_ALL, queryNodes);
-        }
-
-        public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_OpenNode"), queryNodes); //NOI18N
-            this.mode = mode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(QueryController.QueryMode.VIEW);
             }
         }
 
@@ -767,21 +780,14 @@ public class Actions {
     }
     public static class EditQueryAction extends QueryAction {
 
-        private QueryController.QueryMode mode;
-
         public EditQueryAction(QueryNode... queryNodes) {
-            this(QueryController.QueryMode.EDIT, queryNodes);
-        }
-
-        public EditQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Edit"), queryNodes); //NOI18N
-            this.mode = mode;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(false, mode);
+                queryNode.getQuery().open(QueryController.QueryMode.EDIT);
             }
         }
 

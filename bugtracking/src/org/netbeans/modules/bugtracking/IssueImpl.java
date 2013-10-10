@@ -50,7 +50,7 @@ import java.util.Date;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
@@ -188,7 +188,7 @@ public final class IssueImpl<R, I> {
         }
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         return issueProvider.getController(data);
     }    
     

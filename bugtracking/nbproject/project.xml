@@ -221,6 +221,7 @@
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>bugtracking</word>
             <word>kenai</word>
+            <word>plugins</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

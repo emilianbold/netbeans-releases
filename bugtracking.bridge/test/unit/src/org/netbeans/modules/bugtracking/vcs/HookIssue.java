@@ -48,7 +48,7 @@ import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
 
@@ -61,7 +61,7 @@ public class HookIssue extends TestIssue {
 
     boolean closed;
     String comment;
-    private BugtrackingController controller;
+    private IssueController controller;
 
     static HookIssue getInstance() {
         if(instance == null) {
@@ -121,9 +121,9 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {        
-            controller = new BugtrackingController() {
+            controller = new IssueController() {
                 private JComponent panel = new JPanel();                
                 @Override
                 public JComponent getComponent() {
@@ -133,14 +133,8 @@ public class HookIssue extends TestIssue {
                 public HelpCtx getHelpCtx() {
                     throw new UnsupportedOperationException("Not supported yet.");
                 }
-                @Override
-                public boolean isValid() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                @Override
-                public void applyChanges() throws IOException {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
+                @Override public void opened() { }
+                @Override public void closed() { }
             };
         }
         return controller;

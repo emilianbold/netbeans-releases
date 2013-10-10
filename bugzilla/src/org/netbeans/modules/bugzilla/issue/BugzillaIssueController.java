@@ -22,7 +22,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted    [year] [name of copyright owner]"
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -43,7 +43,7 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.util.HelpCtx;
 
@@ -51,10 +51,10 @@ import org.openide.util.HelpCtx;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class IssueController extends BugtrackingController {
+public class BugzillaIssueController implements IssueController {
     private final IssuePanel issuePanel;
 
-    public IssueController(BugzillaIssue issue) {
+    public BugzillaIssueController(BugzillaIssue issue) {
         IssuePanel panel = new IssuePanel();
         panel.setIssue(issue);
         issuePanel = panel;
@@ -84,16 +84,7 @@ public class IssueController extends BugtrackingController {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(org.netbeans.modules.bugzilla.issue.BugzillaIssue.class);
-    }
-
-    @Override
-    public boolean isValid() {
-        return true; // PENDING
-    }
-
-    @Override
-    public void applyChanges() {
+        return new HelpCtx("org.netbeans.modules.bugzilla.issue.BugzillaIssue"); // NOI18N
     }
 
     void refreshViewData(boolean force) {

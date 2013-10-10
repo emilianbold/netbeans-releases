@@ -101,11 +101,6 @@ public class JiraConnector extends TeamBugtrackingConnector {
         return NbBundle.getMessage(JiraConnector.class, "LBL_ConnectorName");           // NOI18N
     }
 
-    @Override
-    public IssueFinder getIssueFinder() {
-        return JiraIssueFinder.getInstance();
-    }
-
     /******************************************************************************
      * Kenai
      ******************************************************************************/
