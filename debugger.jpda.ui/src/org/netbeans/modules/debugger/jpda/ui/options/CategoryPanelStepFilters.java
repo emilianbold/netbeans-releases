@@ -108,7 +108,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         filterClassesScrollPane = new javax.swing.JScrollPane();
         filterClassesTable = new javax.swing.JTable() {
             public boolean getScrollableTracksViewportHeight() {
-                return true;
+                return false;
             }
         };
         stepThroughFiltersCheckBox = new javax.swing.JCheckBox();
@@ -150,6 +150,7 @@ class CategoryPanelStepFilters extends StorablePanel {
                 return types [columnIndex];
             }
         });
+        filterClassesTable.setFillsViewportHeight(true);
         filterClassesTable.setShowHorizontalLines(false);
         filterClassesTable.setShowVerticalLines(false);
         filterClassesTable.setTableHeader(null);
@@ -198,20 +199,20 @@ class CategoryPanelStepFilters extends StorablePanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(stepThroughFiltersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(filterStaticInitCheckBox)
                                     .addComponent(filterSyntheticCheckBox)
                                     .addComponent(filterConstructorsCheckBox)
                                     .addComponent(filterClassesLabel)
-                                    .addComponent(filterClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
+                                    .addComponent(filterClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE))
                                 .addGap(6, 6, 6)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(filterAddButton)
                                     .addComponent(filterRemoveButton)
                                     .addComponent(filtersCheckAllButton)
-                                    .addComponent(filtersUncheckAllButton)))))))
+                                    .addComponent(filtersUncheckAllButton)))
+                            .addComponent(stepThroughFiltersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE)))))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {filterAddButton, filterRemoveButton, filtersCheckAllButton, filtersUncheckAllButton});
@@ -237,10 +238,9 @@ class CategoryPanelStepFilters extends StorablePanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(filtersCheckAllButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(filtersUncheckAllButton)
-                        .addGap(36, 36, 36))
-                    .addComponent(filterClassesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(filtersUncheckAllButton))
+                    .addComponent(filterClassesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(stepThroughFiltersCheckBox)
                 .addContainerGap())
         );
@@ -287,6 +287,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         model.addRow(new Object[] { Boolean.TRUE, "" });
         final int index = model.getRowCount() - 1;
         filterClassesTable.getSelectionModel().setSelectionInterval(index, index);
+        filterClassesTable.scrollRectToVisible(filterClassesTable.getCellRect(index, 1, true));
         filterClassesTable.editCellAt(index, 1);
         filterClassesTable.getEditorComponent().requestFocus();
          //DefaultCellEditor ed = (DefaultCellEditor)
