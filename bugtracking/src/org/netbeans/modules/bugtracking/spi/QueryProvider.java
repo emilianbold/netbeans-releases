@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Provides access to an bugtracking query.
+ * Provides access to a bugtracking query.
  *
  * @author Tomas Stupka
  * 
