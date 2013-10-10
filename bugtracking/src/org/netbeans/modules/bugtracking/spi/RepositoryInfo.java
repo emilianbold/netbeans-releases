@@ -59,7 +59,7 @@ public final class RepositoryInfo {
     static {
         SPIAccessorImpl.createAccesor();
     }
-        
+
     private static final String DELIMITER         = "<=>";                      // NOI18N    
     
     private final Map<String, String> map = new HashMap<String, String>();

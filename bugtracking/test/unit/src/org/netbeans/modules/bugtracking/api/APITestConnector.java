@@ -270,7 +270,7 @@ public class APITestConnector implements BugtrackingConnector {
         }
     }
 
-    public static class APITestIssueProvider extends IssueProvider<APITestIssue> {
+    public static class APITestIssueProvider implements IssueProvider<APITestIssue> {
 
         @Override
         public String[] getSubtasks(APITestIssue data) {
@@ -340,6 +340,11 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public void discardOutgoing(APITestIssue data) {
             data.discardOutgoing();
+        }
+
+        @Override
+        public boolean submit(APITestIssue data) {
+            return data.submit();
         }
 
     }    
