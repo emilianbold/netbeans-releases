@@ -806,7 +806,7 @@ public class Term extends JComponent implements Accessible {
 	if (debugKeypass()) {
 	    System.out.println("---- setKeyStrokeSet --------------------");//NOI18N
             for (KeyStroke ks : keystroke_set) {
-                System.out.println("--- " + ks);
+                System.out.println("--- " + ks);//NOI18N
             }
 	}
     }
@@ -3872,7 +3872,7 @@ public class Term extends JComponent implements Accessible {
             // cursor up - scroll
             // Opposite of op_ind()
             if (debugOps()) {
-                System.out.printf("op_ri(%d)\n", count);
+                System.out.printf("op_ri(%d)\n", count);//NOI18N
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
             Line l;
@@ -3896,7 +3896,7 @@ public class Term extends JComponent implements Accessible {
             // cursor up - no scroll
             // Opposite of op_cud()
             if (debugOps()) {
-                System.out.printf("op_cu(%d)\n", count);
+                System.out.printf("op_cu(%d)\n", count);//NOI18N
             }
             boolean old_atw = cursor_line().setAboutToWrap(false);
 
