@@ -370,9 +370,9 @@ public class DashboardUtils {
         if (isIdNumeric && isIdOtherNumberic) {
             return compareNumericId(id, idOther);
         } else if (isIdNumeric) {
-            return -1;
-        } else if (isIdOtherNumberic) {
             return 1;
+        } else if (isIdOtherNumberic) {
+            return -1;
         } else {
             return compareComplexId(id1, id2);
         }
@@ -380,9 +380,9 @@ public class DashboardUtils {
 
     private static int compareNumericId(int id, int idOther) {
         if (id < idOther) {
-            return 1;
-        } else if (id > idOther) {
             return -1;
+        } else if (id > idOther) {
+            return 1;
         } else {
             return 0;
         }
