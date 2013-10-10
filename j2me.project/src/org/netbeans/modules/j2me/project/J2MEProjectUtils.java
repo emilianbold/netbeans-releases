@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.j2me.project;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,12 +51,17 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JRadioButton;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.j2me.project.ui.PlatformsComboBoxModel;
+import org.netbeans.modules.java.api.common.ui.PlatformFilter;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.modules.SpecificationVersion;
 
@@ -69,20 +75,16 @@ public class J2MEProjectUtils {
     private static ButtonGroup configurationsGroup;
     private static ButtonGroup profilesGroup;
     private static ArrayList<JCheckBox> optionalPackages;
-    private static HashMap<String,J2MEPlatform.J2MEProfile> name2profileAll;
+    private static HashMap<String, J2MEPlatform.J2MEProfile> name2profileAll;
 
     public static ComboBoxModel createPlatformComboBoxModel() {
         readPlatforms();
         return new DefaultComboBoxModel(platforms);
     }
 
-    public static ListCellRenderer createPlatformListCellRenderer() {
-        return new DefaultListCellRenderer();
-    }
-    
     public static ButtonGroup getConfigurationsButtonGroup() {
         return configurationsGroup;
-}
+    }
 
     public static ButtonGroup getProfilesButtonGroup() {
         return profilesGroup;
@@ -91,7 +93,7 @@ public class J2MEProjectUtils {
     public static ArrayList<JCheckBox> getOptionalPackages() {
         return optionalPackages;
     }
-    
+
     private static void readPlatforms() {
         configurationsGroup = new ButtonGroup();
         profilesGroup = new ButtonGroup();
@@ -106,7 +108,7 @@ public class J2MEProjectUtils {
             }
         });
         HashMap<J2MEPlatform.J2MEProfile, J2MEPlatform.J2MEProfile> cfg = new HashMap<>(),
-                prof = new HashMap<>(), 
+                prof = new HashMap<>(),
                 opt = new HashMap<>();
         for (int i = 0; i < platforms.length; i++) {
             if (platforms[i] instanceof J2MEPlatform) {
@@ -141,33 +143,37 @@ public class J2MEProjectUtils {
         arr = opt.values().toArray(new J2MEPlatform.J2MEProfile[opt.size()]);
         initAllOptionalPackages(arr);
     }
-    
+
     private static J2MEPlatform.J2MEProfile takeBetter(final J2MEPlatform.J2MEProfile p1, final J2MEPlatform.J2MEProfile p2) {
-        if (p1 == null) return p2;
-        if (p2 == null) return p1;
+        if (p1 == null) {
+            return p2;
+        }
+        if (p2 == null) {
+            return p1;
+        }
         return p1.getDisplayNameWithVersion().length() > p2.getDisplayNameWithVersion().length() ? p1 : p2;
     }
-    
+
     private static void initAllConfigurations(final J2MEPlatform.J2MEProfile cfgs[]) {
         Arrays.sort(cfgs);
-        for (int i=0; i<cfgs.length; i++) {
+        for (int i = 0; i < cfgs.length; i++) {
             final JRadioButton btn = new JRadioButton(cfgs[i].toString()); // TO DO some text formating
             btn.setToolTipText(cfgs[i].getDisplayNameWithVersion());
             btn.setActionCommand(cfgs[i].toString());
             configurationsGroup.add(btn);
         }
     }
-    
+
     private static void initAllProfiles(final J2MEPlatform.J2MEProfile profs[]) {
         Arrays.sort(profs);
-        for (int i=0; i<profs.length; i++) {
+        for (int i = 0; i < profs.length; i++) {
             final JRadioButton btn = new JRadioButton(profs[i].toString()); // TO DO some text formating
             btn.setToolTipText(profs[i].getDisplayNameWithVersion());
             btn.setActionCommand(profs[i].toString());
             profilesGroup.add(btn);
         }
     }
-    
+
     private static void initAllOptionalPackages(final J2MEPlatform.J2MEProfile opts[]) {
         Arrays.sort(opts, new Comparator<J2MEPlatform.J2MEProfile>() {
             @Override
@@ -183,5 +189,18 @@ public class J2MEProjectUtils {
             optionalPackages.add(cb);
         }
     }
-    
+
+    public static ComboBoxModel createJDKPlatformComboBoxModel() {
+        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel(null,
+                Arrays.<PlatformFilter>asList(new PlatformFilter() {
+            @Override
+            public boolean accept(JavaPlatform platform) {
+                return new SpecificationVersion("1.8").compareTo(platform.getSpecification().getVersion()) <= 0; //NOI18N
+            }
+        })));
+    }
+
+    public static ListCellRenderer createJDKPlatformListCellRenderer() {
+        return PlatformUiSupport.createPlatformListCellRenderer();
+    }
 }

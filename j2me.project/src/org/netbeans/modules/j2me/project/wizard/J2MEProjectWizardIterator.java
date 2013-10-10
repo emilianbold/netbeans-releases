@@ -76,6 +76,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     private static final String MANIFEST_FILE = "manifest.mf"; //NOI18N
     static final String MIDLET_CLASS = "mainClass"; // NOI18N
     static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+    static final String JDK_PLATFORM = "jdk"; //NOI18N
     static final String PLATFORM = "platform"; //NOI18N
     static final String DEVICE = "device"; //NOI18N
     static final String CONFIGURATION = "config"; //NOI18N
@@ -112,6 +113,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String midletClass = (String) wiz.getProperty(MIDLET_CLASS); //NOI18N
         String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
         JavaPlatform platform = (JavaPlatform) wiz.getProperty(PLATFORM);
+        String jdkAntName = (String) wiz.getProperty(JDK_PLATFORM);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -206,6 +208,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             this.wiz.putProperty("name", null); //NOI18N
             this.wiz.putProperty(MIDLET_CLASS, null); //NOI18N
             this.wiz.putProperty(SHARED_LIBRARIES, null); //NOI18N
+            this.wiz.putProperty(JDK_PLATFORM, null); //NOI18N
             this.wiz.putProperty(PLATFORM, null); //NOI18N
             this.wiz.putProperty(DEVICE, null); //NOI18N
             this.wiz.putProperty(CONFIGURATION, null); //NOI18N

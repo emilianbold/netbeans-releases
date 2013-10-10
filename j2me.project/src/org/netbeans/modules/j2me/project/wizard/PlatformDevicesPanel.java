@@ -60,16 +60,18 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JRadioButton;
-import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.modules.j2me.project.J2MEProjectUtils;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.j2me.project.wizard.J2MEProjectWizardIterator.WizardType;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.*;
 
 /**
@@ -77,10 +79,11 @@ import org.openide.util.*;
  */
 public class PlatformDevicesPanel extends SettingsPanel {
 
+    private static final String PLATFORM_ANT_NAME = "platform.ant.name";
+    
     private final WizardType type;
     private PanelConfigureProject panel;
     private ComboBoxModel platformsModel;
-    private ListCellRenderer platformsCellRenderer;
     private DefaultComboBoxModel devicesModel;
     private JavaPlatformChangeListener jpcl;
     private ButtonGroup configurationsGroup;
@@ -88,7 +91,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private final HashMap<String, J2MEPlatform.J2MEProfile> name2profile = new HashMap<>();
     private int firstConfigurationWidth = -1;
     private ArrayList<JCheckBox> optionalPackages;
-    private J2MEProjectProperties props;
+    private J2MEProjectProperties props;    
 
     public PlatformDevicesPanel(J2MEProjectProperties properties) {
         this.props = properties;
@@ -111,7 +114,6 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
     private void preInitComponents() {
         platformsModel = J2MEProjectUtils.createPlatformComboBoxModel();
-        platformsCellRenderer = J2MEProjectUtils.createPlatformListCellRenderer();
         devicesModel = new DefaultComboBoxModel();
         configurationsGroup = J2MEProjectUtils.getConfigurationsButtonGroup();
         profilesGroup = J2MEProjectUtils.getProfilesButtonGroup();
@@ -123,13 +125,27 @@ public class PlatformDevicesPanel extends SettingsPanel {
             lblOptionalPackages.setVisible(false);
             jScrollPane1.setVisible(false);
         }
-        initPlatformAndDevices();
+        initJdkPlatform();
+        initPlatformAndDevices();        
 
         jpcl = new JavaPlatformChangeListener();
         JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(jpcl, JavaPlatformManager.getDefault()));
     }
 
-    private void initPlatformAndDevices() {
+    private void initJdkPlatform() {
+        jdkComboBox.setRenderer(J2MEProjectUtils.createJDKPlatformListCellRenderer());
+        ComboBoxModel jdkCompoboxModel = J2MEProjectUtils.createJDKPlatformComboBoxModel();
+//        if (jdkCompoboxModel.getSize() == 1) {
+//            //If the only element in model is Default J2SE 1.7 Platform, do not use it
+//            final JavaPlatform javaPlatform = PlatformUiSupport.getPlatform(jdkCompoboxModel.getSelectedItem());
+//            if (javaPlatform.getSpecification().getVersion().compareTo(new SpecificationVersion("1.8")) < 0) { //NOI18N
+//                jdkCompoboxModel = new DefaultComboBoxModel();
+//            }
+//        }
+        jdkComboBox.setModel(jdkCompoboxModel);
+    }
+
+    private void initPlatformAndDevices() {        
         J2MEPlatform platform = getPlatform();
         platformComboBox.setModel(platformsModel);
         // copied from CustomizerLibraries
@@ -216,6 +232,8 @@ public class PlatformDevicesPanel extends SettingsPanel {
         lblOptionalPackages = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         optionalPackagesPanel = new javax.swing.JPanel();
+        lblJDKPath = new javax.swing.JLabel();
+        jdkComboBox = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -223,7 +241,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblPlatform, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Platform_ComboBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(lblPlatform, gridBagConstraints);
@@ -231,7 +249,6 @@ public class PlatformDevicesPanel extends SettingsPanel {
         lblPlatform.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSD_labelPlatform")); // NOI18N
 
         platformComboBox.setModel(platformsModel);
-        platformComboBox.setRenderer(platformsCellRenderer);
         platformComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 platformComboBoxActionPerformed(evt);
@@ -239,7 +256,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -254,7 +271,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
@@ -266,7 +283,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblDevice, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Device_ComboBox")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(lblDevice, gridBagConstraints);
@@ -281,14 +298,14 @@ public class PlatformDevicesPanel extends SettingsPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         add(deviceComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 13, 0);
@@ -298,7 +315,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Configuration_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(lblConfiguration, gridBagConstraints);
@@ -308,7 +325,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         configurationPanel.setLayout(new java.awt.GridLayout(1, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -320,7 +337,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblProfile, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_Profile_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         add(lblProfile, gridBagConstraints);
@@ -330,7 +347,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         profilePanel.setLayout(new java.awt.GridLayout(1, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -341,7 +358,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblOptionalPackages, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "J2MEPlatformPanel.lblOptionalPackages.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -352,7 +369,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -360,6 +377,24 @@ public class PlatformDevicesPanel extends SettingsPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
+
+        lblJDKPath.setLabelFor(jdkComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(lblJDKPath, org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "LBL_PanelOptions_JDkPath_ComboBox")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        add(lblJDKPath, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        add(jdkComboBox, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSN_PanelOptionsVisual")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PlatformDevicesPanel.class, "ACSD_PanelOptionsVisual")); // NOI18N
@@ -376,6 +411,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private void btnManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnManagePlatformsActionPerformed
         PlatformsCustomizer.showCustomizer(getPlatform());
         preInitComponents();
+        initJdkPlatform();
         initPlatformAndDevices();
         if (panel != null) {
             panel.fireChangeEvent();
@@ -511,6 +547,10 @@ public class PlatformDevicesPanel extends SettingsPanel {
         final ButtonModel m = profilesGroup.getSelection();
         return m == null ? "" : m.getActionCommand();
     }
+    
+    private String getJdkPlatformAntName() {
+        return PlatformUiSupport.getPlatform(jdkComboBox.getSelectedItem()).getProperties().get(PLATFORM_ANT_NAME); //NOI18N
+    }
 
     private void setBottomPanelAreaVisible(boolean visible) {
         jSeparator1.setVisible(visible);
@@ -531,6 +571,22 @@ public class PlatformDevicesPanel extends SettingsPanel {
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(PlatformDevicesPanel.class, "WARN_PanelOptionsVisual.noMEPlatform")); // NOI18N
             return false;
+        }
+
+        if (jdkComboBox.getSelectedItem() == null) {
+            setBottomPanelAreaVisible(false);
+            settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PlatformDevicesPanel.class, "WARN_PanelOptionsVisual.noSEPlatform")); // NOI18N
+            return false;
+        } else {
+            final Object item = jdkComboBox.getSelectedItem();
+            if (item != null) {
+                final JavaPlatform platform = PlatformUiSupport.getPlatform(item);
+                if (platform.getSpecification().getVersion().compareTo(new SpecificationVersion("1.8")) < 0) { //NOI18N
+                    settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
+                            NbBundle.getMessage(PlatformDevicesPanel.class, "WARN_PanelOptionsVisual.missingJDK")); // NOI18N
+                }
+            }
         }
         setBottomPanelAreaVisible(true);
         return true;
@@ -553,6 +609,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         if (profile == null) {
             profile = getPreferences().get(J2MEProjectWizardIterator.PROFILE, null);
         }
+        String jdkPlatform = (String) d.getProperty(J2MEProjectWizardIterator.JDK_PLATFORM);        
         if (platform != null) {
             for (int i = 0; i < platformComboBox.getItemCount(); i++) {
                 J2MEPlatform itemAt = (J2MEPlatform) platformComboBox.getItemAt(i);
@@ -589,6 +646,15 @@ public class PlatformDevicesPanel extends SettingsPanel {
                 }
             }
         }
+        if (jdkPlatform != null) {
+            for (int i = 0; i < jdkComboBox.getItemCount(); i++) {
+                JavaPlatform itemAt = PlatformUiSupport.getPlatform(jdkComboBox.getItemAt(i));
+                if (itemAt.getProperties().get(PLATFORM_ANT_NAME).equals(jdkPlatform)) {
+                    jdkComboBox.setSelectedItem(itemAt);
+                    break;
+                }
+            }
+        }
     }
 
     @Override
@@ -602,6 +668,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         d.putProperty(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
         d.putProperty(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
+        d.putProperty(J2MEProjectWizardIterator.JDK_PLATFORM, jdkComboBox.getSelectedIndex() == -1 ? "" : getJdkPlatformAntName()); //This is enough to store in wizard iterator
 
         getPreferences().put(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
         getPreferences().put(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
@@ -618,8 +685,10 @@ public class PlatformDevicesPanel extends SettingsPanel {
     private javax.swing.JComboBox deviceComboBox;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JComboBox jdkComboBox;
     private javax.swing.JLabel lblConfiguration;
     private javax.swing.JLabel lblDevice;
+    private javax.swing.JLabel lblJDKPath;
     private javax.swing.JLabel lblOptionalPackages;
     private javax.swing.JLabel lblPlatform;
     private javax.swing.JLabel lblProfile;
