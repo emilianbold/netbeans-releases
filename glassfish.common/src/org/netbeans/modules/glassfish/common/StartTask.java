@@ -69,6 +69,7 @@ import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
 import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
+import org.glassfish.tools.ide.utils.NetUtils;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
@@ -237,7 +238,8 @@ public class StartTask extends BasicTask<TaskState> {
         // Our server is offline.
         if (GlassFishState.isOffline(instance)) {
             // But administrator port is occupied.
-            if (ServerUtils.isDASRunning(instance)) {
+            if (ServerUtils.isAdminPortListening(
+                    instance, NetUtils.PORT_CHECK_TIMEOUT)) {
                 ResultString version;
                 try {
                     version = CommandVersion.getVersion(instance);
@@ -459,12 +461,13 @@ public class StartTask extends BasicTask<TaskState> {
                 return new StateChange(this, result, event,
                         "StartTask.startDAS.alreadyRunning");
             case OFFLINE:
-                if (ServerUtils.isDASRunning(instance)) {
+                if (ServerUtils.isAdminPortListening(
+                        instance, NetUtils.PORT_CHECK_TIMEOUT)) {
                     msgKey = "StartTask.startDAS.adminPortOccupied";
                 } else {
                     final int httpPort = instance.getPort();
                     if (httpPort >= 0 && httpPort <= 65535
-                            && ServerUtils.isRunningLocal(
+                            && NetUtils.isPortListeningLocal(
                             instance.getHost(), httpPort)) {
                         msgKey = "StartTask.startDAS.httpPortOccupied";
                     }
