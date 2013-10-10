@@ -367,6 +367,10 @@ public abstract class ODCSQuery {
         }
     }
 
+    public boolean canRemove() {
+        return isModifiable();
+    }
+
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
         
         private final Set<String> addedIds = new HashSet<String>();

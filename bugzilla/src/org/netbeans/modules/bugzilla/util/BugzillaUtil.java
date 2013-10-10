@@ -44,7 +44,6 @@ package org.netbeans.modules.bugzilla.util;
 
 import java.awt.Color;
 import java.util.Collections;
-import java.util.List;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.logging.Level;
@@ -56,6 +55,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -202,7 +202,8 @@ public class BugzillaUtil {
                 Bugzilla.getInstance().getIssueProvider(),
                 Bugzilla.getInstance().getStatusProvider(),
                 null, 
-                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository));
+                Bugzilla.getInstance().createPriorityProvider(bugzillaRepository),
+                SimpleIssueFinder.getInstance());
     }
 
     public static void openIssue(BugzillaIssue bugzillaIssue) {
@@ -210,7 +211,7 @@ public class BugzillaUtil {
     }
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
-        Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+        Bugzilla.getInstance().getBugtrackingFactory().editQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
 
     public static void runInAWT(Runnable r) {

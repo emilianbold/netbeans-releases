@@ -42,95 +42,40 @@
 
 package org.netbeans.modules.bugtracking.spi;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
- *
+* Provides access to an {@link Issues}-s UI.
+ * <br/>
+ * Every Issue is expected to provide at least some visual expected to. 
+ * Typically this would be an Issue editor making it possible to create and 
+ * modify issues.
+ * 
  * @author Tomas Stupka
  */
-public abstract class BugtrackingController {
+public interface IssueController {
 
     /**
-     * Some data in the controllers component where changed
+     * Returns a visual Issue component.
+     * @return a visual component representing an Issue
      */
-    public static final String EVENT_COMPONENT_DATA_CHANGED   = "bugtracking.data.changed";   // NOI18N
-
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-    /**
-     * Returns a visual component representing the bugtracking entity this controller is meant for
-     * e.g. Repository, Query, ...
-     * @return a visual component representing a bugtracking entity
-     */
-    public abstract JComponent getComponent() ;
+    public JComponent getComponent();
 
     /**
      * Returns the help context associated with this controllers visual component
      * @return
      */
-    public abstract HelpCtx getHelpCtx();
+    public HelpCtx getHelpCtx();
 
     /**
-     * Returns true if data in this controllers visual component are valid
-     * @return
+     * Called when the component returned by this controller was opened.
      */
-    public abstract boolean isValid();
+    public void opened();
 
     /**
-     * Should return a message in case the controller isn't valid
-     * @return
+     * Called when the component returned by this controller was closed.
      */
-    public String getErrorMessage() {
-        return null;
-    }
-    
-    /**
-     * Is called when the changes made in the
-     * controllers visual component are confirmed
-     */
-    public abstract void applyChanges() throws IOException; 
-
-    /**
-     * Called when this controller was openened
-     * @deprecated 
-     */
-    public void opened() {
-
-    }
-
-    /**
-     * Called when this controller was closed
-     * @deprecated 
-     */
-    public void closed() {
-
-    }
-
-    /**
-     * Registers a PropertyChangeListener
-     * @param l
-     */
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        support.addPropertyChangeListener(l);
-    }
-
-    /**
-     * Unregisters a PropertyChangeListener
-     * @param l
-     */
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        support.removePropertyChangeListener(l);
-    }
-
-    /**
-     * Signals a change in this controlers visual components data
-     */
-    protected void fireDataChanged() {
-        support.firePropertyChange(EVENT_COMPONENT_DATA_CHANGED, null, null);
-    }
+    public void closed();
 
 }

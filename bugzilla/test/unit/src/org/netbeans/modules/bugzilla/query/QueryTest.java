@@ -59,6 +59,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -385,7 +386,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     }
 
     private void populate(QueryController c, String summary) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        QueryPanel p = (QueryPanel) c.getComponent();
+        QueryPanel p = (QueryPanel) c.getComponent(QueryMode.EDIT);
         p.summaryTextField.setText(summary);
         p.productList.getSelectionModel().clearSelection(); // no product
         Field f = c.getClass().getDeclaredField("populated");

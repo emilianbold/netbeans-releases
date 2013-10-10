@@ -45,6 +45,9 @@ package org.netbeans.modules.bugtracking.spi;
 /**
  * Provides Issue Priority information for a particular remote repository 
  * as well as for a particular Issue from that repository.
+ * <br/>
+ * Note that an implementation of this interface is not mandatory for a 
+ * NetBeans bugtracking plugin. 
  * 
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
@@ -57,7 +60,7 @@ public interface IssuePriorityProvider<I> {
      * returned via {@link #getPriorityInfos}.
      * 
      * @param i
-     * @return 
+     * @return
      * @see IssuePriorityInfo
      */
     public String getPriorityID(I i);

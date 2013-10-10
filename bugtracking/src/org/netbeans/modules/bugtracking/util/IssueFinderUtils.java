@@ -46,6 +46,8 @@ import java.util.*;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 
 /**
@@ -58,9 +60,9 @@ public class IssueFinderUtils {
         
     public static Collection<IssueFinder> getIssueFinders() {
         List<IssueFinder> ret = new LinkedList<IssueFinder>();
-        DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector dc : dcs) {
-            IssueFinder issueFinder = dc.getIssueFinder();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(false);
+        for (RepositoryImpl r : repos) {
+            IssueFinder issueFinder = r.getIssueFinder();
             if(issueFinder != null) {
                 ret.add(issueFinder);
             }

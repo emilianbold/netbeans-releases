@@ -47,14 +47,14 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
  *
  * @author Tomas Stupka
  */
-public abstract class TeamQueryProvider<Q, I> extends QueryProvider<Q, I> {
+public interface TeamQueryProvider<Q, I> extends QueryProvider<Q, I> {
     
     /**
      * Determines if the query needs the user to be logged in to show some
      * results - e.g. MyIssues queries have no results in case the user is
      * not logged in
      *
-     * @param query
+     * @param q
      * @return true if login needed, otherwise false
      */
     public abstract boolean needsLogin(Q q);

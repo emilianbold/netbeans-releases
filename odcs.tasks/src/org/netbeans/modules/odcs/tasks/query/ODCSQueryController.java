@@ -108,7 +108,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
+public class ODCSQueryController implements QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener {
 
     protected QueryPanel panel;
 
@@ -206,6 +206,11 @@ public class ODCSQueryController extends QueryController implements ItemListener
         }
     }
 
+    @Override
+    public boolean providesMode(QueryMode mode) {
+        return modifiable || mode != QueryMode.EDIT;
+    }
+    
     private void setupRenderer(IssueTable issueTable) {
         QueryCellRenderer renderer = new QueryCellRenderer(query, issueTable, (QueryTableCellRenderer)issueTable.getRenderer());
         issueTable.setRenderer(renderer);
@@ -251,7 +256,8 @@ public class ODCSQueryController extends QueryController implements ItemListener
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent getComponent(QueryMode mode) {
+        setMode(mode);
         return panel;
     }
 
@@ -260,24 +266,18 @@ public class ODCSQueryController extends QueryController implements ItemListener
         return new HelpCtx("org.netbeans.modules.odcs.tasks.query.ODCSQueryController"); // NOI18N
     }
 
-    @Override
     public void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
                 onModify();
                 break;            
-            case SHOW_ALL:
+            case VIEW:
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);
         }
-
     }
         
     protected ODCSRepository getRepository() {

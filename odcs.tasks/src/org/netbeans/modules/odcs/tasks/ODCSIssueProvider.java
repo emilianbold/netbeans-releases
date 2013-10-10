@@ -44,7 +44,7 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 
@@ -105,7 +105,7 @@ public class ODCSIssueProvider extends IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public BugtrackingController getController(ODCSIssue data) {
+    public IssueController getController(ODCSIssue data) {
         return data.getController();
     }
 
