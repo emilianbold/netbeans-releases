@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="GNU" display="GNU Compiler Collection" family="GNU" qmakespec="${os}-g++"/>
+    <toolchain name="GNU" display="GNU" family="GNU" qmakespec="${os}-g++"/>
     <platforms stringvalue="linux,unix,none"/>
     <makefile_writer class="org.netbeans.modules.cnd.makeproject.api.configurations.DefaultMakefileWriter"/>
     <default_locations>
