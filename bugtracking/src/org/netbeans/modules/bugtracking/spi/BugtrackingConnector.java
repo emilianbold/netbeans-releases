@@ -54,25 +54,30 @@ import org.netbeans.modules.bugtracking.api.Repository;
  * @author Tomas Stupka
  */
 // XXX provide commit hook support instead of addComment() and addAttachent() in Issue
-public abstract class BugtrackingConnector {
+public interface BugtrackingConnector {
 
     /**
+     * Creates a {@link Repository} instance.
      * 
-     * @param info
-     * @return 
+     * @param info repository information based on which the repository should be created
+     * 
+     * @return a {@link Repository} instance.
+     * @see BugtrackingFactory
      */
-    public abstract Repository createRepository(RepositoryInfo info);  
+    public Repository createRepository(RepositoryInfo info);  
     
     /**
-     * Creates a new repository instance.
+     * Creates a new repository instance. 
      * 
      * @return the created repository
+     * @see BugtrackingFactory
      */
-    public abstract Repository createRepository();
+    public Repository createRepository();
 
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})
     public @interface Registration {    
+        
         /**
          * Returns a unique ID for this connector
          *

@@ -48,7 +48,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
  *
  * @author Tomas Stupka
  */
-public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
+public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
 
     @Override
     public String getDisplayName(NbJiraIssue data) {

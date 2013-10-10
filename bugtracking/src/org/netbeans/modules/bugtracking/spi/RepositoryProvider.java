@@ -49,7 +49,7 @@ import java.util.Collections;
 
 /**
  * 
- * Represents a bugtracking repository (server).
+ * Provides access to a bugtracking repository (server).
  * 
  * @author Tomas Stupka, Jan Stola
  * 
@@ -57,7 +57,7 @@ import java.util.Collections;
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
  */
-public abstract class RepositoryProvider<R, Q, I> {
+public interface RepositoryProvider<R, Q, I> {
 
     /**
      * A query from this repository was saved or removed
@@ -70,99 +70,127 @@ public abstract class RepositoryProvider<R, Q, I> {
     public static final String EVENT_UNSUBMITTED_ISSUES_CHANGED = "bugtracking.repository.unsubmittedIssues.changed"; //NOI18N
     
     /**
-     * Returns the repository info or null in case the repository is new
+     * Returns the repository info or null in case the repository is new and not saved yet.
      * 
-     * @param r
+     * @param r an implementation specific repository
      * @return 
      */
-    public abstract RepositoryInfo getInfo(R r);
+    public RepositoryInfo getInfo(R r);
     
     /**
      * Returns the icon for this repository
+     * 
+     * @param r an implementation specific repository
      * @return
      */
-    public abstract Image getIcon(R r);
+    public Image getIcon(R r);
 
     /**
-     * Returns an issue with the given ID
+     * Returns an issue with the given ID.
      *
      * XXX add flag refresh
      *
-     * @param id
+     * @param r an implementation specific repository
+     * @param ids
      * @return
      */
-    public abstract I[] getIssues(R r, String... ids);
+    public I[] getIssues(R r, String... ids);
 
     /**
-     * Removes this repository from its connector
+     * Removes this repository from its connector.
      *
+     * @param r an implementation specific repository
      */
-    public abstract void remove(R r);
+    public void remove(R r);
 
     /**
-     * Returns the {@link BugtrackignController} for this repository
+     * Returns the {@link BugtrackignController} for this repository.
+     * 
+     * @param r an implementation specific repository
      * @return
      */
-    public abstract RepositoryController getController(R r);
+    public RepositoryController getController(R r);
 
     /**
-     * Creates a new query instance. Might block for a longer time.
+     * Creates a new query instance.
      *
+     * @param r an implementation specific repository
+     * 
      * @return a new QueryProvider instance or null if it's not possible
      * to access the repository.
+     * 
+     * @see QueryProvider
      */
-    public abstract Q createQuery(R r); 
+    public Q createQuery(R r); 
 
     /**
-     * Creates a new issue instance. Might block for a longer time.
+     * Creates a new issue, not yet submitted, issue instance. 
      *
+     * @param r an implementation specific repository
+     * 
      * @return return a new issue instance or null if it's not possible
-     * to access the repository.
+     * to create an issue.
+     * 
+     * @see IssueProvider
      */
-    public abstract I createIssue(R r);
+    public I createIssue(R r);
 
     /**
-     * Creates a new issue instance. Might block for a longer time.
+     * Creates a new issue instance preset with the given summary and description.
      *
-     * @param r
-     * @param summary
+     * @param r an implementation specific repository
+     * @param summary 
      * @param description
+     * 
      * @return return a new issue instance or null if it's not possible
-     * to access the repository.
-     * XXX do we need a canCreate(...) if this is provided?
+     * to create an issue.
+     * 
+     * @see IssueProvider
      */
-    public abstract I createIssue(R r, String summary, String description);
+    public I createIssue(R r, String summary, String description);
     
     /**
-     * Returns all saved queries
-     * @return
+     * Returns all named queries. 
+     * 
+     * @param r an implementation specific repository
+     * @return collection of queries
      */
-    public abstract Collection<Q> getQueries(R r);
+    public Collection<Q> getQueries(R r);
 
     /**
      * Runs a query against the bugtracking repository to get all issues
-     * which applies that their ID or summary contains the given criteria string
+     * for which applies that the ID equals to or the summary contains 
+     * the given criteria string.
      *
-     * XXX move to siple search
+     * XXX move to simple search
      *
+     * @param r an implementation specific repository
      * @param criteria
+     * @return collection of issues
      */
-    public abstract Collection<I> simpleSearch(R r, String criteria);
+    public Collection<I> simpleSearch(R r, String criteria);
     
     /**
-     * Returns unsubmitted issues for the given repository.
+     * Returns unsubmitted issues from the given repository.
+     * 
      * @param r repository
      * @return collection of unsubmitted issues
      */
-    public Collection<I> getUnsubmittedIssues (R r) {
-        return Collections.<I>emptyList();
-    }
+    public Collection<I> getUnsubmittedIssues (R r);
     
-    /*********
-     * EVENTS
-     *********/
+    /**
+     * Removes a PropertyChangeListener to the given repository.
+     * 
+     * @param r an implementation specific repository
+     * @param listener 
+     */
+    public void removePropertyChangeListener(R r, PropertyChangeListener listener);
 
-    public abstract void removePropertyChangeListener(R r, PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(R r, PropertyChangeListener listener);    
+    /**
+     * Add a PropertyChangeListener to the given repository.
+     * 
+     * @param r an implementation specific repository
+     * @param listener 
+     */
+    public void addPropertyChangeListener(R r, PropertyChangeListener listener);    
 }

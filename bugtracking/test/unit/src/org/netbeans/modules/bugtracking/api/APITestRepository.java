@@ -48,6 +48,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -140,7 +141,7 @@ public class APITestRepository extends TestRepository {
     }
 
     @Override
-    public TestIssue createIssue(String summary, String description) {
+    public APITestIssue createIssue(String summary, String description) {
         newIssue = new APITestIssue(null, this, true, summary, description);
         return newIssue;
     }
@@ -165,7 +166,7 @@ public class APITestRepository extends TestRepository {
         return ret;
     }
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { 
         support.removePropertyChangeListener(listener);
@@ -182,6 +183,10 @@ public class APITestRepository extends TestRepository {
     
     void fireAttributesChangeEvent() {
         support.firePropertyChange(new PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, null, null));
+    }
+
+    Collection<APITestIssue> getUnsubmittedIssues() {
+        return Collections.EMPTY_LIST;
     }
 
     class APITestRepositoryController implements RepositoryController {

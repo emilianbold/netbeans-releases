@@ -53,7 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author tomas
  */
-public class TestIssueProvider extends IssueProvider<TestIssue> {
+public class TestIssueProvider implements IssueProvider<TestIssue> {
     @Override
     public String[] getSubtasks(TestIssue data) {
         return data.getSubtasks();
@@ -122,6 +122,11 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     @Override
     public void discardOutgoing(TestIssue data) {
         data.discardOutgoing();
+    }
+
+    @Override
+    public boolean submit(TestIssue data) {
+        return data.submit();
     }
     
 }
