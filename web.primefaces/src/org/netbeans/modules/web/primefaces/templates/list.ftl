@@ -46,7 +46,7 @@
 
         <ui:define name="body">
                 <script>
-                    function handleSubmit(xhr, status, args, dialog) {
+                    function handleSubmit(args, dialog) {
                         var jqDialog = jQuery('#'+dialog);
                         if(args.validationFailed) {
                             jqDialog.effect('shake', { times:3 }, 100);

@@ -50,7 +50,7 @@ import org.openide.util.Cancellable;
  */
 public class InterrupterImpl implements Interrupter, Cancellable {
 
-    private boolean canceled = false;
+    private volatile boolean canceled = false;
 
     @Override
     public boolean cancelled() {

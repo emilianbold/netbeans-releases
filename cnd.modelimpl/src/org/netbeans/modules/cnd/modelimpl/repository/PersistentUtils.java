@@ -94,7 +94,6 @@ import org.netbeans.modules.cnd.repository.support.AbstractObjectFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
@@ -106,9 +105,9 @@ public class PersistentUtils {
 
     public static FileSystem readFileSystem(RepositoryDataInput input) throws IOException {
         CharSequence rootUrl = PersistentUtils.readUTF(input, FilePathCache.getManager());
-        FileObject rootFileObject = CndFileUtils.urlToFileObject(rootUrl);
-        assert (rootFileObject != null) : "Restored null file object for URL " + rootUrl;
-        return rootFileObject.getFileSystem();
+        FileSystem fs = CndFileUtils.urlToFileSystem(rootUrl);
+        assert (fs != null) : "Restored null file system for URL " + rootUrl;
+        return fs;
     }
     
     public static void writeFileSystem(FileSystem fs, RepositoryDataOutput output) throws IOException {
