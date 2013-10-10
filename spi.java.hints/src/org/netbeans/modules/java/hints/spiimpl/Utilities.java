@@ -741,7 +741,7 @@ public class Utilities {
             compiler.enterTrees(com.sun.tools.javac.util.List.of(cut));
 
             Todo todo = compiler.todo;
-            ListBuffer<Env<AttrContext>> defer = ListBuffer.<Env<AttrContext>>lb();
+            ListBuffer<Env<AttrContext>> defer = new ListBuffer<Env<AttrContext>>();
             
             while (todo.peek() != null) {
                 Env<AttrContext> env = todo.remove();
@@ -1527,6 +1527,9 @@ public class Utilities {
                 return dImpl.getDiagnosticPosition().getEndPosition(new EndPosTable() {
                     @Override public int getEndPos(JCTree tree) {
                         return (int) sp.getEndPosition(null, tree);
+                    }
+                    @Override public void storeEnd(JCTree tree, int endpos) {
+                        throw new UnsupportedOperationException("Not supported yet.");
                     }
                     @Override public int replaceTree(JCTree oldtree, JCTree newtree) {
                         throw new UnsupportedOperationException("Not supported yet.");
