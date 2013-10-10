@@ -1,0 +1,26 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import javax.microedition.midlet.*;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} extends MIDlet {
+
+    public void startApp() {
+    }
+
+    public void pauseApp() {
+    }
+
+    public void destroyApp(boolean unconditional) {
+    }
+}
