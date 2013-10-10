@@ -182,11 +182,11 @@ public final class FileContent implements MutableDeclarationsContainer {
                 (emptyContent ? false : other.hasBrokenIncludes()),
                 new FileComponentInstantiations(other.getFileInstantiations(), emptyContent),
                 new FileComponentReferences(other.getFileReferences(), emptyContent),
-                createFakeIncludes(emptyContent ? Collections.<FakeIncludePair>emptyList() : other.fakeIncludeRegistrations),
-                createFakeFunctions(emptyContent ? Collections.<CsmUID<FunctionImplEx<?>>>emptyList() : other.fakeFunctionRegistrations),
-                createErrors(emptyContent ? Collections.<ErrorDirectiveImpl>emptySet() : other.errors), 
+                createFakeIncludes(emptyContent || other.fakeIncludeRegistrations.isEmpty()? Collections.<FakeIncludePair>emptyList() : other.fakeIncludeRegistrations),
+                createFakeFunctions(emptyContent || other.fakeFunctionRegistrations.isEmpty()? Collections.<CsmUID<FunctionImplEx<?>>>emptyList() : other.fakeFunctionRegistrations),
+                createErrors(emptyContent || other.errors.isEmpty()? Collections.<ErrorDirectiveImpl>emptySet() : other.errors), 
                 emptyContent ? 0 : other.parserErrorsCount,
-                createParserErrors(emptyContent ? Collections.<CsmParserProvider.ParserError>emptyList() : other.parserErrors));
+                createParserErrors(emptyContent || other.parserErrors.isEmpty() ? Collections.<CsmParserProvider.ParserError>emptyList() : other.parserErrors));
     }
     
     /**
