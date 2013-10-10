@@ -46,9 +46,6 @@ import java.io.File;
 
 /**
  * Provides access to a bugtracking Issue.
- * <br/>
- * Note that an implementation of this interface is not mandatory for a 
- * NetBeans bugtracking plugin. 
  *
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
@@ -61,80 +58,91 @@ public interface IssueProvider<I> {
     public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
 
     /**
-     * Returns this issues display name
+     * Returns this issues display name. 
+     * 
+     * @param i
      * @return
      */
-    public String getDisplayName(I data);
+    public String getDisplayName(I i);
 
     /**
-     * Returns this issues tooltip
+     * Returns this issues tooltip.
+     * 
+     * @param i
      * @return
      */
-    public String getTooltip(I data);
+    public String getTooltip(I i);
 
     /**
      * Returns this issues unique ID
+     * @param i
      * @return
      */
-    public String getID(I data);
+    public String getID(I i);
     
     /**
-     * Returns the ID-s of all issues where this one could be consideret 
-     * being superordinated to them. 
-     * e.g. the blocks/depends relationship in Bugzilla, or subtask/parenttask in JIRA
+     * Returns the ID-s of all issues where this one could be considered
+     * being superordinate to them. 
+     * e.g. the blocks/depends relationship in Bugzilla, or sub-/parent-task in JIRA
      * 
      * 
-     * @param data
+     * @param i
      * @return 
      */
-    public String[] getSubtasks(I data);
+    public String[] getSubtasks(I i);
 
     /**
      * Returns this issues summary
+     * @param i
      * @return
      */
-    public String getSummary(I data);
+    public String getSummary(I i);
 
     /**
      * Returns true if the issue isn't stored in a repository yet. Otherwise false.
+     * 
+     * @param i
      * @return
      */
-    public boolean isNew(I data);
+    public boolean isNew(I i);
     
     /**
      * Determines if the issue is considered finished 
      * in the means of the particular bugtracking.
      * 
-     * @param data
+     * @param i
      * @return true if finished, otherwise false
      */
-    public boolean isFinished(I data);
+    public boolean isFinished(I i);
 
     /**
      * Refreshes this Issues data from its bugtracking repository
      *
+     * @param i
      * @return true if the issue was refreshed, otherwise false
      */
-    public boolean refresh(I data);
+    public boolean refresh(I i);
 
     /**
      * Add a comment to this issue and close it as fixed eventually.
      * 
+     * @param i
      * @param comment
      * @param closeAsFixed 
      */
     // XXX throw exception
     // XXX provide way so that we know commit hooks are supported
-    public void addComment(I data, String comment, boolean closeAsFixed);
+    public void addComment(I i, String comment, boolean closeAsFixed);
 
     /**
      * Attach a file to this issue
+     * @param i
      * @param file
      * @param description 
      */
     // XXX throw exception; attach Patch or attachFile?
     // XXX provide way so that we know patch attachemnts are supported
-    public void attachPatch(I data, File file, String description);
+    public void attachPatch(I i, File file, String description);
 
     /**
      * Discard outgoing local changes. 
@@ -142,30 +150,41 @@ public interface IssueProvider<I> {
      * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
      * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
      * 
-     * @param data 
+     * @param i 
      */
-    public void discardOutgoing(I data);
+    public void discardOutgoing(I i);
     
     /**
      * Returns this issues controller
-     * XXX we don't need this. use get component instead and get rid of the BugtrackingController
+     * @param i
      * @return
      */
-    public IssueController getController(I data);
+    public IssueController getController(I i);
 
-    public void removePropertyChangeListener(I data, PropertyChangeListener listener);
+    /**
+     * Remove a PropertyChangeListener from the given issue.
+     * @param i
+     * @param listener 
+     */
+    public void removePropertyChangeListener(I i, PropertyChangeListener listener);
 
-    public void addPropertyChangeListener(I data, PropertyChangeListener listener);
+    /**
+     * Add a PropertyChangeListener to the given issue.
+     * 
+     * @param i
+     * @param listener 
+     */
+    public void addPropertyChangeListener(I i, PropertyChangeListener listener);
     
     /**
      * Submits the issue. Override and implement if you support issue
      * submitting.
      *
-     * @param data issue data
+     * @param i issue data
      * @return <code>true</code> if the task was successfully
      * submitted,<code>false</code> if the task was not submitted for any
      * reason.
      */
-    public boolean submit (I data);
+    public boolean submit (I i);
     
 }
