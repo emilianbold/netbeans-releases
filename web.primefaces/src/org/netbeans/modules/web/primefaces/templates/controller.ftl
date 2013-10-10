@@ -69,6 +69,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.faces.model.SelectItem;
 <#if jpaControllerClassName??>
   <#if isInjected?? && isInjected==true>
 import javax.persistence.EntityManagerFactory;
@@ -207,6 +208,22 @@ public class ${controllerClassName} implements Serializable {
         return ejbFacade.find(id);
     }
 </#if>
+
+    public SelectItem[] getItemsAvailableSelectMany() {
+<#if ejbClassName??>
+        return JsfUtil.getSelectItems(ejbFacade.findAll(), false);
+<#elseif jpaControllerClassName??>
+        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), false);
+</#if>
+    }
+
+    public SelectItem[] getItemsAvailableSelectOne() {
+<#if ejbClassName??>
+        return JsfUtil.getSelectItems(ejbFacade.findAll(), true);
+<#elseif jpaControllerClassName??>
+        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), true);
+</#if>
+    }
 
     @FacesConverter(forClass=${entityClassName}.class)
     public static class ${controllerClassName}Converter implements Converter {
