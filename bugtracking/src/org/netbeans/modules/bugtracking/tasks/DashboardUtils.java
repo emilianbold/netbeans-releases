@@ -419,4 +419,18 @@ public class DashboardUtils {
         }
         return compareNumericId(suffixInt1, suffixInt2);
     }
+
+     public static boolean confirmDelete(String title, String message) {
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message,
+                title,
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            return true;
+        }
+        return false;
+    }
 }
