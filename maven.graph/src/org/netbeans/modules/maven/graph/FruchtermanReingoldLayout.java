@@ -81,6 +81,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         this.scene = scene;
         init();
         this.panel = panel;
+
     }
     
     public @Override void performLayout() {
@@ -180,7 +181,11 @@ public class FruchtermanReingoldLayout extends SceneLayout {
             Widget wid = scene.findWidget(n);
             Point point = new Point();
             point.setLocation(n.locX, n.locY);
-            wid.setPreferredLocation(point);
+            if (scene.isAnimated()) {
+                scene.getSceneAnimator().animatePreferredLocation(wid, point);
+            } else {
+                wid.setPreferredLocation(point);
+            }
         }
     }
     
