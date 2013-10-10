@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.project.ui.groups;
 
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.util.RequestProcessor;
@@ -69,11 +67,16 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
     public ManageGroupsPanel() {
         initComponents();
         DefaultListModel model = new DefaultListModel();
+        String selectedValue = null;
         for (final Group g : Group.allGroups()) {
             model.addElement(g.getName());
+            if(g.equals(Group.getActiveGroup())) {
+                selectedValue = g.getName();
+            }
         }
         model.addElement(NONE_GOUP);
         groupList.setModel(model);
+        groupList.setSelectedValue(selectedValue == null? NONE_GOUP : selectedValue, true);
         groupList.setEnabled(model.getSize() > 0);
         groupList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         groupList.addListSelectionListener(new ListSelectionListener() {
@@ -83,19 +86,20 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
                 firePropertyChange("selection", null, null);
             }
         });
-        selectButton.setEnabled(isReady() && isExactlyOneGroupSelected());
-        removeButton.setEnabled(isReady() && isAtLeastOneGroupSelected() && !isNoneGroupSelected());
-        removeAllButton.setEnabled(isReady() && model.getSize() > 1);
-        propertiesButton.setEnabled(isReady() && isExactlyOneGroupSelected() &&  !isNoneGroupSelected());
+        final boolean isReady = isReady();
+        final boolean isNoneGroupSelected = isNoneGroupSelected();
+        removeButton.setEnabled(isReady && isAtLeastOneGroupSelected() && !isNoneGroupSelected);
+        removeAllButton.setEnabled(isReady && model.getSize() > 1);
+        propertiesButton.setEnabled(isReady && isExactlyOneGroupSelected() &&  !isNoneGroupSelected);
         addPropertyChangeListener(new PropertyChangeListener() {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("selection")) {
-                    selectButton.setEnabled(isExactlyOneGroupSelected());
-                    removeButton.setEnabled(isAtLeastOneGroupSelected() && !isNoneGroupSelected());
+                    final boolean isNoneGroupSelected = isNoneGroupSelected();
+                    removeButton.setEnabled(isAtLeastOneGroupSelected() && !isNoneGroupSelected);
                     removeAllButton.setEnabled(groupList.getModel().getSize() > 1);
-                    propertiesButton.setEnabled(isExactlyOneGroupSelected() && !isNoneGroupSelected());
+                    propertiesButton.setEnabled(isExactlyOneGroupSelected() && !isNoneGroupSelected);
                     groupList.setEnabled(groupList.getModel().getSize() > 0);
                 }
             }
@@ -118,11 +122,11 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
         return groupList.getSelectedValuesList().size() >= 1;
     }
 
-    private boolean isExactlyOneGroupSelected() {
+    final boolean isExactlyOneGroupSelected() {
         return groupList.getSelectedValuesList().size() == 1;
     }
 
-    private Group[] getSelectedGroups() {
+    Group[] getSelectedGroups() {
         Group[] selection = new Group[groupList.getSelectedValuesList().size()];
         for (int i = 0; i < groupList.getSelectedValuesList().size(); i++) {
             String groupName = (String) groupList.getSelectedValuesList().get(i);
@@ -165,10 +169,9 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
         selectionLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         groupList = new javax.swing.JList();
-        selectButton = new javax.swing.JButton();
+        propertiesButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
         removeAllButton = new javax.swing.JButton();
-        propertiesButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
 
@@ -200,19 +203,21 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(selectButton, org.openide.util.NbBundle.getMessage(ManageGroupsPanel.class, "ManageGroupsPanel.selectButton.text")); // NOI18N
-        selectButton.setMaximumSize(new java.awt.Dimension(105, 29));
-        selectButton.setMinimumSize(new java.awt.Dimension(105, 29));
-        selectButton.setPreferredSize(new java.awt.Dimension(105, 29));
-        selectButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(propertiesButton, org.openide.util.NbBundle.getMessage(ManageGroupsPanel.class, "ManageGroupsPanel.propertiesButton.text")); // NOI18N
+        propertiesButton.setMaximumSize(new java.awt.Dimension(105, 29));
+        propertiesButton.setMinimumSize(new java.awt.Dimension(105, 29));
+        propertiesButton.setPreferredSize(new java.awt.Dimension(105, 29));
+        propertiesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectButtonActionPerformed(evt);
+                propertiesButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        add(selectButton, gridBagConstraints);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(propertiesButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(ManageGroupsPanel.class, "ManageGroupsPanel.removeButton.text")); // NOI18N
         removeButton.setMaximumSize(new java.awt.Dimension(87, 29));
@@ -247,22 +252,6 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
         add(removeAllButton, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(propertiesButton, org.openide.util.NbBundle.getMessage(ManageGroupsPanel.class, "ManageGroupsPanel.propertiesButton.text")); // NOI18N
-        propertiesButton.setMaximumSize(new java.awt.Dimension(105, 29));
-        propertiesButton.setMinimumSize(new java.awt.Dimension(105, 29));
-        propertiesButton.setPreferredSize(new java.awt.Dimension(105, 29));
-        propertiesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                propertiesButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 12);
-        add(propertiesButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -287,20 +276,6 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
         removeGroups(Arrays.asList(getSelectedGroups()));
     }//GEN-LAST:event_removeButtonActionPerformed
 
-    private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                Group.setActiveGroup(getSelectedGroups()[0], false);
-            }
-        });
-        final Window w = SwingUtilities.getWindowAncestor(this);
-        if (w != null) {
-            w.setVisible(false);
-            w.dispose();
-        }    
-    }//GEN-LAST:event_selectButtonActionPerformed
-
     private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
         removeGroups(Group.allGroups());
     }//GEN-LAST:event_removeAllButtonActionPerformed
@@ -314,7 +289,6 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
     private javax.swing.JButton propertiesButton;
     private javax.swing.JButton removeAllButton;
     private javax.swing.JButton removeButton;
-    private javax.swing.JButton selectButton;
     private javax.swing.JLabel selectionLabel;
     // End of variables declaration//GEN-END:variables
 }

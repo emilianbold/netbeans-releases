@@ -79,7 +79,7 @@ import org.openide.util.lookup.Lookups;
     @ActionReference(path = "Menu/File", position = 1100),
     @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 600, separatorAfter = 700)
 })
-@Messages("GroupsMenu.label=Project Gro&up")
+@Messages("GroupsMenu.label=Project Gro&ups...")
 public class GroupsMenu extends AbstractAction {
     
     private static final RequestProcessor RP = new RequestProcessor(GroupsMenu.class.getName());
@@ -146,6 +146,7 @@ public class GroupsMenu extends AbstractAction {
      */
     @Messages({
         "GroupsMenu.manage_title=Manage Groups",
+        "GroupsMenu.manage_select_group=&Select Group",
         "GroupsMenu.manage_new_group=&New Group...",
         "GroupsMenu.manage_remove=&Remove",
         "GroupsMenu.manage_cancel=&Cancel",
@@ -157,7 +158,31 @@ public class GroupsMenu extends AbstractAction {
         dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
         dd.setModal(true);
         dd.setHelpCtx(new HelpCtx(HELPCTX));
+        final JButton select = new JButton();
+        Mnemonics.setLocalizedText(select, GroupsMenu_manage_select_group());
+        select.setDefaultCapable(true);
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("selection")) {
+                    select.setEnabled(panel.isExactlyOneGroupSelected());
+                }
+            }
+        });
+        select.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Group.setActiveGroup(panel.getSelectedGroups()[0], false);
+                    }
+                });
+            }
+        });
         final JButton newGroup = new JButton();
+        newGroup.setDefaultCapable(false);
         Mnemonics.setLocalizedText(newGroup, GroupsMenu_manage_new_group());
         newGroup.addActionListener(new ActionListener() {
 
@@ -167,7 +192,8 @@ public class GroupsMenu extends AbstractAction {
             }
         });
         JButton cancel = new JButton(GroupsMenu_new_cancel());
-        dd.setOptions(new Object[] {newGroup, cancel});
+        cancel.setDefaultCapable(false);
+        dd.setOptions(new Object[] {select, newGroup, cancel});
         DialogDisplayer.getDefault().notify(dd);
     }
 
