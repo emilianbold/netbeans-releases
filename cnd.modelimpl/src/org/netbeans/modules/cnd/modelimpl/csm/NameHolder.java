@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
 
@@ -391,19 +392,15 @@ public class NameHolder {
                     }
                 }
                 if( last.getType() == CPPTokenTypes.IDENT ) {
-                    String lastName = "";  // NOI18N
-                    
-                    if (tildeToken != null) {
-                        lastName += tildeToken.getText();
-                    }
-                    
                     isMacroExpanded = isMacroExpandedToken(last);
                     start = OffsetableBase.getStartOffset(last);
                     end = OffsetableBase.getEndOffset(last);
-                    
-                    lastName += AstUtil.getText(last);
-                    
-                    return lastName;
+
+                    if (tildeToken != null) {
+                        return CharSequenceUtils.concatenate(AstUtil.getText(tildeToken), AstUtil.getText(last));
+                    } else {
+                        return AstUtil.getText(last);
+                    }
                 } else {
                     if( operator != null ) {
                         start = OffsetableBase.getStartOffset(operator);
