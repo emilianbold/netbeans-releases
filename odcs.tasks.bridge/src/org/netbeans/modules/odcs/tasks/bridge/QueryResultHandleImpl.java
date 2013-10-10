@@ -93,7 +93,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         TeamUtil.openQuery(query, queryMode, true);
     }
 
-    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}"})
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal={0} total"})
     static QueryResultHandleImpl forAllStatus(Query query) {
         Collection<Issue> issues = query.getIssues();
         int issueCount = issues != null ? issues.size() : 0;
@@ -105,7 +105,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 ResultType.NAMED_RESULT);
     }
     
-    @Messages({"# {0} - number of tasks", "LBL_QueryResultUnseen=new or changed {0}"})
+    @Messages({"# {0} - number of tasks", "LBL_QueryResultUnseen={0} changed"})
     static QueryResultHandleImpl forNotSeenStatus(Query query) {
         Collection<Issue> issues;
         int unseenIssues;
@@ -120,6 +120,9 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
             {
                 issues.add(issue);
             }
+        }
+        if (issues.isEmpty()) {
+            return null;
         }
         unseenIssues = issues.size();
 

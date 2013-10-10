@@ -49,8 +49,6 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 
 public class PerfMemoryValidationTest extends PerfIDEValidation {
-    //private static String[] testNames =  "testNewPetCatalogSample".split(",");
-    // testNewPetCatalogSample,testBuildPetCatalogSample,testCleanPetCatalogSample,testRedeployPetCatalogSample,testNewAnnotationOverrideInterceptorSample,testBuildAnnotationOverrideInterceptorSample,testCleanAnnotationOverrideInterceptorSample,testRedeployAnnotationOverrideInterceptorSample,testNewInterceptorStatelessSample,testBuildInterceptorStatelessSample,testCleanInterceptorStatelessSample,testRedeployInterceptorStatelessSample,testNewJSFJPASample,testBuildJSFJPASample,testCleanJSFJPASample,testRedeployJSFJPASample,testNewJSFJPACrudSample,testBuildJSFJPACrudSample,testCleanJSFJPACrudSample,testRedeployJSFJPACrudSample,testNewLotteryAnnotationSample,testBuildLotteryAnnotationSample,testCleanLotteryAnnotationSample,testRedeployLotteryAnnotationSample,testNewServletStatelessSample,testBuildServletStatelessSample,testCleanServletStatelessSample,testRedeployServletStatelessSample,testNewWebJPASample,testBuildWebJPASample,testCleanWebJPASample,testRedeployWebJPASample,testStopServer
     /** Need to be defined because of JUnit */
     public PerfMemoryValidationTest(String name) {
         super(name);
@@ -99,7 +97,6 @@ public class PerfMemoryValidationTest extends PerfIDEValidation {
         conf = conf.addTest("testDebugging");
         conf = conf.addTest("testXML"); 
         conf = conf.addTest("testNewJavaScriptProject");
-        //conf = conf.addTest(PerfEnterpriseSamples.class, testNames);
         
         conf = conf.addTest("testWindowSystem");
 //        conf = conf.addTest("testDb");

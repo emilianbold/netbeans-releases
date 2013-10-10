@@ -101,7 +101,7 @@ public class RecentSearches {
         return instance;
     } 
     
-    public void add(ItemResult result) {
+    public synchronized void add(ItemResult result) {
         Date now = new GregorianCalendar().getTime();
 
         // don't create duplicates, however poor-man's test only
@@ -126,7 +126,7 @@ public class RecentSearches {
         storeRecentToPrefs();
     }
     
-    public List<ItemResult> getSearches() {
+    public synchronized List<ItemResult> getSearches() {
         LinkedList<ItemResult> fiveDayList = new LinkedList<ItemResult>();
         for (ItemResult ir : recent) {
             if ((new GregorianCalendar().getTime().getTime() - ir.getDate().getTime()) < FIVE_DAYS)
@@ -134,6 +134,20 @@ public class RecentSearches {
         }
         //provide only recent searches newer than five days
         return fiveDayList;
+    }
+
+    /**
+     * Clears the list of recent searches.
+     */
+    public synchronized void clear() {
+        recent.clear();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                storeRecentToPrefs();
+            }
+        });
     }
 
     //preferences
