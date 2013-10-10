@@ -43,8 +43,6 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Provides access to a bugtracking Issue.
@@ -157,7 +155,7 @@ public abstract class IssueProvider<I> {
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
-    public abstract BugtrackingController getController(I data);
+    public abstract IssueController getController(I data);
 
     public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
 

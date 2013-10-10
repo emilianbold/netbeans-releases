@@ -517,7 +517,7 @@ public class CacheTest extends NbTestCase {
         }
 
         @Override
-        public BugtrackingController getController(CTestIssue data) {
+        public IssueController getController(CTestIssue data) {
             return data.getController();
         }
 

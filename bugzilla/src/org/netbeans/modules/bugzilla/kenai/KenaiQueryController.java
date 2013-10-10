@@ -75,6 +75,12 @@ public class KenaiQueryController extends QueryController {
     }
 
     @Override
+    public boolean providesMode(QueryMode mode) {
+        // can't edit predefined quries, otherwise all posible modes accepted
+        return !predefinedQuery || mode != QueryMode.EDIT;
+    }
+    
+    @Override
     public void populate(String urlParameters) {
         if(BugzillaUtil.isNbRepository(getRepository())) {
             if(urlParameters == null) { // is new

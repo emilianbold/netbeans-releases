@@ -111,7 +111,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
+public class QueryController implements org.netbeans.modules.bugtracking.spi.QueryController, ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, ChangeListener {
 
     protected QueryPanel panel;
 
@@ -271,6 +271,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     @Override
+    public boolean providesMode(QueryMode mode) {
+        return true;
+    }
+    
+    @Override
     public void opened() {
         wasOpened = true;
         if(query.isSaved()) {
@@ -320,7 +325,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     @Override
-    public JComponent getComponent() {
+    public JComponent getComponent(QueryMode mode) {
+        setMode(mode);
         return panel;
     }
 
@@ -329,21 +335,15 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
     }
 
-    @Override
-    public void setMode(QueryMode mode) {
+    private void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
                 onModify();
                 break;
-            case SHOW_ALL:
+            case VIEW:
                 wasModeShow = true;
                 onCancelChanges();
                 selectFilter(issueTable.getAllFilter());
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                wasModeShow = true;
-                onCancelChanges();
-                selectFilter(issueTable.getNewOrChangedFilter());
                 break;
             default: 
                 throw new IllegalStateException("Unsupported mode " + mode);

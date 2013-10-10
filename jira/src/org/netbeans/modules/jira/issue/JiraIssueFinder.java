@@ -49,7 +49,7 @@ import org.openide.ErrorManager;
  *
  * @author Marian Petras
  */
-public class JiraIssueFinder extends IssueFinder {
+public class JiraIssueFinder implements IssueFinder {
 
     private static JiraIssueFinder instance;
     private static final int[] EMPTY_INT_ARR = new int[0];
