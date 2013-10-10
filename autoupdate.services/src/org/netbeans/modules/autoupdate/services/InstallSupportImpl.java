@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -1295,12 +1296,13 @@ public class InstallSupportImpl {
                 LOG.log(Level.INFO, "Trying external URL: {0}", url);
                 try {
                     conn = new URL(url).openConnection();
-                    conn.connect();
+                    conn.setConnectTimeout(AutoupdateSettings.getOpenConnectionTimeout());
+                    conn.setReadTimeout(AutoupdateSettings.getOpenConnectionTimeout());
                     return conn.getInputStream();
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Cannot connect to {0}", url);
                     LOG.log(Level.INFO, "Details", ex);
-                    if (ex instanceof UnknownHostException || ex instanceof ConnectException) {
+                    if (ex instanceof UnknownHostException || ex instanceof ConnectException || ex instanceof SocketTimeoutException) {
                         ioe = ex;
                         externalUrl = url;
                     }

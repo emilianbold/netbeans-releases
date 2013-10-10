@@ -155,6 +155,7 @@ public class NetworkAccess {
                 public InputStream call () throws Exception {
                     URLConnection conn = url.openConnection ();
                     conn.setConnectTimeout (timeout);
+                    conn.setReadTimeout(timeout);
                     if(conn instanceof HttpsURLConnection){
                         NetworkAccess.initSSL((HttpsURLConnection) conn);
                     }
