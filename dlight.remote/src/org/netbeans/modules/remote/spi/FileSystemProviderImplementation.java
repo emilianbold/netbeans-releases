@@ -65,6 +65,7 @@ public interface FileSystemProviderImplementation {
     String normalizeAbsolutePath(String absPath, FileSystem fileSystem);
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
     FileObject urlToFileObject(String absoluteURL);
+    FileSystem urlToFileSystem(String url);
     FileObject fileToFileObject(File file);
     String toURL(FileObject fileObject);
     String toURL(FileSystem fileSystem, String absPath);
@@ -96,4 +97,5 @@ public interface FileSystemProviderImplementation {
     public char getFileSeparatorChar();
     void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
     void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem);
+
 }

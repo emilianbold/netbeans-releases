@@ -70,10 +70,15 @@ public class CppHighlightsLayerFactory implements HighlightsLayerFactory {
         return 
             new HighlightsLayer[] {
                 HighlightsLayer.create(
-                    SemanticHighlighter.class.getName(), 
+                    SemanticHighlighter.class.getName() + "Slow", // NOI18N
                     ZOrder.SYNTAX_RACK.forPosition(2000),
                     true,
-                    SemanticHighlighter.getHighlightsBag(context.getDocument())),
+                    SemanticHighlighter.getHighlightsBag(context.getDocument(), false)),
+                HighlightsLayer.create(
+                    SemanticHighlighter.class.getName() + "Fast", // NOI18N
+                    ZOrder.SYNTAX_RACK.forPosition(1500),
+                    true,
+                    SemanticHighlighter.getHighlightsBag(context.getDocument(), true)),
                 HighlightsLayer.create(
                     MarkOccurrencesHighlighter.class.getName(), 
                     ZOrder.CARET_RACK.forPosition(1000),
