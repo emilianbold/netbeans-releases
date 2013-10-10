@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
@@ -208,7 +207,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         } else {
             this.scopeRef = scope;
         }
@@ -369,7 +368,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
-        return CharSequenceUtils.concatenate(getQualifiedName(), getSignature().toString().substring(getName().length()));
+        final CharSequence sign = getSignature();
+        return CharSequenceUtils.concatenate(getQualifiedName(), sign.subSequence(getName().length(), sign.length()));
     }
 
     @Override

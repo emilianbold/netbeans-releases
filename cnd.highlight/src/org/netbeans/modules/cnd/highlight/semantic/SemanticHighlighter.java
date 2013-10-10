@@ -83,7 +83,8 @@ import org.netbeans.spi.editor.highlighting.support.PositionsBag;
  * @author Sergey Grinev
  */
 public final class SemanticHighlighter extends HighlighterBase {
-    private static final String POSITION_BAG = "CndSemanticHighlighter"; // NOI18N
+    private static final String SLOW_POSITION_BAG = "CndSemanticHighlighterSlow"; // NOI18N
+    private static final String FAST_POSITION_BAG = "CndSemanticHighlighterFast"; // NOI18N
     private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
 
     public SemanticHighlighter(Document doc) {
@@ -98,15 +99,16 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    public static PositionsBag getHighlightsBag(Document doc) {
+    public static PositionsBag getHighlightsBag(Document doc, boolean fast) {
         if (doc == null) {
             return null;
         }
+        final String name = fast ? FAST_POSITION_BAG : SLOW_POSITION_BAG;
 
-        PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
+        PositionsBag bag = (PositionsBag) doc.getProperty(name);
 
         if (bag == null) {
-            doc.putProperty(POSITION_BAG, bag = new PositionsBag(doc));
+            doc.putProperty(name, bag = new PositionsBag(doc));
         }
 
         return bag;
@@ -172,16 +174,16 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
     
-    public static PositionsBag getSemanticBagForTests(Document doc, Interrupter interrupter) {
+    public static PositionsBag getSemanticBagForTests(Document doc, Interrupter interrupter, boolean fast) {
         final SemanticHighlighter semanticHighlighter = new SemanticHighlighter(doc);
         semanticHighlighter.update(interrupter);
-        return getHighlightsBag(doc);
+        return getHighlightsBag(doc, fast);
     }
 
     private void update(BaseDocument doc, final Interrupter interrupter) {
         boolean macroExpansionView = (doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null);
-        PositionsBag newBag = new PositionsBag(doc);
-        newBag.clear();
+        PositionsBag newBagFast = new PositionsBag(doc);
+        PositionsBag newBagSlow = new PositionsBag(doc);
         final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         long start = System.currentTimeMillis();
         if (csmFile != null && csmFile.isParsed()) {
@@ -195,7 +197,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
-                        (!macroExpansionView || !se.getName().equals("macros"))) { // NOI18N
+                        (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
                     ReferenceCollector collector = se.getCollector();
                     if (collector != null) {
                         // remember the collector for future use
@@ -203,7 +205,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlightsToBag(newBag, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(newBagFast, se.getBlocks(csmFile), se);
                         i.remove();
                     }
                 } else {
@@ -212,18 +214,18 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            PositionsBag old = getHighlightsBag(doc);
-            if (old != null) {
+            PositionsBag oldFast = getHighlightsBag(doc, true);
+            if (oldFast != null) {
                 // this is done to prevent loss of other highlightings during adding ones managed by this highlighter
                 // otherwise document will "blink" on editing
                 PositionsBag tempBag = new PositionsBag(doc);
-                tempBag.addAllHighlights(newBag);
-                HighlightsSequence seq = newBag.getHighlights(0, Integer.MAX_VALUE);
+                tempBag.addAllHighlights(newBagFast);
+                HighlightsSequence seq = newBagFast.getHighlights(0, Integer.MAX_VALUE);
                 Set<AttributeSet> set = new HashSet<AttributeSet>();
                 while (seq.moveNext()) {
                     set.add(seq.getAttributes());
                 }
-                seq = old.getHighlights(0, Integer.MAX_VALUE);
+                seq = oldFast.getHighlights(0, Integer.MAX_VALUE);
                 while (seq.moveNext()) {
                     if (!set.contains(seq.getAttributes())) {
                         int startOffset = getDocumentOffset(doc, seq.getStartOffset());
@@ -233,9 +235,9 @@ public final class SemanticHighlighter extends HighlighterBase {
                         }
                     }
                 }
-                getHighlightsBag(doc).setHighlights(tempBag);
+                getHighlightsBag(doc, true).setHighlights(tempBag);
             } else {
-                getHighlightsBag(doc).setHighlights(newBag);
+                getHighlightsBag(doc, true).setHighlights(newBagFast);
             }
             // here we invoke the collectors
             // but not for huge documents
@@ -254,15 +256,15 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR);
                 // here we apply highlighting to discovered blocks
                 for (int i = 0; i < entities.size(); ++i) {
-                    addHighlightsToBag(newBag, collectors.get(i).getReferences(), entities.get(i));
+                    addHighlightsToBag(newBagSlow, collectors.get(i).getReferences(), entities.get(i));
                 }
             }
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.FINER, "Semantic Highlighting update() done in {0}ms for file {1}", new Object[]{System.currentTimeMillis() - start, csmFile.getAbsolutePath()});
             }
-        }
-        if (!interrupter.cancelled()){
-            getHighlightsBag(doc).setHighlights(newBag);
+            if (!interrupter.cancelled()){
+                getHighlightsBag(doc, false).setHighlights(newBagSlow);
+            }
         }
     }
 
@@ -324,7 +326,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             BaseDocument doc = getDocument();
             if (doc != null) {
                 //System.err.println("cleanAfterYourself");
-                getHighlightsBag(doc).clear();
+                getHighlightsBag(doc, true).clear();
+                getHighlightsBag(doc, false).clear();
             }
         }
     }

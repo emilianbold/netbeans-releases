@@ -671,6 +671,9 @@ public abstract class FromEntityBase {
             return !JpaControllerUtil.isFieldOptionalAndNullable(method, isFieldAccess());
         }
 
+        public String getReturnType() {
+            return (String) method.getReturnType().toString();
+        }
     }
 
     public static final class TemplateData {
@@ -692,6 +695,10 @@ public abstract class FromEntityBase {
 
         public String getDateTimeFormat() {
             return fd.getDateTimeFormat();
+        }
+
+        public String getReturnType() {
+            return fd.getReturnType();
         }
 
         public boolean isBlob() {
@@ -741,16 +748,6 @@ public abstract class FromEntityBase {
 
         public String getCodeToPopulate() {
             return codeToPopulate;
-        }
-    }
-
-    public static class Getter {
-
-        public Getter() {
-        }
-
-        public String getP() {
-            return "p";
         }
     }
 

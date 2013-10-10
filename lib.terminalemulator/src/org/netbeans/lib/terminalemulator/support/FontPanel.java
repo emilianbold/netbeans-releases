@@ -107,9 +107,9 @@ class FontPanel extends JPanel {
     private JTextField tfFont;
     private JTextField tfStyle;
     private JTextField tfSize;
-    private JList lFont;
-    private JList lStyle;
-    private JList lSize;
+    private JList<FontDescr> lFont;
+    private JList<String> lStyle;
+    private JList<Integer> lSize;
     private boolean dontSetValue = false;
 
     private static boolean showFixed = true;
@@ -134,6 +134,11 @@ class FontPanel extends JPanel {
         public FontDescr(String name, boolean isFixed) {
             this.name = name;
             this.isFixed = isFixed;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
 
         public String name() {
@@ -171,7 +176,7 @@ class FontPanel extends JPanel {
      * Encapsulates the list of fonts the user can choose from.
      */
     private final static class Fonts {
-	private final List<FontDescr> fonts = new ArrayList<FontDescr>();
+	private final List<FontDescr> fonts = new ArrayList<>();
 
 	public Fonts() {
 	    add(new FontDescr("Monospaced", true));	// NOI18N
@@ -231,6 +236,7 @@ class FontPanel extends JPanel {
 	}
 
 	@Override
+        @SuppressWarnings("SleepWhileInLoop")
 	protected Fonts doInBackground() throws Exception {
             String[] fontNames;
             try {
@@ -278,9 +284,7 @@ class FontPanel extends JPanel {
 	    Fonts fonts = null;
 	    try {
 		fonts = get();
-	    } catch (InterruptedException ex) {
-		Logger.getLogger(FontPanel.class.getName()).log(Level.SEVERE, null, ex);
-	    } catch (ExecutionException ex) {
+	    } catch (InterruptedException | ExecutionException ex) {
 		Logger.getLogger(FontPanel.class.getName()).log(Level.SEVERE, null, ex);
 	    } catch (CancellationException ex) {
 		// Logger.getLogger(FontPanel.class.getName()).log(Level.WARNING, null, ex);
@@ -384,17 +388,17 @@ class FontPanel extends JPanel {
      * 2) When we have fonts that are not fixed width we'd like to render
      *    them in grey.
      */
-    static class MyListCellRenderer implements ListCellRenderer {
-        private final ListCellRenderer delegate;
+    static class MyListCellRenderer implements ListCellRenderer<FontDescr> {
+        private final ListCellRenderer<? super FontDescr> delegate;
 
-        MyListCellRenderer(ListCellRenderer delegate) {
+        MyListCellRenderer(ListCellRenderer<? super FontDescr> delegate) {
             this.delegate = delegate;
         }
 
 	@Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            FontDescr fd = (FontDescr) value;
-            Component c = delegate.getListCellRendererComponent(list, fd.name(), index, isSelected, cellHasFocus);
+        public Component getListCellRendererComponent(JList<? extends FontDescr> list, FontDescr value, int index, boolean isSelected, boolean cellHasFocus) {
+            FontDescr fd = value;
+            Component c = delegate.getListCellRendererComponent(list, fd, index, isSelected, cellHasFocus);
             if (fd.isFixed()) {
                 c.setForeground(Color.BLACK);
             } else {
@@ -477,15 +481,15 @@ class FontPanel extends JPanel {
 	    });
 	}
 
-        lFont = new JList(fonts.toArray());
+        lFont = new JList<>(fonts.toArray());
         lFont.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lFont.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Font");	// NOI18N
         lFont.setCellRenderer(new MyListCellRenderer(lFont.getCellRenderer()));
 
-        lStyle = new JList(styles);
+        lStyle = new JList<>(styles);
         lStyle.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lStyle.getAccessibleContext().setAccessibleDescription("ACSD_CTL_FontStyle");	// NOI18N
-        lSize = new JList(sizes);
+        lSize = new JList<>(sizes);
         lSize.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         lSize.getAccessibleContext().setAccessibleDescription("ACSD_CTL_Size");	// NOI18N
         tfSize = new JTextField(String.valueOf(font.getSize()));
@@ -741,18 +745,19 @@ class FontPanel extends JPanel {
 	    }
 	    @Override
 	    public void propertyChange(PropertyChangeEvent evt) {
-
-		if ("progress".equals(evt.getPropertyName())) {	// NOI18N
-		    if (ckCancel())
-			return;
-		    progressMonitor.setProgress((Integer) evt.getNewValue());
-
-		} else if (GetFontsWorker.PROP_NFONTS.equals(evt.getPropertyName())) {
-		    if (ckCancel())
-			return;
-		    progressMonitor.setNote(Catalog.get("MSG_CheckingFixedWidth")); // NOI18N
-		    progressMonitor.setMaximum((Integer) evt.getNewValue());
-		}
+                switch (evt.getPropertyName()) {
+                    case "progress":// NOI18N
+                        if (ckCancel())
+                            return;
+                        progressMonitor.setProgress((Integer) evt.getNewValue());
+                        break;
+                    case GetFontsWorker.PROP_NFONTS:
+                        if (ckCancel())
+                            return;
+                        progressMonitor.setNote(Catalog.get("MSG_CheckingFixedWidth")); // NOI18N
+                        progressMonitor.setMaximum((Integer) evt.getNewValue());
+                        break;
+                }
 	    }
 	});
 

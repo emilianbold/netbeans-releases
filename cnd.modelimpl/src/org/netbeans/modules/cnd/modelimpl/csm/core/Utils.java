@@ -233,14 +233,14 @@ public class Utils {
         CharSequence namePostfix = uniqueName.subSequence(1, uniqueName.length());
         CharSequence out[] = new CharSequence[]
                                 {
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEALIAS) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION) + namePostfix,
-                                getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION) + namePostfix
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.STRUCT), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.UNION), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEDEF), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.TYPEALIAS), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION), namePostfix),
+                                CharSequenceUtils.concatenate(getCsmDeclarationKindkey(CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION), namePostfix)
                                 };
         return out;
     }
