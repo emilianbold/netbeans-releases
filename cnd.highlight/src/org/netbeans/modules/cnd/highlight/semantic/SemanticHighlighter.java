@@ -197,7 +197,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {
                 SemanticEntity se = i.next();
                 if (NamedOption.getAccessor().getBoolean(se.getName()) && 
-                        (!macroExpansionView || !se.getName().equals("macros"))) { // NOI18N
+                        (!macroExpansionView || !se.getName().equals(SemanticEntitiesProvider.MacrosCodeProvider.NAME))) { // NOI18N
                     ReferenceCollector collector = se.getCollector();
                     if (collector != null) {
                         // remember the collector for future use
