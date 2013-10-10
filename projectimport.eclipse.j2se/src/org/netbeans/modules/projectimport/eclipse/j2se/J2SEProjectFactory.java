@@ -160,7 +160,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         EditableProperties prop = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String ver = model.getJavaPlatform().getSpecification().getVersion().toString();
         String normalizedName = model.getJavaPlatform().getProperties().get("platform.ant.name"); // NOI18N
-        prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
+        prop.setProperty(ProjectProperties.PLATFORM_ACTIVE, normalizedName);
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
 
@@ -205,14 +205,14 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
 
     private void setupCompilerProperties(AntProjectHelper helper, ProjectImportModel model) {
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.JAVAC_SOURCE, model.getSourceLevel());
-        ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
-        ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
-        ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, model.getEncoding());
+        ep.setProperty(ProjectProperties.JAVAC_SOURCE, model.getSourceLevel());
+        ep.setProperty(ProjectProperties.JAVAC_TARGET, model.getTargetLevel());
+        ep.setProperty(ProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
+        ep.setProperty(ProjectProperties.JAVAC_COMPILERARGS, model.getCompilerArgs());
+        ep.setProperty(ProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
+        ep.setProperty(ProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
     }
 
