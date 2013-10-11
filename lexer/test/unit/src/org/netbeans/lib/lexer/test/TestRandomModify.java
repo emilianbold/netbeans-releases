@@ -377,27 +377,32 @@ public class TestRandomModify {
 
     protected void checkConsistency() throws Exception {
         if (!isSkipLexerConsistencyCheck()) {
-            LexerTestUtilities.incCheck(doc, true);
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    LexerTestUtilities.incCheck(doc, true);
 
-            // Possibly debug the hierarchy - do it after incCheck() so that hierarchy is fully inited
-            if (isDebugHierarchy()) {
-                TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-                if (hi != null) {
-                    System.err.println("DEBUG hierarchy:\n" + hi + "\n");
-                }
-            }
+                    // Possibly debug the hierarchy - do it after incCheck() so that hierarchy is fully inited
+                    if (isDebugHierarchy()) {
+                        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+                        if (hi != null) {
+                            System.err.println("DEBUG hierarchy:\n" + hi + "\n");
+                        }
+                    }
 
-            for (int i = 0; i < snapshots.size(); i++) {
-                SnapshotDescription sd = snapshots.get(i);
-                TokenHierarchy<?> bm = sd.batchMirror();
-                TokenHierarchy<?> s = sd.snapshot();
-                if (isDebugOperation()) {
-                    System.err.println("Comparing snapshot " + i + " of " + snapshots.size());
+                    for (int i = 0; i < snapshots.size(); i++) {
+                        SnapshotDescription sd = snapshots.get(i);
+                        TokenHierarchy<?> bm = sd.batchMirror();
+                        TokenHierarchy<?> s = sd.snapshot();
+                        if (isDebugOperation()) {
+                            System.err.println("Comparing snapshot " + i + " of " + snapshots.size());
+                        }
+                        // Check snapshot without comparing lookaheads and states
+                        LexerTestUtilities.assertTokenSequencesEqual(null, bm.tokenSequence(), bm,
+                                s.tokenSequence(), s, false, false);
+                    }
                 }
-                // Check snapshot without comparing lookaheads and states
-                LexerTestUtilities.assertTokenSequencesEqual(null, bm.tokenSequence(), bm,
-                        s.tokenSequence(), s, false, false);
-            }
+            });
         }
     }
     

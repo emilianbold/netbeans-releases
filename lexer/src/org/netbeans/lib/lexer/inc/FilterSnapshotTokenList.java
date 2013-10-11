@@ -48,7 +48,6 @@ import java.util.Set;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.TokenList;
@@ -104,38 +103,47 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         return tokenOffsetDiff;
     }
     
+    @Override
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         return tokenList.tokenOrEmbedding(index);
     }
 
+    @Override
     public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
         return tokenList.replaceFlyToken(index, flyToken, offset);
     }
 
+    @Override
     public int tokenOffset(int index) {
         return tokenOffsetDiff + tokenList.tokenOffset(index);
     }
 
+    @Override
     public int modCount() {
         return LexerUtilsConstants.MOD_COUNT_IMMUTABLE_INPUT;
     }
 
+    @Override
     public int tokenCount() {
         return tokenList.tokenCount();
     }
 
+    @Override
     public int tokenCountCurrent() {
         return tokenList.tokenCountCurrent();
     }
 
+    @Override
     public LanguagePath languagePath() {
         return tokenList.languagePath();
     }
 
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         return tokenList.tokenOffset(token);
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCount());
     }
@@ -144,53 +152,70 @@ public final class FilterSnapshotTokenList<T extends TokenId> implements TokenLi
         throw new IllegalStateException("Unexpected call.");
     }
 
-    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
-        tokenList.wrapToken(index, embeddingContainer);
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
+        tokenList.setTokenOrEmbedding(index, t);
     }
 
+    @Override
     public TokenList<?> rootTokenList() {
         return tokenList.rootTokenList();
     }
 
+    @Override
     public CharSequence inputSourceText() {
         return rootTokenList().inputSourceText();
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }
     
+    @Override
     public InputAttributes inputAttributes() {
         return tokenList.inputAttributes();
     }
 
+    @Override
     public int lookahead(int index) {
         // Can be used by LexerTestUtilities.lookahead()
         return tokenList.lookahead(index);
     }
 
+    @Override
     public Object state(int index) {
         return tokenList.state(index);
     }
 
+    @Override
     public boolean isContinuous() {
         return tokenList.isContinuous();
     }
 
+    @Override
     public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
     
+    @Override
     public int startOffset() {
         return tokenOffsetDiff + tokenList.startOffset();
     }
 
+    @Override
     public int endOffset() {
         return tokenOffsetDiff + tokenList.endOffset();
     }
 
+    @Override
     public boolean isRemoved() {
         return false;
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "FilterSnapshotTL";
     }
 
 }

@@ -44,10 +44,10 @@
 package org.netbeans.lib.lexer;
 
 import java.util.List;
+import javax.swing.text.AbstractDocument;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -76,10 +76,15 @@ public class TokenSequenceListTest extends NbTestCase {
     }
 
     public void testInc() throws Exception {
-        ModificationTextDocument doc = new ModificationTextDocument();
+        final ModificationTextDocument doc = new ModificationTextDocument();
         doc.insertString(0, getText1(), null);
         doc.putProperty(Language.class,TestTokenId.language());
-        testHierarchy(TokenHierarchy.get(doc));
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                testHierarchy(TokenHierarchy.get(doc));
+            }
+        });
     }
     
     public void testBoundaries() throws Exception {
@@ -92,35 +97,40 @@ public class TokenSequenceListTest extends NbTestCase {
             embedded(TestHTMLTagTokenId.language());
         
         TokenHierarchy<?> tokenHierarchy = TokenHierarchy.get(doc);
-        List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(lp, 35, 48);
+        ((AbstractDocument)doc).readLock();
+        try {
+            List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(lp, 35, 48);
 
-        assertEquals(3, tsList.size());
-        TokenSequence<?> ts = tsList.get(0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "tq", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+            assertEquals(3, tsList.size());
+            TokenSequence<?> ts = tsList.get(0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "tq", -1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
 
-        ts = tsList.get(1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "/tq", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
+            ts = tsList.get(1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "/tq", -1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.GT, ">", -1);
 
-        ts = tsList.get(2);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "code", -1);
+            ts = tsList.get(2);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.LT, "<", -1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestHTMLTagTokenId.TEXT, "code", -1);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
     
     private String getText1() {
         return "ab/**<t> x*/c/**u<t2>v*/jkl/**hey<tq>aaa</tq><code>sample</code>*/";
     }
 
-    private void testHierarchy(TokenHierarchy<?> tokenHierarchy) throws Exception {
+    private void testHierarchy(TokenHierarchy<?> tokenHierarchy) {
         LanguagePath lp = LanguagePath.get(TestTokenId.language());
         List<TokenSequence<?>> tsList = tokenHierarchy.tokenSequenceList(lp, 0, Integer.MAX_VALUE);
         assertEquals(1, tsList.size());

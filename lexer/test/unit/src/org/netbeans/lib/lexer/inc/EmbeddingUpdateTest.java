@@ -44,6 +44,7 @@
 
 package org.netbeans.lib.lexer.inc;
 
+import javax.swing.text.AbstractDocument;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
@@ -84,75 +85,94 @@ public class EmbeddingUpdateTest extends NbTestCase {
         doc.insertString(0, "a/*abc def*/", null);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
-        TokenSequence<?> ets = ts.embedded();
-        assertNotNull(ets);
-        assertTrue(ts.moveNext());
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
-        assertFalse(ets.moveNext());
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
+            TokenSequence<?> ets = ts.embedded();
+            assertNotNull(ets);
+            assertTrue(ts.moveNext());
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
+            assertFalse(ets.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         // Make "axbc" inside the comment
         doc.insertString(4, "x", null);
         
-        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
-        assertNotNull(evt);
-        TokenChange<?> tc = evt.tokenChange();
-        assertNotNull(tc);
-        assertEquals(1, tc.index());
-        assertEquals(1, tc.offset());
-        assertEquals(1, tc.addedTokenCount());
-        assertEquals(1, tc.removedTokenCount());
-        assertEquals(TestTokenId.language(), tc.language());
-        assertEquals(1, tc.embeddedChangeCount());
-        TokenChange<?> etc = tc.embeddedChange(0);
-        assertEquals(0, etc.index());
-        assertEquals(3, etc.offset());
-        assertEquals(1, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
-        assertEquals(1, etc.removedTokenCount());
-        assertEquals(TestPlainTokenId.language(), etc.language());
-        assertEquals(0, etc.embeddedChangeCount());
-        
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+            assertNotNull(evt);
+            TokenChange<?> tc = evt.tokenChange();
+            assertNotNull(tc);
+            assertEquals(1, tc.index());
+            assertEquals(1, tc.offset());
+            assertEquals(1, tc.addedTokenCount());
+            assertEquals(1, tc.removedTokenCount());
+            assertEquals(TestTokenId.language(), tc.language());
+            assertEquals(1, tc.embeddedChangeCount());
+            TokenChange<?> etc = tc.embeddedChange(0);
+            assertEquals(0, etc.index());
+            assertEquals(3, etc.offset());
+            assertEquals(1, etc.addedTokenCount()); // 0 to allow for lazy lexing where this would be unknowns
+            assertEquals(1, etc.removedTokenCount());
+            assertEquals(TestPlainTokenId.language(), etc.language());
+            assertEquals(0, etc.embeddedChangeCount());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
         doc.remove(3, 8); // there will be empty /**/ so test empty embedded sequence
         doc.insertString(3, "x", null); // there will be empty /**/
     }        
         
     public void testEmbeddingActivityChange() throws Exception {
-        Document doc = new ModificationTextDocument();
+        ModificationTextDocument doc = new ModificationTextDocument();
         // Assign a language to the document
         doc.putProperty(Language.class,TestTokenId.language());
         doc.insertString(0, "a/*abc def*/", null);
         LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
-        TokenSequence<?> ets = ts.embedded();
-        assertNotNull(ets);
-        assertTrue(ts.moveNext());
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
-        assertTrue(ets.moveNext());
-        LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
-        assertFalse(ets.moveNext());
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "a", 0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, "/*abc def*/", 1);
+            TokenSequence<?> ets = ts.embedded();
+            assertNotNull(ets);
+            assertTrue(ts.moveNext());
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "abc", 3);
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WHITESPACE, " ", 6);
+            assertTrue(ets.moveNext());
+            LexerTestUtilities.assertTokenEquals(ets,TestPlainTokenId.WORD, "def", 7);
+            assertFalse(ets.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-        TokenHierarchyControl control = input.tokenHierarchyControl();
-        control.setActive(false);
-        control.setActive(true);
+        final TokenHierarchyControl control = input.tokenHierarchyControl();
+        doc.runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                control.setActive(false);
+                control.setActive(true);
+            }
+        });
 
     }
 
