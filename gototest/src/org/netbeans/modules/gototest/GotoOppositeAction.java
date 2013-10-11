@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorPanelDisplayer;
 import org.netbeans.spi.gototest.TestLocator;
 import org.netbeans.spi.gototest.TestLocator.FileType;
 import org.netbeans.spi.gototest.TestLocator.LocationListener;
@@ -153,6 +154,7 @@ public class GotoOppositeAction extends CallableSystemAction {
                     FileType currentFileType = getCurrentFileType();
                     if(currentFileType == FileType.NEITHER) {
                         StatusDisplayer.getDefault().setStatusText(Bundle.No_Test_Or_Tested_Class_Found());
+                        TestCreatorPanelDisplayer.getDefault().displayPanel(TopComponent.getRegistry().getActivatedNodes(), null, null);
                     }
                     else {
                         populateLocationResults(fo, caretOffset);
