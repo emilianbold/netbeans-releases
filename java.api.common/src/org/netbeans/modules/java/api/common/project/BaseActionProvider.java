@@ -324,7 +324,9 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     private JavaPlatform getActivePlatform() {
-        return CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active"));
+        return callback instanceof CustomPlatformCallback ?
+            ((CustomPlatformCallback)callback).getActivePlatform() :
+            CommonProjectUtils.getActivePlatform(evaluator.getProperty(ProjectProperties.PLATFORM_ACTIVE));
     }
 
     private void modification(FileObject f) {
@@ -2078,6 +2080,24 @@ public abstract class BaseActionProvider implements ActionProvider {
          */
         @NonNull
         Set<String> createConcealedProperties(@NonNull String command, @NonNull Lookup context);
+    }
+
+    /**
+     * Callback to find an active project platform.
+     * By default the {@link BaseActionProvider} finds an active project
+     * platform using the {@link ProjectProperties#PLATFORM_ACTIVE} property
+     * among J2SE platforms. When a project type needs to change such a behavior
+     * the {@link CustomPlatformCallback} provides a possibility for custom
+     * {@link JavaPlatform} lookup.
+     * @since 1.61
+     */
+    public interface CustomPlatformCallback extends Callback {
+        /**
+         * Returns the active project platform.
+         * @return the active {@link JavaPlatform} or null in case of broken platform.
+         */
+        @CheckForNull
+        JavaPlatform getActivePlatform();
     }
 
     public static final class CallbackImpl implements Callback {
