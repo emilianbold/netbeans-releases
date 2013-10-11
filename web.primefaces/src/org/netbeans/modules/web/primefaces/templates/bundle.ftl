@@ -33,6 +33,7 @@ Delete=Delete
 Close=Close
 Cancel=Cancel
 Save=Save
+SelectOneMessage=Select One...
 
 <#list entities as entity>
 ${entity.entityClassName}Created=${entity.entityClassName} was successfully created.

@@ -209,19 +209,19 @@ public class ${controllerClassName} implements Serializable {
     }
 </#if>
 
-    public SelectItem[] getItemsAvailableSelectMany() {
+    public List<${entityClassName}> getItemsAvailableSelectMany() {
 <#if ejbClassName??>
-        return JsfUtil.getSelectItems(ejbFacade.findAll(), false);
+        return ejbFacade.findAll();
 <#elseif jpaControllerClassName??>
-        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), false);
+        return getJpaController().find${entityClassName}Entities();
 </#if>
     }
 
-    public SelectItem[] getItemsAvailableSelectOne() {
+    public List<${entityClassName}> getItemsAvailableSelectOne() {
 <#if ejbClassName??>
-        return JsfUtil.getSelectItems(ejbFacade.findAll(), true);
+        return ejbFacade.findAll();
 <#elseif jpaControllerClassName??>
-        return JsfUtil.getSelectItems(getJpaController().find${entityClassName}Entities(), true);
+        return getJpaController().find${entityClassName}Entities();
 </#if>
     }
 
