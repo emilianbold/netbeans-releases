@@ -69,7 +69,6 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
-import javax.faces.model.SelectItem;
 <#if jpaControllerClassName??>
   <#if isInjected?? && isInjected==true>
 import javax.persistence.EntityManagerFactory;
@@ -98,12 +97,12 @@ public class ${controllerClassName} implements Serializable {
     private EntityManagerFactory emf = null;
 </#if>
 
-    private List<${entityClassName}> items = null;
 <#if ejbClassName??>
     @EJB private ${ejbFullClassName} ejbFacade;
 <#elseif jpaControllerClassName??>
     private ${jpaControllerClassName} jpaController = null;
 </#if>
+    private List<${entityClassName}> items = null;
     private ${entityClassName} selected;
 
     public ${controllerClassName}() {
