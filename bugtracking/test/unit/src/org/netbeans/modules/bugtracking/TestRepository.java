@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.api.APITestIssue;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.openide.util.Lookup;
@@ -102,6 +103,10 @@ public abstract class TestRepository {
 
     public void refreshIssues(TestIssue... issues) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public Collection<TestIssue> getUnsubmittedIssues(TestRepository r) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

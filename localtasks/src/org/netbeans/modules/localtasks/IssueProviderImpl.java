@@ -46,13 +46,13 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.localtasks.task.LocalTask;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.IssueProvider<LocalTask> {
+public class IssueProviderImpl implements IssueProvider<LocalTask> {
 
     @Override
     public String getDisplayName (LocalTask data) {
@@ -122,6 +122,11 @@ public class IssueProviderImpl extends org.netbeans.modules.bugtracking.spi.Issu
     @Override
     public void discardOutgoing(LocalTask data) {
         data.delete();
+    }
+
+    @Override
+    public boolean submit(LocalTask data) {
+        return false;
     }
     
 }
