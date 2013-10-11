@@ -118,7 +118,7 @@ public class ${controllerClassName} implements Serializable {
 
     protected void setEmbeddableKeys() {
         // Nothing to do if entity does not have any embeddable key.
-    };
+    }
 
     protected void initializeEmbeddableKey() {
         // Nothing to do if entity does not have any embeddable key.
@@ -152,7 +152,7 @@ public class ${controllerClassName} implements Serializable {
     public void create() {
         persist(PersistAction.CREATE, ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Created"));
         if (!JsfUtil.isValidationFailed()) {
-            items = null; // Invalidate list of items to trigger re-query.
+            items = null;    // Invalidate list of items to trigger re-query.
         }
     }
 
@@ -271,7 +271,8 @@ ${keyStringBody}
                 ${entityClassName} o = (${entityClassName}) object;
                 return getStringKey(o.${keyGetter}());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${entityClassName}.class.getName());
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "object {0} is of type {1}; expected type: {2}", new Object[]{object, object.getClass().getName(), ${entityClassName}.class.getName()});
+                return null;
             }
         }
 
