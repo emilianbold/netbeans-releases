@@ -67,7 +67,6 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -262,7 +261,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     @Override
     public void componentOpened() {
         super.componentOpened();
-        result = getLookup().lookup(new Lookup.Template<DependencyNode>(DependencyNode.class));
+        result = getLookup().lookupResult(DependencyNode.class);
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -367,7 +366,7 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
     private static class NodeVisitor implements DependencyNodeVisitor {
         private List<DependencyNode> directs;
         private List<DependencyNode> trans;
-        private List<String> scopes;
+        private final List<String> scopes;
         private DependencyNode root;
         private Stack<DependencyNode> path;
 
