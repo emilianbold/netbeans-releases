@@ -46,6 +46,8 @@ package org.netbeans.core.windows.options;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
+import java.awt.Frame;
+import java.awt.GraphicsDevice;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -77,6 +79,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 @OptionsPanelController.Keywords(keywords={"#KW_WindowOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName_WinSys")
 public class WinSysPanel extends javax.swing.JPanel {
@@ -97,8 +100,6 @@ public class WinSysPanel extends javax.swing.JPanel {
         initComponents();
         // TODO listen to changes in form fields and call controller.changed()
         boolean isMacJDK17 = isMacJDK7();
-        this.isDragImage.setEnabled(!isMacJDK17);
-        this.isDragImageAlpha.setEnabled(!isMacJDK17);
         this.isAlphaFloating.setEnabled(!isMacJDK17);
         checkMaximizeNativeLaF.addItemListener(new ItemListener() {
 
@@ -517,7 +518,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
     
     private void updateDragSection () {
-        boolean isAlpha = NativeWindowSystem.getDefault().isWindowAlphaSupported();
+        boolean isAlpha = NativeWindowSystem.getDefault().isUndecoratedWindowAlphaSupported();
         boolean isDrag = isDragImage.isSelected();
 
         isDragImageAlpha.setEnabled(isAlpha && isDrag);
