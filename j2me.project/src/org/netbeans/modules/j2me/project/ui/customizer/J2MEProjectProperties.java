@@ -73,8 +73,16 @@ public final class J2MEProjectProperties {
     /**
      * Creates a new instance of J2MEProjectProperties
      */
-    public J2MEProjectProperties(@NonNull final J2MEProject project) {
+    J2MEProjectProperties(@NonNull final J2MEProject project) {
         this.project = project;
+    }
+
+    void collectData() {
+
+    }
+
+    void storeData() {
+        
     }
     
     public static boolean isTrue(final String value) {

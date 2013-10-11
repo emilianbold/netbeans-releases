@@ -50,6 +50,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2me.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -209,7 +210,8 @@ public class J2MEProject implements Project {
                         public Boolean call() throws Exception {
                             return Boolean.FALSE;
                         }
-                })
+                }),
+                new CustomizerProviderImpl(this)
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }

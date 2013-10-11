@@ -131,21 +131,21 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-java-j2seproject",
+            projectType = "org-netbeans-modules-j2me-project",
             position = 305)
     public static J2MECompositeCategoryProvider createPlatform() {
         return new J2MECompositeCategoryProvider(PLATFORM);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-java-j2seproject",
+            projectType = "org-netbeans-modules-j2me-project",
             position = 310)
     public static J2MECompositeCategoryProvider createApplicationDescriptor() {
         return new J2MECompositeCategoryProvider(APPLICATION_DESCRIPTOR);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-java-j2seproject",
+            projectType = "org-netbeans-modules-j2me-project",
             category = "BuildCategory",
             position = 230)
     public static J2MECompositeCategoryProvider createObfuscating() {
@@ -153,7 +153,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-java-j2seproject",
+            projectType = "org-netbeans-modules-j2me-project",
             category = "BuildCategory",
             position = 235)
     public static J2MECompositeCategoryProvider createSigning() {
