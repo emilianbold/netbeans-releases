@@ -74,7 +74,7 @@ public class CndParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        LOG.log(Level.INFO, "parse called for {0}", snapshot); //NOI18N
+        LOG.log(Level.FINE, "parse called for {0}", snapshot); //NOI18N
         if (snapshot == null) {
             return;
         }

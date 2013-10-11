@@ -56,7 +56,7 @@ import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
         tooltip = "#LBL_ConnectorTooltip",
         providesRepositoryManagement = false
 )
-public class LocalTaskConnector extends BugtrackingConnector {
+public class LocalTaskConnector implements BugtrackingConnector {
     public static final String CONNECTOR_NAME = "NB_LOCAL_TASKS";
 
     @Override

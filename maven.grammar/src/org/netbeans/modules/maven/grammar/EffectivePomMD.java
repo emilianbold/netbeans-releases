@@ -91,7 +91,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -264,7 +263,11 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
             return UndoRedo.NONE;
         }
 
-        @Messages("ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors")
+        @Messages({
+            "ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors", 
+            "ERR_Unloadable=POM's project currently unloadable.",
+            "ERR_In_Jar=Cannot show effective POM for jar file content."
+        })
         @Override public void run() {
             try {
                 FileObject pom = lookup.lookup(FileObject.class);
@@ -285,7 +288,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         if (nbmp != null) {
                             model = nbmp.getMavenProject().getModel();
                             if (model == null || nbmp.isUnloadable()) {
-                                errorMessage = "POM's project currently unloadable.";
+                                errorMessage = ERR_Unloadable();
                             }
                             nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
                         } else {
@@ -295,10 +298,16 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         }
                     } else {
                         LOG.log(Level.WARNING, "not a project: {0}", p);
-                        ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(FileUtil.toFile(pom));
-                        model = res.getEffectiveModel();
+                        File fl = FileUtil.toFile(pom);
+                        if (fl != null) {
+                            ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(fl);
+                            model = res.getEffectiveModel();
+                        } else {
+                            errorMessage = ERR_In_Jar();
+                        }
                     }
                 } else {
+                    LOG.log(Level.WARNING, "no file in lookup");
                     errorMessage = "No file in editor lookup";
                 }                
                 

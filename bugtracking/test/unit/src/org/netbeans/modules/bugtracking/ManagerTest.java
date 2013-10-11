@@ -93,7 +93,7 @@ public class ManagerTest extends NbTestCase {
         displayName="ManagerTestConector",
         tooltip="ManagerTestConector"
     )    
-    public static class MyConnector extends BugtrackingConnector {
+    public static class MyConnector implements BugtrackingConnector {
         public MyConnector() {
         }
 

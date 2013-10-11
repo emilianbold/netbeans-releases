@@ -469,7 +469,7 @@ public class CacheTest extends NbTestCase {
         }
     }
 
-    public class CTestIssueProvider extends IssueProvider<CTestIssue> {
+    public class CTestIssueProvider implements IssueProvider<CTestIssue> {
 
         @Override
         public String getDisplayName(CTestIssue data) {
@@ -536,6 +536,11 @@ public class CacheTest extends NbTestCase {
         @Override
         public void discardOutgoing(CTestIssue data) {
             data.discardOutgoing();
+        }
+
+        @Override
+        public boolean submit(CTestIssue data) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 

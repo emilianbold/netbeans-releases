@@ -55,15 +55,10 @@ import org.netbeans.modules.bugtracking.api.Repository;
 public interface RepositoryQueryImplementation {
     
     /**
-     * Determines the remote bugtracking repository. 
+     * Determines the remote bugtracking repository url. 
      * 
      * @param fileObject
-     * @param askIfUnknown
-     * @return 
-     * 
-     * XXX change return type to url and get rid of askifunknown as that is 
-     * interesting only for the default impl and RepositoryQuery in the API ...
-     * 
+     * @return the remote repository url or null if not available
      */
-    public Repository getRepository(FileObject fileObject, boolean askIfUnknown);
+    public String getRepositoryUrl(FileObject fileObject);
 }

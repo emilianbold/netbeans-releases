@@ -285,7 +285,7 @@ public class IssueAccessorTest extends NbTestCase {
             tooltip=IATestConnector.ID,
             id=IATestConnector.ID
     )
-    public static class IATestConnector extends BugtrackingConnector {
+    public static class IATestConnector implements BugtrackingConnector {
         public final static String ID = "KenaiCconector";
         static Repository kolibaRepository;
 //        static TestRepository goldenProjectRepository;
