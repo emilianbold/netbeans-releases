@@ -295,8 +295,13 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         }
                     } else {
                         LOG.log(Level.WARNING, "not a project: {0}", p);
-                        ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(FileUtil.toFile(pom));
-                        model = res.getEffectiveModel();
+                        File fl = FileUtil.toFile(pom);
+                        if (fl != null) {
+                            ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(fl);
+                            model = res.getEffectiveModel();
+                        } else {
+                            errorMessage = "Cannot show effective POM for jar file content.";
+                        }
                     }
                 } else {
                     errorMessage = "No file in editor lookup";
