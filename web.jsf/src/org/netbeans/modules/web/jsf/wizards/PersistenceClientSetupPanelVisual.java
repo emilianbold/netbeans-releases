@@ -46,6 +46,8 @@ package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,6 +184,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         jsfPackageComboBox.setEditable(true);
 
+        ajaxifyCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("LBL_AJAXIFY_APP.Mnemonic").charAt(0));
         ajaxifyCheckbox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_AJAXIFY_APP")); // NOI18N
         ajaxifyCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -191,11 +194,13 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         jLabel6.setText(bundle.getString("MSG_Jpa_Jsf_Packages")); // NOI18N
 
+        jpaPackageLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("LBL_Jpa_Controller_Package_Mnemonic").charAt(0));
         jpaPackageLabel.setLabelFor(jpaPackageComboBox);
         jpaPackageLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_Jpa_Controller_Package")); // NOI18N
 
         jpaPackageComboBox.setEditable(true);
 
+        overrideExistingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.overrideExistingFiles.mnemonic").charAt(0));
         overrideExistingCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.overrideExistingFiles")); // NOI18N
         overrideExistingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,9 +215,12 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             }
         });
 
+        localizationBundleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.localizationBundle.mnemonic").charAt(0));
         localizationBundleLabel.setLabelFor(localizationBundleTextField);
         localizationBundleLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.localizationBundle")); // NOI18N
 
+        templateChooserLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.chooseTemplate.mnemonic").charAt(0));
+        templateChooserLabel.setLabelFor(templatesComboBox);
         templateChooserLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.chooseTemplate")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -352,19 +360,25 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         String bundleTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.BUNDLE_TEMPLATE);
 
         JPopupMenu menu = new JPopupMenu();
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.allTemplates"),
-                viewTemplatePath, editTemplatePath, createTemplatePath, listTemplatePath, controllerTemplatePath, paginationTemplatePath, utilTemplatePath, bundleTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.viewTemplate"), viewTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"), editTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"), createTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.listTemplate"), listTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"), controllerTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"), paginationTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"), utilTemplatePath));
-        menu.add(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.bundleTemplate"), bundleTemplatePath));
+        List<String> paths = new ArrayList<>();
+        processValidPath(menu, paths, viewTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.viewTemplate"));
+        processValidPath(menu, paths, editTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"));
+        processValidPath(menu, paths, createTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"));
+        processValidPath(menu, paths, listTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.listTemplate"));
+        processValidPath(menu, paths, controllerTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"));
+        processValidPath(menu, paths, paginationTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"));
+        processValidPath(menu, paths, utilTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"));
+        processValidPath(menu, paths, bundleTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.bundleTemplate"));
+        menu.insert(new OpenTemplateAction(this, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.allTemplates"), paths.toArray(new String[paths.size()])), 0);
         menu.show(customizeTemplatesLabel, evt.getX(), evt.getY());
     }//GEN-LAST:event_customizeTemplatesLabelMouseClicked
-        
+
+    private void processValidPath(JPopupMenu menu, List<String> paths, String path, String message) {
+        if (FileUtil.getConfigRoot().getFileObject(path) != null) {
+            paths.add(path);
+            menu.add(new OpenTemplateAction(this, message, path));
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox ajaxifyCheckbox;
