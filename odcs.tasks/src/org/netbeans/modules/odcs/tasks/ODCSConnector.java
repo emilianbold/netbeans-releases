@@ -74,11 +74,6 @@ public class ODCSConnector extends TeamBugtrackingConnector {
         return ODCSUtil.createRepository(new ODCSRepository());
     }
 
-    @Override
-    public IssueFinder getIssueFinder() {
-        return SimpleIssueFinder.getInstance();
-    }
-
     /***************************************************************************
      * Team Support
      ***************************************************************************/

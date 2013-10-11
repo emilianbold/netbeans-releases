@@ -101,16 +101,16 @@ public interface CallStackFrame {
     public abstract String getClassName ();
 
     /**
-    * Returns name of default stratumn.
+    * Returns name of default stratum.
     *
-    * @return name of default stratumn
+    * @return name of default stratum
     */
     public abstract String getDefaultStratum ();
 
     /**
-    * Returns name of default stratumn.
+    * Returns name of default stratum.
     *
-    * @return name of default stratumn
+    * @return name of default stratum
     */
     public abstract List<String> getAvailableStrata ();
 

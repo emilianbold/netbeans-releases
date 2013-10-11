@@ -44,6 +44,7 @@ package org.netbeans.spi.project.ui;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -212,11 +213,10 @@ public interface ProjectProblemsProvider {
                 @NonNull final Severity severity,
                 @NonNull final String displayName,
                 @NonNull final String description,
-                @NonNull final ProjectProblemResolver resolver) {
+                @NullAllowed final ProjectProblemResolver resolver) {
             Parameters.notNull("severity", severity); //NOI18N
             Parameters.notNull("displayName", displayName); //NOI18N
             Parameters.notNull("description", description); //NOI18N
-            Parameters.notNull("resolver", resolver);   //NOI18N
             this.severity = severity;
             this.displayName = displayName;
             this.description = description;
@@ -253,6 +253,15 @@ public interface ProjectProblemsProvider {
         }
 
         /**
+         * Is the problem resolvable?
+         * @return
+         * @since 1.74
+         */
+        public boolean isResolvable() {
+            return resolver != null;
+        }
+
+        /**
          * Resolves the problem.
          * Called by the Event Dispatch Thread.
          * When the resolution needs to be done by a background thread, eg. downloading
@@ -261,6 +270,16 @@ public interface ProjectProblemsProvider {
          * @return the {@link Future} holding the problem resolution status.
          */
         public Future<Result> resolve() {
+            if (resolver == null) {
+                FutureTask<Result> toRet = new FutureTask<Result>(new Runnable() {
+                    @Override
+                    public void run() {
+                        //noop
+                    }
+                }, Result.create(Status.UNRESOLVED));
+                toRet.run();
+                return toRet;
+            }
             return resolver.resolve();
         }
 
@@ -278,7 +297,7 @@ public interface ProjectProblemsProvider {
             final  ProjectProblem otherProblem = (ProjectProblem) other;
             return displayName.equals(otherProblem.displayName) &&
                 description.equals(otherProblem.description) &&
-                resolver.equals(otherProblem.resolver);
+                (resolver != null ? resolver.equals(otherProblem.resolver) : otherProblem.resolver == null);
         }
 
         /**
@@ -289,7 +308,7 @@ public interface ProjectProblemsProvider {
             int result = 17;
             result = 31 * result + displayName.hashCode();
             result = 31 * result + description.hashCode();
-            result = 31 * result + resolver.hashCode();
+            result = 31 * result + (resolver != null ? resolver.hashCode() : 0);
             return result;
         }
 
@@ -321,6 +340,20 @@ public interface ProjectProblemsProvider {
         }
 
         /**
+         * Creates a new unresolvable instance of the {@link ProjectProblem} with error {@link Severity}.
+         * @param displayName the project problem display name.
+         * @param description the project problem description.
+         * @return a new instance of {@link ProjectProblem}
+         * @since 1.74
+         */
+        @NonNull
+        public static ProjectProblem createError(
+                @NonNull final String displayName,
+                @NonNull final String description) {            
+            return new ProjectProblem(Severity.ERROR, displayName, description, null);
+        }
+
+        /**
          * Creates a new instance of the {@link ProjectProblem} with warning {@link Severity}.
          * @param displayName the project problem display name.
          * @param description the project problem description.
@@ -335,6 +368,20 @@ public interface ProjectProblemsProvider {
             return new ProjectProblem(Severity.WARNING, displayName,description,resolver);
         }
 
+        /**
+         * Creates a new unresolvable instance of the {@link ProjectProblem} with warning {@link Severity}.
+         * @param displayName the project problem display name.
+         * @param description the project problem description.
+         * @return a new instance of {@link ProjectProblem}
+         * @since 1.74
+         */
+        @NonNull
+        public static ProjectProblem createWarning(
+                @NonNull final String displayName,
+                @NonNull final String description) {
+            return new ProjectProblem(Severity.WARNING, displayName, description, null);
     }
+
+}
 
 }

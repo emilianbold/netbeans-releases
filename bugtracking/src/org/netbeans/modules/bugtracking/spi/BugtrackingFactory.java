@@ -77,7 +77,7 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null, null, null);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null, null, null, null);
         return impl.getRepository();
     }
     
@@ -90,6 +90,7 @@ public final class BugtrackingFactory<R, Q, I> {
      * @param iscp
      * @param ipp
      * @param qp
+     * @param isf
      * @return 
      */
     public Repository createRepository(R r, 
@@ -98,7 +99,8 @@ public final class BugtrackingFactory<R, Q, I> {
             IssueProvider<I> ip,
             IssueStatusProvider<I> isp,
             IssueSchedulingProvider<I> iscp, 
-            IssuePriorityProvider<I> ipp) 
+            IssuePriorityProvider<I> ipp,
+            IssueFinder isf)
     {
         RepositoryInfo info = rp.getInfo(r);
         if(info != null) {
@@ -109,7 +111,7 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp, iscp, ipp);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp, iscp, ipp, isf);
         return impl.getRepository();
     }
     
@@ -126,10 +128,10 @@ public final class BugtrackingFactory<R, Q, I> {
         return BugtrackingUtil.isOpened(query);
     }
     
-    public void openQuery(Repository repository, Q q) {
+    public void editQuery(Repository repository, Q q) {
         QueryImpl query = getQueryImpl(repository, q);
         if(query != null) {
-            query.openShowAll(false);
+            query.open(QueryController.QueryMode.EDIT);
         }
     }
     

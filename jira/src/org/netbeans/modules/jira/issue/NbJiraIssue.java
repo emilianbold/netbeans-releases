@@ -92,7 +92,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
@@ -1120,7 +1120,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         addAttachment(file, comment, null);
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
             controller = new Controller();
         }
@@ -1896,7 +1896,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         }
     }
 
-    private class Controller extends BugtrackingController {
+    private class Controller implements IssueController {
         private JComponent component;
         private IssuePanel issuePanel;
 
@@ -1938,15 +1938,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             }
         }
 
-        @Override
-        public boolean isValid() {
-            return true; // PENDING
-        }
-
-        @Override
-        public void applyChanges() {
-        }
-
         private void refreshViewData (final boolean force) {
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
@@ -1960,7 +1951,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(org.netbeans.modules.jira.issue.NbJiraIssue.class);
+            return new HelpCtx("org.netbeans.modules.jira.issue.NbJiraIssue"); // NOI18N
         }
 
         private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {

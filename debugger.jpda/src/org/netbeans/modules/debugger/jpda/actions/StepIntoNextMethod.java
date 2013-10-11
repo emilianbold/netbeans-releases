@@ -88,6 +88,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.openide.util.Exceptions;
 
 /**
  * Extracted from StepIntoActionProvider and StepIntoNextMethodActionProvider
@@ -169,6 +170,23 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                        t.getMethodName () + ':' +
                        t.getLineNumber (null);
             if (stepDepth == StepRequest.STEP_INTO) {
+                // Special handling of stepping into in a nashorn script:
+                if (position.startsWith("jdk.nashorn.internal.scripts.Script") &&
+                    "JS".equals(debugger.getSession().getCurrentLanguage())) {
+                    try {
+                        EventRequestWrapper.disable (stepRequest);
+                        stepRequest.addClassFilter("jdk.nashorn.internal.scripts.Script*");
+                        EventRequestWrapper.enable (stepRequest);
+                    } catch (InternalExceptionWrapper ex) {
+                        stepRequest = null;
+                    } catch (InvalidRequestStateExceptionWrapper ex) {
+                        stepRequest = null;
+                    } catch (ObjectCollectedExceptionWrapper ex) {
+                        stepRequest = null;
+                    } catch (VMDisconnectedExceptionWrapper ex) {
+                        stepRequest = null;
+                    }
+                }
                 stepIntoRequest = stepRequest;
             }
             depth = t.getStackDepth();

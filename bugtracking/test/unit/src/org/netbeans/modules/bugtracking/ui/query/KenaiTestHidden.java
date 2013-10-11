@@ -58,7 +58,7 @@ import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.LogHandler;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.cache.IssueCache;

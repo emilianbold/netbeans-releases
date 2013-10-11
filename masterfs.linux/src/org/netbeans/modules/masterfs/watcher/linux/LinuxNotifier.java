@@ -113,6 +113,20 @@ public final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
     }
 
     @Override public String nextEvent() throws IOException {
+        String path;
+        while (true) {
+            path = nextEventPath();
+            if (path == null || !path.isEmpty()) {
+                return path;
+            }
+        }
+    }
+
+    /**
+     * @return Path for the next event, null in case of queue overflow, or empty
+     * string if the event should be ignored.
+     */
+    public String nextEventPath() throws IOException {
         /* inotify event structure layout:
          *   int      wd;    // Watch descriptor
          *   uint32_t mask;  // Mask of events
@@ -145,6 +159,9 @@ public final class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
         int len = buff.getInt();
         String name = getString(len); // ignore
 
+        if ((mask & InotifyImpl.IN_IGNORED) == InotifyImpl.IN_IGNORED) {
+            return ""; // #235632                                       //NOI18N
+        }
         LKey key = map.get(wd);
         if (key == null) { /* wd == -1 -> Queue overflow */
             return null;

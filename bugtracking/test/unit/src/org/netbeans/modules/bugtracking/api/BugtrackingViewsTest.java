@@ -57,7 +57,7 @@ public class BugtrackingViewsTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(UtilTestCase.class);
         suite.addTest(new IssueTest("_testOpen"));
-        suite.addTest(new QueryTest("_testOpen"));
+//        suite.addTest(new QueryTest("_testOpen"));
         return suite;
     }
 

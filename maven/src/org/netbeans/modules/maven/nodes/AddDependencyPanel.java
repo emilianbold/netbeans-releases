@@ -406,8 +406,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         }
         
         if (project.getDependencies() != null && gId != null && aId != null) {
+            //poor mans expression evaluator, it's unlikely that some other expressions would be frequent
+            String resolvedGroupId = gId.contains("${project.groupId}") ? gId.replace("${project.groupId}", project.getGroupId()) : gId;
+            String resolvedArtifactId = aId.contains("${project.artifactId}") ? aId.replace("${project.artifactId}", project.getArtifactId()) : aId;
+            
             for (Dependency dep : project.getDependencies()) {
-                if (gId.equals(dep.getGroupId()) && aId.equals(dep.getArtifactId())) {
+                if (resolvedGroupId.equals(dep.getGroupId()) && resolvedArtifactId.equals(dep.getArtifactId())) {
                     warn = Bundle.MSG_Defined();
                 }
                     
@@ -1034,13 +1038,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             Comparator<String>, PropertyChangeListener, ChangeListener {
         
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private ResultsRootNode resultsRootNode;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final ResultsRootNode resultsRootNode;
 
         private String inProgressText, lastQueryText, curTypedText;
 
-        private Color defSearchC;
+        private final Color defSearchC;
 
         private QueryPanel() {
             btv = new BeanTreeView();
@@ -1369,9 +1373,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private class DMListPanel extends JPanel implements ExplorerManager.Provider,
             AncestorListener, ActionListener, PropertyChangeListener, Runnable {
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private MavenProject project;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final MavenProject project;
         private Node noDMRoot;
 
         private List<Dependency> dmDeps;
@@ -1484,9 +1488,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private class OpenListPanel extends JPanel implements ExplorerManager.Provider,
             PropertyChangeListener, Runnable {
 
-        private BeanTreeView btv;
-        private ExplorerManager manager;
-        private Project project;
+        private final BeanTreeView btv;
+        private final ExplorerManager manager;
+        private final Project project;
 
         public OpenListPanel(Project project) {
             this.project = project;

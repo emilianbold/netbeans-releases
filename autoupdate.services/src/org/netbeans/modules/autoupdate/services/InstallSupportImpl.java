@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -89,7 +90,7 @@ import org.openide.util.NbCollections;
  * @author Jiri Rechtacek
  */
 public class InstallSupportImpl {
-    private InstallSupport support;
+    private final InstallSupport support;
     private boolean progressRunning = false;
     private static final Logger LOG = Logger.getLogger (InstallSupportImpl.class.getName ());
     
@@ -117,9 +118,9 @@ public class InstallSupportImpl {
     private STEP currentStep = STEP.NOTSTARTED;
     
     // validation results
-    private Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
-    private Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
-    private Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
+    private final Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
+    private final Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
+    private final Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
     private List<? extends OperationInfo> infos = null;
     
     private ExecutorService es = null;
@@ -1128,7 +1129,7 @@ public class InstallSupportImpl {
     }
     
     private static final class RefreshModulesListener implements PropertyChangeListener, Runnable  {
-        private ProgressHandle handle;
+        private final ProgressHandle handle;
         private int i;
         private PropertyChangeEvent ev;
         
@@ -1295,12 +1296,13 @@ public class InstallSupportImpl {
                 LOG.log(Level.INFO, "Trying external URL: {0}", url);
                 try {
                     conn = new URL(url).openConnection();
-                    conn.connect();
+                    conn.setConnectTimeout(AutoupdateSettings.getOpenConnectionTimeout());
+                    conn.setReadTimeout(AutoupdateSettings.getOpenConnectionTimeout());
                     return conn.getInputStream();
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Cannot connect to {0}", url);
                     LOG.log(Level.INFO, "Details", ex);
-                    if (ex instanceof UnknownHostException || ex instanceof ConnectException) {
+                    if (ex instanceof UnknownHostException || ex instanceof ConnectException || ex instanceof SocketTimeoutException) {
                         ioe = ex;
                         externalUrl = url;
                     }

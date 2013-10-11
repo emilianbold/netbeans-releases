@@ -108,7 +108,7 @@ import org.openide.util.NbBundle;
 
 
 /**
-* Class representating one line of callstack.
+* Class representing one line of callstack.
 */
 public class CallStackFrameImpl implements CallStackFrame {
     
@@ -236,9 +236,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     /**
-    * Returns name of default stratumn.
+    * Returns name of default stratum.
     *
-    * @return name of default stratumn
+    * @return name of default stratum
     */
     public synchronized String getDefaultStratum () {
         if (!valid && sfLocation == null) return "";
@@ -259,9 +259,9 @@ public class CallStackFrameImpl implements CallStackFrame {
     }
 
     /**
-    * Returns name of default stratumn.
+    * Returns name of default stratum.
     *
-    * @return name of default stratumn
+    * @return name of default stratum
     */
     public synchronized List<String> getAvailableStrata () {
         if (!valid && sfLocation == null) return Collections.emptyList();
