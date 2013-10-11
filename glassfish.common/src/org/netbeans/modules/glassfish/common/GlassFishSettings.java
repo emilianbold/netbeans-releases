@@ -130,4 +130,17 @@ public class GlassFishSettings {
         settings().putBoolean(LBL_GF_KILL_SHOW_AGAIN, showAgain);
     }
 
+    /**
+     * Get system property do disable UI in NetBeans.
+     * <p/>
+     * @return Value of <code>true</code> when UI is enabled in NetBeans
+     *         of <code>false</code> otherwise.
+     */
+    public static boolean showWindowSystem() {
+        String showProperty
+                = System.getProperty("org.netbeans.core.WindowSystem.show");
+        return showProperty == null
+                || !showProperty.toLowerCase().equals("false");
+    }
+
 }

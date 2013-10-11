@@ -87,12 +87,14 @@ public class WarnPanel extends javax.swing.JPanel {
      */
     public static void gfUnknownVersionWarning(final String serverName,
             final String installRoot) {
-        String warning = NbBundle.getMessage(
-                WarnPanel.class, "WarnPanel.gfUnknownVersionWarning",
-                new String[] {serverName, installRoot});
-        NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(
-                warning, NotifyDescriptor.PLAIN_MESSAGE);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
+        if (GlassFishSettings.showWindowSystem()) {
+            String warning = NbBundle.getMessage(
+                    WarnPanel.class, "WarnPanel.gfUnknownVersionWarning",
+                    new String[]{serverName, installRoot});
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor.Message(
+                    warning, NotifyDescriptor.PLAIN_MESSAGE);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+        }
     }
 
     /**
