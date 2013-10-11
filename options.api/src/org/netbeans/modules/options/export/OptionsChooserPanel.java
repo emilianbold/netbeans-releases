@@ -223,7 +223,17 @@ public final class OptionsChooserPanel extends JPanel {
                 save.actionPerformed(new ActionEvent(optionsChooserPanel, 0, ""));
             }
             
-            final String targetPath = optionsChooserPanel.getSelectedFilePath();
+            String selectedFilePath = optionsChooserPanel.getSelectedFilePath();
+            if (selectedFilePath.endsWith("/")) {  //NOI18N
+                //name zip file after last folder
+                selectedFilePath = selectedFilePath.substring(0, selectedFilePath.lastIndexOf("/"));  //NOI18N
+                String zipName = selectedFilePath.substring(selectedFilePath.lastIndexOf("/") + 1);  //NOI18N
+                selectedFilePath = selectedFilePath.concat("/").concat(zipName).concat(".zip");  //NOI18N
+            }
+            if (!selectedFilePath.endsWith(".zip")) {  //NOI18N
+                selectedFilePath = selectedFilePath.concat(".zip");  //NOI18N
+            }
+            final String targetPath = selectedFilePath;
             RequestProcessor RP = new RequestProcessor("OptionsChooserPanel Export", 1); // NOI18N
             Runnable runnable = new Runnable() {
                 @Override
@@ -508,12 +518,13 @@ public final class OptionsChooserPanel extends JPanel {
                 return true;
             }
         } else {
-            if (txtFile.getText().length() == 0 || !txtFile.getText().endsWith(".zip")) {  //NOI18N
+            if (txtFile.getText().length() == 0) {  //NOI18N
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.file.warning"));
             } else if (getOptionsExportModel().getState() == OptionsExportModel.State.DISABLED) {
                 dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.nooption.warning"));
             } else {
-                File parent = new File(txtFile.getText()).getParentFile();
+                String text = txtFile.getText();
+                File parent = text.endsWith("/") ? new File(text) : new File(text).getParentFile();
                 if(parent == null) {
                     dialogDescriptor.getNotificationLineSupport().setWarningMessage(NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.noparent.warning"));
                 } else {
