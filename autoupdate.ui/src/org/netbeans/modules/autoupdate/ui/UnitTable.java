@@ -115,8 +115,9 @@ public class UnitTable extends JTable {
         java.awt.Point p = e.getPoint ();
         int rowIndex = rowAtPoint (p);
         int colIndex = columnAtPoint (p);
+        int realRowIndex = convertRowIndexToModel(rowIndex);
         int realColumnIndex = convertColumnIndexToModel (colIndex);
-        tip = model.getToolTipText (rowIndex, realColumnIndex);
+        tip = model.getToolTipText(realRowIndex, realColumnIndex);
         return tip != null ? tip : super.getToolTipText (e);
     }
     
