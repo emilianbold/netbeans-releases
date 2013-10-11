@@ -184,6 +184,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         jsfPackageComboBox.setEditable(true);
 
+        ajaxifyCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("LBL_AJAXIFY_APP.Mnemonic").charAt(0));
         ajaxifyCheckbox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_AJAXIFY_APP")); // NOI18N
         ajaxifyCheckbox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -193,11 +194,13 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
 
         jLabel6.setText(bundle.getString("MSG_Jpa_Jsf_Packages")); // NOI18N
 
+        jpaPackageLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("LBL_Jpa_Controller_Package_Mnemonic").charAt(0));
         jpaPackageLabel.setLabelFor(jpaPackageComboBox);
         jpaPackageLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "LBL_Jpa_Controller_Package")); // NOI18N
 
         jpaPackageComboBox.setEditable(true);
 
+        overrideExistingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.overrideExistingFiles.mnemonic").charAt(0));
         overrideExistingCheckBox.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.overrideExistingFiles")); // NOI18N
         overrideExistingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -212,9 +215,12 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
             }
         });
 
+        localizationBundleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.localizationBundle.mnemonic").charAt(0));
         localizationBundleLabel.setLabelFor(localizationBundleTextField);
         localizationBundleLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.localizationBundle")); // NOI18N
 
+        templateChooserLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("PersistenceClientSetupPanelVisual.chooseTemplate.mnemonic").charAt(0));
+        templateChooserLabel.setLabelFor(templatesComboBox);
         templateChooserLabel.setText(org.openide.util.NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.chooseTemplate")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
