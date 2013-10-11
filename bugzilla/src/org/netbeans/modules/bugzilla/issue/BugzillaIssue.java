@@ -76,7 +76,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -122,7 +122,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     private final BugzillaRepository repository;
 
-    private IssueController controller;
+    private BugzillaIssueController controller;
     private BugzillaIssueNode node;
     private OwnerInfo info;
 
@@ -381,9 +381,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if (controller == null) {
-            controller = new IssueController(this);
+            controller = new BugzillaIssueController(this);
         }
         return controller;
     }

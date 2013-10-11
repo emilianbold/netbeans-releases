@@ -75,7 +75,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -705,7 +705,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return updateModel() && refresh();
     }
 
-    public BugtrackingController getController() {
+    public IssueController getController() {
         if(controller == null) {
             controller = new ODCSIssueController(this);
         }

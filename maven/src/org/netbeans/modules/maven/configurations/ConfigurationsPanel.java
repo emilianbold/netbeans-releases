@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.configurations;
 import java.awt.Component;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -55,6 +56,8 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -117,6 +120,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.P
             btnEdit.setEnabled(true);
             btnRemove.setEnabled(true);
         }
+        btnClone.setEnabled(conf != null);
     }
 
     private void createListModel() {
@@ -151,6 +155,7 @@ public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.P
         btnEdit = new javax.swing.JButton();
         btnRemove = new javax.swing.JButton();
         btnActivate = new javax.swing.JButton();
+        btnClone = new javax.swing.JButton();
 
         lblConfigurations.setLabelFor(lstConfigurations);
         org.openide.awt.Mnemonics.setLocalizedText(lblConfigurations, org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.lblConfigurations.text")); // NOI18N
@@ -192,6 +197,13 @@ public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.P
             }
         });
 
+        btnClone.setText(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnClone.text")); // NOI18N
+        btnClone.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCloneActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -201,16 +213,18 @@ public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.P
                     .addComponent(lblConfigurations)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(btnAdd)
-                        .addComponent(btnActivate)
-                        .addComponent(btnEdit))
-                    .addComponent(btnRemove))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnAdd)
+                            .addComponent(btnActivate))
+                        .addComponent(btnRemove))
+                    .addComponent(btnEdit)
+                    .addComponent(btnClone))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnActivate, btnAdd, btnEdit, btnRemove});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnActivate, btnAdd, btnClone, btnEdit, btnRemove});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -219,16 +233,18 @@ public class ConfigurationsPanel extends javax.swing.JPanel implements HelpCtx.P
                 .addComponent(lblConfigurations)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 227, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnActivate)
                         .addGap(18, 18, 18)
                         .addComponent(btnAdd)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnClone)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnEdit)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnRemove)
-                        .addContainerGap(81, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)))
+                        .addContainerGap())))
         );
 
         btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConfigurationsPanel.class, "ConfigurationsPanel.btnAdd.AccessibleContext.accessibleDescription")); // NOI18N
@@ -294,10 +310,41 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     
 }//GEN-LAST:event_btnActivateActionPerformed
 
+    private void btnCloneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloneActionPerformed
+    ModelHandle2.Configuration conf = (ModelHandle2.Configuration) lstConfigurations.getSelectedValue();
+    if (conf != null) {
+        NewConfigurationPanel pnl = new NewConfigurationPanel();
+        pnl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ConfigurationsPanel.class, "ACSD_Clone_Config"));
+        pnl.setConfigurationId(conf.getId() + "_clone");
+        pnl.setProfiles(conf.getActivatedProfiles());
+        pnl.setProperties(ActionMappings.createPropertiesList(conf.getProperties()));
+        pnl.setShared(conf.isShared());
+        DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ConfigurationsPanel.class, "TIT_Clone_Config"));
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (ret == DialogDescriptor.OK_OPTION) {
+            ModelHandle2.Configuration newconf = ModelHandle2.createCustomConfiguration(pnl.getConfigurationId());
+
+            newconf.setShared(pnl.isShared());
+            newconf.setActivatedProfiles(pnl.getProfiles());
+            newconf.setProperties(ActionMappings.convertStringToActionProperties(pnl.getProperties()));
+            handle.addConfiguration(newconf);
+            ActionToGoalMapping oldmapping = handle.getActionMappings(conf);
+            ActionToGoalMapping newmapping = handle.getActionMappings(newconf);
+            cloneMappings(oldmapping, newmapping);
+            handle.markAsModified(newmapping);
+            handle.markConfigurationsAsModified();
+            createListModel();
+            lstConfigurations.setSelectedValue(newconf, true);
+        }
+    }
+        
+    }//GEN-LAST:event_btnCloneActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnActivate;
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnClone;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnRemove;
     private javax.swing.JScrollPane jScrollPane1;
@@ -310,6 +357,7 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         btnActivate.setEnabled(true);
         btnAdd.setEnabled(true);
         btnEdit.setEnabled(true);
+        btnClone.setEnabled(true);
         btnRemove.setEnabled(true);
     }
     // End of variables declaration
@@ -351,5 +399,30 @@ private void btnActivateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     @Override
     public HelpCtx getHelpCtx() {
         return CustomizerProviderImpl.HELP_CTX;
+    }
+
+    private void cloneMappings(ActionToGoalMapping oldmapping, ActionToGoalMapping newmapping) {
+        for (NetbeansActionMapping m : oldmapping.getActions()) {
+            NetbeansActionMapping mm = new NetbeansActionMapping();
+            mm.setActionName(m.getActionName());
+            if (m.getActivatedProfiles() != null) {
+                mm.setActivatedProfiles(new ArrayList<String>(m.getActivatedProfiles()));
+            }
+            m.setBasedir(mm.getBasedir());
+            if (m.getPackagings() != null) {
+                mm.setPackagings(new ArrayList<String>(m.getPackagings()));
+            }
+            m.setDisplayName(mm.getDisplayName());
+            if (m.getGoals() != null) {
+                mm.setGoals(new ArrayList<String>(m.getGoals()));
+            }
+            mm.setPreAction(m.getPreAction());
+            if (m.getProperties() != null) {
+                mm.setProperties(new HashMap<String, String>(m.getProperties()));
+            }
+            mm.setReactor(m.getReactor());
+            mm.setRecursive(m.isRecursive());
+            newmapping.addAction(mm);
+        }
     }
 }

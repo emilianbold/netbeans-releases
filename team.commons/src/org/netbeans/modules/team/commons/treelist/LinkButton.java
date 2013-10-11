@@ -44,7 +44,6 @@ package org.netbeans.modules.team.commons.treelist;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
-import java.awt.Image;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +51,6 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultButtonModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
@@ -64,17 +62,7 @@ import javax.swing.plaf.UIResource;
  */
 public class LinkButton extends JButton {
     private final boolean handlePopupEvents;
-
-    /**
-     * C'tor
-     *
-     * @param img Image to create button's icon from
-     * @param al Action to invoke when the button is pressed, can be null but
-     * the button is disabled then.
-     */
-    public LinkButton(Image img, Action a) {
-        this(new ImageIcon(img), a);
-    }
+    private boolean underlined;
 
     /**
      * C'tor
@@ -87,6 +75,7 @@ public class LinkButton extends JButton {
         setIcon(icon);
         setPressedIcon(icon);
         this.handlePopupEvents = true;
+        this.underlined = true;
         init(a);
     }
 
@@ -98,8 +87,9 @@ public class LinkButton extends JButton {
      * @param al Action to invoke when the button is pressed, can be null but
      * the button is disabled then.
      */
-    public LinkButton(String text, Icon icon, Action a) {
+    public LinkButton(String text, Icon icon, Action a, boolean underlined) {
         super(text);
+        this.underlined = underlined;
         setIcon(icon);
         setPressedIcon(icon);
         Object tooltip = a.getValue(Action.SHORT_DESCRIPTION);
@@ -118,7 +108,11 @@ public class LinkButton extends JButton {
      * the button is disabled then.
      */
     public LinkButton(String text, Action a) {
-        this(text, true, a);
+        this(text, a, true);
+    }
+
+    public LinkButton(String text, Action a, boolean underlined) {
+        this(text, true, a, underlined);
     }
 
     /**
@@ -132,8 +126,13 @@ public class LinkButton extends JButton {
      * the button is disabled then.
      */    
     public LinkButton(String text, boolean handlePopupEvents, Action a) {
+        this(text, handlePopupEvents, a, true);
+    }
+
+    public LinkButton(String text, boolean handlePopupEvents, Action a, boolean underlined) {
         super(text);
         this.handlePopupEvents = handlePopupEvents;
+        this.underlined = underlined;
         
         if (null != a) {
             Icon icon = (Icon) a.getValue(Action.SMALL_ICON);
@@ -152,7 +151,7 @@ public class LinkButton extends JButton {
     boolean isHandlingPopupEvents() {
         return handlePopupEvents;
     }
-    
+
     /**
      * Adjust foreground color
      *
@@ -189,9 +188,11 @@ public class LinkButton extends JButton {
             setForeground(ColorManager.getDefault().getDisabledColor());
         }
         Font font = UIManager.getFont("Tree.font");//NOI18N
-        Map<TextAttribute, Object> map = new HashMap<TextAttribute, Object>();
-        map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
-        font = font.deriveFont(map);
+        if (underlined) {
+            Map<TextAttribute, Object> map = new HashMap<TextAttribute, Object>();
+            map.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
+            font = font.deriveFont(map);
+        }
         setFont(font);
     }
 

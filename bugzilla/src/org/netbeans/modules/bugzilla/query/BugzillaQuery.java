@@ -362,6 +362,10 @@ public class BugzillaQuery {
         return lastRefresh;
     }
 
+    public boolean canRemove() {
+        return true;
+    }
+
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
         
         private final Set<String> addedIds = new HashSet<String>();

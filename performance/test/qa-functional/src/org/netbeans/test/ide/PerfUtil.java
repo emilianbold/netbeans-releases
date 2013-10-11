@@ -51,9 +51,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
-import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
@@ -156,20 +154,6 @@ public class PerfUtil {
         BreakpointsWindowOperator bwo = BreakpointsWindowOperator.invoke();
         bwo.deleteAll();
         bwo.close();
-    }
-    
-    public static void stopTomcat() {
-        getServerNode().stop();;
-    }
-    
-    public static void startTomcat() {
-        getServerNode().start();
-
-    }
-    
-    private static final J2eeServerNode getServerNode() {
-        RuntimeTabOperator.invoke();
-        return new J2eeServerNode("Bundled Tomcat");
     }
     
     public static final void cleanStatusBar() {

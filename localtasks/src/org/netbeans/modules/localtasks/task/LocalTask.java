@@ -61,7 +61,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttachmentMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -179,7 +179,7 @@ public final class LocalTask extends AbstractLocalTask {
         return false;
     }
 
-    public BugtrackingController getController () {
+    public IssueController getController () {
         return getTaskController();
     }
     

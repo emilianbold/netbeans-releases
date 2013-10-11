@@ -588,7 +588,8 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                                 sceneView.putClientProperty("print.printable", true); // NOI18N
                             }
                             pane.setViewportView(sceneView);
-                            scene.cleanLayout(pane);
+                            scene.setSurroundingScrollPane(pane);
+                            scene.cleanLayout();
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
                             txtFind.setEnabled(true);
                             btnBigger.setEnabled(true);

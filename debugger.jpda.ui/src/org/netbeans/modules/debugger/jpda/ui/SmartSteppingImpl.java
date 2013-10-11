@@ -159,12 +159,23 @@ PropertyChangeListener {
         
         // find pattern
         String name, n1 = className.replace ('.', '/');
+        /*
         do {
             name = n1;
             int i = name.lastIndexOf ('/');
             if (i < 0) break;
             n1 = name.substring (0, i);
         } while (!ectx.sourceAvailable (n1, false));
+               */
+        name = n1;
+        int i = name.lastIndexOf ('/');
+        if (i > 0) {
+            n1 = name.substring (0, i);
+            if (!ectx.sourceAvailable (n1, false)) {
+                name = n1;
+            }
+        }
+            
         HashSet s = new HashSet ();
         s.add (name.replace ('/', '.') + ".*");
         addExclusionPatterns (s);

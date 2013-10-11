@@ -45,9 +45,25 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
- *
+ * Provides information if a file managed in the IDE is somehow associated with 
+ * a bugtracking repository.
+ * <br/>
+ * Note that this interface is not meant to be implemented by bugtracking plugins.
+ * 
  * @author Tomas Stupka
  */
 public interface RepositoryQueryImplementation {
+    
+    /**
+     * Determines the remote bugtracking repository. 
+     * 
+     * @param fileObject
+     * @param askIfUnknown
+     * @return 
+     * 
+     * XXX change return type to url and get rid of askifunknown as that is 
+     * interesting only for the default impl and RepositoryQuery in the API ...
+     * 
+     */
     public Repository getRepository(FileObject fileObject, boolean askIfUnknown);
 }

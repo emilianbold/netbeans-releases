@@ -61,11 +61,6 @@ public final class Query {
      * queries issue list was changed
      */
     public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
-
-    public enum QueryMode {
-        SHOW_ALL,
-        SHOW_NEW_OR_CHANGED
-    }
     
     private QueryImpl impl;
 
@@ -98,18 +93,6 @@ public final class Query {
         impl.refresh();
     }
 
-    public void open(QueryMode mode) {
-        switch(mode) {
-            case SHOW_NEW_OR_CHANGED:
-                impl.open(false, QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
-                break;
-            case SHOW_ALL:
-                impl.open(false, QueryController.QueryMode.SHOW_ALL);
-                break;
-                
-        }
-    }
-    
     public void remove() {
         impl.remove();
     }
@@ -118,7 +101,7 @@ public final class Query {
      * @param query
      */
     public static void openNew(Repository repository) {
-        QueryAction.openQuery(null, repository.getImpl());
+        QueryAction.createNewQuery(repository.getImpl());
     }
     
     QueryImpl getImpl() {

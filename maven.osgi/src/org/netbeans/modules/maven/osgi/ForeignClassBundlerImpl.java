@@ -46,9 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -61,7 +58,6 @@ import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.maven.osgi.Bundle.*;
-import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.util.RequestProcessor;
 
@@ -70,18 +66,7 @@ import org.openide.util.RequestProcessor;
     "PRBL_DESC=When the final bundle jar contains classes not originating in current project, NetBeans internal compiler cannot use the sources of the project. Then changes done in project's source code only appears in depending projects when project is recompiled. Also applies to features like Refactoring which will not be able to find usages in depending projects."
 })
 public class ForeignClassBundlerImpl implements ForeignClassBundler, ProjectProblemsProvider { // #179521
-    private static final ProjectProblem PROBLEM_REPORT = ProjectProblem.createWarning(PRBL_Name(), PRBL_DESC(), new ProjectProblemResolver() {
-
-        @Override
-        public Future<Result> resolve() {
-            return new FutureTask<Result>(new Callable<Result>() {
-                @Override
-                public Result call() throws Exception {
-                    return Result.create(Status.UNRESOLVED);
-                }
-            });
-        }
-    });
+    private static final ProjectProblem PROBLEM_REPORT = ProjectProblem.createWarning(PRBL_Name(), PRBL_DESC());
     private static final RequestProcessor RP = new RequestProcessor(ForeignClassBundlerImpl.class);
     
     private final AtomicBoolean hasProblem = new AtomicBoolean(false);

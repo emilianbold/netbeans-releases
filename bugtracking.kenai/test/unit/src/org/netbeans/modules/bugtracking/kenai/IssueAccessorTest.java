@@ -233,43 +233,51 @@ public class IssueAccessorTest extends NbTestCase {
         public IATestIssue(String name) {
             this.name = name;
         }
+        @Override
         public String getDisplayName() {
             return name;
         }
+        @Override
         public String getTooltip() {
             return name;
         }
+        @Override
         public boolean isNew() {
             return false;
         }
+        @Override
         public boolean isFinished() {
             return false;
         }
+        @Override
         public String getSummary() {
             return "This is" + name;
         }
+        @Override
         public String getID() {
             return name;
         }
-        public BugtrackingController getController() {
+        @Override
+        public IssueController getController() {
             return controller;
         }
+        @Override
         public boolean refresh() {return true;}
         public Map<String, String> getAttributes() {return Collections.EMPTY_MAP;}
     }
 
-    private static class TestIssueController extends BugtrackingController {
-        private JPanel panel = new JPanel();
+    private static class TestIssueController implements IssueController {
+        private final JPanel panel = new JPanel();
+        @Override
         public JComponent getComponent() {
             return panel;
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(this.getClass());
         }
-        public boolean isValid() {
-            return true;
-        }
-        public void applyChanges() throws IOException { }
+        @Override public void opened() { }
+        @Override public void closed() { }
     }
 
     @BugtrackingConnector.Registration(

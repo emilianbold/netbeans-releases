@@ -61,8 +61,8 @@ import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 
@@ -133,14 +133,14 @@ public class QueryNode<P> extends AsynchronousNode<List<QueryResultHandle>> impl
             panel.add( lbl, new GridBagConstraints(col++,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
             if (data.size() > 0) {
-                lbl = new TreeLabel("("); //NOI18N
+                lbl = new TreeLabel(" ("); //NOI18N
                 labels.add(lbl);
                 panel.add(lbl, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
 
                 for (int i = 0; i < data.size(); i++) {
                     QueryResultHandle qrh = data.get(i);
                     if (qrh.getResultType() == QueryResultHandle.ResultType.NAMED_RESULT) {
-                        LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh));
+                        LinkButton btn = new LinkButton(qrh.getText(), accessor.getOpenQueryResultAction(qrh), true);
                         btn.setToolTipText(qrh.getToolTipText());
                         buttons.add(btn);
                         panel.add(btn, new GridBagConstraints(col++, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));

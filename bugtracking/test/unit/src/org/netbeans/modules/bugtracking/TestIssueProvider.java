@@ -44,7 +44,7 @@ package org.netbeans.modules.bugtracking;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.nodes.Node;
@@ -105,7 +105,7 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
-    public BugtrackingController getController(TestIssue data) {
+    public IssueController getController(TestIssue data) {
         return data.getController();
     }
 
