@@ -296,7 +296,7 @@ public class QTCTestHidden extends NbTestCase {
         displayName="Dummy bugtracking connector",
         tooltip="bugtracking connector created for testing purposes"
     )
-    public static class MyConnector extends BugtrackingConnector {
+    public static class MyConnector implements BugtrackingConnector {
         final static String ID = "QTCconector";
 
         public MyConnector() {

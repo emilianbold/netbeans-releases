@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.bugtracking.util;
 
+import org.netbeans.modules.bugtracking.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.HierarchyEvent;
@@ -62,9 +62,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import java.util.ArrayList;
 import java.util.Arrays;

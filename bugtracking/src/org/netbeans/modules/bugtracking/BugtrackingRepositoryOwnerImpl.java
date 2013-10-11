@@ -41,29 +41,3 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.io.File;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.lookup.ServiceProvider;
-
-/**
- *
- * @author tomas
- */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.RepositoryQueryImplementation.class)})
-public class BugtrackingRepositoryOwnerImpl implements RepositoryQueryImplementation {
-
-    @Override
-    public Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
-        File file = FileUtil.toFile(fileObject);
-        if(file == null) {
-            return null;
-        }
-        RepositoryImpl impl = BugtrackingOwnerSupport.getInstance().getRepository(file, askIfUnknown);
-        return impl != null ? impl.getRepository() : null;
-    }
-
-}

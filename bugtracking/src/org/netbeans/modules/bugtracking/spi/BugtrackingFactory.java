@@ -56,62 +56,79 @@ import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 public final class BugtrackingFactory<R, Q, I> {
    
     /**
+     * Creates a {@link Repository} instance configured with the given providers.
      * 
-     * @param r
-     * @param rp
-     * @param ip
-     * @param qp
-     * @return 
+     * @param r a implementation specific repository 
+     * @param repositoryProvider a {@link RepositoryProvider} to access the implementation specific repository.<br/> 
+     *                           Is mandatory and cannot be null.
+     * @param queryProvider a {@link QueryProvider} to access queries from the given repository.<br/>
+     *                      Is mandatory and cannot be null.
+     * @param issueProvider an {@link IssueProvider} to access issues from the given repository.<br/>
+     *                      Is mandatory and cannot be null.
+     * 
+     * @return a {@link Repository} instance
      */
     public Repository createRepository(R r, 
-            RepositoryProvider<R, Q, I> rp, 
-            QueryProvider<Q, I> qp,
-            IssueProvider<I> ip) 
+            RepositoryProvider<R, Q, I> repositoryProvider, 
+            QueryProvider<Q, I> queryProvider,
+            IssueProvider<I> issueProvider) 
     {
-        RepositoryInfo info = rp.getInfo(r);
+        RepositoryInfo info = repositoryProvider.getInfo(r);
         if(info != null) {
             String repositoryId = info.getId();
-            String connectorId = rp.getInfo(r).getConnectorId();
+            String connectorId = repositoryProvider.getInfo(r).getConnectorId();
             Repository repo = getRepository(connectorId, repositoryId);
             if(repo != null) {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, null, null, null, null);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, null, null, null, null);
         return impl.getRepository();
     }
     
     /**
+     * Creates a {@link Repository} instance configured with the given providers.
      * 
-     * @param r
-     * @param rp
-     * @param ip
-     * @param isp
-     * @param iscp
-     * @param ipp
-     * @param qp
-     * @param isf
-     * @return 
+     * @param r a implementation specific repository 
+     * @param repositoryProvider a {@link RepositoryProvider} to access the implementation specific repository.<br/> 
+     *                           Is mandatory and cannot be null.   
+     * @param queryProvider a {@link QueryProvider} to access queries from the given repository.<br/>
+     *                      Is mandatory and cannot be null.
+     * @param issueProvider an {@link IssueProvider} to access issues from the given repository.<br/>
+     *                      Is mandatory and cannot be null.    
+     * @param issueStatusProvider an {@link IssueStatusProvider} to provide status information 
+     *                            of an implementation specific issue.<br/> 
+     *                            Might be null.
+     * @param issueSchedulingProvider an {@link IssueSchedulingProvider} to provide scheduling information 
+     *                                of an implementation specific issue.<br/> 
+     *                                Might be null.
+     * @param issuePriorityProvider an {@link IssuePriorityProvider} to provide priority information 
+     *                              of an implementation specific issue.<br/> 
+     *                              Might be null.
+     * @param issueFinder an {@link IssueFinder} to find issue references in text..<br/> 
+     *                    Might be null.
+     * 
+     * @return a {@link Repository} instance
      */
     public Repository createRepository(R r, 
-            RepositoryProvider<R, Q, I> rp, 
-            QueryProvider<Q, I> qp,
-            IssueProvider<I> ip,
-            IssueStatusProvider<I> isp,
-            IssueSchedulingProvider<I> iscp, 
-            IssuePriorityProvider<I> ipp,
-            IssueFinder isf)
+            RepositoryProvider<R, Q, I> repositoryProvider, 
+            QueryProvider<Q, I> queryProvider,
+            IssueProvider<I> issueProvider,
+            IssueStatusProvider<I> issueStatusProvider,
+            IssueSchedulingProvider<I> issueSchedulingProvider, 
+            IssuePriorityProvider<I> issuePriorityProvider,
+            IssueFinder issueFinder)
     {
-        RepositoryInfo info = rp.getInfo(r);
+        RepositoryInfo info = repositoryProvider.getInfo(r);
         if(info != null) {
             String repositoryId = info.getId();
-            String connectorId = rp.getInfo(r).getConnectorId();
+            String connectorId = repositoryProvider.getInfo(r).getConnectorId();
             Repository repo = getRepository(connectorId, repositoryId);
             if(repo != null) {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip, isp, iscp, ipp, isf);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
         return impl.getRepository();
     }
     

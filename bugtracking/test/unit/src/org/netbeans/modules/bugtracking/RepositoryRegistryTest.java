@@ -238,7 +238,7 @@ public class RepositoryRegistryTest extends NbTestCase {
     
     private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";
     @BugtrackingConnector.Registration (id=ID_CONNECTOR1,displayName=ID_CONNECTOR1,tooltip=ID_CONNECTOR1)    
-    public static class MyConnector1 extends BugtrackingConnector {
+    public static class MyConnector1 implements BugtrackingConnector {
         public MyConnector1() {
         }
 

@@ -253,14 +253,6 @@ public class BugtrackingUtil {
         return cons;
     }
 
-    public static String scramble(String str) {
-        return Scrambler.getInstance().scramble(str);
-    }
-
-    public static String descramble(String str) {
-        return Scrambler.getInstance().descramble(str);
-    }
-
     public static String selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
@@ -354,12 +346,8 @@ public class BugtrackingUtil {
      * @return
      */
     public static char[] readPassword(String scrambledPassword, String keyPrefix, String user, String url) {
-        if (scrambledPassword != null && !scrambledPassword.equals("")) {                                    // NOI18N
-            return BugtrackingUtil.descramble(scrambledPassword).toCharArray();
-        } else {
-            char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
-            return password != null ? password : new char[0];
-        }
+        char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
+        return password != null ? password : new char[0];
     }
 
     public static RequestProcessor getParallelRP () {

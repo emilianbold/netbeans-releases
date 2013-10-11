@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
     displayName=HookConnector.ID,
     tooltip=HookConnector.ID
 )    
-public class HookConnector extends BugtrackingConnector {
+public class HookConnector implements BugtrackingConnector {
     public static final String ID = "HookTestConnector";
     
     private static HookConnector instance;

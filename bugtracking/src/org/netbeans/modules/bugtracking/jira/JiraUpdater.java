@@ -219,7 +219,7 @@ public class JiraUpdater {
         return panel;
     }
     
-    private class JiraProxyConector extends BugtrackingConnector {
+    private class JiraProxyConector implements BugtrackingConnector {
         private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
         public Repository createRepository() {
@@ -230,7 +230,7 @@ public class JiraUpdater {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
     }
-    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
+    private class JiraProxyRepositoryProvider implements RepositoryProvider<Object,Object,Object> {
         @Override
         public Image getIcon(Object r) {
             return null;
@@ -276,6 +276,10 @@ public class JiraUpdater {
 
         @Override
         public Object createIssue(Object r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        @Override
+        public Collection<Object> getUnsubmittedIssues(Object r) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }

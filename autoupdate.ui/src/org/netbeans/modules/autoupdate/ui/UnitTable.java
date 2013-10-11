@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,7 +47,6 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import javax.swing.BorderFactory;
@@ -69,7 +68,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
  *
  * @author Jiri Rechtacek, Radek Matous
  */
-public class UnitTable extends JTable {
+public final class UnitTable extends JTable {
     private UnitCategoryTableModel model = null;
     private static final int DARKER_COLOR_COMPONENT = 10;
     private TableCellRenderer enableRenderer = null;
@@ -111,12 +110,13 @@ public class UnitTable extends JTable {
     
     @Override
     public String getToolTipText (MouseEvent e) {
-        String tip = null;
+        String tip;
         java.awt.Point p = e.getPoint ();
         int rowIndex = rowAtPoint (p);
         int colIndex = columnAtPoint (p);
+        int realRowIndex = convertRowIndexToModel(rowIndex);
         int realColumnIndex = convertColumnIndexToModel (colIndex);
-        tip = model.getToolTipText (rowIndex, realColumnIndex);
+        tip = model.getToolTipText(realRowIndex, realColumnIndex);
         return tip != null ? tip : super.getToolTipText (e);
     }
     
@@ -204,14 +204,6 @@ public class UnitTable extends JTable {
     private class MyTableHeader extends JTableHeader {        
         public MyTableHeader ( TableColumnModel model ) {
             super ( model );
-            addMouseListener ( new MouseAdapter () {
-                @Override
-                public void mouseClicked (MouseEvent e) {
-                    if( e.getClickCount() != 1 || !UnitTable.this.isEnabled()) {
-                        return;
-                    }                   
-                }
-            });
             this.setReorderingAllowed ( false );
         }
         
