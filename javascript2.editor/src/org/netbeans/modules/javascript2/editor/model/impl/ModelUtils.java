@@ -809,7 +809,16 @@ public class ModelUtils {
                                 }   
                                 ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                    String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
+                                    if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name.substring(localFqn.length() + 1), typeUsage.getOffset(), false));
+                                    } else {
+                                        if (!typeUsage1.getType().equals(name)) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                        } else {
+                                            lastResolvedTypes.add(typeUsage1);
+                                        }
+                                    }
                                 }
                                 
                             }
