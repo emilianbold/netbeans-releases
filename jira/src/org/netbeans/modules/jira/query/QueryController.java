@@ -1378,11 +1378,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         @Override
         public void notifyData(final NbJiraIssue issue) {
             issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getKey())) {
-                // XXX this is quite ugly - the query notifies an archoived issue
-                // but it doesn't "contain" it!
-                return;
-            }
             setIssueCount(++counter);
             if(counter == 1) {
                 EventQueue.invokeLater(new Runnable() {
