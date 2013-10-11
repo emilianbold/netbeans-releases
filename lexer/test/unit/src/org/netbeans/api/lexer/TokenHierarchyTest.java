@@ -47,6 +47,7 @@ package org.netbeans.api.lexer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LexerApiPackageAccessor;
@@ -97,17 +98,22 @@ public class TokenHierarchyTest extends NbTestCase {
         doc.insertString(0, text, null);
         
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        Set<LanguagePath> lps = hi.languagePaths();
-        assertEquals(0, lps.size());
-        
-        // Now put a valid language into document
-        doc.putProperty(Language.class,TestLineTokenId.language());
-        
-        // Re-check language paths again
-        lps = hi.languagePaths();
-        assertNotNull(lps);
-        assertEquals(1, lps.size());
-        assertTrue(lps.contains(LanguagePath.get(TestLineTokenId.language())));
+        ((AbstractDocument)doc).readLock();
+        try {
+            Set<LanguagePath> lps = hi.languagePaths();
+            assertEquals(0, lps.size());
+
+            // Now put a valid language into document
+            doc.putProperty(Language.class,TestLineTokenId.language());
+
+            // Re-check language paths again
+            lps = hi.languagePaths();
+            assertNotNull(lps);
+            assertEquals(1, lps.size());
+            assertTrue(lps.contains(LanguagePath.get(TestLineTokenId.language())));
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
     
     public void testSameEmbeddedToken() throws Exception {
@@ -119,22 +125,27 @@ public class TokenHierarchyTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        TokenSequence<?> ets = ts.embedded();
-        assertTrue(ets.moveNext());
-        Token<?> et = ets.token();
-        assertNotNull(et);
-        
-        TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
-        TokenSequence<?> ts2 = hi2.tokenSequence();
-        assertTrue(ts2.moveNext());
-        TokenSequence<?> ets2 = ts2.embedded();
-        assertTrue(ets2.moveNext());
-        Token<?> et2 = ets2.token();
-        assertNotNull(et2);
-        
-        assertSame(et, et2);
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            TokenSequence<?> ets = ts.embedded();
+            assertTrue(ets.moveNext());
+            Token<?> et = ets.token();
+            assertNotNull(et);
+
+            TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
+            TokenSequence<?> ts2 = hi2.tokenSequence();
+            assertTrue(ts2.moveNext());
+            TokenSequence<?> ets2 = ts2.embedded();
+            assertTrue(ets2.moveNext());
+            Token<?> et2 = ets2.token();
+            assertNotNull(et2);
+
+            assertSame(et, et2);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testEmbeddingOnSubSequence() throws Exception {
@@ -145,25 +156,30 @@ public class TokenHierarchyTest extends NbTestCase {
         
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        TokenSequence<?> ets = ts.embedded();
-        assertTrue(ets.moveNext());
-        Token<?> et = ets.token();
-        assertNotNull(et);
-        
-        TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
-        TokenSequence<?> ts2 = hi2.tokenSequence();
-        // Use subsequence
-        ts2 = ts2.subSequence(0);
-        assertTrue(ts2.moveNext());
-        TokenSequence<?> ets2 = ts2.embedded();
-        assertTrue(ets2.moveNext());
-        Token<?> et2 = ets2.token();
-        assertNotNull(et2);
-        
-        assertSame("Same tokens expected", et, et2);
+
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            TokenSequence<?> ets = ts.embedded();
+            assertTrue(ets.moveNext());
+            Token<?> et = ets.token();
+            assertNotNull(et);
+
+            TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
+            TokenSequence<?> ts2 = hi2.tokenSequence();
+            // Use subsequence
+            ts2 = ts2.subSequence(0);
+            assertTrue(ts2.moveNext());
+            TokenSequence<?> ets2 = ts2.embedded();
+            assertTrue(ets2.moveNext());
+            Token<?> et2 = ets2.token();
+            assertNotNull(et2);
+
+            assertSame("Same tokens expected", et, et2);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testEmbeddingOnSubSequenceSimple() throws Exception {
@@ -175,22 +191,27 @@ public class TokenHierarchyTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         
-        TokenSequence<?> ts = hi.tokenSequence();
-        // Use subsequence
-        ts = ts.subSequence(0);
-        assertTrue(ts.moveNext());
-        TokenSequence<?> ets = ts.embedded();
-        assertTrue(ets.moveNext());
-        Token<?> et = ets.token();
-        assertNotNull(et);
-        
-        // Ask the original top-level token sequence again
-        TokenSequence<?> ets2 = ts.embedded();
-        assertTrue(ets2.moveNext());
-        Token<?> et2 = ets2.token();
-        assertNotNull(et2);
-        
-        assertSame(et, et2);
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            // Use subsequence
+            ts = ts.subSequence(0);
+            assertTrue(ts.moveNext());
+            TokenSequence<?> ets = ts.embedded();
+            assertTrue(ets.moveNext());
+            Token<?> et = ets.token();
+            assertNotNull(et);
+
+            // Ask the original top-level token sequence again
+            TokenSequence<?> ets2 = ts.embedded();
+            assertTrue(ets2.moveNext());
+            Token<?> et2 = ets2.token();
+            assertNotNull(et2);
+
+            assertSame(et, et2);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void test120906() throws Exception {
@@ -200,24 +221,29 @@ public class TokenHierarchyTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        List<TokenSequence<?>> ets1 = hi.embeddedTokenSequences(4, false);
-        assertEquals("Wrong number of embedded TokenSequences", 2, ets1.size());
-        assertEquals("Wrong offset from the most embedded TokenSequence", 3, ets1.get(1).offset());
-        
-        List<TokenSequence<?>> ets2 = hi.embeddedTokenSequences(6, false);
-        assertEquals("Wrong number of embedded TokenSequences", 1, ets2.size());
-        assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets2.get(0).offset());
-        
-        List<TokenSequence<?>> ets3 = hi.embeddedTokenSequences(3, true);
-        assertEquals("Wrong number of embedded TokenSequences", 1, ets3.size());
-        assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets3.get(0).offset());
+        ((AbstractDocument)doc).readLock();
+        try {
+            List<TokenSequence<?>> ets1 = hi.embeddedTokenSequences(4, false);
+            assertEquals("Wrong number of embedded TokenSequences", 2, ets1.size());
+            assertEquals("Wrong offset from the most embedded TokenSequence", 3, ets1.get(1).offset());
 
-        List<TokenSequence<?>> ets4 = hi.embeddedTokenSequences(0, true);
-        assertEquals("Wrong number of embedded TokenSequences", 0, ets4.size());
+            List<TokenSequence<?>> ets2 = hi.embeddedTokenSequences(6, false);
+            assertEquals("Wrong number of embedded TokenSequences", 1, ets2.size());
+            assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets2.get(0).offset());
 
-        // Lexer works over char sequence DocumentUtilities.getText(doc) which is doc.getLength()+1 long
-        List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength()+1, false);
-        assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
+            List<TokenSequence<?>> ets3 = hi.embeddedTokenSequences(3, true);
+            assertEquals("Wrong number of embedded TokenSequences", 1, ets3.size());
+            assertEquals("Wrong offset from the most embedded TokenSequence", 0, ets3.get(0).offset());
+
+            List<TokenSequence<?>> ets4 = hi.embeddedTokenSequences(0, true);
+            assertEquals("Wrong number of embedded TokenSequences", 0, ets4.size());
+
+            // Lexer works over char sequence DocumentUtilities.getText(doc) which is doc.getLength()+1 long
+            List<TokenSequence<?>> ets5 = hi.embeddedTokenSequences(doc.getLength()+1, false);
+            assertEquals("Wrong number of embedded TokenSequences", 0, ets5.size());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testMultiThreadTokenSequenceCreation() throws Exception {
@@ -233,7 +259,7 @@ public class TokenHierarchyTest extends NbTestCase {
         int threadCount = 3;
         List<TSAccessor> threads = new ArrayList<TSAccessor>(threadCount);
         while (threads.size() < threadCount) {
-            TSAccessor a = new TSAccessor();
+            TSAccessor a = new TSAccessor(doc);
             threads.add(a);
             a.start();
         }
@@ -259,19 +285,30 @@ public class TokenHierarchyTest extends NbTestCase {
         TokenSequence<?> ts;
         Token<?> token1;
         
-        TSAccessor() {
+        private Document doc;
+        
+        private boolean readLocked;
+        
+        TSAccessor(Document doc) {
+            this.doc = doc;
         }
         
         public void run() {
-            synchronized (hi) {
-                try {
-                    hi.wait();
-                } catch (InterruptedException e) {
+            if (readLocked) {
+                synchronized (hi) {
+                    try {
+                        hi.wait();
+                    } catch (InterruptedException e) {
+                    }
                 }
+                ts = hi.tokenSequence();
+                assertTrue(ts.moveNext());
+                token1 = ts.token();
+                
+            } else {
+                readLocked = true;
+                doc.render(this);
             }
-            ts = hi.tokenSequence();
-            assertTrue(ts.moveNext());
-            token1 = ts.token();
         }
 
     }

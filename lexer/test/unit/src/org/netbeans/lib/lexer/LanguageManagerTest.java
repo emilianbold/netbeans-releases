@@ -45,6 +45,7 @@
 package org.netbeans.lib.lexer;
 
 import java.lang.ref.WeakReference;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -81,11 +82,16 @@ public class LanguageManagerTest extends NbTestCase {
         doc.putProperty("mimeType", MIME_TYPE_KNOWN);
         
         TokenHierarchy th = TokenHierarchy.get(doc);
-        Language lang = th.tokenSequence().language();
-        assertNotNull("There should be language for " + MIME_TYPE_KNOWN, lang);
-        
-        assertNotNull("Invalid mime type", lang.mimeType());
-        assertEquals("Wrong language's mime type", MIME_TYPE_KNOWN, lang.mimeType());
+        ((AbstractDocument)doc).readLock();
+        try {
+            Language lang = th.tokenSequence().language();
+            assertNotNull("There should be language for " + MIME_TYPE_KNOWN, lang);
+
+            assertNotNull("Invalid mime type", lang.mimeType());
+            assertEquals("Wrong language's mime type", MIME_TYPE_KNOWN, lang.mimeType());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
     
     public void testCachingMT() {

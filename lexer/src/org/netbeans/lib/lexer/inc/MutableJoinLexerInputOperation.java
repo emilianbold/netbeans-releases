@@ -69,7 +69,7 @@ import org.netbeans.lib.lexer.JoinTokenList;
 
 class MutableJoinLexerInputOperation<T extends TokenId> extends JoinLexerInputOperation<T> {
     
-    private TokenListListUpdate<T> tokenListListUpdate;
+    private final TokenListListUpdate<T> tokenListListUpdate;
 
     MutableJoinLexerInputOperation(JoinTokenList<T> joinTokenList, int relexJoinIndex, Object lexerRestartState,
             int activeTokenListIndex, int relexOffset, TokenListListUpdate<T> tokenListListUpdate
@@ -79,7 +79,7 @@ class MutableJoinLexerInputOperation<T extends TokenId> extends JoinLexerInputOp
     }
 
     @Override
-    public EmbeddedTokenList<T> tokenList(int tokenListIndex) {
+    public EmbeddedTokenList<?,T> tokenList(int tokenListIndex) {
         return tokenListListUpdate.afterUpdateTokenList((JoinTokenList<T>) tokenList, tokenListIndex);
     }
 

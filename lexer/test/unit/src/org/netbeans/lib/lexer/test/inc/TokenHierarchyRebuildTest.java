@@ -44,6 +44,7 @@
 package org.netbeans.lib.lexer.test.inc;
 
 import java.util.ConcurrentModificationException;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -69,27 +70,34 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
     }
     
     public void testRebuild() throws Exception {
-        Document doc = new ModificationTextDocument();
+        final Document doc = new ModificationTextDocument();
         doc.putProperty(Language.class,TestTokenId.language());
         doc.insertString(0, "abc def", null);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        Token<?> t = ts.token();
-        assertNotNull(t);
-        String tText = t.text().toString();
-        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
-        
-        // Should write-lock the document
-        // doc.writeLock();
+        TokenSequence<?> ts;
+        Token<?> t;
+        String tText;
+        ((AbstractDocument)doc).readLock();
         try {
-            MutableTextInput input = (MutableTextInput)doc.getProperty(MutableTextInput.class);
-            assertNotNull(input);
-            input.tokenHierarchyControl().rebuild();
-            LexerTestUtilities.initLastDocumentEventListening(doc);
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            t = ts.token();
+            assertNotNull(t);
+            tText = t.text().toString();
+            LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         } finally {
-            // doc.writeUnlock();
+            ((AbstractDocument)doc).readUnlock();
         }
+        
+        ((ModificationTextDocument)doc).runAtomic(new Runnable() {
+            @Override
+            public void run() {
+                MutableTextInput input = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                assertNotNull(input);
+                input.tokenHierarchyControl().rebuild();
+                LexerTestUtilities.initLastDocumentEventListening(doc);
+            }
+        });
         
         // Check the fired token hierarchy event
         int docLen = doc.getLength();
@@ -98,22 +106,30 @@ public class TokenHierarchyRebuildTest extends NbTestCase {
         // Extra newline contained in DocumentUtilities.getText(doc) being relexed
         assertEquals(docLen+1, evt.affectedEndOffset());
         
+        ((AbstractDocument)doc).readLock();
         try { // ts should no longer work
             ts.moveNext();
             fail("ConcurrentModificationException not thrown.");
         } catch (ConcurrentModificationException e) {
             // Expected
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
         }
         
         TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
         assertSame(hi, hi2);
-        TokenSequence<?> ts2 = hi2.tokenSequence();
-        assertTrue(ts2.moveNext());
-        Token<?> t2  = ts2.token();
-        
-        assertNotSame(t, t2);
-        assertSame(t.id(), t2.id());
-        assertTrue(TokenUtilities.equals(tText, t2.text()));
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts2 = hi2.tokenSequence();
+            assertTrue(ts2.moveNext());
+            Token<?> t2  = ts2.token();
+
+            assertNotSame(t, t2);
+            assertSame(t.id(), t2.id());
+            assertTrue(TokenUtilities.equals(tText, t2.text()));
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
     }
     
