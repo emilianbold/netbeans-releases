@@ -205,6 +205,8 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             initIn = INIT_FIELD;
         }
         
+        boolean oldInitMethod = initMethod.isSelected();
+        
         initMethod.setEnabled((initIn & INIT_METHOD) != 0);
         initField.setEnabled((initIn & INIT_FIELD) != 0);
         initConstructors.setEnabled((initIn & INIT_CONSTRUCTORS) != 0);
@@ -224,6 +226,9 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
                 initMethod.setSelected(true);
             else
                 initField.setSelected(true);
+        }
+        if (oldInitMethod != initMethod.isSelected()) {
+            adjustFinal();
         }
     }
     
