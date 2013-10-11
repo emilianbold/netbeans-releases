@@ -27,10 +27,6 @@
                     <attr name="position" intvalue="200"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.web.primefaces.resources.Bundle#Templates/JSF/JSF_From_Entity_Wizard/PrimeFaces"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
-                    <file name="PaginationHelper.ftl" url="../templates/PaginationHelper.ftl">
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
-                        <attr name="template" boolvalue="true"/>
-                    </file>
                     <file name="JsfUtil.ftl" url="../templates/JsfUtil.ftl">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>
