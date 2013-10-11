@@ -85,11 +85,6 @@ public class TestQueryProvider implements QueryProvider<TestQuery, TestIssue> {
     }
 
     @Override
-    public boolean contains(TestQuery q, String id) {
-        return q.contains(id);
-    }
-    
-    @Override
     public void refresh(TestQuery q) {
         q.refresh();
     }

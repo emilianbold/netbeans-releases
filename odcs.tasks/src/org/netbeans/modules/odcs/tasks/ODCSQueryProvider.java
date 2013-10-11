@@ -103,11 +103,6 @@ public class ODCSQueryProvider implements TeamQueryProvider<ODCSQuery, ODCSIssue
     }
 
     @Override
-    public boolean contains(ODCSQuery q, String id) {
-        return q.contains(id);
-    }
-
-    @Override
     public void refresh(ODCSQuery q) {
         q.getController().refresh(true);
     }

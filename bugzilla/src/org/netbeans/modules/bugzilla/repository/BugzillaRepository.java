@@ -73,7 +73,6 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -242,10 +241,10 @@ public class BugzillaRepository {
         if (task != null) {
             synchronized (CACHE_LOCK) {
                 String taskId = BugzillaIssue.getID(task);
-                Cache issueCache = getCache();
+                Cache issueCache = getIssueCache();
                 issue = issueCache.getIssue(taskId);
                 if (issue == null) {
-                    issue = issueCache.setIssueData(taskId, new BugzillaIssue(task, this));
+                    issue = issueCache.setIssue(taskId, new BugzillaIssue(task, this));
                 }
             }
         }
@@ -253,7 +252,7 @@ public class BugzillaRepository {
     }
 
     public void taskDeleted (String taskId) {
-        getCache().removeIssue(taskId);
+        getIssueCache().removeIssue(taskId);
     }
 
     public Collection<BugzillaIssue> getUnsubmittedIssues () {
@@ -445,11 +444,7 @@ public class BugzillaRepository {
         return getQueriesIntern();
     }
 
-    public IssueCache<BugzillaIssue> getIssueCache() {
-        return getCache();
-    }
-    
-    private Cache getCache () {
+    public Cache getIssueCache() {
         synchronized (CACHE_LOCK) {
             if(cache == null) {
                 cache = new Cache();
@@ -457,11 +452,10 @@ public class BugzillaRepository {
             return cache;
         }
     }
-
+    
     public void removeQuery(BugzillaQuery query) {        
         Bugzilla.LOG.log(Level.FINE, "removing query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().removeQuery(this, query);
-        getIssueCache().removeQuery(query.getStoredQueryName());
         getQueriesIntern().remove(query);
         stopRefreshing(query);
         fireQueryListChanged();
@@ -883,15 +877,12 @@ public class BugzillaRepository {
         }
     }
 
-    private class Cache extends IssueCache<BugzillaIssue> {
+    public class Cache  {
         
-        private final Map<String, Reference<BugzillaIssue>> issues = new HashMap<String, Reference<BugzillaIssue>>();
+        private final Map<String, Reference<BugzillaIssue>> issues = new HashMap<>();
         
-        Cache() {
-            super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
-        }
+        Cache() { }
 
-        @Override
         public BugzillaIssue getIssue (String id) {
             synchronized (CACHE_LOCK) {
                 Reference<BugzillaIssue> issueRef = issues.get(id);
@@ -899,28 +890,11 @@ public class BugzillaRepository {
             }
         }
 
-        @Override
-        public BugzillaIssue setIssueData (String id, BugzillaIssue issue) {
+        public BugzillaIssue setIssue (String id, BugzillaIssue issue) {
             synchronized (CACHE_LOCK) {
-                issues.put(id, new SoftReference<BugzillaIssue>(issue));
+                issues.put(id, new SoftReference<>(issue));
             }
             return issue;
-        }
-
-        @Override
-        public Status getStatus (String id) {
-            BugzillaIssue issue = getIssue(id);
-            if (issue != null) {
-                switch (issue.getStatus()) {
-                    case INCOMING_MODIFIED:
-                        return Status.ISSUE_STATUS_MODIFIED;
-                    case INCOMING_NEW:
-                        return Status.ISSUE_STATUS_NEW;
-                    case SEEN:
-                        return Status.ISSUE_STATUS_SEEN;
-                }
-            }
-            return Status.ISSUE_STATUS_UNKNOWN;
         }
 
         private void removeIssue (String id) {
@@ -928,23 +902,7 @@ public class BugzillaRepository {
                 issues.remove(id);
             }
         }
-    }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<BugzillaIssue> {
-        @Override
-        public long getLastModified(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getLastModify();
-        }
-        @Override
-        public long getCreated(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getCreated();
-        }
-        @Override
-        public Map<String, String> getAttributes(BugzillaIssue issue) {
-            return Collections.<String, String>emptyMap();
-        }
     }
 
 }
