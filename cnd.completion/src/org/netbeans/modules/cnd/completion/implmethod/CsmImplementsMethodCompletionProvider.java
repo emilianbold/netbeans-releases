@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -204,6 +205,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
         
         private Collection<CsmImplementsMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
             Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<CsmImplementsMethodCompletionItem>();
+            CsmCacheManager.enter();
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
@@ -261,6 +263,8 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                 }
             } catch (BadLocationException ex) {
                 // no completion
+            } finally {
+                CsmCacheManager.leave();
             }
             return items;
         }
