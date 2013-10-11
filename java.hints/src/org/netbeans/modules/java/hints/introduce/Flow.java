@@ -354,6 +354,7 @@ public class Flow {
         }
 
         private void resume(Tree tree, Map<Tree, Collection<Map<Element, State>>> resume) {
+            // note: the 'tree' might be just a head of a Tree list, i.e. 1st item of update statment list in a for-loop.
             Collection<Map<Element, State>> toResume = resume.remove(tree);
 
             if (toResume != null) {
@@ -1038,11 +1039,20 @@ public class Flow {
                 case WHILE_LOOP:
                     resumePoint = ((WhileLoopTree) loop).getCondition();
                     break;
-                case FOR_LOOP:
-                    resumePoint = ((ForLoopTree) loop).getCondition();
-                    if (resumePoint == null) {
-                        resumePoint = ((ForLoopTree) loop).getStatement();
-                    }
+                case FOR_LOOP: {
+                        ForLoopTree flt = (ForLoopTree)loop;
+                        resumePoint = null;
+                        if (flt.getUpdate() != null && !flt.getUpdate().isEmpty()) {
+                            // resume will react on the 1st Tree of the update statement (always processed left to right)
+                            resumePoint = flt.getUpdate().get(0);
+                        } 
+                        if (resumePoint == null) {
+                            resumePoint = flt.getCondition();
+                        }
+                        if (resumePoint == null) {
+                            resumePoint = flt.getStatement();
+                        }
+                }
                     break;
                 case DO_WHILE_LOOP:
                     resumePoint = ((DoWhileLoopTree) loop).getCondition();
