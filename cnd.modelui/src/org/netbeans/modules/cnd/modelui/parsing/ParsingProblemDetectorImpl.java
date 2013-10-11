@@ -71,6 +71,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
     private final int startMemory;
     private int lineCount;
     private long startTime;
+    private AverageSpeed averageSpeed;
     private final List<Measure> measures;
     private final int memoryThreshold;
     private final CsmProject project;
@@ -168,18 +169,18 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
     public String nextCsmFile(CsmFile file, int current, int allWork) {
         String msg = "";
         int usedMemory = (int) ((runtime.totalMemory() - runtime.freeMemory()) / Mb);
-        long delta = System.currentTimeMillis() - startTime;
+        final long currentTimeMillis = System.currentTimeMillis();
+        final long delta = currentTimeMillis - startTime;
         if (TIMING) {
             lineCount += CsmFileInfoQuery.getDefault().getLineCount(file);
             synchronized(measures) {
                 measures.add(new Measure(lineCount, (int)delta, usedMemory));
             }
         }
-        if (current < 10) {
-            remainingTime = 0;
-        } else {
-            remainingTime = delta*(allWork-current)/current;
-         }
+        if (averageSpeed != null) {
+            averageSpeed.add(currentTimeMillis);
+            remainingTime = averageSpeed.getEstimation(startTime, delta, current, allWork);
+        }
         if (maxMemory - usedMemory < memoryThreshold) {
             msg = NbBundle.getMessage(ParsingProblemDetectorImpl.class, "MSG_LowMemory"); // NOI18N
         }
@@ -211,6 +212,7 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
     @Override
     public void switchToDeterminate(int maxWorkUnits) {
         startTime = System.currentTimeMillis();
+        averageSpeed = new AverageSpeed(startTime);
     }
     
     public static final class Measure {
@@ -221,6 +223,52 @@ public class ParsingProblemDetectorImpl implements ParsingProblemDetector {
             this.lines = lines;
             this.time = time;
             this.memory = memory;
+        }
+    }
+    
+    private static final class AverageSpeed {
+        private static final int MOVING_AVERAGE = 60;
+        private final int[] last = new int[MOVING_AVERAGE];
+        private long movingStartTime;
+        private AverageSpeed(long startTime) {
+            movingStartTime = startTime;
+        }
+        private void add(long currentTime) {
+            int delta = (int) ((currentTime - movingStartTime) / 1000);
+            if (delta < 0) {
+                return;
+            }
+            if (delta >= MOVING_AVERAGE) {
+                int shift = 1 + delta - MOVING_AVERAGE;
+                for(int i = 0; i < MOVING_AVERAGE; i++) {
+                    if (i+shift < MOVING_AVERAGE) {
+                        last[i] = last[i+shift];
+                    } else {
+                        last[i] = 0;
+                    }
+                }
+                movingStartTime += shift * 1000;
+                delta -= shift;
+            }
+            last[delta] += 1;
+        }
+        
+        private long getEstimation(long startTime, long delta, int current, int allWork) {
+            if (current < 10) {
+                return 0;
+            } else {
+                final long interval = startTime + delta - movingStartTime;   
+                if (interval/1000 >  MOVING_AVERAGE/2) {   
+                    int work = 0;
+                    for(int i = 0; i < MOVING_AVERAGE; i++) {
+                        work += last[i];
+                    }
+                    if (work > 0) {
+                        return interval*(allWork-current)/work;
+                    }
+                }
+                return delta*(allWork-current)/current;
+            }
         }
     }
 }
