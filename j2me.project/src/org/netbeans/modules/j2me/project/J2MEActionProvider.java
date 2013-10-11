@@ -49,10 +49,16 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_CLEAN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_COMPILE_SINGLE;
@@ -67,6 +73,7 @@ import static org.netbeans.spi.project.ActionProvider.COMMAND_RENAME;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -132,20 +139,18 @@ class J2MEActionProvider extends BaseActionProvider {
     )));
 
     J2MEActionProvider(
-        @NonNull J2MEProject project,
-        @NonNull UpdateHelper updateHelper,
-        @NonNull PropertyEvaluator eval,
-        @NonNull SourceRoots src,
-        @NonNull SourceRoots test,
-        @NonNull AntProjectHelper helper) {
+        @NonNull final J2MEProject project,
+        @NonNull final UpdateHelper updateHelper,
+        @NonNull final SourceRoots src,
+        @NonNull final SourceRoots test) {
         super(
             project,
             updateHelper,
-            eval,
+            project.evaluator(),
             src,
             test,
-            helper,
-            new BaseActionProvider.CallbackImpl(project.getClassPathProvider()));
+            updateHelper.getAntProjectHelper(),
+            new Provider(project));
     }
 
     @Override
@@ -181,6 +186,36 @@ class J2MEActionProvider extends BaseActionProvider {
     @Override
     public String[] getSupportedActions() {
         return supportedActions;
+    }
+
+    private static final class Provider implements CustomPlatformCallback {
+
+        private final Callback delegate;
+        private final PropertyEvaluator eval;
+
+
+        Provider(@NonNull final J2MEProject prj) {
+            delegate = new BaseActionProvider.CallbackImpl(prj.getClassPathProvider());
+            eval = prj.evaluator();
+        }
+
+        @Override
+        public JavaPlatform getActivePlatform() {
+            return CommonProjectUtils.getActivePlatform(
+                    eval.getProperty(ProjectProperties.PLATFORM_ACTIVE),
+                    J2MEProjectProperties.PLATFORM_TYPE_J2ME);
+        }
+
+        @Override
+        public ClassPath getProjectSourcesClassPath(String type) {
+            return delegate.getProjectSourcesClassPath(type);
+        }
+
+        @Override
+        public ClassPath findClassPath(FileObject file, String type) {
+            return delegate.findClassPath(file, type);
+        }
+
     }
 
 }

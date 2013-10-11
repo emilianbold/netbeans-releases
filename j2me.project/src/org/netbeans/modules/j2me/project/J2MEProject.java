@@ -182,10 +182,8 @@ public class J2MEProject implements Project {
                 new J2MEActionProvider(
                     this,
                     updateHelper,
-                    eval,
                     sourceRoots,
-                    testRoots,
-                    helper),
+                    testRoots),
                 cpProvider,
                 QuerySupport.createFileEncodingQuery(eval, ProjectProperties.SOURCE_ENCODING),
                 QuerySupport.createSourceLevelQuery2(eval),
