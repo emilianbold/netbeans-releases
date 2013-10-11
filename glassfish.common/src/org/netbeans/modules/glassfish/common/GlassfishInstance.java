@@ -786,7 +786,13 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         if (this.version == null) {
             String installroot = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
             String displayName = ip.get(GlassfishModule.DISPLAY_NAME_ATTR);
-            WarnPanel.gfUnknownVersionWarning(displayName, installroot);
+            // #237015 - Don't show pop up in installer
+            String showProperty
+                    = System.getProperty("org.netbeans.core.WindowSystem.show");
+            if (showProperty == null
+                    || !showProperty.toLowerCase().equals("false")) {
+                WarnPanel.gfUnknownVersionWarning(displayName, installroot);
+            }
             LOGGER.log(Level.INFO, NbBundle.getMessage(
                     GlassfishInstance.class,
                     "GlassfishInstance.init.versionNull",
