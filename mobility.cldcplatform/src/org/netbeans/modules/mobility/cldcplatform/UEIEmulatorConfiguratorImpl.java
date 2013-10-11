@@ -83,6 +83,7 @@ import org.openide.ErrorManager;
 /**
  *
  * @author  Martin Ryzl, David Kaspar
+ * @author Roman Svitanic
  */
 public final class UEIEmulatorConfiguratorImpl {
     
@@ -93,6 +94,7 @@ public final class UEIEmulatorConfiguratorImpl {
     
     //if two versions of the same API is listed then higher version must go first
     private static final String[][] APIs = {
+        {"CLDC",   "1.8", "java/lang/Object.class", "java/lang/Double.class", "java/util/Collection.class", "java/util/Collections.class", "java/io/InputStream.class", "java/util/Date.class", "javax/microedition/io/Connection.class"},
         {"CLDC",   "1.1", "java/lang/Object.class", "java/lang/Double.class", "java/io/InputStream.class", "java/util/Date.class", "javax/microedition/io/Connection.class"},
         {"CLDC",   "1.0", "java/lang/Object.class", "java/io/InputStream.class", "java/util/Date.class", "javax/microedition/io/Connection.class"},
         {"MIDP",   "2.0", "java/lang/IllegalStateException.class", "java/util/Timer.class", "javax/microedition/io/PushRegistry.class", "javax/microedition/lcdui/CustomItem.class", "javax/microedition/lcdui/game/GameCanvas.class", "javax/microedition/rms/RecordStore.class", "javax/microedition/midlet/MIDlet.class", "javax/microedition/pki/Certificate.class"},
@@ -112,6 +114,7 @@ public final class UEIEmulatorConfiguratorImpl {
         {"NOKIAUI","1.0", "com/nokia/mid/ui/FullCanvas.class"},
         {"IMP",    "1.0", "java/lang/IllegalStateException.class", "java/util/Timer.class", "javax/microedition/io/HttpConnection.class", "javax/microedition/rms/RecordStore.class", "javax/microedition/midlet/MIDlet.class"},
         {"IMP-NG", "1.0", "java/lang/IllegalStateException.class", "java/util/Timer.class", "javax/microedition/rms/RecordStore.class", "javax/microedition/midlet/MIDlet.class", "javax/microedition/pki/Certificate.class"},
+        {"MEEP",   "1.0", "javax/microedition/midlet/MIDlet.class", "javax/microedition/io/GCFPermission.class", "javax/microedition/event/Event.class"},
         {"AJOF",   "1.0", "com/siemens/icm/ajof/WmMIDlet.class"},
     };
     
@@ -126,7 +129,7 @@ public final class UEIEmulatorConfiguratorImpl {
         final String rootPath = root.getPath();
         String path = o instanceof JarFile ? ((JarFile)o).getName() : ((File)o).getPath();
         if (path.length() > rootPath.length() && path.startsWith(rootPath)) path = J2MEPlatform.PLATFORM_STRING_PREFIX + path.substring(rootPath.length() + 1);
-        return path.replace('\\', '/');
+        return path.replace('\\', '/'); //NOI18N
     }
     
     public static List<J2MEPlatform.J2MEProfile> analyzePath(final File froot, final String classpath, final String defaultClasspath) {
@@ -147,7 +150,7 @@ public final class UEIEmulatorConfiguratorImpl {
                 String name;
                 if (ff.add(f)) {
                     if (f.isDirectory()) files.add(f);
-                    else if (f.isFile() && ((name = f.getName().toLowerCase()).endsWith(".zip") || name.endsWith(".jar"))) files.add(new JarFile(f));
+                    else if (f.isFile() && ((name = f.getName().toLowerCase()).endsWith(".zip") || name.endsWith(".jar"))) files.add(new JarFile(f)); //NOI18N
                 }
             } catch (IOException ioe) {}
             
@@ -169,7 +172,7 @@ public final class UEIEmulatorConfiguratorImpl {
                     if (api != null) {
                         foundMIDP = foundMIDP || "MIDP".equals(api); //NOI18N
                         if (version == null) version = "1.0"; //NOI18N
-                        final String key = api + '-' + version;
+                        final String key = api + '-' + version;  //NOI18N
                         
                         String d = m.getMainAttributes().getValue("API-Dependencies"); // NOI18N
                         if (d != null) dependencies.put(key, d);
@@ -244,15 +247,18 @@ public final class UEIEmulatorConfiguratorImpl {
             final HashSet<Object> undetected = new HashSet<Object>(files);
             for ( final Map.Entry<String,Set<Object>> e : foundAPIs.entrySet() ) {
                 String name = e.getKey();
-                int i = name.lastIndexOf('-');
+                int i = name.lastIndexOf('-');  //NOI18N
                 String version = name.substring(i + 1);
                 name = name.substring(0, i);
-                if (!foundMIDP || !("IMP".equals(name) || "IMP-NG".equals(name))) { //NOI18N
+                if (!foundMIDP || !("IMP".equals(name) || "IMP-NG".equals(name) || "MEEP".equals(name))) { //NOI18N
                     String dispName = dispNames.get(name);
                     try {
                         dispName = NbBundle.getMessage(UEIEmulatorConfiguratorImpl.class, name);
                     } catch (Exception ex) {}
-                    final String type = "CLDC".equals(name) ? J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION : ("MIDP".equals(name) || "IMP".equals(name) || "IMP-NG".equals(name) ? J2MEPlatform.J2MEProfile.TYPE_PROFILE : J2MEPlatform.J2MEProfile.TYPE_OPTIONAL); //NOI18N
+                    final String type = "CLDC".equals(name) ?  //NOI18N
+                            J2MEPlatform.J2MEProfile.TYPE_CONFIGURATION :
+                            ("MIDP".equals(name) || "IMP".equals(name) || "IMP-NG".equals(name) || "MEEP".equals(name) ?  //NOI18N
+                            J2MEPlatform.J2MEProfile.TYPE_PROFILE : J2MEPlatform.J2MEProfile.TYPE_OPTIONAL);
                     final StringBuffer cp = new StringBuffer();
                     boolean def = true;
                     for ( final Object obj : e.getValue() ) {
@@ -269,7 +275,7 @@ public final class UEIEmulatorConfiguratorImpl {
             for ( Object obj : undetected ) {
                 final String jarName = cutPath(froot, obj);
                 String dispName = jarName.startsWith(J2MEPlatform.PLATFORM_STRING_PREFIX) ? jarName.substring(J2MEPlatform.PLATFORM_STRING_PREFIX.length()) : jarName;
-                final J2MEPlatform.J2MEProfile prof = new J2MEPlatform.J2MEProfile(dispName, "1.0", dispName, J2MEPlatform.J2MEProfile.TYPE_OPTIONAL, null, jarName, defaultCp.contains(jarName));
+                final J2MEPlatform.J2MEProfile prof = new J2MEPlatform.J2MEProfile(dispName, "1.0", dispName, J2MEPlatform.J2MEProfile.TYPE_OPTIONAL, null, jarName, defaultCp.contains(jarName)); //NOI18N
                 result.add(prof);
             }
             return result;
@@ -470,6 +476,15 @@ public final class UEIEmulatorConfiguratorImpl {
             //ignore CDC devicess
             if (configuration != null && configuration.startsWith("CDC")){ //NOI18N
                 continue;
+            }
+            
+            if (configuration != null && configuration.startsWith("CLDC") && !jarsString.contains("cldc")) { //NOI18N
+                //ME8SDK workaround for missing cldc JAR path in APIs
+                for (File libJar : libFiles) {
+                    if (libJar.getName().contains("cldc")) { //NOI18N
+                        jarsString += "," + libJar.getAbsolutePath(); //NOI18N
+                    }
+                }
             }
 
             String profile = properties.getProperty(deviceName + ".version.profile"); //NOI18N
