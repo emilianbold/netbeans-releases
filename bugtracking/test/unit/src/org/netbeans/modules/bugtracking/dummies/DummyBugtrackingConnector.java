@@ -61,7 +61,7 @@ import org.openide.util.Lookup;
     displayName=DummyBugtrackingConnector.DISPLAY_NAME,
     tooltip=DummyBugtrackingConnector.TOOLTIP
 )    
-public class DummyBugtrackingConnector extends BugtrackingConnector {
+public class DummyBugtrackingConnector implements BugtrackingConnector {
     public static final String ID = "DummyBugtrackingConnector";
     public static final String DISPLAY_NAME = "Dummy bugtracking connector";
     public static final String TOOLTIP = "bugtracking connector created for testing purposes";

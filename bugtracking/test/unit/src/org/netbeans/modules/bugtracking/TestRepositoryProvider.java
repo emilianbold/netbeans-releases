@@ -53,7 +53,7 @@ import org.openide.util.Lookup;
  *
  * @author tomas
  */
-public class TestRepositoryProvider extends RepositoryProvider<TestRepository, TestQuery, TestIssue> {
+public class TestRepositoryProvider implements RepositoryProvider<TestRepository, TestQuery, TestIssue> {
 
     @Override
     public RepositoryInfo getInfo(TestRepository r) {
@@ -114,4 +114,10 @@ public class TestRepositoryProvider extends RepositoryProvider<TestRepository, T
     public TestIssue createIssue(TestRepository r, String summary, String description) {
         return r.createIssue(summary, description);
     }
+
+    @Override
+    public Collection<TestIssue> getUnsubmittedIssues(TestRepository r) {
+        return r.getUnsubmittedIssues(r);
+    }
+     
 }
