@@ -47,15 +47,15 @@ import ${jpaControllerFullClassName};
 import java.io.Serializable;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 <#if isInjected?? && isInjected==true>
 import javax.annotation.Resource;
 </#if>
 <#if ejbClassName??>
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 </#if>
+import javax.ejb.EJBException;
 <#if managedBeanName??>
 <#if cdiEnabled?? && cdiEnabled>
 import javax.inject.Named;
@@ -118,7 +118,7 @@ public class ${controllerClassName} implements Serializable {
 
     protected void setEmbeddableKeys() {
         // Nothing to do if entity does not have any embeddable key.
-    };
+    }
 
     protected void initializeEmbeddableKey() {
         // Nothing to do if entity does not have any embeddable key.
@@ -142,17 +142,15 @@ public class ${controllerClassName} implements Serializable {
 </#if>
 
     public ${entityClassName} prepareCreate() {
-        ${entityClassName} newItem;
-        newItem = new ${entityClassName}();
-        this.selected = newItem;
+        selected = new ${entityClassName}();
         initializeEmbeddableKey();
-        return newItem;
+        return selected;
     }
 
     public void create() {
         persist(PersistAction.CREATE, ResourceBundle.getBundle("${bundle}").getString("${entityClassName}Created"));
         if (!JsfUtil.isValidationFailed()) {
-            items = null; // Invalidate list of items to trigger re-query.
+            items = null;    // Invalidate list of items to trigger re-query.
         }
     }
 
@@ -170,7 +168,11 @@ public class ${controllerClassName} implements Serializable {
 
     public List<${entityClassName}> getItems() {
         if (items == null) {
-            items = ejbFacade.findAll();
+<#if ejbClassName??>
+            items = getFacade().findAll();
+<#elseif jpaControllerClassName??>
+            items = getJpaController().find${entityClassName}Entities();
+</#if>
         }
         return items;
     }
@@ -178,11 +180,21 @@ public class ${controllerClassName} implements Serializable {
     private void persist(PersistAction persistAction, String successMessage) {
         if (selected != null) {
             try {
+<#if ejbClassName??>
                 if (persistAction != PersistAction.DELETE) {
-                    this.ejbFacade.edit(selected);
+                    getFacade().edit(selected);
                 } else {
-                    this.ejbFacade.remove(selected);
+                    getFacade().remove(selected);
                 }
+<#elseif jpaControllerClassName??>
+                if (persistAction == PersistAction.UPDATE) {
+                    getJpaController().edit(selected);
+                } else if (persistAction == PersistAction.CREATE) {
+                    getJpaController().create(selected);
+                } else {
+                    getJpaController().destroy(selected.getId());
+                }
+</#if>
                 JsfUtil.addSuccessMessage(successMessage);
             } catch (EJBException ex) {
                 String msg = "";
@@ -204,13 +216,13 @@ public class ${controllerClassName} implements Serializable {
 
 <#if ejbClassName?? && cdiEnabled?? && cdiEnabled>
     public ${entityClassName} get${entityClassName}(${keyType} id) {
-        return ejbFacade.find(id);
+        return getFacade().find(id);
     }
 </#if>
 
     public List<${entityClassName}> getItemsAvailableSelectMany() {
 <#if ejbClassName??>
-        return ejbFacade.findAll();
+        return getFacade().findAll();
 <#elseif jpaControllerClassName??>
         return getJpaController().find${entityClassName}Entities();
 </#if>
@@ -218,7 +230,7 @@ public class ${controllerClassName} implements Serializable {
 
     public List<${entityClassName}> getItemsAvailableSelectOne() {
 <#if ejbClassName??>
-        return ejbFacade.findAll();
+        return getFacade().findAll();
 <#elseif jpaControllerClassName??>
         return getJpaController().find${entityClassName}Entities();
 </#if>
@@ -243,7 +255,7 @@ public class ${controllerClassName} implements Serializable {
 <#if cdiEnabled?? && cdiEnabled>
             return controller.get${entityClassName}(getKey(value));
 <#else>
-            return controller.ejbFacade.find(getKey(value));
+            return controller.getFacade().find(getKey(value));
 </#if>
 <#elseif jpaControllerClassName??>
             return controller.getJpaController().find${entityClassName}(getKey(value));
@@ -271,7 +283,8 @@ ${keyStringBody}
                 ${entityClassName} o = (${entityClassName}) object;
                 return getStringKey(o.${keyGetter}());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type " + object.getClass().getName() + "; expected type: "+${entityClassName}.class.getName());
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, "object {0} is of type {1}; expected type: {2}", new Object[]{object, object.getClass().getName(), ${entityClassName}.class.getName()});
+                return null;
             }
         }
 
