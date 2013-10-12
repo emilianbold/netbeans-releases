@@ -140,8 +140,22 @@ public abstract class LexerInputOperation<T extends TokenId> {
         }
     }
 
+    /**
+     * Read a character or return LexerInput.EOF.
+     *
+     * @param offset offset among characters that were read from this lexer input operation (zero
+     *  offset is first character read from this lexer input operation).
+     * @return character at the given offset or LexerInput.EOF.
+     */
     public abstract int read(int offset);
 
+    /**
+     * Read a character that was already requested by {@link #read(int)} in the past.
+     *
+     * @param offset offset among characters that were read from this lexer input operation (zero
+     *  offset is first character read from this lexer input operation).
+     * @return character at the given offset.
+     */
     public abstract char readExisting(int offset);
 
     /**

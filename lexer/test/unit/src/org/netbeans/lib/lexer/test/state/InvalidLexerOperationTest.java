@@ -44,13 +44,13 @@
 
 package org.netbeans.lib.lexer.test.state;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
@@ -84,20 +84,25 @@ public class InvalidLexerOperationTest extends TestCase {
         // Put the language now into the document so that lexing starts from scratch
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
-
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
-        assertEquals(LexerTestUtilities.lookahead(ts), 0);
-        assertEquals(LexerTestUtilities.state(ts), StateLexer.AFTER_A);
-
-        attrs.setValue(StateTokenId.language(), "returnNullToken", Boolean.TRUE, true);
+        ((AbstractDocument)doc).readLock();
         try {
-            // Lexer will return null token too early
+            TokenSequence<?> ts = hi.tokenSequence();
+
             assertTrue(ts.moveNext());
-            fail("IllegalStateException not thrown when null token returned before input end.");
-        } catch (IllegalStateException e) {
-            // Expected fail of lexer
+            LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
+            assertEquals(LexerTestUtilities.lookahead(ts), 0);
+            assertEquals(LexerTestUtilities.state(ts), StateLexer.AFTER_A);
+
+            attrs.setValue(StateTokenId.language(), "returnNullToken", Boolean.TRUE, true);
+            try {
+                // Lexer will return null token too early
+                assertTrue(ts.moveNext());
+                fail("IllegalStateException not thrown when null token returned before input end.");
+            } catch (IllegalStateException e) {
+                // Expected fail of lexer
+            }
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
         }
     }
 
@@ -130,19 +135,27 @@ public class InvalidLexerOperationTest extends TestCase {
         // Put the language now into the document so that lexing starts from scratch
         doc.putProperty(Language.class, StateTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        TokenSequence<?> ts = hi.tokenSequence();
+        TokenSequence<?> ts;
+        LanguagePath lp;
+        
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
 
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
-        LanguagePath lp = LanguagePath.get(StateTokenId.language());
-        assertFalse(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.BMULTI, "b", 1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "\n", 2);
-        assertFalse(ts.moveNext());
-        assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
-        attrs.setValue(lp, "lexerRelease", Boolean.FALSE, false);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, StateTokenId.A, "a", 0);
+            lp = LanguagePath.get(StateTokenId.language());
+            assertFalse(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, StateTokenId.BMULTI, "b", 1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, StateTokenId.ERROR, "\n", 2);
+            assertFalse(ts.moveNext());
+            assertTrue(Boolean.TRUE.equals(attrs.getValue(lp, "lexerRelease")));
+            attrs.setValue(lp, "lexerRelease", Boolean.FALSE, false);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         // Do modification and check lexer release after it
         doc.insertString(1, "b", null);

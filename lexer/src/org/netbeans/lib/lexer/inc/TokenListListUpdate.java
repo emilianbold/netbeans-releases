@@ -75,9 +75,9 @@ final class TokenListListUpdate<T extends TokenId> {
 
     int removedTokenListCount;
 
-    private EmbeddedTokenList<T>[] removedTokenLists;
+    private EmbeddedTokenList<?,T>[] removedTokenLists;
 
-    List<EmbeddedTokenList<T>> addedTokenLists;
+    List<EmbeddedTokenList<?,T>> addedTokenLists;
 
     TokenListListUpdate(TokenListList<T> tokenListList) {
         this.tokenListList = tokenListList;
@@ -96,25 +96,25 @@ final class TokenListListUpdate<T extends TokenId> {
         return addedTokenLists.size();
     }
 
-    public EmbeddedTokenList<T>[] removedTokenLists() {
+    public EmbeddedTokenList<?,T>[] removedTokenLists() {
         return removedTokenLists;
     }
 
-    public EmbeddedTokenList<T> afterUpdateTokenList(JoinTokenList<T> jtl, int tokenListIndex) {
-        EmbeddedTokenList<T> etl;
+    public EmbeddedTokenList<?,T> afterUpdateTokenList(JoinTokenList<T> jtl, int tokenListIndex) {
+        EmbeddedTokenList<?,T> etl;
         if (tokenListIndex < modTokenListIndex) {
             etl = jtl.tokenList(tokenListIndex);
             // Update ETL's start offset. JTL.tokenStartLocalIndex() may skip down several ETLs
             //   for join tokens so this needs to be done to properly relex.
             // Only used by TLU so update without syncing.
-            etl.embeddingContainer().updateStatusUnsync();
+            etl.updateModCount();
         } else if (tokenListIndex < modTokenListIndex + addedTokenLists.size()) {
             etl = addedTokenLists.get(tokenListIndex - modTokenListIndex);
         } else { // Last part after removed and added
             etl = jtl.tokenList(tokenListIndex + removedTokenListCount - addedTokenLists.size());
             // Update ETL's start offset.
             // Only used by TLU so update without syncing.
-            etl.embeddingContainer().updateStatusUnsync();
+            etl.updateModCount();
         }
         return etl;
     }
@@ -123,7 +123,7 @@ final class TokenListListUpdate<T extends TokenId> {
         return jtl.tokenListCount() - removedTokenListCount + addedTokenLists.size();
     }
 
-    void markChangedMember(EmbeddedTokenList<T> changedTokenList) {
+    void markChangedMember(EmbeddedTokenList<?,T> changedTokenList) {
         assert (modTokenListIndex == -1);
         modTokenListIndex = tokenListList.findIndex(changedTokenList.startOffset());
         assert (tokenListList.get(modTokenListIndex) == changedTokenList) :
@@ -143,8 +143,8 @@ final class TokenListListUpdate<T extends TokenId> {
      * It's expected that updateStatusImpl() was already called
      * on the corresponding embedding container.
      */
-    void markRemovedMember(EmbeddedTokenList<T> removedTokenList, TokenHierarchyEventInfo eventInfo) {
-        removedTokenList.embeddingContainer().updateStatus();
+    void markRemovedMember(EmbeddedTokenList<?,T> removedTokenList, TokenHierarchyEventInfo eventInfo) {
+        removedTokenList.updateModCount();
         boolean indexWasMinusOne; // Used for possible exception cause debugging
 //            removedTokenList.embeddingContainer().checkStatusUpdated();
         if (modTokenListIndex == -1) {
@@ -155,7 +155,7 @@ final class TokenListListUpdate<T extends TokenId> {
         } else { // tokenListIndex already initialized
             indexWasMinusOne = false;
         }
-        EmbeddedTokenList<T> markedForRemoveTokenList = tokenListList.getOrNull(modTokenListIndex + removedTokenListCount);
+        EmbeddedTokenList<?,T> markedForRemoveTokenList = tokenListList.getOrNull(modTokenListIndex + removedTokenListCount);
         if (markedForRemoveTokenList != removedTokenList) {
             int realIndex = tokenListList.indexOf(removedTokenList);
             String msg = "\n\nLEXER-INTERNAL-ERROR: Removing at tokenListIndex=" + modTokenListIndex + // NOI18N
@@ -191,22 +191,22 @@ final class TokenListListUpdate<T extends TokenId> {
      * It's expected that updateStatusImpl() was already called
      * on the corresponding embedding container.
      */
-    void markAddedMember(EmbeddedTokenList<T> addedTokenList) {
+    void markAddedMember(EmbeddedTokenList<?,T> addedTokenList) {
 //            addedTokenList.embeddingContainer().checkStatusUpdated();
         if (addedTokenLists == null) {
             if (modTokenListIndex == -1) {
                 modTokenListIndex = tokenListList.findIndex(addedTokenList.startOffset());
                 assert (modTokenListIndex >= 0) : "tokenListIndex=" + modTokenListIndex + " < 0"; // NOI18N
             }
-            addedTokenLists = new ArrayList<EmbeddedTokenList<T>>(4);
+            addedTokenLists = new ArrayList<EmbeddedTokenList<?,T>>(4);
         }
         addedTokenLists.add(addedTokenList);
     }
 
-    void replaceTokenLists(int indexShift) {
+    void replaceTokenLists() {
         assert (removedTokenListCount > 0 || addedTokenLists != null);
         removedTokenLists = tokenListList.replace(
-                modTokenListIndex + indexShift, removedTokenListCount, addedTokenLists);
+                modTokenListIndex, removedTokenListCount, addedTokenLists);
     }
     
     /**
@@ -216,7 +216,7 @@ final class TokenListListUpdate<T extends TokenId> {
         if (tokenListList.hasChildren()) {
             if (removedTokenLists != null) {
                 for (int i = 0; i < removedTokenLists.length; i++) {
-                    EmbeddedTokenList<T> etl = removedTokenLists[i];
+                    EmbeddedTokenList<?,T> etl = removedTokenLists[i];
                     updateItem.collectRemovedEmbeddings(etl);
                 }
             }
@@ -228,17 +228,17 @@ final class TokenListListUpdate<T extends TokenId> {
         // and once new ETLs are added they may be joining and whole TLL becomes joining
         boolean becomeJoining = false;
         for (int i = 0; i < addedTokenLists.size(); i++) {
-            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
-            becomeJoining |= addedEtl.embedding().joinSections();
+            EmbeddedTokenList<?,T> addedEtl = addedTokenLists.get(i);
+            becomeJoining |= addedEtl.languageEmbedding().joinSections();
         }
         
         if (becomeJoining) {
             // Create JTL to init tokens
             tokenListList.setJoinSections(true);
-            JoinTokenList.create(tokenListList, 0, tokenListList.size());
+            tokenListList.joinTokenList();
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {
-            EmbeddedTokenList<T> addedEtl = addedTokenLists.get(i);
+            EmbeddedTokenList<?,T> addedEtl = addedTokenLists.get(i);
             if (!becomeJoining) {
                 addedEtl.initAllTokens();
             }
@@ -249,11 +249,11 @@ final class TokenListListUpdate<T extends TokenId> {
     }
 
 
-    TokenListChange<T> createTokenListChange(EmbeddedTokenList<T> etl) {
+    TokenListChange<T> createTokenListChange(EmbeddedTokenList<?,T> etl) {
         assert (etl != null);
         TokenListChange<T> etlTokenListChange;
         if (tokenListList.joinSections()) {
-            MutableJoinTokenList<T> jtl = MutableJoinTokenList.create(tokenListList, modTokenListIndex);
+            JoinTokenList<T> jtl = tokenListList.joinTokenList();
             etlTokenListChange = new JoinTokenListChange<T>(jtl);
         } else { // Non-joining
             etlTokenListChange = new TokenListChange<T>(etl);
@@ -265,7 +265,8 @@ final class TokenListListUpdate<T extends TokenId> {
         assert (tokenListList.joinSections());
         // In case when adding at jtl.tokenListCount() a last ETL must be used
         int etlIndex = Math.min(modTokenListIndex, tokenListList.size() - 1);
-        MutableJoinTokenList<T> jtl = MutableJoinTokenList.create(tokenListList, etlIndex);
+        JoinTokenList<T> jtl = tokenListList.joinTokenList();
+        jtl.setActiveTokenListIndex(etlIndex);
         return new JoinTokenListChange<T>(jtl);
     }
 

@@ -69,7 +69,9 @@ public final class PartTypePropertyProvider implements TokenPropertyProvider<Tok
     }
     
     public static <T extends TokenId> TokenPropertyProvider<T> get(PartType partType) {
-        return (TokenPropertyProvider<T>)partTypeOrdinal2Provider[partType.ordinal()];
+        @SuppressWarnings("unchecked")
+        TokenPropertyProvider<T> provider = (TokenPropertyProvider<T>) partTypeOrdinal2Provider[partType.ordinal()];
+        return provider;
     }
     
     public static <T extends TokenId> TokenPropertyProvider<T> createDelegating(

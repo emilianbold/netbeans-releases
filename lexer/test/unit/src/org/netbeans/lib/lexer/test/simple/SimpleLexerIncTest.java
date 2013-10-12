@@ -50,9 +50,8 @@ import junit.framework.TestCase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.lib.lexer.lang.TestTokenId;
 import java.util.ConcurrentModificationException;
-import java.util.logging.Logger;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
-import junit.framework.Assert;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -108,10 +107,16 @@ public class SimpleLexerIncTest extends NbTestCase {
         doc.remove(0, doc.getLength());
         LexerTestUtilities.incCheck(doc, false);
         
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", 0);
-        assertFalse(ts.moveNext());
+        TokenSequence<?> ts;
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", 0);
+            assertFalse(ts.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
         // Insert text into document
         String commentText = "/* test comment  */";
@@ -121,184 +126,225 @@ public class SimpleLexerIncTest extends NbTestCase {
         text += commentText + "def";
         doc.insertString(0, text, null);
 
+        ((AbstractDocument)doc).readLock();
         // Last token sequence should throw exception - new must be obtained
         try {
             ts.moveNext();
             fail("TokenSequence.moveNext() did not throw exception as expected.");
         } catch (ConcurrentModificationException e) {
             // Expected exception
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
         }
         
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
-        assertEquals(1, LexerTestUtilities.lookahead(ts));
-        assertEquals(null, LexerTestUtilities.state(ts));
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
-        assertEquals(1, LexerTestUtilities.lookahead(ts)); // la=1 because may be "+-+"
-        assertEquals(null, LexerTestUtilities.state(ts));
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "xy", 7);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 9);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS_MINUS_PLUS, "+-+", 10);
-        assertEquals(0, LexerTestUtilities.lookahead(ts));
-        assertEquals(null, LexerTestUtilities.state(ts));
-        assertTrue(ts.moveNext());
-        int offset = commentStartOffset;
-        int commentIndex = ts.index();
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, offset);
-        offset += commentText.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
-        assertFalse(ts.moveNext());
-        LexerTestUtilities.incCheck(doc, false);
-        
-        // Check TokenSequence.move()
-        int relOffset = ts.move(50); // past the end of all tokens
-        assertEquals(relOffset, 50 - (offset + 4));
-        assertTrue(ts.movePrevious());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+            assertEquals(1, LexerTestUtilities.lookahead(ts));
+            assertEquals(null, LexerTestUtilities.state(ts));
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
+            assertEquals(1, LexerTestUtilities.lookahead(ts)); // la=1 because may be "+-+"
+            assertEquals(null, LexerTestUtilities.state(ts));
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "xy", 7);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 9);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS_MINUS_PLUS, "+-+", 10);
+            assertEquals(0, LexerTestUtilities.lookahead(ts));
+            assertEquals(null, LexerTestUtilities.state(ts));
+            assertTrue(ts.moveNext());
+            int offset = commentStartOffset;
+            int commentIndex = ts.index();
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, offset);
+            offset += commentText.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "def", offset);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
+            assertFalse(ts.moveNext());
+            LexerTestUtilities.incCheck(doc, false);
 
-        relOffset = ts.move(6); // right at begining of "-"
-        assertEquals(relOffset, 0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
+            // Check TokenSequence.move()
+            int relOffset = ts.move(50); // past the end of all tokens
+            assertEquals(relOffset, 50 - (offset + 4));
+            assertTrue(ts.movePrevious());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, "\n", offset + 3);
 
-        relOffset = ts.move(-5); // to first token "abc"
-        assertEquals(relOffset, -5);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+            relOffset = ts.move(6); // right at begining of "-"
+            assertEquals(relOffset, 0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
 
-        relOffset = ts.move(5); // to "uv"
-        assertEquals(relOffset, 1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
+            relOffset = ts.move(-5); // to first token "abc"
+            assertEquals(relOffset, -5);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
 
-        // Check embedded sequence
-        ts.moveIndex(commentIndex);
-        ts.moveNext();
-        TokenSequence<?> embedded = ts.embedded();
-        assertNotNull("Null embedded sequence", embedded);
-        assertTrue(embedded.moveNext());
-        int commentOffset = commentStartOffset + 2; // skip "/*"
-        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
-        commentOffset += 1;
-        assertTrue(embedded.moveNext());
-        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "test", commentOffset);
-        commentOffset += 4;
-        assertTrue(embedded.moveNext());
-        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
-        commentOffset += 1;
-        assertTrue(embedded.moveNext());
-        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "comment", commentOffset);
-        commentOffset += 7;
-        assertTrue(embedded.moveNext());
-        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, "  ", commentOffset);
-        assertFalse(embedded.moveNext());
+            relOffset = ts.move(5); // to "uv"
+            assertEquals(relOffset, 1);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
+
+            // Check embedded sequence
+            ts.moveIndex(commentIndex);
+            ts.moveNext();
+            TokenSequence<?> embedded = ts.embedded();
+            assertNotNull("Null embedded sequence", embedded);
+            assertTrue(embedded.moveNext());
+            int commentOffset = commentStartOffset + 2; // skip "/*"
+            LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
+            commentOffset += 1;
+            assertTrue(embedded.moveNext());
+            LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "test", commentOffset);
+            commentOffset += 4;
+            assertTrue(embedded.moveNext());
+            LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
+            commentOffset += 1;
+            assertTrue(embedded.moveNext());
+            LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "comment", commentOffset);
+            commentOffset += 7;
+            assertTrue(embedded.moveNext());
+            LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, "  ", commentOffset);
+            assertFalse(embedded.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         // Modify comment
         doc.insertString(commentStartOffset + 4, "r", null);
 
-        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
-        assertNotNull(evt);
-        TokenChange<?> tc = evt.tokenChange();
-        assertNotNull(tc);
-        // Check top-level TC
-        assertEquals(7, tc.index());
-        assertEquals(13, tc.offset());
-        assertEquals(1, tc.addedTokenCount());
-        assertEquals(1, tc.removedTokenCount());
-        assertEquals(TestTokenId.language(), tc.language());
-        assertTrue(tc.isBoundsChange());
-        assertEquals(1, tc.embeddedChangeCount());
-        // Check added token
-        TokenSequence<?> tsAdded = tc.currentTokenSequence();
-        assertTrue(tsAdded.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsAdded,TestTokenId.BLOCK_COMMENT, "/* trest comment  */", commentStartOffset);
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+            assertNotNull(evt);
+            TokenChange<?> tc = evt.tokenChange();
+            assertNotNull(tc);
+            // Check top-level TC
+            assertEquals(7, tc.index());
+            assertEquals(13, tc.offset());
+            assertEquals(1, tc.addedTokenCount());
+            assertEquals(1, tc.removedTokenCount());
+            assertEquals(TestTokenId.language(), tc.language());
+            assertTrue(tc.isBoundsChange());
+            assertEquals(1, tc.embeddedChangeCount());
+            // Check added token
+            TokenSequence<?> tsAdded = tc.currentTokenSequence();
+            assertTrue(tsAdded.moveNext());
+            LexerTestUtilities.assertTokenEquals(tsAdded,TestTokenId.BLOCK_COMMENT, "/* trest comment  */", commentStartOffset);
 
-        // Check inner token change
-        assertEquals(1, tc.embeddedChangeCount());
-        TokenChange<?> tcInner = tc.embeddedChange(0);
-        assertNotNull(tcInner);
-        // Check top-level TC
-        assertEquals(1, tcInner.index());
-        assertEquals(16, tcInner.offset());
-        assertEquals(1, tcInner.addedTokenCount());
-        assertEquals(1, tcInner.removedTokenCount());
-        assertEquals(TestPlainTokenId.language(), tcInner.language());
-        assertTrue(tcInner.isBoundsChange());
-        assertEquals(0, tcInner.embeddedChangeCount());
-        // Check added token
-        tsAdded = tcInner.currentTokenSequence();
-        assertTrue(tsAdded.moveNext());
-        LexerTestUtilities.assertTokenEquals(tsAdded,TestPlainTokenId.WORD, "trest", commentStartOffset + 3);
+            // Check inner token change
+            assertEquals(1, tc.embeddedChangeCount());
+            TokenChange<?> tcInner = tc.embeddedChange(0);
+            assertNotNull(tcInner);
+            // Check top-level TC
+            assertEquals(1, tcInner.index());
+            assertEquals(16, tcInner.offset());
+            assertEquals(1, tcInner.addedTokenCount());
+            assertEquals(1, tcInner.removedTokenCount());
+            assertEquals(TestPlainTokenId.language(), tcInner.language());
+            assertTrue(tcInner.isBoundsChange());
+            assertEquals(0, tcInner.embeddedChangeCount());
+            // Check added token
+            tsAdded = tcInner.currentTokenSequence();
+            assertTrue(tsAdded.moveNext());
+            LexerTestUtilities.assertTokenEquals(tsAdded,TestPlainTokenId.WORD, "trest", commentStartOffset + 3);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         doc.insertString(2, "d", null); // should be "abdc"
 
-        // Last token sequence should throw exception - new must be obtained
+        ((AbstractDocument)doc).readLock();
         try {
+        // Last token sequence should throw exception - new must be obtained
             ts.moveNext();
             fail("TokenSequence.moveNext() did not throw exception as expected.");
         } catch (ConcurrentModificationException e) {
             // Expected exception
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
         }
         LexerTestUtilities.incCheck(doc, false);
         
         
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abdc", 0);
-        LexerTestUtilities.incCheck(doc, false);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abdc", 0);
+            LexerTestUtilities.incCheck(doc, false);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
         // Remove added 'd' to become "abc" again
         doc.remove(2, 1); // should be "abc" again
         LexerTestUtilities.incCheck(doc, false);
         
 
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
-        LexerTestUtilities.incCheck(doc, false);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+            LexerTestUtilities.incCheck(doc, false);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         
         // Now insert right at the end of first token - identifier with lookahead 1
         doc.insertString(3, "x", null); // should become "abcx"
         LexerTestUtilities.incCheck(doc, false);
         
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abcx", 0);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abcx", 0);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         doc.remove(3, 1); // return back to "abc"
         LexerTestUtilities.incCheck(doc, false);
 
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         
         // Now insert right at the end of "+" token - operator with lookahead 1 (because of "+-+" operator)
         doc.insertString(4, "z", null); // should become "abc" "+" "zuv"
         LexerTestUtilities.incCheck(doc, false);
         
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zuv", 4);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zuv", 4);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 7);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
         doc.remove(4, 1); // return back to "abc" "+" "uv"
         LexerTestUtilities.incCheck(doc, false);
@@ -307,17 +353,22 @@ public class SimpleLexerIncTest extends NbTestCase {
         doc.insertString(7, "z", null);
         LexerTestUtilities.incCheck(doc, false);
         
-        ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zxy", 7);
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "abc", 0);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", 3);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.MINUS, "-", 6);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "zxy", 7);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         doc.remove(7, 1); // return back to "abc" "+" "uv"
         LexerTestUtilities.incCheck(doc, false);
@@ -364,73 +415,85 @@ public class SimpleLexerIncTest extends NbTestCase {
         assert (id2.length() > 30); // DefaultToken.INPUT_SOURCE_SUBSEQUENCE_THRESHOLD
         doc.insertString(0, "+" + id1 + "+" + id2 + "+", null);
 //        LexerTestUtilities.incCheck(doc, false);
-        
-        TokenSequence<?> ts = hi.tokenSequence();
-        int offset = 0;
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
-//        checkTokenText(ts.token(), id1);
-        tokenText = ts.token().text();
-        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
-        checkText(tokenText, id1, false);
-        offset += id1.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
-//        checkTokenText(ts.token(), id2);
-        Token token = ts.token();
-        tokenText = token.text();
-        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
-//        checkText(tokenText, id2, false);
-        offset += id2.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
-        offset++;
-        assertFalse(ts.moveNext());
+
+        TokenSequence<?> ts;
+        int offset;
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            offset = 0;
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+    //        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
+    //        checkTokenText(ts.token(), id1);
+            tokenText = ts.token().text();
+            assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+            checkText(tokenText, id1, false);
+            offset += id1.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+    //        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
+    //        checkTokenText(ts.token(), id2);
+            Token token = ts.token();
+            tokenText = token.text();
+            assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+    //        checkText(tokenText, id2, false);
+            offset += id2.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
+            offset++;
+            assertFalse(ts.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
         
 
         doc.insertString(0, id1, null); // Insert extra chars
 
-        ts = hi.tokenSequence();
-        offset = 0;
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, 0);
-        offset += id1.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
-        checkTokenText(ts.token(), id1);
-//        tokenText = ts.token().text();
-//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
-//        checkText(tokenText, id1, false);
-        offset += id1.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-//        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
-        checkTokenText(ts.token(), id2);
-//        tokenText = ts.token().text();
-//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
-//        checkText(tokenText, id2, false);
-        offset += id2.length();
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
-        offset++;
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
-        offset++;
-        assertFalse(ts.moveNext());
+        ((AbstractDocument)doc).readLock();
+        try {
+            ts = hi.tokenSequence();
+            offset = 0;
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, 0);
+            offset += id1.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+    //        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id1, offset);
+            checkTokenText(ts.token(), id1);
+    //        tokenText = ts.token().text();
+    //        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+    //        checkText(tokenText, id1, false);
+            offset += id1.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+    //        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
+            checkTokenText(ts.token(), id2);
+    //        tokenText = ts.token().text();
+    //        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+    //        checkText(tokenText, id2, false);
+            offset += id2.length();
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.PLUS, "+", offset);
+            offset++;
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts, TestTokenId.WHITESPACE, "\n", offset);
+            offset++;
+            assertFalse(ts.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
     
     private static void checkTokenText(Token token, String expectedText) {

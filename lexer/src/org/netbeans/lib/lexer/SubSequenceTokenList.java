@@ -153,6 +153,7 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return limitEndOffset;
     }
     
+    @Override
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         index += limitStartIndex;
         return (index < limitEndIndex)
@@ -160,6 +161,7 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
             : null;
     }
 
+    @Override
     public int tokenOffset(int index) {
         index += limitStartIndex;
         if (index >= limitEndIndex)
@@ -167,77 +169,95 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return tokenList.tokenOffset(index);
     }
 
+    @Override
     public int[] tokenIndex(int offset) {
         return LexerUtilsConstants.tokenIndexBinSearch(this, offset, tokenCountCurrent());
     }
 
+    @Override
     public int tokenCount() {
         return tokenCountCurrent();
     }
 
+    @Override
     public int tokenCountCurrent() {
         return limitEndIndex - limitStartIndex;
     }
 
+    @Override
     public AbstractToken<T> replaceFlyToken(int index, AbstractToken<T> flyToken, int offset) {
         return tokenList.replaceFlyToken(index + limitStartIndex, flyToken, offset);
     }
 
+    @Override
     public int modCount() {
         return tokenList.modCount();
     }
 
+    @Override
     public LanguagePath languagePath() {
         return tokenList.languagePath();
     }
 
+    @Override
     public int tokenOffset(AbstractToken<T> token) {
         return tokenList.tokenOffset(token);
     }
 
-    public void wrapToken(int index, EmbeddingContainer<T> embeddingContainer) {
-        tokenList.wrapToken(limitStartIndex + index, embeddingContainer);
+    @Override
+    public void setTokenOrEmbedding(int index, TokenOrEmbedding<T> t) {
+        tokenList.setTokenOrEmbedding(limitStartIndex + index, t);
     }
 
+    @Override
     public TokenList<?> rootTokenList() {
         return tokenList.rootTokenList();
     }
 
+    @Override
     public CharSequence inputSourceText() {
         return rootTokenList().inputSourceText();
     }
 
+    @Override
     public TokenHierarchyOperation<?,?> tokenHierarchyOperation() {
         return tokenList.tokenHierarchyOperation();
     }
     
+    @Override
     public InputAttributes inputAttributes() {
         return tokenList.inputAttributes();
     }
 
+    @Override
     public int lookahead(int index) {
         // Can be used by LexerTestUtilities.lookahead()
         return tokenList.lookahead(index);
     }
 
+    @Override
     public Object state(int index) {
         return tokenList.state(index);
     }
 
+    @Override
     public boolean isContinuous() {
         return tokenList.isContinuous();
     }
 
+    @Override
     public Set<T> skipTokenIds() {
         return tokenList.skipTokenIds();
     }
     
+    @Override
     public int startOffset() {
         if (tokenCountCurrent() > 0 || tokenCount() > 0)
             return tokenOffset(0);
         return limitStartOffset;
     }
 
+    @Override
     public int endOffset() {
         int cntM1 = tokenCount() - 1;
         if (cntM1 >= 0)
@@ -245,8 +265,14 @@ public final class SubSequenceTokenList<T extends TokenId> implements TokenList<
         return limitStartOffset;
     }
     
+    @Override
     public boolean isRemoved() {
         return tokenList.isRemoved();
+    }
+
+    @Override
+    public String dumpInfoType() {
+        return "SubSeqTL";
     }
 
 }

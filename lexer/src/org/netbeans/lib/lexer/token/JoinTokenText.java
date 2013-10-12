@@ -60,8 +60,10 @@ public final class JoinTokenText<T extends TokenId> implements CharSequence {
     
     private static final Logger LOG = Logger.getLogger(JoinTokenText.class.getName());
 
-    private List<PartToken<T>> joinedParts;
+    private final List<PartToken<T>> joinedParts;
 
+    private final int length;
+    
     private int activePartIndex;
     
     private CharSequence activeInputText;
@@ -69,8 +71,6 @@ public final class JoinTokenText<T extends TokenId> implements CharSequence {
     private int activeStartCharIndex;
     
     private int activeEndCharIndex;
-    
-    private int length;
     
     public JoinTokenText(List<PartToken<T>> joinedParts, int length) {
         this.joinedParts = joinedParts;
@@ -80,6 +80,7 @@ public final class JoinTokenText<T extends TokenId> implements CharSequence {
         this.length = length;
     }
 
+    @Override
     public synchronized char charAt(int index) {
         if (index < activeStartCharIndex) { // Find non-empty previous
             if (index < 0)
@@ -110,10 +111,12 @@ public final class JoinTokenText<T extends TokenId> implements CharSequence {
         return activeInputText.charAt(index - activeStartCharIndex);
     }
 
+    @Override
     public int length() {
         return length;
     }
     
+    @Override
     public CharSequence subSequence(int start, int end) {
         return CharSequenceUtilities.toString(this, start, end);
     }

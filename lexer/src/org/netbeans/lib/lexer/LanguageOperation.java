@@ -185,7 +185,6 @@ public final class LanguageOperation<T extends TokenId> implements PropertyChang
     }
     
     public synchronized TextToken<T> getFlyweightToken(T id, String text) {
-        TextToken<T> token;
         if (flyItems == null) {
             // Create flyItems array
             @SuppressWarnings("unchecked")

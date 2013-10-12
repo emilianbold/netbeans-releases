@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
@@ -326,7 +327,12 @@ public final class LexerTestUtilities {
     
     public static void incCheck(Document doc, boolean nested) {
         TokenHierarchy<?> incHi = TokenHierarchy.get(doc);
-        assertConsistency(incHi);
+        ((AbstractDocument)doc).readLock();
+        try {
+            assertConsistency(incHi);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
 
         Language<?> language = (Language<?>)
                 doc.getProperty(Language.class);
@@ -339,51 +345,58 @@ public final class LexerTestUtilities {
             e.printStackTrace();
             TestCase.fail("BadLocationException occurred");
         }
-        TokenHierarchy<?> batchHi = TokenHierarchy.create(docText, language);
-        TokenSequence<?> batchTS = batchHi.tokenSequence();
-        TokenSequence<?> incTS = incHi.tokenSequence();
-        try {
-            // Compare lookaheads and states as well
-            assertTokenSequencesEqual("TOP", batchTS, batchHi, incTS, incHi, true, false);
-        } catch (Throwable t) {
-            // Go forward two tokens to have an extra tokens context
-            batchTS.moveNext();
-            batchTS.moveNext();
-            StringBuilder sb = new StringBuilder(512);
-            sb.append("BATCH token sequence dump:\n").append(batchTS);
-            sb.append("\n\nTEST token sequence dump:\n").append(incTS);
-            TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
-            if (lastHi != null) {
-//                    System.err.println("PREVIOUS batch token sequence dump:\n" + lastHi.tokenSequence());
-            }
-            throw new IllegalStateException(sb.toString(), t);
-        }
         
-        if (nested) {
-            batchTS.moveStart();
-            incTS.moveStart();
+        TokenHierarchy<?> batchHi;
+        ((AbstractDocument)doc).readLock();
+        try {
+            batchHi = TokenHierarchy.create(docText, language);
+            TokenSequence<?> batchTS = batchHi.tokenSequence();
+            TokenSequence<?> incTS = incHi.tokenSequence();
             try {
-                incCheckNested("TOP", doc, batchTS, batchHi, incTS, incHi);
-            } catch (Throwable t) { // Re-throw with hierarchy info
+                // Compare lookaheads and states as well
+                assertTokenSequencesEqual("TOP", batchTS, batchHi, incTS, incHi, true, false);
+            } catch (Throwable t) {
+                // Go forward two tokens to have an extra tokens context
+                batchTS.moveNext();
+                batchTS.moveNext();
                 StringBuilder sb = new StringBuilder(512);
-                sb.append("\n\n\nERROR in HIERARCHY!!!!!!!!\n");
-                sb.append(t.toString());
-                sb.append("\n\nBATCH token hierarchy:\n").append(batchHi);
-                sb.append("\n\n\n\nTEST token hierarchy:\n").append(incHi);
-                t.printStackTrace();
+                sb.append("BATCH token sequence dump:\n").append(batchTS);
+                sb.append("\n\nTEST token sequence dump:\n").append(incTS);
+                TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
+                if (lastHi != null) {
+    //                    System.err.println("PREVIOUS batch token sequence dump:\n" + lastHi.tokenSequence());
+                }
                 throw new IllegalStateException(sb.toString(), t);
             }
-        }
 
-        // Check the change since last modification
-        TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
-        if (lastHi != null) {
-            // TODO comparison
-        }
-        doc.putProperty(LAST_TOKEN_HIERARCHY, batchHi); // new last batch token hierarchy
+            if (nested) {
+                batchTS.moveStart();
+                incTS.moveStart();
+                try {
+                    incCheckNested("TOP", doc, batchTS, batchHi, incTS, incHi);
+                } catch (Throwable t) { // Re-throw with hierarchy info
+                    StringBuilder sb = new StringBuilder(512);
+                    sb.append("\n\n\nERROR in HIERARCHY!!!!!!!!\n");
+                    sb.append(t.toString());
+                    sb.append("\n\nBATCH token hierarchy:\n").append(batchHi);
+                    sb.append("\n\n\n\nTEST token hierarchy:\n").append(incHi);
+                    t.printStackTrace();
+                    throw new IllegalStateException(sb.toString(), t);
+                }
+            }
 
-        // Do another check since some TLLs may be created during embedded TS checking
-        assertConsistency(incHi);
+            // Check the change since last modification
+            TokenHierarchy<?> lastHi = (TokenHierarchy<?>)doc.getProperty(LAST_TOKEN_HIERARCHY);
+            if (lastHi != null) {
+                // TODO comparison
+            }
+            doc.putProperty(LAST_TOKEN_HIERARCHY, batchHi); // new last batch token hierarchy
+
+            // Do another check since some TLLs may be created during embedded TS checking
+            assertConsistency(incHi);
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public static void incCheckNested(String message, Document doc,
