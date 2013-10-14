@@ -109,11 +109,6 @@ public class BugzillaQueryProvider implements TeamQueryProvider<BugzillaQuery, B
     }
 
     @Override
-    public boolean contains(BugzillaQuery query, String id) {
-        return query.contains(id);
-    }
-
-    @Override
     public void refresh(BugzillaQuery query) {
         query.getController().refresh(true);
     }

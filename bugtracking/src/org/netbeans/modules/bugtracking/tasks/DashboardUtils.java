@@ -90,20 +90,9 @@ public class DashboardUtils {
     private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
     private static final String NEW_COLOR = UIUtils.getColorString(UIUtils.getTaskNewColor());
     private static final String mODIFIED_COLOR = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
-//    private static final Map<String, Map<String, Image>> repositoryToPriorityIcons = new HashMap<String, Map<String, Image>>();
 
     private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
     private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
-//    private static final Image DEFAULT_TASK_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/task.png", true); //NOI18
-//    private static final List<Image> DEFAULT_PRIORITY_ICONS = new ArrayList<Image>(5);
-//    
-//    static {
-//        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP1.png", true)); //NOI18
-//        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP2.png", true)); //NOI18
-//        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP3.png", true)); //NOI18
-//        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP4.png", true)); //NOI18
-//        DEFAULT_PRIORITY_ICONS.add(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/taskP5.png", true)); //NOI18
-//    }
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -344,36 +333,13 @@ public class DashboardUtils {
     }
 
     public static Icon getTaskIcon(IssueImpl issue) {
-//        String priority = "";
         Image priorityIcon = issue.getPriorityIcon();
-//        if (priorityIcon == null) {
-//            if (!repositoryToPriorityIcons.containsKey(issue.getRepositoryImpl().getId())) {
-//                analyzeRepositoryIcons(issue.getRepositoryImpl());
-//            }
-//            priorityIcon = repositoryToPriorityIcons.get(issue.getRepositoryImpl().getId()).get(priority);
-//        }
-//        priorityIcon = priorityIcon == null ? DEFAULT_TASK_ICON : priorityIcon;
-
         Image scheduleIcon = getScheduleIcon(issue);
         if (scheduleIcon != null) {
             return ImageUtilities.image2Icon(ImageUtilities.mergeImages(priorityIcon, scheduleIcon, 0, 0));
         }
         return ImageUtilities.image2Icon(priorityIcon);
     }
-
-//    private static void analyzeRepositoryIcons(RepositoryImpl repository) {
-//        Collection<String> sortedPriorities = new ArrayList<String>();
-//        Map<String, Image> priorityToIcon = new HashMap<String, Image>(sortedPriorities.size());
-//        Iterator<Image> iteratorIcons = DEFAULT_PRIORITY_ICONS.iterator();
-//        for (String priority : sortedPriorities) {
-//            if (iteratorIcons.hasNext()) {
-//                priorityToIcon.put(priority, iteratorIcons.next());
-//            } else {
-//                priorityToIcon.put(priority, DEFAULT_TASK_ICON);
-//            }
-//        }
-//        repositoryToPriorityIcons.put(repository.getId(), priorityToIcon);
-//    }
 
     private static Image getScheduleIcon(IssueImpl issue) {
         boolean afterDue = false; //TODO get from issue ASA it is in API
@@ -404,9 +370,9 @@ public class DashboardUtils {
         if (isIdNumeric && isIdOtherNumberic) {
             return compareNumericId(id, idOther);
         } else if (isIdNumeric) {
-            return -1;
-        } else if (isIdOtherNumberic) {
             return 1;
+        } else if (isIdOtherNumberic) {
+            return -1;
         } else {
             return compareComplexId(id1, id2);
         }
@@ -414,9 +380,9 @@ public class DashboardUtils {
 
     private static int compareNumericId(int id, int idOther) {
         if (id < idOther) {
-            return 1;
-        } else if (id > idOther) {
             return -1;
+        } else if (id > idOther) {
+            return 1;
         } else {
             return 0;
         }
@@ -452,5 +418,19 @@ public class DashboardUtils {
             return suffix1.compareTo(suffix2);
         }
         return compareNumericId(suffixInt1, suffixInt2);
+    }
+
+     public static boolean confirmDelete(String title, String message) {
+        NotifyDescriptor nd = new NotifyDescriptor(
+                message,
+                title,
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.QUESTION_MESSAGE,
+                null,
+                NotifyDescriptor.YES_OPTION);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+            return true;
+        }
+        return false;
     }
 }

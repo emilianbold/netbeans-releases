@@ -75,7 +75,6 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
@@ -535,17 +534,13 @@ public class ODCSRepository implements PropertyChangeListener {
         return info.getId();
     }
 
-    private Cache getCache () {
+    public Cache getIssueCache() {
         synchronized (CACHE_LOCK) {
             if(cache == null) {
                 cache = new Cache();
             }
             return cache;
         }
-    }
-    
-    public IssueCache<ODCSIssue> getIssueCache() {
-        return getCache();
     }
 
     public ODCSExecutor getExecutor() {
@@ -556,7 +551,6 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public void removeQuery(ODCSQuery query) {
-        getIssueCache().removeQuery(query.getDisplayName()); // XXX do we have to do this?
         synchronized (QUERIES_LOCK) {
             remoteSavedQueries.remove(query);
         }
@@ -615,10 +609,10 @@ public class ODCSRepository implements PropertyChangeListener {
         if (task != null) {
             synchronized (CACHE_LOCK) {
                 String taskId = ODCSIssue.getID(task);
-                Cache issueCache = getCache();
+                Cache issueCache = getIssueCache();
                 issue = issueCache.getIssue(taskId);
                 if (issue == null) {
-                    issue = issueCache.setIssueData(taskId, new ODCSIssue(task, this));
+                    issue = issueCache.setIssue(taskId, new ODCSIssue(task, this));
                 }
             }
         }
@@ -656,7 +650,7 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     public void taskDeleted (String taskId) {
-        getCache().removeIssue(taskId);
+        getIssueCache().removeIssue(taskId);
     }
 
     public Collection<ODCSIssue> getUnsubmittedIssues () {
@@ -677,14 +671,11 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
     
-    private class Cache extends IssueCache<ODCSIssue> {
+    public class Cache {
         private final Map<String, Reference<ODCSIssue>> issues = new HashMap<String, Reference<ODCSIssue>>();
         
-        Cache() {
-            super(ODCSRepository.this.getUrl(), new IssueAccessorImpl());
-        }
+        Cache() { }
 
-        @Override
         public ODCSIssue getIssue (String id) {
             synchronized (CACHE_LOCK) {
                 Reference<ODCSIssue> issueRef = issues.get(id);
@@ -692,28 +683,11 @@ public class ODCSRepository implements PropertyChangeListener {
             }
         }
 
-        @Override
-        public ODCSIssue setIssueData (String id, ODCSIssue issue) {
+        public ODCSIssue setIssue (String id, ODCSIssue issue) {
             synchronized (CACHE_LOCK) {
                 issues.put(id, new SoftReference<ODCSIssue>(issue));
             }
             return issue;
-        }
-
-        @Override
-        public Status getStatus (String id) {
-            ODCSIssue issue = getIssue(id);
-            if (issue != null) {
-                switch (issue.getStatus()) {
-                    case INCOMING_MODIFIED:
-                        return Status.ISSUE_STATUS_MODIFIED;
-                    case INCOMING_NEW:
-                        return Status.ISSUE_STATUS_NEW;
-                    case SEEN:
-                        return Status.ISSUE_STATUS_SEEN;
-                }
-            }
-            return Status.ISSUE_STATUS_UNKNOWN;
         }
 
         private void removeIssue (String id) {
@@ -723,20 +697,4 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<ODCSIssue> {
-        @Override
-        public long getLastModified(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getLastModify();
-        }
-        @Override
-        public long getCreated(ODCSIssue issue) {
-            assert issue != null;
-            return issue.getCreated();
-        }
-        @Override
-        public Map<String, String> getAttributes(ODCSIssue issue) {
-            return Collections.<String, String>emptyMap();
-        }
-    }    
 }

@@ -987,11 +987,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String id = getID();
-                        try {
-                            repository.getIssueCache().setIssueData(id, BugzillaIssue.this);
-                        } catch (IOException ex) {
-                            Bugzilla.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(id, BugzillaIssue.this);
                         Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
                         // a new issue was created -> refresh all queries
                         repository.refreshAllQueries();

@@ -95,7 +95,6 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -325,7 +324,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
 
     public String getPriorityID() {
-        return getPriority().getId();
+        final Priority priority = getPriority();
+        return priority != null ? priority.getId() : null;
     }
     
     int getSortOrder() {
@@ -682,16 +682,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     public IssueStatusProvider.Status getIssueStatus() {
-        IssueCache.Status status = getRepository().getIssueCache().getStatus(getKey());
-        switch(status) {
-            case ISSUE_STATUS_NEW:
-                return IssueStatusProvider.Status.INCOMING_NEW;
-            case ISSUE_STATUS_MODIFIED:
-                return IssueStatusProvider.Status.INCOMING_MODIFIED;
-            case ISSUE_STATUS_SEEN:
-                return IssueStatusProvider.Status.SEEN;
-        }
-        return IssueStatusProvider.Status.SEEN;
+        return getStatus();
     }
 
     public void setUpToDate(boolean seen) {
@@ -1733,11 +1724,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String key = getKey();
-                        try {
-                            repository.getIssueCache().setIssueData(key, NbJiraIssue.this);
-                        } catch (IOException ex) {
-                            Jira.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(key, NbJiraIssue.this);
                         Jira.LOG.log(Level.FINE, "created issue #{0}", key);
                         // a new issue was created -> refresh all queries
                         repository.refreshAllQueries();

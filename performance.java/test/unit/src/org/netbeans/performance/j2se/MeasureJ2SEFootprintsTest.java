@@ -43,29 +43,28 @@
  */
 package org.netbeans.performance.j2se;
 
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.performance.j2se.footprints.*;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  * Test suite that actually does not perform any test but sets up user directory
  * for UI responsiveness tests
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
 public class MeasureJ2SEFootprintsTest {
-
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Footprints suite");
         System.setProperty("suitename", MeasureJ2SEFootprintsTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OutOfTheBox.class)
-        .addTest(J2SEProjectWorkflow.class)
-        .addTest(FindUsages.class)
-        .addTest(RefactoringRename.class)
-        .enableModules(".*").clusters(".*")));
-
+        suite.addTest(JellyTestCase.emptyConfiguration()
+                .addTest(OutOfTheBox.class)
+                .addTest(J2SEProjectWorkflow.class)
+                .addTest(FindUsages.class)
+                .addTest(RefactoringRename.class)
+                .suite());
         return suite;
     }
 }

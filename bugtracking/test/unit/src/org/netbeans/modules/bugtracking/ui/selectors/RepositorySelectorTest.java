@@ -43,26 +43,21 @@
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 

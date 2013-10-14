@@ -89,7 +89,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.util.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;

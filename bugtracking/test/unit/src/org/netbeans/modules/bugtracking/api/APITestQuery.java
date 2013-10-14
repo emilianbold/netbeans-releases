@@ -128,11 +128,6 @@ public class APITestQuery extends TestQuery {
         return Arrays.asList(repo.getIssues(new String[] {APITestIssue.ID_1}));
     }
 
-    @Override
-    public boolean contains(String id) {
-        return getIssues().contains(id);
-    }
-
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {

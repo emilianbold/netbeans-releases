@@ -65,7 +65,7 @@ import org.openide.util.actions.NodeAction;
 @ActionRegistration(displayName = "#LBL_CreateCommonTestAction")
 @ActionReferences(value = {
     @ActionReference(path = "UI/ToolActions/Java")})
-@NbBundle.Messages({"LBL_CreateCommonTestAction=Create Tests"})
+@NbBundle.Messages({"LBL_CreateCommonTestAction=Create/Update Tests"})
 public class TestCreatorAction extends NodeAction {
     
     /** Creates a new instance of TestCreatorAction */

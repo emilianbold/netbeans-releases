@@ -43,8 +43,6 @@
 package org.netbeans.modules.bugtracking.ui.query;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.List;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -54,14 +52,11 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;

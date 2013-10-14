@@ -71,6 +71,7 @@ public class BugzillaConfig {
     private static final String LAST_CHANGE_FROM    = "bugzilla.last_change_from";      // NOI18N // XXX
     private static final String QUERY_NAME          = "bugzilla.query_";                // NOI18N
     private static final String QUERY_REFRESH_INT   = "bugzilla.query_refresh";         // NOI18N
+    private static final String QUERY_LAST_REFRESH  = "bugzilla.query_last_refresh";    // NOI18N
     private static final String ISSUE_REFRESH_INT   = "bugzilla.issue_refresh";         // NOI18N
     private static final String DELIMITER           = "<=>";                            // NOI18N
     private static final String ATTACH_LOG          = "bugzilla.attach_log";            // NOI18N;
@@ -146,9 +147,8 @@ public class BugzillaConfig {
             return null;
         }
         String[] values = value.split(DELIMITER);
-        assert values.length >= 2;
+        assert values.length >= 2 : "worng amount of stored query data " + values.length + " in query " + queryName; // NOI18N
         String urlParams = values[0];
-//      skip  long lastRefresh = Long.parseLong(values[1]); // skip
         boolean urlDef = values.length > 2 ? Boolean.parseBoolean(values[2]) : false;
         return repository.createPersistentQuery(queryName, urlParams, urlDef);
     }
@@ -167,6 +167,14 @@ public class BugzillaConfig {
         return getKeysWithPrefix(QUERY_NAME + repoID + DELIMITER);
     }
 
+    public long getLastQueryRefresh(BugzillaRepository repository, String queryName) {
+        return getPreferences().getLong(getQueryKey(QUERY_LAST_REFRESH + "_" + repository.getID(), queryName), -1); // NOI18N
+    }
+    
+    public void putLastQueryRefresh(BugzillaRepository repository, String queryName, long lastRefresh) {
+        getPreferences().putLong(QUERY_LAST_REFRESH + "_" + getQueryKey(repository.getID(), queryName), lastRefresh); // NOI18N
+    }
+    
     private String[] getKeysWithPrefix(String prefix) {
         String[] keys = null;
         try {
@@ -177,7 +185,7 @@ public class BugzillaConfig {
         if (keys == null || keys.length == 0) {
             return new String[0];
         }
-        List<String> ret = new ArrayList<String>();
+        List<String> ret = new ArrayList<>();
         for (String key : keys) {
             if (key.startsWith(prefix)) {
                 ret.add(key.substring(prefix.length()));

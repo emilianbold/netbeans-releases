@@ -41,31 +41,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.performance.j2se;
+package org.netbeans.performance.j2se.startup;
 
-import org.netbeans.performance.j2se.startup.*;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 /**
- * Test suite that actually does not perform any test but sets up user directory
- * for UI responsiveness tests
+ * Measure startup time by org.netbeans.core.perftool.StartLog. Number of starts
+ * with new userdir is defined by property
+ * <br> <code> org.netbeans.performance.repeat.with.new.userdir </code>
+ * <br> and number of starts with old userdir is defined by property
+ * <br> <code> org.netbeans.performance.repeat </code> Run measurement defined
+ * number times, but forget first measured value, it's a attempt to have still
+ * the same testing conditions with loaded and cached files.
  *
- * @author  rkubacki@netbeans.org, mmirilovic@netbeans.org
+ * @author mmirilovic@netbeans.org
  */
-public class MeasureJ2SEStartupTest {
+public class ComplexJavaProjectStartup extends MeasureStartupTimeTestCase {
 
+    public static final String suiteName = "J2SE Startup suite";
+
+    /**
+     * Define test case
+     *
+     * @param testName name of the test case
+     */
+    public ComplexJavaProjectStartup(String testName) {
+        super(testName);
+    }
 
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("J2SE Startup suite");
-        System.setProperty("suitename", MeasureJ2SEStartupTest.class.getCanonicalName());
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MeasureWarmUp.class)
-        .addTest(OutOfTheBoxStartup.class)
-        .addTest(ComplexJavaProjectStartup.class)
-        .addTest(ComplexNBProjectStartup.class)
-        .enableModules(".*").clusters(".*").gui(false)));
-
+        NbTestSuite suite = new NbTestSuite("Java Complex Measurements Suite");
+        System.setProperty("suitename", ComplexJavaProjectStartup.class.getCanonicalName());
+        suite.addTest(JellyTestCase.emptyConfiguration()
+                .addTest(PrepareIDEForComplexMeasurements.class)
+                .addTest("testCloseAllDocuments")
+                .addTest("testCloseMemoryToolbar")
+                .addTest("testOpenFiles")
+                .addTest("testSaveStatus")
+                .suite());
+        suite.addTestSuite(ComplexJavaProjectStartup.class);
         return suite;
+    }
+
+    /**
+     * Testing start of IDE with measurement of the startup time.
+     *
+     * @throws java.io.IOException
+     */
+    public void testStartIDEWithOpenedFiles() throws java.io.IOException {
+        measureComplexStartupTime("Startup Time with 10 opened java files");
+        PerformanceData[] pData = this.getPerformanceData();
+        for (PerformanceData pData1 : pData) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), pData1);
+        }
     }
 }

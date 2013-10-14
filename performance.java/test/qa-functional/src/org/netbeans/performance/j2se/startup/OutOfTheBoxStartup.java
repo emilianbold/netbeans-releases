@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,21 +41,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.performance.j2se.startup;
 
-import java.io.File;
-import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase;
 
 /**
- * We need to access org.netbeans.modules.java.source.usages package, which
- * is not public.
- * 
- * @author Tomas Zezula
+ * Measure startup time by org.netbeans.core.perftool.StartLog. Number of starts
+ * with new userdir is defined by property
+ * <br> <code> org.netbeans.performance.repeat.with.new.userdir </code>
+ * <br> and number of starts with old userdir is defined by property
+ * <br> <code> org.netbeans.performance.repeat </code> Run measurement defined
+ * number times, but forget first measured value, it's a attempt to have still
+ * the same testing conditions with loaded and cached files.
+ *
+ * @author mmirilovic@netbeans.org
  */
-public class IndexUtil {
+public class OutOfTheBoxStartup extends MeasureStartupTimeTestCase {
 
-    public static void setCacheFolder(final File cacheFolder) {
-        CacheFolder.setCacheFolder(FileUtil.toFileObject(cacheFolder));
+    public static final String suiteName = "J2SE Startup suite";
+
+    /**
+     * Define test case
+     *
+     * @param testName name of the test case
+     */
+    public OutOfTheBoxStartup(String testName) {
+        super(testName);
+    }
+
+    /**
+     * Testing start of IDE with measurement of the startup time.
+     *
+     * @throws java.io.IOException
+     */
+    public void testStartIDE() throws java.io.IOException {
+        String performanceDataName = "Startup Time";
+
+        // don't report first run, try to have still the same testing conditions
+        runIDE(getIdeHome(), new java.io.File(getWorkDir(), "ideuserdir_prepare"), getMeasureFile(0, 0), 1000);
+
+        for (int n = 1; n <= repeatNewUserdir; n++) {
+            for (int i = 1; i <= repeat; i++) {
+                long measuredTime = runIDEandMeasureStartup(performanceDataName, getMeasureFile(i, n), getUserdirFile(n), 10000);
+                reportPerformance(performanceDataName, measuredTime, "ms", i > 1 ? 2 : 1);
+            }
+        }
+        PerformanceData[] pData = this.getPerformanceData();
+        for (PerformanceData pData1 : pData) {
+            org.netbeans.modules.performance.utilities.CommonUtilities.processUnitTestsResults(this.getClass().getName(), System.getProperty("suitename"), pData1);
+        }
     }
 }

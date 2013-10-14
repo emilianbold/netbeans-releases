@@ -137,7 +137,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
+        issueTable = new IssueTable<ODCSQuery>(ODCSUtil.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
@@ -1097,11 +1097,6 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         @Override
         public void notifyData(final ODCSIssue issue) {
             issueTable.addNode(issue.getNode());
-            if(!query.contains(issue.getID())) {
-                // XXX this is quite ugly - the query notifies an archived issue
-                // but it doesn't "contain" it!
-                return;
-            }
             setIssueCount(++counter);
             if(counter == 1) {
                 EventQueue.invokeLater(new Runnable() {
