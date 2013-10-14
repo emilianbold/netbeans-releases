@@ -113,7 +113,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String midletClass = (String) wiz.getProperty(MIDLET_CLASS); //NOI18N
         String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
         JavaPlatform platform = (JavaPlatform) wiz.getProperty(PLATFORM);
-        String jdkAntName = (String) wiz.getProperty(JDK_PLATFORM);
+        JavaPlatform sdk = (JavaPlatform) wiz.getProperty(JDK_PLATFORM);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;

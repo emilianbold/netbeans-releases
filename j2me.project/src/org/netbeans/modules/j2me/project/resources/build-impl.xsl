@@ -134,15 +134,19 @@ is divided into following sections:
                 <j2meproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                 <j2meproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
 
-                <j2meproject1:property name="platform.compile.home" value="platforms.${{platform.compile}}.home"/>
-                <j2meproject1:property name="platform.javac.tmp" value="platforms.${{platform.compile}}.javac"/>
-                <condition property="platform.javac" value="${{platform.compile.home}}/bin/javac">
-                    <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.compile}}.javac}}"/>
+                <j2meproject1:property name="platform.sdk.home.tmp" value="platforms.${{platform.sdk}}.home"/>
+                <condition property="platform.sdk.home" value="${java.home}">
+                    <equals arg1="${{platform.sdk.home.tmp}}" arg2="$${{platforms.${{platform.sdk}}.home}}"/>
+                </condition>
+                <property name="platform.sdk.home" value="${{platform.sdk.home.tmp}}"/>
+                <j2meproject1:property name="platform.javac.tmp" value="platforms.${{platform.sdk}}.javac"/>
+                <condition property="platform.javac" value="${{platform.sdk.home}}/bin/javac">
+                    <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.sdk}}.javac}}"/>
                 </condition>
                 <property name="platform.javac" value="${{platform.javac.tmp}}"/>
-                <j2meproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.compile}}.javadoc"/>
-                <condition property="platform.javadoc" value="${{platform.compile.home}}/bin/javadoc">
-                    <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.compile}}.javadoc}}"/>
+                <j2meproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.sdk}}.javadoc"/>
+                <condition property="platform.javadoc" value="${{platform.sdk.home}}/bin/javadoc">
+                    <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.sdk}}.javadoc}}"/>
                 </condition>
                 <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
                 <condition property="platform.invalid" value="true">
@@ -157,11 +161,11 @@ is divided into following sections:
                 <fail unless="platform.javac">Must set platform.javac</fail>
                 <fail if="platform.invalid">
                     The Compile Platform is not correctly set up.
-                    Your active compile platform is: ${platform.compile}, but the corresponding property "platforms.${platform.compile}.home" is not found in the project's properties files.
+                    Your active compile platform is: ${platform.sdk}, but the corresponding property "platforms.${platform.sdk}.home" is not found in the project's properties files.
                     Either open the project in the IDE and setup the Platform with the same name or add it manually.
                     For example like this:
-                    ant -Duser.properties.file=&lt;path_to_property_file&gt; jar (where you put the property "platforms.${platform.compile}.home" in a .properties file)
-                    or ant -Dplatforms.${platform.compile}.home=&lt;path_to_JDK_home&gt; jar (where no properties file is used)
+                    ant -Duser.properties.file=&lt;path_to_property_file&gt; jar (where you put the property "platforms.${platform.sdk}.home" in a .properties file)
+                    or ant -Dplatforms.${platform.sdk}.home=&lt;path_to_JDK_home&gt; jar (where no properties file is used)
                 </fail>
                 <available file="${{manifest.file}}" property="manifest.available"/>
                 <condition property="do.archive">

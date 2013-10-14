@@ -58,6 +58,7 @@ public final class J2MEProjectProperties {
         
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
+    public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
 
 
     private final J2MEProject project;
