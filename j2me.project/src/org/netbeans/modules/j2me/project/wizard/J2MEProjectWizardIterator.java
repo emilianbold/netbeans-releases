@@ -119,7 +119,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String configuration = (String) wiz.getProperty(CONFIGURATION);
         String profile = (String) wiz.getProperty(PROFILE);
         String device = (String) wiz.getProperty(DEVICE);
-        String jdkAntName = (String) wiz.getProperty(JDK_PLATFORM);
+        JavaPlatform jdk = (JavaPlatform) wiz.getProperty(JDK_PLATFORM);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -136,8 +136,8 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         props.put("platform.configuration", configuration); //NOI18N
         props.put("platform.profile", profile); //NOI18N
         props.put("platform.type", ((J2MEPlatform) platform).getType()); //NOI18N
-        props.put("platform.device", device); //NOI18N
-        props.put("platform.java", jdkAntName); //NOI18N
+        props.put("platform.device", device); //NOI18N        
+        props.put("platform.java", jdk.getProperties().get("platform.ant.name")); //NOI18N
         if (midletClass != null && !midletClass.isEmpty()) {
             props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
             props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N

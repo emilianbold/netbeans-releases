@@ -78,8 +78,6 @@ import org.openide.util.*;
  * @author Theofanis Oikonomou
  */
 public class PlatformDevicesPanel extends SettingsPanel {
-
-    private static final String PLATFORM_ANT_NAME = "platform.ant.name";
     
     private final WizardType type;
     private PanelConfigureProject panel;
@@ -548,8 +546,8 @@ public class PlatformDevicesPanel extends SettingsPanel {
         return m == null ? "" : m.getActionCommand();
     }
     
-    private String getJdkPlatformAntName() {
-        return PlatformUiSupport.getPlatform(jdkComboBox.getSelectedItem()).getProperties().get(PLATFORM_ANT_NAME); //NOI18N
+    private JavaPlatform getJdkPlatform() {
+        return PlatformUiSupport.getPlatform(jdkComboBox.getSelectedItem());
     }
 
     private void setBottomPanelAreaVisible(boolean visible) {
@@ -609,7 +607,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         if (profile == null) {
             profile = getPreferences().get(J2MEProjectWizardIterator.PROFILE, null);
         }
-        String jdkPlatform = (String) d.getProperty(J2MEProjectWizardIterator.JDK_PLATFORM);        
+        JavaPlatform jdkPlatform = (JavaPlatform) d.getProperty(J2MEProjectWizardIterator.JDK_PLATFORM);
         if (platform != null) {
             for (int i = 0; i < platformComboBox.getItemCount(); i++) {
                 J2MEPlatform itemAt = (J2MEPlatform) platformComboBox.getItemAt(i);
@@ -649,7 +647,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         if (jdkPlatform != null) {
             for (int i = 0; i < jdkComboBox.getItemCount(); i++) {
                 JavaPlatform itemAt = PlatformUiSupport.getPlatform(jdkComboBox.getItemAt(i));
-                if (itemAt.getProperties().get(PLATFORM_ANT_NAME).equals(jdkPlatform)) {
+                if (itemAt.equals(jdkPlatform)) {
                     jdkComboBox.setSelectedItem(itemAt);
                     break;
                 }
@@ -668,7 +666,7 @@ public class PlatformDevicesPanel extends SettingsPanel {
         d.putProperty(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
         d.putProperty(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
-        d.putProperty(J2MEProjectWizardIterator.JDK_PLATFORM, jdkComboBox.getSelectedIndex() == -1 ? "" : getJdkPlatformAntName()); //This is enough to store in wizard iterator
+        d.putProperty(J2MEProjectWizardIterator.JDK_PLATFORM, jdkComboBox.getSelectedIndex() == -1 ? "" : getJdkPlatform()); //This is enough to store in wizard iterator
 
         getPreferences().put(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
         getPreferences().put(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
