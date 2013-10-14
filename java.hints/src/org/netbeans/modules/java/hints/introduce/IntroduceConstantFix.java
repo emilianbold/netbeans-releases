@@ -85,6 +85,11 @@ public class IntroduceConstantFix extends IntroduceFieldFix {
         return null;
     }
 
+    @Override
+    public String getText() {
+        return NbBundle.getMessage(IntroduceConstantFix.class, "FIX_IntroduceConstant");
+    }
+
     /**
      * Creates an 'introduce constant' fix.
      *
