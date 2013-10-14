@@ -81,6 +81,7 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean foundShadowedVariable = false;
     private boolean foundRecursiveCall = false;
     private boolean foundOverloadWhichMakesLambdaAmbiguous = false;
+    private boolean foundAssignmentToRawType = false;
     private boolean foundAssignmentToSupertype = false;
     private boolean foundErroneousTargetType = false;
     private boolean havePreconditionsBeenChecked = false;
@@ -110,7 +111,8 @@ public class ConvertToLambdaPreconditionChecker {
                 && !foundShadowedVariable()
                 && !foundRecursiveCall()
                 && !foundOverloadWhichMakesLambdaAmbiguous()
-                && !foundAssignmentToSupertype();
+                && !foundAssignmentToSupertype()
+                && !foundAssignmentToRawtype();
     }
     
     private void ensurePreconditionsAreChecked() {
@@ -133,7 +135,9 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean needsCastToExpectedType() {
         ensurePreconditionsAreChecked();
         return foundOverloadWhichMakesLambdaAmbiguous()
-                || foundAssignmentToSupertype();
+                || foundAssignmentToSupertype() 
+                // #234080: cannot infer lambda types from the raw type
+                || foundAssignmentToRawtype();
     }
 
     public boolean foundRefToThisOrSuper() {
@@ -159,6 +163,11 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean foundAssignmentToSupertype() {
         ensurePreconditionsAreChecked();
         return foundAssignmentToSupertype;
+    }
+
+    public boolean foundAssignmentToRawtype() {
+        ensurePreconditionsAreChecked();
+        return foundAssignmentToRawType;
     }
 
     public boolean foundErroneousTargetType() {
@@ -443,13 +452,15 @@ public class ConvertToLambdaPreconditionChecker {
             return;
         }
 
-        expectedType = info.getTypes().erasure(expectedType);
+        TypeMirror erasedExpectedType = info.getTypes().erasure(expectedType);
 
         TreePath pathForClassIdentifier = new TreePath(pathToNewClassTree, newClassTree.getIdentifier());
         TypeMirror lambdaType = info.getTrees().getTypeMirror(pathForClassIdentifier);
         lambdaType = info.getTypes().erasure(lambdaType);
 
-        foundAssignmentToSupertype = !info.getTypes().isSameType(expectedType, lambdaType);
+        foundAssignmentToSupertype = !info.getTypes().isSameType(erasedExpectedType, lambdaType);
+        
+        foundAssignmentToRawType =  info.getTypes().isSameType(erasedExpectedType, expectedType);
     }
 
     private TypeMirror findExpectedType(TreePath path) {
