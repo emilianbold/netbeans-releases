@@ -97,6 +97,8 @@ public class TomcatManager implements DeploymentManager {
 
     public enum TomEEVersion {TOMEE_15, TOMEE_16};
 
+    public enum TomEEType {TOMEE_WEB, TOMEE_JAXRS, TOMEE_PLUS};
+
     public static final String KEY_UUID = "NB_EXEC_TOMCAT_START_PROCESS_UUID"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(TomcatManager.class.getName());
@@ -143,6 +145,9 @@ public class TomcatManager implements DeploymentManager {
 
     /* GuardedBy(this) */
     private TomEEVersion tomEEVersion;
+
+    /* GuardedBy(this) */
+    private TomEEType tomEEType;
 
     private final InstanceProperties ip;
 
@@ -434,7 +439,13 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public synchronized boolean isTomEE() {
-        return getTomEEVersion() != null;
+        loadTomEEInfo();
+        return tomEEVersion != null;
+    }
+
+    public synchronized boolean isTomEEJaxRS() {
+        loadTomEEInfo();
+        return TomEEType.TOMEE_JAXRS.equals(tomEEType) || TomEEType.TOMEE_PLUS.equals(tomEEType);
     }
 
     /** Returns Tomcat lib folder: "lib" for  Tomcat 6.0 and "common/lib" for Tomcat 5.x */
@@ -448,21 +459,27 @@ public class TomcatManager implements DeploymentManager {
     }
 
     public synchronized TomEEVersion getTomEEVersion() {
+        loadTomEEInfo();
+        return tomEEVersion;
+    }
+
+    public synchronized void loadTomEEInfo() {
         if (tomEEChecked) {
-            LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
-            return tomEEVersion;
+            LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
         }
         assert tomEEWarListener == null;
 
         tomEEChecked = true;
-        tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase(), true);
+        tomEEVersion = TomcatFactory.getTomEEVersion(tp.getCatalinaHome(), tp.getCatalinaBase());
+        tomEEType = tomEEVersion == null ? null : TomcatFactory.getTomEEType(tp.getCatalinaHome(), tp.getCatalinaBase());
         if (tomEEVersion == null) {
             tomEEWarListener = new TomEEWarListener(tp, new TomEEWarListener.RefreshHook() {
 
                 @Override
-                public void refresh(TomEEVersion version) {
+                public void refresh(TomEEVersion version, TomEEType type) {
                     synchronized (TomcatManager.this) {
                         tomEEVersion = version;
+                        tomEEType = type;
                     }
                     getTomcatPlatform().notifyLibrariesChanged();
                 }
@@ -478,8 +495,7 @@ public class TomcatManager implements DeploymentManager {
             tomEEWarListener.checkAndRefresh();
         }
 
-        LOGGER.log(Level.INFO, "TomEE version {0}", tomEEVersion);
-        return tomEEVersion;
+        LOGGER.log(Level.INFO, "TomEE version {0}, type {1}", new Object[] {tomEEVersion, tomEEType});
     }
 
 // --- DeploymentManager interface implementation ----------------------

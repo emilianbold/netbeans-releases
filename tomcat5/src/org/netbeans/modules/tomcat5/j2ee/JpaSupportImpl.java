@@ -48,7 +48,7 @@ import org.netbeans.modules.javaee.specs.support.spi.JpaProviderFactory;
 import org.netbeans.modules.javaee.specs.support.spi.JpaSupportImplementation;
 
 /**
- *
+ * This is TomEE only class.
  * @author Petr Hejl
  */
 public class JpaSupportImpl implements JpaSupportImplementation {

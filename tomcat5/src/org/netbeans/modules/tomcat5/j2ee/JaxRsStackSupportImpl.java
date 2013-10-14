@@ -39,74 +39,72 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.tomcat5;
+package org.netbeans.modules.tomcat5.j2ee;
 
-import java.io.File;
-import org.netbeans.modules.tomcat5.deploy.TomcatManager;
-import org.netbeans.modules.tomcat5.util.TomcatProperties;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
+import java.net.URL;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
+ * This is TomEE only class.
  *
  * @author Petr Hejl
  */
-public class TomEEWarListener implements FileChangeListener {
+// XXX web service expert should review this
+public class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
 
-    private final TomcatProperties tp;
+    private static final String JAX_RS_APPLICATION_CLASS = "javax.ws.rs.core.Application"; //NOI18N
 
-    private final RefreshHook refresh;
+    private final TomcatPlatformImpl j2eePlatform;
 
-    private File currentTomEEJar;
-
-    public TomEEWarListener(TomcatProperties tp, RefreshHook refresh) {
-        this.tp = tp;
-        this.refresh = refresh;
+    JaxRsStackSupportImpl(TomcatPlatformImpl j2eePlatform) {
+        this.j2eePlatform = j2eePlatform;
     }
 
     @Override
-    public void fileFolderCreated(FileEvent fe) {
-        checkAndRefresh();
+    public boolean addJsr311Api(Project project) {
+        // return true (behaves like added) when JAX-RS is on classpath
+        return isBundled(JAX_RS_APPLICATION_CLASS);
     }
 
     @Override
-    public void fileDataCreated(FileEvent fe) {
-        checkAndRefresh();
+    public boolean extendsJerseyProjectClasspath(Project project) {
+        // declared as extended when JAX-RS is on classpath
+        // suppose that TomEE has its own implementation of JAX-RS
+        return isBundled(JAX_RS_APPLICATION_CLASS);
     }
 
     @Override
-    public void fileChanged(FileEvent fe) {
-        checkAndRefresh();
+    public void removeJaxRsLibraries(Project project) {
     }
 
     @Override
-    public void fileDeleted(FileEvent fe) {
-        checkAndRefresh();
+    public void configureCustomJersey(Project project) {
     }
 
     @Override
-    public void fileRenamed(FileRenameEvent fe) {
-        checkAndRefresh();
-    }
-
-    @Override
-    public void fileAttributeChanged(FileAttributeEvent fe) {
-    }
-
-    public void checkAndRefresh() {
-        File jar = TomcatFactory.getTomEEWebAppJar(tp.getCatalinaHome(), tp.getCatalinaBase());
-        if (this.currentTomEEJar != jar && (this.currentTomEEJar == null || !this.currentTomEEJar.equals(jar))) {
-            currentTomEEJar = jar;
-            TomcatManager.TomEEVersion version = TomcatFactory.getTomEEVersion(jar);
-            TomcatManager.TomEEType type = version == null ? null : TomcatFactory.getTomEEType(jar.getParentFile());
-            refresh.refresh(version, type);
+    public boolean isBundled(String classFqn) {
+        j2eePlatform.getLibraries();
+        for (LibraryImplementation lib : j2eePlatform.getLibraries()) {
+            List<URL> urls = lib.getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+            for (URL url : urls) {
+                FileObject root = URLMapper.findFileObject(url);
+                if (FileUtil.isArchiveFile(root)) {
+                    root = FileUtil.getArchiveRoot(root);
+                }
+                String path = classFqn.replace('.', '/') + ".class"; //NOI18N
+                if (root.getFileObject(path) != null) {
+                    return true;
+                }
+            }
         }
-    }
 
-    public static interface RefreshHook {
-        void refresh(TomcatManager.TomEEVersion version, TomcatManager.TomEEType type);
+        return false;
     }
-
 }

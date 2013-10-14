@@ -446,6 +446,14 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
+        // See issue #236428 - when closing string, lexer returns IDENTIFIER instead of STRING_LITERAL
+        if (id == GroovyTokenId.IDENTIFIER) {
+            String text = token.text().toString();
+            if (text.startsWith("\"") || text.startsWith("\'")) {
+                insideString = true;
+            }
+        }
+
         if (id == GroovyTokenId.ERROR && (previousToken != null) && (previousToken.id() == beginToken)) {
             insideString = true;
         }
