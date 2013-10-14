@@ -168,7 +168,7 @@ public class BugzillaConfig {
     }
 
     public long getLastQueryRefresh(BugzillaRepository repository, String queryName) {
-        return getPreferences().getLong(getQueryKey(QUERY_LAST_REFRESH + "_" + repository.getID(), queryName), -1); // NOI18N
+        return getPreferences().getLong(QUERY_LAST_REFRESH + "_" + getQueryKey(repository.getID(), queryName), -1); // NOI18N
     }
     
     public void putLastQueryRefresh(BugzillaRepository repository, String queryName, long lastRefresh) {
