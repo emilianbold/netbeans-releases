@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
@@ -222,12 +223,7 @@ public abstract class FromEntityBase {
 
         // namespace location
         WebModule webModule = WebModule.getWebModule(targetJspFO);
-        JSFVersion version = webModule != null ? JSFVersion.forWebModule(webModule) : null;
-        String nsLocation = NamespaceUtils.SUN_COM_LOCATION;
-        if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
-            nsLocation = NamespaceUtils.JCP_ORG_LOCATION;
-        }
-        params.put("nsLocation", nsLocation); //NOI18N
+        params.put("nsLocation", JSFUtils.getNamespaceDomain(webModule)); //NOI18N
 
         return params;
     }
