@@ -144,8 +144,8 @@ public class JSFClientGenerator {
     private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
     private static final String WELCOME_JSF_FL_PAGE = "index.xhtml";  //NOI18N
     static final String TEMPLATE_JSF_FL_PAGE = "template.xhtml";  //NOI18N
-    public  static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
-    private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
+    public static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
+    public static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_JSPF = "AjaxScripts.jspf"; //NOI18N
     private static final String JSFCRUD_AJAX_BUSY_IMAGE = "busy.gif"; //NOI18N

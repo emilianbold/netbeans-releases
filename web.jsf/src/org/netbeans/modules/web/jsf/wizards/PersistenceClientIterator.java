@@ -137,7 +137,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String CONVERTER_SUFFIX = "Converter";  //NOI18N
     private static final String JAVA_EXT = "java"; //NOI18N
     public static final String JSF2_GENERATOR_PROPERTY = "jsf2Generator"; // "true" if set otherwise undefined
-    private static final String CSS_FOLDER = "resources/css/";  //NOI18N
+    private static final String RESOURCES_FOLDER = "resources/";        //NOI18N
+    private static final String CSS_FOLDER = RESOURCES_FOLDER + "css/"; //NOI18N
+    private static final String JS_FOLDER = RESOURCES_FOLDER + "js/";   //NOI18N
 
     private transient WebModuleExtender wme;
     private transient ExtenderController ec;
@@ -492,6 +494,20 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg);
         }
+
+        // create jsfcrud.js JavaScript file if available
+        if (webRoot.getFileObject(JS_FOLDER + JSFClientGenerator.JSFCRUD_JAVASCRIPT) == null) {
+            FileObject frameworkJs = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/"+ JSFClientGenerator.JSFCRUD_JAVASCRIPT);
+            if (frameworkJs != null && frameworkJs.isValid()) {
+                String content = JSFFrameworkProvider.readResource(frameworkJs.getInputStream(), "UTF-8"); //NOI18N
+                FileObject target = FileUtil.createData(webRoot, JS_FOLDER + JSFClientGenerator.JSFCRUD_JAVASCRIPT);
+                JSFFrameworkProvider.createFile(target, content, encoding.name());
+                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
+                progressContributor.progress(progressMsg, progressIndex++);
+                progressPanel.setText(progressMsg);
+            }
+        }
+
         //Create template.xhtml if it is not created yet, because it is used by other generated templates
         if (webRoot.getFileObject(JSFClientGenerator.TEMPLATE_JSF_FL_PAGE) == null) {
             FileObject target = TemplateIterator.createTemplate(project, webRoot, false);
