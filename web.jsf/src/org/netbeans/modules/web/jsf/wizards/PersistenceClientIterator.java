@@ -453,6 +453,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 progressContributor.progress(progressMsg, progressIndex++);
                 progressPanel.setText(progressMsg);
                 FileObject tableTemplate = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/"+ UTIL_CLASS_NAMES2[i] + ".ftl");
+                if (tableTemplate == null || !tableTemplate.isValid()) {
+                    continue;
+                }
                 FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES2[i] + "."+JAVA_EXT);//NOI18N
                 HashMap<String, Object> params = new HashMap<String, Object>();
                 params.put("packageName", utilPackage);
@@ -526,8 +529,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                 params.put("persistenceUnitName", persistenceUnitName); //NOI18N
             }
             FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass, embeddedPkSupport);
-
-            JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
+            if (template != null && template.isValid()) {
+                JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
+            }
 
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true, null);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
@@ -560,7 +564,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         if (target == null) {
             target = FileUtil.createData(resourcePackageRoot, bundleFileName);
         }
-        JSFPaletteUtilities.expandJSFTemplate(template, params, target);
+        if (template != null && template.isValid()) {
+            JSFPaletteUtilities.expandJSFTemplate(template, params, target);
+        }
 
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(wm);
@@ -689,6 +695,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             String jsfFolder, FileObject webRoot, String name, Map<String, Object> params,
             ProgressContributor progressContributor, ProgressPanel progressPanel, int progressIndex) throws IOException {
         FileObject template = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/" + templateName);
+        if (template == null || !template.isValid()) {
+            return;
+        }
         String fileName = getJsfFileName(entityClass, jsfFolder, name);
         String  progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", fileName); //NOI18N
         progressContributor.progress(progressMsg, progressIndex);

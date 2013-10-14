@@ -100,12 +100,6 @@ public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryCo
 //        } catch (Exception e) {
 //            throw new RuntimeException(e);
 //        }
-        cleanupStoredIssues();
-    }
-
-    private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
-        QueryTestUtil.getRepository().getIssueCache().storeArchivedQueryIssues(QUERY_NAME, new String[0]);
-        QueryTestUtil.getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
 }

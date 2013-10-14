@@ -168,6 +168,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                         ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
                     else
                         ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
+                    c.notifyChanged(true);
                 }
             }
         });
@@ -182,6 +183,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                     ((DefaultListModel) lUseIn.getModel ()).set (i, "-" + name.substring (1));
                 else
                     ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
+                c.notifyChanged(true);
             }
         });
         
@@ -351,6 +353,11 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
 
         defaultLocale.setEditable(true);
         defaultLocale.setModel(getLocaleModel());
+        defaultLocale.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                defaultLocaleItemStateChanged(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_Default_Locale", new Object[] {})); // NOI18N
 
@@ -464,6 +471,10 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
             updateLocales();
         }
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void defaultLocaleItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_defaultLocaleItemStateChanged
+        c.notifyChanged(true);
+    }//GEN-LAST:event_defaultLocaleItemStateChanged
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

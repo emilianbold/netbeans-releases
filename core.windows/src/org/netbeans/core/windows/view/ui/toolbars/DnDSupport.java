@@ -394,7 +394,7 @@ final class DnDSupport implements DragSourceListener, DragGestureListener, DropT
         w.setBounds(bounds);
         w.setVisible(true);
         NativeWindowSystem nws = NativeWindowSystem.getDefault();
-        if( nws.isWindowAlphaSupported() ) {
+        if( nws.isUndecoratedWindowAlphaSupported() ) {
             nws.setWindowAlpha(w, 0.7f);
         }
         return w;

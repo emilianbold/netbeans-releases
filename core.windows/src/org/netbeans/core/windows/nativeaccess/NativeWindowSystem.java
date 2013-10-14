@@ -42,6 +42,7 @@
 
 package org.netbeans.core.windows.nativeaccess;
 
+import java.awt.Frame;
 import java.awt.Shape;
 import java.awt.Window;
 import javax.swing.Icon;
@@ -82,6 +83,14 @@ public abstract class NativeWindowSystem {
      * @return True if top-level windows (Frame, Window, Dialog) can be transparent.
      */
     public abstract boolean isWindowAlphaSupported();
+    
+    /**
+     * Check whether it is possible to make top-level UNDECORATED windows transparent.
+     * @return  True if top-level undecorated windows (Frame, Window, Dialog) can be transparent.
+     * @see Frame#isUndecorated() 
+     * @since 2.69
+     */
+    public abstract boolean isUndecoratedWindowAlphaSupported();
     
     /**
      * Adjust transparency of the given window.

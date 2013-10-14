@@ -714,11 +714,13 @@ public final class Models {
         
         @Override
         public void addNode(Node n) {
-            if (presetNodes == null) {
-                presetNodes = new LinkedList<Node>();
-                SwingUtilities.invokeLater(new PresetNodesCleaner());
+            if (SwingUtilities.isEventDispatchThread()) {
+                if (presetNodes == null) {
+                    presetNodes = new LinkedList<Node>();
+                    SwingUtilities.invokeLater(new PresetNodesCleaner());
+                }
+                presetNodes.add(n);
             }
-            presetNodes.add(n);
         }
         
         private Node[] getActiveNodes(ActionEvent e) {

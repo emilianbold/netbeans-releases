@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 
 /**
- * Provides access to an bugtracking query.
+ * Provides access to a bugtracking query.
  *
  * @author Tomas Stupka
  * 
@@ -131,26 +131,14 @@ public interface QueryProvider<Q, I> {
     public Collection<I> getIssues(Q q);
 
     /**
-     * Returns true if the issue does belong to the query
-     * @param q
-     * @param id
-     * @return
-     */
-    // XXX used only by query table - get rid of this
-    public boolean contains(Q q, String id);
-
-    /**
      * Refreshes the given query
      * 
      * @param query
      */
     public void refresh(Q query);
     
-    /*********
-     * EVENTS
-     *********/
-
     /**
+     * Remove a PropertyChangeListener from the given query.
      * 
      * @param q
      * @param listener 
@@ -158,6 +146,7 @@ public interface QueryProvider<Q, I> {
     public void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
     /**
+     * Add a PropertyChangeListener to the given query.
      * 
      * @param q
      * @param listener 

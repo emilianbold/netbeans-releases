@@ -71,7 +71,7 @@ import org.openide.util.Lookup;
     id=APITestConnector.ID_CONNECTOR,
     displayName=APITestConnector.ID_CONNECTOR,
     tooltip=APITestConnector.ID_CONNECTOR)    
-public class APITestConnector extends BugtrackingConnector {
+public class APITestConnector implements BugtrackingConnector {
     
     private static final BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue> factory = 
             new BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue>();
@@ -166,11 +166,6 @@ public class APITestConnector extends BugtrackingConnector {
         }
 
         @Override
-        public boolean contains(APITestQuery q, String id) {
-            return q.contains(id);
-        }
-
-        @Override
         public void refresh(APITestQuery q) {
             q.refresh();
         }
@@ -202,7 +197,7 @@ public class APITestConnector extends BugtrackingConnector {
 
     }
 
-    public static class APITestRepositoryProvider extends RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
+    public static class APITestRepositoryProvider implements RepositoryProvider<APITestRepository, APITestQuery, APITestIssue> {
 
         @Override
         public RepositoryInfo getInfo(APITestRepository r) {
@@ -256,16 +251,21 @@ public class APITestConnector extends BugtrackingConnector {
 
         @Override
         public Collection<APITestIssue> simpleSearch(APITestRepository r, String criteria) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.simpleSearch(criteria);
         }
 
         @Override
         public APITestIssue createIssue(APITestRepository r, String summary, String description) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            return r.createIssue(summary, description);
+        }
+
+        @Override
+        public Collection<APITestIssue> getUnsubmittedIssues(APITestRepository r) {
+            return r.getUnsubmittedIssues();
         }
     }
 
-    public static class APITestIssueProvider extends IssueProvider<APITestIssue> {
+    public static class APITestIssueProvider implements IssueProvider<APITestIssue> {
 
         @Override
         public String[] getSubtasks(APITestIssue data) {
@@ -335,6 +335,11 @@ public class APITestConnector extends BugtrackingConnector {
         @Override
         public void discardOutgoing(APITestIssue data) {
             data.discardOutgoing();
+        }
+
+        @Override
+        public boolean submit(APITestIssue data) {
+            return data.submit();
         }
 
     }    

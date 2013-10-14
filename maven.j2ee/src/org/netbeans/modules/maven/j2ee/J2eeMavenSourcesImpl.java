@@ -115,9 +115,9 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
         List<SourceGroup> resourceRoots = getWebSourceGroups();
 
         synchronized (this) {
-            if (!this.webResourceRoots.equals(resourceRoots)) {
+            if (webResourceRoots == null || !webResourceRoots.equals(resourceRoots)) {
                 // Set the cached value to the current resource roots
-                this.webResourceRoots = resourceRoots;
+                webResourceRoots = resourceRoots;
                 return true;
             }
         }

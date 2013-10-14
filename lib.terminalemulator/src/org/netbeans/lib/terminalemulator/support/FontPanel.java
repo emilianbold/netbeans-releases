@@ -746,8 +746,7 @@ class FontPanel extends JPanel {
 	    @Override
 	    public void propertyChange(PropertyChangeEvent evt) {
                 switch (evt.getPropertyName()) {
-                    case "progress":
-                        // NOI18N
+                    case "progress":// NOI18N
                         if (ckCancel())
                             return;
                         progressMonitor.setProgress((Integer) evt.getNewValue());

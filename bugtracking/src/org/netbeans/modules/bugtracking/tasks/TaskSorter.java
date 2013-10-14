@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.bugtracking.tasks;
 
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.openide.util.NbBundle;
 
@@ -54,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class TaskSorter {
+public class TaskSorter{
 
     private static TaskSorter instance;
     private List<TaskAttribute> attributes;
@@ -70,17 +71,17 @@ public class TaskSorter {
         return instance;
     }
 
-    private TaskSorter() {
+    private TaskSorter(){
         initAttributes();
-        updateAttributes();
+        sortAttributes();
     }
 
-    public Comparator<TaskNode> getComparator() {
+    public Comparator<TaskNode> getComparator(){
         return new TaskComparator();
     }
 
     public List<TaskAttribute> getAttributes() {
-        return getClonedAttributes();
+        return attributes;
     }
 
     public void setAttributes(List<TaskAttribute> attributes) {
@@ -88,8 +89,8 @@ public class TaskSorter {
         DashboardSettings.getInstance().setSortingAttributes(attributes);
     }
 
-    private void updateAttributes() {
-        DashboardSettings.getInstance().updateSortingAttributes(attributes);
+    private void sortAttributes() {
+        DashboardSettings.getInstance().updateAttributesRank(attributes);
         Collections.sort(attributes);
     }
 
@@ -107,41 +108,15 @@ public class TaskSorter {
         }
     }
 
-    private List<TaskAttribute> getClonedAttributes() {
-        List<TaskAttribute> cloned = new ArrayList<TaskAttribute>(attributes.size());
-        for (TaskAttribute taskAttribute : attributes) {
-            cloned.add(taskAttribute.getClone());
-        }
-        return cloned;
-    }
-
-    private void initAttributes() {
+    private void initAttributes(){
         attributes = new ArrayList<TaskAttribute>();
         TaskAttribute priority = new TaskAttribute(PRIORITY_ID, NbBundle.getMessage(TaskSorter.class, "LBL_PriorityDisplayName"), new Comparator<TaskNode>() {
             @Override
             public int compare(TaskNode tn1, TaskNode tn2) {
-
-                //TODO - how to solve different repositories
-                String priority1 = tn1.getTask().getPriority();
-                int rank1 = getIndexOf(tn1.getTask().getRepositoryImpl().getPriorityInfos(), priority1);
-                String priority2 = tn2.getTask().getPriority();
-                int rank2 = getIndexOf(tn2.getTask().getRepositoryImpl().getPriorityInfos(), priority2);
-                return Integer.compare(rank2, rank1);
-            }
-
-            private int getIndexOf(IssuePriorityInfo[] priorityInfos, String priorityName) {
-                for (int i = 0; i < priorityInfos.length; i++) {
-                    IssuePriorityInfo issuePriorityInfo = priorityInfos[i];
-                    if (issuePriorityInfo.getDisplayName().equals(priorityName)) {
-                        return i;
-                    }
-                }
-                return Integer.MAX_VALUE;
+                //TODO implement
+                return 0;
             }
         });
-        //set defaults
-        priority.setRank(1);
-        priority.setAsceding(false);
         attributes.add(priority);
 
         TaskAttribute status = new TaskAttribute(STATUS_ID, NbBundle.getMessage(TaskSorter.class, "LBL_StatusDisplayName"), new Comparator<TaskNode>() {
@@ -150,9 +125,15 @@ public class TaskSorter {
                 return tn1.getTask().getStatus().compareTo(tn2.getTask().getStatus());
             }
         });
-        status.setRank(2);
-        status.setAsceding(true);
         attributes.add(status);
+
+        TaskAttribute taskId = new TaskAttribute(TASKID_ID, NbBundle.getMessage(TaskSorter.class, "LBL_TaskidDisplayName"), new Comparator<TaskNode>() {
+            @Override
+            public int compare(TaskNode tn1, TaskNode tn2) {
+                return DashboardUtils.compareTaskIds(tn1.getTask().getID(), tn2.getTask().getID());
+            }
+        });
+        attributes.add(taskId);
 
         TaskAttribute scheduled = new TaskAttribute(SCHEDULED_ID, NbBundle.getMessage(TaskSorter.class, "LBL_ScheduledDisplayName"), new Comparator<TaskNode>() {
             @Override
@@ -161,18 +142,6 @@ public class TaskSorter {
                 return 0;
             }
         });
-        scheduled.setRank(3);
-        scheduled.setAsceding(false);
         attributes.add(scheduled);
-
-        TaskAttribute taskId = new TaskAttribute(TASKID_ID, NbBundle.getMessage(TaskSorter.class, "LBL_TaskidDisplayName"), new Comparator<TaskNode>() {
-            @Override
-            public int compare(TaskNode tn1, TaskNode tn2) {
-                return DashboardUtils.compareTaskIds(tn1.getTask().getID(), tn2.getTask().getID());
-            }
-        });
-        taskId.setRank(4);
-        taskId.setAsceding(false);
-        attributes.add(taskId);
     }
 }

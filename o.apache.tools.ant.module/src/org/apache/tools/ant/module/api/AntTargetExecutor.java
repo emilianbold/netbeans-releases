@@ -46,11 +46,16 @@ package org.apache.tools.ant.module.api;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.run.TargetExecutor;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 
 /**
  * Executes an Ant target or list of targets asynchronously inside NetBeans.
@@ -102,6 +107,7 @@ final public class AntTargetExecutor {
         TargetExecutor te = new TargetExecutor(antProject, targets);
         te.setVerbosity(env.getVerbosity());
         te.setProperties(NbCollections.checkedMapByCopy(env.getProperties(), String.class, String.class, true));
+        te.setConcealedProperties(env.getConcealedProperties());
         if (env.getLogger() == null) {
             return te.execute();
         } else {
@@ -118,6 +124,7 @@ final public class AntTargetExecutor {
         private int verbosity;
         private Properties properties;
         private OutputStream outputStream;
+        private volatile Set<String> concealedProperties;
 
         /** Create instance of Env class describing environment for Ant target execution.
          */
@@ -125,6 +132,7 @@ final public class AntTargetExecutor {
             verbosity = AntSettings.getVerbosity();
             properties = new Properties();
             properties.putAll(AntSettings.getProperties());
+            concealedProperties = Collections.emptySet();
         }
 
         /**
@@ -148,7 +156,7 @@ final public class AntTargetExecutor {
         public synchronized void setProperties(Properties p) {
             properties = (Properties) p.clone();
         }
-
+        
         /** Get current Ant script execution properties. The clone of
          * real properties is returned.
          * @return the current name/value pairs passed to Ant
@@ -179,6 +187,26 @@ final public class AntTargetExecutor {
             return outputStream;
         }
 
+        /**
+         * Sets names of the properties whose values should not be visible to the user.
+         * This method can be used to safely pass password to ant script.
+         * @param properties the names of properties to be concealed
+         * @since 3.71
+         */
+        public void setConcealedProperties(@NonNull final Set<? extends String> properties) {
+            Parameters.notNull("properties", properties);   //NOI18N
+            concealedProperties = Collections.unmodifiableSet(new HashSet<>(properties));
+        }
+
+        /**
+         * Returns names of the properties whose values should not be visible to the user.
+         * @return the {@link Set} of property names
+         * @since 3.71
+         */
+        @NonNull
+        public Set<String> getConcealedProperties() {
+            return concealedProperties;
+        }
     }
     
 }

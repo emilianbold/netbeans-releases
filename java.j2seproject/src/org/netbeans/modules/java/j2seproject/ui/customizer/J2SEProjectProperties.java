@@ -81,7 +81,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -112,6 +111,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.*;
 
 /**
  * @author Petr Hrebejk
@@ -131,68 +131,27 @@ public class J2SEProjectProperties {
     
     // Special properties of the project
     public static final String J2SE_PROJECT_NAME = "j2se.project.name"; // NOI18N
-    public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
-
-    // folowing properties have moved to ProjectProperties in java.api.common module:
-    //public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
-    //public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
-    //public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    //public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
-    //public static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    //public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-    //public static final String INCLUDES = "includes"; // NOI18N
-    //public static final String EXCLUDES = "excludes"; // NOI18N
-    //public static final String[] WELL_KNOWN_PATHS = new String[] {            
-    //public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-    
-    // Properties stored in the PROJECT.PROPERTIES    
-    public static final String DIST_DIR = "dist.dir"; // NOI18N
-    public static final String DIST_JAR = "dist.jar"; // NOI18N
-    public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
-    public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
-    public static final String JAVAC_SOURCE = "javac.source"; // NOI18N
-    public static final String JAVAC_TARGET = "javac.target"; // NOI18N
-    public static final String JAVAC_PROFILE = "javac.profile"; // NOI18N
-    public static final String JAVAC_DEBUG = "javac.debug"; // NOI18N
-    public static final String JAVAC_DEPRECATION = "javac.deprecation"; // NOI18N
-    public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
-    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
-    public static final String BUILD_CLASSES_EXCLUDES = "build.classes.excludes"; // NOI18N
-    public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; // NOI18N
-    public static final String NO_DEPENDENCIES="no.dependencies"; // NOI18N
-    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
-    public static final String SOURCE_ENCODING="source.encoding"; // NOI18N
-    
-    
-    public static final String JAVADOC_PRIVATE="javadoc.private"; // NOI18N
-    public static final String JAVADOC_NO_TREE="javadoc.notree"; // NOI18N
-    public static final String JAVADOC_USE="javadoc.use"; // NOI18N
-    public static final String JAVADOC_NO_NAVBAR="javadoc.nonavbar"; // NOI18N
-    public static final String JAVADOC_NO_INDEX="javadoc.noindex"; // NOI18N
-    public static final String JAVADOC_SPLIT_INDEX="javadoc.splitindex"; // NOI18N
-    public static final String JAVADOC_AUTHOR="javadoc.author"; // NOI18N
-    public static final String JAVADOC_VERSION="javadoc.version"; // NOI18N
-    public static final String JAVADOC_WINDOW_TITLE="javadoc.windowtitle"; // NOI18N
-    public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
-    public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
-    
+    // Properties stored in the PROJECT.PROPERTIES
     public static final String APPLICATION_TITLE ="application.title"; // NOI18N
     public static final String APPLICATION_VENDOR ="application.vendor"; // NOI18N
     public static final String APPLICATION_DESC ="application.desc"; // NOI18N
     public static final String APPLICATION_HOMEPAGE ="application.homepage"; // NOI18N
     public static final String APPLICATION_SPLASH ="application.splash"; // NOI18N
-    
-    public static final String LICENSE_NAME = "project.license";
-    public static final String LICENSE_PATH = "project.licensePath";
-    
-    // Properties stored in the PRIVATE.PROPERTIES
-    public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
-    // Main build.xml location
-    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
     //Disables copying of dependencies to dist folder
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
-    //Files excluded from dist.jar
-    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
+    //Runtime platform
+    public static final String PLATFORM_RUNTIME = "platform.runtime";   //NOI18N
+
+    //Name of ant platform name property
+    public static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
+
+    private static final String[] CONFIG_AWARE_PROPERTIES = {
+        ProjectProperties.MAIN_CLASS,
+        ProjectProperties.APPLICATION_ARGS,
+        ProjectProperties.RUN_JVM_ARGS,
+        ProjectProperties.RUN_WORK_DIR,
+        PLATFORM_RUNTIME
+    };
     
     ClassPathSupport cs;
     
@@ -346,8 +305,8 @@ public class J2SEProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
         final Collection<? extends PlatformFilter> filters = project.getLookup().lookupAll(PlatformFilter.class);
-        PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM)) :
-                PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM), filters);
+        PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(PLATFORM_ACTIVE)) :
+                PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(PLATFORM_ACTIVE), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
@@ -407,7 +366,7 @@ public class J2SEProjectProperties {
                 PROCESSOR_OPTIONS_MODEL.addRow(new String[] {key, value});
             }
         }
-        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILER_ARG );
+        JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILERARGS );
         
         // CustomizerJar
         DIST_JAR_MODEL = projectGroup.createStringDocument( evaluator, DIST_JAR );
@@ -865,7 +824,7 @@ public class J2SEProjectProperties {
             }
         });
         Map<String,String> def = new TreeMap<String,String>();
-        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
             String v = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
             if (v == null) {
                 v = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
@@ -914,7 +873,7 @@ public class J2SEProjectProperties {
             EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
         //System.err.println("storeRunConfigs: " + configs);
         Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {ProjectProperties.MAIN_CLASS, ProjectProperties.APPLICATION_ARGS, ProjectProperties.RUN_JVM_ARGS, ProjectProperties.RUN_WORK_DIR}) {
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
             String v = def.get(prop);
             EditableProperties ep =
                     (prop.equals(ProjectProperties.APPLICATION_ARGS) ||

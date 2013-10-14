@@ -299,10 +299,6 @@ public final class RepositoryImpl<R, Q, I> {
         return issuePriorityProvider;
     }
 
-    public IssuePriorityInfo[] getPriorityInfos() {
-        return issuePriorityProvider != null ? issuePriorityProvider.getPriorityInfos() : new IssuePriorityInfo[0];
-    }
-
     String getPriorityName(I i) {
         return issuePriorityProvider != null ? 
                 getPrioritySupport().getName(issuePriorityProvider.getPriorityID(i)) :

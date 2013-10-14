@@ -158,7 +158,7 @@ class SQLType {
         switch (sqlType) {
             case Types.CHAR:
                 if ((length != null) && (length.intValue() == 1)) {
-                     return typeList[isNullable ? 1 : 2];
+                     return typeList[1];//typeList[isNullable ? 1 : 2] is replaced with String always because of issue #195674 (openjpa fo Character handling)
                 }
             default:
                 return null;

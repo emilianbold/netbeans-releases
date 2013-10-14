@@ -40,7 +40,6 @@ package org.netbeans.modules.jira;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.EnumSet;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
@@ -108,15 +107,6 @@ public class JiraQueryProvider implements TeamQueryProvider<JiraQuery, NbJiraIss
     @Override
     public void addPropertyChangeListener(JiraQuery query, PropertyChangeListener listener) {
         query.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean contains(JiraQuery query, String id) {
-        return query.contains(id);
-    }
-
-    public Collection<NbJiraIssue> getIssues(JiraQuery query, EnumSet<IssueCache.Status> includeStatus) {
-        return query.getIssues(includeStatus);
     }
 
     @Override

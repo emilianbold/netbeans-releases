@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -191,7 +191,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
         try {
             long startTime = runIDE(getIdeHome(), userdir, measureFile, timeout);
-            Hashtable measuredValues = parseMeasuredValues(measureFile);
+            HashMap<String, Long> measuredValues = parseMeasuredValues(measureFile);
 
             Object tempValue = measuredValues.get("IDE starts t = ");
             long runTime = 0;
@@ -220,7 +220,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
             for (String[] data : STARTUP_DATA) {
                 if (measuredValues.containsKey(data[1])) {
-                    long value = ((Long) measuredValues.get(data[1])).longValue();
+                    long value = measuredValues.get(data[1]);
                     System.out.println(data[0] + "=" + value);
                     reportPerformance(performanceDataName + " | " + data[0], value, "ms", 1);
                 } else {
@@ -265,16 +265,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
     }
 
     static long runIDE(File ideHome, File userdir, File measureFile, long timeout, File[] clusters) throws IOException {
-        //check <userdir>/lock file
-        if (new File(userdir, "lock").exists()) {
-            fail("Original Userdir is locked!");
-        }
-
         //add guitracker on classpath
-        String classpath = System.getProperty("performance.testutilities.dist.jar");
-        if (classpath == null) {
-            classpath = ideHome.getAbsolutePath() + separator + "extra" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
-        }
+        String classpath = ideHome.getAbsolutePath() + separator + "java" + separator + "modules" + separator + "org-netbeans-modules-performance.jar";
 
         //add property on command line
         String test_cmd_suffix = System.getProperty("xtest.perf.commandline.suffix");
@@ -340,8 +332,6 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
         // wait after startup, need to set longer time for complex startup because rescan rises
 //        cmd.append(" -J-Dorg.netbeans.performance.waitafterstartup=").append(timeout);
         cmd.append(" -J-Dnetbeans.logger.console=false");
-        // disable rescaning after startup
-        //        cmd.append(" -J-Dnetbeans.javacore.noscan=true";
         // disable status line displayer - issue 90542
         cmd.append(" -J-Dorg.openide.awt.StatusDisplayer.DISPLAY_TIME=0");
         // test command line suffix
@@ -368,9 +358,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
             System.out.println("IDE exited with status = " + ideProcess.waitFor());
         } catch (InterruptedException ie) {
             ie.printStackTrace(System.err);
-            IOException ioe = new IOException("Caught InterruptedException :" + ie.getMessage());
-            ioe.initCause(ie);
-            throw ioe;
+            throw new IOException("Caught InterruptedException :" + ie.getMessage(), ie);
         }
 
         return startTime;
@@ -408,7 +396,7 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
                 File nbjunit = new File(MeasureStartupTimeTestCase.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                 File harness = nbjunit.getParentFile().getParentFile();
                 Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
-                TreeSet<File> sorted = new TreeSet<File>();
+                TreeSet<File> sorted = new TreeSet<>();
                 for (File p : harness.getParentFile().listFiles()) {
                     if (p.getName().startsWith("platform")) {
                         sorted.add(p);
@@ -436,17 +424,18 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
 
     /**
      * Get User directory. User directory is prepared and defined by property
-     * <br> <code> userdir.prepared </code> + "/sys/ide"
+     * <br> <code> userdir.prepared </code>.
      *
      * @throws IOException
      * @return User directory
      */
     protected File getUserdirFile() throws IOException {
         String usdPrep = System.getProperty("userdir.prepared");
-        if (!(usdPrep == null)) {
-            return new File(new File(usdPrep, "sys"), "ide");
+        System.err.println("\n\n\nUSERDIR=" + usdPrep);
+        if (usdPrep != null) {
+            return new File(usdPrep);
         }
-        return new File(new File(getWorkDir().getAbsolutePath(), "sys"), "ide");
+        return new File(getWorkDir(), "userdir0");
     }
 
     /**
@@ -485,11 +474,13 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      *
      * @param measuredFile file where the startup time is stored
      * @return measured startup time
+     * @throws
+     * org.netbeans.modules.performance.utilities.MeasureStartupTimeTestCase.CantParseMeasuredValuesException
      */
-    protected static Hashtable parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
-        Hashtable<String, Long> measuredValues = new Hashtable<String, Long>();
+    protected static HashMap<String, Long> parseMeasuredValues(File measuredFile) throws CantParseMeasuredValuesException {
+        HashMap<String, Long> measuredValues = new HashMap<>();
 
-        Hashtable<String, String> startup_data = new Hashtable<String, String>(STARTUP_DATA.length);
+        HashMap<String, String> startup_data = new HashMap<>(STARTUP_DATA.length);
         for (String[] data : STARTUP_DATA) {
             startup_data.put(data[1], data[2]);
         }
@@ -548,8 +539,8 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
     public static class ThreadReader implements Runnable {
 
         private Thread thread;
-        private BufferedReader br;
-        private PrintStream out;
+        private final BufferedReader br;
+        private final PrintStream out;
         private String s;
 
         public ThreadReader(InputStream in, PrintStream out) {

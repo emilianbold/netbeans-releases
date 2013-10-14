@@ -78,7 +78,6 @@ import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -316,7 +315,6 @@ public class JiraRepository {
 
     public void removeQuery(JiraQuery query) {
         Jira.getInstance().getStorageManager().removeQuery(this, query);
-        getIssueCache().removeQuery(query.getStoredQueryName());
         synchronized(QUERIES_LOCK) {
             getQueriesIntern().remove(query);
         }
@@ -458,7 +456,7 @@ public class JiraRepository {
         return issues;
     }
 
-    private Cache getCache () {
+    public Cache getIssueCache () {
         synchronized (CACHE_LOCK) {
             if(cache == null) {
                 cache = new Cache();
@@ -467,10 +465,6 @@ public class JiraRepository {
         }
     }
     
-    public IssueCache<NbJiraIssue> getIssueCache() {
-        return getCache();
-    }
-
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
@@ -769,10 +763,10 @@ public class JiraRepository {
         if (task != null) {
             synchronized (CACHE_LOCK) {
                 String taskKey = NbJiraIssue.getKey(task);
-                Cache issueCache = getCache();
+                Cache issueCache = getIssueCache();
                 issue = issueCache.getIssue(taskKey);
                 if (issue == null) {
-                    issue = issueCache.setIssueData(taskKey, new NbJiraIssue(task, this));
+                    issue = issueCache.setIssue(taskKey, new NbJiraIssue(task, this));
                 }
             }
         }
@@ -818,7 +812,7 @@ public class JiraRepository {
     }
 
     public void taskDeleted (String taskId) {
-        getCache().removeIssue(taskId);
+        getIssueCache().removeIssue(taskId);
     }
 
     public Collection<NbJiraIssue> getUnsubmittedIssues () {
@@ -839,14 +833,11 @@ public class JiraRepository {
         }
     }
     
-    private class Cache extends IssueCache<NbJiraIssue> {
+    public class Cache  {
         private final Map<String, Reference<NbJiraIssue>> issues = new HashMap<>();
         
-        Cache() {
-            super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
-        }
+        Cache() { }
 
-        @Override
         public NbJiraIssue getIssue (String key) {
             synchronized (CACHE_LOCK) {
                 Reference<NbJiraIssue> issueRef = issues.get(key);
@@ -854,28 +845,11 @@ public class JiraRepository {
             }
         }
 
-        @Override
-        public NbJiraIssue setIssueData (String key, NbJiraIssue issue) {
+        public NbJiraIssue setIssue (String key, NbJiraIssue issue) {
             synchronized (CACHE_LOCK) {
                 issues.put(key, new SoftReference<>(issue));
             }
             return issue;
-        }
-
-        @Override
-        public IssueCache.Status getStatus (String id) {
-            NbJiraIssue issue = getIssue(id);
-            if (issue != null) {
-                switch (issue.getStatus()) {
-                    case INCOMING_MODIFIED:
-                        return IssueCache.Status.ISSUE_STATUS_MODIFIED;
-                    case INCOMING_NEW:
-                        return IssueCache.Status.ISSUE_STATUS_NEW;
-                    case SEEN:
-                        return IssueCache.Status.ISSUE_STATUS_SEEN;
-                }
-            }
-            return IssueCache.Status.ISSUE_STATUS_UNKNOWN;
         }
 
         private void removeIssue (String key) {
@@ -885,20 +859,4 @@ public class JiraRepository {
         }
     }
     
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue> {
-        @Override
-        public long getLastModified(NbJiraIssue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getLastModify();
-        }
-        @Override
-        public long getCreated(NbJiraIssue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getCreated();
-        }
-        @Override
-        public Map<String, String> getAttributes(NbJiraIssue issue) {
-            return Collections.<String, String>emptyMap();
-        }
-    }
 }

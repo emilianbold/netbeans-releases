@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
@@ -60,7 +61,7 @@ public class KenaiQuery extends BugzillaQuery {
         super(name, repository, urlParameters, saved, false, false);
         this.product = product;
         this.predefinedQuery = predefined;
-        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.lastRefresh = BugzillaConfig.getInstance().getLastQueryRefresh(repository, getStoredQueryName());
         controller = createControler(repository, this, urlParameters);
     }
 
