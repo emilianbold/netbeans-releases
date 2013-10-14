@@ -53,6 +53,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
@@ -201,8 +202,13 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         List<Action> actions = new ArrayList<Action>();
         if (justTasks) {
             actions.addAll(Actions.getTaskPopupActions(taskNodes));
+            actions.add(null);
         }
-        actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        List<Action> submitablePopupActions = Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+        if (!submitablePopupActions.isEmpty()) {
+            actions.addAll(submitablePopupActions);
+            actions.add(null);
+        }
         List<Action> defaultActions = Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
         if (containsNewTask) {
             for (Action action : defaultActions) {
@@ -289,6 +295,10 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
             return s.isUnsubmitted();
         }
         return false;
+    }
+
+    public boolean isLocal() {
+        return BugtrackingManager.isLocalConnectorID(task.getRepositoryImpl().getConnectorId());
     }
 
     @Override

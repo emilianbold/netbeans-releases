@@ -481,7 +481,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             synchronized (LOCK_CATEGORIES) {
                 for (CategoryNode categoryNode : toDelete) {
                     model.removeRoot(categoryNode);
@@ -635,7 +635,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             for (RepositoryNode repositoryNode : toRemove) {
                 synchronized (LOCK_REPOSITORIES) {
                     repositoryNodes.remove(repositoryNode);
@@ -694,7 +694,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryQuestion", names);
-        if (confirmDelete(title, message)) {
+        if (DashboardUtils.confirmDelete(title, message)) {
             for (QueryNode queryNode : toDelete) {
                 queryNode.getQuery().remove();
             }
@@ -1221,20 +1221,6 @@ public final class DashboardViewer implements PropertyChangeListener {
 
         treeList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(Actions.DELETE_KEY, "org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction"); //NOI18N
         treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
-    }
-
-    private boolean confirmDelete(String title, String message) {
-        NotifyDescriptor nd = new NotifyDescriptor(
-                message,
-                title,
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null,
-                NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            return true;
-        }
-        return false;
     }
 
     private void handleSelection(TreeListNode node) {
