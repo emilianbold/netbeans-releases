@@ -61,7 +61,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -460,7 +462,13 @@ public class ConvertToLambdaPreconditionChecker {
 
         foundAssignmentToSupertype = !info.getTypes().isSameType(erasedExpectedType, lambdaType);
         
-        foundAssignmentToRawType =  info.getTypes().isSameType(erasedExpectedType, expectedType);
+        if (erasedExpectedType.getKind() == TypeKind.DECLARED) {
+            TypeElement te = (TypeElement)((DeclaredType)erasedExpectedType).asElement();
+            TypeMirror tt = (DeclaredType)te.asType();
+            if (tt.getKind() == TypeKind.DECLARED && !((DeclaredType)tt).getTypeArguments().isEmpty()) {
+                foundAssignmentToRawType =  info.getTypes().isSameType(erasedExpectedType, expectedType);
+            }
+        }
     }
 
     private TypeMirror findExpectedType(TreePath path) {
