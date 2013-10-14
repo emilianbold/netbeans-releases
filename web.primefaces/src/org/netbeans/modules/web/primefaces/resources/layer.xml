@@ -63,6 +63,10 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="template.xhtml" url="../templates/template.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.primefaces.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="JSF_From_Entity_Snippets">

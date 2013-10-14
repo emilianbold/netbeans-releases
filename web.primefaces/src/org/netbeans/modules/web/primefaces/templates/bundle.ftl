@@ -34,6 +34,9 @@ Close=Close
 Cancel=Cancel
 Save=Save
 SelectOneMessage=Select One...
+Home=Home
+Maintenance=Maintenance
+AppName=
 
 <#list entities as entity>
 ${entity.entityClassName}Created=${entity.entityClassName} was successfully created.
