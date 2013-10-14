@@ -75,10 +75,6 @@ public abstract class TestQuery {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public boolean contains(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }

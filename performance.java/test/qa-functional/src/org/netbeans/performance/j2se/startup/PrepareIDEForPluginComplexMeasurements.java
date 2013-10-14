@@ -41,114 +41,105 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.performance.j2se.prepare;
-
+package org.netbeans.performance.j2se.startup;
 
 import java.io.File;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
-
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-
 import org.netbeans.jemmy.operators.Operator;
-
 import org.netbeans.junit.NbTestSuite;
 
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.performance.j2se.Utilities;
-
-
-
 /**
- * Prepare user directory for complex measurements (startup time and memory consumption) of IDE with opened NB plug-in.
- * Open 3 java files and shut down ide.
- * Created user directory will be used to measure startup time and memory consumption of IDE with opened files.
+ * Prepare user directory for complex measurements (startup time and memory
+ * consumption) of IDE with opened NB plug-in. Open 3 java files and shut down
+ * ide. Created user directory will be used to measure startup time and memory
+ * consumption of IDE with opened files.
  *
- * @author Marian.Mirilovic@sun.com
+ * @author Marian Mirilovic
  */
 public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplexMeasurements {
-    
-    public static final String suiteName="J2SE Prepare suite";
-    
-    /** Define testcase
+
+    public static final String suiteName = "J2SE Prepare suite";
+
+    /**
+     * Define testcase
+     *
      * @param testName name of the testcase
      */
     public PrepareIDEForPluginComplexMeasurements(String testName) {
         super(testName);
     }
-    
-    /** Testsuite
+
+    /**
+     * Testsuite
+     *
      * @return testuite
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("Prepare IDE for Plugin Complex Measurements Suite");
         System.setProperty("suitename", PrepareIDEForPluginComplexMeasurements.class.getCanonicalName());
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(PrepareIDEForPluginComplexMeasurements.class)
-                .addTest("testCloseAllDocuments")                
+        suite.addTest(JellyTestCase.emptyConfiguration()
+                .addTest(PrepareIDEForPluginComplexMeasurements.class)
+                .addTest("testCloseAllDocuments")
                 .addTest("testCloseMemoryToolbar")
-                .addTest(PrepareIDEForPluginComplexMeasurements.class, "testOpenFiles")
-                .addTest("testSaveStatus").enableModules(".*").clusters(".*")));
+                .addTest("testOpenFiles")
+                .addTest("testSaveStatus")
+                .suite());
         return suite;
     }
-    
+
     /**
      * Open 3 selected files from jEdit project.
      */
     @Override
-    public void testOpenFiles(){
-        File parentDir = getDataDir().getParentFile().getParentFile();
-        File funcData = new File(parentDir, "qa-functional"+File.separator+"data");
-        try {            
-            Utilities.openProject("SystemProperties", funcData);
-        } catch (Exception e) {
-            System.err.println(e.getLocalizedMessage());
-        }
+    public void testOpenFiles() {
         try {
+            openDataProjects("SystemProperties");
             String[][] files_path = {
-                {"org.myorg.systemproperties","AllPropsChildren.java"},
-                {"org.myorg.systemproperties","AllPropsNode.java"},
-                {"org.myorg.systemproperties","OnePropNode.java"},
-                {"org.myorg.systemproperties","PropertiesNotifier.java"},
-                {"org.myorg.systemproperties","RefreshPropsAction.java"}
+                {"org.myorg.systemproperties", "AllPropsChildren.java"},
+                {"org.myorg.systemproperties", "AllPropsNode.java"},
+                {"org.myorg.systemproperties", "OnePropNode.java"},
+                {"org.myorg.systemproperties", "PropertiesNotifier.java"},
+                {"org.myorg.systemproperties", "RefreshPropsAction.java"}
             };
-            
+
             Node[] openFileNodes = new Node[files_path.length];
             Node node;
-            
+
             // try to workarround problems with tooltip on Win2K & WinXP - issue 56825
             ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode("SystemProperties");
             projectNode.expand();
-            
+
             SourcePackagesNode sourceNode = new SourcePackagesNode(projectNode);
             sourceNode.expand();
-            
+
             // create exactly (full match) and case sensitively comparing comparator
             Operator.DefaultStringComparator comparator = new Operator.DefaultStringComparator(true, true);
             sourceNode.setComparator(comparator);
-            
-            for(int i=0; i<files_path.length; i++) {
-                node = new Node(sourceNode,files_path[i][0]);
+
+            for (int i = 0; i < files_path.length; i++) {
+                node = new Node(sourceNode, files_path[i][0]);
                 node.expand();
-                
-                openFileNodes[i] = new Node(node,files_path[i][1]);
-                
+
+                openFileNodes[i] = new Node(node, files_path[i][1]);
+
                 //try to avoid issue 56825
                 openFileNodes[i].select();
-                
+
                 // open file one by one, opening all files at once causes never ending loop (java+mdr)
                 //new OpenAction().performAPI(openFileNodes[i]);
             }
-            
+
             // try to come back and open all files at-once, rises another problem with refactoring, if you do open file and next expand folder,
             // it doesn't finish in the real-time -> hard to reproduced by hand
             try {
                 new OpenAction().performAPI(openFileNodes);
-            }catch(Exception exc){
+            } catch (Exception exc) {
                 err.println("---------------------------------------");
                 err.println("issue 56825 : EXCEPTION catched during OpenAction");
                 exc.printStackTrace(err);
@@ -157,18 +148,17 @@ public class PrepareIDEForPluginComplexMeasurements extends PrepareIDEForComplex
                 new OpenAction().performAPI(openFileNodes);
                 err.println("issue 56825 : Success");
             }
-            
-            
+
             // check whether files are opened in editor
-            for(int i=0; i<files_path.length; i++) {
+            for (int i = 0; i < files_path.length; i++) {
                 new EditorOperator(files_path[i][1]);
             }
 //        new org.netbeans.jemmy.EventTool().waitNoEvent(60000);
-            
-        }catch(Exception exc){
+
+        } catch (Exception exc) {
             test_failed = true;
             fail(exc);
         }
     }
-    
+
 }

@@ -100,11 +100,6 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
     }
 
     @Override
-    public boolean contains (LocalQuery q, String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void refresh (LocalQuery query) {
         query.refresh();
     }
