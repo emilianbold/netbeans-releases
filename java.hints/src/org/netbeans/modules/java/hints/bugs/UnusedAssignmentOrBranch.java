@@ -178,13 +178,19 @@ public class UnusedAssignmentOrBranch {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         Set<? extends Tree> flowResult = flow.getDeadBranches();
         IfTree it = (IfTree) ctx.getPath().getLeaf();
-
-        for (Tree t : new Tree[] {it.getThenStatement(), it.getElseStatement()}) {
-            if (flowResult.contains(t)) {
+        
+        if (flowResult.contains(it.getThenStatement())) {
+            result.add(ErrorDescriptionFactory.forTree(ctx, it.getThenStatement(), deadBranchLabel));
+        }
+        Tree t = it.getElseStatement();
+        if (flowResult.contains(t)) {
+            result.add(ErrorDescriptionFactory.forTree(ctx, t, deadBranchLabel));
+            while (t != null && t.getKind() == Tree.Kind.IF) {
+                it = (IfTree)t;
+                t = it.getElseStatement();
                 result.add(ErrorDescriptionFactory.forTree(ctx, t, deadBranchLabel));
             }
         }
-
         return result;
     }
 
