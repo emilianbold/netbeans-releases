@@ -84,25 +84,25 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         return ui;
     }
 
-    @NbBundle.Messages("ERR_ScanningInProgress=Can't refactor - scanning in progress.")
+    @NbBundle.Messages("ERR_ParsingInProgress=Can't refactor - parsing in progress.")
     protected void fetchRefactoringUI(Source source, UserTask userTask) {
         Future<?> futureTask = RP.submit(new ParsingTask(source, userTask));
-        boolean scanningInProgress = false;
+        boolean parsingInProgress = false;
         try {
-            futureTask.get(300, TimeUnit.MILLISECONDS);
+            futureTask.get(2500, TimeUnit.MILLISECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ex) {
             LOG.log(Level.WARNING, null, ex);
         } catch (TimeoutException ex) {
             futureTask.cancel(true);
-            scanningInProgress = true;
+            parsingInProgress = true;
         }
         TopComponent activeTopComponent = TopComponent.getRegistry().getActivated();
         if (ui != null) {
             UI.openRefactoringUI(ui, activeTopComponent);
-        } else if (scanningInProgress) {
-            JOptionPane.showMessageDialog(null, Bundle.ERR_ScanningInProgress());
+        } else if (parsingInProgress) {
+            JOptionPane.showMessageDialog(null, Bundle.ERR_ParsingInProgress());
         } else {
             JOptionPane.showMessageDialog(null, Bundle.ERR_CannotRefactorLoc());
         }
@@ -112,6 +112,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         private final Source source;
         private final UserTask userTask;
         private volatile boolean cancelled;
+        private volatile Future<Void> future;
 
         private ParsingTask(Source source, UserTask userTask) {
             this.source = source;
@@ -122,7 +123,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         public void run() {
             try {
                 if (!cancelled) {
-                    ParserManager.parse(Collections.singleton(source), userTask);
+                    future = ParserManager.parseWhenScanFinished(Collections.singleton(source), userTask);
                 }
             } catch (ParseException e) {
                 LOG.log(Level.WARNING, null, e);
@@ -132,6 +133,9 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         @Override
         public boolean cancel() {
             cancelled = true;
+            if (future != null) {
+                future.cancel(true);
+            }
             return true;
         }
     }
