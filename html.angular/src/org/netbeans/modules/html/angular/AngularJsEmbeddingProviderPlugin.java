@@ -109,10 +109,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     @Override
     public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
         if (AngularJsIndexer.Factory.isScannerThread()) {
-            System.out.println("%%%%%%%%%%%%%%% nevytvarim angular virtualni source");
             return false;
         }
-        System.out.println("*************** jedu virtual source");
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
@@ -252,7 +250,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         sb.append("(function () {\n$scope = "); //NOI18N
         
         Project project = FileOwnerQuery.getOwner(snapshot.getSource().getFileObject());
-        String fqn = controllerName;
+        String fqn = controllerName.trim();
         AngularJsIndex index = null;
         try {
              index = AngularJsIndex.get(project);
@@ -268,16 +266,15 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
             }
         }
-        sb.append(fqn);
-        sb.append(".$scope;\n");   //NOI18N
-//        if (!controllerName.trim().isEmpty()) {
-//            sb.append(controllerName).append("\n");  //NOI18N
-//        }
+        
+        if (!fqn.isEmpty()) {
+            sb.append(fqn);
+            sb.append(".");
+        }
+        sb.append("$scope;\n");   //NOI18N
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
-        //embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
-        sb = new StringBuilder();
-        sb.append("with ($scope) { \n");
-        embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\nwith ($scope) { \n", Constants.JAVASCRIPT_MIMETYPE));
         return true;
     }
     
