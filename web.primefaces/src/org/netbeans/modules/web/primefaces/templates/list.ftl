@@ -19,6 +19,7 @@
         blob - does field represents a large block of text? (type: boolean)
         relationshipOne - does field represent one to one or many to one relationship (type: boolean)
         relationshipMany - does field represent one to many relationship (type: boolean)
+        returnType - fully qualified data type of the field (type: String)
         id - field id name (type: String)
         required - is field optional and nullable or it is not? (type: boolean)
         valuesGetter - if item is of type 1:1 or 1:many relationship then use this
@@ -67,6 +68,8 @@
                                 <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}">
                                     <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                                 </h:outputText>
+    <#elseif entityDescriptor.returnType?matches(".*[Bb]+oolean")>
+                                <p:selectBooleanCheckbox value="${r"#{"}${entityDescriptor.name}${r"}"}" disabled="true"/>
     <#else>
                                 <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}"/>
     </#if>
