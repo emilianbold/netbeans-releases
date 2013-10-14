@@ -324,7 +324,8 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
 
 
     public String getPriorityID() {
-        return getPriority().getId();
+        final Priority priority = getPriority();
+        return priority != null ? priority.getId() : null;
     }
     
     int getSortOrder() {
