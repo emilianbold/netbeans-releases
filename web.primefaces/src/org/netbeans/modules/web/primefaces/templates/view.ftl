@@ -34,6 +34,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="${nsLocation}/jsf/facelets"
       xmlns:h="${nsLocation}/jsf/html"
+      xmlns:f="${nsLocation}/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
     <ui:composition>
@@ -48,6 +49,8 @@
                         <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}">
                             <f:convertDateTime pattern="${entityDescriptor.dateTimeFormat}" />
                         </h:outputText>
+    <#elseif entityDescriptor.returnType?matches(".*[Bb]+oolean")>
+                        <p:selectBooleanCheckbox value="${r"#{"}${entityDescriptor.name}${r"}"}" disabled="true"/>
     <#else>
                         <h:outputText value="${r"#{"}${entityDescriptor.name}${r"}"}" title="${r"#{"}${bundle}.View${entityName}Title_${entityDescriptor.id?replace(".","_")}${r"}"}"/>
     </#if>
