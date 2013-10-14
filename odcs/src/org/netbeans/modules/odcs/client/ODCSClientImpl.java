@@ -1,13 +1,21 @@
 package org.netbeans.modules.odcs.client;
 
+import com.tasktop.c2c.server.common.service.EntityNotFoundException;
+import com.tasktop.c2c.server.common.service.ValidationException;
+import com.tasktop.c2c.server.common.service.domain.QueryResult;
+import com.tasktop.c2c.server.common.service.web.ApacheHttpRestClientDelegate;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
 import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
+import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
+import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
+import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +48,7 @@ import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
+import org.openide.util.Exceptions;
 import org.openide.util.NetworkSettings;
 
 public class ODCSClientImpl implements ODCSClient {
@@ -51,6 +60,10 @@ public class ODCSClientImpl implements ODCSClient {
     private final NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     
     private final static Logger LOG = Logger.getLogger(ODCSClient.class.getName());
+    private ActivityServiceClient actvityServiceClient;
+    private ProfileWebServiceClient profileServiceClient;
+    private ScmServiceClient scmServiceClient;
+    private TaskServiceClient tasksServiceClient;
     
     public ODCSClientImpl(String url, PasswordAuthentication pa) {
         this.location = new WebLocation(pa, url);
@@ -63,10 +76,6 @@ public class ODCSClientImpl implements ODCSClient {
         httpClient.getParams().setAuthenticationPreemptive(true);
     }
 
-    public <T> T runGet(Class<T> t, String service) throws ODCSException {
-        return run(new GetMethod(url + service), t, service);
-    }
-    
     private <T> T runDelete(Class<T> t, String service) throws ODCSException {
         return run(new DeleteMethod(url + service), t, service);
     }
@@ -97,139 +106,132 @@ public class ODCSClientImpl implements ODCSClient {
             method.releaseConnection();
         }
     }
-    
-    public <T> T runPost(Class<T> t, String service, Object content) throws ODCSException {
-        PostMethod method = new PostMethod(url + service);
-        method.setDoAuthentication(true);
-        method.setRequestHeader("Content-Type", "application/json");
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            if(content != null) {
-                method.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(content), "application/json", "UTF-8"));
-            }
-        } catch (IOException e) {
-            throw new ODCSException(e);
-        } 
-        try {
-            HostConfiguration hostConfiguration = WebUtil.createHostConfiguration(httpClient, location, nullProgressMonitor);
-            int result = WebUtil.execute(httpClient, hostConfiguration, method, nullProgressMonitor);
-            if (result == HttpStatus.SC_OK) {
-                InputStream in = WebUtil.getResponseBodyAsStream(method, nullProgressMonitor);
-                try {
-                    ObjectMapper m = new ObjectMapper();
-                    m.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                    return m.readValue(new InputStreamReader(in), t);
-                } finally {
-                    in.close();
-                }
-            } else if(result == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                handleInternalServerError(method, service, result);
-                return null;
-            } else {
-                throw new ODCSException(service + " returned http code : " + result);
-            }
-        } catch (IOException e) {
-            throw new ODCSException(e);
-        } finally {
-            method.releaseConnection();
-        }
-    }
 
     @Override
     public Profile getCurrentProfile() throws ODCSException {
-        return runGet(ProfileWrapper.class, "api/profile").profile;
+        return getProfileClient().getCurrentProfile();
     }
 
     @Override
     public List<Project> getMyProjects() throws ODCSException {
-        ProjectsQuery query = new ProjectsQuery(ProjectRelationship.MEMBER, null);
-        ProjectQueryResultWrapper w = runPost(ProjectQueryResultWrapper.class, "api/projects/search", query);
-        return w.queryResult.getResultPage();
+        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.MEMBER, null));
+        return r != null ? r.getResultPage() : null;
     }
 
     @Override
     public Project getProjectById (String projectId) throws ODCSException {
-        return runGet(ProjectWrapper.class, "api/projects/" + projectId).project;
+        try {
+            return getProfileClient().getProjectByIdentifier(projectId);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
-        ProjectActivity[] l = runGet(ActivityWrapper.class, "api/activity/" + projectId).projectActivityList;
-        return Arrays.asList(l);
+        return getActivityClient().getRecentActivity(projectId);
     }
 
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
-        ProjectActivity[] l = runGet(ActivityWrapper.class, "api/activity/" + projectId + "/short").projectActivityList;
-        return Arrays.asList(l);
+        return getActivityClient().getShortActivityList(projectId);
     }
 
     @Override
     public List<ScmRepository> getScmRepositories(String projectId) throws ODCSException {
-        ScmRepository[] l = runGet(RepositoryWrapper.class, "s/" + projectId + "/scm/api/repository").scmRepositoryList;
-        return Arrays.asList(l);
+        try {
+            return getScmClient(projectId).getScmRepositories();
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public boolean isWatchingProject(String projectId) throws ODCSException {
-        return runGet(WatchingProjectWrapper.class, "api/projects/" + projectId + "/watch").isWatching;
+        try {
+            return getProfileClient().isWatchingProject(projectId);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
-        ProjectsQuery query = new ProjectsQuery(pattern, null);
-        ProjectQueryResultWrapper w = runPost(ProjectQueryResultWrapper.class, "api/projects/search", query);
-        return w.queryResult.getResultPage();
+        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(pattern, null));
+        return r != null ? r.getResultPage() : null;
     }
 
     @Override
     public void unwatchProject(String projectId) throws ODCSException {
-        runPost(WatchingProjectWrapper.class, "api/projects/" + projectId + "/unwatch", null);
+        try {
+            getProfileClient().unwatchProject(projectId);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public void watchProject(String projectId) throws ODCSException {
-        runPost(WatchingProjectWrapper.class, "api/projects/" + projectId + "/watch", null);
+        try {
+            getProfileClient().watchProject(projectId);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public List<Project> getWatchedProjects () throws ODCSException {
-        ProjectsQuery query = new ProjectsQuery(ProjectRelationship.WATCHER, null);
-        ProjectQueryResultWrapper w = runPost(ProjectQueryResultWrapper.class, "api/projects/search", query);
-        return w.queryResult.getResultPage();
+        QueryResult<Project> r = getProfileClient().findProjects(new ProjectsQuery(ProjectRelationship.WATCHER, null));
+        return r != null ? r.getResultPage() : null;
     }
 
     @Override
     public Project createProject (Project project) throws ODCSException {
-        ProjectWrapper w = runPost(ProjectWrapper.class, "api/profile/project", project);
-        Project p = w.project;
-        if (w.project.getProjectServices() == null) {
-            p = getProjectById(w.project.getIdentifier());
+        try {
+            return getProfileClient().createProject(project);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        } catch (ValidationException ex) {
+            throw new ODCSException(ex);
         }
-        return p;
     }
     
     @Override
     public SavedTaskQuery createQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
-        QueryWrapper w = runPost(QueryWrapper.class, "s/" + projectId + "/tasks/task/query", query);
-        return w.savedTaskQuery;
+        try {
+            return getTasksClient(projectId).createQuery(query);
+        } catch (ValidationException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public SavedTaskQuery updateQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
-        QueryWrapper w = runPost(QueryWrapper.class, "s/" + projectId + "/tasks/task/query/" + query.getId(), query);
-        return w.savedTaskQuery;
+        try {
+            return getTasksClient(projectId).updateQuery(query);
+        } catch (ValidationException ex) {
+            throw new ODCSException(ex);
+        } catch (EntityNotFoundException ex) {
+            throw new ODCSException(ex);
+        }
     }
 
     @Override
     public void deleteQuery(String projectId, Integer queryId) throws ODCSException {
+        // XXX UnsupportedOperationException !!!
+//        try {
+//            getTasksClient(projectId).deleteQuery(queryId);
+//        } catch (ValidationException ex) {
+//            throw new ODCSException(ex);
+//        } catch (EntityNotFoundException ex) {
+//            throw new ODCSException(ex);
+//        }
         runDelete(QueryWrapper.class, "s/" + projectId + "/tasks/task/query/" + queryId);
     }
 
     @Override
     public RepositoryConfiguration getRepositoryContext(String projectId) throws ODCSException {
-        RepositoryConfigurationWrapper w = runGet(RepositoryConfigurationWrapper.class, "s/" + projectId + "/tasks/repositoryContext");
-        return w.repositoryConfiguration;
+        return getTasksClient(projectId).getRepositoryContext();
     }
 
     private void handleInternalServerError(HttpMethodBase method, String service, int result) throws ODCSException, IOException {
@@ -247,6 +249,51 @@ public class ODCSClientImpl implements ODCSClient {
         } finally {
             in.close();
         }
+    }
+
+    private ActivityServiceClient getActivityClient() {
+        if (actvityServiceClient == null) {
+            actvityServiceClient = new ActivityServiceClient();
+            actvityServiceClient.setBaseUrl(url + "api/");
+            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            actvityServiceClient.setRestClientDelegate(delegate);
+        }
+        return actvityServiceClient;
+    }
+    
+    private ProfileWebServiceClient getProfileClient() {
+        if (profileServiceClient == null) {
+            profileServiceClient = new ProfileWebServiceClient();
+            profileServiceClient.setBaseUrl(url + "api/");
+            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            profileServiceClient.setRestClientDelegate(delegate);
+        }
+        return profileServiceClient;
+    }
+
+    private ScmServiceClient getScmClient(String projectId) {
+        if (scmServiceClient == null) {
+            scmServiceClient = new ScmServiceClient();
+            scmServiceClient.setBaseUrl(url + "s/" + projectId + "/scm/api/");
+            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            scmServiceClient.setRestClientDelegate(delegate);
+        }
+        return scmServiceClient;        
+    }
+
+    private TaskServiceClient getTasksClient(String projectId) {
+        if (tasksServiceClient == null) {
+            tasksServiceClient = new TaskServiceClient();
+            //      runPost(QueryWrapper.class, "s/" + projectId + "/tasks/task/query", query)
+            tasksServiceClient.setBaseUrl(url + "s/" + projectId + "/tasks/");
+            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            tasksServiceClient.setRestClientDelegate(delegate);
+        }
+        return tasksServiceClient;     
     }
 
     private class WebLocation extends AbstractWebLocation {
