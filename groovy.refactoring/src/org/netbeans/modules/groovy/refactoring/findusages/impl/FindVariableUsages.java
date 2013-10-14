@@ -141,8 +141,7 @@ public class FindVariableUsages extends AbstractFindUsages {
 
             if (variable != null) {
                 final String varName = variableExpression.getText();
-                final String fileName = getSourceUnit().getName();
-                final String varType = fileName.substring(0, fileName.indexOf(".")); // NOI18N
+                final String varType = variable.getType().getName();
 
                 addIfEqual(expression, varType, varName);
             }
