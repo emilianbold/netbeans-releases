@@ -477,9 +477,16 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
 
         Charset encoding = FileEncodingQuery.getEncoding(project.getProjectDirectory());
-        if (webRoot.getFileObject(CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET) == null) {
-            String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
-            FileObject target = FileUtil.createData(webRoot, CSS_FOLDER+JSFClientGenerator.JSFCRUD_STYLESHEET);
+        if (webRoot.getFileObject(CSS_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET) == null) {
+            // create Framework specific CSS file if available
+            String content;
+            FileObject frameworkCss = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/"+ JSFClientGenerator.JSFCRUD_STYLESHEET);
+            if (frameworkCss != null && frameworkCss.isValid()) {
+                content = JSFFrameworkProvider.readResource(frameworkCss.getInputStream(), "UTF-8"); //NOI18N
+            } else {
+                content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
+            }
+            FileObject target = FileUtil.createData(webRoot, CSS_FOLDER + JSFClientGenerator.JSFCRUD_STYLESHEET);
             JSFFrameworkProvider.createFile(target, content, encoding.name());
             progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", target.getNameExt()); //NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
