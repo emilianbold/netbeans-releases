@@ -104,6 +104,7 @@ public final class J2MEProjectBuilder {
     private final Collection<File> sourceRoots;
     private final Collection<Library> compileLibraries;
     private final Collection<Library> runtimeLibraries;
+    private JavaPlatform sdk = JavaPlatform.getDefault();
     private boolean hasDefaultRoots;
     private String librariesDefinition;
     private String buildXmlName;
@@ -129,6 +130,13 @@ public final class J2MEProjectBuilder {
         this.sourceRoots = new LinkedHashSet<>();
         this.compileLibraries = new LinkedHashSet<>();
         this.runtimeLibraries = new LinkedHashSet<>();
+    }
+
+    @NonNull
+    public J2MEProjectBuilder setSDKPlatform(@NonNull final JavaPlatform sdk) {
+        Parameters.notNull("sdk", sdk); //NOI18N
+        this.sdk = sdk;
+        return this;
     }
 
     @NonNull
@@ -203,6 +211,7 @@ public final class J2MEProjectBuilder {
                             "${"+ ProjectProperties.JAVAC_CLASSPATH+"}:",   //NOI18N
                             "${"+ProjectProperties.BUILD_CLASSES_DIR+ "}"), //NOI18N
                         platform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME),
+                        sdk.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME),
                         customProjectProperties,
                         customPrivateProperties);
                 final J2MEProject p = (J2MEProject) ProjectManager.getDefault().findProject(dirFO);
@@ -410,6 +419,7 @@ public final class J2MEProjectBuilder {
             @NonNull String[] compileClassPath,
             @NonNull String[] runtimeClassPath,
             @NonNull final String platformId,
+            @NonNull final String sdkPlatform,
             @NullAllowed Map<String, String> customProjectProperties,
             @NullAllowed Map<String, String> customPrivateProperties
             ) throws IOException {
@@ -482,7 +492,8 @@ public final class J2MEProjectBuilder {
         ep.setProperty(ProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form"); // NOI18N
 
         //Platform
-        ep.setProperty(ProjectProperties.PLATFORM_ACTIVE, platformId); // NOI18N
+        ep.setProperty(ProjectProperties.PLATFORM_ACTIVE, platformId);
+        ep.setProperty(J2MEProjectProperties.PLATFORM_SDK, sdkPlatform);
 
         //Javadoc Properties
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
