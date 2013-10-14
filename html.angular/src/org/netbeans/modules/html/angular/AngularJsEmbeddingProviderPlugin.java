@@ -274,7 +274,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         sb.append("$scope;\n");   //NOI18N
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
         embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
-        embeddings.add(snapshot.create("\nwith ($scope) { \n", Constants.JAVASCRIPT_MIMETYPE));
+        embeddings.add(snapshot.create("\nwith ($scope) { \n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
         return true;
     }
     
