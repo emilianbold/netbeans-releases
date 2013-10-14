@@ -63,6 +63,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.QueryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.SortPanel;
 import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedCategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.ClosedRepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
@@ -71,6 +72,8 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -665,10 +668,10 @@ public class Actions {
         }
 
         @Override
-        public boolean isEnabled () {
+        public boolean isEnabled() {
             return super.isEnabled() && !containsLocalRepository(getRepositoryNodes());
         }
-        
+
     }
 
     public static class QuickSearchAction extends RepositoryAction {
@@ -708,12 +711,8 @@ public class Actions {
             }
         }        
         List<Action> actions = new ArrayList<Action>();
-        if(editPossible) {
-            actions.add(new EditQueryAction(queryNodes));
-        }  
-        if (openPossible) {
-            actions.add(new OpenQueryAction(queryNodes));
-        }
+        actions.add(new EditQueryAction(queryNodes));
+        actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
         //actions.add(new NotificationQueryAction(queryNodes));
         return actions;
@@ -778,6 +777,7 @@ public class Actions {
             return !containsQueryFromLocalRepository(getQueryNodes());
         }
     }
+
     public static class EditQueryAction extends QueryAction {
 
         public EditQueryAction(QueryNode... queryNodes) {
@@ -875,5 +875,24 @@ public class Actions {
             }
         }
         return isLocal;
+    }
+
+    public static class SortDialogAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SortPanel panel = new SortPanel();
+            NotifyDescriptor categoryNameDialog = new NotifyDescriptor(
+                    panel,
+                    NbBundle.getMessage(Actions.class, "MSG_SortDialog"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.PLAIN_MESSAGE,
+                    null,
+                    NotifyDescriptor.OK_OPTION);
+            if (DialogDisplayer.getDefault().notify(categoryNameDialog) == NotifyDescriptor.OK_OPTION) {
+                panel.saveAttributes();
+            }
+            
+        }
     }
 }
