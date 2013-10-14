@@ -255,8 +255,7 @@ public class ODCSClientImpl implements ODCSClient {
         if (actvityServiceClient == null) {
             actvityServiceClient = new ActivityServiceClient();
             actvityServiceClient.setBaseUrl(url + "api/");
-            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
             actvityServiceClient.setRestClientDelegate(delegate);
         }
         return actvityServiceClient;
@@ -266,8 +265,7 @@ public class ODCSClientImpl implements ODCSClient {
         if (profileServiceClient == null) {
             profileServiceClient = new ProfileWebServiceClient();
             profileServiceClient.setBaseUrl(url + "api/");
-            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
             profileServiceClient.setRestClientDelegate(delegate);
         }
         return profileServiceClient;
@@ -277,8 +275,7 @@ public class ODCSClientImpl implements ODCSClient {
         if (scmServiceClient == null) {
             scmServiceClient = new ScmServiceClient();
             scmServiceClient.setBaseUrl(url + "s/" + projectId + "/scm/api/");
-            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
             scmServiceClient.setRestClientDelegate(delegate);
         }
         return scmServiceClient;        
@@ -287,10 +284,8 @@ public class ODCSClientImpl implements ODCSClient {
     private TaskServiceClient getTasksClient(String projectId) {
         if (tasksServiceClient == null) {
             tasksServiceClient = new TaskServiceClient();
-            //      runPost(QueryWrapper.class, "s/" + projectId + "/tasks/task/query", query)
             tasksServiceClient.setBaseUrl(url + "s/" + projectId + "/tasks/");
-            AuthenticationCredentials credentials = new AuthenticationCredentials(pa.getUserName(), new String(pa.getPassword()));
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(credentials.getUserName(), credentials.getPassword());
+            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
             tasksServiceClient.setRestClientDelegate(delegate);
         }
         return tasksServiceClient;     
