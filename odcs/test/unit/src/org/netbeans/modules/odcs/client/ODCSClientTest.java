@@ -221,17 +221,17 @@ public class ODCSClientTest extends NbTestCase  {
         assertTrue(watchedProjects.isEmpty());
     }
     
-    public void testGetRecentActivities () throws Exception {
-        ODCSClient client = getClient();
-        Project project = client.getProjectById(MY_PROJECT);
-        
-        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
-        assertNotNull(activities);
-        assertTrue(activities.size() > 0);
-        
-        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
-        assertNotNull(shortActivities);
-        assertTrue(shortActivities.size() > 0);
+//    public void testGetRecentActivities () throws Exception {
+//        ODCSClient client = getClient();
+//        Project project = client.getProjectById(MY_PROJECT);
+//        
+//        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
+//        assertNotNull(activities);
+//        assertTrue(activities.size() > 0);
+//        
+//        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
+//        assertNotNull(shortActivities);
+//        assertTrue(shortActivities.size() > 0);
         
         
         // lets not compare the arrays for now. short activities seem to skip some ...
@@ -262,7 +262,7 @@ public class ODCSClientTest extends NbTestCase  {
 //                assertActivity((TaskActivity) a1, (TaskActivity) a2);
 //            }
 //        }
-    }
+//    }
     
 //    public void testGetHudsonStatus () throws Exception {
 //        ODCSClient client = getClient();
