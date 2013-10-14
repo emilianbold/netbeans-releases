@@ -527,6 +527,9 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
         if (manager.isTomEE()) {
             content.add(new JpaSupportImpl());
         }
+        if (manager.isTomEEJaxRS()) {
+            content.add(new JaxRsStackSupportImpl(this));
+        }
 
         Lookup baseLookup = Lookups.fixed(content.toArray());
         return LookupProviderSupport.createCompositeLookup(baseLookup, 
