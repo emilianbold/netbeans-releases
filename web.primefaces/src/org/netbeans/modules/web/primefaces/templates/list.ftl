@@ -45,17 +45,6 @@
         </ui:define>
 
         <ui:define name="body">
-                <script>
-                    function handleSubmit(args, dialog) {
-                        var jqDialog = jQuery('#'+dialog);
-                        if(args.validationFailed) {
-                            jqDialog.effect('shake', { times:3 }, 100);
-                        } else {
-                            PF(dialog).hide();
-                        }
-                    }
-                </script>
-                <p:growl id="growl" life="3000"/>
                 <h:form id="${entityName}ListForm">
                     <p:panel header="${r"#{"}${bundle}.List${entityName}Title${r"}"}">
                         <p:dataTable id="datalist" value="${r"#{"}${managedBeanProperty}${r"}"}" var="${item}"
