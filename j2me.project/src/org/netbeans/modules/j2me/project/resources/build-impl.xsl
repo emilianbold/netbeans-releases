@@ -18,7 +18,7 @@
                 xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
                 exclude-result-prefixes="xalan p projdeps projdeps2 j2meproject1 libs">
     <!-- XXX should use namespaces for NB in-VM tasks from ant/browsetask and debuggerjpda/ant (Ant 1.6.1 and higher only) -->
-    <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
+    <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4" cdata-section-elements="script"/>
     <xsl:template match="/">
 
         <xsl:comment><![CDATA[
@@ -261,8 +261,6 @@ is divided into following sections:
                 <fail unless="dist.dir">Must set dist.dir</fail>
                 <fail unless="build.classes.dir">Must set build.classes.dir</fail>
                 <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
-                <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
-                <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.jar">Must set dist.jar</fail>
             </target>
@@ -575,7 +573,7 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-debug-args">                                                            
+            <target name="-init-debug-args">
                 <property name="debug-args-line" value="-Xdebug"/>
                 <condition property="debug-transport-by-os" value="dt_shmem" else="dt_socket">
                     <os family="windows"/>
@@ -683,8 +681,18 @@ is divided into following sections:
                 <property name="ap.cmd.line.internal" value=""/>
             </target>
 
+            <target name="-init-javame">
+                <xsl:attribute name="depends">-init-user,-init-project</xsl:attribute>
+                <fail unless="libs.j2me_ant_ext.classpath">Classpath to J2ME Ant extension library (libs.j2me_ant_ext.classpath property) is not set. For example: location of javame/modules/org-netbeans-mobility-antext.jar file in the IDE installation directory.</fail>
+                <taskdef resource="org/netbeans/mobility/antext/defs.properties">
+                    <classpath>
+                        <pathelement path="${{libs.j2me_ant_ext.classpath}}"/>
+                    </classpath>
+                </taskdef>
+            </target>
+
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-test,-init-macrodef-test-debug,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-java,-init-presetdef-jar,-init-ap-cmdline</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-nbjpda,-init-macrodef-debug,-init-presetdef-jar,-init-ap-cmdline,-init-javame</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -858,12 +866,68 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-do-jar-update-manifest,-pre-jar,-do-jar-without-libraries,-do-jar-with-libraries,-post-jar</xsl:attribute>
             </target>
 
             <target name="jar">
-                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-jar,-do-jar,-post-jar,create-jad</xsl:attribute>
                 <xsl:attribute name="description">Build JAR.</xsl:attribute>
+            </target>
+
+            <target name="create-jad">
+                <xsl:attribute name="description">Creates JAD file.</xsl:attribute>
+                <fail unless="dist.jad">Must set dist.jad</fail>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{manifest.midlets}}${{manifest.others}}" encoding="UTF-8"/>
+                <antcall target="-add-configuration" inheritall="true" inheritrefs="true"/>
+                <antcall target="-add-profile" inheritall="true" inheritrefs="true"/>
+                <nb-jad jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="${{dist.jar}}" url="${{dist.jar.file}}" sign="${{sign.enabled}}" keystore="${{sign.keystore}}" keystorepassword="${{sign.keystore.password}}" alias="${{sign.alias}}" aliaspassword="${{sign.alias.password}}" encoding="UTF-8"/>
+            </target>
+
+            <target name="-add-configuration" unless="contains.manifest.configuration">
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="MicroEdition-Configuration: ${{platform.configuration}}" append="true" encoding="UTF-8"/>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{line.separator}}" append="true"/>
+            </target>
+
+            <target name="-add-profile" unless="contains.manifest.profile">
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="MicroEdition-Profile: ${{platform.profile}}" append="true" encoding="UTF-8"/>
+                <echo file="${{dist.dir}}/${{dist.jad}}" message="${{line.separator}}" append="true"/>
+            </target>
+
+            <target name="-do-jar-update-manifest" depends="-do-jar-create-manifest,-do-jar-copy-manifest">
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="Microedition-Profile" value="${{platform.profile}}"/>
+                    <attribute name="MicroEdition-Configuration" value="${{platform.configuration}}"/>
+                </manifest>
+                <script>
+		<xsl:attribute name="language">javascript</xsl:attribute><![CDATA[
+                function updateManifest(entries) {
+                    var src = new String(project.getProperty("tmp.manifest.file"));
+                    var srf = new java.io.File(src);
+                    var manifest = project.createTask("manifest");
+                    var mode = new org.apache.tools.ant.taskdefs.ManifestTask.Mode();
+                    mode.setValue("update");
+                    manifest.setMode(mode);
+                    manifest.setFile(srf);
+                    if(manifest != null) {
+                        var propertyArray = entries.split("\n");
+                        for (var i = 0; i < propertyArray.length; i++) {
+                            if (propertyArray[i].indexOf(":") == -1) {
+                                continue;
+                            }
+                            var splitted = propertyArray[i].split(":");
+                            var propertyAttr = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                            propertyAttr.setName(splitted[0].trim());
+                            propertyAttr.setValue(splitted[1].trim());
+                            manifest.addConfiguredAttribute(propertyAttr);
+                        }
+                        manifest.perform();
+                    }
+                }
+                var midlets = new String(project.getProperty("manifest.midlets"));
+                updateManifest(midlets);
+                var others = new String(project.getProperty("manifest.others"));
+                updateManifest(others);
+                ]]></script>
             </target>
 
             <xsl:comment>
@@ -872,7 +936,10 @@ is divided into following sections:
                 =================
             </xsl:comment>
 
-            
+            <target name="run" depends="init,clean,jar">
+                <nb-run jadfile="${{dist.dir}}/${{dist.jad}}" jarfile="{{dist.jar.file}}" jadurl="${{dist.jad.url}}" device="${{platform.device}}" platformhome="${{platform.home}}" platformtype="${{platform.type}}" execmethod="${{run.method}}" securitydomain="${{security.domain}}" commandline="${{platform.runcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+            </target>
+
             <xsl:comment>
                 =================
                 DEBUGGING SECTION
@@ -884,7 +951,7 @@ is divided into following sections:
                 <xsl:attribute name="depends">init</xsl:attribute>
                 <j2meproject1:nbjpdastart name="${{debug.class}}"/>
             </target>
-            
+
 
             <target name="-debug-start-debuggee">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
@@ -897,7 +964,8 @@ is divided into following sections:
 
             <target name="debug">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
-                <xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee</xsl:attribute>
+                <!--<xsl:attribute name="depends">init,compile,-debug-start-debugger,-debug-start-debuggee</xsl:attribute>-->
+                <xsl:attribute name="depends">-debug-javame</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
             </target>
 
@@ -910,7 +978,7 @@ is divided into following sections:
             <target name="debug-stepinto">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,-debug-start-debugger-stepinto,-debug-start-debuggee</xsl:attribute>
-            </target>            
+            </target>
 
             <target name="-pre-debug-fix">
                 <xsl:attribute name="depends">init</xsl:attribute>
@@ -927,6 +995,21 @@ is divided into following sections:
             <target name="debug-fix">
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
+            </target>
+
+            <target name="-debug-javame" depends="init,clean,jar">
+                <parallel>
+                    <nb-run debug="true" debugsuspend="true" debugserver="true" debuggeraddressproperty="jpda.port" platformtype="${{platform.type}}" platformhome="${{platform.home}}" device="${{platform.device}}" jadfile="${{dist.dir}}/${{dist.jad}}" jadurl="${{dist.jad.url}}" jarfile="${{dist.jar.file}}" execmethod="${{run.method}}" securitydomain="${{security.domain}}" commandline="${{platform.debugcommandline}}" classpath="${{platform.bootclasspath}}:${{dist.dir}}/${{dist.jar}}" cmdoptions="${{run.cmd.options}}"/>
+                    <sequential>
+                        <sleep seconds="5"/>
+                        <antcall target="-nbdebug"/>
+                    </sequential>
+                </parallel>
+            </target>
+
+            <target name="-nbdebug" description="Start NetBeans debugger" if="netbeans.home">
+                <property name="debug.delay" value="5000"/>
+                <nb-mobility-debug address="${{jpda.port}}" name="${{app.codename}}" delay="${{debug.delay}}" timeout="${{debug.timeout}}" period="2000"/>
             </target>
 
             <xsl:comment>
@@ -975,7 +1058,7 @@ is divided into following sections:
                     <xsl:attribute name="executable">${platform.javadoc}</xsl:attribute>
                     <classpath>
                         <path path="${{javac.classpath}}"/>
-                    </classpath>                    
+                    </classpath>
                     <xsl:call-template name="createFilesets">
                         <xsl:with-param name="roots" select="/p:project/p:configuration/j2meproject1:data/j2meproject1:source-roots"/>
                         <xsl:with-param name="excludes" select="'*.java'"/>

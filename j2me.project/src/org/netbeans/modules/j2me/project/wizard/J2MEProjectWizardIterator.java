@@ -46,17 +46,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2me.project.api.J2MEProjectBuilder;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileLock;
@@ -71,7 +76,7 @@ import org.openide.util.NbBundle;
 public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
     public static enum WizardType { APPLICATION, EXISTING };
-    
+
     static final String PROP_NAME_INDEX = "nameIndex"; //NOI18N
     private static final String MANIFEST_FILE = "manifest.mf"; //NOI18N
     static final String MIDLET_CLASS = "mainClass"; // NOI18N
@@ -113,6 +118,9 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String midletClass = (String) wiz.getProperty(MIDLET_CLASS); //NOI18N
         String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
         JavaPlatform platform = (JavaPlatform) wiz.getProperty(PLATFORM);
+        String configuration = (String) wiz.getProperty(CONFIGURATION);
+        String profile = (String) wiz.getProperty(PROFILE);
+        String device = (String) wiz.getProperty(DEVICE);
         String jdkAntName = (String) wiz.getProperty(JDK_PLATFORM);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
@@ -120,6 +128,23 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             }
             librariesDefinition += SharableLibrariesUtils.DEFAULT_LIBRARIES_FILENAME;
         }
+        // put J2ME-specific project properties
+        Map<String, String> props = new HashMap<>();
+        props.put("dist.jad", name + ".jad"); //NOI18N
+        props.put("dist.jar.file", name + ".jar"); //NOI18N
+        props.put("run.method", "STANDARD"); //NOI18N
+        props.put("debug.timeout", "30000"); //NOI18N
+        props.put("security.domain", ""); //NOI18N
+        props.put("platform.configuration", configuration); //NOI18N
+        props.put("platform.profile", profile); //NOI18N
+        props.put("platform.type", ((J2MEPlatform) platform).getType()); //NOI18N
+        props.put("platform.device", device); //NOI18N
+        props.put("platform.java", jdkAntName); //NOI18N
+        if (midletClass != null && !midletClass.isEmpty()) {
+            props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
+            props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
+        }
+        // end of J2ME-specific properties
         handle.progress(NbBundle.getMessage(J2MEProjectWizardIterator.class, "LBL_NewJ2MEProjectWizardIterator_WizardProgress_CreatingProject"), 1); //NOI18N
         switch (type) {
             default:
@@ -129,6 +154,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
                         setMainMIDLetName(midletClass).
                         setMainMIDLetTemplate(midletTemplate).
                         setLibrariesDefinitionFile(librariesDefinition).
+                        addCustomProjectProperties(props).
                         build();
                 handle.progress(2);
                 if (midletClass != null && !midletClass.isEmpty()) {
@@ -149,7 +175,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         }
         handle.progress(3);
 
-        // Returning FileObject of project diretory. 
+        // Returning FileObject of project diretory.
         // Project will be open and set as main
         final Integer ind = (Integer) wiz.getProperty(PROP_NAME_INDEX);
         if (ind != null) {
@@ -306,7 +332,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
                 OutputStream os = manifest.getOutputStream(lock);
                 try {
                     PrintWriter pw = new PrintWriter(os);
-                    pw.println("Manifest-Version: 1.0"); // NOI18N                    
+                    pw.println("Manifest-Version: 1.0"); // NOI18N
                     pw.println(); // safest to end in \n\n due to JRE parsing bug
                     pw.flush();
                 } finally {

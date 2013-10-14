@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -96,20 +97,22 @@ public final class J2MEProjectBuilder {
     private static final Logger LOG = Logger.getLogger(J2MEProjectBuilder.class.getName());
     private static final String DEFAULT_MAIN_TEMPLATE = "Templates/j2me/Midlet.java";  //NOI18N
     private static final SpecificationVersion VERSION_8 = new SpecificationVersion("8.0"); //NOI18N
-    
+
     private final File projectDirectory;
     private final String name;
     private final JavaPlatform platform;
     private final Collection<File> sourceRoots;
     private final Collection<Library> compileLibraries;
     private final Collection<Library> runtimeLibraries;
-    private boolean hasDefaultRoots;    
+    private boolean hasDefaultRoots;
     private String librariesDefinition;
     private String buildXmlName;
     private String distFolder;
     private String mainMIDlet;
     private String mainMIDletTemplate;
     private String manifest;
+    private Map<String, String> customProjectProperties;
+    private Map<String, String> customPrivateProperties;
 
     private J2MEProjectBuilder(
             @NonNull final File projectDirectory,
@@ -163,6 +166,17 @@ public final class J2MEProjectBuilder {
         return this;
     }
 
+    @NonNull
+    public J2MEProjectBuilder addCustomProjectProperties(@NullAllowed final Map<String, String> props) {
+        this.customProjectProperties = props;
+        return this;
+    }
+
+    @NonNull
+    public J2MEProjectBuilder addCustomPrivateProperties(@NullAllowed final Map<String, String> props) {
+        this.customPrivateProperties = props;
+        return this;
+    }
 
     public AntProjectHelper build() throws IOException {
         assert projectDirectory != null;
@@ -188,7 +202,9 @@ public final class J2MEProjectBuilder {
                             runtimeLibraries,
                             "${"+ ProjectProperties.JAVAC_CLASSPATH+"}:",   //NOI18N
                             "${"+ProjectProperties.BUILD_CLASSES_DIR+ "}"), //NOI18N
-                        platform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME));
+                        platform.getProperties().get(J2MEProjectProperties.PLATFORM_ANT_NAME),
+                        customProjectProperties,
+                        customPrivateProperties);
                 final J2MEProject p = (J2MEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
                 final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -296,7 +312,7 @@ public final class J2MEProjectBuilder {
             return new SpecificationVersion("1.3"); //NOI18N
         }
     }
-    
+
         private static void registerRoots(
             final AntProjectHelper helper,
             final ReferenceHelper refHelper,
@@ -336,7 +352,7 @@ public final class J2MEProjectBuilder {
             props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             props.put(propName,srcReference);
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-        }                                                            
+        }
         helper.putPrimaryConfigurationData(data,true);
     }
 
@@ -393,7 +409,9 @@ public final class J2MEProjectBuilder {
             @NullAllowed String librariesDefinition,
             @NonNull String[] compileClassPath,
             @NonNull String[] runtimeClassPath,
-            @NonNull final String platformId
+            @NonNull final String platformId,
+            @NullAllowed Map<String, String> customProjectProperties,
+            @NullAllowed Map<String, String> customPrivateProperties
             ) throws IOException {
 
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2MEProject.TYPE, librariesDefinition);
@@ -415,7 +433,7 @@ public final class J2MEProjectBuilder {
         data.appendChild (sourceRoots);
         Element testRoots = doc.createElementNS(J2MEProject.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
         data.appendChild (testRoots);
-        h.putPrimaryConfigurationData(data, true);        
+        h.putPrimaryConfigurationData(data, true);
         //Dist folder
         ep.setProperty(ProjectProperties.DIST_DIR, distFolder != null ? distFolder : "dist"); // NOI18N
         ep.setComment(ProjectProperties.DIST_DIR, new String[] {"# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.dir")}, false); // NOI18N
@@ -496,9 +514,17 @@ public final class J2MEProjectBuilder {
                     "# " + NbBundle.getMessage(J2MEProjectBuilder.class, "COMMENT_dist.archive.excludes") //NOI18N
                 },
                 false);
+
+        //J2ME-specific properties
+        if (customProjectProperties != null) {
+            ep.putAll(customProjectProperties);
+        }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
+        if (customPrivateProperties != null) {
+            ep.putAll(customPrivateProperties);
+        }
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         logUsage();
         return h;
