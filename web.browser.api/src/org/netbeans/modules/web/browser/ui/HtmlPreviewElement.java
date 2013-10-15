@@ -269,9 +269,8 @@ public class HtmlPreviewElement implements MultiViewElement {
             Document doc = editorCookie.getDocument();
             if( null != doc )
                 doc.addDocumentListener( documentListener );
-        } else {
-            reloadFromDocument();
         }
+        reloadFromDocument();
     }
 
     private void reloadFromDocument() {
@@ -311,6 +310,8 @@ public class HtmlPreviewElement implements MultiViewElement {
     }
 
     private void refresh( Document doc ) {
+        if( null == doc )
+            return;
         try {
             String text = doc.getText( 0, doc.getLength() );
             if( null != browser && null != methodSetBrowserContent ) {
