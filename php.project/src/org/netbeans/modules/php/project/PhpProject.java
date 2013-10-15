@@ -825,7 +825,8 @@ public final class PhpProject implements Project {
 
             frameworks.projectOpened();
 
-            reinitFolders();
+            // avoid slowness
+            readFolders();
 
             getName();
 
@@ -886,13 +887,16 @@ public final class PhpProject implements Project {
             }
         }
 
-        private void reinitFolders() {
+        private void readFolders() {
             // #165494 - moved from projectClosed() to projectOpened()
             // clear references to ensure that all the dirs are read again
             webRootDirectory = null;
             resetIgnoredFolders();
             // read dirs
             getIgnoredFiles();
+            getSourceRoots().getRoots();
+            getTestRoots().getRoots();
+            getSeleniumRoots().getRoots();
         }
 
     }
