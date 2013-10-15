@@ -589,7 +589,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                             }
                             pane.setViewportView(sceneView);
                             scene.setSurroundingScrollPane(pane);
-                            scene.cleanLayout();
+                            scene.initialLayout();
                             scene.setSelectedObjects(Collections.singleton(scene.getRootGraphNode()));
                             txtFind.setEnabled(true);
                             btnBigger.setEnabled(true);
