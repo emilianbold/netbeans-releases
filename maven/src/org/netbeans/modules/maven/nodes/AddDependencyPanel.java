@@ -847,7 +847,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 break;
             }
         }
+        Collections.sort(result, new Comparator<Dependency>() {
 
+            @Override
+            public int compare(Dependency o1, Dependency o2) {
+                return o1.getManagementKey().compareTo(o2.getManagementKey());
+            }
+        });
         return result;
     }
 
