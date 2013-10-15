@@ -45,13 +45,20 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.LayoutManager;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.Scrollable;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 
 /**
  * Top-level container holding column-like panels for each TeamServer.
@@ -82,11 +89,25 @@ class ServersContainer extends JPanel implements Scrollable {
         }
     }
 
-    static JComponent create( List<JComponent> serverComponents ) {
+    static JComponent create( List<JComponent> serverComponents, final JComponent selectedComponent ) {
         ServersContainer container = new ServersContainer( serverComponents );
 
-        ScrollingContainer res = new ScrollingContainer( container, true );
+        final ScrollingContainer res = new ScrollingContainer( container, true );
         res.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10));
+        
+        if(selectedComponent != null) {
+            res.addComponentListener(new ComponentListener() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    selectedComponent.scrollRectToVisible(selectedComponent.getBounds());   
+                    res.removeComponentListener(this);
+                }
+                @Override public void componentMoved(ComponentEvent e) { }
+                @Override public void componentShown(ComponentEvent e) { }
+                @Override public void componentHidden(ComponentEvent e) { }
+            });
+        }
+
         return res;
     }
 

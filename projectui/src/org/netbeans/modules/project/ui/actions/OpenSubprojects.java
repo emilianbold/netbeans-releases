@@ -120,14 +120,7 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
     }
     
     @Override protected void performAction(Node[] activatedNodes) {
-    
-        /*for( int i = 0; i < activatedNodes.length; i++ ) {
-            Project p = activatedNodes[i].getLookup().lookup(Project.class);
-            if ( p != null ) {
-                OpenProjectList.getDefault().open(new Project[] {p}, true, true);
-            }
-        }*/
-        
+        openAllRequiredProjects(activatedNodes);
     }
     
     @Messages({
@@ -170,15 +163,7 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    Node [] activatedNodes = getActivatedNodes();
-                    if(activatedNodes != null) {
-                        for( int i = 0; i < activatedNodes.length; i++ ) {
-                            Project p = activatedNodes[i].getLookup().lookup(Project.class);
-                            if ( p != null ) {
-                                OpenProjectList.getDefault().open(new Project[] {p}, true, true);
-                            }
-                        }
-                    }
+                    openAllRequiredProjects(getActivatedNodes());
                 }
             });
             Mnemonics.setLocalizedText(openAllProjectsItem, OpenProjectMenu_Open_All_Projects());
@@ -190,6 +175,17 @@ public class OpenSubprojects extends NodeAction implements Presenter.Popup{
         }
             
         return menu;
+    }
+    
+    private void openAllRequiredProjects(Node [] activatedNodes) {
+        if(activatedNodes != null) {
+            for( int i = 0; i < activatedNodes.length; i++ ) {
+                Project p = activatedNodes[i].getLookup().lookup(Project.class);
+                if ( p != null ) {
+                    OpenProjectList.getDefault().open(new Project[] {p}, true, true);
+                }
+            }
+        }
     }
     
     /*private void fillRecursiveSubProjects(Project p, Set<Project> subProjects) {

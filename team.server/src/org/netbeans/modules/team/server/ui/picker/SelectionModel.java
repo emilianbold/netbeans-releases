@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.server.ui.picker;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;

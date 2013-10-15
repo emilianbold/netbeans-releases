@@ -146,10 +146,6 @@ public final class QueryImpl<Q, I>  {
         return queryProvider.getTooltip(data);
     }
 
-    public boolean contains(String id) {
-        return queryProvider.contains(data, id);
-    }
-
     public void refresh() {
         queryProvider.refresh(data);
     }

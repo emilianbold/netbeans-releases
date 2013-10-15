@@ -1215,11 +1215,6 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                     notifiedIssues.add(issue);
                 }
             }
-            if (!query.contains(issue.getID())) {
-                // XXX this is quite ugly - the query notifies an archoived issue
-                // but it doesn't "contain" it!
-                return;
-            }
             setIssueCount(++counter);
             if(counter == 1) {
                 EventQueue.invokeLater(new Runnable() {

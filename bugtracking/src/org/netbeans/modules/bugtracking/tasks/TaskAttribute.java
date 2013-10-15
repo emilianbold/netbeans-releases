@@ -54,16 +54,30 @@ public class TaskAttribute implements Comparator<TaskNode>, Comparable<TaskAttri
     private final String displayName;
     private final Comparator<TaskNode> comparator;
     private int rank;
+    private boolean asceding;
+
+    public static final int NO_RANK = Integer.MAX_VALUE;
 
     public TaskAttribute(String id, String displayName, Comparator<TaskNode> comparator) {
         this.id = id;
         this.displayName = displayName;
         this.comparator = comparator;
+        this.rank = NO_RANK;
+        this.asceding = true;
+    }
+
+    private TaskAttribute(String id, String displayName, Comparator<TaskNode> comparator, int rank, boolean asceding) {
+        this.id = id;
+        this.displayName = displayName;
+        this.comparator = comparator;
+        this.rank = rank;
+        this.asceding = asceding;
     }
 
     @Override
     public int compare(TaskNode tn1, TaskNode tn2) {
-        return comparator.compare(tn1, tn2);
+        int compare = comparator.compare(tn1, tn2);
+        return asceding ? compare : -compare;
     }
 
     public int getRank() {
@@ -72,6 +86,14 @@ public class TaskAttribute implements Comparator<TaskNode>, Comparable<TaskAttri
 
     public void setRank(int rank) {
         this.rank = rank;
+    }
+
+    public boolean isAsceding() {
+        return asceding;
+    }
+
+    public void setAsceding(boolean asceding) {
+        this.asceding = asceding;
     }
 
     public String getId() {
@@ -85,5 +107,14 @@ public class TaskAttribute implements Comparator<TaskNode>, Comparable<TaskAttri
     @Override
     public int compareTo(TaskAttribute o) {
         return Integer.compare(rank, o.rank);
+    }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+
+    TaskAttribute getClone() {
+        return new TaskAttribute(id, displayName, comparator, rank, asceding);
     }
 }

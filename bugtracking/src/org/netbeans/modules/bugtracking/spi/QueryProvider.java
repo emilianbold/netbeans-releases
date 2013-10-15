@@ -131,15 +131,6 @@ public interface QueryProvider<Q, I> {
     public Collection<I> getIssues(Q q);
 
     /**
-     * Returns true if the issue does belong to the query
-     * @param q
-     * @param id
-     * @return
-     */
-    // XXX used only by query table - get rid of this
-    public boolean contains(Q q, String id);
-
-    /**
      * Refreshes the given query
      * 
      * @param query

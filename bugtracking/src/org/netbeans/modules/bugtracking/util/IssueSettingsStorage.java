@@ -39,82 +39,129 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.cache;
+package org.netbeans.modules.bugtracking.util;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.openide.modules.Places;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public final class StorageUtils {
+public class IssueSettingsStorage {
+    
+    private static  final Logger LOG = Logger.getLogger(IssueSettingsStorage.class.getName());
+    private static final String PROP_COLLAPSED_COMMENT_PREFIX = "collapsed.comment";   // NOI18N
+    
+    private static IssueSettingsStorage instance;
+    private final File storage;
 
-    private static  final Logger LOG = Logger.getLogger(StorageUtils.class.getName());
+    private IssueSettingsStorage() { 
+        storage = getStorageRootFile();
+        if(!storage.exists()) {
+            storage.mkdirs();
+        }
+    }
+    
+    public synchronized static IssueSettingsStorage getInstance() {
+        if(instance == null) {
+            instance = new IssueSettingsStorage();
+        }
+        return instance;
+    }
+    
+    private File getStorageRootFile() {
+        return new File(new File(Places.getUserDirectory(), "config"), "issue-tracking");         // NOI18N
+    }
+
+    public Collection<Long> loadCollapsedCommenst(String repoUrl, String id) {
+        File file = getIssuePropertiesFile(repoUrl, id);
+        FileLocks.FileLock l = FileLocks.getLock(file);
+        try {
+            Properties p = load(file, repoUrl, id);
+            Set<Long> s = new HashSet<Long>();
+            for(Object k : p.keySet()) {
+                String key = k.toString();
+                if(key.startsWith(PROP_COLLAPSED_COMMENT_PREFIX) && "true".equals(p.get(key))) {
+                    s.add(Long.parseLong(key.substring(PROP_COLLAPSED_COMMENT_PREFIX.length())));
+                }
+            }
+            return s;
+        } catch (IOException ex) {
+            BugtrackingManager.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
+        } finally {
+            l.release();
+        }
+                
+        return Collections.EMPTY_SET;
+    }
+    
+    private Properties load(File file, String repoUrl, String id) throws IOException {
+        Properties p = new Properties();
+        if(!file.exists()) {
+            file.createNewFile();
+        }
+        FileInputStream fis = new FileInputStream(file);
+        try {
+            p.load(fis);
+        } finally {
+            fis.close();
+        }
+        return p;
+        }
+    
+    public void storeCollapsedComments(Collection<Long> collapsedComments, String repoUrl, String id) {
+        File file = getIssuePropertiesFile(repoUrl, id);
+        FileLocks.FileLock l = FileLocks.getLock(file);
+        try {
+            Properties p = load(file, repoUrl, id);
+            clear(p, PROP_COLLAPSED_COMMENT_PREFIX);
+            for (Long i : collapsedComments) {
+                p.put(PROP_COLLAPSED_COMMENT_PREFIX + i, "true");
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            try {
+                p.store(fos, "");
+            } finally {
+                fos.close();
+            }
+        } catch (IOException ex) {
+            BugtrackingManager.LOG.log(Level.WARNING, repoUrl + " " + id, ex);
+        } finally {
+            l.release();
+        }
+    }
+
+    private void clear(Properties p, String keyPrefix) {
+        Iterator<Object> it = p.keySet().iterator();
+        while(it.hasNext()) {
+            String key = it.next().toString();
+            if(key.startsWith(keyPrefix)) {
+                it.remove();
+            }
+        }
+    }
+    
+    private File getIssuePropertiesFile(String repoUrl, String id) {
+        return new File(getNameSpaceFolder(storage, repoUrl), id);
+    }
+    
     private static Map<String, String> loggedUrls;
-    
-    private StorageUtils() {}
-    
-    static DataOutputStream getDataOutputStream(File file, boolean append) throws IOException, InterruptedException {
-        return new DataOutputStream(getFileOutputStream(file, append));
-    }
-
-    static DataInputStream getDataInputStream(File file) throws IOException, InterruptedException {
-        return new DataInputStream(getFileInputStream(file));
-    }
-
-    static FileOutputStream getFileOutputStream(File file, boolean append) throws IOException, InterruptedException {
-        int retry = 0;
-        while (true) {
-            try {
-                return new FileOutputStream(file, append);
-            } catch (IOException ioex) {
-                retry++;
-                if (retry > 7) {
-                    throw ioex;
-                }
-                Thread.sleep(retry * 30);
-            }
-        }
-    }
-
-    static FileInputStream getFileInputStream(File file) throws IOException, InterruptedException {
-        int retry = 0;
-        while (true) {
-            try {
-                return new FileInputStream(file);
-            } catch (IOException ioex) {
-                retry++;
-                if (retry > 7) {
-                    throw ioex;
-                }
-                Thread.sleep(retry * 30);
-            }
-        }
-    }
-
-    static void copyStreams(OutputStream out, InputStream in) throws IOException {
-        byte [] buffer = new byte[4096];
-        for (;;) {
-            int n = in.read(buffer);
-            if (n < 0) break;
-            out.write(buffer, 0, n);
-        }
-    }
-
     static File getNameSpaceFolder(File storage, String url) {
         File folderLegacy = new File(storage, TextUtils.encodeURL(url));
         File folder = new File(storage, TextUtils.getMD5(url));
@@ -137,18 +184,8 @@ public final class StorageUtils {
         }
         return folder;
     }
-
-    static DataOutputStream getQueryOutputStream(File queryFile) throws IOException, InterruptedException {
-        return getDataOutputStream(queryFile, false);
-    }
-
-    static DataInputStream getQueryInputStream(File queryFile) throws IOException, InterruptedException {
-        if(!queryFile.exists()) return null;
-        return getDataInputStream(queryFile);
-    }
-
-
-    static class FileLocks {
+    
+    private static class FileLocks {
         private static FileLocks instance;
         private synchronized static FileLocks getInstance() {
             if(instance == null) {
@@ -179,5 +216,4 @@ public final class StorageUtils {
             }
         }
     }
-
 }
