@@ -79,7 +79,7 @@ import org.openide.util.Lookup;
 /**
  * A quick prototype of a Preview tab in HTML document Multiview window.
  *
- * Note: It is disabled by default. Use system propery nb.html.preview.enabled=true to turn it on.
+ * Note: It is disabled by default. Use system property nb.html.preview.enabled=true to turn it on.
  *
  * @author S. Aubrecht
  */
