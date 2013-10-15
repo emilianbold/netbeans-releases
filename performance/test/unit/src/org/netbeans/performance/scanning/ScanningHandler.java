@@ -52,9 +52,10 @@ import org.netbeans.junit.NbPerformanceTest.PerformanceData;
  *
  * @author petr
  */
-class ScanningHandler extends Handler{
+class ScanningHandler extends Handler {
+
     private final List<PerformanceData> data;
-        
+
     List<PerformanceData> getData() {
         return data;
     }
@@ -64,6 +65,7 @@ class ScanningHandler extends Handler{
     }
 
     static enum ScanType {
+
         INITIAL(" initial "),
         UP_TO_DATE(" up-to-date ");
 
@@ -72,26 +74,26 @@ class ScanningHandler extends Handler{
         private ScanType(String name) {
             this.name = name;
         }
-        
+
         private String getName() {
             return name;
         }
     }
-    
+
     private final String projectName;
     private ScanType type;
 
     public ScanningHandler(String projectName) {
         this.projectName = projectName;
         this.type = ScanType.INITIAL;
-        data = new ArrayList<PerformanceData>();
-        
+        data = new ArrayList<>();
+
     }
 
     public void setType(ScanType type) {
         this.type = type;
     }
-        
+
     @Override
     public void publish(LogRecord record) {
         String message = record.getMessage();
@@ -100,10 +102,10 @@ class ScanningHandler extends Handler{
                 PerformanceData res = new PerformanceData();
                 res.name = projectName + type.getName() + "source scan";
 
-                if (record.getParameters()==null) {
+                if (record.getParameters() == null) {
                     StringTokenizer tokenizer = new StringTokenizer(message, " ");
                     int count = tokenizer.countTokens();
-                    String token="0";
+                    String token = "0";
                     for (int i = 0; i < count; i++) {
                         String next = tokenizer.nextToken();
                         if ((next.startsWith("source")) && "0".equals(token)) {
@@ -118,14 +120,14 @@ class ScanningHandler extends Handler{
                         }
                         token = next;
                     }
-                } else if (record.getParameters()[0].hashCode()>0) {
+                } else if (record.getParameters()[0].hashCode() > 0) {
                     res.value = record.getParameters()[1].hashCode();
                     res.unit = "ms";
                     res.runOrder = 0;
                     data.add(res);
                 }
             } else if (message.contains("binary roots")) {
-                if (record.getParameters()[0].hashCode()>0) {
+                if (record.getParameters()[0].hashCode() > 0) {
                     PerformanceData res = new PerformanceData();
                     res.name = projectName + type.getName() + "binary scan";
                     res.value = record.getParameters()[1].hashCode();
@@ -140,9 +142,8 @@ class ScanningHandler extends Handler{
     @Override
     public void flush() {
     }
-    
+
     @Override
     public void close() throws SecurityException {
     }
 }
- 

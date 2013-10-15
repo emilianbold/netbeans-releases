@@ -43,6 +43,7 @@
 package org.netbeans.core.nativeaccess;
 
 import com.sun.jna.platform.WindowUtils;
+import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
@@ -96,18 +97,22 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         GraphicsDevice gd = gc.getDevice();
         //check if JDK APIs are supported
         if (gc.getDevice().getFullScreenWindow() != w) {
-            if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)) {
-                w.setOpacity(alpha);
+            if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT) ) {
+                try {
+                    w.setOpacity(alpha);
+                    return;
+                } catch( Exception e ) {
+                    //ignore, we'll try JNA
+                }
             }
-        } else {
-            //try the JNA way
-            try {
-                WindowUtils.setWindowAlpha(w, alpha);
-            } catch( ThreadDeath td ) {
-                throw td;
-            } catch( Throwable e ) {
-                LOG.log(Level.INFO, null, e);
-            }
+        }
+        //try the JNA way
+        try {
+            WindowUtils.setWindowAlpha(w, alpha);
+        } catch( ThreadDeath td ) {
+            throw td;
+        } catch( Throwable e ) {
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -118,20 +123,24 @@ public class NativeWindowSystemImpl extends NativeWindowSystem {
         //check if JDK APIs are supported
         if (gc.getDevice().getFullScreenWindow() != w) {
             if (gd.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.TRANSLUCENT)) {
-                w.setShape(mask);
+                try {
+                    w.setShape(mask);
+                    return;
+                } catch( Exception e ) {
+                    //ignore, we'll try JNA
+                }
             }
-        } else {
-            //try the JNA way
-            w.setShape(mask);
-            if( true )
-                return;
-            try {
-                WindowUtils.setWindowMask(w, mask);
-            } catch( ThreadDeath td ) {
-                throw td;
-            } catch( Throwable e ) {
-                LOG.log(Level.INFO, null, e);
-            }
+        }
+        //try the JNA way
+        w.setShape(mask);
+        if( true )
+            return;
+        try {
+            WindowUtils.setWindowMask(w, mask);
+        } catch( ThreadDeath td ) {
+            throw td;
+        } catch( Throwable e ) {
+            LOG.log(Level.INFO, null, e);
         }
     }
 

@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.project.ui.groups;
 
+import java.awt.Window;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.util.RequestProcessor;
@@ -84,6 +88,24 @@ public class ManageGroupsPanel extends javax.swing.JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 firePropertyChange("selection", null, null);
+            }
+        });
+        groupList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Group.setActiveGroup(getSelectedGroups()[0], false);
+                        }
+                    });
+                    final Window w = SwingUtilities.getWindowAncestor(ManageGroupsPanel.this);
+                    if (w != null) {
+                        w.setVisible(false);
+                        w.dispose();
+                    }
+                }
             }
         });
         final boolean isReady = isReady();

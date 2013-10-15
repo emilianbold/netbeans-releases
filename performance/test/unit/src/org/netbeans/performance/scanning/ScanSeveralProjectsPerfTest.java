@@ -61,77 +61,59 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 
 /**
- * 
+ *
  * @author Pavel Flaska
  */
 public class ScanSeveralProjectsPerfTest extends NbTestCase {
 
     private ScanningHandler handler;
-    
+
     public ScanSeveralProjectsPerfTest(String name) {
         super(name);
     }
-    
+
     /**
      * Set-up the services and project
+     *
+     * @throws java.io.IOException
      */
     @Override
-    protected void setUp() throws IOException, InterruptedException {
+    protected void setUp() throws IOException {
+        System.out.println("###########  " + getName() + " ###########");
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     @Override
     protected int timeOut() {
-        return 15*60000; // 15min
+        return 15 * 60000; // 15min
     }
 
     public void testScanProjects()
-            throws IOException, ExecutionException, InterruptedException
-    {
+            throws IOException, ExecutionException, InterruptedException {
         String[][] files = {
-                { "https://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
-                            "gravl-0.4.zip",
-                            "gravl-0.4"},
-      
-                { "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
-                            "jEdit41.zip",
-                            "jEdit"
-                },
-                { "https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                        "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                        "mediawiki-1.14.0"
-                },
-                { "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
-                            "tomcat6.zip",
-                            "tomcat6"
-                },
-                { "http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
-                            "BigWebProject.zip",
-                            "FrankioskiProject"
-                }
-            };
-        
-        System.setProperty("grails.home","/space/grails/"); //NOI18N
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
-        npwo.selectProject("Grails Application");
-        try {
-            npwo.next();
-            wait(5000);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        WizardOperator wo = new WizardOperator("New Project");
-        wo.cancel();        
-        
-        
+            {"http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
+                "jEdit41.zip",
+                "jEdit"
+            },
+            {"https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                "mediawiki-1.14.0"
+            },
+            {"http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
+                "tomcat6.zip",
+                "tomcat6"
+            },
+            {"http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
+                "BigWebProject.zip",
+                "FrankioskiProject"
+            }
+        };
+
         for (String[] row : files) {
             final String networkFileLoc = row[0];
             final String compressedProject = row[1];
@@ -139,23 +121,23 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
             String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + compressedProject;
             File f = new File(zipPath);
             if (!f.exists()) {
-                 zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
+                zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
             }
             File zipFile = FileUtil.normalizeFile(new File(zipPath));
             Utilities.unzip(zipFile, getWorkDirPath());
         }
-        
+
         final Project[] projects = new Project[files.length];
         int i = 0;
         for (String[] row : files) {
             final String projectName = row[2];
 
             File projectsDir = FileUtil.normalizeFile(getWorkDir());
-            System.out.println("projectsDir= "+projectsDir.toString());
+            System.out.println("projectsDir= " + projectsDir.toString());
             FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
-            System.out.println("projectsDirFO= "+projectsDirFO.toString());
+            System.out.println("projectsDirFO= " + projectsDirFO.toString());
             FileObject projdir = projectsDirFO.getFileObject(projectName);
-            System.out.println("projectName= "+projectName.toString());
+            System.out.println("projectName= " + projectName.toString());
             FileObject nbproject = projdir.getFileObject("nbproject");
             if (nbproject.getFileObject("private") != null) {
                 for (FileObject ch : nbproject.getFileObject("private").getChildren()) {
@@ -204,19 +186,17 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-                addTest(ScanSeveralProjectsPerfTest.class).
-                clusters(".*").gui(true).
-                enableModules(".*", ".*"));
+        return NbModuleSuite.createConfiguration(ScanSeveralProjectsPerfTest.class).
+                clusters(".*").enableModules(".*").suite();
     }
 
     public PerformanceData[] getPerformanceData() {
         List<PerformanceData> data = handler.getData();
-        if (data!=null) {
+        if (data != null) {
             return data.toArray(new PerformanceData[0]);
         } else {
             return null;
-        }        
+        }
     }
 
     private class ReadingHandler extends Handler {

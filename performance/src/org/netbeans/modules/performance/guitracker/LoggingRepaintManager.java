@@ -83,7 +83,7 @@ public class LoggingRepaintManager extends RepaintManager {
     public LoggingRepaintManager(ActionTracker tr) {
         this.tr = tr;
         regionFilters = new LinkedList<RegionFilter>();
-        resetRegionFilters();  // filter default button on Vista and Windows 7 - see issue 100961
+        resetRegionFilters();  // filter default button on Vista, Windows 7 and Windows 8 - see issue 100961
         // lastPaint = System.nanoTime();
     }
 
@@ -226,8 +226,8 @@ public class LoggingRepaintManager extends RepaintManager {
     public void resetRegionFilters() {
         tr.add(ActionTracker.TRACK_CONFIG_APPLICATION_MESSAGE, "FILTER: reset");
         regionFilters.clear();
-        // filter default button on Vista and Windows 7 - see issue 100961
-        if ("Windows 7".equalsIgnoreCase(OS_NAME) || "Windows Vista".equalsIgnoreCase(OS_NAME)) {
+        // filter default button on Vista, Windows 7 and Windows 8 - see issue 100961
+        if ("Windows 8".equalsIgnoreCase(OS_NAME) || "Windows 7".equalsIgnoreCase(OS_NAME) || "Windows Vista".equalsIgnoreCase(OS_NAME)) {
             addRegionFilter(LoggingRepaintManager.VISTA_FILTER);
         }
     }

@@ -86,20 +86,20 @@ public class FruchtermanReingoldLayout extends SceneLayout {
     
     public @Override void performLayout() {
         performLayout(true);
-        scene.validate();
-        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
-        for (Widget widget : scene.getChildren()) {
-            Rectangle childBounds = widget.getBounds();
-            if (childBounds == null) {
-                continue;
-            }
-            rectangle = rectangle.union(widget.convertLocalToScene(childBounds));
-        }
-        Dimension dim = rectangle.getSize ();
-        Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
-        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
-        scene.setZoomFactor (Math.min(zoom, 1));
-        scene.validate();
+//        scene.validate();
+//        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
+//        for (Widget widget : scene.getChildren()) {
+//            Rectangle childBounds = widget.getBounds();
+//            if (childBounds == null) {
+//                continue;
+//            }
+//            rectangle = rectangle.union(widget.convertLocalToScene(childBounds));
+//        }
+//        Dimension dim = rectangle.getSize ();
+//        Dimension viewDim = panel.getViewportBorderBounds ().getSize ();
+//        double zoom = Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height);
+//        scene.setZoomFactor (Math.min(zoom, 1));
+//        scene.validate();
     }
     
     private void performLayout(boolean finish) {

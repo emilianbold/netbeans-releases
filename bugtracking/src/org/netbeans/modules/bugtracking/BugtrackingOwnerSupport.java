@@ -425,7 +425,7 @@ public class BugtrackingOwnerSupport {
         selectorBuilder.setPreselectedRepository(suggestedRepo);
         selectorBuilder.setLabelAboveComboBox();
 
-        final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
+        String dialogTitle = NbBundle.getMessage(BugtrackingOwnerSupport.class, "LBL_BugtrackerSelectorTitle"); // NOI18N
 
         DialogDescriptor dialogDescriptor
                 = selectorBuilder.createDialogDescriptor(dialogTitle);
@@ -443,10 +443,6 @@ public class BugtrackingOwnerSupport {
         } else {
             return null;
         }
-    }
-
-    private String getMessage(String msgKey) {
-        return NbBundle.getMessage(BugtrackingOwnerSupport.class, msgKey);
     }
 
     private static FileObject getMainProjectDirectory() {

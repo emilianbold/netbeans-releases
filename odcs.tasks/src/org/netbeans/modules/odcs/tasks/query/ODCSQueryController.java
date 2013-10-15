@@ -542,12 +542,19 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     }
                 }
                 assert name != null;
-                save(name);
-                ODCS.LOG.fine("on save finnish");
+                final String fname = name;
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        save(fname);
+                        ODCS.LOG.fine("on save finnish");
 
-                if(refresh) {
-                    onRefresh();
-                }
+                        if(refresh) {
+                            onRefresh();
+                        }
+                    }
+                };
+                ODCSUtil.runInAwt(r);
             }
 
        });
@@ -625,11 +632,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     setIssueCount(issueCount);
                 }
             };
-            if(EventQueue.isDispatchThread()) {
-                r.run();
-            } else {
-                EventQueue.invokeLater(r);
-            }
+            ODCSUtil.runInAwt(r);
         }
         issueTable.setFilter(filter);
     }

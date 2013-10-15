@@ -55,9 +55,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jellytools.OptionsOperator;
-import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
@@ -67,7 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
- * 
+ *
  * @author Pavel Flaska
  */
 public class ScanProjectPerfTest extends NbTestCase {
@@ -75,95 +72,68 @@ public class ScanProjectPerfTest extends NbTestCase {
     public ScanProjectPerfTest(String name) {
         super(name);
     }
-    
+
     private ScanningHandler handler;
-    
+
     /**
      * Set-up the services and project
+     *
+     * @throws java.io.IOException
      */
     @Override
-    protected void setUp() throws IOException, InterruptedException {
+    protected void setUp() throws IOException {
+        System.out.println("###########  " + getName() + " ###########");
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
-       // System.setProperty("grails.home","/space/grails/"); //NOI18N
     }
 
     @Override
     protected int timeOut() {
-        return 15*60000; // 15min
+        return 15 * 60000; // 15min
     }
 
     public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip", 
-                    "jEdit41.zip",
-                    "jEdit");
+        scanProject("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
+                "jEdit41.zip",
+                "jEdit");
     }
 
     public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                    "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                    "mediawiki-1.14.0"
-                );
+        scanProject("https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
+                "mediawiki-1.14.0"
+        );
     }
-    
+
     public void testWebProject() throws IOException, ExecutionException, InterruptedException {
         scanProject("http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
-                    "BigWebProject.zip",
-                    "FrankioskiProject"
-                );
+                "BigWebProject.zip",
+                "FrankioskiProject"
+        );
     }
-    
+
     public void testTomcat() throws IOException, ExecutionException, InterruptedException {
         scanProject("http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
-                    "tomcat6.zip",
-                    "tomcat6");
+                "tomcat6.zip",
+                "tomcat6");
     }
-    
-//    public void testGroovyGrails() throws IOException, ExecutionException, InterruptedException {
-//        System.setProperty("grails.home","/space/grails/"); //NOI18N
-//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-//        npwo.selectCategory("Groovy"); // XXX use Bundle.getString instead
-//        npwo.selectProject("Grails Application");
-//        try {
-//            npwo.next();
-//            wait(5000);
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-//        WizardOperator wo = new WizardOperator("New Project");
-//        wo.cancel(); 
-//        
-//        OptionsOperator optionsOper = OptionsOperator.invoke();
-//        optionsOper.selectMiscellaneous();
-//              
-//        
-//        optionsOper.ok();
-//        
-//               
-//        scanProject("http://netbeans.org/projects/performance/downloads/download/gravl-0.4.zip",
-//                    "gravl-0.4.zip",
-//                    "gravl-0.4");
-//    }
-    
-    
 
     private void scanProject(
             final String networkFileLoc,
             final String compressedProject,
             final String project)
-            throws IOException, ExecutionException, InterruptedException
-    {
+            throws IOException, ExecutionException, InterruptedException {
         String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + compressedProject;
         File f = new File(zipPath);
         if (!f.exists()) {
-             zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
+            zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
         }
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
         Utilities.unzip(zipFile, getWorkDirPath());
-        
+
         FileObject projectDir = Utilities.openProject(project, getWorkDir());
         final String projectName = projectDir.getName();
-        
+
         Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
         repositoryUpdater.setLevel(Level.INFO);
         handler = new ScanningHandler(projectName);
@@ -177,13 +147,13 @@ public class ScanProjectPerfTest extends NbTestCase {
         JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
 
         src.runWhenScanFinished(new Task<CompilationController>() {
-            
+
             @Override()
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
             }
         }, false).get();
-        
+
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
         projectDir = Utilities.openProject(project, getWorkDir());
 
@@ -197,6 +167,7 @@ public class ScanProjectPerfTest extends NbTestCase {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
             }
         }, false).get();
+        OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
     }
 
     @Override
@@ -209,21 +180,20 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-                addTest(ScanProjectPerfTest.class).
-                clusters(".*").gui(false).
-                enableModules(".*", ".*"));
+        return NbModuleSuite.createConfiguration(ScanProjectPerfTest.class).
+                clusters(".*").enableModules(".*").gui(false).
+                suite();
     }
 
     public PerformanceData[] getPerformanceData() {
         List<PerformanceData> data = handler.getData();
-        if (data!=null) {
+        if (data != null) {
             return data.toArray(new PerformanceData[0]);
         } else {
             return null;
-        }        
+        }
     }
-    
+
     private class ReadingHandler extends Handler {
 
         private boolean read = false;
