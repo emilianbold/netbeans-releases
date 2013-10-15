@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.api;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,14 +92,32 @@ public class CssParserResult extends ParserResult {
     /**
      * Gets lexer / parser diagnostics w/o additional issues 
      * possibly added by {@link ExtendedDiagnosticsProvider}.
+     * @return list of parsing issues
      */
     public List<ProblemDescription> getParserDiagnostics() {
         return diagnostics;
     }
+    
+    public List<? extends FilterableError> getDiagnostics(boolean includeFiltered) {
+        List<? extends FilterableError> extendedDiagnostics = ErrorsProviderQuery.getExtendedDiagnostics(this);
+        if(includeFiltered) {
+            return extendedDiagnostics;
+        } else {
+            //remove filtered issues
+            List<FilterableError> result = new ArrayList<>();
+            for(FilterableError e : extendedDiagnostics) {
+                if(!e.isFiltered()) {
+                    result.add(e);
+                }
+            }
+            return result;
+        }
+    }
+    
 
     @Override
     public List<? extends FilterableError> getDiagnostics() {
-        return ErrorsProviderQuery.getExtendedDiagnostics(this);
+        return getDiagnostics(false);
     }
     
     public <T> T getProperty(Class<T> type) {

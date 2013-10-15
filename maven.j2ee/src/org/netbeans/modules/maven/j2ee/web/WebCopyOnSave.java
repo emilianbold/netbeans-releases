@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -62,7 +64,6 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -93,6 +94,7 @@ import org.openide.util.RequestProcessor;
 public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener, DeployOnSaveListener {
 
     private static final RequestProcessor RP = new RequestProcessor("Maven Copy on Save", 5);
+    private static final Logger LOG = Logger.getLogger(WebCopyOnSave.class.getName());
     private static final List<String> staticResources = new ArrayList<>();
     private final Project project;
     private final FileChangeListener listener;
@@ -266,7 +268,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                     handleFileCopying(fe.getFile());
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                logIOException(fe.getFile(), e);
             }
         }
 
@@ -288,7 +290,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                     handleFileCopying(fe.getFile());
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                logIOException(fe.getFile(), e);
             }
         }
 
@@ -328,7 +330,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                     handleFileDeletion(fo, path);
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                logIOException(fe.getFile(), e);
             }
         }
 
@@ -350,8 +352,20 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                     handleFileDeletion(fe.getFile(), null);
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                logIOException(fe.getFile(), e);
             }
+        }
+
+        // Created to be able to find original problem from issue #236766
+        private void logIOException(FileObject fo, IOException ex) {
+            LOG.log(Level.INFO, "IOException occured while trying to use Compile on Save/Deploy on Save "
+                    + "feature on a changed file ({1}). Please attach this message log to NetBeans bugzilla "
+                    + "issue (ID number #236766) with some more datails about what you have been doing when "
+                    + "the problem occuered.", fo);
+            LOG.log(Level.INFO, "Compile on Save: ", RunUtils.isCompileOnSaveEnabled(project));
+            LOG.log(Level.INFO, "Deploy on Save: ", MavenProjectSupport.isDeployOnSave(project));
+            LOG.log(Level.INFO, "Copy on Save for static resrouces: ", MavenProjectSupport.isCopyStaticResourcesOnSave(project));
+            LOG.log(Level.INFO, "Stacktrace:", ex);
         }
 
         private boolean isInPlace() throws IOException {

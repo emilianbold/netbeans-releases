@@ -435,7 +435,6 @@ public class JSFClientGenerator {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_JSP_PAGE); //NOI18N
         FileObject indexfl = documentBase.getFileObject(WELCOME_JSF_FL_PAGE);
-        FileObject templatefl = documentBase.getFileObject(TEMPLATE_JSF_FL_PAGE);
 
         if (indexjsp != null) {
             String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
@@ -490,22 +489,9 @@ public class JSFClientGenerator {
                 return true;
             }
         }
-        else if(indexfl!=null)
-        {
+        else if(indexfl != null) {
             String content = JSFFrameworkProvider.readResource(indexfl.getInputStream(), projectEncoding); //NO18N
-            String templateContent = null;
-            if (templatefl != null) {
-                templateContent = JSFFrameworkProvider.readResource(templatefl.getInputStream(), projectEncoding); //NO18N
-            }
             String endLine = System.getProperty("line.separator"); //NOI18N
-
-            //insert style and script tags in template if not already present
-            if (templateContent !=null && templateContent.indexOf(styleAndScriptTags) == -1) {
-                String justTitleEnd = "</title>"; //NOI18N
-                String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
-                templateContent = templateContent.replace(justTitleEnd, replaceHeadWith); //NOI18N
-                JSFFrameworkProvider.createFile(templatefl,templateContent, projectEncoding);
-            }
             //insert style and script tags if not already present
             if (content.indexOf(styleAndScriptTags) == -1) {
                 String justTitleEnd = "</title>"; //NOI18N
