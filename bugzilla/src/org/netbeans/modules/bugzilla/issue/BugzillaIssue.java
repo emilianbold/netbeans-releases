@@ -46,12 +46,13 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -1158,23 +1159,38 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             status += "/" + resolution; //NOI18N
         }
         String scheduledLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Scheduled_Title"); //NOI18N
-        String scheduled = "---";
+        String scheduled = getScheduleDisplayString();
 
         String dueLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Due_Title"); //NOI18N
-        String due = "---";
+        String due = getDueDisplayString();
+        
 
         String estimateLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Estimate_Title"); //NOI18N
-        String estimate = "---";
+        String estimate = getEstimateDisplayString();
 
         String fieldTable = "<table>" //NOI18N
             + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
             + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>" //NOI18N
-            + "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>" //NOI18N
-                + "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td></tr>" //NOI18N
-            + "</table>"; //NOI18N
+            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>"
+            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>"; //NOI18N
+
+        if (!scheduled.isEmpty()) {
+            fieldTable += "<tr><td><b>" + scheduledLabel + ":</b></td><td colspan=\"3\">" + scheduled + "</td></tr>"; //NOI18N
+        }
+        boolean addNewLine = !due.isEmpty() || !estimate.isEmpty();
+        if (addNewLine) {
+            fieldTable += "<tr>"; //NOI18N
+        }
+        if (!due.isEmpty()) {
+            fieldTable += "<tr><td><b>" + dueLabel + ":</b></td><td>" + due + "</td>"; //NOI18N
+        }
+        if (!estimate.isEmpty()) {
+            fieldTable += "<td style=\"padding-left:25px;\"><b>" + estimateLabel + ":</b></td><td>" + estimate + "</td>"; //NOI18N
+        }
+        if (addNewLine) {
+            fieldTable += "</tr>"; //NOI18N
+        }
+        fieldTable += "</table>"; //NOI18N
         
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
@@ -1214,6 +1230,62 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_UnsubmittedNewShort"); //NOI18N;
         }
         return displayName;
+    }
+
+    private String getDueDisplayString() {
+        Calendar dueDate = Calendar.getInstance();
+        Date date = getNbTask().getDueDate();
+        if (date == null) {
+            return "";
+        }
+        dueDate.setTime(date);
+        return formatDate(dueDate);
+    }
+
+    private String getScheduleDisplayString() {
+        NbDateRange scheduleDate = getNbTask().getScheduleDate();
+        if (scheduleDate == null) {
+            return "";
+        }
+        return formateDate(scheduleDate.getStartDate(), scheduleDate.getEndDate());
+    }
+
+    private String getEstimateDisplayString() {
+        int estimate = getNbTask().getEstimate();
+        if (estimate == 0) {
+            return "";
+        }
+        return "" + estimate;
+    }
+
+    private String formatDate(Calendar date) {
+        Calendar now = Calendar.getInstance();
+        if (now.get(Calendar.YEAR) == date.get(Calendar.YEAR)) {
+
+            return DateFormat.getDateInstance(DateFormat.SHORT).format(date.getTime());
+        } else {
+            return DateFormat.getDateInstance(DateFormat.DEFAULT).format(date.getTime());
+
+        }
+    }
+
+    private String formateDate(Calendar start, Calendar end) {
+        Calendar now = Calendar.getInstance();
+        // one day range
+        if (start.get(Calendar.YEAR) == end.get(Calendar.YEAR) 
+                && start.get(Calendar.MONTH) == end.get(Calendar.MONTH)
+                && start.get(Calendar.DAY_OF_MONTH) == end.get(Calendar.DAY_OF_MONTH)) {
+            return formatDate(start);
+        }
+
+        if (now.get(Calendar.YEAR) == start.get(Calendar.YEAR) && now.get(Calendar.YEAR) == end.get(Calendar.YEAR)) {
+            DateFormat format = DateFormat.getDateInstance(DateFormat.SHORT);
+            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
+        } else {
+            DateFormat format = DateFormat.getDateInstance(DateFormat.DEFAULT);
+            return format.format(start.getTime()) + " - " + format.format(end.getTime()); //NOI18N
+
+        }
     }
     
     private boolean updateRecentChanges () {
@@ -1410,14 +1482,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             controller.modelStateChanged(true, hasLocalEdits());
         }
     }
-    
+
     void setTaskEstimate (int estimate) {
         super.setEstimate(estimate);
         if (controller != null) {
             controller.modelStateChanged(true, hasLocalEdits());
         }
     }
-    
+
     public boolean discardLocalEdits () {
         clearUnsavedChanges();
         return cancelChanges();
