@@ -215,6 +215,7 @@ public class TokenListChange<T extends TokenId> {
 
     public void setRemovedTokens(TokenOrEmbedding<T>[] removedTokensOrBranches) {
         tokenChangeInfo.setRemovedTokenList(new RemovedTokenList<T>(
+                tokenChangeInfo.currentTokenList().rootTokenList(),
                 languagePath(), removedTokensOrBranches));
     }
     

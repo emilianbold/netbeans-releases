@@ -102,21 +102,47 @@ public final class LexerTestUtilities {
     }
 
     /**
+     * @see #assertTokenEquals(String, TokenSequence, TokenId, int, int)
+     */
+    public static void assertTokenEquals(TokenSequence<?> ts, TokenId id, int length, int offset) {
+        assertTokenEquals(null, ts, id, length, offset);
+    }
+
+    /**
      * Compare <code>TokenSequence.token()</code> to the given
      * token id, text and offset.
      *
      * @param offset expected offset. It may be -1 to prevent offset testing.
      */
     public static void assertTokenEquals(String message, TokenSequence<?> ts, TokenId id, String text, int offset) {
+        assertTokenEquals(message, ts, id, text, offset, (text != null) ? text.length() : -1);
+    }
+
+    /**
+     * Compare <code>TokenSequence.token()</code> to the given
+     * token id, length and offset.
+     *
+     * @param length length of the token (text might be null for removed token so it could not be compared).
+     * @param offset expected offset. It may be -1 to prevent offset testing.
+     */
+    public static void assertTokenEquals(String message, TokenSequence<?> ts, TokenId id, int length, int offset) {
+        assertTokenEquals(message, ts, id, null, offset, length);
+    }
+
+    private static void assertTokenEquals(String message, TokenSequence<?> ts, TokenId id, String text, int offset, int length) {
         message = messagePrefix(message);
         Token<?> t = ts.token();
         TestCase.assertNotNull("Token is null", t);
         TokenId tId = t.id();
         TestCase.assertEquals(message + "Invalid token.id() for text=\"" + debugTextOrNull(t.text()) + '"', id, tId);
-        CharSequence tText = t.text();
-        assertTextEquals(message + "Invalid token.text() for id=" + LexerUtilsConstants.idToString(id), text, tText);
-        // The token's length must correspond to text.length()
-        TestCase.assertEquals(message + "Invalid token.length()", text.length(), t.length());
+        if (length != -1) {
+            TestCase.assertEquals("Invalid token length", length, t.length());
+        }
+        if (text != null) {
+            CharSequence tText = t.text();
+            assertTextEquals(message + "Invalid token.text() for id=" + LexerUtilsConstants.idToString(id), text, tText);
+            TestCase.assertEquals(message + "Invalid token.length()", text.length(), t.length());
+        }
 
         if (offset != -1) {
             int tsOffset = ts.offset();

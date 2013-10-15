@@ -115,8 +115,18 @@ public class TokenHierarchyEventTest extends NbTestCase {
             assertNotNull(tc);
             assertEquals(2, tc.index());
             assertEquals(4, tc.offset());
-            assertEquals(1, tc.addedTokenCount());
+
             assertEquals(1, tc.removedTokenCount());
+            TokenSequence<?> removedTS = tc.removedTokenSequence();
+            assertTrue(removedTS.moveNext());
+            LexerTestUtilities.assertTokenEquals(removedTS, TestTokenId.IDENTIFIER, 3, 4);
+
+            assertEquals(1, tc.addedTokenCount());
+            TokenSequence<?> currentTS = tc.currentTokenSequence();
+            currentTS.moveIndex(tc.index());
+            assertTrue(currentTS.moveNext());
+            LexerTestUtilities.assertTokenEquals(currentTS, TestTokenId.IDENTIFIER, "dxef", 4);
+
             assertEquals(TestTokenId.language(), tc.language());
             assertEquals(0, tc.embeddedChangeCount());
         } finally {
