@@ -449,7 +449,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }// </editor-fold>//GEN-END:initComponents
     
     private void btnSmallerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSmallerActionPerformed
-        scene.setZoomFactor(scene.getZoomFactor() * 0.8);
+        scene.setMyZoomFactor(scene.getZoomFactor() * 0.8);
         scene.validate();
         scene.repaint();
         if (!pane.getHorizontalScrollBar().isVisible() && 
@@ -461,7 +461,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     }//GEN-LAST:event_btnSmallerActionPerformed
     
     private void btnBiggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBiggerActionPerformed
-        scene.setZoomFactor(scene.getZoomFactor() * 1.2);
+        scene.setMyZoomFactor(scene.getZoomFactor() * 1.2);
         scene.validate();
         scene.repaint();
         if (pane.getHorizontalScrollBar().isVisible() || 

@@ -186,6 +186,20 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         getActions().addAction(popupMenuAction);
     }
 
+    void setMyZoomFactor(double zoom) {
+        setZoomFactor(zoom);
+        ArrayList<Widget> arr = new ArrayList<Widget>();
+        arr.addAll(mainLayer.getChildren());
+        arr.addAll(connectionLayer.getChildren());
+        for (Widget wid : arr) {
+            if (wid instanceof ArtifactWidget) {
+                ((ArtifactWidget)wid).updateReadableZoom();
+            }
+            if (wid instanceof EdgeWidget) {
+                ((EdgeWidget)wid).updateReadableZoom();
+            }
+        }
+    }
 
     void initialLayout() {
         //start using default layout
@@ -568,7 +582,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                             new Point((int)rectangle.getCenterX(), (int)rectangle.getCenterY()));
                 }
             } else {
-                depScene.setZoomFactor (zf);
+                depScene.setMyZoomFactor (zf);
             }
         }
     }
