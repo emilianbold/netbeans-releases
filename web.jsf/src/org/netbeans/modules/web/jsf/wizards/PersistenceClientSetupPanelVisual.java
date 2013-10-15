@@ -354,6 +354,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         String editTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.EDIT_TEMPLATE);
         String createTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.CREATE_TEMPLATE);
         String listTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.LIST_TEMPLATE);
+        String baseTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.BASE_TEMPLATE);
         String controllerTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.CONTROLLER_TEMPLATE);
         String paginationTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.PAGINATION_TEMPLATE);
         String utilTemplatePath = JsfTemplateUtils.getTemplatePath(TemplateType.PAGES, getTemplatesStyle(), WizardProperties.UTIL_TEMPLATE);
@@ -365,6 +366,7 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         processValidPath(menu, paths, editTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.editTemplate"));
         processValidPath(menu, paths, createTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.createTemplate"));
         processValidPath(menu, paths, listTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.listTemplate"));
+        processValidPath(menu, paths, baseTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.baseTemplate"));
         processValidPath(menu, paths, controllerTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.controllerTemplate"));
         processValidPath(menu, paths, paginationTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.paginationTemplate"));
         processValidPath(menu, paths, utilTemplatePath, NbBundle.getMessage(PersistenceClientSetupPanelVisual.class, "PersistenceClientSetupPanelVisual.utilTemplate"));
