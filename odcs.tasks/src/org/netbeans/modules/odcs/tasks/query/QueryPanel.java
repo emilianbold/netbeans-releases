@@ -64,6 +64,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 
 /**
  *
@@ -145,18 +146,24 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         repaint();
     }
 
-    void setRemoteInvocationRunning(boolean running) {
-        modifyButton.setEnabled(!running);
-        seenButton.setEnabled(!running);
-        removeButton.setEnabled(!running);
-        refreshButton.setEnabled(!running);
-        cloneQueryButton.setEnabled(!running);
-        findIssuesButton.setEnabled(!running);
-        filterLabel.setEnabled(!running);
-        filterComboBox.setEnabled(!running);
-        
-        saveChangesButton.setEnabled(!running);
-        cancelChangesButton.setEnabled(!running);        
+    void setRemoteInvocationRunning(final boolean running) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                modifyButton.setEnabled(!running);
+                seenButton.setEnabled(!running);
+                removeButton.setEnabled(!running);
+                refreshButton.setEnabled(!running);
+                cloneQueryButton.setEnabled(!running);
+                findIssuesButton.setEnabled(!running);
+                filterLabel.setEnabled(!running);
+                filterComboBox.setEnabled(!running);
+                
+                saveChangesButton.setEnabled(!running);
+                cancelChangesButton.setEnabled(!running);                
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     /** This method is called from within the constructor to
@@ -180,7 +187,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         filterLabel = new javax.swing.JLabel();
         criteriaPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        separatorLabel1 = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
         queryHeaderPanel = new javax.swing.JPanel();
         lastRefreshLabel = new javax.swing.JLabel();
@@ -189,6 +195,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
+        separatorLabel1 = new javax.swing.JLabel();
         noContentPanel = new javax.swing.JPanel();
         noContentLabel = new javax.swing.JLabel();
 
@@ -688,13 +695,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         searchPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(webButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.text")); // NOI18N
-        webButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                webButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.text")); // NOI18N
 
         criteriaPanel.setBackground(new java.awt.Color(224, 224, 224));
@@ -828,9 +828,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         idTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.idTextField.AccessibleContext.accessibleDescription")); // NOI18N
         gotoIssueButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.gotoIssueButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(separatorLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel1.text")); // NOI18N
-        separatorLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         org.openide.awt.Mnemonics.setLocalizedText(refreshConfigurationButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshConfigurationButton.text")); // NOI18N
         refreshConfigurationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -858,10 +855,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(separatorLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -878,8 +871,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(refreshConfigurationButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(separatorLabel1)
                     .addComponent(saveButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cancelChangesButton)
                     .addComponent(saveChangesButton)
@@ -887,9 +878,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                 .addContainerGap())
         );
 
-        searchPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {saveButton, separatorLabel1, webButton});
-
-        webButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.AccessibleContext.accessibleDescription")); // NOI18N
         searchButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
         cancelChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cancelChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
         saveChangesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.saveChangesButton.AccessibleContext.accessibleDescription")); // NOI18N
@@ -961,6 +949,16 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(webButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.text")); // NOI18N
+        webButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                webButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(separatorLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel1.text")); // NOI18N
+        separatorLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         javax.swing.GroupLayout queryHeaderPanelLayout = new javax.swing.GroupLayout(queryHeaderPanel);
         queryHeaderPanel.setLayout(queryHeaderPanelLayout);
         queryHeaderPanelLayout.setHorizontalGroup(
@@ -995,7 +993,12 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addGap(6, 6, 6)
                         .addComponent(jLabel8)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(separatorLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         queryHeaderPanelLayout.setVerticalGroup(
@@ -1022,16 +1025,22 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(jLabel7)
                     .addComponent(findIssuesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(queryHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                        .addComponent(webButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(separatorLabel1)))
                 .addContainerGap())
         );
 
         queryHeaderPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {jLabel4, jLabel5, jLabel6, jLabel7, modifyButton, refreshButton, removeButton});
 
+        queryHeaderPanelLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {separatorLabel1, webButton});
+
         seenButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshButton.AccessibleContext.accessibleDescription")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.seenButton.AccessibleContext.accessibleDescription")); // NOI18N
         modifyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.modifyButton.AccessibleContext.accessibleDescription")); // NOI18N
+        webButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.webButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         noContentPanel.setLayout(new java.awt.GridBagLayout());
@@ -1211,97 +1220,159 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
      * enables/disables all but the parameter fields
      * @param enable
      */
-    void enableFields(boolean enable) {
-        searchBySummaryCheckBox.setEnabled(enable);
-        searchByDescriptionCheckBox.setEnabled(enable);
-        
-        productLabel.setEnabled(enable);
-        componentLabel.setEnabled(enable);
-        releaseLabel.setEnabled(enable);
-        statusLabel.setEnabled(enable);
-        severityLabel.setEnabled(enable);
-        resolutionLabel.setEnabled(enable);
-        priorityLabel.setEnabled(enable);
-        iterationLabel.setEnabled(enable);
-        issueTypeLabel.setEnabled(enable);
-
-        searchButton.setEnabled(enable);
-        saveButton.setEnabled(enable);
-        webButton.setEnabled(enable);
-        refreshConfigurationButton.setEnabled(enable);
+    void enableFields(final boolean enable) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                searchBySummaryCheckBox.setEnabled(enable);
+                searchByDescriptionCheckBox.setEnabled(enable);
+                
+                productLabel.setEnabled(enable);
+                componentLabel.setEnabled(enable);
+                releaseLabel.setEnabled(enable);
+                statusLabel.setEnabled(enable);
+                severityLabel.setEnabled(enable);
+                resolutionLabel.setEnabled(enable);
+                priorityLabel.setEnabled(enable);
+                iterationLabel.setEnabled(enable);
+                issueTypeLabel.setEnabled(enable);
+                
+                searchButton.setEnabled(enable);
+                saveButton.setEnabled(enable);
+                webButton.setEnabled(enable);
+                refreshConfigurationButton.setEnabled(enable);
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void switchQueryFields(boolean showAdvanced) {
-        byDetails.setVisible(showAdvanced);
-        byText.setVisible(showAdvanced);
-        byLastChange.setVisible(showAdvanced);
-        byPeople.setVisible(showAdvanced);
+    void switchQueryFields(final boolean showAdvanced) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                byDetails.setVisible(showAdvanced);
+                byText.setVisible(showAdvanced);
+                byLastChange.setVisible(showAdvanced);
+                byPeople.setVisible(showAdvanced);
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void showError(String text) {
-        noContentPanel.setVisible(true);
-        tableSummaryLabel.setVisible(false);
-        tableFieldsPanel.setVisible(false);
-        if(text != null) {
-            noContentLabel.setForeground(ERROR_COLOR);
-            noContentLabel.setText(text);
-        }
+    void showError(final String text) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                noContentPanel.setVisible(true);
+                tableSummaryLabel.setVisible(false);
+                tableFieldsPanel.setVisible(false);
+                if (text != null) {
+                    noContentLabel.setForeground(ERROR_COLOR);
+                    noContentLabel.setText(text);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void showSearchingProgress(boolean on, String text) {
-        noContentPanel.setVisible(on);
-        tableSummaryLabel.setVisible(!on);
-        tableFieldsPanel.setVisible(!on);
-        if(on && text != null) {
-            noContentLabel.setForeground(defaultTextColor);
-            noContentLabel.setText(text);
-        }
+    void showSearchingProgress(final boolean on, final String text) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                noContentPanel.setVisible(on);
+                tableSummaryLabel.setVisible(!on);
+                tableFieldsPanel.setVisible(!on);
+                if (on && text != null) {
+                    noContentLabel.setForeground(defaultTextColor);
+                    noContentLabel.setText(text);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void showRetrievingProgress(boolean on, String text, boolean searchPanelVisible) {
-        noContentPanel.setVisible(on);
-        noContentLabel.setForeground(Color.red);
-        if(searchPanelVisible) {
-            searchPanel.setVisible(!on);
-        }
-        if(on && text != null) {
-            noContentLabel.setForeground(defaultTextColor);
-            noContentLabel.setText(text);
-        }
+    void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                noContentPanel.setVisible(on);
+                noContentLabel.setForeground(Color.red);
+                if (searchPanelVisible) {
+                    searchPanel.setVisible(!on);
+                }
+                if (on && text != null) {
+                    noContentLabel.setForeground(defaultTextColor);
+                    noContentLabel.setText(text);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     void showNoContentPanel(boolean on) {
         showSearchingProgress(on, null);
     }
 
-    void setModifyVisible(boolean b) {
-        searchPanel.setVisible(b);
-        cancelChangesButton.setVisible(b);
-        saveChangesButton.setVisible(b);
+    void setModifyVisible(final boolean b) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                searchPanel.setVisible(b);
+                cancelChangesButton.setVisible(b);
+                saveChangesButton.setVisible(b);
+                
+                webButton.setVisible(b);
+                separatorLabel3.setVisible(b);
+                
+                tableFieldsPanel.setVisible(!b);
+                searchButton.setVisible(!b);
+                saveButton.setVisible(!b);
         
-        webButton.setVisible(b);
-        separatorLabel3.setVisible(b);
-
-        tableFieldsPanel.setVisible(!b);
-        searchButton.setVisible(!b);
-        saveButton.setVisible(!b);
-        
-        separatorLabel1.setVisible(!b);
+                separatorLabel1.setVisible(!b);
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void setSaved(String name, String lastRefresh) {
-        searchPanel.setVisible(false);
-        queryHeaderPanel.setVisible(true);
-        tableHeaderPanel.setVisible(true);
-        filterComboBox.setVisible(true); // XXX move to bugtracking IssueTable component
-        filterLabel.setVisible(true);
-        tablePanel.setVisible(true);
-        nameLabel.setText(name);
-        setLastRefresh(lastRefresh);
+    void setSaved(final String name, final String lastRefresh) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                searchPanel.setVisible(false);
+                queryHeaderPanel.setVisible(true);
+                tableHeaderPanel.setVisible(true);
+                filterComboBox.setVisible(true); // XXX move to bugtracking IssueTable component
+                filterLabel.setVisible(true);
+                tablePanel.setVisible(true);
+                nameLabel.setText(name);
+                setLastRefresh(lastRefresh);
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
-    void setLastRefresh(String lastRefresh) {
-        lastRefreshDateLabel.setText(lastRefresh);
+    void setLastRefresh(final String lastRefresh) {
+        Runnable r = new Runnable() {
+            public void run() {
+                lastRefreshDateLabel.setText(lastRefresh);
+            }
+        };
+        ODCSUtil.runInAwt(r);
+    }
+
+    void hideModificationFields () {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                // can't change the controllers data
+                // so alwasy keep those fields disabled
+                modifyButton.setEnabled(false);
+                removeButton.setEnabled(false);
+                refreshConfigurationButton.setEnabled(false);
+                cloneQueryButton.setEnabled(false);
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     public void focusGained(FocusEvent e) {
