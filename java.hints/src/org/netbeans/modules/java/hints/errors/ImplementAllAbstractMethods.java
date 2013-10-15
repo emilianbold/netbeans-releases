@@ -108,16 +108,17 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         analyze(offset, info, new Performer() {
             @Override
             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
+                result.add(new FixImpl(info.getJavaSource(), offset, null));
+            }
+            @Override
+            public void makeClassAbstract(TreePath pathToModify, String className) {
+                Tree toModify = pathToModify.getLeaf();
                 Element el = info.getTrees().getElement(pathToModify);
                 if (el.getKind() == ElementKind.ENUM) {
                     result.add(new ImplementOnEnumValues(info.getJavaSource(), offset));
                 } else {
-                    result.add(new FixImpl(info.getJavaSource(), offset, null));
+                    result.add(new FixImpl(info.getJavaSource(), offset, className));
                 }
-            }
-            @Override
-            public void makeClassAbstract(Tree toModify, String className) {
-                result.add(new FixImpl(info.getJavaSource(), offset, className));
             }
         });
         
@@ -143,7 +144,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
     private static interface Performer {
 
         public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify);
-        public void makeClassAbstract(Tree toModify, String className);
+        public void makeClassAbstract(TreePath toModify, String className);
 
     }
 
@@ -168,13 +169,11 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         final Tree leaf = path.getLeaf();
         
         if (isUsableElement) {
-            if (e.getKind() != ElementKind.ENUM) {
-                //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
-                for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
-                    if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
-                        performer.makeClassAbstract(leaf, e.getSimpleName().toString());
-                        return;
-                    }
+            //#85806: do not propose implement all abstract methods when the current class contains abstract methods:
+            for (ExecutableElement ee : ElementFilter.methodsIn(e.getEnclosedElements())) {
+                if (ee.getModifiers().contains(Modifier.ABSTRACT)) {
+                    performer.makeClassAbstract(path, e.getSimpleName().toString());
+                    return;
                 }
             }
 
@@ -194,7 +193,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
             performer.fixAllAbstractMethods(path, leaf);
             
             if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals(""))
-                performer.makeClassAbstract(leaf, e.getSimpleName().toString());
+                performer.makeClassAbstract(path, e.getSimpleName().toString());
         } else if (leaf.getKind() == Kind.NEW_CLASS) {
             //if the parent of path.getLeaf is an error, the situation probably is like:
             //new Runnable {}
@@ -275,7 +274,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                             }
 
                             @Override
-                            public void makeClassAbstract(Tree toModify, String className) {
+                            public void makeClassAbstract(TreePath toModify, String className) {
                                 // no op
                             }
 
@@ -309,7 +308,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                             }
 
                             @Override
-                            public void makeClassAbstract(Tree toModify, String className) {
+                            public void makeClassAbstract(TreePath toModify, String className) {
                                 // no op
                             }
 
@@ -383,7 +382,8 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                                 if (makeClassAbstractName != null) return;
                                 fixClassOrVariable(copy, pathToModify, toModify, offsetArr, repeat);
                             }
-                            public void makeClassAbstract(Tree toModify, String className) {
+                            public void makeClassAbstract(TreePath pathToModify, String className) {
+                                Tree toModify = pathToModify.getLeaf();
                                 if (makeClassAbstractName == null) return;
                                 //the toModify has to be a class tree:
                                 if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
