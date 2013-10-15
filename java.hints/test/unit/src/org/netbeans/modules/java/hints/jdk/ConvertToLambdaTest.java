@@ -193,6 +193,31 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "}\n");
     }
     
+    public void testThatCastIsIfAssignedToRaw() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparable c = new Comparable<String>(){            \n" +
+                       "            @Override\n" +
+                       "            public int compareTo(String o) {\n" +
+                       "                return 1;\n" +
+                       "            }            \n" +
+                       "        };" +
+                       "    }\n" +
+                       "}\n")
+                .run(ConvertToLambda.class)
+                .findWarning("3:27-3:45:" + lambdaConvWarning)
+                .applyFix()
+                .assertOutput("package test;\n" +
+                    "public class Test {\n" +
+                       "    {\n" +
+                       "        Comparable c = (Comparable<String>) (String o) -> 1;\n" +
+                       "    }\n" +
+                       "}\n");
+       }
+
     public void testThatSiteWithinConstrIsConverted() throws Exception {
         HintTest.create()
                 .sourceLevel("1.8")

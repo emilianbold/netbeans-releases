@@ -88,39 +88,10 @@ public final class LexerUtilsConstants {
     public static final int MOD_COUNT_REMOVED = -2;
     
     /**
-     * Maximum token length that has the TokenLength objects cached by TokenLength.CACHE.
-     */
-    public static final int MAX_CACHED_TOKEN_LENGTH = 200;
-    
-    /**
-     * Threshold (used by TokenLength) above which the DefaultToken implementations will
-     * start to cache the Token.text().toString() result in itself.
-     */
-    public static final short CACHE_TOKEN_TO_STRING_THRESHOLD = 900;
-    
-    /**
-     * Threshold similar to TOKEN_TEXT_STRING_THRESHOLD but for a case when a root token list's text
-     * is a String instance. In that case a String.substring(start, end) will be used
-     * which is considerably cheaper than a regular case because the character data
-     * will be shared with the root text and there will be no character copying.
-     */
-    public static final short INPUT_TEXT_STRING_THRESHOLD = 300;
-    
-    /**
-     * Used by TokenLength as a measure of a String instance production.
-     */
-    public static final short TOKEN_LENGTH_STRING_CREATION_FACTOR = 50;
-    
-    /**
      * Initial size of a buffer for copying a text of a Reader.
      */
-    public static final int READER_TEXT_BUFFER_SIZE = 4096;
+    public static final int READER_TEXT_BUFFER_SIZE = 16384;
     
-    static {
-        // Require the following to only use THRESHOLD in certain checks
-        assert (CACHE_TOKEN_TO_STRING_THRESHOLD >= INPUT_TEXT_STRING_THRESHOLD);
-    }
-
     public static final AbstractToken<?> SKIP_TOKEN
         = new TextToken<TokenId>(
             new TokenIdImpl("skip-token-id; special id of TokenFactory.SKIP_TOKEN; " + // NOI18N
@@ -347,8 +318,8 @@ public final class LexerUtilsConstants {
         return new int[] { high, midStartOffset };
     }
 
-    public static int updatedStartOffset(EmbeddedTokenList<?> etl, TokenHierarchyEventInfo eventInfo) {
-        etl.embeddingContainer().updateStatusUnsync();
+    public static int updatedStartOffset(EmbeddedTokenList<?,?> etl, TokenHierarchyEventInfo eventInfo) {
+        etl.updateModCount();
         int startOffset = etl.startOffset();
         return (etl.isRemoved() && startOffset > eventInfo.modOffset())
                 ? Math.max(startOffset - eventInfo.removedLength(), eventInfo.modOffset())
@@ -385,8 +356,13 @@ public final class LexerUtilsConstants {
             ArrayUtilities.appendSpaces(sb, indent);
             sb.append((i == currentIndex) ? '*' : 'T');
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            appendTokenInfo(sb, tokenList, i, tokenHierarchy,
-                    appendEmbedded, indent, dumpTokenText);
+            try {
+                appendTokenInfo(sb, tokenList, i, tokenHierarchy,
+                        appendEmbedded, indent, dumpTokenText);
+            } catch (IndexOutOfBoundsException e) { // Fallback that allows to grab at least partial info
+                sb.append("<IOOBE occurred!!!>\n");
+                break; // Do not dump further info
+            }
             sb.append('\n');
         }
         return sb;
@@ -406,16 +382,9 @@ public final class LexerUtilsConstants {
             TokenHierarchy tokenHierarchy, boolean appendEmbedded, int indent,
             boolean dumpTokenText
     ) {
-        try {
-            appendTokenInfo(sb, tokenList.tokenOrEmbedding(index),
-                    tokenList.lookahead(index), tokenList.state(index),
-                    tokenHierarchy, appendEmbedded, indent, dumpTokenText);
-        } catch (IndexOutOfBoundsException e) {
-            // Special handling due to fact that the JTL.lookahead() failed here and additional info was needed
-           tokenList.lookahead(index); // Reattempt to possibly debug the exception throwing
-            System.err.println("Index=" + index + ", tokenCount=" + tokenList.tokenCount() + ", cls=" + tokenList.getClass());
-            throw e; // Rethrow the IOOBE
-        }
+        appendTokenInfo(sb, tokenList.tokenOrEmbedding(index),
+                tokenList.lookahead(index), tokenList.state(index),
+                tokenHierarchy, appendEmbedded, indent, dumpTokenText);
     }
 
     public static <T extends TokenId> void appendTokenInfo(StringBuilder sb,
@@ -426,7 +395,7 @@ public final class LexerUtilsConstants {
         if (tokenOrEmbedding == null) {
             sb.append("<NULL-TOKEN>");
         } else { // regular token
-            EmbeddingContainer<T> ec = tokenOrEmbedding.embedding();
+            EmbeddedTokenList<T, ?> etl = tokenOrEmbedding.embedding();
             AbstractToken<T> token = tokenOrEmbedding.token();
             token.dumpInfo(sb, tokenHierarchy, dumpTokenText, true, indent);
             appendLAState(sb, lookahead, state);
@@ -434,23 +403,22 @@ public final class LexerUtilsConstants {
             appendIdentityHashCode(sb, token);
 
             // Check for embedding and if there is one dump it
-            if (ec != null) {
+            if (etl != null) {
                 indent += 4;
-                // Append EC's IHC
-                sb.append("; EC-");
-                appendIdentityHashCode(sb, ec);
-                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
                 int index = 0;
-                while (etl != null) {
+                do {
                     sb.append('\n');
                     ArrayUtilities.appendSpaces(sb, indent);
-                    sb.append("Embedding[").append(index).append("]: \"").append(etl.languagePath().mimePath()).append("\"\n");
+                    sb.append("  Embedding[").append(index).append("]: \"");
+                    sb.append(etl.languagePath().mimePath()).append("\", ");
+                    LexerUtilsConstants.appendIdentityHashCode(sb, etl);
+                    sb.append("\n");
                     if (appendEmbedded) {
                         appendTokenList(sb, etl, -1, 0, Integer.MAX_VALUE, appendEmbedded, indent, true);
                     }
                     etl = etl.nextEmbeddedTokenList();
                     index++;
-                }
+                } while (etl != null);
             } 
         }
     }
@@ -482,7 +450,7 @@ public final class LexerUtilsConstants {
         // Of course this may affect a testing in case a missing EC.updateStatus()
         //   is a reason of failure.
         if (tokenList instanceof EmbeddedTokenList) {
-            ((EmbeddedTokenList<?>)tokenList).embeddingContainer().updateStatus();
+            ((EmbeddedTokenList<?,?>)tokenList).updateModCount();
         }
         int startOffset = tokenList.startOffset();
         int lastOffset = startOffset;
@@ -527,9 +495,8 @@ public final class LexerUtilsConstants {
                         tokenList, i);
             }
             lastOffset = offset + token.length();
-            EmbeddingContainer<?> ec = tokenOrEmbedding.embedding();
-            if (ec != null && checkEmbedded) {
-                EmbeddedTokenList<?> etl = ec.firstEmbeddedTokenList();
+            EmbeddedTokenList<?,?> etl = tokenOrEmbedding.embedding();
+            if (etl != null && checkEmbedded) {
                 while (etl != null) {
                     String error = checkConsistencyTokenList(etl, checkEmbedded);
                     if (error != null)
@@ -541,8 +508,14 @@ public final class LexerUtilsConstants {
         // Check that last offset ended at TL.endOffset() for continuous TLs
         if (tokenList instanceof MutableTokenList && ((MutableTokenList<?>)tokenList).isFullyLexed()) {
             int endOffset = tokenList.endOffset();
-            if (startOffset != endOffset && tokenCountCurrent == 0) {
-                return dumpContext("Non-empty token list does not contain any tokens", tokenList, 0); // NOI18N
+            // Check that non-empty continuous TL has tokens.
+            // The check can't be applied to non-continuous TLs since e.g. a JTL consiting
+            // of two ETLs <100,100> and <105,105> will contain no tokens.
+            if (tokenList.isContinuous() && startOffset != endOffset && tokenCountCurrent == 0) {
+                String msg = "Non-empty " + tokenList.dumpInfoType() + // NOI18N
+                        " <" + startOffset + "," + endOffset + "> " + // NOI18N
+                        " does not contain any tokens"; // NOI18N
+                return dumpContext(msg, tokenList, 0); // NOI18N
             }
             if (continuous && lastOffset != endOffset) {
                 return dumpContext("lastOffset=" + lastOffset + " != endOffset=" + endOffset, // NOI18N
@@ -557,7 +530,9 @@ public final class LexerUtilsConstants {
         sb.append(msg);
         sb.append(" at index="); // NOI18N
         sb.append(index);
-        sb.append(" of tokens of language-path "); // NOI18N
+        sb.append(" of tokenList with ");
+        appendIdentityHashCode(sb, tokenList);
+        sb.append(" of language-path "); // NOI18N
         sb.append(tokenList.languagePath().mimePath());
         sb.append(", ").append(tokenList.getClass());
         sb.append('\n');

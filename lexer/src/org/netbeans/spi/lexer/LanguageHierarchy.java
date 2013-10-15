@@ -333,15 +333,18 @@ public abstract class LanguageHierarchy<T extends TokenId> {
     }
     
     /** Enforce default implementation of <code>hashCode()</code>. */
+    @Override
     public final int hashCode() {
         return super.hashCode();
     }
     
     /** Enforce default implementation of <code>equals()</code>. */
+    @Override
     public final boolean equals(Object o) {
         return super.equals(o);
     }
 
+    @Override
     public String toString() {
         return getClass().getName(); // for debugging purposes only
     }

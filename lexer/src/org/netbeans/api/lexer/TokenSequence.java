@@ -47,8 +47,9 @@ package org.netbeans.api.lexer;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
+import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
-import org.netbeans.lib.lexer.EmbeddingContainer;
+import org.netbeans.lib.lexer.EmbeddingOperation;
 import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.SubSequenceTokenList;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
@@ -139,17 +140,27 @@ public final class TokenSequence<T extends TokenId> {
      */
     private int tokenOffset = -1; // 24 bytes
 
+    private final TokenList<?> rootTokenList; // 28 bytes
+
     /**
-     * Copy of the modCount of the token list. If the token list's modCount
-     * changes (by modification) this token sequence will become invalid.
+     * modCount of token list at time when token sequence was constructed.
      */
-    private final int modCount; // 28 bytes
+    private final int modCount; // 32 bytes
+
+    private final EmbeddedTokenList<?,T> embeddedTokenList;
 
     /**
      * Package-private constructor used by API accessor.
      */
     TokenSequence(TokenList<T> tokenList) {
         this.tokenList = tokenList;
+        this.rootTokenList = tokenList.rootTokenList();
+        if (tokenList instanceof EmbeddedTokenList) {
+            embeddedTokenList = (EmbeddedTokenList<?,T>) tokenList;
+            embeddedTokenList.updateModCount(rootTokenList.modCount());
+        } else {
+            embeddedTokenList = null;
+        }
         this.modCount = tokenList.modCount();
     }
 
@@ -229,9 +240,11 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public Token<T> offsetToken() {
-        checkTokenNotNull();
-        if (token.isFlyweight()) {
-            token = tokenList.replaceFlyToken(tokenIndex, token, offset());
+        synchronized (rootTokenList) {
+            checkTokenNotNull();
+            if (token.isFlyweight()) {
+                token = tokenList.replaceFlyToken(tokenIndex, token, offset());
+            }
         }
         return token;
     }
@@ -251,11 +264,13 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public int offset() {
-        checkTokenNotNull();
-        if (tokenOffset == -1) {
-            tokenOffset = tokenList.tokenOffset(tokenIndex);
+        synchronized (rootTokenList) {
+            checkTokenNotNull();
+            if (tokenOffset == -1) {
+                tokenOffset = tokenList.tokenOffset(tokenIndex);
+            }
+            return tokenOffset;
         }
-        return tokenOffset;
     }
     
     /**
@@ -302,7 +317,6 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public TokenSequence<?> embedded() {
-        checkTokenNotNull();
         return embeddedImpl(null, false);
     }
 
@@ -314,7 +328,6 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public <ET extends TokenId> TokenSequence<ET> embedded(Language<ET> embeddedLanguage) {
-        checkTokenNotNull();
         return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), false);
     }
 
@@ -335,7 +348,6 @@ public final class TokenSequence<T extends TokenId> {
      *  or to a join token in case the first token of this embedding is part of the join token.
      */
     public TokenSequence<?> embeddedJoined() {
-        checkTokenNotNull();
         return embeddedImpl(null, true);
     }
 
@@ -347,30 +359,37 @@ public final class TokenSequence<T extends TokenId> {
      * @throws IllegalStateException if {@link #token()} returns null.
      */
     public <ET extends TokenId> TokenSequence<ET> embeddedJoined(Language<ET> embeddedLanguage) {
-        checkTokenNotNull();
         return embeddedImpl(Collections.<Language<?>>singleton(embeddedLanguage), true);
     }
 
     private <ET extends TokenId> TokenSequence<ET> embeddedImpl(Set<Language<?>> embeddedLanguagesSet, boolean joined) {
-        if (token.isFlyweight())
-            return null;
-
-        EmbeddedTokenList<ET> embeddedTokenList
-                = EmbeddingContainer.embeddedTokenList(tokenList, tokenIndex, embeddedLanguagesSet, true);
-        if (embeddedTokenList != null) {
-            embeddedTokenList.embeddingContainer().updateStatus();
-            TokenSequence<ET> tse;
-            JoinTokenList<ET> joinTokenList;
-            if (joined && (joinTokenList = embeddedTokenList.joinTokenList()) != null) {
-                tse = new TokenSequence<ET>(joinTokenList);
-                // Position to this etl's index
-                tse.moveIndex(joinTokenList.activeStartJoinIndex());
-            } else { // Request regular TS or no joining available
-                tse = new TokenSequence<ET>(embeddedTokenList);
+        synchronized (rootTokenList) {
+            checkTokenNotNull();
+            if (token.isFlyweight()) {
+                return null;
             }
-            return tse;
+            checkValid();
+            EmbeddedTokenList<?,ET> etl
+                    = EmbeddingOperation.embeddedTokenList(tokenList, tokenIndex, embeddedLanguagesSet, true);
+            if (etl != null) {
+                etl.updateModCount(rootTokenList.modCount());
+                TokenSequence<ET> tse;
+                JoinTokenList<ET> jtl;
+                EmbeddedJoinInfo<ET> joinInfo = etl.joinInfo();
+                if (joined && (jtl = joinInfo.joinTokenList) != null) {
+                    @SuppressWarnings("unchecked")
+                    JoinTokenList<ET> joinTokenList = (JoinTokenList<ET>) jtl;
+                    tse = new TokenSequence<ET>(joinTokenList);
+                    // Position to this etl's index
+                    jtl.setActiveTokenListIndex(joinInfo.tokenListIndex());
+                    tse.moveIndex(joinTokenList.activeStartJoinIndex());
+                } else { // Request regular TS or no joining available
+                    tse = new TokenSequence<ET>(etl);
+                }
+                return tse;
+            }
+            return null;
         }
-        return null;
     }
 
     /**
@@ -419,10 +438,13 @@ public final class TokenSequence<T extends TokenId> {
      */
     public boolean createEmbedding(Language<?> embeddedLanguage,
     int startSkipLength, int endSkipLength, boolean joinSections) {
-        checkTokenNotNull();
-        // Write-lock presence checked in the impl
-        return EmbeddingContainer.createEmbedding(tokenList, tokenIndex,
-                embeddedLanguage, startSkipLength, endSkipLength, joinSections);
+        synchronized (rootTokenList) {
+            checkTokenNotNull();
+            checkValid();
+            // Write-lock presence checked in the impl
+            return EmbeddingOperation.createEmbedding(tokenList, tokenIndex,
+                    embeddedLanguage, startSkipLength, endSkipLength, joinSections);
+        }
     }
     
     /**
@@ -432,9 +454,12 @@ public final class TokenSequence<T extends TokenId> {
      * within a write lock over the text input.
      */
     public boolean removeEmbedding(Language<?> embeddedLanguage) {
-        checkTokenNotNull();
-        // Write-lock presence checked in the impl
-        return EmbeddingContainer.removeEmbedding(tokenList, tokenIndex, embeddedLanguage);
+        synchronized (rootTokenList) {
+            checkTokenNotNull();
+            checkValid();
+            // Write-lock presence checked in the impl
+            return EmbeddingOperation.removeEmbedding(tokenList, tokenIndex, embeddedLanguage);
+        }
     }
 
     /**
@@ -454,32 +479,34 @@ public final class TokenSequence<T extends TokenId> {
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean moveNext() {
-        checkModCount();
-        if (token != null) // Token already fetched
-            tokenIndex++;
-        TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(tokenIndex);
-        if (tokenOrEmbedding != null) { // Might be null if no more tokens available
-            AbstractToken<T> origToken = token;
-            token = tokenOrEmbedding.token();
-            // If origToken == null then the right offset might already be pre-computed from move()
-            if (tokenOffset != -1) {
-                if (origToken != null) {
-                    // If the token list is continuous or the fetched token
-                    // is flyweight (there cannot be a gap before flyweight token)
-                    // the original offset can be just increased
-                    // by the original token's length.
-                    if (tokenList.isContinuous() || token.isFlyweight()) {
-                        tokenOffset += origToken.length(); // advance by previous token's length
-                    } else // Offset must be recomputed
-                        tokenOffset = -1; // mark the offset to be recomputed
-                } else // Not valid token previously
-                    tokenOffset = -1;
+        synchronized (rootTokenList) {
+            checkValid();
+            if (token != null) // Token already fetched
+                tokenIndex++;
+            TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(tokenIndex);
+            if (tokenOrEmbedding != null) { // Might be null if no more tokens available
+                AbstractToken<T> origToken = token;
+                token = tokenOrEmbedding.token();
+                // If origToken == null then the right offset might already be pre-computed from move()
+                if (tokenOffset != -1) {
+                    if (origToken != null) {
+                        // If the token list is continuous or the fetched token
+                        // is flyweight (there cannot be a gap before flyweight token)
+                        // the original offset can be just increased
+                        // by the original token's length.
+                        if (tokenList.isContinuous() || token.isFlyweight()) {
+                            tokenOffset += origToken.length(); // advance by previous token's length
+                        } else // Offset must be recomputed
+                            tokenOffset = -1; // mark the offset to be recomputed
+                    } else // Not valid token previously
+                        tokenOffset = -1;
+                }
+                return true;
             }
-            return true;
+            if (token != null) // Unsuccessful move from existing token
+                tokenIndex--;
+            return false;
         }
-        if (token != null) // Unsuccessful move from existing token
-            tokenIndex--;
-        return false;
     }
 
     /**
@@ -499,30 +526,32 @@ public final class TokenSequence<T extends TokenId> {
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public boolean movePrevious() {
-        checkModCount();
-        if (tokenIndex > 0) {
-            AbstractToken<T> origToken = token;
-            tokenIndex--;
-            token = tokenList.tokenOrEmbedding(tokenIndex).token();
-            if (tokenOffset != -1) {
-                if (origToken != null) {
-                    // If the token list is continuous or the original token
-                    // is flyweight (there cannot be a gap before flyweight token)
-                    // the original offset can be just decreased
-                    // by the fetched token's length.
-                    if (tokenList.isContinuous() || origToken.isFlyweight()) {
-                        tokenOffset -= token.length(); // decrease by the fetched's token length
-                    } else { // mark the offset to be computed upon call to offset()
+        synchronized (rootTokenList) {
+            checkValid();
+            if (tokenIndex > 0) {
+                AbstractToken<T> origToken = token;
+                tokenIndex--;
+                token = tokenList.tokenOrEmbedding(tokenIndex).token();
+                if (tokenOffset != -1) {
+                    if (origToken != null) {
+                        // If the token list is continuous or the original token
+                        // is flyweight (there cannot be a gap before flyweight token)
+                        // the original offset can be just decreased
+                        // by the fetched token's length.
+                        if (tokenList.isContinuous() || origToken.isFlyweight()) {
+                            tokenOffset -= token.length(); // decrease by the fetched's token length
+                        } else { // mark the offset to be computed upon call to offset()
+                            tokenOffset = -1;
+                        }
+                    } else {
                         tokenOffset = -1;
                     }
-                } else {
-                    tokenOffset = -1;
                 }
-            }
-            return true;
+                return true;
 
-        } // no tokens below index zero
-        return false;
+            } // no tokens below index zero
+            return false;
+        }
     }
 
     /**
@@ -558,7 +587,13 @@ public final class TokenSequence<T extends TokenId> {
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public int moveIndex(int index) {
-        checkModCount();
+        synchronized (rootTokenList) {
+            checkValid();
+            return moveIndexImpl(index);
+        }
+    }
+    
+    private int moveIndexImpl(int index) {
         if (index >= 0) {
             TokenOrEmbedding<T> tokenOrEmbedding = tokenList.tokenOrEmbedding(index);
             if (tokenOrEmbedding != null) { // enough tokens
@@ -578,7 +613,10 @@ public final class TokenSequence<T extends TokenId> {
      * This is equivalent to <code>moveIndex(0)</code>.
      */
     public void moveStart() {
-        moveIndex(0);
+        synchronized (rootTokenList) {
+            checkValid();
+            moveIndex(0);
+        }
     }
     
     /**
@@ -587,7 +625,10 @@ public final class TokenSequence<T extends TokenId> {
      * This is equivalent to <code>moveIndex(tokenCount())</code>.
      */
     public void moveEnd() {
-        moveIndex(tokenCount());
+        synchronized (rootTokenList) {
+            checkValid();
+            moveIndex(tokenList.tokenCount());
+        }
     }
     
     /**
@@ -632,14 +673,16 @@ public final class TokenSequence<T extends TokenId> {
      *  is no longer valid because of an underlying mutable input source modification.
      */
     public int move(int offset) {
-        checkModCount();
-        int[] indexAndTokenOffset = tokenList.tokenIndex(offset);
-        if (indexAndTokenOffset[0] != -1) { // Valid index and token-offset
-            resetTokenIndex(indexAndTokenOffset[0], indexAndTokenOffset[1]);
-        } else { // No tokens in token list (indexAndOffset[1] == 0)
-            resetTokenIndex(0, -1); // Set Index to zero and offset to invalid
+        synchronized (rootTokenList) {
+            checkValid();
+            int[] indexAndTokenOffset = tokenList.tokenIndex(offset);
+            if (indexAndTokenOffset[0] != -1) { // Valid index and token-offset
+                resetTokenIndex(indexAndTokenOffset[0], indexAndTokenOffset[1]);
+            } else { // No tokens in token list (indexAndOffset[1] == 0)
+                resetTokenIndex(0, -1); // Set Index to zero and offset to invalid
+            }
+            return offset - indexAndTokenOffset[1];
         }
-        return offset - indexAndTokenOffset[1];
     }
     
     /**
@@ -650,7 +693,10 @@ public final class TokenSequence<T extends TokenId> {
      * @see #tokenCount()
      */
     public boolean isEmpty() {
-        return (tokenIndex == 0 && tokenList.tokenOrEmbedding(0) == null);
+        synchronized (rootTokenList) {
+            checkValid();
+            return (tokenIndex == 0 && tokenList.tokenOrEmbedding(0) == null);
+        }
     }
 
     /**
@@ -663,8 +709,10 @@ public final class TokenSequence<T extends TokenId> {
      * @return total number of tokens in this token sequence.
      */
     public int tokenCount() {
-        checkModCount();
-        return tokenList.tokenCount();
+        synchronized (rootTokenList) {
+            checkValid();
+            return tokenList.tokenCount();
+        }
     }
     
     /**
@@ -693,17 +741,19 @@ public final class TokenSequence<T extends TokenId> {
      * @return non-null sub sequence of this token sequence.
      */
     public TokenSequence<T> subSequence(int startOffset, int endOffset) {
-        checkModCount(); // Ensure subsequences on valid token sequences only
-        TokenList<T> tl;
-        if (tokenList.getClass() == SubSequenceTokenList.class) {
-            SubSequenceTokenList<T> stl = (SubSequenceTokenList<T>)tokenList;
-            tl = stl.delegate();
-            startOffset = Math.max(startOffset, stl.limitStartOffset());
-            endOffset = Math.min(endOffset, stl.limitEndOffset());
-        } else {// Regular token list
-            tl = tokenList;
+        synchronized (rootTokenList) {
+            checkValid();
+            TokenList<T> tl;
+            if (tokenList.getClass() == SubSequenceTokenList.class) {
+                SubSequenceTokenList<T> stl = (SubSequenceTokenList<T>)tokenList;
+                tl = stl.delegate();
+                startOffset = Math.max(startOffset, stl.limitStartOffset());
+                endOffset = Math.min(endOffset, stl.limitEndOffset());
+            } else {// Regular token list
+                tl = tokenList;
+            }
+            return new TokenSequence<T>(new SubSequenceTokenList<T>(tl, startOffset, endOffset));
         }
-        return new TokenSequence<T>(new SubSequenceTokenList<T>(tl, startOffset, endOffset));
     }
     
     /**
@@ -715,7 +765,9 @@ public final class TokenSequence<T extends TokenId> {
      * @return true if this token sequence is ready for use or false if it should be abandoned.
      */
     public boolean isValid() {
-        return (tokenList.modCount() == this.modCount);
+        synchronized (rootTokenList) {
+            return !isInvalid();
+        }
     }
     
     @Override
@@ -746,15 +798,25 @@ public final class TokenSequence<T extends TokenId> {
         }
     }
     
-    private void checkModCount() {
-        if (tokenList.modCount() != this.modCount) {
+    private void checkValid() {
+        if (isInvalid()) {
             throw new ConcurrentModificationException(
                 "Caller uses obsolete token sequence which is no longer valid. Underlying token hierarchy" + // NOI18N
-                " has been modified: modCount=" + this.modCount + // NOI18N
-                " != upToDateModCount=" + tokenList.modCount() + // NOI18N
-                "\nPlease report against caller's module which needs to be fixed (not the lexer module)." // NOI18N
+                " has been modified by insertion or removal or a custom language embedding was created." + // NOI18N
+                "TS.modCount=" + modCount + ", tokenList.modCount()=" + tokenList.modCount() + // NOI18N
+                ", rootModCount=" + rootTokenList.modCount() + // NOI18N
+                "\nPlease report a bug against a module that calls lexer's code e.g. java, php etc. " + // NOI18N
+                "but not the lexer module itself." // NOI18N
             );
         }
+    }
+
+    private boolean isInvalid() {
+        if (embeddedTokenList != null) {
+            embeddedTokenList.updateModCount(rootTokenList.modCount());
+        }
+        return (modCount != tokenList.modCount());
+        
     }
 
 }

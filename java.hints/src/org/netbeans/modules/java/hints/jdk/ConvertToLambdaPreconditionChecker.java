@@ -61,7 +61,9 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -81,6 +83,7 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean foundShadowedVariable = false;
     private boolean foundRecursiveCall = false;
     private boolean foundOverloadWhichMakesLambdaAmbiguous = false;
+    private boolean foundAssignmentToRawType = false;
     private boolean foundAssignmentToSupertype = false;
     private boolean foundErroneousTargetType = false;
     private boolean havePreconditionsBeenChecked = false;
@@ -110,7 +113,8 @@ public class ConvertToLambdaPreconditionChecker {
                 && !foundShadowedVariable()
                 && !foundRecursiveCall()
                 && !foundOverloadWhichMakesLambdaAmbiguous()
-                && !foundAssignmentToSupertype();
+                && !foundAssignmentToSupertype()
+                && !foundAssignmentToRawtype();
     }
     
     private void ensurePreconditionsAreChecked() {
@@ -133,7 +137,9 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean needsCastToExpectedType() {
         ensurePreconditionsAreChecked();
         return foundOverloadWhichMakesLambdaAmbiguous()
-                || foundAssignmentToSupertype();
+                || foundAssignmentToSupertype() 
+                // #234080: cannot infer lambda types from the raw type
+                || foundAssignmentToRawtype();
     }
 
     public boolean foundRefToThisOrSuper() {
@@ -159,6 +165,11 @@ public class ConvertToLambdaPreconditionChecker {
     public boolean foundAssignmentToSupertype() {
         ensurePreconditionsAreChecked();
         return foundAssignmentToSupertype;
+    }
+
+    public boolean foundAssignmentToRawtype() {
+        ensurePreconditionsAreChecked();
+        return foundAssignmentToRawType;
     }
 
     public boolean foundErroneousTargetType() {
@@ -443,13 +454,21 @@ public class ConvertToLambdaPreconditionChecker {
             return;
         }
 
-        expectedType = info.getTypes().erasure(expectedType);
+        TypeMirror erasedExpectedType = info.getTypes().erasure(expectedType);
 
         TreePath pathForClassIdentifier = new TreePath(pathToNewClassTree, newClassTree.getIdentifier());
         TypeMirror lambdaType = info.getTrees().getTypeMirror(pathForClassIdentifier);
         lambdaType = info.getTypes().erasure(lambdaType);
 
-        foundAssignmentToSupertype = !info.getTypes().isSameType(expectedType, lambdaType);
+        foundAssignmentToSupertype = !info.getTypes().isSameType(erasedExpectedType, lambdaType);
+        
+        if (erasedExpectedType.getKind() == TypeKind.DECLARED) {
+            TypeElement te = (TypeElement)((DeclaredType)erasedExpectedType).asElement();
+            TypeMirror tt = (DeclaredType)te.asType();
+            if (tt.getKind() == TypeKind.DECLARED && !((DeclaredType)tt).getTypeArguments().isEmpty()) {
+                foundAssignmentToRawType =  info.getTypes().isSameType(erasedExpectedType, expectedType);
+            }
+        }
     }
 
     private TypeMirror findExpectedType(TreePath path) {

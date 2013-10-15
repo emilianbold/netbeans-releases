@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -193,14 +194,14 @@ public final class TokenListUpdater {
         } else { // relexIndex < tokenCount
             // Possibly increase matchIndex and matchOffset by skipping the tokens in the removed area
             if (eventInfo.removedLength() > 0) { // At least remove token at relexOffset
-                matchOffset += tokenList.tokenOrEmbeddingUnsync(matchIndex++).token().length();
+                matchOffset += tokenList.tokenOrEmbeddingDirect(matchIndex++).token().length();
                 int removedEndOffset = eventInfo.modOffset() + eventInfo.removedLength();
                 while (matchOffset < removedEndOffset && matchIndex < tokenCount) {
-                    matchOffset += tokenList.tokenOrEmbeddingUnsync(matchIndex++).token().length();
+                    matchOffset += tokenList.tokenOrEmbeddingDirect(matchIndex++).token().length();
                 }
             } else { // For inside-token inserts match on the next token
                 if (matchOffset < eventInfo.modOffset()) { // (matchOffset == mod-token-start-offset)
-                    matchOffset += tokenList.tokenOrEmbeddingUnsync(matchIndex++).token().length();
+                    matchOffset += tokenList.tokenOrEmbeddingDirect(matchIndex++).token().length();
                 }
             }
             // Update the matchOffset so that it corresponds to the state
@@ -215,7 +216,7 @@ public final class TokenListUpdater {
                 LOG.log(Level.FINE, "    Token at reInd=" + relexIndex + " affected (la=" + // NOI18N
                         tokenList.lookahead(relexIndex) + ") => relex it\n"); // NOI18N
             }
-            AbstractToken<T> token = tokenList.tokenOrEmbeddingUnsync(relexIndex).token();
+            AbstractToken<T> token = tokenList.tokenOrEmbeddingDirect(relexIndex).token();
             relexOffset -= token.length();
         }
         
@@ -245,7 +246,7 @@ public final class TokenListUpdater {
         int lookahead;
         if (!relex && (lookahead = tokenList.lookahead(matchIndex - 1)) > 1 && matchIndex < tokenCount) {
             // Check whether lookahead of the token before match point exceeds the whole token right after match point
-            relex = (lookahead > tokenList.tokenOrEmbeddingUnsync(matchIndex).token().length()); // check next token
+            relex = (lookahead > tokenList.tokenOrEmbeddingDirect(matchIndex).token().length()); // check next token
         }
 
         if (loggable) {
@@ -307,7 +308,7 @@ public final class TokenListUpdater {
      * @param eventInfo non-null info about modification offset and inserted and removed length.
      */
     static <T extends TokenId> void updateJoined(JoinTokenListChange<T> change, TokenHierarchyEventInfo eventInfo) {
-        MutableJoinTokenList<T> jtl = (MutableJoinTokenList<T>) change.tokenList();
+        JoinTokenList<T> jtl = (JoinTokenList<T>) change.tokenList();
         TokenListListUpdate<T> tokenListListUpdate = change.tokenListListUpdate();
         int tokenCount = jtl.tokenCountCurrent();
         boolean loggable = LOG.isLoggable(Level.FINE);
@@ -335,8 +336,12 @@ public final class TokenListUpdater {
             // relModOffset must be assigned too for token list modification since
             // token list mod may affect preceding tokens reaching the mod point with their lookaheads.
             relModOffset = 0; // may be updated later
-            jtl.setActiveTokenListIndex(modTokenListIndex);
-            relexIndex = jtl.activeStartJoinIndex();
+            if (modTokenListIndex < jtl.tokenListCount()) {
+                jtl.setActiveTokenListIndex(modTokenListIndex);
+                relexIndex = jtl.activeStartJoinIndex();
+            } else {
+                relexIndex = jtl.tokenCountCurrent();
+            }
             relexLocalIndex = 0;
             relexTokenListIndex = modTokenListIndex;
             checkPrevTokenListJoined = true;
@@ -359,9 +364,9 @@ public final class TokenListUpdater {
                 if (matchOffset > modOffset) {
                     matchOffset = Math.max(matchOffset - eventInfo.removedLength(), modOffset);
                 }
-                if (jtl.activeTokenList().joinInfo.joinTokenLastPartShift() > 0) {
+                if (jtl.activeTokenList().joinInfo().joinTokenLastPartShift() > 0) {
                     // Note: JoinToken.endOffset() calls EC.updateStatus() otherwise there could be obsolete start-offset.
-                    matchOffset = ((JoinToken<T>) jtl.tokenOrEmbeddingUnsync(matchIndex).token()).endOffset();
+                    matchOffset = ((JoinToken<T>) jtl.tokenOrEmbeddingDirect(matchIndex).token()).endOffset();
                     matchIndex++;
                     lastRemovedJoined = true;
                 }
@@ -390,7 +395,7 @@ public final class TokenListUpdater {
             
         } else { // Not token list mod
             jtl.setActiveTokenListIndex(modTokenListIndex); // Index of ETL where a change occurred.
-            EmbeddedTokenList<T> modEtl = jtl.activeTokenList();
+            EmbeddedTokenList<?,T> modEtl = jtl.activeTokenList();
             assert ((eventInfo.insertedLength() > 0) || (eventInfo.removedLength() > 0)) : "No modification"; // NOI18N
             assert (modOffset >= modEtl.startOffset()) :
                 "modOffset=" + modOffset + " < etlStartOffset=" + modEtl.startOffset(); // NOI18N
@@ -419,17 +424,17 @@ public final class TokenListUpdater {
             int modEtlTokenCount = modEtl.tokenCountCurrent();
             if (eventInfo.removedLength() > 0) { // At least remove token at relexOffset
                 matchIndex++;
-                matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
+                matchOffset += modEtl.tokenOrEmbeddingDirect(matchLocalIndex++).token().length();
                 int removedEndOffset = eventInfo.modOffset() + eventInfo.removedLength();
                 // XXX review '&& (matchLocalIndex < modEtl.tokenCount())'
                 while (matchOffset < removedEndOffset && (matchLocalIndex < modEtlTokenCount)) {
                     matchIndex++;
-                    matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
+                    matchOffset += modEtl.tokenOrEmbeddingDirect(matchLocalIndex++).token().length();
                 }
             } else { // For inside-token inserts match on the next token
                 if (matchOffset < modOffset) { // (matchOffset == mod-token-start-offset)
                     matchIndex++;
-                    matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
+                    matchOffset += modEtl.tokenOrEmbeddingDirect(matchLocalIndex++).token().length();
                 }
             }
             // Update the matchOffset so that it corresponds to the state
@@ -448,10 +453,10 @@ public final class TokenListUpdater {
             assert (relexLocalIndex <= matchLocalIndex);
             assert (matchLocalIndex <= modEtlTokenCount);
             if (matchLocalIndex == modEtlTokenCount) {
-                if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
+                if (modEtl.joinInfo().joinTokenLastPartShift() > 0) {
                     matchIndex = jtl.activeEndJoinIndex() + 1; // above join token
                     // Get join token but do not move active ETL
-                    JoinToken<T> joinToken = ((JoinToken<T>) jtl.tokenOrEmbeddingUnsync(matchIndex - 1).token()); 
+                    JoinToken<T> joinToken = ((JoinToken<T>) jtl.tokenOrEmbeddingDirect(matchIndex - 1).token()); 
                     jtl.setActiveTokenListIndex(modTokenListIndex);
                     matchOffset = joinToken.endOffset();
                     // Note matchLocalIndex not updated
@@ -472,7 +477,7 @@ public final class TokenListUpdater {
                     //       doc:"{x}<a>y" and insert(3,"u") becomes "{x}u<a>y"
                     //   Then the relexIndex would be 1 and relexOffset would normally point to "y"
                     //     but it has to point to the inserted 'u' instead.
-                    if (modEtl.joinInfo.joinTokenLastPartShift() > 0) { // Adjust to last token's start
+                    if (modEtl.joinInfo().joinTokenLastPartShift() > 0) { // Adjust to last token's start
                         // Or there is a possibility that the modEtl has no tokens at all
                         assert (eventInfo.removedLength() == 0) : "Insert only expected";
                         if (modEtlTokenCount > 0) { // At least one token
@@ -496,13 +501,13 @@ public final class TokenListUpdater {
         if (checkPrevTokenListJoined && relexTokenListIndex > 0) {
             jtl.setActiveTokenListIndex(relexTokenListIndex - 1);
             while (true) { // Must cycle in order to assign relModOffset properly.
-                int lps = jtl.activeTokenList().joinInfo.joinTokenLastPartShift();
+                int lps = jtl.activeTokenList().joinInfo().joinTokenLastPartShift();
                 if (lps > 0) {
                     if (jtl.activeTokenList().tokenCountCurrent() > 0) {
                         relexLocalIndex = jtl.activeTokenList().tokenCountCurrent() - 1;
                         relexTokenListIndex = jtl.activeTokenListIndex();
                         // relexIndex stays the same
-                        PartToken<T> partToken = (PartToken<T>) jtl.activeTokenList().tokenOrEmbeddingUnsync(
+                        PartToken<T> partToken = (PartToken<T>) jtl.activeTokenList().tokenOrEmbeddingDirect(
                                 relexLocalIndex).token();
                         relModOffset = partToken.partTextEndOffset();
                         relexOffset = partToken.joinToken().offset(null);
@@ -518,7 +523,7 @@ public final class TokenListUpdater {
                             matchIndex++;
                             matchOffset = partToken.joinToken().endOffset();
                             // Recompute lps since it may be obsolete after possible activeTokenListIndex change
-                            lps = jtl.activeTokenList().joinInfo.joinTokenLastPartShift();
+                            lps = jtl.activeTokenList().joinInfo().joinTokenLastPartShift();
                             // If the last part is located inside modEtl then it must be adjusted
                             if (jtl.activeTokenListIndex() + lps == modTokenListIndex) {
                                 matchOffset += eventInfo.diffLength();
@@ -541,14 +546,14 @@ public final class TokenListUpdater {
         // Update relex-vars according to lookahead of tokens before relexIndex
         int origRelexIndex = relexIndex;
         while (relexIndex > 0 && jtl.lookahead(relexIndex - 1) > relModOffset) {
-            AbstractToken<T> relexToken = jtl.tokenOrEmbeddingUnsync(--relexIndex).token();
+            AbstractToken<T> relexToken = jtl.tokenOrEmbeddingDirect(--relexIndex).token();
             relModOffset += relexToken.length(); // User regular token.length() here
             if (loggable) {
                 LOG.log(Level.FINE, "    Token at reInd=" + relexIndex + " affected (la=" + // NOI18N
                         jtl.lookahead(relexIndex) + ") => relex it\n"); // NOI18N
             }
         }
-        if (relexIndex != origRelexIndex) {
+        if (relexIndex != origRelexIndex) { // relexIndex can only be <= origRelexIndex
             relexOffset = jtl.tokenOffset(relexIndex);
             relexLocalIndex = jtl.tokenStartLocalIndex(relexIndex);
             relexTokenListIndex = jtl.activeTokenListIndex();
@@ -697,7 +702,7 @@ public final class TokenListUpdater {
                     break;
                 }
                 
-                int afterMatchPointTokenLength = tokenList.tokenOrEmbeddingUnsync(change.matchIndex).token().length();
+                int afterMatchPointTokenLength = tokenList.tokenOrEmbeddingDirect(change.matchIndex).token().length();
                 if (matchPointOrigLookahead <= afterMatchPointTokenLength &&
                     lookahead <= afterMatchPointTokenLength
                 ) {
@@ -747,7 +752,7 @@ public final class TokenListUpdater {
                     change.matchIndex > lowestMatchIndex // At least one token removed
             ) {
                 AbstractToken<T> lastAddedToken = change.addedTokenOrEmbeddings().get(lastAddedTokenIndex).token();
-                AbstractToken<T> lastRemovedToken = tokenList.tokenOrEmbeddingUnsync(change.matchIndex - 1).token();
+                AbstractToken<T> lastRemovedToken = tokenList.tokenOrEmbeddingDirect(change.matchIndex - 1).token();
                 if (lastAddedToken.id() != lastRemovedToken.id()
                     || lastAddedToken.length() != lastRemovedToken.length()
                     || change.laState().lookahead(lastAddedTokenIndex) != tokenList.lookahead(change.matchIndex - 1)
