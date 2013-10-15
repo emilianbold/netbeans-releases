@@ -572,6 +572,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
 
         FileObject template = FileUtil.getConfigRoot().getFileObject(JsfTemplateUtils.BASE_TPL_PATH + "/" + templateStyle + "/" + WizardProperties.BUNDLE_TEMPLATE);
         Map<String, Object> params = new HashMap<String, Object>();
+        params.put("projectName", ProjectUtils.getInformation(project).getDisplayName());
         params.put("entities", bundleData);
         params.put("comment", Boolean.FALSE);
         String bundleFileName = getBundleFileName(bundleName);
