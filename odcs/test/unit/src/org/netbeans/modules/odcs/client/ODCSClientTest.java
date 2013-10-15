@@ -55,6 +55,7 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Task;
@@ -328,6 +329,22 @@ public class ODCSClientTest extends NbTestCase  {
         
         client.deleteQuery(MY_PROJECT, stq.getId());
         assertQuery(client, null, queryName, queryString);
+    }
+    
+    public void testRepoConfig () throws Exception {
+        ODCSClient client = getClient();
+        RepositoryConfiguration rc = client.getRepositoryContext(MY_PROJECT);
+        assertNotNull(rc);
+        
+        List<Product> products = rc.getProducts();
+        boolean found = false;
+        for (Product product : products) {
+            if(product.getName().equals("Default")) {
+                found = true;
+                break;
+            }
+        }
+        assertTrue(found);
     }
     
 //    public void testCreateDeleteProject () throws Exception {
