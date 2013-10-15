@@ -463,19 +463,21 @@ public class ODCSRepository implements PropertyChangeListener {
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
-            for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                try {
-                    MylynSupport supp = MylynSupport.getInstance();
-                    IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
-                    if (query == null) {
-                        query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
-                        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-                        query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
-                        supp.addQuery(taskRepository, query);
+            if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                    try {
+                        MylynSupport supp = MylynSupport.getInstance();
+                        IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
+                        if (query == null) {
+                            query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
+                            query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+                            query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
+                            supp.addQuery(taskRepository, query);
+                        }
+                        queries.put(ptq, query);
+                    } catch (CoreException ex) {
+                        ODCS.LOG.log(Level.WARNING, null, ex);
                     }
-                    queries.put(ptq, query);
-                } catch (CoreException ex) {
-                    ODCS.LOG.log(Level.WARNING, null, ex);
                 }
             }
             synchronized(QUERIES_LOCK) {
