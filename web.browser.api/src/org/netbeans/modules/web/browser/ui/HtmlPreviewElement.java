@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.browser.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JLayer;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.LayerUI;
@@ -97,6 +100,8 @@ public class HtmlPreviewElement implements MultiViewElement {
     private final Lookup lookup;
 
     private Method methodSetBrowserContent;
+    
+    private Timer refreshTimer;
 
     private static final Logger LOG = Logger.getLogger( HtmlPreviewElement.class.getName() );
 
@@ -110,17 +115,17 @@ public class HtmlPreviewElement implements MultiViewElement {
 
             @Override
             public void insertUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
 
             @Override
             public void removeUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
 
             @Override
             public void changedUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
         };
 
@@ -273,6 +278,22 @@ public class HtmlPreviewElement implements MultiViewElement {
         reloadFromDocument();
     }
 
+    private void scheduleReload() {
+        if( null == refreshTimer ) {
+            refreshTimer = new Timer(500, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    reloadFromDocument();
+                }
+            });
+            refreshTimer.setRepeats(false);
+            refreshTimer.start();
+        } else {
+            refreshTimer.restart();
+        }
+    }
+    
     private void reloadFromDocument() {
         if( null == editorCookie )
             return;
@@ -300,6 +321,10 @@ public class HtmlPreviewElement implements MultiViewElement {
                 }
             });
             return;
+        }
+        if( null != refreshTimer ) {
+            refreshTimer.stop();
+            refreshTimer = null;
         }
         if( null != editorCookie ) {
             editorCookie.removePropertyChangeListener( editorListener );
