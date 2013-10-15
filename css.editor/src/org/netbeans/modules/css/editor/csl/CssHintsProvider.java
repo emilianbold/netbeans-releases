@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -58,19 +57,10 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.css.editor.CssPreferences;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.FilterableError;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.css.lib.api.FilterableError.SetFilterAction;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,12 +68,9 @@ import org.openide.util.RequestProcessor;
  */
 public class CssHintsProvider implements HintsProvider {
 
-    private static RequestProcessor RP = new RequestProcessor(CssHintsProvider.class);
-    
-    private boolean cancelled = false;
-
     /**
-     * Compute hints applicable to the given compilation info and add to the given result list.
+     * Compute hints applicable to the given compilation info and add to the
+     * given result list.
      */
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
@@ -107,46 +94,48 @@ public class CssHintsProvider implements HintsProvider {
 
     /**
      * Process the errors for the given compilation info, and add errors and
-     * warning descriptions into the provided hint list. Return any errors
-     * that were not added as error descriptions (e.g. had no applicable error rule)
+     * warning descriptions into the provided hint list. Return any errors that
+     * were not added as error descriptions (e.g. had no applicable error rule)
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        CssParserResult result = (CssParserResult)context.parserResult;
-        for (FilterableError e :result.getDiagnostics()) {
-
+        CssParserResult result = (CssParserResult) context.parserResult;
+        Collection<String> disableFixActionNames = new HashSet<>();
+        for (FilterableError e : result.getDiagnostics(true)) {
             if (e.isFiltered()) {
-                //add hint for reenabling the property
-                hints.add(new Hint(new CssRule(HintSeverity.WARNING),
-                        getMessageKey(e.getKey(), true), //NOI18N
-                        context.parserResult.getSnapshot().getSource().getFileObject(),
-                        new OffsetRange(0, 0),
-                        Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), true)),
-                        10));
-
+                FilterableError.SetFilterAction disableFilterAction = e.getDisableFilterAction();
+                if (!disableFixActionNames.contains(disableFilterAction.getDisplayName())) {
+                    disableFixActionNames.add(disableFilterAction.getDisplayName());
+                    //add hint for reenabling the property
+                    hints.add(new Hint(new CssRule(HintSeverity.WARNING),
+                            //                        getMessageKey(e.getKey(), true), //NOI18N
+                            disableFilterAction.getDisplayName(),
+                            context.parserResult.getSnapshot().getSource().getFileObject(),
+                            new OffsetRange(0, 0),
+                            Collections.<HintFix>singletonList(new ErrorCheckFix(disableFilterAction)),
+                            10));
+                }
             } else {
-
-                assert e.getDescription() != null;
-
-                List<HintFix> fixes = CssAnalyser.isConfigurableError(e.getKey())
-                        ? Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), false))
-                        : Collections.<HintFix>emptyList();
+                Collection<FilterableError.SetFilterAction> enableFilterActions = e.getEnableFilterActions();
+                List<HintFix> fixes = new ArrayList<>();
+                for (SetFilterAction action : enableFilterActions) {
+                    fixes.add(new ErrorCheckFix(action));
+                }
 
                 int astFrom = e.getStartPosition();
                 int astTo = e.getEndPosition();
-                
+
                 int docFrom = context.parserResult.getSnapshot().getOriginalOffset(astFrom);
                 int docTo = context.parserResult.getSnapshot().getOriginalOffset(astTo);
-                
-                if(docFrom == -1 || docTo == -1) {
+
+                if (docFrom == -1 || docTo == -1) {
                     //One of the error offsets falls to virtual source.
                     //The situation very likely means that the css parsing error
                     //is implied by missing content which is generated by some
                     //templating language in the runtime => ignore the error
                     continue;
                 }
-                    
-                
+
                 Hint h = new Hint(getCssRule(e.getSeverity()),
                         e.getDescription(),
                         e.getFile(),
@@ -164,23 +153,28 @@ public class CssHintsProvider implements HintsProvider {
      */
     @Override
     public void cancel() {
-        this.cancelled = true;
+        //todo implement
     }
 
     /**
-     * <p>Optional builtin Rules. Typically you don't use this; you register your rules in your filesystem
-     * layer in the gsf-hints/mimetype1/mimetype2 folder, for example gsf-hints/text/x-ruby/.
-     * Error hints should go in the "errors" folder, selection hints should go in the "selection" folder,
-     * and all other hints should go in the "hints" folder (but note that you can create localized folders
-     * and organize them under hints; these categories are shown in the hints options panel.
-     * Hints returned from this method will be placed in the "general" folder.
+     * <p>
+     * Optional builtin Rules. Typically you don't use this; you register your
+     * rules in your filesystem layer in the gsf-hints/mimetype1/mimetype2
+     * folder, for example gsf-hints/text/x-ruby/. Error hints should go in the
+     * "errors" folder, selection hints should go in the "selection" folder, and
+     * all other hints should go in the "hints" folder (but note that you can
+     * create localized folders and organize them under hints; these categories
+     * are shown in the hints options panel. Hints returned from this method
+     * will be placed in the "general" folder.
      * </p>
      * <p>
-     * This method is primarily intended for rules that should be added dynamically, for example for
-     * Rules that have a many different flavors yet a single implementation class (such as
-     * JavaScript's StrictWarning rule which wraps a number of builtin parser warnings.)
+     * This method is primarily intended for rules that should be added
+     * dynamically, for example for Rules that have a many different flavors yet
+     * a single implementation class (such as JavaScript's StrictWarning rule
+     * which wraps a number of builtin parser warnings.)
      *
-     * @return A list of rules that are builtin, or null or an empty list when there are no builtins
+     * @return A list of rules that are builtin, or null or an empty list when
+     * there are no builtins
      */
     @Override
     public List<Rule> getBuiltinRules() {
@@ -188,9 +182,10 @@ public class CssHintsProvider implements HintsProvider {
     }
 
     /**
-     * Create a RuleContext object specific to this HintsProvider. This lets implementations of
-     * this interface created subclasses of the RuleContext that can be passed around to all
-     * the executed rules.
+     * Create a RuleContext object specific to this HintsProvider. This lets
+     * implementations of this interface created subclasses of the RuleContext
+     * that can be passed around to all the executed rules.
+     *
      * @return A new instance of a RuleContext object
      */
     @Override
@@ -213,7 +208,7 @@ public class CssHintsProvider implements HintsProvider {
 
     private static final class CssRule implements ErrorRule {
 
-        private HintSeverity severity;
+        private final HintSeverity severity;
 
         private CssRule(HintSeverity severity) {
             this.severity = severity;
@@ -246,51 +241,40 @@ public class CssHintsProvider implements HintsProvider {
     }
 
     private static String getMessageKey(String errorKey, boolean enabled) {
-            String param = null;
-            String keyEnable = null;
-            String keyDisable = null;
-            if (CssAnalyser.isUnknownPropertyError(errorKey)) {
-                keyEnable = "MSG_Disable_Ignore_Property"; //NOI18N
-                keyDisable = "MSG_Enable_Ignore_Property"; //NOI18N
-                param = CssAnalyser.getUnknownPropertyName(errorKey);
-            } else {
-                keyEnable = "MSG_Disable_Check"; //NOI18N
-                keyDisable = "MSG_Enable_Check"; //NOI18N
+        String param = null;
+        String keyEnable = null;
+        String keyDisable = null;
+        if (CssAnalyser.isUnknownPropertyError(errorKey)) {
+            keyEnable = "MSG_Disable_Ignore_Property"; //NOI18N
+            keyDisable = "MSG_Enable_Ignore_Property"; //NOI18N
+            param = CssAnalyser.getUnknownPropertyName(errorKey);
+        } else {
+            keyEnable = "MSG_Disable_Check"; //NOI18N
+            keyDisable = "MSG_Enable_Check"; //NOI18N
 
-            }
-            return enabled
-                    ? NbBundle.getMessage(CssHintsProvider.class, keyEnable, param)
-                    : NbBundle.getMessage(CssHintsProvider.class, keyDisable, param);
+        }
+        return enabled
+                ? NbBundle.getMessage(CssHintsProvider.class, keyEnable, param)
+                : NbBundle.getMessage(CssHintsProvider.class, keyDisable, param);
 
     }
-    
 
     private static final class ErrorCheckFix implements HintFix {
 
-        private String errorKey;
-        private boolean enabled;
-        private FileObject file;
+        private final SetFilterAction action;
 
-        public ErrorCheckFix(Snapshot snapshot, String errorKey, boolean enabled) {
-            assert CssAnalyser.isConfigurableError(errorKey);
-
-            this.file = snapshot.getSource().getFileObject();
-            this.errorKey = errorKey;
-            this.enabled = enabled;
+        public ErrorCheckFix(SetFilterAction action) {
+            this.action = action;
         }
 
         @Override
         public String getDescription() {
-            return getMessageKey(errorKey, enabled);
+            return action.getDisplayName();
         }
 
         @Override
         public void implement() throws Exception {
-            CssPreferences.setCssErrorChecking(errorKey, enabled);
-            
-            reindexActionItems();
-            reindexFile(file);
-            refreshDocument(file);
+            action.run();
         }
 
         @Override
@@ -302,67 +286,7 @@ public class CssHintsProvider implements HintsProvider {
         public boolean isInteractive() {
             return false;
         }
-        
-    }
-    
-    private static void reindexFile(final FileObject fo) {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                //refresh Action Items for this file
-                IndexingManager.getDefault().refreshIndexAndWait(fo.getParent().toURL(),
-                        Collections.singleton(fo.toURL()), true, false);
-            }
-        });
-    }
-
-    private static void reindexActionItems() {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                //refresh all Action Items 
-                IndexingManager.getDefault().refreshAllIndices("TLIndexer"); //NOI18N
-            }
-        });
-
-    }
-    
-      private static void refreshDocument(final FileObject fo) throws IOException {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie editorCookie = dobj.getLookup().lookup(EditorCookie.class);
-                    StyledDocument document = editorCookie.openDocument();
-                    forceReparse(document);
-                } catch (IOException  ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
 
     }
 
-    
-    //force reparse of *THIS document only* => hints update
-    private static void forceReparse(final Document doc) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                NbEditorDocument nbdoc = (NbEditorDocument) doc;
-                nbdoc.runAtomic(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
-                        if (mti != null) {
-                            mti.tokenHierarchyControl().rebuild();
-                        }
-                    }
-                });
-            }
-        });
-    }
 }

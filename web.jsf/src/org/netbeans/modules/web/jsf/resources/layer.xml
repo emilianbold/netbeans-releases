@@ -171,6 +171,10 @@ made subject to such option by the copyright holder.
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
+                    <file name="template.ftl" url="templates/crudtemplate.ftl">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.resources.Bundle"/>
+                        <attr name="template" boolvalue="true"/>
+                    </file>
                 </folder>
             </folder>
             <!-- JSF From Entity Snippets -->
