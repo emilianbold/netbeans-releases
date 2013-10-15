@@ -117,11 +117,15 @@ public class ${controllerClassName} implements Serializable {
     }
 
     protected void setEmbeddableKeys() {
-        // Nothing to do if entity does not have any embeddable key.
+<#list embeddedIdFields as fields>
+            selected.${keyGetter}().${fields.getEmbeddedSetter()}(selected.${fields.getCodeToPopulate()});
+</#list>
     }
 
     protected void initializeEmbeddableKey() {
-        // Nothing to do if entity does not have any embeddable key.
+<#if keyEmbedded>
+        selected.${keySetter}(new ${keyType}());
+</#if>
     }
 
 <#if ejbClassName??>
