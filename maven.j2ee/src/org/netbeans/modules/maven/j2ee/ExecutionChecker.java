@@ -280,15 +280,18 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         "MSG_Server_No_Debugging=<html>The target server does not support debugging.<br><b>Choose a different server</b> in project properties.</html>"
     })
     private boolean isSupported() {
-        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(getServerInstanceID());
+        String serverInstanceID = getServerInstanceID();
+        ServerInstance serverInstance = Deployment.getDefault().getServerInstance(serverInstanceID);
         try {
-            if (serverInstance != null && !serverInstance.isDebuggingSupported()) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
-                return false;
-            }
-            if (serverInstance != null && !serverInstance.isProfilingSupported()) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Profiling(), NotifyDescriptor.WARNING_MESSAGE));
-                return false;
+            if (serverInstance != null && !DEV_NULL.equals(serverInstanceID)) {
+                if (!serverInstance.isDebuggingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Debugging(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
+                if (!serverInstance.isProfilingSupported()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_Server_No_Profiling(), NotifyDescriptor.WARNING_MESSAGE));
+                    return false;
+                }
             }
         } catch (InstanceRemovedException ex) {
             Exceptions.printStackTrace(ex);
