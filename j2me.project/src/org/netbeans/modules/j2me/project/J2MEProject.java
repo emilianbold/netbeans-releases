@@ -145,6 +145,16 @@ public class J2MEProject implements Project {
     }
 
     @NonNull
+    public AntProjectHelper getHelper() {
+        return helper;
+    }
+
+    @NonNull
+    public UpdateHelper getUpdateHelper() {
+        return updateHelper;
+    }
+
+    @NonNull
     public SourceRoots getSourceRoots() {
         return sourceRoots;
     }
