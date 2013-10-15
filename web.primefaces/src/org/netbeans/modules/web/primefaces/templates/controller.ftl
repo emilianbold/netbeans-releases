@@ -179,6 +179,7 @@ public class ${controllerClassName} implements Serializable {
 
     private void persist(PersistAction persistAction, String successMessage) {
         if (selected != null) {
+            setEmbeddableKeys();
             try {
 <#if ejbClassName??>
                 if (persistAction != PersistAction.DELETE) {
