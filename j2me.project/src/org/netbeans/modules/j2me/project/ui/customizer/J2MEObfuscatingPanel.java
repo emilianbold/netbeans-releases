@@ -41,9 +41,24 @@
  */
 package org.netbeans.modules.j2me.project.ui.customizer;
 
+import java.awt.CardLayout;
+import java.util.Hashtable;
+import java.util.List;
+import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.util.NbBundle;
+
 /**
  *
- * @author Theofanis Oikonomou
+ * @author Roman Svitanic
  */
 public class J2MEObfuscatingPanel extends javax.swing.JPanel {
 
@@ -52,6 +67,31 @@ public class J2MEObfuscatingPanel extends javax.swing.JPanel {
      */
     public J2MEObfuscatingPanel(J2MEProjectProperties properties) {
         initComponents();
+        postInitComponents(properties);
+    }
+
+    private void postInitComponents(J2MEProjectProperties properties) {
+        // Hashtable used because JSlider doesn't accept other arguments
+        Hashtable<Integer, JLabel> values = new Hashtable<>(10, 1);
+        final JLabel l1 = new JLabel(NbBundle.getMessage(J2MEObfuscatingPanel.class, "LBL_CustomizerObfuscate_Level_Off"));
+        final JLabel l2 = new JLabel(NbBundle.getMessage(J2MEObfuscatingPanel.class, "LBL_CustomizerObfuscate_Level_Maximum"));
+        values.put(Integer.valueOf("0"), l1);
+        values.put(Integer.valueOf("9"), l2);
+        for (int i = 1; i < 9; i++) {
+            values.put(i, new JLabel(String.valueOf(i)));
+        }
+        levelSlider.setModel(properties.OBFUSCATION_LEVEL_MODEL);
+        levelSlider.setLabelTable(values);
+        levelSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                updateDescription();
+            }
+        });
+        customArea.setDocument(properties.ADDITIONAL_OBFUSCATION_SETTINGS_MODEL);
+        updateDescription();
+        boolean proguardInstalled = LibraryManager.getDefault().getLibrary("proguard") == null;
+        ((CardLayout) getLayout()).show(this, proguardInstalled ? "panelInstallProguard" : "panelObfuscatorSettings"); //NOI18N
     }
 
     /**
@@ -62,29 +102,141 @@ public class J2MEObfuscatingPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
+        panelObfuscatorSettings = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        levelSlider = new javax.swing.JSlider();
+        descriptionLabel = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        descriptionArea = new javax.swing.JTextArea();
+        settingsLabel = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        customArea = new javax.swing.JTextArea();
+        panelInstallProguard = new javax.swing.JPanel();
+        buttonInstallProguard = new javax.swing.JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(J2MEObfuscatingPanel.class, "J2MEObfuscatingPanel.jLabel1.text")); // NOI18N
+        setLayout(new java.awt.CardLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(237, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(275, Short.MAX_VALUE))
-        );
+        panelObfuscatorSettings.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(J2MEObfuscatingPanel.class, "J2MEObfuscatingPanel.jLabel2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        panelObfuscatorSettings.add(jLabel2, gridBagConstraints);
+
+        levelSlider.setMajorTickSpacing(1);
+        levelSlider.setMaximum(9);
+        levelSlider.setPaintLabels(true);
+        levelSlider.setSnapToTicks(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 11);
+        panelObfuscatorSettings.add(levelSlider, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, NbBundle.getMessage(J2MEObfuscatingPanel.class, "J2MEObfuscatingPanel.descriptionLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
+        panelObfuscatorSettings.add(descriptionLabel, gridBagConstraints);
+
+        descriptionArea.setEditable(false);
+        jScrollPane2.setViewportView(descriptionArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 2.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 11);
+        panelObfuscatorSettings.add(jScrollPane2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(settingsLabel, NbBundle.getMessage(J2MEObfuscatingPanel.class, "J2MEObfuscatingPanel.settingsLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
+        panelObfuscatorSettings.add(settingsLabel, gridBagConstraints);
+
+        jScrollPane1.setViewportView(customArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 11);
+        panelObfuscatorSettings.add(jScrollPane1, gridBagConstraints);
+
+        add(panelObfuscatorSettings, "panelObfuscatorSettings");
+
+        panelInstallProguard.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(buttonInstallProguard, org.openide.util.NbBundle.getMessage(J2MEObfuscatingPanel.class, "J2MEObfuscatingPanel.buttonInstallProguard.text")); // NOI18N
+        buttonInstallProguard.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                buttonInstallProguardActionPerformed(evt);
+            }
+        });
+        panelInstallProguard.add(buttonInstallProguard, new java.awt.GridBagConstraints());
+
+        add(panelInstallProguard, "panelInstallProguard");
     }// </editor-fold>//GEN-END:initComponents
+
+    private void updateDescription() {
+        customArea.setEnabled(levelSlider.getValue() > 0);
+        descriptionArea.setText(NbBundle.getMessage(J2MEObfuscatingPanel.class, "DESC_ObfuscationLeve_" + levelSlider.getValue())); //NOI18N
+    }
+
+    private void buttonInstallProguardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonInstallProguardActionPerformed
+        for (UpdateUnit unit : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
+            if (unit.getCodeName().equals("org.netbeans.modules.mobility.proguard")) { //NOI18N
+                List<UpdateElement> updates = unit.getAvailableUpdates();
+                if (!updates.isEmpty()) {
+                    OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
+                    UpdateElement element = updates.get(0);
+                    if (oc.canBeAdded(unit, element)) {
+                        for (UpdateElement req : oc.add(element).getRequiredElements()) {
+                            oc.add(req);
+                        }
+                        if (PluginManager.openInstallWizard(oc)) {
+                            ((CardLayout) getLayout()).show(this, "panelObfuscatorSettings"); //NOI18N
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        ((CardLayout) getLayout()).show(this, "panelInstallProguard"); //NOI18N
+    }//GEN-LAST:event_buttonInstallProguardActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton buttonInstallProguard;
+    private javax.swing.JTextArea customArea;
+    private javax.swing.JTextArea descriptionArea;
+    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSlider levelSlider;
+    private javax.swing.JPanel panelInstallProguard;
+    private javax.swing.JPanel panelObfuscatorSettings;
+    private javax.swing.JLabel settingsLabel;
     // End of variables declaration//GEN-END:variables
 }

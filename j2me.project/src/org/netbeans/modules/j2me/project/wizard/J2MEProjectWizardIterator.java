@@ -136,8 +136,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         props.put("platform.configuration", configuration); //NOI18N
         props.put("platform.profile", profile); //NOI18N
         props.put("platform.type", ((J2MEPlatform) platform).getType()); //NOI18N
-        props.put("platform.device", device); //NOI18N        
-        props.put("platform.java", jdk.getProperties().get("platform.ant.name")); //NOI18N
+        props.put("platform.device", device); //NOI18N
         if (midletClass != null && !midletClass.isEmpty()) {
             props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
             props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
@@ -152,6 +151,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
                         setMainMIDLetName(midletClass).
                         setMainMIDLetTemplate(midletTemplate).
                         setLibrariesDefinitionFile(librariesDefinition).
+                        setSDKPlatform(jdk).
                         addCustomProjectProperties(props).
                         build();
                 handle.progress(2);

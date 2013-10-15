@@ -61,8 +61,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.BoundedRangeModel;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -109,6 +111,8 @@ public final class J2MEProjectProperties {
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
     public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
+    public static final String OBFUSCATION_CUSTOM = "obfuscation.custom"; //NOI18N
+    public static final String OBFUSCATION_LEVEL = "obfuscation.level"; //NOI18N
     
     
     // MODELS FOR VISUAL CONTROLS
@@ -135,7 +139,11 @@ public final class J2MEProjectProperties {
     
     // CustomizerCompile
     ButtonModel NO_DEPENDENCIES_MODEL;
-    
+
+    //J2MEObfuscatingPanel
+    Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
+    BoundedRangeModel OBFUSCATION_LEVEL_MODEL;
+
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
     private Map<String,String> additionalProperties;
     private String includes, excludes;
@@ -213,6 +221,10 @@ public final class J2MEProjectProperties {
         }
 
         NO_DEPENDENCIES_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, ProjectProperties.NO_DEPENDENCIES);
+
+        //Obfuscation customizer
+        ADDITIONAL_OBFUSCATION_SETTINGS_MODEL = projectGroup.createStringDocument(getEvaluator(), OBFUSCATION_CUSTOM);
+        OBFUSCATION_LEVEL_MODEL = ModelHelper.createSliderModel(getEvaluator(), OBFUSCATION_LEVEL, 0, 0, 9);
     }
 
     void collectData() {
@@ -309,6 +321,10 @@ public final class J2MEProjectProperties {
 
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
+        
+        //Obfusation properties
+        projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));
+        projectGroup.store(projectProperties);
 
         // Store the property changes into the project
         project.getUpdateHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
@@ -555,5 +571,24 @@ public final class J2MEProjectProperties {
             deploymentPanel = new J2MEDeploymentPanel(this);
         }
         return deploymentPanel;
+    }
+
+    /**
+     * Helper class for components models instantiation.
+     */
+    public static class ModelHelper {
+
+        /**
+         * Creates a model for JSlider.
+         */
+        public static BoundedRangeModel createSliderModel(PropertyEvaluator evaluator, String propertyName, int extent, int minVal, int maxVal) {
+            String value = evaluator.getProperty(propertyName);
+            if (value == null) {
+                value = "0"; // NOI18N
+            }
+
+            DefaultBoundedRangeModel model = new DefaultBoundedRangeModel(Integer.valueOf(value), extent, minVal, maxVal);
+            return model;
+        }
     }
 }
