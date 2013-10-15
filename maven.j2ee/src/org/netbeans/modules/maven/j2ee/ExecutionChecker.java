@@ -261,7 +261,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     
     @Override
     public boolean checkRunConfig(RunConfig config) {
-        if (!isSupported()) {
+        if (!isSupported()) { // #234767
             return false;
         }
 
