@@ -232,6 +232,10 @@ public final class IssueImpl<R, I> {
         return issueProvider.submit(data);
     }
 
+    public void discardChanges() {
+        issueProvider.discardOutgoing(data);
+    }
+
     public boolean hasSchedule() {
         IssueSchedulingProvider<I> isp = repo.getSchedulingProvider();
         return isp != null;

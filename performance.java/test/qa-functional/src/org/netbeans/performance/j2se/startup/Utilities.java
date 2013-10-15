@@ -39,28 +39,20 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.performance.j2se;
+package org.netbeans.performance.j2se.startup;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
-import java.util.logging.*;
-import java.util.zip.*;
-
-import junit.framework.Assert;
-
-import org.openide.filesystems.*;
-import org.openide.util.*;
-import org.openide.util.lookup.*;
-
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Utilities methods.
@@ -109,27 +101,6 @@ public class Utilities {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Open project <code>projectName</code> located in <code>dir</code>
-     * directory.
-     *
-     * @param projectName           project name to open
-     * @param dir                   project's enclosing directory
-     * @return file-object          representing project
-     * @throws java.io.IOException  when project cannot be opened
-     */
-    public static FileObject openProject(String projectName, File dir) throws IOException {
-        File projectsDir = FileUtil.normalizeFile(dir);
-        FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
-        FileObject projdir = projectsDirFO.getFileObject(projectName);
-        Project p = ProjectManager.getDefault().findProject(projdir);
-        OpenProjects.getDefault().open(new Project[]{p}, false);
-        if (p == null) {
-            throw new IOException("Project is not opened " + projectName);
-        }
-        return projdir;
     }
 
     public static String projectOpen(String path, String tmpFile) {
@@ -194,76 +165,5 @@ public class Utilities {
         }
 
         return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + tmpFile;
-    }
-
-    public static ClassPath createEmptyPath() {
-        return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-    }
-
-    public static ClassPath createSourcePath(FileObject projectDir)
-            throws IOException
-    {
-        final FileObject sourceRoot = projectDir.getFileObject("src");
-        File root = FileUtil.toFile(sourceRoot);
-        if (!root.exists()) {
-            root.mkdirs();
-        }
-        return ClassPathSupport.createClassPath(new URL[]{root.toURI().toURL()});
-    }
-    
-    public static class TestLkp extends ProxyLookup {
-
-        private static TestLkp DEFAULT;
-
-        public TestLkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            ClassLoader l = TestLkp.class.getClassLoader();
-            this.setLookups(
-                    new Lookup[] {
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l)
-                    }
-            );
-        }
-
-        public static void setLookupsWrapper(Lookup... l) {
-            DEFAULT.setLookups(l);
-        }
-    }
-
-    public static interface ParameterSetter {
-        void setParameters();
-    }
-    
-    public static class MyHandler extends Handler {
-
-        private Map<String, Long> map = new HashMap<String, Long>();
-
-        @Override
-        public void publish(LogRecord record) {
-            Long data;
-            if (record == null) {
-                return;
-            }
-            for (Object o : record.getParameters()) {
-                if (o instanceof Long) {
-                    data = (Long) o;
-                    map.put(record.getMessage(), data);
-                }
-            }
-        }
-
-        public Long get(String key) {
-            return map.get(key);
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
     }
 }

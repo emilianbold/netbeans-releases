@@ -652,11 +652,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
                         updateTooltip();
                         fireDataChanged();
                         String id = getID();
-                        try {
-                            repository.getIssueCache().setIssueData(id, ODCSIssue.this);
-                        } catch (IOException ex) {
-                            ODCS.LOG.log(Level.INFO, null, ex);
-                        }
+                        repository.getIssueCache().setIssue(id, ODCSIssue.this);
                         ODCS.LOG.log(Level.FINE, "created issue #{0}", id);
                     } else {
                         ODCS.LOG.log(Level.FINE, "submiting failed");

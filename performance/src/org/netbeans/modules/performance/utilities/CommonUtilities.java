@@ -101,8 +101,8 @@ import org.openide.util.Exceptions;
  */
 public class CommonUtilities {
     
-    public static final String SOURCE_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
-    public static final String TEST_PACKAGES;// = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
+    public static final String SOURCE_PACKAGES = "Source Packages";
+    public static final String TEST_PACKAGES = "Test Packages";
     private static PerformanceTestCase test = null;
     
     private static DocumentBuilderFactory dbf=null;
@@ -113,8 +113,6 @@ public class CommonUtilities {
     private static String tempDir; // <nbjunit.workdir>/tmpdir/
     
     static {
-        SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
-        TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
         String workDir = System.getProperty("nbjunit.workdir");
         String altPath = System.getProperty("nb_perf_alt_path");
         if (workDir != null) {

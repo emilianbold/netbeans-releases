@@ -48,6 +48,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
 import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.tasks.actions.Actions.SortDialogAction;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
@@ -66,6 +67,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private final JTextField textFilter;
     private final TreeLabel lblCount;
     private final JButton btnFilter;
+    private final JButton btnSort;
     //private final JButton btnGroup;
     private final OpenedCategorizedTaskFilter openedTaskFilter;
     private final DashboardToolbar toolBar;
@@ -123,6 +125,12 @@ public class FilterPanel extends javax.swing.JPanel {
         add(new JLabel(), new GridBagConstraints(5, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
         toolBar = new DashboardToolbar();
+        
+        btnSort = new JButton(new SortDialogAction());
+        btnSort.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/sort.png", true)); //NOI18N
+        btnSort.setToolTipText(NbBundle.getMessage(FilterPanel.class, "LBL_SortTooltip")); //NOI18N
+        toolBar.addButton(btnSort);
+
         btnFilter = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/filter.png", true)); //NOI18N
         btnFilter.setToolTipText(NbBundle.getMessage(FilterPanel.class, "LBL_FilterTooltip")); //NOI18N
         final JPopupMenu filterPopup = createFilterPopup();

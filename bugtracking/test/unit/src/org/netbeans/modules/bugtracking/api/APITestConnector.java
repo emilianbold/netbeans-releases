@@ -166,11 +166,6 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public boolean contains(APITestQuery q, String id) {
-            return q.contains(id);
-        }
-
-        @Override
         public void refresh(APITestQuery q) {
             q.refresh();
         }

@@ -227,6 +227,32 @@ public class TextUtils {
         return sb.toString();
     }
 
+    /**
+     * Decodes URL by decoding from %XX escape sequences.
+     *
+     * @param encoded url to decode
+     * @return decoded url
+     */
+    public static String decodeURL(String encoded) {
+        if (encoded == null) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(encoded.length());
+
+        for (int i = 0; i < encoded.length(); i++) {
+            char c = encoded.charAt(i);
+            if (c == '%') {
+                String code = encoded.substring(i + 1, i + 3);
+                char decode = (char) Integer.parseInt(code, 16);
+                sb.append(decode);
+                i += 2;
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
     private static boolean isAlowedChar(char c) {
         return c >= '0' && c <= '9' ||                                          // NOI18N
                c >= 'A' && c <= 'Z' ||                                          // NOI18N
