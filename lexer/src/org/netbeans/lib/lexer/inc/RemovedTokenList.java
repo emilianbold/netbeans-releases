@@ -65,13 +65,16 @@ import org.netbeans.lib.lexer.TokenOrEmbedding;
 
 public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     
+    private final TokenList<?> rootTokenList;
+    
     private final LanguagePath languagePath;
     
-    private TokenOrEmbedding<T>[] tokenOrEmbeddings;
+    private final TokenOrEmbedding<T>[] tokenOrEmbeddings;
     
     private int removedTokensStartOffset;
     
-    public RemovedTokenList(LanguagePath languagePath, TokenOrEmbedding<T>[] tokensOrBranches) {
+    public RemovedTokenList(TokenList<?> rootTokenList, LanguagePath languagePath, TokenOrEmbedding<T>[] tokensOrBranches) {
+        this.rootTokenList = rootTokenList;
         this.languagePath = languagePath;
         this.tokenOrEmbeddings = tokensOrBranches;
     }
@@ -171,7 +174,7 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
     
     @Override
     public TokenList<?> rootTokenList() {
-        return null;
+        return rootTokenList;
     }
 
     @Override

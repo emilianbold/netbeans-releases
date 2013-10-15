@@ -49,7 +49,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.token.AbstractToken;
 
 /**
