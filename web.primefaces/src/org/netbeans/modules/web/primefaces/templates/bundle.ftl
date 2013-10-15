@@ -6,6 +6,8 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
+    comment - always (Boolean; always FALSE)
+    projectName - display name of the project (type: String)
     entities - list of beans with following properites:
         entityClassName - controller class name (type: String)
         entityDescriptors - list of beans describing individual entities. Bean has following properties:
@@ -36,7 +38,7 @@ Save=Save
 SelectOneMessage=Select One...
 Home=Home
 Maintenance=Maintenance
-AppName=
+AppName=${projectName}
 
 <#list entities as entity>
 ${entity.entityClassName}Created=${entity.entityClassName} was successfully created.
