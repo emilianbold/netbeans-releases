@@ -178,6 +178,28 @@ public class ModelUtils {
                     break;
                 }
             }
+            if (object instanceof JsArray) {
+                JsArray array = (JsArray)object;
+                JsObject global = getGlobalObject(object);
+                for (TypeUsage type : array.getTypesInArray()) {
+                    if (type.getType().startsWith(SemiTypeResolverVisitor.ST_ANONYM)) {
+                        int anonymOffset = Integer.parseInt(type.getType().substring(SemiTypeResolverVisitor.ST_ANONYM.length()));
+                        if (anonymOffset > 0) {
+                            DeclarationScope scope = getDeclarationScope(array);
+                            for (JsObject property : ((JsObject)scope).getProperties().values()) {
+                                JsElement.Kind kind = property.getJSKind();
+                                if (kind == JsElement.Kind.ANONYMOUS_OBJECT) {
+                                    tmpObject = findJsObject(property, offset);
+                                }
+                                if (tmpObject != null) {
+                                    result = tmpObject;
+                                    break;
+                                }
+                            }
+                        }   
+                    }
+                }
+            }
         }
         return result;
     }
@@ -781,13 +803,22 @@ public class ModelUtils {
                             
                             for (TypeUsage typeUsage : typeFromWith) {
                                 String sType = typeUsage.getType();
-                            if (sType.startsWith("@exp;")) {
-                                sType = sType.substring(5);
-                                sType = sType.replace("@pro;", ".");
-                            }   
+                                if (sType.startsWith("@exp;")) {
+                                    sType = sType.substring(5);
+                                    sType = sType.replace("@pro;", ".");
+                                }   
                                 ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
                                 for (TypeUsage typeUsage1 : fromAssignments) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                    String localFqn = localObject != null ? localObject.getFullyQualifiedName() : null;
+                                    if (localFqn != null  && name.startsWith(localFqn) && name.length() > localFqn.length() ) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name.substring(localFqn.length() + 1), typeUsage.getOffset(), false));
+                                    } else {
+                                        if (!typeUsage1.getType().equals(name)) {
+                                            lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                        } else {
+                                            lastResolvedTypes.add(typeUsage1);
+                                        }
+                                    }
                                 }
                                 
                             }

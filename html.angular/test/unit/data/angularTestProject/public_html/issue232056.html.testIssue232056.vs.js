@@ -1,7 +1,7 @@
-(function () { // generated function for scope TestContr
-TestContr();
-var val;
+$scope = TestContr.$scope;
+with ($scope1) { 
 val;
 val;
 val;
-});
+val;
+};
