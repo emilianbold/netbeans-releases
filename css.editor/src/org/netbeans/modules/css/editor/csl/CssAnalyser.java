@@ -48,7 +48,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.CssDeclarationContext;
-import org.netbeans.modules.css.editor.CssPreferences;
+import org.netbeans.modules.css.editor.ParsingErrorsFilter;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzerResult;
 import org.netbeans.modules.css.lib.api.CssParserResult;
@@ -70,10 +70,10 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Provides extended errors from semantic css analysis.
- * 
+ *
  * @author mfukala@netbeans.org
  */
-@ServiceProvider(service=ErrorsProvider.class)
+@ServiceProvider(service = ErrorsProvider.class)
 public class CssAnalyser implements ErrorsProvider {
 
     private static final String UNKNOWN_PROPERTY_BUNDLE_KEY = "unknown_property";//NOI18N
@@ -86,50 +86,50 @@ public class CssAnalyser implements ErrorsProvider {
         final Node node = parserResult.getParseTree();
         final Snapshot snapshot = parserResult.getSnapshot();
         final FileObject file = snapshot.getSource().getFileObject();
-        
+
         List<FilterableError> errors = new ArrayList<>();
         NodeVisitor<List<FilterableError>> visitor = new NodeVisitor<List<FilterableError>>(errors) {
-            
+
             @Override
             public boolean visit(Node node) {
                 if (node.type() == NodeType.propertyDeclaration) {
                     //do not check declarations in fontFace and counterStyle
-                    
+
                     //structure: declarations/declaration/propertyDeclaration
                     Node parent = node.parent().parent();
-                    if(parent.type() == NodeType.declarations) {
-                        switch(parent.parent().type()) {
+                    if (parent.type() == NodeType.declarations) {
+                        switch (parent.parent().type()) {
                             case fontFace:
                             case counterStyle:
-                                return false; 
+                                return false;
                         }
                     }
                     SemanticAnalyzerResult analyzeDeclaration = CssModuleSupport.analyzeDeclaration(node);
-                    switch(analyzeDeclaration.getType()) {
-                        case ERRONEOUS:                            
+                    switch (analyzeDeclaration.getType()) {
+                        case ERRONEOUS:
                             throw new NotImplementedException(); //TODO
                         case VALID:
                             return false;
                         case UNKNOWN:
                             break;
                     }
-                    
+
                     //check if the declaration contains a generated code, if so do not do any checks
-                    if(Css3Utils.containsGeneratedCode(node.image())) {
+                    if (Css3Utils.containsGeneratedCode(node.image())) {
                         return false;
                     }
-                    
+
                     CssDeclarationContext ctx = new CssDeclarationContext(node);
-                    
+
                     Node propertyNode = ctx.getProperty();
                     Node valueNode = ctx.getPropertyValue();
-                    
+
                     if (propertyNode != null) {
                         String propertyName = ctx.getPropertyNameImage();
 
                         //check non css 2.1 compatible properties and ignore them
                         //values are not checked as well
-                        if(isNonCss21CompatibleDeclarationPropertyName(propertyName)) {
+                        if (isNonCss21CompatibleDeclarationPropertyName(propertyName)) {
                             return false;
                         }
 
@@ -139,52 +139,54 @@ public class CssAnalyser implements ErrorsProvider {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);
                             String key = UNKNOWN_PROPERTY_ERROR_KEY + propertyName;
-                            boolean filtered = CssPreferences.isErrorCheckingDisabledForCssErrorKey(key);
-                            
-                            FilterableError error = makeError(propertyNode.from(),
+
+                            FileObject file = snapshot.getSource().getFileObject();
+                            FilterableError error = CssErrorFactory.createError(key,
+                                    msg,
+                                    msg,
+                                    file,
+                                    propertyNode.from(),
                                     propertyNode.to(),
-                                    snapshot,
-                                    key,
-                                    msg,
-                                    msg,
                                     false /* not line error */,
                                     Severity.WARNING,
-                                    filtered);
-                            if(error != null) {
+                                    ParsingErrorsFilter.getEnableFilterAction(file, key),
+                                    ParsingErrorsFilter.getDisableFilterAction(file, key));
+
+                            if (error != null) {
                                 getResult().add(error);
                             }
                         }
 
                         //check value
                         if (valueNode != null && property != null) {
-                            if(NodeUtil.containsError(valueNode)) {
+                            if (NodeUtil.containsError(valueNode)) {
                                 return false; //no semantic checks if there's a parsing error
                             }
                             String valueImage = ctx.getPropertyValueImage();
-                            
+
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
-                            if (!Css3Utils.containsGeneratedCode(valueImage) 
+                            if (!Css3Utils.containsGeneratedCode(valueImage)
                                     //TODO add support for checking value of vendor specific properties, not it is disabled.
                                     && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
                                 ResolvedProperty pv = new ResolvedProperty(file, property, valueImage);
                                 if (!pv.isResolved()) {
-                                    if(!ctx.containsIEBS9Hack() && !ctx.containsIEStarHack()) {
+                                    if (!ctx.containsIEBS9Hack() && !ctx.containsIEStarHack()) {
                                         String errorMsg = null;
 
                                         //error in property 
                                         List<Token> unresolved = pv.getUnresolvedTokens();
-                                        if(unresolved.isEmpty()) {
+                                        if (unresolved.isEmpty()) {
                                             return false;
                                         }
                                         Token unexpectedToken = unresolved.iterator().next();
 
-                                        if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
+                                        if (isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
                                             return false;
                                         }
-                                        
+
                                         CharSequence unexpectedTokenImg = unexpectedToken.image();
-                                        if(Css3Utils.isVendorSpecificPropertyValue(file, unexpectedTokenImg)) {
+                                        if (Css3Utils.isVendorSpecificPropertyValue(file, unexpectedTokenImg)) {
                                             //the unexpected token is a vendor property value, ignore
                                             return false;
                                         }
@@ -200,9 +202,8 @@ public class CssAnalyser implements ErrorsProvider {
                                                 errorMsg,
                                                 errorMsg,
                                                 false /* not line error */,
-                                                Severity.WARNING,
-                                                false);
-                                        if(error != null) {
+                                                Severity.WARNING);
+                                        if (error != null) {
                                             getResult().add(error);
                                         }
                                     }
@@ -212,30 +213,29 @@ public class CssAnalyser implements ErrorsProvider {
 
                     }
 
-                } 
-                
+                }
+
                 return false;
             }
-            
+
         };
-        
+
         visitor.visitChildren(node);
-        
+
         return errors;
     }
 
-    private static FilterableError makeError(int astFrom, int astTo, Snapshot snapshot, String key, String displayName, String description, boolean lineError, Severity severity, boolean filtered) {
+    private static FilterableError makeError(int astFrom, int astTo, Snapshot snapshot, String key, String displayName, String description, boolean lineError, Severity severity) {
         assert astFrom <= astTo;
 
         return CssErrorFactory.createError(key,
-                            displayName,
-                            description,
-                            snapshot.getSource().getFileObject(),
-                            astFrom,
-                            astTo,
-                            lineError,
-                            severity,
-                            filtered);
+                displayName,
+                description,
+                snapshot.getSource().getFileObject(),
+                astFrom,
+                astTo,
+                lineError,
+                severity);
 
     }
 
@@ -243,7 +243,7 @@ public class CssAnalyser implements ErrorsProvider {
         //unknown property errors can be suppressed, so far
         return isUnknownPropertyError(errorKey);
     }
-    
+
     public static boolean isUnknownPropertyError(String errorKey) {
         return errorKey.startsWith(UNKNOWN_PROPERTY_ERROR_KEY);
     }
@@ -253,8 +253,6 @@ public class CssAnalyser implements ErrorsProvider {
         int index = unknownPropertyErrorKey.indexOf(UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER);//NOI18N
         return unknownPropertyErrorKey.substring(index + 1);
     }
-
-    
 
     //this is only a temporary hack for being able to filter out the css 2.1 errors for
     //commonly used properties not defined in the specification
