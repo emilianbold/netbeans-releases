@@ -96,6 +96,7 @@ public final class CustomizerProviderImpl implements CustomizerProvider3 {
                 final Lookup context = Lookups.fixed(new Object[] {
                     project,
                     uiProperties,
+                    new SubCategoryProvider(preselectedCategory, preselectedSubCategory)
                 });
                 final OptionListener listener = new OptionListener(context);
                 final StoreListener storeListener = new StoreListener(context);
@@ -208,6 +209,24 @@ public final class CustomizerProviderImpl implements CustomizerProvider3 {
             props.storeData();
         }
 
+    }
+    
+    static final class SubCategoryProvider {
+        private String subcategory;
+        private String category;
+
+        SubCategoryProvider(String category, String subcategory) {
+            this.category = category;
+            this.subcategory = subcategory;
+        }
+
+        public String getCategory() {
+            return category;
+        }
+
+        public String getSubcategory() {
+            return subcategory;
+        }
     }
 
 }

@@ -41,16 +41,12 @@
  */
 package org.netbeans.modules.j2me.project.ui.customizer;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -60,6 +56,8 @@ import org.openide.util.NbBundle;
  */
 public class J2MECompositeCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
+    private static final String SOURCES = "Sources";
+    static final String LIBRARIES = "Libraries";
     private static final String PLATFORM = "Platform";
     private static final String APPLICATION_DESCRIPTOR = "Application Descriptor";
     private static final String OBFUSCATING = "Obfuscating";
@@ -72,7 +70,9 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     }
 
     @Override
-    @NbBundle.Messages({"LBL_Category_Platform=Platform",
+    @NbBundle.Messages({"LBL_Category_Sources=Sources",
+        "LBL_Category_Libraries=Libraries",
+        "LBL_Category_Platform=Platform",
         "LBL_Category_Application_Descriptor=Application Descriptor",
         "LBL_Category_Obfuscating=Obfuscating",
         "LBL_Category_Signing=Signing"})
@@ -82,6 +82,18 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
         assert project != null;
         assert name != null;
         switch (name) {
+            case SOURCES:
+                toReturn = ProjectCustomizer.Category.create(
+                        SOURCES,
+                        Bundle.LBL_Category_Sources(),
+                        null);
+                break;
+            case LIBRARIES:
+                toReturn = ProjectCustomizer.Category.create(
+                        LIBRARIES,
+                        Bundle.LBL_Category_Libraries(),
+                        null);
+                break;
             case PLATFORM:
                 toReturn = ProjectCustomizer.Category.create(
                         PLATFORM,
@@ -117,6 +129,12 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
         final J2MEProjectProperties uiProps = context.lookup(J2MEProjectProperties.class);
         assert uiProps != null;
         switch (nm) {
+            case SOURCES:
+                return new J2MESourcesPanel(uiProps);
+            case LIBRARIES:
+                CustomizerProviderImpl.SubCategoryProvider prov = context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
+                assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";
+                return new J2MELibrarisPanel(uiProps, prov, category);
             case PLATFORM:
                 return new J2MEPlatformPanel(uiProps);
             case APPLICATION_DESCRIPTOR:
@@ -128,6 +146,22 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
         }
         return new JPanel();
 
+    }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-j2me-project",
+        position=100
+    )
+    public static J2MECompositeCategoryProvider createSources() {
+        return new J2MECompositeCategoryProvider(SOURCES);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType="org-netbeans-modules-j2me-project",
+        position=200
+    )
+    public static J2MECompositeCategoryProvider createLibraries() {
+        return new J2MECompositeCategoryProvider(LIBRARIES);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

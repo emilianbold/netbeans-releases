@@ -160,6 +160,11 @@ public class J2MEProject implements Project {
     }
 
     @NonNull
+    public SourceRoots getTestRoots() {
+        return testRoots;
+    }
+
+    @NonNull
     public PropertyEvaluator evaluator() {
         return eval;
     }
