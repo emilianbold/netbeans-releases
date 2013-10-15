@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ResourceBundle;
 import javax.swing.*;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.netbeans.lib.profiler.ui.components.VerticalLayout;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -139,7 +140,11 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         this.manager = manager;
         this.supportsSleepingState = supportsSleepingState;
 
+        setOpaque(true);
+        setBackground(new HTMLTextArea().getBackground());
+        
         noContentPanel = new JPanel();
+        noContentPanel.setOpaque(false);
         noContentPanel.setLayout(new BorderLayout());
         noContentPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         UIUtils.decorateProfilerPanel(noContentPanel);
@@ -156,9 +161,10 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
         noContentText.setEnabled(false);
         noContentText.setWrapStyleWord(true);
         noContentText.setLineWrap(true);
-        noContentText.setBackground(noContentPanel.getBackground());
+        noContentText.setOpaque(false);
 
         JPanel containerPanel = new JPanel(new BorderLayout());
+        containerPanel.setOpaque(false);
         containerPanel.add(noContentIcon, BorderLayout.WEST);
         containerPanel.add(noContentText, BorderLayout.CENTER);
         noContentPanel.add(containerPanel, BorderLayout.NORTH);
@@ -191,14 +197,17 @@ public class ThreadsDetailsPanel extends JPanel implements ActionListener, DataM
                     return new Dimension(Math.min(dim.width, scrollPane.getViewportBorderBounds().width), dim.height);
                 }
             };
+        content.setOpaque(false);
         content.getAccessibleContext().setAccessibleName(CONTENT_ACCESS_NAME);
         content.getAccessibleContext().setAccessibleName(CONTENT_ACCESS_DESCR);
 
         JPanel contentPanel = new JPanel();
+        contentPanel.setOpaque(false);
         contentPanel.setLayout(new BorderLayout());
         UIUtils.decorateProfilerPanel(contentPanel);
         scrollPane = new JScrollPane(contentPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                                      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setOpaque(false);
         scrollPane.getVerticalScrollBar().setUnitIncrement(30);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());
