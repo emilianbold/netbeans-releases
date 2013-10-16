@@ -43,6 +43,9 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -94,12 +97,15 @@ public final class BugtrackingManager implements LookupListener {
     private ProjectServices projectServices;
     private static final String LOCAL_CONNECTOR_ID = "NB_LOCAL_TASKS"; //NOI18N
     
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
             instance = new BugtrackingManager();
         }
         return instance;
     }
+    private final static String PROP_RECENT_ISSUES_CHANGED = "recent.issues.changed"; // NOI18N
 
     private BugtrackingManager() { }
 
@@ -163,6 +169,7 @@ public final class BugtrackingManager implements LookupListener {
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
         }
+        fireRecentIssuesChanged();
     }
 
     public Map<String, List<RecentIssue>> getAllRecentIssues() {
@@ -231,6 +238,18 @@ public final class BugtrackingManager implements LookupListener {
 
     public static boolean isLocalConnectorID (String connectorID) {
         return LOCAL_CONNECTOR_ID.equals(connectorID);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    private void fireRecentIssuesChanged() {
+        support.firePropertyChange(PROP_RECENT_ISSUES_CHANGED, null, null);
     }
     
 }
