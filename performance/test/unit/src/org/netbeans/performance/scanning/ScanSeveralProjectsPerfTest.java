@@ -43,7 +43,6 @@ package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -179,7 +178,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for (PerformanceData rec : getPerformanceData()) {
+        for (PerformanceData rec : handler.getData()) {
             Utilities.processUnitTestsResults(ScanSeveralProjectsPerfTest.class.getCanonicalName(), rec);
         }
         handler.clear();
@@ -188,15 +187,6 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.createConfiguration(ScanSeveralProjectsPerfTest.class).
                 clusters(".*").enableModules(".*").suite();
-    }
-
-    public PerformanceData[] getPerformanceData() {
-        List<PerformanceData> data = handler.getData();
-        if (data != null) {
-            return data.toArray(new PerformanceData[0]);
-        } else {
-            return null;
-        }
     }
 
     private class ReadingHandler extends Handler {

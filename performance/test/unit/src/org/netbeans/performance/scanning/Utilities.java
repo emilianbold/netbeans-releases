@@ -355,12 +355,14 @@ public class Utilities {
     }
 
     public static void processUnitTestsResults(String className, PerformanceData pd) {
-        processUnitTestsResults(className, className, pd);
+        String suiteClassName = System.getProperty("suitename", "org.netbeans.performance.unknown");
+        String suiteName = System.getProperty("suite", "Unknown Test Suite");
+        processUnitTestsResults(className, suiteName, suiteClassName, pd);
     }
 
-    public static void processUnitTestsResults(String className, String suiteName, PerformanceData pd) {
+    public static void processUnitTestsResults(String className, String suiteName, String suiteClassName, PerformanceData pd) {
         long[] result = new long[2];
         result[1] = pd.value;
-        xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, suiteName, pd.unit, "passed", 120000, result, 1);
+        xmlTestResults(System.getProperty("nbjunit.workdir"), suiteName, pd.name, className, suiteClassName, pd.unit, "passed", 120000, result, 1);
     }
 }
