@@ -55,27 +55,37 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.tree.TreeSelectionModel;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.traversal.DependencyNodeVisitor;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -86,7 +96,9 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -94,18 +106,25 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class DependencyPanel extends TopComponent implements MultiViewElement, LookupListener{
+    private static final Logger LOG = Logger.getLogger(DependencyPanel.class.getName());
 
     private Lookup.Result<DependencyNode> result;
     private JToolBar toolbar;
     private final ExplorerManager explorerManager;
     private final ExplorerManager treeExplorerManager;
+    private final boolean includeToolbar;
 
-    DependencyPanel(Lookup lookup) {
+    DependencyPanel(Lookup lookup, boolean includeToolbar) {
         super(lookup);
+        this.includeToolbar = includeToolbar;
         explorerManager = new ExplorerManager();
         treeExplorerManager = new ExplorerManager();
         
         initComponents();
+
+        ((BeanTreeView)tvTree).setBorder((Border)UIManager.get("ScrollPane.border"));
+        ((BeanTreeView)tvDependencyList).setBorder((Border)UIManager.get("ScrollPane.border"));
+        
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
             jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
@@ -162,6 +181,61 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             }
         });
     }
+    
+//    @MultiViewElement.Registration(
+//        displayName="#TAB_Tree",
+//        iconBase=IconResources.ICON_DEPENDENCY_JAR,
+//        persistenceType=TopComponent.PERSISTENCE_NEVER,
+//        preferredID=ArtifactViewer.HINT_DEPENDENCIES,
+//        mimeType=Constants.POM_MIME_TYPE,
+//        position=101
+//    )
+    //we want to include in editable editors once we have modification actions included.
+    @NbBundle.Messages("TAB_Tree=Tree")
+    public static MultiViewElement forPOM(final Lookup editor) {
+        class L extends ProxyLookup implements PropertyChangeListener {
+            Project p;
+            L() {
+                FileObject pom = editor.lookup(FileObject.class);
+                if (pom != null) {
+                    p = FileOwnerQuery.getOwner(pom);
+                    if (p != null) {
+                        NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
+                        if (nbmp != null) {
+                            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
+                            reset();
+                        } else {
+                            LOG.log(Level.WARNING, "not a Maven project: {0}", p);
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "no owner of {0}", pom);
+                    }
+                } else {
+                    LOG.log(Level.WARNING, "no FileObject in {0}", editor);
+                }
+            }
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                    reset();
+                }
+            }
+            private void reset() {
+                ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
+                if (avf != null) {
+                    Lookup l = avf.createLookup(p);
+                    if (l != null) {
+                        setLookups(l);
+                    } else {
+                        LOG.log(Level.WARNING, "no artifact lookup for {0}", p);
+                    }
+                } else {
+                    LOG.warning("no ArtifactViewerFactory found");
+                }
+            }
+        }
+        return new DependencyPanel(new L(), false);
+    }    
     
 
     public @Override int getPersistenceType() {
@@ -306,15 +380,17 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             }
             
             toolbar.setFloatable(false);
-            Action[] a = new Action[1];
-            Action[] actions = getLookup().lookup(a.getClass());
-            Dimension space = new Dimension(3, 0);
-            toolbar.addSeparator(space);
-            for (Action act : actions) {
-                JButton btn = new JButton();
-                Actions.connect(btn, act);
-                toolbar.add(btn);
+            if (includeToolbar) {
+                Action[] a = new Action[1];
+                Action[] actions = getLookup().lookup(a.getClass());
+                Dimension space = new Dimension(3, 0);
                 toolbar.addSeparator(space);
+                for (Action act : actions) {
+                    JButton btn = new JButton();
+                    Actions.connect(btn, act);
+                    toolbar.add(btn);
+                    toolbar.addSeparator(space);
+                }
             }
         }
         return toolbar;
