@@ -2452,7 +2452,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
     private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
-        Jira.getInstance().getBugtrackingFactory().addToCategory(JiraUtils.getRepository(issue.getRepository()), issue); 
+        Jira.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue); 
     }//GEN-LAST:event_addToCategoryButtonActionPerformed
 
     @NbBundle.Messages({

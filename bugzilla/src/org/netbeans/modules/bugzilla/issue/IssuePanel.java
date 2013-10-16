@@ -4058,10 +4058,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if (privateSectionActions == null) {
             privateSectionActions = new Action[] {
                 new AbstractAction(Bundle.IssuePanel_addToCategory_text()) {
-                
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
+                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue);
                     }
                 }
             };

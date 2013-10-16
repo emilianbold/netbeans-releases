@@ -253,6 +253,18 @@ public class BugtrackingUtil {
         return cons;
     }
 
+    /**
+     * Facility method to obtain an already registered {@link Repository} instance.
+     * 
+     * @param connectorId
+     * @param repositoryId
+     * @return 
+     */
+    public static Repository getRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        return impl != null ? impl.getRepository() : null;
+    }  
+ 
     public static String selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);

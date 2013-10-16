@@ -55,7 +55,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
@@ -80,7 +80,7 @@ public class Bugzilla {
     private RequestProcessor rp;
     private BugzillaClientManager clientManager;
 
-    private BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> bf;
+    private BugtrackingSupport<BugzillaRepository, BugzillaQuery, BugzillaIssue> bf;
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
@@ -140,9 +140,9 @@ public class Bugzilla {
         return rp;
     }
     
-    public BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }
