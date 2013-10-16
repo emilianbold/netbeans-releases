@@ -39,32 +39,68 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.test.refactoring.operators;
 
-package org.netbeans.modules.test.refactoring.actions;
-
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.*;
 
 /**
- <p>
- @author Standa
+ * <p>
+ * @author (stanislav.sazonov@oracle.com)
  */
-public class RefactorIntroduceMethodAction extends ActionNoBlock {
-	private static final String introduceMethodPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
-            + "|Introduce|Method...";
-          
-    private static final String introduceMethodMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
-            + "|Introduce|Method...";
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.META_MASK) : //Mac
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
+public abstract class IntroduceOperator extends ParametersPanelOperator {
 
-    /**
-     * creates new RefactorRenameAction instance
-     */
-    public RefactorIntroduceMethodAction() {
-        super(introduceMethodMenu, introduceMethodPopup, null, keystroke);
+    private JTextFieldOperator textField;
+    private JLabelOperator error;
+    private JRadioButtonOperator radPublic;
+    private JRadioButtonOperator radProtected;
+    private JRadioButtonOperator radDefault;
+    private JRadioButtonOperator radPrivate;
+//    private JButtonOperator btnRefactor;
+
+    public IntroduceOperator(String caption) {
+        super(caption);
     }
+
+    public JTextFieldOperator getNewName() {
+        if(textField == null)
+            textField = new JTextFieldOperator(this);
+        return textField;
+    }
+
+    public JLabelOperator getError() {
+        if(error == null)
+            error = new JLabelOperator(this);
+        return error;
+    }
+
+    public JRadioButtonOperator getRadPublic() {
+        if(radPublic == null)
+            radPublic = new JRadioButtonOperator(this, "public");
+        return radPublic;
+    }
+
+    public JRadioButtonOperator getRadProtected() {
+        if(radProtected == null)
+            radProtected = new JRadioButtonOperator(this, "protected");
+        return radProtected;
+    }
+
+    public JRadioButtonOperator getRadDefault() {
+        if(radDefault == null)
+            radDefault = new JRadioButtonOperator(this, "default");
+        return radDefault;
+    }
+
+    public JRadioButtonOperator getRadPrivate() {
+        if(radPrivate == null)
+            radPrivate = new JRadioButtonOperator(this, "private");
+        return radPrivate;
+    }
+
+//    public JButtonOperator getBtnRefactor() {
+//        if(btnRefactor == null) {
+//            btnRefactor = new JButtonOperator(this, "Refactor");
+//        }
+//        return btnRefactor;
+//    }
 }

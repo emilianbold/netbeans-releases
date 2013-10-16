@@ -39,32 +39,59 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.test.refactoring.operators;
 
-package org.netbeans.modules.test.refactoring.actions;
-
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
 
 /**
- <p>
- @author Standa
+ * <p> @author (stanislav.sazonov@oracle.com)
  */
-public class RefactorIntroduceMethodAction extends ActionNoBlock {
-	private static final String introduceMethodPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
-            + "|Introduce|Method...";
-          
-    private static final String introduceMethodMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
-            + "|Introduce|Method...";
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.META_MASK) : //Mac
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
+public class IntroduceFieldOperator extends IntroduceOperator {
 
-    /**
-     * creates new RefactorRenameAction instance
-     */
-    public RefactorIntroduceMethodAction() {
-        super(introduceMethodMenu, introduceMethodPopup, null, keystroke);
+    private JCheckBoxOperator declareFinal;
+    private JCheckBoxOperator alsoReplace;
+    
+    private JRadioButtonOperator inCurrentMethod;
+    private JRadioButtonOperator inField;
+    private JRadioButtonOperator inConstructor;
+
+    public IntroduceFieldOperator() {
+        super("Introduce field");
+    }
+
+    public JCheckBoxOperator getDeclareFinal() {
+        if (declareFinal == null) {
+            declareFinal = new JCheckBoxOperator(this, 0);
+        }
+        return declareFinal;
+    }
+    
+    public JCheckBoxOperator getAlsoReplace() {
+        if (alsoReplace == null) {
+            alsoReplace = new JCheckBoxOperator(this, 1);
+        }
+        return alsoReplace;
+    }
+    
+    public JRadioButtonOperator getInCurrentMethod() {
+        if (inCurrentMethod == null) {
+            inCurrentMethod = new JRadioButtonOperator(this, "Current Method");
+        }
+        return inCurrentMethod;
+    }
+
+    public JRadioButtonOperator getInField() {
+        if (inField == null) {
+            inField = new JRadioButtonOperator(this, "Field");
+        }
+        return inField;
+    }
+
+    public JRadioButtonOperator getInConstructor() {
+        if (inConstructor == null) {
+            inConstructor = new JRadioButtonOperator(this, "Constructor(s)");
+        }
+        return inConstructor;
     }
 }
