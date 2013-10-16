@@ -51,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Stack;
@@ -505,7 +506,7 @@ public final class FoldOperationImpl {
 
     private class Refresher implements Comparator<FoldInfo> {
         private Collection<FoldInfo>    foldInfos;
-        private Collection<Fold>        toRemove = new ArrayList<Fold>();
+        private List<Fold>              toRemove = new ArrayList<Fold>();
         private Collection<FoldInfo>    toAdd = new ArrayList<FoldInfo>();
         private Map<FoldInfo, Fold>     currentFolds = new HashMap<FoldInfo, Fold>();
 
@@ -638,7 +639,8 @@ public final class FoldOperationImpl {
                         LOG.finest("Fold = " + f + ", FoldInfo = " + i);
                     }
                     int action = compare(i, f);
-                    if (action < 0 && !nextSameRange(i, f)) {
+                    boolean nextSameRange = nextSameRange(i, f);
+                    if (action < 0 && !nextSameRange) {
                         // create a new fold from the FoldInfo
                         toAdd.add(i);
                         i = ni();
@@ -646,7 +648,7 @@ public final class FoldOperationImpl {
                             LOG.finest("Advanced info, next = " + i);
                         }
                         continue;
-                    } else if (action > 0 && !containsSame(i, f)) {
+                    } else if (action > 0 && !nextSameRange) {
                         toRemove.add(f);
                         f = foldIt.hasNext() ? foldIt.next() : null;
                         if (LOG.isLoggable(Level.FINEST)) {
@@ -662,7 +664,11 @@ public final class FoldOperationImpl {
                         LOG.finest("Advanced both info & fold");
                     }
                 }
-                for (Fold fold : toRemove) {
+                // remove folds in reverse order. If a fold ceases to exist with all its children, the children are
+                // removed first instead of propagating up to the hierarchy.
+                // other folds currently in the hierarchy should have their positions updated by document, so even
+                for (int ri = 0; ri < toRemove.size(); ri++) { /*toRemove.size() - 1; ri >= 0; ri--) {*/
+                    Fold fold = toRemove.get(ri);
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.finest("Removing: " + f);
                     }
