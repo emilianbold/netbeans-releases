@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -77,7 +76,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
@@ -561,8 +559,10 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             return new OpenAction(node, tcLookup);
         }
         
-        
-        
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {new OpenAction(node, tcLookup)};
+        }
     }
     
     private static class ListNode extends AbstractNode {
@@ -590,8 +590,10 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
             return new OpenAction(node, tcLookup);
         }
 
-        
-        
+        @Override
+        public Action[] getActions(boolean context) {
+            return new Action[] {new OpenAction(node, tcLookup)};
+        }
     }
     
     
@@ -650,9 +652,11 @@ public class DependencyPanel extends TopComponent implements MultiViewElement, L
         private final DependencyNode dependencyNode;
         private final Lookup lkp;
 
+        @NbBundle.Messages({"ACT_Open=View Artifact Details"})
         public OpenAction(DependencyNode dn, Lookup lkp) {
             this.dependencyNode = dn;
             this.lkp = lkp;
+            putValue(NAME, Bundle.ACT_Open());
         }
         
         
