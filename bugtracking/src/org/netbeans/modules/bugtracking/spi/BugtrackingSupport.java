@@ -39,63 +39,62 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
 /**
- *
+ * 
+ * Collection of utility methods for bugtracking systems implementors. 
+ * 
  * @author Tomas Stupka
  * 
  * @param <R> the implementation specific repository type
  * @param <Q> the implementation specific query type
  * @param <I> the implementation specific issue type
  */
-public final class BugtrackingFactory<R, Q, I> {
-   
+public final class BugtrackingSupport<R, Q, I> {
+    private final RepositoryProvider<R, Q, I> repositoryProvider;
+    private final QueryProvider<Q, I> queryProvider;
+    private final IssueProvider<I> issueProvider;
+
     /**
-     * Creates a {@link Repository} instance configured with the given providers.
-     * 
-     * @param r a implementation specific repository 
      * @param repositoryProvider a {@link RepositoryProvider} to access the implementation specific repository.<br/> 
      *                           Is mandatory and cannot be null.
      * @param queryProvider a {@link QueryProvider} to access queries from the given repository.<br/>
      *                      Is mandatory and cannot be null.
      * @param issueProvider an {@link IssueProvider} to access issues from the given repository.<br/>
      *                      Is mandatory and cannot be null.
+     */
+    public BugtrackingSupport(RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
+        this.repositoryProvider = repositoryProvider;
+        this.queryProvider = queryProvider;
+        this.issueProvider = issueProvider;
+    }
+    
+    /**
+     * Factory method to create a {@link Repository} instance configured with the given providers.
+     * 
+     * @param r a implementation specific repository instance
      * 
      * @return a {@link Repository} instance
      */
-    public Repository createRepository(R r, 
-            RepositoryProvider<R, Q, I> repositoryProvider, 
-            QueryProvider<Q, I> queryProvider,
-            IssueProvider<I> issueProvider) 
+    public Repository createRepository(R r) 
     {
-        RepositoryInfo info = repositoryProvider.getInfo(r);
-        if(info != null) {
-            String repositoryId = info.getId();
-            String connectorId = repositoryProvider.getInfo(r).getConnectorId();
-            Repository repo = getRepository(connectorId, repositoryId);
-            if(repo != null) {
-                return repo;
-            }
+        Repository repo = getRepository(r);
+        if(repo != null) {
+            return repo;
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, null, null, null, null);
         return impl.getRepository();
     }
     
     /**
-     * Creates a {@link Repository} instance configured with the given providers.
+     * Factory method to create a {@link Repository} instance configured with the given providers.
      * 
-     * @param r a implementation specific repository 
-     * @param repositoryProvider a {@link RepositoryProvider} to access the implementation specific repository.<br/> 
-     *                           Is mandatory and cannot be null.   
-     * @param queryProvider a {@link QueryProvider} to access queries from the given repository.<br/>
-     *                      Is mandatory and cannot be null.
-     * @param issueProvider an {@link IssueProvider} to access issues from the given repository.<br/>
-     *                      Is mandatory and cannot be null.    
+     * @param r a implementation specific repository instance
      * @param issueStatusProvider an {@link IssueStatusProvider} to provide status information 
      *                            of an implementation specific issue.<br/> 
      *                            Might be null.
@@ -110,60 +109,59 @@ public final class BugtrackingFactory<R, Q, I> {
      * 
      * @return a {@link Repository} instance
      */
-    public Repository createRepository(R r, 
-            RepositoryProvider<R, Q, I> repositoryProvider, 
-            QueryProvider<Q, I> queryProvider,
-            IssueProvider<I> issueProvider,
+    public Repository createRepository(R r,
             IssueStatusProvider<I> issueStatusProvider,
             IssueSchedulingProvider<I> issueSchedulingProvider, 
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)
     {
-        RepositoryInfo info = repositoryProvider.getInfo(r);
-        if(info != null) {
-            String repositoryId = info.getId();
-            String connectorId = repositoryProvider.getInfo(r).getConnectorId();
-            Repository repo = getRepository(connectorId, repositoryId);
-            if(repo != null) {
-                return repo;
-            }
+        Repository repo = getRepository(r);
+        if(repo != null) {
+            return repo;
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
         return impl.getRepository();
     }
     
-    public Repository getRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
-        if(impl == null) {
-            return null;
-        }
-        return impl.getRepository();
-    }
-    
-    public boolean isOpen(Repository repository, Q q) {
-        QueryImpl query = getQueryImpl(repository, q);
-        return BugtrackingUtil.isOpened(query);
-    }
-    
-    public void editQuery(Repository repository, Q q) {
-        QueryImpl query = getQueryImpl(repository, q);
+    /**
+     * Opens in the editor area a TopComponent with the given Queries UI in edit mode.
+     * 
+     * @param r a implementation specific Repository instance
+     * @param q a implementation specific Query instance
+     * 
+     * @see QueryController
+     */
+    public void editQuery(R r, Q q) {
+        QueryImpl query = getQueryImpl(r, q);
         if(query != null) {
             query.open(QueryController.QueryMode.EDIT);
         }
     }
-    
-    public void openIssue(Repository repository, I i) {
-        IssueImpl issue = getIssueImpl(repository, i);
+
+    /**
+     * Opens in the editor area a TopComponent with the given Issues UI in edit mode.
+     * 
+     * @param r a implementation specific Repository instance
+     * @param i a implementation specific Issue instance
+     */
+    public void openIssue(R r, I i) {
+        IssueImpl issue = getIssueImpl(r, i);
         if (issue != null) {
             issue.open();
         }
     }
     
-    public void addToCategory(final Repository repository, final I i) {
+    /**
+     * Opens a UI to select an Tasks Dashboard Category to add the given Issue into.
+     * 
+     * @param r a implementation specific Repository instance
+     * @param i a implementation specific Issue instance
+     */
+    public void addToCategory(final R r, final I i) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                IssueImpl issue = getIssueImpl(repository, i);
+                IssueImpl issue = getIssueImpl(r, i);
                 if (issue != null) {
                     DashboardTopComponent.findInstance().addTask(issue);
                 }
@@ -171,30 +169,59 @@ public final class BugtrackingFactory<R, Q, I> {
         });
     }
     
-    public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {
-        return UndoRedoSupport.getSupport(getIssueImpl(repository, i));
-    }
-    
-    public boolean editRepository(Repository repository, String errorMessage) {
-        return BugtrackingUtil.editRepository(APIAccessor.IMPL.getImpl(repository), errorMessage);
+    /**
+     * Opens a UI to edit a repository. 
+     * 
+     * @param r a implementation specific Repository instance
+     * @param errorMessage an message to be show in the repository edit dialog
+     * @return <code>true</code> in case the repository was changed, otherwise <code>false</code>.
+     */
+    public boolean editRepository(R r, String errorMessage) {
+        RepositoryImpl impl = getRepositoryImpl(r);
+        return impl != null ? BugtrackingUtil.editRepository(impl, errorMessage) : false;
     }
 
+    /**
+     * Priority icons used by default in the Tasks Dashboard sorted from the highest priority. 
+     * @return 
+     */
     public Image[] getPriorityIcons() {
         return IssuePrioritySupport.getIcons();
     }
     
-    private QueryImpl getQueryImpl(Repository repository, Q q) {
-        RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
-        QueryImpl impl = repositoryImpl.getQuery(q);
-        if(impl == null) {
-            return null;
+    private QueryImpl getQueryImpl(R r, Q q) {
+        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r);
+        return impl != null ? impl.getQuery(q) : null;
+    }
+    
+    private IssueImpl getIssueImpl(R r, I i) {
+        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r);
+        return impl != null ? impl.getIssue(i) : null;
+    }
+
+    private Repository getRepository(String connectorId, String repositoryId) {
+        RepositoryImpl impl = getRepositoryImpl(connectorId, repositoryId);
+        return impl != null ? impl.getRepository() : null;
+    }    
+    
+    private RepositoryImpl getRepositoryImpl(R r) {
+       RepositoryInfo info = repositoryProvider.getInfo(r);
+       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getId()) : null;
+    }
+    
+    private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
+        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+    }    
+    
+    private Repository getRepository(R r) {
+        RepositoryInfo info = repositoryProvider.getInfo(r);
+        if (info != null) {
+            String repositoryId = info.getId();
+            String connectorId = repositoryProvider.getInfo(r).getConnectorId();
+            Repository repo = getRepository(connectorId, repositoryId);
+            return repo;
         }
-        return impl;
+        return null;
     }
-    
-    private IssueImpl getIssueImpl(Repository repository, I i) {
-        RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
-        return repositoryImpl.getIssue(i);
-    }
-    
+
 }
