@@ -502,6 +502,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
     
     private Problem initDelegate(CompilationController info) throws IllegalArgumentException {
         Problem p = null;
+        final String FINAL = "final ";
         if (paramTable == null) {
             try {
                 info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
@@ -557,7 +558,7 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                     expression = parents.getExpression();
                 }
 
-                paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), (refactoring.isFinal() ? "final " : "") + type, expression.toString());
+                paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), (refactoring.isFinal() ? FINAL : "") + type, expression.toString());
                 
                 TreePath resolved = treePathHandle.resolve(info);
                 TreePath meth = JavaPluginUtils.findMethod(resolved);
@@ -567,7 +568,13 @@ public class IntroduceParameterPlugin extends JavaRefactoringPlugin {
                 Exceptions.printStackTrace(ex);
             }
         } else {
-            paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), paramTable[index].getType(), paramTable[index].getDefaultValue());
+            String type = paramTable[index].getType();
+            if(type.startsWith(FINAL)) {
+                type = refactoring.isFinal()? type : type.substring(FINAL.length());
+            } else {
+                type = refactoring.isFinal()? FINAL + type : type;
+            }
+            paramTable[index] = new ChangeParametersRefactoring.ParameterInfo(-1, refactoring.getParameterName(), type, paramTable[index].getDefaultValue());
         }
         return p;
     }
