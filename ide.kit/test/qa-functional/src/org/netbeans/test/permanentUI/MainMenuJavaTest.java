@@ -41,6 +41,7 @@
  */
 package org.netbeans.test.permanentUI;
 
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
@@ -48,7 +49,7 @@ import org.netbeans.test.permanentUI.utils.ProjectContext;
  *
  * @author Marian.Mirilovic@oracle.com
  */
-public class MainMenuJavaTest extends MainMenuTest {
+public class MainMenuJavaTest extends MainMenuTestCase {
 
     public MainMenuJavaTest(String name) {
         super(name);
@@ -69,48 +70,46 @@ public class MainMenuJavaTest extends MainMenuTest {
     }
 
     @Override
-    public void initialize() {
-        this.context = ProjectContext.JAVA;
+    public void initialize() throws IOException {
         openFile("SampleProject", org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + TREE_SEPARATOR + "sample1", "SampleClass1.java");
+    }
+    
+    @Override
+    public ProjectContext getContext() {
+        return ProjectContext.JAVA;
     }
     
     @Override
     protected void tearDown() throws Exception {}
     
 
-    @Override
     public void testFileMenu() {
         oneMenuTest("File");
     }
 
-    @Override
     public void testRefactorMenu() {
         oneMenuTest("Refactor");
     }
 
-    @Override
     public void testDebugMenu() {
         oneMenuTest("Debug");
     }
 
-    @Override
     public void testRunMenu() {
         oneMenuTest("Run");
     }
 
-    @Override
     public void testToolsMenu() {
         oneMenuTest("Tools");
     }
 
-    @Override
     public void testProfileMenu() {
         oneMenuTest("Profile");
     }
 
-    @Override
     public void testView_CodeFoldsSubMenu() {
         oneSubMenuTest("View|Code Folds", true);
     }
+
 
 }

@@ -42,6 +42,7 @@
 package org.netbeans.test.permanentUI;
 
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,17 +50,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.util.StringTokenizer;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.JemmyException;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.Waitable;
-import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 import org.openide.filesystems.FileObject;
@@ -72,12 +70,10 @@ public abstract class PermUITestCase extends JellyTestCase {
 
     protected static final char TREE_SEPARATOR = '|';
     protected static final boolean screen = false;
-
-    //context says what kind of project is open
-    protected ProjectContext context = ProjectContext.NONE;
-
     protected boolean initialized = false;
 
+    private static int index = 0;
+    
     public PermUITestCase(String name) {
         super(name);
     }
@@ -87,21 +83,27 @@ public abstract class PermUITestCase extends JellyTestCase {
      */
     @Override
     public void setUp() {
+        // push Escape key to ensure there is no thing blocking shortcut execution
+        MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
+        
+        System.setProperty("jemmy.screen.capture", "true");
+
         try {
+//            clearWorkDir();
             System.setErr(new PrintStream(new File(getWorkDir(), getName() + ".error")));
-            clearWorkDir();
-            getWorkDir();
             if (!initialized) {
                 initialize();
                 initialized = true;
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            captureScreen();
+            ex.printStackTrace(System.err);
         }
-        System.out.println("########  " + " CONTEXT -> " + context.toString() + " - " + getName() + "  #######");
+        System.out.println("########  " + " CONTEXT -> " + getContext().toString() + " - " + getName() + "  #######");
     }
 
     public abstract void initialize() throws IOException;
+    public abstract ProjectContext getContext();
 
     public void ref(Object o) {
         getRef().println(o);
@@ -147,64 +149,14 @@ public abstract class PermUITestCase extends JellyTestCase {
      * @param treeSubPackagePathToFile
      * @param fileName
      */
-    protected void openFile(String project, String treeSubPackagePathToFile, String fileName) {
-        openProject(project);
-        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, TREE_SEPARATOR + "");
-        if (st.countTokens() > 1) {
-            String token = st.nextToken();
-
-            String fullpath = token;
-            while (st.hasMoreTokens()) {
-                token = st.nextToken();
-                waitForChildNode(project, fullpath, token);
-                fullpath += TREE_SEPARATOR + token;
-            }
-        }
-        // last node
-        waitForChildNode(project, treeSubPackagePathToFile, fileName);
-        // end of fix of issue #51191
-
-        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(project);
-        Node node = new Node(projectNode, treeSubPackagePathToFile + TREE_SEPARATOR + fileName);
+    protected void openFile(String project, String treeSubPackagePathToFile, String fileName) throws IOException {
+        openDataProjects(project);
+        waitScanFinished();
+        ProjectRootNode projectRootNode = new ProjectsTabOperator().getProjectRootNode(project);
+        Node node = new Node(projectRootNode, treeSubPackagePathToFile + TREE_SEPARATOR + fileName);
         //node.performPopupAction("Open");
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
-    }
-
-    private void waitForChildNode(String project, String parentPath, String childName) {
-        ProjectRootNode projectNode = openProject(project);
-        Node parent = new Node(projectNode, parentPath);
-        final String finalFileName = childName;
-        try {
-            // wait for max. 3 seconds for the file node to appear
-            JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 3000);
-            new Waiter(new Waitable() {
-                @Override
-                public Object actionProduced(Object parent) {
-                    return ((Node) parent).isChildPresent(finalFileName) ? Boolean.TRUE : null;
-                }
-
-                @Override
-                public String getDescription() {
-                    return ("Waiting for the tree to load.");
-                }
-            }).waitAction(parent);
-        } catch (InterruptedException e) {
-            throw new JemmyException("Interrupted.", e);
-        }
-    }
-
-    protected ProjectRootNode openProject(String projectName) {
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-
-        ProjectRootNode rootNode;
-        try {
-            openDataProjects(projectName);
-            rootNode = pto.getProjectRootNode(projectName);
-            rootNode.select();
-        } catch (IOException ex) {
-            throw new JemmyException("Open project [" + projectName + "] fails !!!", ex);
-        }
-        return rootNode;
+        new EditorOperator(fileName).pushHomeKey(); // request focus ... try to fix failures on Windows - if the node isn't selected it's not a part of menu items (context sensitive)
     }
 
     /**
@@ -257,11 +209,6 @@ public abstract class PermUITestCase extends JellyTestCase {
         return new File(d.toString());
     }
 
-    private File getReferencFile() throws IOException {
-        File refFile = new File(getWorkDir(), getName() + ".ref");
-        return refFile;
-    }
-
     protected ComponentChooser getCompChooser(final String className) {
         return new ComponentChooser() {
             @Override
@@ -282,14 +229,15 @@ public abstract class PermUITestCase extends JellyTestCase {
     protected void captureScreen() {
         if (screen) {
             try {
-                String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
+                index++;
+                String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen" + index + ".png";
                 PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
             } catch (Exception ex) {
                 ex.printStackTrace(getLog());
             }
         }
     }
-
+    
     protected class LogFiles {
 
         String pathToIdeLogFile;
