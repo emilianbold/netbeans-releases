@@ -201,7 +201,7 @@ public class BugzillaUtil {
                 Bugzilla.getInstance().getQueryProvider(),
                 Bugzilla.getInstance().getIssueProvider(),
                 Bugzilla.getInstance().getStatusProvider(),
-                null, 
+                Bugzilla.getInstance().getSchedulingProvider(),
                 Bugzilla.getInstance().createPriorityProvider(bugzillaRepository),
                 SimpleIssueFinder.getInstance());
     }

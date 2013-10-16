@@ -40,79 +40,47 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.mylyn.util;
+package org.netbeans.modules.localtasks;
 
-import java.text.DateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import org.eclipse.mylyn.internal.tasks.core.DateRange;
 import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public final class NbDateRange implements Comparable<NbDateRange> {
-    private final DateRange delegate;
+class IssueSchedulingProviderImpl implements IssueSchedulingProvider<LocalTask> {
 
-    NbDateRange (DateRange delegate) {
-        this.delegate = delegate;
-    }
-    
-    public NbDateRange (Calendar startDate, Calendar endDate) {
-        this(new DateRange(startDate, endDate));
-    }
-    
-    public NbDateRange (Calendar time) {
-        this(new DateRange(time));
-    }
-
-    public NbDateRange (IssueScheduleInfo info) {
-        this(toDateRange(info));
-    }
-    
     @Override
-    public int compareTo (NbDateRange o) {
-        return getDelegate().compareTo(o.getDelegate());
-    }
-    
-    public Calendar getStartDate () {
-        return delegate.getStartDate();
-    }
-    
-    public Calendar getEndDate () {
-        return delegate.getEndDate();
-    }
-    
-    DateRange getDelegate () {
-        return delegate;
+    public void setDueDate (LocalTask i, Date date) {
+        i.setTaskDueDate(date, true);
     }
 
     @Override
-    public boolean equals (Object obj) {
-        if (!(obj instanceof NbDateRange)) {
-            return false;
-        }
-        return delegate.equals(((NbDateRange) obj).getDelegate());
+    public void setSchedule (LocalTask i, IssueScheduleInfo date) {
+        i.setTaskScheduleDate(date, true);
     }
 
     @Override
-    public int hashCode () {
-        return delegate.hashCode();
+    public void setEstimate (LocalTask i, int hours) {
+        i.setTaskEstimate(hours, true);
+    }
+
+    @Override
+    public Date getDueDate (LocalTask i) {
+        return i.getPersistentDueDate();
+    }
+
+    @Override
+    public IssueScheduleInfo getSchedule (LocalTask i) {
+        return i.getPersistentScheduleInfo();
+    }
+
+    @Override
+    public int getEstimate (LocalTask i) {
+        return i.getPersistentEstimate();
     }
     
-    public IssueScheduleInfo toSchedulingInfo () {
-        Calendar startDate = getStartDate();
-        Calendar endDate = getEndDate();
-        int difference = (int) ((endDate.getTimeInMillis() - startDate.getTimeInMillis()) / 1000 / 3600 / 24) + 1;
-        return new IssueScheduleInfo(startDate.getTime(), difference);
-    }
-    
-    private static DateRange toDateRange (IssueScheduleInfo info) {
-        Calendar startDate = Calendar.getInstance();
-        Calendar endDate = Calendar.getInstance();
-        startDate.setTime(info.getDate());
-        endDate.setTime(new Date(info.getDate().getTime() + (info.getInterval() - 1) * 24 * 3600 * 1000));
-        return new DateRange(startDate, endDate);
-    }
 }

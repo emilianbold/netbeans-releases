@@ -80,6 +80,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
@@ -120,6 +121,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
+    private static final SimpleDateFormat DUE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");                 // NOI18N
 
     private final BugzillaRepository repository;
 
@@ -919,6 +921,21 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             });
         }
     }
+    
+    private void setDueDateAndSubmit (final Date date) {
+        refresh();
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                if (date == null) {
+                    setFieldValue(IssueField.DEADLINE, "");
+                } else {
+                    setFieldValue(IssueField.DEADLINE, DUE_DATE_FORMAT.format(date));
+                }
+                submitAndRefresh();
+            }
+        });
+    }
 
     public void attachPatch(File file, String description) {
         boolean isPatch = true;
@@ -1234,7 +1251,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
 
     private String getDueDisplayString() {
         Calendar dueDate = Calendar.getInstance();
-        Date date = getNbTask().getDueDate();
+        Date date = getPersistentDueDate();
         if (date == null) {
             return "";
         }
@@ -1251,7 +1268,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     private String getEstimateDisplayString() {
-        int estimate = getNbTask().getEstimate();
+        int estimate = getPersistentEstimate();
         if (estimate == 0) {
             return "";
         }
@@ -1466,27 +1483,28 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
     }
     
-    void setTaskDueDate (Date date) {
+    public void setTaskDueDate (Date date, boolean persistChange) {
         if (hasTimeTracking()) {
-            throw new UnsupportedOperationException();
-        }
-        super.setDueDate(date);
-        if (controller != null) {
-            controller.modelStateChanged(true, hasLocalEdits());
+            setDueDateAndSubmit(date);
+        } else {
+            super.setDueDate(date, persistChange);
+            if (controller != null) {
+                controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+            }
         }
     }
     
-    void setTaskScheduleDate (NbDateRange date) {
-        super.setScheduleDate(date);
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
         if (controller != null) {
-            controller.modelStateChanged(true, hasLocalEdits());
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
     }
 
-    void setTaskEstimate (int estimate) {
-        super.setEstimate(estimate);
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
         if (controller != null) {
-            controller.modelStateChanged(true, hasLocalEdits());
+            controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
         }
     }
 
