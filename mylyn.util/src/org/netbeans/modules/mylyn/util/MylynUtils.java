@@ -77,8 +77,7 @@ public class MylynUtils {
         logCredentials(repository, user, password, "Setting credentials: ");    // NOI18N
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
-        
-        AuthenticationCredentials httpCreds = repository.getCredentials(AuthenticationType.HTTP);
+
         if(httpUser != null || httpPassword != null) {
             if(httpUser == null) {
                 httpUser = "";      // NOI18N
@@ -86,14 +85,10 @@ public class MylynUtils {
             if(httpPassword == null) {
                 httpPassword = new char[0];  
             }
-            if(!httpUser.equals(httpCreds.getUserName()) && 
-               new String(httpPassword).equals(httpCreds.getPassword()) ) 
-            {
-                logCredentials(repository, httpUser, httpPassword, "Setting http credentials: ");   // NOI18N
-                authenticationCredentials = new AuthenticationCredentials(httpUser, new String(httpPassword));
-                repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
-            }
-        } else if(httpCreds != null) {
+            logCredentials(repository, httpUser, httpPassword, "Setting http credentials: ");   // NOI18N
+            authenticationCredentials = new AuthenticationCredentials(httpUser, new String(httpPassword));
+            repository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
+        } else {
             repository.setCredentials(AuthenticationType.HTTP, null, false);
         }
 
