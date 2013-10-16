@@ -140,11 +140,6 @@ public final class BugtrackingFactory<R, Q, I> {
         return impl.getRepository();
     }
     
-    public boolean isOpen(Repository repository, Q q) {
-        QueryImpl query = getQueryImpl(repository, q);
-        return BugtrackingUtil.isOpened(query);
-    }
-    
     public void editQuery(Repository repository, Q q) {
         QueryImpl query = getQueryImpl(repository, q);
         if(query != null) {
