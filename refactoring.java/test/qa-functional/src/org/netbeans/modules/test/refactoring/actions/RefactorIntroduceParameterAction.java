@@ -51,20 +51,20 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
  <p>
  @author Standa
  */
-public class RefactorIntroduceMethodAction extends ActionNoBlock {
-	private static final String introduceMethodPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
-            + "|Introduce|Method...";
+public class RefactorIntroduceParameterAction extends ActionNoBlock {
+    private static final String introduceMethodPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
+            + "|Introduce|Parameter...";
           
     private static final String introduceMethodMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
-            + "|Introduce|Method...";
+            + "|Introduce|Parameter...";
     private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.META_MASK) : //Mac
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
+            KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.META_MASK) : //Mac
+            KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
 
     /**
      * creates new RefactorRenameAction instance
      */
-    public RefactorIntroduceMethodAction() {
+    public RefactorIntroduceParameterAction() {
         super(introduceMethodMenu, introduceMethodPopup, null, keystroke);
     }
 }
