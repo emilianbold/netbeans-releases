@@ -73,6 +73,11 @@ import org.openide.util.RequestProcessor;
  */
 public final class BugtrackingManager implements LookupListener {
     
+    /**
+     * Recent issues have changed.
+     */
+    public final static String PROP_RECENT_ISSUES_CHANGED = "recent.issues.changed"; // NOI18N
+    
     private static BugtrackingManager instance;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.BugtrackingManager"); // NOI18N
@@ -104,7 +109,6 @@ public final class BugtrackingManager implements LookupListener {
         }
         return instance;
     }
-    private final static String PROP_RECENT_ISSUES_CHANGED = "recent.issues.changed"; // NOI18N
 
     private BugtrackingManager() { }
 
