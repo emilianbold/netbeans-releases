@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.editor.fold;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -64,6 +66,9 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
+
+import static org.netbeans.modules.editor.fold.FoldHierarchyExecution.OPERATION_EMPTY;
 
 /**
  * Class encapsulating a modification
@@ -261,6 +266,73 @@ public final class FoldHierarchyTransactionImpl {
             );
         }
     }
+
+    /**
+     * The method is run after 'undo' and should validate all folds affected by the change. Undo operation
+     * revives some Position offsets, and the effect on the data in fold hierarchy proved unreliable - Positions of
+     * a child were reverted to a state they did not fit into parent's Positions (also restored by Undo).
+     * 
+     * @param fold parent fold
+     * @param evt current event
+     * @param damaged damaged folds
+     */
+    void validateAffectedFolds(Fold fold, DocumentEvent evt) {
+        Collection pp = new ArrayList();
+        validateAffectedFolds(fold, evt, pp);
+        if (!pp.isEmpty()) {
+            ApiPackageAccessor api = ApiPackageAccessor.get();
+            for (Iterator it = pp.iterator(); it.hasNext(); ) {
+                Fold childFold = (Fold)it.next();
+                removeFold(childFold);
+                removeEmptyNotify(childFold);
+            }
+        }
+    }
+    
+    
+    void validateAffectedFolds(Fold fold, DocumentEvent evt, Collection damaged) {
+        int startOffset = evt.getOffset();
+        int endOffset = startOffset + evt.getLength();
+        
+        int childIndex = FoldUtilitiesImpl.findFoldStartIndex(fold, startOffset, true);
+        if (childIndex == -1) {
+            if (fold.getFoldCount() == 0) {
+                return;
+            }
+            Fold first = fold.getFold(0);
+            if (first.getStartOffset() <= endOffset) {
+                childIndex = 0;
+            } else {
+                return;
+            }
+        }
+        if (childIndex >= 1) {
+            Fold prevChildFold = fold.getFold(childIndex - 1);
+            if (prevChildFold.getEndOffset() == startOffset) {
+                validateAffectedFolds(prevChildFold, evt, damaged);
+            }
+        }
+        int pStart = fold.getStartOffset();
+        int pEnd = fold.getEndOffset();
+        boolean removed;
+        boolean startsWithin = false;
+        do {
+            Fold childFold = fold.getFold(childIndex);
+            int cStart = childFold.getStartOffset();
+            int cEnd = childFold.getEndOffset();
+            startsWithin = cStart < startOffset && 
+                           cEnd <= endOffset;
+            removed = false;
+            if (cStart < pStart || cEnd > pEnd || cStart == cEnd) {
+                damaged.add(childFold);
+            }
+            if (childFold.getFoldCount() > 0) { // check children
+                // Some children could be damaged even if this one was not
+                validateAffectedFolds(childFold, evt, damaged);
+            }
+            childIndex++;
+        } while ((startsWithin || removed) && childIndex < fold.getFoldCount());
+    }
     
     /**
      * This method implements the <code>DocumentListener</code>.
@@ -275,8 +347,11 @@ public final class FoldHierarchyTransactionImpl {
             LOG.fine("insertUpdate: offset=" + evt.getOffset() // NOI18N
                 + ", length=" + evt.getLength() + '\n'); // NOI18N
         }
-
         try {
+            if (FoldHierarchyExecution.isEventInUndoRedoHack(evt)) {
+                validateAffectedFolds(execution.getRootFold(), evt);
+            }
+            
             insertCheckEndOffset(execution.getRootFold(), evt);
 
         } catch (BadLocationException e) {
@@ -395,7 +470,9 @@ public final class FoldHierarchyTransactionImpl {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("removeUpdate: offset=" + evt.getOffset() + ", len=" + evt.getLength() + '\n'); // NOI18N
         }
-
+        if (FoldHierarchyExecution.isEventInUndoRedoHack(evt)) {
+            validateAffectedFolds(execution.getRootFold(), evt);
+        }
         removeCheckDamaged2(evt);
     }
     
@@ -418,14 +495,14 @@ public final class FoldHierarchyTransactionImpl {
             
             switch (cmd) {
                 case FoldHierarchyExecution.OPERATION_EMPTY:
-                    execution.remove(childFold, this);
+                    removeFold(childFold);
                     getManager(childFold).removeEmptyNotify(childFold);
                     api.foldMarkDamaged(childFold, damagedFlags);
                     break;
                     
                 case FoldHierarchyExecution.OPERATION_DAMAGE:
                     api.foldMarkDamaged(childFold, damagedFlags);
-                    execution.remove(childFold, this);
+                    removeFold(childFold);
                     getManager(childFold).removeDamagedNotify(childFold);
                     break;
                     
@@ -1038,6 +1115,7 @@ public final class FoldHierarchyTransactionImpl {
      * Attempt to reinsert the folds unblocked by particular add/remove operation.
      */
     private void processUnblocked() {
+        ApiPackageAccessor api = ApiPackageAccessor.get();
         if (unblockedFoldMaxPriority >= 0) { // some folds became unblocked
             for (int priority = unblockedFoldMaxPriority; priority >= 0; priority--) {
                 List foldList = (List)unblockedFoldLists.get(priority);
@@ -1049,6 +1127,13 @@ public final class FoldHierarchyTransactionImpl {
                     if (!execution.isAddedOrBlocked(unblocked)) { // not yet processed
                         unblockedFoldMaxPriority = -1;
 
+                        int start = unblocked.getStartOffset();
+                        int end = unblocked.getEndOffset();
+                        if (start >= end) {
+                            api.foldMarkDamaged(unblocked, FoldUtilitiesImpl.FLAG_START_DAMAGED | FoldUtilitiesImpl.FLAG_END_DAMAGED);
+                            getManager(unblocked).removeEmptyNotify(unblocked);
+                            continue;
+                        }
                         // Attempt to reinsert the fold - random order - use root fold
                         addFold(unblocked, rootFold, 0);
 

@@ -655,7 +655,7 @@ public class GsfFoldManager implements FoldManager {
         }
 
         public void run() {
-            Document document = operation.getHierarchy().getComponent().getDocument();
+            final Document document = operation.getHierarchy().getComponent().getDocument();
             if (!insideRender) {
                 startTime = System.currentTimeMillis();
                 insideRender = true;
@@ -668,9 +668,15 @@ public class GsfFoldManager implements FoldManager {
             }
             operation.getHierarchy().lock();
             try {
-                if (operation.getHierarchy().getComponent().getDocument() != this.scannedDocument) {
+                Document newDoc = operation.getHierarchy().getComponent().getDocument();
+                if (newDoc != this.scannedDocument) {
                     // prevent folding, bad offsets, see issue #223800
                     return;
+                }
+                if (newDoc != document) {
+                    LOG.log(Level.WARNING, "Locked different document than the component: currentDoc: {0}, lockedDoc: {1}", new Object[] {
+                        newDoc, document
+                    });
                 }
                 try {
                     mergeSpecialFoldState(imports, importsFold);
