@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -96,7 +97,7 @@ public class InitializeFieldSuggestion extends SuggestionRule {
         private List<String> declaredFields;
         private List<String> usedVariables;
         private boolean isInConstructor;
-        private int classBodyStartOffset;
+        private int typeBodyStartOffset;
         private int constructorBodyEndOffset;
 
         private ConstructorVisitor(FileObject fileObject, BaseDocument baseDocument) {
@@ -111,11 +112,20 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
         @Override
         public void visit(ClassDeclaration node) {
-            classBodyStartOffset = node.getBody().getStartOffset() + 1;
+            typeBodyStartOffset = node.getBody().getStartOffset() + 1;
             declaredFields = new ArrayList<>();
             usedVariables = new ArrayList<>();
             super.visit(node);
-            classBodyStartOffset = 0;
+            typeBodyStartOffset = 0;
+        }
+
+        @Override
+        public void visit(TraitDeclaration node) {
+            typeBodyStartOffset = node.getBody().getStartOffset() + 1;
+            declaredFields = new ArrayList<>();
+            usedVariables = new ArrayList<>();
+            super.visit(node);
+            typeBodyStartOffset = 0;
         }
 
         @Override
@@ -154,7 +164,7 @@ public class InitializeFieldSuggestion extends SuggestionRule {
                     initializers.add(new FieldAssignmentInitializer(constructorBodyEndOffset, formalParameter));
                 }
                 if (!declaredFields.contains(parameterName)) {
-                    initializers.add(new FieldDeclarationInitializer(classBodyStartOffset, formalParameter));
+                    initializers.add(new FieldDeclarationInitializer(typeBodyStartOffset, formalParameter));
                 }
                 if (!initializers.isEmpty()) {
                     result.add(new ParameterToInit(formalParameter, initializers));

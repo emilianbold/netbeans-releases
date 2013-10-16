@@ -267,4 +267,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new TooManyReturnStatementsHint(), "testTooManyReturnStatements.php");
     }
 
+    public void testIssue229522() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue229522.php", "function __construct($par^am) {");
+    }
+
 }
