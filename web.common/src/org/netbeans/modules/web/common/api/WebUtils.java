@@ -52,6 +52,7 @@ import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -135,7 +136,7 @@ public class WebUtils {
                     //relative to the current file's folder - let's resolve
                     FileObject parent = source.getParent();
                     if(parent != null) {
-                        FileObject resolvedFileObject = parent.getFileObject(importedFileName);
+                        FileObject resolvedFileObject = parent.getFileObject(URLDecoder.decode(importedFileName, "UTF-8")); //NOI18N
                         //test if the link is resolved to something else than the parent file,
                         //which may happen at least in the case of empty importedFileName string
                         if (resolvedFileObject != null &&
