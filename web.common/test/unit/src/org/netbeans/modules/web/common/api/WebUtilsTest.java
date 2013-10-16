@@ -115,7 +115,7 @@ public class WebUtilsTest extends CslTestBase {
         //test resolve invalid path reference
         FileReference resolved = WebUtils.resolveToReference(one, "xyz");
         assertNull(resolved);
-        
+
         resolved = WebUtils.resolveToReference(one, "");
         assertNull(resolved);
 
@@ -136,6 +136,13 @@ public class WebUtilsTest extends CslTestBase {
         FileReference resolved = WebUtils.resolveToReference(one, "/css/common.css");
         assertNull(resolved);
 
+    }
+
+    public void testIssue229522() {
+        FileObject one = getTestFile("one.txt");
+        assertNotNull(one);
+        FileReference reference = WebUtils.resolveToReference(one, "./space%20issue229522/test.css");
+        assertNotNull(reference);
     }
 
     public void testGetResultIteratorForNoEmbedding() throws Exception {
@@ -210,7 +217,7 @@ public class WebUtilsTest extends CslTestBase {
         u = WebUtils.stringToUrl("jar:file:/tmp/a.zip!/aa/bb/cc.txt");
         assertEquals("jar:file:/tmp/a.zip!/aa/bb/cc.txt", u.toExternalForm());
     }
-    
+
     public void testUrlToString() throws Exception {
         String s = WebUtils.urlToString(new URL("http://localhost:1234/some%20path%20with%20spaces/zem%C4%9Bd%C4%9Blstv%C3%AD?more%20spaces#m%C4%9B%20d%C4%9B"));
         assertEquals("http://localhost:1234/some path with spaces/zemědělství?more spaces#mě dě", s);
@@ -224,7 +231,7 @@ public class WebUtilsTest extends CslTestBase {
         s = WebUtils.urlToString(new URL("jar:file:/tmp/a.zip!/aa/bb/cc.txt"));
         assertEquals("jar:file:/tmp/a.zip!/aa/bb/cc.txt", s);
     }
-    
+
     private void setEmbeddingProviderIntoMockLookup(String forMimeType, final Set<String> embeddedMimeTypes) {
         MockMimeLookup.setInstances(MimePath.parse(forMimeType), new TaskFactory() {
             public @Override Collection<? extends SchedulerTask> create(Snapshot snapshot) {
