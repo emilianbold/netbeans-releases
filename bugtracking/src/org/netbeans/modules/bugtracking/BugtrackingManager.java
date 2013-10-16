@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.SimpleDateFormat;
@@ -83,7 +82,7 @@ public final class BugtrackingManager implements LookupListener {
     /**
      * Holds all registered connectors.
      */
-    private final Collection<BugtrackingConnector> connectors = new ArrayList<BugtrackingConnector>(2);
+    private final Collection<DelegatingConnector> connectors = new ArrayList<DelegatingConnector>(2);
 
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
@@ -194,21 +193,19 @@ public final class BugtrackingManager implements LookupListener {
     private void refreshConnectors() {
         synchronized (connectors) {
             if (connectorsLookup == null) {
-                connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
+                connectorsLookup = Lookup.getDefault().lookupResult(BugtrackingConnector.class);
                 connectorsLookup.addLookupListener(this);
             }
-            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
-            if(LOG.isLoggable(Level.FINER)) {
-                for (BugtrackingConnector c : conns) {
-                    DelegatingConnector dc = 
-                        c instanceof DelegatingConnector ? 
-                            (DelegatingConnector) c :
-                            new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
-                    LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
-                }
-            }
             connectors.clear();
-            connectors.addAll(conns);
+            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
+            for (BugtrackingConnector c : conns) {
+                DelegatingConnector dc = 
+                    c instanceof DelegatingConnector ? 
+                        (DelegatingConnector) c :
+                        new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
+                connectors.add(dc);
+                LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
+            }
         }
     }
 
