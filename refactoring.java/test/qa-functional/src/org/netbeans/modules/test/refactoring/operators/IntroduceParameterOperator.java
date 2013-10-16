@@ -39,32 +39,62 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.test.refactoring.operators;
 
-package org.netbeans.modules.test.refactoring.actions;
-
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jemmy.operators.*;
 
 /**
- <p>
- @author Standa
+ * <p>
+ * @author (stanislav.sazonov@oracle.com)
  */
-public class RefactorIntroduceMethodAction extends ActionNoBlock {
-	private static final String introduceMethodPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
-            + "|Introduce|Method...";
-          
-    private static final String introduceMethodMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
-            + "|Introduce|Method...";
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.META_MASK) : //Mac
-            KeyStroke.getKeyStroke(KeyEvent.VK_M, KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK);  //Win, Unix
+public class IntroduceParameterOperator extends IntroduceOperator {
 
-    /**
-     * creates new RefactorRenameAction instance
-     */
-    public RefactorIntroduceMethodAction() {
-        super(introduceMethodMenu, introduceMethodPopup, null, keystroke);
+    private JEditorPaneOperator parName;
+    
+    private JCheckBoxOperator declareFinal;
+    private JCheckBoxOperator replaceAllOccurences;
+    private JCheckBoxOperator generateJvadoc;
+
+    private JRadioButtonOperator updateMethods;
+    private JRadioButtonOperator createnewMethod;
+
+    public IntroduceParameterOperator() {
+        super("Introduce parameter");
+    }
+
+    public JEditorPaneOperator getParName(){
+        if(parName == null)
+            parName = new JEditorPaneOperator(this);
+        return parName;
+    }
+    
+    public JCheckBoxOperator getDeclareFinal() {
+        if(declareFinal == null)
+            declareFinal = new JCheckBoxOperator(this, 0);
+        return declareFinal;
+    }
+
+    public JCheckBoxOperator getReplaceAllOccurences() {
+        if(replaceAllOccurences == null)
+            replaceAllOccurences = new JCheckBoxOperator(this, 1);
+        return replaceAllOccurences;
+    }
+
+    public JCheckBoxOperator getGenerateJvadoc() {
+        if(generateJvadoc == null)
+            generateJvadoc = new JCheckBoxOperator(this, 2);
+        return generateJvadoc;
+    }
+
+    public JRadioButtonOperator getUpdateMethods() {
+        if(updateMethods == null)
+            updateMethods = new JRadioButtonOperator(this, 0);
+        return updateMethods;
+    }
+
+    public JRadioButtonOperator getCreatenewMethod() {
+        if(createnewMethod == null)
+            createnewMethod = new JRadioButtonOperator(this, 1);
+        return createnewMethod;
     }
 }
