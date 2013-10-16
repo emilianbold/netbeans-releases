@@ -1,2 +1,3 @@
-Diff    >   Diff To Base        D
-            Diff To Revision... T
+Diff    >   Diff To HEAD        D
+            Diff To Tracked     R
+            Diff To...    T

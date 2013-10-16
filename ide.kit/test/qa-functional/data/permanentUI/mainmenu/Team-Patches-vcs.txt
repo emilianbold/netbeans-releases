@@ -1,6 +1,4 @@
 Patches     >   Export Uncommitted Changes...   U
-                Export Diff...                  D
-                Export Changeset Bundle...      C
+                Export Commit...                C
                 =============================
                 Apply Diff Patch...             Y
-                Import Changesets...            I
