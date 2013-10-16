@@ -224,8 +224,4 @@ public class Jira {
         }
         return jcp;
     }    
-    
-    public UndoRedoSupport getUndoRedoSupport(NbJiraIssue issue) {
-        return getBugtrackingFactory().getUndoRedoSupport(JiraUtils.getRepository(issue.getRepository()), issue);
-    }
 }

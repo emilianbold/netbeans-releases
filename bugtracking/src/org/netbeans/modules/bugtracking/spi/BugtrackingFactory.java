@@ -39,11 +39,11 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
 /**
  *
@@ -169,10 +169,6 @@ public final class BugtrackingFactory<R, Q, I> {
                 }
             }
         });
-    }
-    
-    public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {
-        return UndoRedoSupport.getSupport(getIssueImpl(repository, i));
     }
     
     public boolean editRepository(Repository repository, String errorMessage) {
