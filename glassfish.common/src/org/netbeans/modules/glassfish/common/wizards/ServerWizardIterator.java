@@ -472,7 +472,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName, 
                     newHttpPort, newAdminPort, userName, password, targetValue,
-                    formatUri("localhost", newAdminPort, getTargetValue(),domainsDir,domainName), 
+                    formatUri(hostName, newAdminPort, getTargetValue(),domainsDir,domainName), 
                     gip);
             result.add(instance.getCommonInstance());
         } else {
@@ -480,7 +480,7 @@ public class ServerWizardIterator extends PortCollection implements WizardDescri
                     (String) wizard.getProperty("ServInstWizard_displayName"),  // NOI18N
                     installRoot, glassfishRoot, domainsDir, domainName,
                     getHttpPort(), getAdminPort(), userName, password, targetValue,
-                    formatUri("localhost", getAdminPort(), getTargetValue(), domainsDir, domainName),
+                    formatUri(hostName, getAdminPort(), getTargetValue(), domainsDir, domainName),
                     gip);
             result.add(instance.getCommonInstance());
         }

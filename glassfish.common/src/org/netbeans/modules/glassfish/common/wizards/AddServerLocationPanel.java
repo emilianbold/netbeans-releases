@@ -54,6 +54,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.PortCollection;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.WizardDescriptor;
@@ -321,13 +322,37 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
         return wizardIterator.getHttpPort() != -1;
     }
     
-    static boolean isRegisterableDomain(File domainDir) {
+    /**
+     * Validates if <code>domainDir</code> contains valid GlassFish domain.
+     * <p/>
+     * @param domainDir      GlassFish domain directory to be validated.
+     * @param portCollection Information from <code>domain.xml</code>
+     *                       configuration file is stored here when
+     *                       <code>domainDir</code> contains valid GlassFish
+     *                       domain.
+     * @return Value of <code>true</code> when <code>domainDir</code> contains
+     *         valid GlassFish domain or <code>false</code> otherwise.
+     */
+    static boolean isRegisterableDomain(final File domainDir,
+            final PortCollection portCollection) {
         File testFile = new File(domainDir, "logs"); // NOI18N
         if (!testFile.exists()) {
             testFile = domainDir;
         }
         return Utils.canWrite(testFile) &&
-                org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDir, null);
+                org.netbeans.modules.glassfish.common.utils.Util
+                .readServerConfiguration(domainDir, portCollection);
+    }
+
+    /**
+     * Validates if <code>domainDir</code> contains valid GlassFish domain.
+     * <p/>
+     * @param domainDir GlassFish domain directory to be validated.
+     * @return Value of <code>true</code> when <code>domainDir</code> contains
+     *         valid GlassFish domain or <code>false</code> otherwise.
+     */
+    static boolean isRegisterableDomain(File domainDir) {
+        return isRegisterableDomain(domainDir, null);
     }
     
     private File getGlassfishRoot(File installDir) {
