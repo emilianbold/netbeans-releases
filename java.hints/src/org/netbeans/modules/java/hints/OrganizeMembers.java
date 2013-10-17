@@ -138,7 +138,10 @@ public class OrganizeMembers {
     }
 
     private static void doOrganizeMembers(WorkingCopy copy, TreePath path) {
+        GeneratorUtilities gu = GeneratorUtilities.get(copy);
+        
         ClassTree clazz = (ClassTree) path.getLeaf();
+        clazz = gu.importComments(clazz, copy.getCompilationUnit());
         TreeMaker maker = copy.getTreeMaker();
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         List<Tree> members = new ArrayList<Tree>(clazz.getMembers().size());
@@ -160,16 +163,19 @@ public class OrganizeMembers {
                     break;
                 case BLOCK:
                     member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
-                    GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                    gu.copyComments(tree, member, true);
-                    gu.copyComments(tree, member, false);
                     break;
                 default:
                     member = tree;    
             }
+            if (member != tree) {
+                gu.copyComments(tree, member, true);
+                gu.copyComments(tree, member, false);
+            }
             members.add(member);
         }
         nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
+        gu.copyComments(clazz, nue, true);
+        gu.copyComments(clazz, nue, false);
         copy.rewrite(clazz, nue);
     }
     
