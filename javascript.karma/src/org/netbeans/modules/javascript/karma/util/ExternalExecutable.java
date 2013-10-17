@@ -117,6 +117,7 @@ public final class ExternalExecutable {
     private File fileOutput = null;
     private boolean fileOutputOnly = false;
     private boolean noInfo = false;
+    private boolean noOutput = false;
 
 
     /**
@@ -286,6 +287,11 @@ public final class ExternalExecutable {
      */
     public ExternalExecutable noInfo(boolean noInfo) {
         this.noInfo = noInfo;
+        return this;
+    }
+
+    public ExternalExecutable noOutput(boolean noOutput) {
+        this.noOutput = noOutput;
         return this;
     }
 
@@ -509,6 +515,11 @@ public final class ExternalExecutable {
         if (infoOutProcessorFactory != null) {
             inputProcessors.add(infoOutProcessorFactory);
         }
+        // output
+        ExecutionDescriptor.InputProcessorFactory outputOutProcessorFactory = getOutputProcessorFactory();
+        if (outputOutProcessorFactory != null) {
+            inputProcessors.add(outputOutProcessorFactory);
+        }
         // file output
         ExecutionDescriptor.InputProcessorFactory fileOutProcessorFactory = getFileOutputProcessorFactory();
         if (fileOutProcessorFactory != null) {
@@ -546,7 +557,20 @@ public final class ExternalExecutable {
         return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.proxy(new InfoInputProcessor(defaultProcessor, fullCommand), defaultProcessor);
+                return new InfoInputProcessor(defaultProcessor, fullCommand);
+            }
+        };
+    }
+
+    private ExecutionDescriptor.InputProcessorFactory getOutputProcessorFactory() {
+        if (noOutput) {
+            // no output
+            return null;
+        }
+        return new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return defaultProcessor;
             }
         };
     }
