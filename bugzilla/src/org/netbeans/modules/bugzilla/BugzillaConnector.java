@@ -108,7 +108,7 @@ public class BugzillaConnector extends TeamBugtrackingConnector {
         if(BugzillaUtil.isNbRepository(repo)) {
             NBRepositorySupport.getInstance().setNBBugzillaRepository(repo);
         }
-        return BugzillaUtil.getRepository(repo);
+        return BugzillaUtil.createRepository(repo);
     }
 
     private KenaiRepository createKenaiRepository(TeamProject kenaiProject, String displayName, String location) {

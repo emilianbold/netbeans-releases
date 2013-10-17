@@ -220,10 +220,10 @@ public class JiraUpdater {
     }
     
     private class JiraProxyConector implements BugtrackingConnector {
-        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
+        private BugtrackingSupport<Object, Object, Object> f = new BugtrackingSupport<Object, Object, Object>(new JiraProxyRepositoryProvider(), null, null);
         @Override
         public Repository createRepository() {
-            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(f);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {
