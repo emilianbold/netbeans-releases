@@ -376,7 +376,7 @@ public final class TokenSequence<T extends TokenId> {
                 TokenSequence<ET> tse;
                 JoinTokenList<ET> jtl;
                 EmbeddedJoinInfo<ET> joinInfo = etl.joinInfo();
-                if (joined && (jtl = joinInfo.joinTokenList) != null) {
+                if (joined && (joinInfo != null) && (jtl = joinInfo.joinTokenList) != null) {
                     @SuppressWarnings("unchecked")
                     JoinTokenList<ET> joinTokenList = (JoinTokenList<ET>) jtl;
                     tse = new TokenSequence<ET>(joinTokenList);
