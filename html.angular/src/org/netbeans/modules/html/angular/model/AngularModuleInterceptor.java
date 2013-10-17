@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular.model;
 
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -61,7 +62,8 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 @FunctionInterceptor.Registration(priority = 15)
 public class AngularModuleInterceptor implements FunctionInterceptor{
 
-    private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
+    //private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
+    private static Pattern PATTERN = Pattern.compile("(.)*\\.controller");
     
     @Override
     public Pattern getNamePattern() {
@@ -76,7 +78,8 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         }
         System.out.print("nalezen controller: ");
         String controllerName = null;
-        TypeUsage functionType = null;
+        String functionName = null;
+        int functionOffset = -1;
         String fqnOfController = null;
         for (FunctionArgument fArgument : args) {
             switch (fArgument.getKind()) {
@@ -94,21 +97,26 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     JsArray array = (JsArray)fArgument.getValue();
                     for (TypeUsage type : array.getTypesInArray()) {
                         if (type.getType().equals(TypeUsage.FUNCTION)) {
-                            functionType = type;
+                            functionName = type.getType();
+                            functionOffset = type.getOffset();
                             break;
                         }
                     }
                     break;
+                case REFERENCE:
+                    functionName = ((List<String>)fArgument.getValue()).get(0);
+                    functionOffset = fArgument.getOffset();
+                    break;
             }
-            if (controllerName != null && functionType != null) {
+            if (controllerName != null && functionName != null) {
                 // we probably found the name of the controller and also the function definition
                 break;
             }
         }
-        if (controllerName != null && functionType != null) {
+        if (controllerName != null && functionName != null) {
             System.out.print(controllerName + " : ");
             // we need to find the function itself
-            JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionType.getOffset());
+            JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
             if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
                 fqnOfController = controllerDecl.getFullyQualifiedName();
                 AngularJsIndexer.addController(globalObject.getFileObject().toURI(), new AngularJsController(controllerName, fqnOfController, globalObject.getFileObject().getPath()));

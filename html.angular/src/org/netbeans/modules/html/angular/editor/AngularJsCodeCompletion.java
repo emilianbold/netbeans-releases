@@ -177,7 +177,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                 if (!variable.isAnonymous() && variable.getJSKind() == JsElement.Kind.FUNCTION && variable instanceof IndexedElement.FunctionIndexedElement) {
                     IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)variable;
                     // pick up all functions that has at least one parameter and one of the paramets is $scope
-                    if (function.getParameters().size() > 0 && function.getParameters().containsKey("$scope")) {
+                    if (!function.isAnonymous() && function.getParameters().size() > 0 && function.getParameters().containsKey("$scope")) {
                         AngularJsElement element = new AngularJsElement(function.getName(), ElementKind.METHOD);
                         int anchor = ccContext.getCaretOffset() - ccContext.getPrefix().length();
                         result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, function.getFileObject()));
