@@ -283,7 +283,7 @@ class SearchExecutor extends SvnProgressSupport {
         for (int i = logMessages.length - 1; i >= 0; i--) {
             ISVNLogMessage logMessage = logMessages[i];
             if(logMessage == null) continue;
-            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot);
+            RepositoryRevision rev = new RepositoryRevision(logMessage, rootUrl, master.getRoots(), pathToRoot, pegRevisions);
             results.add(rev);
         }
     }
