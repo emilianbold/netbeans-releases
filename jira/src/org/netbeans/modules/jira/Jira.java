@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -77,7 +77,7 @@ public class Jira {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
-    private BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> bf;
+    private BugtrackingSupport<JiraRepository, JiraQuery, NbJiraIssue> bf;
     private JiraRepositoryProvider jrp;
     private JiraQueryProvider jqp;
     private JiraIssueProvider jip;
@@ -134,9 +134,9 @@ public class Jira {
         return storageManager;
     }
 
-    public BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<JiraRepository, JiraQuery, NbJiraIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }    
@@ -224,8 +224,4 @@ public class Jira {
         }
         return jcp;
     }    
-    
-    public UndoRedoSupport getUndoRedoSupport(NbJiraIssue issue) {
-        return getBugtrackingFactory().getUndoRedoSupport(JiraUtils.getRepository(issue.getRepository()), issue);
-    }
 }
