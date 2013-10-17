@@ -66,7 +66,15 @@ public class JsCodeCompletionWithAnonymProperty extends JsCodeCompletionBase {
     public void testWith5() throws Exception {
         checkCompletion("testfiles/completion/withAnonymProperty/test.js", "fw.^language;", false);
     }
+    
+    public void testProperty01() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymProperty/test2.js", "fw.l^anguage;", false);
+    }
 
+    public void testProperty02() throws Exception {
+        checkCompletion("testfiles/completion/withAnonymProperty/test2.js", "gg.l^anguage;", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

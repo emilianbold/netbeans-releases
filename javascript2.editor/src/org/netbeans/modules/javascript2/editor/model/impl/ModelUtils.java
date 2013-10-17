@@ -901,8 +901,15 @@ public class ModelUtils {
                         if (jsIndex != null) {
                             // for the type build the prototype chain.
                             Collection<String> prototypeChain = new ArrayList<String>();
-                            prototypeChain.add(typeUsage.getType());
-                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                            String typeName = typeUsage.getType();
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_EXP)) {
+                                typeName = typeName.substring(typeName.indexOf(SemiTypeResolverVisitor.ST_EXP) + SemiTypeResolverVisitor.ST_EXP.length());
+                            }
+                            if (typeName.contains(SemiTypeResolverVisitor.ST_PRO)) {
+                                typeName = typeName.replace(SemiTypeResolverVisitor.ST_PRO, ".");
+                            }
+                            prototypeChain.add(typeName);
+                            prototypeChain.addAll(findPrototypeChain(typeName, jsIndex));
 
                             Collection<? extends IndexResult> indexResults = null;
                             String propertyToCheck = null;
@@ -944,7 +951,7 @@ public class ModelUtils {
                                 }
                             }
                             if (checkProperty) {
-                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeUsage.getType() + "." + name;
+                                String propertyFQN = propertyToCheck != null ? propertyToCheck : typeName + "." + name;
                                 List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                                 resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
                                 if (fromAssignment.isEmpty()) {
