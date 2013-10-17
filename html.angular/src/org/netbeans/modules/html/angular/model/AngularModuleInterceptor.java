@@ -63,7 +63,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 public class AngularModuleInterceptor implements FunctionInterceptor{
 
     //private static Pattern PATTERN = Pattern.compile("angular\\.module(\\..*)*\\.controller");
-    private static Pattern PATTERN = Pattern.compile("(.)*\\.controller");
+    private final static Pattern PATTERN = Pattern.compile("(.)*\\.controller");
     
     @Override
     public Pattern getNamePattern() {
@@ -73,10 +73,8 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
     @Override
     public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!AngularJsIndexer.isScannerThread()) {
-            System.out.println("dslfjaldjflajf neni scanner thread");
             return;
         }
-        System.out.print("nalezen controller: ");
         String controllerName = null;
         String functionName = null;
         int functionOffset = -1;
@@ -114,25 +112,15 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
             }
         }
         if (controllerName != null && functionName != null) {
-            System.out.print(controllerName + " : ");
             // we need to find the function itself
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
             if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
                 fqnOfController = controllerDecl.getFullyQualifiedName();
                 AngularJsIndexer.addController(globalObject.getFileObject().toURI(), new AngularJsController(controllerName, fqnOfController, globalObject.getFileObject().getPath()));
-                System.out.print(fqnOfController);
                 Collection<? extends JsObject> parameters = ((JsFunction)controllerDecl).getParameters();
-                if (!parameters.isEmpty()) {
-                    // we are interested in the first parameter
-                    JsObject scopeParam = parameters.iterator().next();
-                    for (JsObject property : scopeParam.getProperties().values()) {
-                        System.out.println("    " + property.getName());
-                    }
-                }
             }
             
         }
-        System.out.println("");
     }
     
 }
