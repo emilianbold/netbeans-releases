@@ -58,6 +58,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
@@ -92,7 +93,8 @@ public class J2MEProject implements Project {
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2me-embedded-project/1"; //NOI18N
     public static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2me-embedded-project-private/1"; //NOI18N
     static final String ICON = "org/netbeans/modules/j2me/project/ui/resources/j2meProject.gif";    //NOI18N
-    private static final String EXTENSION_POINT = "Projects/org-netbeans-modules-j2me-project/Lookup";  //NOI18N
+    private static final String EXTENSION_FOLDER = "org-netbeans-modules-j2me-project";    //NOI18N
+    private static final String EXTENSION_POINT = "Projects/"+EXTENSION_FOLDER+"/Lookup";  //NOI18N
 
     private final AntProjectHelper helper;
     private final UpdateHelper updateHelper;
@@ -234,7 +236,9 @@ public class J2MEProject implements Project {
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
                         setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
                         build(),
-                new CustomizerProviderImpl(this)
+                new CustomizerProviderImpl(this),
+                LogicalViewProviders.createBuilder(this, eval, EXTENSION_FOLDER).
+                        build()
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
