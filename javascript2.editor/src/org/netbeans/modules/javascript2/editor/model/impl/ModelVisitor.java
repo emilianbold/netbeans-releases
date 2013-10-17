@@ -605,7 +605,7 @@ public class ModelVisitor extends PathNodeVisitor {
             boolean isAnonymous = false;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
-                if (node instanceof CallNode || node instanceof ExecuteNode) {
+                if (node instanceof CallNode || node instanceof ExecuteNode || node instanceof LiteralNode.ArrayLiteralNode) {
                     isAnonymous = true;
                 } else if (node instanceof AccessNode && getPreviousFromPath(4) instanceof CallNode) {
                     String methodName = ((AccessNode)node).getProperty().getName();
