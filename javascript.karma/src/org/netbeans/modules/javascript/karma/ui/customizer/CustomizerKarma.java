@@ -56,6 +56,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.util.ValidationResult;
@@ -134,8 +135,15 @@ public class CustomizerKarma extends JPanel {
     }
 
     private File getConfigDirectory() {
-        // XXX
-        return FileUtil.toFile(project.getProjectDirectory());
+        Karma.ConfigFolderProvider configFolderProvider = project.getLookup().lookup(Karma.ConfigFolderProvider.class);
+        if (configFolderProvider != null) {
+            File configFolder = configFolderProvider.getConfigFolder();
+            if (configFolder != null
+                    && configFolder.isDirectory()) {
+                return configFolder;
+            }
+        }
+        return getProjectDirectory();
     }
 
     /**
