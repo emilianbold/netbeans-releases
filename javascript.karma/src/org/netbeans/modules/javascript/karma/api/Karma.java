@@ -45,6 +45,8 @@ package org.netbeans.modules.javascript.karma.api;
 import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
+import org.netbeans.modules.javascript.karma.ui.logicalview.KarmaNodeFactory;
+import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 
 /**
@@ -67,7 +69,8 @@ public final class Karma {
     }
 
     /**
-     * Create project customizer for Karma.
+     * Create project customizer for Karma. These properties are used
+     * by {@link #createNodeFactory() Karma server node}.
      * <p>
      * Category name is {@value KarmaCustomizer#IDENTIFIER}.
      * <p>
@@ -77,6 +80,16 @@ public final class Karma {
      */
     public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
         return new KarmaCustomizer();
+    }
+
+    /**
+     * Create Karma server node. Its properties can be customized
+     * using {@link #createCustomizer() project customizer}.
+     * @return Karma server node
+     * @see NodeFactory.Registration
+     */
+    public NodeFactory createNodeFactory() {
+        return new KarmaNodeFactory();
     }
 
     //~ Inner classes
