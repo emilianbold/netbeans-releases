@@ -51,9 +51,6 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -63,11 +60,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -76,7 +73,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -93,6 +89,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -112,28 +109,22 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
@@ -141,15 +132,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_MODIFIED;
-import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_PROJECT_XML;
-import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
-import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.RequestProcessor;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -185,7 +171,6 @@ public final class J2SEProject implements Project {
     };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
-    private static final RequestProcessor PROJECT_OPENED_RP = new RequestProcessor(J2SEProject.class);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -199,7 +184,6 @@ public final class J2SEProject implements Project {
     private SourceRoots testRoots;
     private final ClassPathProviderImpl cpProvider;
     private final ClassPathModifier cpMod;
-    private final GeneratedFilesInterceptorSupport gfis;
 
     private AntBuildExtender buildExtender;
 
@@ -233,7 +217,6 @@ public final class J2SEProject implements Project {
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
         this.cpMod = new ClassPathModifier(this, this.updateHelper, evaluator(), refHelper, null, createClassPathModifierCallback(), null);
         lookup = createLookup(aux, new J2SEProjectOperations(this, updateProject));
-        this.gfis = new GeneratedFilesInterceptorSupport(this, genFilesHelper);
     }
 
     private ClassPathModifier.Callback createClassPathModifierCallback() {
@@ -376,8 +359,31 @@ public final class J2SEProject implements Project {
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
-            new ProjectXmlSavedHookImpl(),
-            UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
+            ProjectHooks.createProjectXmlSavedHookBuilder(updateHelper, genFilesHelper).
+                    setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
+                    setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
+                    setBuildXmlName(J2SEProjectUtil.getBuildXmlName(this)).
+                    setOverrideModifiedBuildImplPredicate(new Callable<Boolean>(){
+                        @Override
+                        public Boolean call() throws Exception {
+                            return projectPropertiesSave.get();
+                        }
+                    }).
+                    build(),
+            UILookupMergerSupport.createProjectOpenHookMerger(
+                ProjectHooks.createProjectOpenedHookBuilder(this, eval, updateHelper, genFilesHelper, cpProvider).
+                        addClassPathType(ClassPath.BOOT).
+                        addClassPathType(ClassPath.COMPILE).
+                        addClassPathType(ClassPath.SOURCE).
+                        setBuildImplTemplate(J2SEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
+                        setBuildTemplate(J2SEProject.class.getResource("resources/build.xsl")).             //NOI18N
+                        setBuildXmlName(J2SEProjectUtil.getBuildXmlName(this)).
+                        addOpenPostAction(newStartMainUpdaterAction()).
+                        addOpenPostAction(newWebServicesAction()).
+                        addOpenPostAction(newMissingPropertiesAction()).
+                        addOpenPostAction(newUpdateCopyLibsAction()).
+                        addClosePostAction(newStopMainUpdaterAction()).
+                        build()),
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(), getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery2(evaluator()),
             QuerySupport.createSources(this, helper, evaluator(), getSourceRoots(), getTestSourceRoots(), Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
@@ -489,243 +495,7 @@ public final class J2SEProject implements Project {
         this.projectPropertiesSave.set(value);
     }
 
-    // Private innerclasses ----------------------------------------------------
-    private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-
-        ProjectXmlSavedHookImpl() {}
-
-        protected void projectXmlSaved() throws IOException {
-            //May be called by {@link AuxiliaryConfiguration#putConfigurationFragment}
-            //which didn't affect the j2seproject
-            try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        if (updateHelper.isCurrent()) {
-                            //Refresh build-impl.xml only for j2seproject/2
-                            final int state = genFilesHelper.getBuildScriptState(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,J2SEProject.class.getResource("resources/build-impl.xsl"));   //NOI18N
-                            final Boolean projectPropertiesSave = J2SEProject.this.projectPropertiesSave.get();
-                            boolean forceRewriteBuildImpl = false;
-                            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
-                                state == (FLAG_UNKNOWN | FLAG_MODIFIED | FLAG_OLD_PROJECT_XML | FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
-                                //When the project.xml was changed from the customizer and the build-impl.xml was modified
-                                //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
-                                //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
-                                //when the project is opened.
-                                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                                if (buildImpl  != null) {
-                                    final String name = buildImpl.getName();
-                                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                                    if (oldBackup != null) {
-                                        oldBackup.delete();
-                                    }
-                                    FileUtil.copyFile(buildImpl, buildImpl.getParent(), name, backupext);
-                                    forceRewriteBuildImpl = true;
-                                }
-                            }
-                            if (forceRewriteBuildImpl) {
-                                gfis.generateBuildScriptFromStylesheet(
-                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    J2SEProject.class.getResource("resources/build-impl.xsl"));
-                            } else {
-                                gfis.refreshBuildScript(
-                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    J2SEProject.class.getResource("resources/build-impl.xsl"),
-                                    false);
-                            }
-                            gfis.refreshBuildScript(
-                                J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
-                                J2SEProject.class.getResource("resources/build.xsl"),
-                                false);
-                        }
-                        return null;
-                    }});
-            } catch (MutexException e) {
-                final Exception inner = e.getException();
-                throw inner instanceof IOException ? (IOException) inner : new IOException(inner);
-            }
-        }
-    }
-
-    private final class ProjectOpenedHookImpl extends ProjectOpenedHook {
-
-        ProjectOpenedHookImpl() {}
-        private static final String JAX_RPC_NAMESPACE="http://www.netbeans.org/ns/j2se-project/jax-rpc"; //NOI18N
-        private static final String JAX_RPC_CLIENTS="web-service-clients"; //NOI18N
-        private static final String JAX_RPC_CLIENT="web-service-client"; //NOI18N
-
-        @Override
-        protected void projectOpened() {
-            // Check up on build scripts.
-            try {
-                if (updateHelper.isCurrent()) {
-                    //Refresh build-impl.xml only for j2seproject/2
-                    gfis.refreshBuildScript(
-                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                        J2SEProject.class.getResource("resources/build-impl.xsl"),
-                        true);
-                    gfis.refreshBuildScript(
-                        J2SEProjectUtil.getBuildXmlName(J2SEProject.this),
-                        J2SEProject.class.getResource("resources/build.xsl"),
-                        true);
-                }
-            } catch (IOException e) {
-                LOG.log(
-                   Level.INFO,
-                   NbBundle.getMessage(J2SEProject.class, "ERR_RegenerateProjectFiles"),
-                   e);
-            }
-
-            // register project's classpaths to GlobalPathRegistry
-            GlobalPathRegistry.getDefault().register(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().register(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-
-            //register updater of main.class
-            //the updater is active only on the opened projects
-	    mainClassUpdater = new MainClassUpdater (
-                    J2SEProject.this,
-                    evaluator(),
-                    updateHelper,
-                    cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],
-                    ProjectProperties.MAIN_CLASS);
-            mainClassUpdater.start();
-
-            // Make it easier to run headless builds on the same machine at least.
-            try {
-                getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                    @Override
-                    public void run () throws IOException {
-                        ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
-                            @Override
-                            public Void run() {
-                                EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                                File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
-                                ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-
-                                //remove jaxws.endorsed.dir property
-                                ep.remove("jaxws.endorsed.dir");
-
-                                // move web-service-clients one level up from in project.xml
-                                // WS should be part of auxiliary configuration
-                                Element data = helper.getPrimaryConfigurationData(true);
-                                NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
-                                if(nodes.getLength() > 0) {
-                                    Element oldJaxRpcClients = (Element) nodes.item(0);
-                                    Document doc = createNewDocument();
-                                    Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
-                                    NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
-                                    for (int i=0;i<childNodes.getLength();i++) {
-                                        Element oldJaxRpcClient = (Element) childNodes.item(i);
-                                        Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
-                                        NodeList nodeProps = oldJaxRpcClient.getChildNodes();
-                                        for (int j=0;j<nodeProps.getLength();j++) {
-                                            Node n = nodeProps.item(j);
-                                            if (n instanceof Element) {
-                                                Element oldProp = (Element) n;
-                                                Element newProp = doc.createElementNS(JAX_RPC_NAMESPACE, oldProp.getLocalName());
-                                                String text = oldProp.getTextContent();
-                                                newProp.setTextContent(text);
-                                                newJaxRpcClient.appendChild(newProp);
-                                            }
-                                        }
-                                        newJaxRpcClients.appendChild(newJaxRpcClient);
-                                    }
-                                    aux.putConfigurationFragment(newJaxRpcClients, true);
-                                    data.removeChild(oldJaxRpcClients);
-                                    helper.putPrimaryConfigurationData(data, true);
-                                }
-
-                                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                                ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                if (!ep.containsKey(ProjectProperties.INCLUDES)) {
-                                    ep.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
-                                }
-                                if (!ep.containsKey(ProjectProperties.EXCLUDES)) {
-                                    ep.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
-                                }
-                                if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
-                                    ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
-                                }
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-                                try {
-                                    ProjectManager.getDefault().saveProject(J2SEProject.this);
-                                } catch (IOException e) {
-                                    //#91398 provide a better error message in case of read-only location of project.
-                                    if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEProject.class, "ERR_ProjectReadOnly",
-                                                J2SEProject.this.getProjectDirectory().getName()));
-                                        DialogDisplayer.getDefault().notify(nd);
-                                    } else {
-                                        Exceptions.printStackTrace(e);
-                                    }
-                                }
-                                return null;
-                            }
-                        });
-                    }
-                });
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-            String prop = evaluator().getProperty(ProjectProperties.SOURCE_ENCODING);
-            if (prop != null) {
-                try {
-                    Charset.forName(prop);
-                } catch (IllegalCharsetNameException e) {
-                    //Broken property, log & ignore
-                    LOG.log(Level.WARNING, "Illegal charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
-                }
-                catch (UnsupportedCharsetException e) {
-                    //todo: Needs UI notification like broken references.
-                    LOG.log(Level.WARNING, "Unsupported charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
-                }
-            }
-            //Update per project CopyLibs if needed
-            new UpdateCopyLibs(J2SEProject.this).run();
-            
-        }
-
-        @Override
-        protected void projectClosed() {
-            final Runnable r = new Runnable() {
-                @Override
-                public void run() {
-                    // just do if the whole project was not deleted...
-                    if (getProjectDirectory().isValid()) {
-                        // Probably unnecessary, but just in case:
-                        try {
-                            ProjectManager.getDefault().saveProject(J2SEProject.this);
-                        } catch (IOException e) {
-                            if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                                // #91398 - ignore, we already reported on project open.
-                                // not counting with someone setting the ro flag while the project is opened.
-                            } else {
-                                Exceptions.printStackTrace(e);
-                            }
-                        }
-                    }
-                    // unregister project's classpaths to GlobalPathRegistry
-                    GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-                    GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-                    GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-                    if (mainClassUpdater != null) {
-                        mainClassUpdater.stop();
-                        mainClassUpdater = null;
-                    }
-                }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                PROJECT_OPENED_RP.execute(r);
-            } else {
-                r.run();
-            }
-        }
-
-    }
-
+    // Private innerclasses ----------------------------------------------------    
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
@@ -1029,85 +799,6 @@ public final class J2SEProject implements Project {
         }
     }
 
-    private static final class UpdateCopyLibs implements Runnable {
-
-        private static final String LIB_COPY_LIBS = "CopyLibs"; //NOI18N
-        private static final String PROP_VERSION = "version";   //NOI18N
-        private static final String VOL_CP = "classpath";       //NOI18N
-
-        private final ReferenceHelper refHelper;
-
-        private UpdateCopyLibs(@NonNull final J2SEProject project) {
-            this.refHelper = project.refHelper;
-        }
-
-        @Override
-        public void run() {
-            final LibraryManager projLibManager = refHelper.getProjectLibraryManager();
-            if (projLibManager == null) {
-                return;
-            }
-            final Library globalCopyLibs = LibraryManager.getDefault().getLibrary(LIB_COPY_LIBS);
-            final Library projectCopyLibs = projLibManager.getLibrary(LIB_COPY_LIBS);
-            if (globalCopyLibs == null || projectCopyLibs == null) {
-                return;
-            }
-            final String globalStr = globalCopyLibs.getProperties().get(PROP_VERSION);
-            if (globalStr == null) {
-                return;
-            }
-            try {
-                final SpecificationVersion globalVersion = new SpecificationVersion(globalStr);
-                final String projectStr = projectCopyLibs.getProperties().get(PROP_VERSION);
-                if (projectStr != null && globalVersion.compareTo(new SpecificationVersion(projectStr)) <= 0) {
-                    return;
-                }
-
-                final List<URL> content = projectCopyLibs.getContent(VOL_CP);
-                projLibManager.removeLibrary(projectCopyLibs);
-                final FileObject projLibLoc = URLMapper.findFileObject(projLibManager.getLocation());
-                if (projLibLoc != null) {
-                    final FileObject libFolder = projLibLoc.getParent();
-                    boolean canDelete = libFolder.canWrite();
-                    FileObject container = null;
-                    for (URL u : content) {
-                        FileObject fo = toFile(u);
-                        if (fo != null) {
-                            canDelete &= fo.canWrite();
-                            if (container == null) {
-                                container = fo.getParent();
-                                canDelete &= container.canWrite();
-                                canDelete &= LIB_COPY_LIBS.equals(container.getName());
-                                canDelete &= libFolder.equals(container.getParent());
-                            } else {
-                                canDelete &= container.equals(fo.getParent());
-                            }
-                        }
-                    }
-                    if (canDelete && container != null) {
-                        container.delete();
-                    }
-                }
-                refHelper.copyLibrary(globalCopyLibs);
-                
-            } catch (IllegalArgumentException iae) {
-                LOG.log(
-                    Level.WARNING,
-                    "Cannot update {0} due to invalid version.",    //NOI18N
-                    projectCopyLibs.getDisplayName());
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-
-        @CheckForNull
-        private static FileObject toFile(@NonNull final URL url) {
-            final URL file = FileUtil.getArchiveFile(url);
-            return URLMapper.findFileObject(file != null ? file : url);
-        }
-
-    }
-
     private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
         @Override
         public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
@@ -1115,4 +806,173 @@ public final class J2SEProject implements Project {
         }
     }
 
+    @NonNull
+    private Runnable newStartMainUpdaterAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                //register updater of main.class
+                //the updater is active only on the opened projects
+                mainClassUpdater = new MainClassUpdater (
+                        J2SEProject.this,
+                        evaluator(),
+                        updateHelper,
+                        cpProvider.getProjectClassPaths(ClassPath.SOURCE)[0],
+                        ProjectProperties.MAIN_CLASS);
+                mainClassUpdater.start();
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newStopMainUpdaterAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                if (mainClassUpdater != null) {
+                    mainClassUpdater.stop();
+                    mainClassUpdater = null;
+                }
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newWebServicesAction() {
+        return new Runnable() {
+            private final String JAX_RPC_NAMESPACE="http://www.netbeans.org/ns/j2se-project/jax-rpc"; //NOI18N
+            private final String JAX_RPC_CLIENTS="web-service-clients"; //NOI18N
+            private final String JAX_RPC_CLIENT="web-service-client"; //NOI18N
+            @Override
+            public void run() {
+                //remove jaxws.endorsed.dir property
+                EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                ep.remove("jaxws.endorsed.dir");
+                // move web-service-clients one level up from in project.xml
+                // WS should be part of auxiliary configuration
+                Element data = helper.getPrimaryConfigurationData(true);
+                NodeList nodes = data.getElementsByTagName(JAX_RPC_CLIENTS);
+                if(nodes.getLength() > 0) {
+                    Element oldJaxRpcClients = (Element) nodes.item(0);
+                    Document doc = createNewDocument();
+                    Element newJaxRpcClients = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENTS);
+                    NodeList childNodes = oldJaxRpcClients.getElementsByTagName(JAX_RPC_CLIENT);
+                    for (int i=0;i<childNodes.getLength();i++) {
+                        Element oldJaxRpcClient = (Element) childNodes.item(i);
+                        Element newJaxRpcClient = doc.createElementNS(JAX_RPC_NAMESPACE, JAX_RPC_CLIENT);
+                        NodeList nodeProps = oldJaxRpcClient.getChildNodes();
+                        for (int j=0;j<nodeProps.getLength();j++) {
+                            Node n = nodeProps.item(j);
+                            if (n instanceof Element) {
+                                Element oldProp = (Element) n;
+                                Element newProp = doc.createElementNS(JAX_RPC_NAMESPACE, oldProp.getLocalName());
+                                String text = oldProp.getTextContent();
+                                newProp.setTextContent(text);
+                                newJaxRpcClient.appendChild(newProp);
+                            }
+                        }
+                        newJaxRpcClients.appendChild(newJaxRpcClient);
+                    }
+                    aux.putConfigurationFragment(newJaxRpcClients, true);
+                    data.removeChild(oldJaxRpcClients);
+                    helper.putPrimaryConfigurationData(data, true);
+                }
+                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newMissingPropertiesAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                if (!ep.containsKey(ProjectProperties.INCLUDES)) {
+                    ep.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
+                }
+                if (!ep.containsKey(ProjectProperties.EXCLUDES)) {
+                    ep.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
+                }
+                if (!ep.containsKey("build.generated.sources.dir")) { // NOI18N
+                    ep.setProperty("build.generated.sources.dir", "${build.dir}/generated-sources"); // NOI18N
+                }
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newUpdateCopyLibsAction() {
+        return new Runnable() {
+            private final String LIB_COPY_LIBS = "CopyLibs"; //NOI18N
+            private final String PROP_VERSION = "version";   //NOI18N
+            private final String VOL_CP = "classpath";       //NOI18N
+
+            @Override
+            public void run() {
+                final LibraryManager projLibManager = refHelper.getProjectLibraryManager();
+                if (projLibManager == null) {
+                    return;
+                }
+                final Library globalCopyLibs = LibraryManager.getDefault().getLibrary(LIB_COPY_LIBS);
+                final Library projectCopyLibs = projLibManager.getLibrary(LIB_COPY_LIBS);
+                if (globalCopyLibs == null || projectCopyLibs == null) {
+                    return;
+                }
+                final String globalStr = globalCopyLibs.getProperties().get(PROP_VERSION);
+                if (globalStr == null) {
+                    return;
+                }
+                try {
+                    final SpecificationVersion globalVersion = new SpecificationVersion(globalStr);
+                    final String projectStr = projectCopyLibs.getProperties().get(PROP_VERSION);
+                    if (projectStr != null && globalVersion.compareTo(new SpecificationVersion(projectStr)) <= 0) {
+                        return;
+                    }
+
+                    final List<URL> content = projectCopyLibs.getContent(VOL_CP);
+                    projLibManager.removeLibrary(projectCopyLibs);
+                    final FileObject projLibLoc = URLMapper.findFileObject(projLibManager.getLocation());
+                    if (projLibLoc != null) {
+                        final FileObject libFolder = projLibLoc.getParent();
+                        boolean canDelete = libFolder.canWrite();
+                        FileObject container = null;
+                        for (URL u : content) {
+                            FileObject fo = toFile(u);
+                            if (fo != null) {
+                                canDelete &= fo.canWrite();
+                                if (container == null) {
+                                    container = fo.getParent();
+                                    canDelete &= container.canWrite();
+                                    canDelete &= LIB_COPY_LIBS.equals(container.getName());
+                                    canDelete &= libFolder.equals(container.getParent());
+                                } else {
+                                    canDelete &= container.equals(fo.getParent());
+                                }
+                            }
+                        }
+                        if (canDelete && container != null) {
+                            container.delete();
+                        }
+                    }
+                    refHelper.copyLibrary(globalCopyLibs);
+
+                } catch (IllegalArgumentException iae) {
+                    LOG.log(
+                            Level.WARNING,
+                            "Cannot update {0} due to invalid version.", //NOI18N
+                            projectCopyLibs.getDisplayName());
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+
+            @CheckForNull
+            private FileObject toFile(@NonNull final URL url) {
+                final URL file = FileUtil.getArchiveFile(url);
+                return URLMapper.findFileObject(file != null ? file : url);
+            }
+        };
+    }
 }

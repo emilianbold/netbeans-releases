@@ -39,15 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seproject.api;
+package org.netbeans.spi.project.ant;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.util.Lookup;
 
 /**
- * Notifies the J2SE Project extension about build script update.
- * The J2SEProject calls all the instances of the @link GeneratedFilesInterceptor}
+ * Notifies the Project extension about build script update.
+ * The {@link GeneratedFilesHelper} calls all the instances of the @link GeneratedFilesInterceptor}
  * registered in the project {@link Lookup} when a a build script file has been
  * updated or created.
  * @author Tomas Zezula

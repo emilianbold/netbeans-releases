@@ -378,7 +378,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     }
 
     // Main build.xml location
-    public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
+    public static final String BUILD_SCRIPT = ProjectProperties.BUILD_SCRIPT;
 
     @NonNull
     public static String getBuildXmlName (final Project project, PropertyEvaluator evaluator) {
