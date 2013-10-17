@@ -56,7 +56,6 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,7 +65,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Name;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -104,7 +107,6 @@ import org.openide.util.NbBundle.Messages;
  * @author Anuradha G
  * @author markiewb
  */
-
 @Messages({
     "LBL_Module_Dependency_Search_DisplayName=Add Module Dependency",
     "# {0} - name of unknown symbol",
@@ -305,7 +307,7 @@ public class SearchModuleDependency implements org.netbeans.modules.java.hints.s
         }
 
         List<Fix> fixes = new ArrayList<Fix>();
-        fixes.add(new OpenDependencyDialogFix(nbModuleProject, simpleOrQualifiedName));
+        fixes.add(new OpenDependencyDialogFix(nbModuleProject, simpleOrQualifiedName, info, path));
         return fixes;
     }
 
@@ -357,7 +359,6 @@ public class SearchModuleDependency implements org.netbeans.modules.java.hints.s
         return "NBM_MISSING_CLASS_NBMANT";//NOI18N
     }
 
-    
     @Override
     public String getDisplayName() {
         return NbBundle.getMessage(SearchModuleDependency.class, "LBL_Module_Dependency_Search_DisplayName");
@@ -373,10 +374,14 @@ public class SearchModuleDependency implements org.netbeans.modules.java.hints.s
 
         private NbModuleProject project;
         private String clazz;
-
-        public OpenDependencyDialogFix(NbModuleProject project, String clazz) {
+        private CompilationInfo info;
+        private TreePath path;
+        
+        public OpenDependencyDialogFix(NbModuleProject project, String clazz, CompilationInfo info, TreePath path) {
             this.project = project;
             this.clazz = clazz;
+            this.info = info;
+            this.path = path;
         }
 
         @Override
@@ -407,7 +412,40 @@ public class SearchModuleDependency implements org.netbeans.modules.java.hints.s
                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(msg);
                     }
+                    int occurences = 0;
+                    String fqnIter = "";
+                    for (ModuleDependency depIter : newDeps) {
+                        for (String publPkgClassNameIter : depIter.getModuleEntry().getPublicClassNames()) {
+                            if (publPkgClassNameIter.endsWith("." + clazz)) {
+                                fqnIter = publPkgClassNameIter;
+                                occurences++;
+                            }
+                        }
+                    }
+                    if (occurences == 1) {
+                        final String fqn = fqnIter;
+                        JavaSource js = JavaSource.forFileObject(info.getFileObject());
+                        if(js != null) {
+                            try {
+                                js.runWhenScanFinished(new Task<CompilationController>() {
+                                    @Override
+                                    public void run(CompilationController cc) throws Exception {
+                                        try {
+                                            SourceUtils.resolveImport(info, path, fqn);
+                                        } catch (NullPointerException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        } catch (IOException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                }, true);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
                 }
+             ;
             }, NbBundle.getMessage(SearchModuleDependency.class, "FIX_Module_Dependency_UpdatingDependencies"), cancel, false);
             return null;
         }

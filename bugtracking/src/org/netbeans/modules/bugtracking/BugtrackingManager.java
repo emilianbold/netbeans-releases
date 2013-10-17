@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,6 +73,11 @@ import org.openide.util.RequestProcessor;
  */
 public final class BugtrackingManager implements LookupListener {
     
+    /**
+     * Recent issues have changed.
+     */
+    public final static String PROP_RECENT_ISSUES_CHANGED = "recent.issues.changed"; // NOI18N
+    
     private static BugtrackingManager instance;
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.BugtrackingManager"); // NOI18N
@@ -80,7 +87,7 @@ public final class BugtrackingManager implements LookupListener {
     /**
      * Holds all registered connectors.
      */
-    private final Collection<BugtrackingConnector> connectors = new ArrayList<BugtrackingConnector>(2);
+    private final Collection<DelegatingConnector> connectors = new ArrayList<DelegatingConnector>(2);
 
     /**
      * Result of Lookup.getDefault().lookup(new Lookup.Template<RepositoryConnector>(RepositoryConnector.class));
@@ -93,6 +100,8 @@ public final class BugtrackingManager implements LookupListener {
     private IDEServices ideServices;
     private ProjectServices projectServices;
     private static final String LOCAL_CONNECTOR_ID = "NB_LOCAL_TASKS"; //NOI18N
+    
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
@@ -163,6 +172,7 @@ public final class BugtrackingManager implements LookupListener {
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
         }
+        fireRecentIssuesChanged();
     }
 
     public Map<String, List<RecentIssue>> getAllRecentIssues() {
@@ -187,21 +197,19 @@ public final class BugtrackingManager implements LookupListener {
     private void refreshConnectors() {
         synchronized (connectors) {
             if (connectorsLookup == null) {
-                connectorsLookup = Lookup.getDefault().lookup(new Lookup.Template<BugtrackingConnector>(BugtrackingConnector.class));
+                connectorsLookup = Lookup.getDefault().lookupResult(BugtrackingConnector.class);
                 connectorsLookup.addLookupListener(this);
             }
-            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
-            if(LOG.isLoggable(Level.FINER)) {
-                for (BugtrackingConnector c : conns) {
-                    DelegatingConnector dc = 
-                        c instanceof DelegatingConnector ? 
-                            (DelegatingConnector) c :
-                            new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
-                    LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
-                }
-            }
             connectors.clear();
-            connectors.addAll(conns);
+            Collection<? extends BugtrackingConnector> conns = connectorsLookup.allInstances();
+            for (BugtrackingConnector c : conns) {
+                DelegatingConnector dc = 
+                    c instanceof DelegatingConnector ? 
+                        (DelegatingConnector) c :
+                        new DelegatingConnector(c, "Unknown", "Unknown", "Unknown", null); // NOI18N
+                connectors.add(dc);
+                LOG.log(Level.FINER, "registered provider: {0}", dc.getDisplayName()); // NOI18N
+            }
         }
     }
 
@@ -231,6 +239,18 @@ public final class BugtrackingManager implements LookupListener {
 
     public static boolean isLocalConnectorID (String connectorID) {
         return LOCAL_CONNECTOR_ID.equals(connectorID);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    private void fireRecentIssuesChanged() {
+        support.firePropertyChange(PROP_RECENT_ISSUES_CHANGED, null, null);
     }
     
 }

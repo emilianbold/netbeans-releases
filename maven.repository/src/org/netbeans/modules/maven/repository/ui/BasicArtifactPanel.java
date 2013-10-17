@@ -464,6 +464,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     public JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             toolbar = new JToolBar();
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
             toolbar.setFloatable(false);
             Action[] a = new Action[1];
             Action[] actions = getLookup().lookup(a.getClass());

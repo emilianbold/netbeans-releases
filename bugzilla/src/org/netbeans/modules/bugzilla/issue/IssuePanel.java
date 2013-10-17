@@ -3916,7 +3916,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskDueDate(dueDatePicker.getDate());
+                issue.setTaskDueDate(dueDatePicker.getDate(), false);
                 return true;
             }
         });
@@ -3931,7 +3931,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                     cal = Calendar.getInstance();
                     cal.setTime(date);
                 }
-                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
                 return true;
             }
         });
@@ -3942,7 +3942,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             protected boolean storeValue () {
                 int value = ((Number) estimateField.getValue()).intValue();
                 if (value != issue.getEstimate()) {
-                    issue.setTaskEstimate(value);
+                    issue.setTaskEstimate(value, false);
                     return true;
                 } else {
                     return false;

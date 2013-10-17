@@ -102,7 +102,7 @@ public final class LocalRepository {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         propertySuport = new PropertyChangeSupport(this);
         repository = fac.createRepository(this, new RepositoryProviderImpl(),
-                new QueryProviderImpl(), new IssueProviderImpl());
+                new QueryProviderImpl(), new IssueProviderImpl(), null, new IssueSchedulingProviderImpl(), null, null);
     }
 
     public Repository getRepository () {

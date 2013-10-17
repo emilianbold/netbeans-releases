@@ -66,7 +66,7 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
 
     @Override
     public QueryController getController (LocalQuery q) {
-        throw new UnsupportedOperationException("Not supported for Local Tasks");
+        return null;
     }
 
     @Override
@@ -76,12 +76,12 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
 
     @Override
     public boolean canRemove(LocalQuery q) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
     
     @Override
     public void remove (LocalQuery q) {
-        throw new UnsupportedOperationException("Not supported for Local Tasks");
+        // NO OP
     }
 
     @Override
@@ -91,7 +91,7 @@ public class QueryProviderImpl implements QueryProvider<LocalQuery, LocalTask> {
 
     @Override
     public void rename(LocalQuery q, String displayName) {
-        throw new UnsupportedOperationException("Rename can't be called on a local teask query!");
+        // NO OP
     }
     
     @Override
