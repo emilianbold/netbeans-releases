@@ -39,26 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.j2seproject.api;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.Project;
-import org.openide.util.Lookup;
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory",category="Project"),
+        position = 2600,
+        path = "Projects/org-netbeans-modules-java-j2seproject/Actions")
+})
+package org.netbeans.modules.java.j2seproject.ui;
 
-/**
- * Notifies the J2SE Project extension about build script update.
- * The J2SEProject calls all the instances of the @link GeneratedFilesInterceptor}
- * registered in the project {@link Lookup} when a a build script file has been
- * updated or created.
- * @author Tomas Zezula
- * @since 1.58
- */
-public interface GeneratedFilesInterceptor {
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 
-    /**
-     * Called when the build script file has been updated or created.
-     * @param project the project for which the build script was updated.
-     * @param path the relative path to generated file from project directory.
-     */
-    void fileGenerated(@NonNull Project project, @NonNull String path);
-}
