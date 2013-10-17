@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.html.angular.model;
 
+import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import java.util.Collection;
 import java.util.regex.Pattern;
+import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
@@ -65,9 +70,61 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
 
     @Override
     public void intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+        if (!AngularJsIndexer.isScannerThread()) {
+            System.out.println("dslfjaldjflajf neni scanner thread");
+            return;
+        }
         System.out.print("nalezen controller: ");
-        System.out.println(name);
-        
+        String controllerName = null;
+        TypeUsage functionType = null;
+        String fqnOfController = null;
+        for (FunctionArgument fArgument : args) {
+            switch (fArgument.getKind()) {
+                case STRING :
+                    if (controllerName == null) {
+                        // we expect that the first string parameter is the name of the conroller
+                        controllerName = (String)fArgument.getValue();
+                    }
+                    break;
+                case ARRAY:
+                    // the function can be declared in ArrayLiteral like:
+                    // ['$scope', 'projects', function($scope, projects) { ... }]
+                    // So we go through the types of arrays, and if contains the Function type,
+                    // we have the offset of the function definition
+                    JsArray array = (JsArray)fArgument.getValue();
+                    for (TypeUsage type : array.getTypesInArray()) {
+                        if (type.getType().equals(TypeUsage.FUNCTION)) {
+                            functionType = type;
+                            break;
+                        }
+                    }
+                    break;
+            }
+            if (controllerName != null && functionType != null) {
+                // we probably found the name of the controller and also the function definition
+                break;
+            }
+        }
+        if (controllerName != null && functionType != null) {
+            System.out.print(controllerName + " : ");
+            // we need to find the function itself
+            JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionType.getOffset());
+            if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
+                fqnOfController = controllerDecl.getFullyQualifiedName();
+                AngularJsIndexer.addController(globalObject.getFileObject().toURI(), new AngularJsController(controllerName, fqnOfController, globalObject.getFileObject().getPath()));
+                System.out.print(fqnOfController);
+                Collection<? extends JsObject> parameters = ((JsFunction)controllerDecl).getParameters();
+                if (!parameters.isEmpty()) {
+                    // we are interested in the first parameter
+                    JsObject scopeParam = parameters.iterator().next();
+                    for (JsObject property : scopeParam.getProperties().values()) {
+                        System.out.println("    " + property.getName());
+                    }
+                }
+            }
+            
+        }
+        System.out.println("");
     }
     
 }
