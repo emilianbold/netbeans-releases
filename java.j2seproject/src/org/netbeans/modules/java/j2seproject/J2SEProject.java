@@ -91,9 +91,9 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
@@ -136,6 +136,7 @@ import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.HelpCtx;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -344,7 +345,6 @@ public final class J2SEProject implements Project {
 
     private Lookup createLookup(final AuxiliaryConfiguration aux, final J2SEProjectOperations ops) {
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), ProjectProperties.SOURCE_ENCODING);
-        final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -352,7 +352,13 @@ public final class J2SEProject implements Project {
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             refHelper.createSubprojectProvider(),
-            lvp,
+            LogicalViewProviders.createBuilder(
+                this,
+                eval,
+                "org-netbeans-modules-java-j2seproject").   //NOI18N
+                setHelpCtx(new HelpCtx("org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider.J2SELogicalViewRootNode")).    //NOI18N
+                setCompileOnSaveBadge(newCoSBadge()).
+                build(),
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -410,7 +416,7 @@ public final class J2SEProject implements Project {
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
-            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, J2SEProjectUtil.getBreakableProperties(this), new String[]{ProjectProperties.PLATFORM_ACTIVE}),
             BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
             BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, ProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
             UILookupMergerSupport.createProjectProblemsProviderMerger(),
@@ -972,6 +978,22 @@ public final class J2SEProject implements Project {
             private FileObject toFile(@NonNull final URL url) {
                 final URL file = FileUtil.getArchiveFile(url);
                 return URLMapper.findFileObject(file != null ? file : url);
+            }
+        };
+    }
+
+    @NonNull
+    private LogicalViewProviders.CompileOnSaveBadge newCoSBadge() {
+        return new LogicalViewProviders.CompileOnSaveBadge() {
+            @Override
+            public boolean isBadgeVisible() {
+                return !J2SEProjectUtil.isCompileOnSaveEnabled(J2SEProject.this) &&
+                    J2SEProjectUtil.isCompileOnSaveSupported(J2SEProject.this);
+            }
+            @Override
+            public boolean isImportant(@NonNull final String propertyName) {
+                return ProjectProperties.COMPILE_ON_SAVE.equals(propertyName) ||
+                propertyName.startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX);
             }
         };
     }

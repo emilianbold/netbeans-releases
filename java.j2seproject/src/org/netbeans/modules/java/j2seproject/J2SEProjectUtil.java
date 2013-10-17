@@ -50,7 +50,9 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
@@ -62,6 +64,16 @@ import org.openide.util.Parameters;
  * @author  Jiri Rechtacek
  */
 public class J2SEProjectUtil {
+
+    private static final String[] BREAKABLE_PROPERTIES = {
+        ProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.RUN_CLASSPATH,
+        ProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.RUN_TEST_CLASSPATH,
+        ProjectProperties.DEBUG_TEST_CLASSPATH,
+        ProjectProperties.ENDORSED_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
+    };
 
     private static final Logger LOG = Logger.getLogger(J2SEProjectUtil.class.getName());
 
@@ -159,4 +171,20 @@ public class J2SEProjectUtil {
                "on".equalsIgnoreCase(param);        //NOI18N
     }
 
+    /**
+     * Returns a list of property names which need to be tested for broken references.
+     * @param project to return property names for
+     * @return the list of breakable properties
+     */
+    public static String[] getBreakableProperties(@NonNull final J2SEProject project) {
+        SourceRoots roots = project.getSourceRoots();
+        String[] srcRootProps = roots.getRootProperties();
+        roots = project.getTestSourceRoots();
+        String[] testRootProps = roots.getRootProperties();
+        String[] result = new String [BREAKABLE_PROPERTIES.length + srcRootProps.length + testRootProps.length];
+        System.arraycopy(BREAKABLE_PROPERTIES, 0, result, 0, BREAKABLE_PROPERTIES.length);
+        System.arraycopy(srcRootProps, 0, result, BREAKABLE_PROPERTIES.length, srcRootProps.length);
+        System.arraycopy(testRootProps, 0, result, BREAKABLE_PROPERTIES.length + srcRootProps.length, testRootProps.length);
+        return result;
+    }
 }
