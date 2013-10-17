@@ -109,7 +109,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.clientproject</friend>
+                <package>org.netbeans.modules.javascript.karma.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
