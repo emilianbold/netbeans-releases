@@ -53,12 +53,14 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.BoundedRangeModel;
@@ -72,6 +74,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -86,6 +91,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -93,6 +99,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -113,6 +122,10 @@ public final class J2MEProjectProperties {
     public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
     public static final String OBFUSCATION_CUSTOM = "obfuscation.custom"; //NOI18N
     public static final String OBFUSCATION_LEVEL = "obfuscation.level"; //NOI18N
+    public static final String PROP_RUN_METHOD = "run.method"; //NOI18N
+    public static final String PROP_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
+    public static final String PROP_SECURITY_DOMAIN = "security.domain"; //NOI18N
+    public static final String PROP_DEBUGGER_TIMEOUT = "debugger.timeout"; //NOI18N
     
     
     // MODELS FOR VISUAL CONTROLS
@@ -143,6 +156,18 @@ public final class J2MEProjectProperties {
     //J2MEObfuscatingPanel
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
     BoundedRangeModel OBFUSCATION_LEVEL_MODEL;
+    
+    //CustomizerRun
+    Map<String, Map<String, String>> RUN_CONFIGS;
+    String activeConfig;
+    String[] SECURITY_DOMAINS;
+    private static final String[] CONFIG_AWARE_PROPERTIES = {
+        ProjectProperties.APPLICATION_ARGS,
+        PROP_RUN_METHOD,
+        PROP_USE_SECURITY_DOMAIN,
+        PROP_SECURITY_DOMAIN,
+        PROP_DEBUGGER_TIMEOUT
+    };
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
     private Map<String,String> additionalProperties;
@@ -160,7 +185,7 @@ public final class J2MEProjectProperties {
 
     public PropertyEvaluator getEvaluator() {
         return project.evaluator();
-    }   
+    }
 
     /**
      * Creates a new instance of J2MEProjectProperties
@@ -225,6 +250,10 @@ public final class J2MEProjectProperties {
         //Obfuscation customizer
         ADDITIONAL_OBFUSCATION_SETTINGS_MODEL = projectGroup.createStringDocument(getEvaluator(), OBFUSCATION_CUSTOM);
         OBFUSCATION_LEVEL_MODEL = ModelHelper.createSliderModel(getEvaluator(), OBFUSCATION_LEVEL, 0, 0, 9);
+        
+        RUN_CONFIGS = readRunConfigs();
+        activeConfig = evaluator.getProperty("config");
+        SECURITY_DOMAINS = readSecurityDomains();
     }
 
     void collectData() {
@@ -293,6 +322,16 @@ public final class J2MEProjectProperties {
         // Standard store of the properties
         projectGroup.store(projectProperties);
         privateGroup.store(privateProperties);
+        
+        //Store run configs
+        storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
+        EditableProperties ep = project.getUpdateHelper().getProperties("nbproject/private/config.properties");
+        if (activeConfig == null) {
+            ep.remove("config");
+        } else {
+            ep.setProperty("config", activeConfig);
+        }
+        project.getUpdateHelper().putProperties("nbproject/private/config.properties", ep);
 
         // Save all paths
         projectProperties.setProperty(ProjectProperties.JAVAC_CLASSPATH, javac_cp);
@@ -571,6 +610,157 @@ public final class J2MEProjectProperties {
             deploymentPanel = new J2MEDeploymentPanel(this);
         }
         return deploymentPanel;
+    }
+
+    /**
+     * Reads settings for configurations.
+     */
+    private Map<String/*|null*/, Map<String, String>> readRunConfigs() {
+        Map<String, Map<String, String>> m = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String s1, String s2) {
+                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+            }
+        });
+        Map<String, String> def = new TreeMap<>();
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
+            String v = project.getUpdateHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(prop);
+            if (v == null) {
+                v = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(prop);
+            }
+            if (v != null) {
+                def.put(prop, v);
+            }
+        }
+        m.put(null, def);
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                final String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                if (relPath != null) {
+                    m.put(kid.getName(), new TreeMap<>(project.getUpdateHelper().getProperties(relPath)));
+                }
+            }
+        }
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        if (configs != null) {
+            for (FileObject kid : configs.getChildren()) {
+                if (!kid.hasExt("properties")) {
+                    continue;
+                }
+                Map<String, String> c = m.get(kid.getName());
+                if (c == null) {
+                    continue;
+                }
+                final String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
+                if (relPath != null) {
+                    c.putAll(new HashMap<>(project.getUpdateHelper().getProperties(relPath)));
+                }
+            }
+        }
+        //System.err.println("readRunConfigs: " + m);
+        return m;
+    }
+
+    /**
+     * Stores settings to configurations.
+     */
+    private void storeRunConfigs(Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs,
+            EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+        //System.err.println("storeRunConfigs: " + configs);
+        Map<String, String> def = configs.get(null);
+        for (String prop : CONFIG_AWARE_PROPERTIES) {
+            String v = def.get(prop);
+            EditableProperties ep =
+                    (prop.equals(ProjectProperties.APPLICATION_ARGS)
+                    || prop.equals(ProjectProperties.RUN_WORK_DIR)
+                    || privateProperties.containsKey(prop))
+                    ? privateProperties : projectProperties;
+            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                if (v != null && v.length() > 0) {
+                    ep.setProperty(prop, v);
+                } else {
+                    ep.remove(prop);
+                }
+            }
+        }
+        for (Map.Entry<String, Map<String, String>> entry : configs.entrySet()) {
+            String config = entry.getKey();
+            if (config == null) {
+                continue;
+            }
+            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
+            String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
+            Map<String, String> c = entry.getValue();
+            if (c == null) {
+                project.getUpdateHelper().putProperties(sharedPath, null);
+                project.getUpdateHelper().putProperties(privatePath, null);
+                continue;
+            }
+            final EditableProperties sharedCfgProps = project.getUpdateHelper().getProperties(sharedPath);
+            final EditableProperties privateCfgProps = project.getUpdateHelper().getProperties(privatePath);
+            boolean privatePropsChanged = false;
+            for (Map.Entry<String, String> entry2 : c.entrySet()) {
+                String prop = entry2.getKey();
+                String v = entry2.getValue();
+                EditableProperties ep =
+                        (prop.equals(ProjectProperties.APPLICATION_ARGS)
+                        || prop.equals(ProjectProperties.RUN_WORK_DIR)
+                        || privateCfgProps.containsKey(prop))
+                        ? privateCfgProps : sharedCfgProps;
+                if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
+                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
+                        ep.setProperty(prop, v);
+                    } else {
+                        ep.remove(prop);
+                    }
+                    privatePropsChanged |= ep == privateCfgProps;
+                }
+            }
+            project.getUpdateHelper().putProperties(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
+            if (privatePropsChanged) {                              //Definition file is written, only when changed
+                project.getUpdateHelper().putProperties(privatePath, privateCfgProps);
+            }
+        }
+    }
+
+    /**
+     * Fetches available security domains for selected J2ME device.
+     *
+     * @return available security domains.
+     */
+    private String[] readSecurityDomains() {
+        String[] securityDomains = new String[0];
+        EditableProperties props = project.getUpdateHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String activePlatform = props.getProperty("platform.active"); //NOI18N
+        String activeDevice = props.getProperty("platform.device"); //NOI18N
+        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().
+                getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, new SpecificationVersion("8.0"))); //NOI18N
+        if (activePlatform != null && activeDevice != null && platforms != null) {
+            for (int i = 0; i < platforms.length; i++) {
+                if (platforms[i] instanceof J2MEPlatform) {
+                    final J2MEPlatform platform = (J2MEPlatform) platforms[i];
+                    if (activePlatform.equals(platform.getProperties().get("platform.ant.name"))) { //NOI18N
+                        final J2MEPlatform.Device[] devices = platform.getDevices();
+                        if (devices != null) {
+                            for (int j = 0; j < devices.length; j++) {
+                                final J2MEPlatform.Device device = devices[j];
+                                if (activeDevice.equals(device.getName())) {
+                                    if (device.getSecurityDomains() != null) {
+                                        securityDomains = device.getSecurityDomains();
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return securityDomains;
     }
 
     /**

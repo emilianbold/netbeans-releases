@@ -59,6 +59,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     private static final String SOURCES = "Sources";
     static final String LIBRARIES = "Libraries";
     private static final String PLATFORM = "Platform";
+    private static final String RUN = "Run";
     private static final String APPLICATION_DESCRIPTOR = "Application Descriptor";
     private static final String OBFUSCATING = "Obfuscating";
     private static final String SIGNING = "Signing";
@@ -73,6 +74,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
     @NbBundle.Messages({"LBL_Category_Sources=Sources",
         "LBL_Category_Libraries=Libraries",
         "LBL_Category_Platform=Platform",
+        "LBL_Category_Run=Run",
         "LBL_Category_Application_Descriptor=Application Descriptor",
         "LBL_Category_Obfuscating=Obfuscating",
         "LBL_Category_Signing=Signing"})
@@ -98,6 +100,12 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
                 toReturn = ProjectCustomizer.Category.create(
                         PLATFORM,
                         Bundle.LBL_Category_Platform(),
+                        null);
+                break;
+            case RUN:
+                toReturn = ProjectCustomizer.Category.create(
+                        RUN,
+                        Bundle.LBL_Category_Run(),
                         null);
                 break;
             case APPLICATION_DESCRIPTOR:
@@ -137,6 +145,8 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
                 return new J2MELibrarisPanel(uiProps, prov, category);
             case PLATFORM:
                 return new J2MEPlatformPanel(uiProps);
+            case RUN:
+                return new J2MERunPanel(uiProps);
             case APPLICATION_DESCRIPTOR:
                 return new J2MEApplicationDescriptorPanel(uiProps);
             case OBFUSCATING:
@@ -169,6 +179,13 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
             position = 305)
     public static J2MECompositeCategoryProvider createPlatform() {
         return new J2MECompositeCategoryProvider(PLATFORM);
+    }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-j2me-project",
+            position = 306)
+    public static J2MECompositeCategoryProvider createRun() {
+        return new J2MECompositeCategoryProvider(RUN);
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
