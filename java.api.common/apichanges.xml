@@ -105,6 +105,21 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="LogicalViewProviders">
+            <api name="java-api-common"/>
+            <summary>Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>.</summary>
+            <version major="1" minor="62"/>
+            <date day="17" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>LogicalViewProviders</code> support to create default implementation of the <code>LogicalViewProvider2</code>
+                    for Ant Based Project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="LogicalViewProviders"/>
+        </change>
         <change id="ProjectHooks">
             <api name="java-api-common"/>
             <summary>Added <code>ProjectHooks</code> factory to create default implementation of the <code>ProjectOpenedHook</code> and the <code>ProjectXmlSavedHook}</code>.</summary>
