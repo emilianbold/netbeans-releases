@@ -44,18 +44,19 @@ package org.netbeans.modules.j2me.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2me.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.BaseActionProvider;
+import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -64,7 +65,6 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.FilterPropertyProvider;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -73,8 +73,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
@@ -217,15 +215,25 @@ public class J2MEProject implements Project {
                     sourceRoots,
                     testRoots,
                     Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
-                new ProjectXmlSavedHookImpl(
-                    updateHelper,
-                    genFilesHelper,
-                    new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return Boolean.FALSE;
-                        }
-                }),
+                ProjectHooks.createProjectXmlSavedHookBuilder(updateHelper, genFilesHelper).
+                        setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
+                        setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
+                        setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
+                        setOverrideModifiedBuildImplPredicate(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() throws Exception {
+                                return Boolean.FALSE;
+                            }
+                        }).
+                        build(),
+                ProjectHooks.createProjectOpenedHookBuilder(this, eval, updateHelper, genFilesHelper, cpProvider).
+                        addClassPathType(ClassPath.BOOT).
+                        addClassPathType(ClassPath.COMPILE).
+                        addClassPathType(ClassPath.SOURCE).
+                        setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
+                        setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
+                        setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
+                        build(),
                 new CustomizerProviderImpl(this)
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
@@ -281,87 +289,4 @@ public class J2MEProject implements Project {
             }
         }
     }
-
-    private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-
-        private final UpdateHelper updateHelper;
-        private final GeneratedFilesHelper genFilesHelper;
-        private final Callable<Boolean> uiModification;
-
-        ProjectXmlSavedHookImpl(
-            @NonNull final UpdateHelper updateHelper,
-            @NonNull final GeneratedFilesHelper genFilesHelper,
-            @NonNull final Callable<Boolean> uiModification) {
-            Parameters.notNull("updateHelper", updateHelper);   //NOI18N
-            Parameters.notNull("genFilesHelper", genFilesHelper);   //NOI18N
-            Parameters.notNull(("uiModification"), uiModification); //NOI18N
-            this.updateHelper = updateHelper;
-            this.genFilesHelper = genFilesHelper;
-            this.uiModification = uiModification;
-        }
-
-        @Override
-        protected void projectXmlSaved() throws IOException {
-            try {
-                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                    @Override
-                    public Void run() throws Exception {
-                        if (updateHelper.isCurrent()) {
-                            //Refresh build-impl.xml only for j2seproject/2
-                            final int state = genFilesHelper.getBuildScriptState(
-                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                J2MEProject.class.getResource("resources/build-impl.xsl"));   //NOI18N
-                            final boolean projectPropertiesSave = isUIModification();
-                            boolean forceRewriteBuildImpl = false;
-                            if ((projectPropertiesSave && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
-                                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
-                                //When the project.xml was changed from the customizer and the build-impl.xml was modified
-                                //move build-impl.xml into the build-impl.xml~ to force regeneration of new build-impl.xml.
-                                //Never do this if it's not a customizer otherwise user modification of build-impl.xml will be deleted
-                                //when the project is opened.
-                                final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
-                                final FileObject buildImpl = projectDir.getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
-                                if (buildImpl  != null) {
-                                    final String name = buildImpl.getName();
-                                    final String backupext = String.format("%s~",buildImpl.getExt());   //NOI18N
-                                    final FileObject oldBackup = buildImpl.getParent().getFileObject(name, backupext);
-                                    if (oldBackup != null) {
-                                        oldBackup.delete();
-                                    }
-                                    FileUtil.copyFile(buildImpl, buildImpl.getParent(), name, backupext);
-                                    forceRewriteBuildImpl = true;
-                                }
-                            }
-                            if (forceRewriteBuildImpl) {
-                                genFilesHelper.generateBuildScriptFromStylesheet(
-                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    J2MEProject.class.getResource("resources/build-impl.xsl"));
-                            } else {
-                                genFilesHelper.refreshBuildScript(
-                                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                    J2MEProject.class.getResource("resources/build-impl.xsl"),
-                                    false);
-                            }
-                            genFilesHelper.refreshBuildScript(
-                                GeneratedFilesHelper.BUILD_XML_PATH,
-                                J2MEProject.class.getResource("resources/build.xsl"),
-                                false);
-                        }
-                        return null;
-                    }});
-            } catch (MutexException e) {
-                final Exception inner = e.getException();
-                throw inner instanceof IOException ? (IOException) inner : new IOException(inner);
-            }
-        }
-
-        private boolean isUIModification() {
-            try {
-                return uiModification.call() == Boolean.TRUE;
-            } catch (Exception e) {
-                return false;
-            }
-        }
-    }
-
 }
