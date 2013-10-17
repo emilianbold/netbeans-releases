@@ -421,6 +421,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 CallNode constructor = (CallNode) un.rhs();
                 createFunctionArgument(constructor.getFunction(), position, functionArguments, result);
             }
+        } else if (argument instanceof ReferenceNode) {
+            ReferenceNode reference = (ReferenceNode) argument;
+            result.add(FunctionArgumentAccessor.getDefault().createForReference(
+                    position, argument.getStart(),
+                    Collections.singletonList(reference.getReference().getName())));
         } else {
             result.add(FunctionArgumentAccessor.getDefault().createForUnknown(position));
         }
