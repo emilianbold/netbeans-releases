@@ -417,12 +417,13 @@ public final class CharSequences {
 
         @Override
         public int hashCode() {
-            int hash = 0;
-            for (int i = 0; i < length(); i++) {
-                hash = 31 * hash + charAt(i);
-            }
-            return hash;
-            //            return (i1 >> 4) + (i1 >> 8) + (i2 << 5) - i2;
+            int hash = 19*i1 + 37*i2;
+            hash += (hash <<  15) ^ 0xffffcd7d;
+            hash ^= (hash >>> 10);
+            hash += (hash <<   3);
+            hash ^= (hash >>>  6);
+            hash += (hash <<   2) + (hash << 14);
+            return hash ^ (hash >>> 16);
         }
 
         @Override
@@ -574,11 +575,13 @@ public final class CharSequences {
 
         @Override
         public int hashCode() {
-            int hash = 0;
-            for (int j = 0; j < length(); j++) {
-                hash = 31 * hash + charAt(j);
-            }
-            return hash;
+            int hash = (int)((i + (i>>32)) & 0xFFFFFFFFL);
+            hash += (hash <<  15) ^ 0xffffcd7d;
+            hash ^= (hash >>> 10);
+            hash += (hash <<   3);
+            hash ^= (hash >>>  6);
+            hash += (hash <<   2) + (hash << 14);
+            return hash ^ (hash >>> 16);
         }
 
         @Override
