@@ -47,7 +47,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
@@ -55,9 +56,11 @@ import org.openide.util.LookupListener;
  *
  * @author stan
  */
-public class LookupListenerListTest {
-    
-    public LookupListenerListTest() {
+@RandomlyFails // marked as @RF until #237149 fixed
+public class LookupListenerListTest extends NbTestCase {
+        
+    public LookupListenerListTest(String name) {
+        super(name);
     }
     
     @BeforeClass
@@ -67,12 +70,14 @@ public class LookupListenerListTest {
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
+    @Override
     public void setUp() {
     }
     
     @After
+    @Override
     public void tearDown() {
     }
 
