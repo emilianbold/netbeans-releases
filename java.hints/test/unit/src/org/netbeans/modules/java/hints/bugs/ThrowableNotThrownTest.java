@@ -203,7 +203,7 @@ public class ThrowableNotThrownTest extends NbTestCase {
                 "        }\n" +
                 "        throw e;\n" +
                 "    }\n" +
-                "}"
+                "}" 
                 )
                 .run(ThrowableNotThrown.class)
                 .assertWarnings();

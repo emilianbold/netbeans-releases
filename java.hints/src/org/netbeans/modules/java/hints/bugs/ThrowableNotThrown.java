@@ -122,7 +122,7 @@ public class ThrowableNotThrown {
     @Hint(displayName = "#DN_ThrowableMethodResultIgnored", description = "#DESC_ThrowableMethodResultIgnored",
             category = "bugs",
             enabled = true,
-            suppressWarnings = { "ThrowableResultIgnored", "ThrowableResultOfMethodCallIgnored" })
+            suppressWarnings = { "ThrowableResultIgnored", "", "ThrowableResultOfMethodCallIgnored" })
     @TriggerPatterns({
         @TriggerPattern(value = "$m($params$)"),
         @TriggerPattern(value = "$expr.$m($params$)")
