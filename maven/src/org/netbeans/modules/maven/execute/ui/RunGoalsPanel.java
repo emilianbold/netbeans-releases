@@ -213,7 +213,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
 
         mapp.setProperties(ActionMappings.convertStringToActionProperties(epProperties.getText()));
 
-        tok = new StringTokenizer(txtProfiles.getText().trim());
+        tok = new StringTokenizer(txtProfiles.getText().trim(), " ,");
         lst = new ArrayList<String>();
         while (tok.hasMoreTokens()) {
             lst.add(tok.nextToken());
