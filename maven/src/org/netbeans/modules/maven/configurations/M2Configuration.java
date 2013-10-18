@@ -54,11 +54,11 @@ import java.util.List;
 import java.util.Map;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.api.MavenConfiguration;
 import static org.netbeans.modules.maven.configurations.Bundle.*;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -66,7 +66,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author mkleint
  */
-public class M2Configuration extends AbstractMavenActionsProvider implements ProjectConfiguration, Comparable<M2Configuration> {
+public class M2Configuration extends AbstractMavenActionsProvider implements MavenConfiguration, Comparable<M2Configuration> {
 
     public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
