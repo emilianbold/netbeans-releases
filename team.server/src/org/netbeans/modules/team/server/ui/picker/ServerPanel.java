@@ -433,7 +433,7 @@ class ServerPanel extends JPanel {
     @NbBundle.Messages({"# {0} - the name of a team server", 
                         "CTL_ServerName=Team Server Name : {0}",
                         "# {0} - the url of a team server", 
-                        "CTL_Url=Url : {0}",
+                        "CTL_Url=URL : {0}",
                         "CTL_OnlineStatusLI=Online Status : logged in",
                         "CTL_OnlineStatusLO=Online Status : not logged in"})
     private String getTooltipText(TeamServer server) {

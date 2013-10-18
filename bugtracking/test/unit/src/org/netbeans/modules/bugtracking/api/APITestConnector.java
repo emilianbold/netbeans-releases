@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.TestKit;
 import static org.netbeans.modules.bugtracking.api.APITestKit.getAPIRepo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -73,8 +73,11 @@ import org.openide.util.Lookup;
     tooltip=APITestConnector.ID_CONNECTOR)    
 public class APITestConnector implements BugtrackingConnector {
     
-    private static final BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue> factory = 
-            new BugtrackingFactory<APITestRepository, APITestQuery, APITestIssue>();
+    private static final BugtrackingSupport<APITestRepository, APITestQuery, APITestIssue> factory = 
+            new BugtrackingSupport<APITestRepository, APITestQuery, APITestIssue>(
+                new APITestRepositoryProvider(), 
+                new APITestQueryProvider(),
+                new APITestIssueProvider());
 
     private static Map<String, APITestRepository> apiRepos = new HashMap<String, APITestRepository>();
     
@@ -104,11 +107,7 @@ public class APITestConnector implements BugtrackingConnector {
             apiRepo = createAPIRepo(getInfo());
             apiRepos.put(info.getId(), apiRepo);
         }
-        return factory.createRepository(
-            apiRepo, 
-            new APITestRepositoryProvider(), 
-            new APITestQueryProvider(),
-            new APITestIssueProvider());
+        return factory.createRepository(apiRepo);
     }
 
     @Override

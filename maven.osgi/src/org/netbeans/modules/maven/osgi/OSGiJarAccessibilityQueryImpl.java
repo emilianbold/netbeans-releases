@@ -145,7 +145,7 @@ public class OSGiJarAccessibilityQueryImpl implements AccessibilityQueryImplemen
 
     @Override
     public Image getBadgeIcon(FileObject jarFile, Artifact art) {
-        if (jarFile != null) {
+        if (jarFile != null && FileUtil.isArchiveFile(jarFile)) {
             FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
             synchronized (publicCache) {
                 List<ManifestElement> pub = publicCache.get(jarRoot);

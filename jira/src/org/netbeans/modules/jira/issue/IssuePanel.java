@@ -137,7 +137,6 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
@@ -182,7 +181,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private IssueLinksPanel issueLinksPanel;
     private boolean skipReload;
     private boolean reloading;
-    private UndoRedoSupport undoRedoSupport;
     private final Set<String> unsavedFields = new HashSet<>();
     private static final String WORKLOG = "WORKLOG"; //NOI18N
     private static final String NEW_ATTACHMENTS = AbstractNbTaskWrapper.NEW_ATTACHMENT_ATTRIBUTE_ID;
@@ -2454,7 +2452,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
     private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
-        Jira.getInstance().getBugtrackingFactory().addToCategory(JiraUtils.getRepository(issue.getRepository()), issue); 
+        Jira.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue); 
     }//GEN-LAST:event_addToCategoryButtonActionPerformed
 
     @NbBundle.Messages({
@@ -2728,10 +2726,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     void opened() {
         open = true;
-        undoRedoSupport = Jira.getInstance().getUndoRedoSupport(issue);
-        undoRedoSupport.register(addCommentArea); 
-        undoRedoSupport.register(environmentArea); 
-        
         enableComponents(false);
         issue.opened();
     }
@@ -2740,10 +2734,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         open = false;
         if(issue != null) {
             commentsPanel.storeSettings();
-            if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll();
-                undoRedoSupport = null;
-            }
             issue.closed();
         }
     }

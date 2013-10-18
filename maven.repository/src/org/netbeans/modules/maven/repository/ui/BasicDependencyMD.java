@@ -98,7 +98,7 @@ public class BasicDependencyMD implements MultiViewDescription, Serializable {
 
     @Override
     public MultiViewElement createElement() {
-        return new DependencyPanel(lookup);
+        return new DependencyPanel(lookup, true);
     }
 
     @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=300)

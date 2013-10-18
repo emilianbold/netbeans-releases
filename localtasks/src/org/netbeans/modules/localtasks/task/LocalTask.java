@@ -65,9 +65,9 @@ import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.localtasks.LocalRepository;
 import org.netbeans.modules.localtasks.util.FileUtils;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel.AttachmentInfo;
-import org.netbeans.modules.mylyn.util.NbDateRange;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.localtasks.AbstractLocalTask;
@@ -465,19 +465,19 @@ public final class LocalTask extends AbstractLocalTask {
         getTaskController().modelStateChanged(true);
     }
     
-    void setTaskDueDate (Date date) {
-        super.setDueDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskDueDate (Date date, boolean persistChange) {
+        super.setDueDate(date, persistChange);
+        getTaskController().modelStateChanged(hasUnsavedChanges());
     }
     
-    void setTaskScheduleDate (NbDateRange date) {
-        super.setScheduleDate(date);
-        getTaskController().modelStateChanged(true);
+    public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
+        super.setScheduleDate(date, persistChange);
+        getTaskController().modelStateChanged(hasUnsavedChanges());
     }
     
-    void setTaskEstimate (int estimate) {
-        super.setEstimate(estimate);
-        getTaskController().modelStateChanged(true);
+    public void setTaskEstimate (int estimate, boolean persistChange) {
+        super.setEstimate(estimate, persistChange);
+        getTaskController().modelStateChanged(hasUnsavedChanges());
     }
 
     public void addComment (String comment, boolean closeAsFixed) {
