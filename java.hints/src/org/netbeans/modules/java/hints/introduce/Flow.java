@@ -98,6 +98,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -196,9 +197,14 @@ public class Flow {
     }
     
     public static final class FlowResult {
+        /**
+         * Contains map of identifier usage (Tree) -> potential values
+         */
         private final Map<Tree, Iterable<? extends TreePath>> assignmentsForUse;
         private final Set<? extends Tree> deadBranches;
         private final Set<VariableElement> finalCandidates;
+        private Map<Tree, TreePath> locations;
+        private volatile Map<Tree, Collection<Tree>> dataFlow;
         private FlowResult(Map<Tree, Iterable<? extends TreePath>> assignmentsForUse, Set<Tree> deadBranches, Set<VariableElement> finalCandidates) {
             this.assignmentsForUse = assignmentsForUse;
             this.deadBranches = deadBranches;
@@ -213,6 +219,61 @@ public class Flow {
         public Set<VariableElement> getFinalCandidates() {
             return finalCandidates;
         }
+        
+        public Collection<Tree> getValueUsers(Tree val) {
+            if (dataFlow == null) {
+                computeDataFlow();
+            }
+            Collection<Tree> c = dataFlow.get(val);
+            return c == null ? Collections.<Tree>emptyList(): c;
+        }
+        
+        public TreePath findPath(Tree node, CompilationUnitTree cut) {
+            if (locations == null) {
+                Map<Tree, TreePath> locs = new IdentityHashMap<Tree, TreePath>(assignmentsForUse.size());
+                PathFinder pf = new PathFinder(locs, assignmentsForUse.keySet());
+                pf.scan(new TreePath(cut), null);
+                locations = locs;
+            }
+            return locations.get(node);
+        }
+        
+        private void computeDataFlow() {
+            Map<Tree, Collection<Tree>> res = new IdentityHashMap<Tree, Collection<Tree>>(7);
+            for (Map.Entry<Tree, Iterable<? extends TreePath>> e : assignmentsForUse.entrySet()) {
+                Tree k = e.getKey();
+                for (TreePath p : e.getValue()) {
+                    Tree l = p.getLeaf();
+                    Collection<Tree> users = res.get(l);
+                    if (users == null) {
+                        users = new ArrayList<Tree>(2);
+                        res.put(l, users);
+                    }
+                    users.add(k);
+                }
+            }
+            dataFlow = res;
+        }
+
+    }
+    
+    private static class PathFinder extends TreePathScanner {
+        final Map<Tree, TreePath> node2Path;
+        final Set<Tree> interestingNodes;
+
+        public PathFinder(Map<Tree, TreePath> node2Path, Set<Tree> interestingNodes) {
+            this.node2Path = node2Path;
+            this.interestingNodes = interestingNodes;
+        }
+        
+        @Override
+        public Object scan(Tree tree, Object p) {
+            if (interestingNodes.contains(tree)) {
+                node2Path.put(tree, new TreePath(getCurrentPath(), tree));
+            }
+            return super.scan(tree, p);
+        }
+        
     }
 
     public interface Cancel {
@@ -283,6 +344,17 @@ public class Flow {
 
     public static boolean definitellyAssigned(CompilationInfo info, VariableElement var, Iterable<? extends TreePath> trees, Cancel cancel) {
         return definitellyAssignedImpl(info, var, null, trees, true, cancel);
+    }
+    
+    private static class AV {
+        final TreePath path;
+        final State   state;
+
+        public AV(TreePath path, State state) {
+            this.path = path;
+            this.state = state;
+        }
+        
     }
 
     /**
