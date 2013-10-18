@@ -45,7 +45,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -69,8 +71,24 @@ public class SourceRootContainer {
     }
     
     public boolean isMySource(CharSequence includePath){
-        if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
-            return true;
+        if (projectRoots.size() < 10) {
+            boolean check = false;
+            for(Map.Entry<CharSequence,Integer> entry : projectRoots.entrySet()) {
+                if (CharSequenceUtils.startsWith(includePath, entry.getKey())) {
+                    if (includePath.length() == entry.getKey().length()) {
+                        return true;
+                    }
+                    check = true;
+                    break;
+                }
+            }
+            if (!check) {
+                return false;
+            }
+        } else {
+            if (projectRoots.containsKey(DefaultCache.getManager().getString(includePath))){
+                return true;
+            }
         }
         while (true){
             int i = CharSequenceUtils.lastIndexOf(includePath, '\\');
