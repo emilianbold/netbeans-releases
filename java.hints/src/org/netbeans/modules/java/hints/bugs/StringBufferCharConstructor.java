@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
+import javax.lang.model.type.TypeKind;
 
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -89,6 +90,11 @@ public class StringBufferCharConstructor {
     })
     public static ErrorDescription run(HintContext ctx) {
         TreePath p = ctx.getPath();
+        
+        TypeMirror paramType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$x")); // NOI18N
+        if (paramType.getKind() != TypeKind.CHAR) {
+            return null;
+        }
         
         TypeMirror tm = ctx.getInfo().getTrees().getTypeMirror(p);
         CharSequence tname = ctx.getInfo().getTypeUtilities().getTypeName(tm);
