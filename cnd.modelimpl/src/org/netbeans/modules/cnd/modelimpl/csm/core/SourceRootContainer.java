@@ -142,7 +142,30 @@ public class SourceRootContainer {
         }
     }
     
-    private void addPath(final String path) {
+    private CharSequence findParent(CharSequence path) {
+        while (true){
+            Integer val = projectRoots.get(DefaultCache.getManager().getString(path));
+            if (val != null) {
+                if (val > Integer.MAX_VALUE/4) {
+                    return path;
+                }
+            }
+            int i = CharSequenceUtils.lastIndexOf(path, '\\');
+            if (i <= 0) {
+                i = CharSequenceUtils.lastIndexOf(path, '/');
+            }
+            if (i <= 0) {
+                return null;
+            }
+            path = path.subSequence(0,i);
+        }
+    }
+    
+    private void addPath(CharSequence path) {
+        CharSequence parent = findParent(path);
+        if (parent != null) {
+            path = parent;
+        }
         CharSequence added = FilePathCache.getManager().getString(path);
         Integer integer = projectRoots.get(added);
         if (integer == null) {
