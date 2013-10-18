@@ -303,10 +303,12 @@ public final class WindowsNotifier extends Notifier<Void> {
         
         String root = null;
 
-        if (path.length() > 3 && path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
+        if (path.length() >= 3 && path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
             root = path.substring(0, 3).replace('/', '\\');
             if (root.charAt(2) != '\\') {
                 throw new IOException("wrong path: " + path);
+            } else if (path.length() == 3) { // Can be suspicious. #236930.
+                LOG.log(Level.INFO, "Adding listener for drive {0}", path); //NOI18N
             }
         } else { // check if it is unc path
             String normedPath = path.replace('/', '\\');
