@@ -57,6 +57,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -639,13 +640,18 @@ public class Term extends JComponent implements Accessible {
     }
 
     private void fireSizeChanged(Dimension cells, Dimension pixels) {
-        ListIterator<TermListener> iter = listeners.listIterator();
-        while (iter.hasNext()) {
-            TermListener l = iter.next();
-            l.sizeChanged(cells, pixels);
+        for (TermListener l : listeners) {
+             l.sizeChanged(cells, pixels);
+         }
+    }
+    
+    private void fireTitleChanged(String title) {
+        for (TermListener l : listeners) {
+            l.titleChanged(title);
         }
     }
-    private LinkedList<TermListener> listeners = new LinkedList<>();
+    
+    private final java.util.List<TermListener> listeners = new CopyOnWriteArrayList<>();
 
     /**
      * Set/unset focus policy.
@@ -4041,6 +4047,7 @@ public class Term extends JComponent implements Accessible {
 
 	@Override
         public void op_win_title(String winTitle) {
+            fireTitleChanged(winTitle);
             if (debugOps()) {
                 System.out.println("op_win_title(" + winTitle + ")"); // NOI18N
             }

@@ -59,5 +59,7 @@ import java.awt.Dimension;
 
 public interface TermListener {
     public void sizeChanged(Dimension cells, Dimension pixels);
+
+    public void titleChanged(String title);
 } 
 
