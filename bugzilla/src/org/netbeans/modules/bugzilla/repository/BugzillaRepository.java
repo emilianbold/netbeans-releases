@@ -605,7 +605,7 @@ public class BugzillaRepository {
     }
 
     public boolean authenticate(String errroMsg) {
-        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(this), errroMsg);
+        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(this, errroMsg);
     }
 
     /**
@@ -791,18 +791,11 @@ public class BugzillaRepository {
     }
 
     public void refreshAllQueries() {
-        refreshAllQueries(false);
-    }
-
-    protected void refreshAllQueries(final boolean onlyOpened) {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Collection<BugzillaQuery> qs = getQueries();
                 for (BugzillaQuery q : qs) {
-                    if(onlyOpened && !Bugzilla.getInstance().getBugtrackingFactory().isOpen(BugzillaUtil.getRepository(BugzillaRepository.this), q)) {
-                        continue;
-                    }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
                     QueryController qc = ((BugzillaQuery) q).getController();
                     qc.onRefresh();

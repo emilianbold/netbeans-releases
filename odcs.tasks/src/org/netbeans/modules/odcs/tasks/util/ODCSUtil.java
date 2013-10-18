@@ -75,6 +75,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
 import org.netbeans.modules.odcs.tasks.ODCS;
@@ -170,11 +171,11 @@ public class ODCSUtil {
     }
     
     public static void openIssue(ODCSIssue odcsIssue) {
-        ODCS.getInstance().getBugtrackingFactory().openIssue(getRepository(odcsIssue.getRepository()), odcsIssue);
+        ODCS.getInstance().getBugtrackingFactory().openIssue(odcsIssue.getRepository(), odcsIssue);
     }
     
     public static void openQuery(ODCSQuery odcsQuery) {
-        ODCS.getInstance().getBugtrackingFactory().editQuery(getRepository(odcsQuery.getRepository()), odcsQuery);
+        ODCS.getInstance().getBugtrackingFactory().editQuery(odcsQuery.getRepository(), odcsQuery);
     }
 
     public static Repository getRepository(ODCSRepository odcsRepository) {
@@ -191,7 +192,7 @@ public class ODCSUtil {
             repository = TeamUtil.getRepository(teamProject);
         }
         if (repository == null) {
-            repository = ODCS.getInstance().getBugtrackingFactory().getRepository(ODCSConnector.ID, odcsRepository.getID());
+            repository = BugtrackingUtil.getRepository(ODCSConnector.ID, odcsRepository.getID());
             if(repository == null) {
                 repository = createRepository(odcsRepository);
             }
@@ -202,9 +203,6 @@ public class ODCSUtil {
     public static Repository createRepository(ODCSRepository odcsRepository) {
         return ODCS.getInstance().getBugtrackingFactory().createRepository(
                 odcsRepository,
-                ODCS.getInstance().getRepositoryProvider(),
-                ODCS.getInstance().getQueryProvider(),
-                ODCS.getInstance().getIssueProvider(),
                 ODCS.getInstance().getStatusProvider(),
                 null, 
                 ODCS.getInstance().getPriorityProvider(odcsRepository),

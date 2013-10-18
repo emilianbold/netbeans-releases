@@ -90,7 +90,7 @@ import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -142,7 +142,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     
     @MultiViewElement.Registration(
         displayName="#TAB_Graph",
-        iconBase=NodeUtils.ICON_DEPENDENCY_JAR,
+        iconBase=IconResources.ICON_DEPENDENCY_JAR,
         persistenceType=TopComponent.PERSISTENCE_NEVER,
         preferredID=ArtifactViewer.HINT_GRAPH,
         mimeType=Constants.POM_MIME_TYPE,
