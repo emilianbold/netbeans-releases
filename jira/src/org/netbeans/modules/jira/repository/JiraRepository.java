@@ -705,7 +705,7 @@ public class JiraRepository {
     }
     
     public boolean authenticate(String errroMsg) {
-        return Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(this), errroMsg);
+        return Jira.getInstance().getBugtrackingFactory().editRepository(this, errroMsg);
     }
 
     private RequestProcessor getRefreshProcessor() {

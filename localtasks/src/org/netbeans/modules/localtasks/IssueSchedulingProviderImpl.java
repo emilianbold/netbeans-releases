@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.netbeans.modules.localtasks;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import java.util.Date;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
+import org.netbeans.modules.bugtracking.spi.IssueSchedulingProvider;
+import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
- * Container for a recently opened IssueProvider and it's last open time
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public final class RecentIssue {
-    private Issue issue;
-    private long ts;
-    public RecentIssue(Issue issue, long ts) {
-        this.issue = issue;
-        this.ts = ts;
+class IssueSchedulingProviderImpl implements IssueSchedulingProvider<LocalTask> {
+
+    @Override
+    public void setDueDate (LocalTask i, Date date) {
+        i.setTaskDueDate(date, true);
     }
 
-    /**
-     * Returns a issue
-     * @return
-     */
-    public Issue getIssue() {
-        return issue;
+    @Override
+    public void setSchedule (LocalTask i, IssueScheduleInfo date) {
+        i.setTaskScheduleDate(date, true);
     }
 
-    /**
-     * Returns the timestamp this issue was the last time opened
-     * @return
-     */
-    public long getTimestamp() {
-        return ts;
+    @Override
+    public void setEstimate (LocalTask i, int hours) {
+        i.setTaskEstimate(hours, true);
     }
+
+    @Override
+    public Date getDueDate (LocalTask i) {
+        return i.getPersistentDueDate();
+    }
+
+    @Override
+    public IssueScheduleInfo getSchedule (LocalTask i) {
+        return i.getPersistentScheduleInfo();
+    }
+
+    @Override
+    public int getEstimate (LocalTask i) {
+        return i.getPersistentEstimate();
+    }
+    
 }

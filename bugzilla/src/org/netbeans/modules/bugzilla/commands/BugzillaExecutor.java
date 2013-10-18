@@ -583,7 +583,7 @@ public class BugzillaExecutor {
                                 }
                                 // do not handle this kind of erorr until flag turned false by a succesfull command
                                 alreadyCalled = true;                                
-                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
+                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(executor.repository, errroMsg);
                                 if(!ret) {
                                     notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                                 }

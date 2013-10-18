@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,39 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.team.spi;
+package org.openide.util.lookup;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
- * Container for a recently opened IssueProvider and it's last open time
  *
- * @author Tomas Stupka
+ * @author stan
  */
-public final class RecentIssue {
-    private Issue issue;
-    private long ts;
-    public RecentIssue(Issue issue, long ts) {
-        this.issue = issue;
-        this.ts = ts;
+public class LookupListenerListTest {
+    
+    public LookupListenerListTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
     }
 
     /**
-     * Returns a issue
-     * @return
+     * Test of remove method, of class LookupListenerList.
      */
-    public Issue getIssue() {
-        return issue;
-    }
+    @Test
+    public void testRemove() {
+        System.out.println("remove");
+        LookupListener l = new LookupListener() {
 
-    /**
-     * Returns the timestamp this issue was the last time opened
-     * @return
-     */
-    public long getTimestamp() {
-        return ts;
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+        LookupListener l2 = new LookupListener() {
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        };
+        LookupListenerList instance = new LookupListenerList();
+        instance.add(l);
+        instance.add(l2);
+        
+        instance.remove(l);
+        instance.remove(l2);
+        //don't throw any exception
+        instance.remove(l);
     }
+    
 }

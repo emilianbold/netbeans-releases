@@ -168,7 +168,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
                 ISVNLogMessage[] messageArray= null;
                 try {                        
                     SvnClient client = Subversion.getInstance().getClient(repositoryUrl, this);                         
-                    messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, SVNRevision.HEAD, revisionFrom, false, false, 0);
+                    messageArray = SvnUtils.getLogMessages(client, repositoryUrl, paths, null, SVNRevision.HEAD, revisionFrom, false, false, 0);
                 } catch (SVNClientException ex) {
                     if (SvnClientExceptionHandler.isFileNotFoundInRevision(ex.getMessage())) {
                         for (int i=0; i < paths.length; ++i) {

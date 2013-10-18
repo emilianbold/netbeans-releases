@@ -49,7 +49,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import static org.netbeans.modules.maven.graph.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
-import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.maven.spi.IconResources;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -62,7 +62,7 @@ import org.openide.windows.TopComponent;
  */
 public class GraphMD implements MultiViewDescription, Serializable {
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
     GraphMD(Lookup lkp) {
         lookup = lkp;
@@ -78,7 +78,7 @@ public class GraphMD implements MultiViewDescription, Serializable {
     }
 
     @Override public Image getIcon() {
-        return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
+        return ImageUtilities.loadImage(IconResources.ICON_DEPENDENCY_JAR, true);
     }
 
     @Override public HelpCtx getHelpCtx() {

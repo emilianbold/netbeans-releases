@@ -43,7 +43,6 @@ package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -155,11 +154,10 @@ public class ScanProjectPerfTest extends NbTestCase {
         }, false).get();
 
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
+        handler.setType(ScanType.UP_TO_DATE);
         projectDir = Utilities.openProject(project, getWorkDir());
 
-        handler.setType(ScanType.UP_TO_DATE);
         src = JavaSource.create(ClasspathInfo.create(projectDir));
-
         src.runWhenScanFinished(new Task<CompilationController>() {
 
             @Override()
@@ -168,12 +166,13 @@ public class ScanProjectPerfTest extends NbTestCase {
             }
         }, false).get();
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
+        repositoryUpdater.removeHandler(handler);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for (PerformanceData rec : getPerformanceData()) {
+        for (PerformanceData rec : handler.getData()) {
             Utilities.processUnitTestsResults(ScanProjectPerfTest.class.getCanonicalName(), rec);
         }
         handler.clear();
@@ -181,17 +180,8 @@ public class ScanProjectPerfTest extends NbTestCase {
 
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.createConfiguration(ScanProjectPerfTest.class).
-                clusters(".*").enableModules(".*").gui(false).
+                clusters(".*").enableModules(".*").
                 suite();
-    }
-
-    public PerformanceData[] getPerformanceData() {
-        List<PerformanceData> data = handler.getData();
-        if (data != null) {
-            return data.toArray(new PerformanceData[0]);
-        } else {
-            return null;
-        }
     }
 
     private class ReadingHandler extends Handler {
