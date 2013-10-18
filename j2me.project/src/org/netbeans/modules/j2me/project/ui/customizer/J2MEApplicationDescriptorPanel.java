@@ -52,6 +52,10 @@ public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel {
      */
     public J2MEApplicationDescriptorPanel(J2MEProjectProperties properties) {
         initComponents();
+        jTabbedPane1.add("Attributes", new J2MEAttributesPanel(properties));
+        jTabbedPane1.add("MIDlets", new J2MEMIDletsPanel(properties));
+        jTabbedPane1.add("Push Registry", new J2MEPushRegistryPanel(properties));
+        jTabbedPane1.add("APIPermissions ", new J2MEAPIPermissionsPanel(properties));
     }
 
     /**
@@ -63,28 +67,20 @@ public class J2MEApplicationDescriptorPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(J2MEApplicationDescriptorPanel.class, "J2MEApplicationDescriptorPanel.jLabel1.text")); // NOI18N
+        jTabbedPane1 = new javax.swing.JTabbedPane();
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(191, Short.MAX_VALUE))
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(275, Short.MAX_VALUE))
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables
 }

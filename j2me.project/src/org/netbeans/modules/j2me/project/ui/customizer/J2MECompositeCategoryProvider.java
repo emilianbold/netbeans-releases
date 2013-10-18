@@ -58,6 +58,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
 
     private static final String SOURCES = "Sources";
     static final String LIBRARIES = "Libraries";
+    public static final String BUILD = "Build";
     private static final String PLATFORM = "Platform";
     private static final String RUN = "Run";
     private static final String APPLICATION_DESCRIPTOR = "Application Descriptor";
@@ -197,7 +198,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-j2me-project",
-            category = "BuildCategory",
+            category = BUILD,
             position = 230)
     public static J2MECompositeCategoryProvider createObfuscating() {
         return new J2MECompositeCategoryProvider(OBFUSCATING);
@@ -205,7 +206,7 @@ public class J2MECompositeCategoryProvider implements ProjectCustomizer.Composit
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = "org-netbeans-modules-j2me-project",
-            category = "BuildCategory",
+            category = BUILD,
             position = 235)
     public static J2MECompositeCategoryProvider createSigning() {
         return new J2MECompositeCategoryProvider(SIGNING);

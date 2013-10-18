@@ -126,6 +126,15 @@ public final class J2MEProjectProperties {
     public static final String PROP_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
     public static final String PROP_SECURITY_DOMAIN = "security.domain"; //NOI18N
     public static final String PROP_DEBUGGER_TIMEOUT = "debugger.timeout"; //NOI18N
+    //J2MEAttributesPanel
+    public static final String MANIFEST_IS_LIBLET = "manifest.is.liblet"; //NOI18N
+    public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
+    public static final String MANIFEST_OTHERS = "manifest.others"; //NOI18N
+    public static final String MANIFEST_MANIFEST = "manifest.manifest"; //NOI18N
+    public static final String MANIFEST_JAD = "manifest.jad"; //NOI18N
+    public static final String DEPLOYMENT_JARURL = "deployment.jarurl"; //MOI18N
+    public static final String DEPLOYMENT_OVERRIDE_JARURL = "deployment.override.jarurl"; //MOI18N
+    public static final String PLATFORM_PROFILE = "platform.profile"; //NOI18N
     
     
     // MODELS FOR VISUAL CONTROLS
@@ -168,6 +177,12 @@ public final class J2MEProjectProperties {
         PROP_SECURITY_DOMAIN,
         PROP_DEBUGGER_TIMEOUT
     };
+
+    //J2MEAttributesPanel
+    ButtonModel DEPLOYMENT_OVERRIDE_JARURL_MODEL;
+    Document DEPLOYMENT_JARURL_MODEL;
+    J2MEAttributesPanel.StorableTableModel ATTRIBUTES_TABLE_MODEL;
+    String[] ATTRIBUTES_PROPERTY_NAMES = {MANIFEST_OTHERS, MANIFEST_JAD, MANIFEST_MANIFEST};
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
     private Map<String,String> additionalProperties;
@@ -254,6 +269,22 @@ public final class J2MEProjectProperties {
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
         SECURITY_DOMAINS = readSecurityDomains();
+        
+        //J2MEAttributesPanel
+        DEPLOYMENT_OVERRIDE_JARURL_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOYMENT_OVERRIDE_JARURL);
+        if(getEvaluator().getProperty(DEPLOYMENT_OVERRIDE_JARURL) == null) {
+            DEPLOYMENT_OVERRIDE_JARURL_MODEL.setSelected(false);
+    }
+        DEPLOYMENT_JARURL_MODEL = projectGroup.createStringDocument(getEvaluator(), DEPLOYMENT_JARURL);
+        if(getEvaluator().getProperty(DEPLOYMENT_JARURL) == null) {
+            try {
+                DEPLOYMENT_JARURL_MODEL.insertString(0, "${dist.jar}", null); //NOI18N
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        ATTRIBUTES_TABLE_MODEL = new J2MEAttributesPanel.StorableTableModel();
+
     }
 
     void collectData() {
@@ -360,6 +391,18 @@ public final class J2MEProjectProperties {
 
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
+        
+        //J2MEAttributesPanel
+        projectProperties.put(DEPLOYMENT_OVERRIDE_JARURL, Boolean.toString(DEPLOYMENT_OVERRIDE_JARURL_MODEL.isSelected()));
+        try {
+            projectProperties.put(DEPLOYMENT_JARURL, DEPLOYMENT_JARURL_MODEL.getText(0, DEPLOYMENT_JARURL_MODEL.getLength()));
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        Object[] dataDelegates = ATTRIBUTES_TABLE_MODEL.getDataDelegates();
+        for (int i = 0; i < dataDelegates.length; i++) {
+            projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], ATTRIBUTES_TABLE_MODEL.encode(dataDelegates[i]));
+        }
         
         //Obfusation properties
         projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));
