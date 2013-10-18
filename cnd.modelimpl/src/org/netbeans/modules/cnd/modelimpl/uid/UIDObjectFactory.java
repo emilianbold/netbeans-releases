@@ -362,8 +362,8 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     @Override
-    protected int getHandler(Object object) {
-        int aHandler;
+    protected short getHandler(Object object) {
+        short aHandler;
 
         if (object instanceof ProjectUID) {
             aHandler = UID_PROJECT_UID;
@@ -409,7 +409,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     @Override
-    protected SelfPersistent createObject(int handler, RepositoryDataInput aStream) throws IOException {
+    protected SelfPersistent createObject(short handler, RepositoryDataInput aStream) throws IOException {
 
         SelfPersistent anUID;
         boolean share = false;
@@ -511,28 +511,28 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
     ///////////////////////////////////////////////////////////////////////////////////////////
     //  constants which defines the handle of an UID in the stream
-    private static final int FIRST_INDEX = KeyObjectFactory.LAST_INDEX + 1;
-    private static final int UID_PROJECT_UID = FIRST_INDEX;
-    private static final int UID_NAMESPACE_UID = UID_PROJECT_UID + 1;
-    private static final int UID_FILE_UID = UID_NAMESPACE_UID + 1;
-    private static final int UID_TYPEDEF_UID = UID_FILE_UID + 1;
-    private static final int UID_CLASSIFIER_UID = UID_TYPEDEF_UID + 1;
-    private static final int UID_FORWARD_CLASS_UID = UID_CLASSIFIER_UID + 1;
-    private static final int UID_UNNAMED_CLASSIFIER_UID = UID_FORWARD_CLASS_UID + 1;
-    private static final int UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
-    private static final int UID_INCLUDE_UID = UID_MACRO_UID + 1;
-    private static final int UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
-    private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INHERITANCE_UID + 1;
-    private static final int UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
-    private static final int UID_BUILT_IN_UID = UID_DECLARATION_UID + 1;
-    private static final int UID_INSTANTIATION_UID = UID_BUILT_IN_UID + 1;
-    private static final int UID_INSTANTIATION_SELF_UID = UID_INSTANTIATION_UID + 1;
-    private static final int UID_UNRESOLVED_CLASS = UID_INSTANTIATION_SELF_UID + 1;
-    private static final int UID_UNRESOLVED_FILE = UID_UNRESOLVED_CLASS + 1;
-    private static final int UID_UNRESOLVED_NAMESPACE = UID_UNRESOLVED_FILE + 1;
+    private static final short FIRST_INDEX = KeyObjectFactory.LAST_INDEX + 1;
+    private static final short UID_PROJECT_UID = FIRST_INDEX;
+    private static final short UID_NAMESPACE_UID = UID_PROJECT_UID + 1;
+    private static final short UID_FILE_UID = UID_NAMESPACE_UID + 1;
+    private static final short UID_TYPEDEF_UID = UID_FILE_UID + 1;
+    private static final short UID_CLASSIFIER_UID = UID_TYPEDEF_UID + 1;
+    private static final short UID_FORWARD_CLASS_UID = UID_CLASSIFIER_UID + 1;
+    private static final short UID_UNNAMED_CLASSIFIER_UID = UID_FORWARD_CLASS_UID + 1;
+    private static final short UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
+    private static final short UID_INCLUDE_UID = UID_MACRO_UID + 1;
+    private static final short UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
+    private static final short UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INHERITANCE_UID + 1;
+    private static final short UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
+    private static final short UID_BUILT_IN_UID = UID_DECLARATION_UID + 1;
+    private static final short UID_INSTANTIATION_UID = UID_BUILT_IN_UID + 1;
+    private static final short UID_INSTANTIATION_SELF_UID = UID_INSTANTIATION_UID + 1;
+    private static final short UID_UNRESOLVED_CLASS = UID_INSTANTIATION_SELF_UID + 1;
+    private static final short UID_UNRESOLVED_FILE = UID_UNRESOLVED_CLASS + 1;
+    private static final short UID_UNRESOLVED_NAMESPACE = UID_UNRESOLVED_FILE + 1;
     // index to be used in another factory (but only in one)
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = UID_UNRESOLVED_NAMESPACE;
+    public static final short LAST_INDEX = UID_UNRESOLVED_NAMESPACE;
 
     private static final Comparator<OffsetSortedKey> OSKComparator = new Comparator<OffsetSortedKey>() {
         @Override

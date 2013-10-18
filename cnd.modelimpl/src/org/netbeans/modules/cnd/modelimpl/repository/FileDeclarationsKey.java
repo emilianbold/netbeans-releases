@@ -73,13 +73,13 @@ public final class FileDeclarationsKey extends ProjectFileNameBasedKey {
     }
 
     @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_FILE_DECLARATIONS_KEY + super.hashCode();
-    }
-
-    @Override
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();
+    }
+    
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_FILE_DECLARATIONS_KEY;
     }
 
     @Override
@@ -90,17 +90,12 @@ public final class FileDeclarationsKey extends ProjectFileNameBasedKey {
     @Override
     public int getSecondaryAt(int level) {
 	assert level == 0;
-	return KeyObjectFactory.KEY_FILE_DECLARATIONS_KEY;
+	return getHandler();
     }
 
     @Override
     public boolean hasCache() {
         return true;
-    }
-
-    @Override
-    public final short getKindPresentation() {
-	return KeyObjectFactory.KEY_FILE_DECLARATIONS_KEY;
     }
 }
 

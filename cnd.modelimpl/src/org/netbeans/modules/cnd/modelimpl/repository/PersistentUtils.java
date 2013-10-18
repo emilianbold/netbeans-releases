@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.NoType;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFunPtrImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
@@ -138,9 +137,9 @@ public class PersistentUtils {
     // support for parameters
     public static void writeParameterList(CsmParameterList<?> paramList, RepositoryDataOutput output) throws IOException {
         if (paramList == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else if (paramList instanceof ParameterListImpl<?, ?>) {
-            int handler = PARAM_LIST_IMPL;
+            byte handler = PARAM_LIST_IMPL;
             if (paramList instanceof FunctionParameterListImpl) {
                 handler = FUN_PARAM_LIST_IMPL;
                 if (paramList instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
@@ -150,13 +149,15 @@ public class PersistentUtils {
             if (paramList instanceof DummyParametersListImpl) {
                 handler = DUMMY_PARAMS_LIST_IMPL;
             }
-            output.writeInt(handler);
+            output.writeByte(handler);
             ((ParameterListImpl<?, ?>)paramList).write(output);
+        } else {
+            throw new IllegalArgumentException("instance of unknown CsmParameterList " + paramList.getClass() + paramList);  //NOI18N
         }
     }
 
     public static CsmParameterList<?> readParameterList(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         CsmParameterList<?> paramList;
         switch (handler) {
             case AbstractObjectFactory.NULL_POINTER:
@@ -183,9 +184,9 @@ public class PersistentUtils {
 
     public static void writeParameters(Collection<CsmParameter> params, RepositoryDataOutput output) throws IOException {
         if (params == null || params.isEmpty()) {
-            output.writeInt(0);
+            output.writeShort(0);
         } else {
-            output.writeInt(params.size());
+            output.writeShort(params.size());
             for (CsmParameter param : params) {
                 writeParameter(param, output);
             }
@@ -193,7 +194,7 @@ public class PersistentUtils {
     }
 
     public static Collection<CsmParameter> readParameters(RepositoryDataInput input) throws IOException {
-        int size = input.readInt();
+        int size = input.readShort();
         if (size == 0) {
             return null;
         }
@@ -236,7 +237,7 @@ public class PersistentUtils {
             output.writeByte(PARAMETER_IMPL);
             ((ParameterImpl)param).write(output);
         } else {
-            throw new IllegalArgumentException("instance of unknown FileBuffer " + param.getClass() + param);  //NOI18N
+            throw new IllegalArgumentException("instance of unknown CsmParameter " + param.getClass() + param);  //NOI18N
         }
     }
     
@@ -246,7 +247,7 @@ public class PersistentUtils {
         assert buffer != null;
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
-            output.writeInt(FILE_BUFFER_FILE);
+            output.writeByte(FILE_BUFFER_FILE);
             ((AbstractFileBuffer) buffer).write(output, unitId);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
@@ -255,7 +256,7 @@ public class PersistentUtils {
 
     public static FileBuffer readBuffer(RepositoryDataInput input, int unitId) throws IOException {
         FileBuffer buffer;
-        int handler = input.readInt();
+        int handler = input.readByte();
         assert handler == FILE_BUFFER_FILE;
         buffer = new FileBufferFile(input, unitId);
         return buffer;
@@ -312,7 +313,6 @@ public class PersistentUtils {
         }
         return arr;
     }
-    private static final int UTF_LIMIT = 65535;
 
     private static final String NULL_STRING = new String(new char[]{0});
 
@@ -352,10 +352,10 @@ public class PersistentUtils {
     // support CsmExpression
     public static void writeExpression(CsmExpression expr, RepositoryDataOutput output) throws IOException {
         if (expr == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
             if (expr instanceof ExpressionBase) {
-                output.writeInt(EXPRESSION_BASE);
+                output.writeByte(EXPRESSION_BASE);
                 ((ExpressionBase) expr).write(output);
             } else {
                 throw new IllegalArgumentException("instance of unknown CsmExpression " + expr);  //NOI18N
@@ -364,7 +364,7 @@ public class PersistentUtils {
     }
 
     public static CsmExpression readExpression(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         CsmExpression expr;
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             expr = null;
@@ -406,14 +406,14 @@ public class PersistentUtils {
 
     public static void writeExpressionKind(CsmExpression.Kind kind, RepositoryDataOutput output) throws IOException {
         if (kind == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
             throw new UnsupportedOperationException("Not yet implemented"); //NOI18N
         }
     }
 
     public static CsmExpression.Kind readExpressionKind(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         CsmExpression.Kind kind;
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             kind = null;
@@ -427,7 +427,7 @@ public class PersistentUtils {
     // support types
     public static CsmType readType(RepositoryDataInput stream) throws IOException {
         CsmType obj;
-        int handler = stream.readInt();
+        byte handler = stream.readByte();
         switch (handler) {
             case AbstractObjectFactory.NULL_POINTER:
                 obj = null;
@@ -466,25 +466,25 @@ public class PersistentUtils {
     public static void writeType(CsmType type, RepositoryDataOutput stream) throws IOException {
         try {
             if (type == null) {
-                stream.writeInt(AbstractObjectFactory.NULL_POINTER);
+                stream.writeByte(AbstractObjectFactory.NULL_POINTER);
             } else if (type instanceof NoType) {
-                stream.writeInt(NO_TYPE);
+                stream.writeByte(NO_TYPE);
             } else if (type instanceof TypeImpl) {
                 if (type instanceof DeclTypeImpl) {
-                    stream.writeInt(TYPE_DECLTYPE_IMPL);
+                    stream.writeByte(TYPE_DECLTYPE_IMPL);
                     ((DeclTypeImpl) type).write(stream);
                 } else if (type instanceof TypeFunPtrImpl) {
-                    stream.writeInt(TYPE_FUN_PTR_IMPL);
+                    stream.writeByte(TYPE_FUN_PTR_IMPL);
                     ((TypeFunPtrImpl) type).write(stream);
                 } else if (type instanceof NestedType) {
-                    stream.writeInt(NESTED_TYPE);
+                    stream.writeByte(NESTED_TYPE);
                     ((NestedType) type).write(stream);
                 } else {
-                    stream.writeInt(TYPE_IMPL);
+                    stream.writeByte(TYPE_IMPL);
                     ((TypeImpl) type).write(stream);
                 }
             } else if (type instanceof TemplateParameterTypeImpl) {
-                stream.writeInt(TEMPLATE_PARAM_TYPE);
+                stream.writeByte(TEMPLATE_PARAM_TYPE);
                 ((TemplateParameterTypeImpl) type).write(stream);
             } else {
                 throw new IllegalArgumentException("instance of unknown class " + type.getClass().getName());  //NOI18N
@@ -533,7 +533,7 @@ public class PersistentUtils {
     ////////////////////////////////////////////////////////////////////////////
     // support Template Descriptors
     public static TemplateDescriptor readTemplateDescriptor(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
         }
@@ -543,15 +543,15 @@ public class PersistentUtils {
 
     public static void writeTemplateDescriptor(TemplateDescriptor templateDescriptor, RepositoryDataOutput output) throws IOException {
         if (templateDescriptor == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
-            output.writeInt(TEMPLATE_DESCRIPTOR_IMPL);
+            output.writeByte(TEMPLATE_DESCRIPTOR_IMPL);
             templateDescriptor.write(output);
         }
     }
 
     public static SpecializationDescriptor readSpecializationDescriptor(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
         }
@@ -561,19 +561,19 @@ public class PersistentUtils {
 
     public static void writeSpecializationDescriptor(SpecializationDescriptor specializationDescriptor, RepositoryDataOutput output) throws IOException {
         if (specializationDescriptor == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
-            output.writeInt(SPECIALIZATION_DESCRIPTOR_IMPL);
+            output.writeByte(SPECIALIZATION_DESCRIPTOR_IMPL);
             specializationDescriptor.write(output);
         }
     }
 
     public static void writeSpecializationParameters(List<CsmSpecializationParameter> params, RepositoryDataOutput output) throws IOException {
         if (params == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {
-            output.writeInt(SPECIALIZATION_PARAMETERS_LIST);
-            output.writeInt(params.size());
+            output.writeByte(SPECIALIZATION_PARAMETERS_LIST);
+            output.writeShort(params.size());
             for (CsmSpecializationParameter p : params) {
                 writeSpecializationParameter(p, output);
             }
@@ -582,16 +582,16 @@ public class PersistentUtils {
 
     public static void writeSpecializationParameter(CsmSpecializationParameter param, RepositoryDataOutput output) throws IOException {
         if (param == null) {
-            output.writeInt(AbstractObjectFactory.NULL_POINTER);
+            output.writeByte(AbstractObjectFactory.NULL_POINTER);
         } else {        
             if (param instanceof TypeBasedSpecializationParameterImpl) {
-                output.writeInt(TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL);
+                output.writeByte(TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL);
                 ((TypeBasedSpecializationParameterImpl) param).write(output);
             } else if (param instanceof ExpressionBasedSpecializationParameterImpl) {
-                output.writeInt(EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL);
+                output.writeByte(EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL);
                 ((ExpressionBasedSpecializationParameterImpl) param).write(output);
             } else if (param instanceof VariadicSpecializationParameterImpl) {
-                output.writeInt(VARIADIC_SPECIALIZATION_PARAMETER_IMPL);
+                output.writeByte(VARIADIC_SPECIALIZATION_PARAMETER_IMPL);
                 ((VariadicSpecializationParameterImpl) param).write(output);
             } else {
                 assert false : "unexpected instance of specialization parameter ";
@@ -600,7 +600,7 @@ public class PersistentUtils {
     }    
 
     public static List<CsmSpecializationParameter> readSpecializationParameters(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return null;
         }
@@ -611,7 +611,7 @@ public class PersistentUtils {
     }
 
     public static void readSpecializationParameters(List<CsmSpecializationParameter> params, RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        int handler = input.readByte();
         if (handler == AbstractObjectFactory.NULL_POINTER) {
             return;
         }
@@ -620,14 +620,14 @@ public class PersistentUtils {
     }
 
     private static void readSpecializationParametersList(List<CsmSpecializationParameter> params, RepositoryDataInput input) throws IOException {
-        int size = input.readInt();
+        int size = input.readShort();
         for (int i = 0; i < size; i++) {
             params.add(readSpecializationParameter(input));
         }
     }
 
     public static CsmSpecializationParameter readSpecializationParameter(RepositoryDataInput input) throws IOException {
-        int type = input.readInt();
+        byte type = input.readByte();
         if (type == AbstractObjectFactory.NULL_POINTER) {
             return null;
         }
@@ -650,7 +650,7 @@ public class PersistentUtils {
     // support visibility
     public static void writeVisibility(CsmVisibility visibility, RepositoryDataOutput output) throws IOException {
         assert visibility != null;
-        int handler = -1;
+        byte handler = -1;
         if (visibility == CsmVisibility.PUBLIC) {
             handler = VISIBILITY_PUBLIC;
         } else if (visibility == CsmVisibility.PROTECTED) {
@@ -662,12 +662,12 @@ public class PersistentUtils {
         } else {
             throw new IllegalArgumentException("instance of unknown visibility " + visibility);  //NOI18N
         }
-        output.writeInt(handler);
+        output.writeByte(handler);
     }
 
     public static CsmVisibility readVisibility(RepositoryDataInput input) throws IOException {
         CsmVisibility visibility = null;
-        int handler = input.readInt();
+        byte handler = input.readByte();
         switch (handler) {
             case VISIBILITY_PUBLIC:
                 visibility = CsmVisibility.PUBLIC;
@@ -695,17 +695,17 @@ public class PersistentUtils {
     public static void writeCompoundStatement(CsmCompoundStatement body, RepositoryDataOutput output) throws IOException {
         assert body != null;
         if (body instanceof LazyCompoundStatementImpl) {
-            output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
+            output.writeByte(LAZY_COMPOUND_STATEMENT_IMPL);
             ((LazyCompoundStatementImpl) body).write(output);
         } else if (body instanceof LazyTryCatchStatementImpl) {
-            output.writeInt(LAZY_TRY_CATCH_STATEMENT_IMPL);
+            output.writeByte(LAZY_TRY_CATCH_STATEMENT_IMPL);
             ((LazyTryCatchStatementImpl) body).write(output);
         } else if (body instanceof EmptyCompoundStatementImpl) {
-            output.writeInt(EMPTY_COMPOUND_STATEMENT_IMPL);
+            output.writeByte(EMPTY_COMPOUND_STATEMENT_IMPL);
             ((EmptyCompoundStatementImpl) body).write(output);
         } else if (body instanceof CompoundStatementImpl) {
             // will be deserialized as lazy compound statement
-            output.writeInt(LAZY_COMPOUND_STATEMENT_IMPL);
+            output.writeByte(LAZY_COMPOUND_STATEMENT_IMPL);
             ((CompoundStatementImpl) body).write(output);
         } else {
             throw new IllegalArgumentException("unknown compound statement " + body);  //NOI18N
@@ -713,7 +713,7 @@ public class PersistentUtils {
     }
 
     public static CsmCompoundStatement readCompoundStatement(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        byte handler = input.readByte();
         CsmCompoundStatement body;
         switch (handler) {
             case LAZY_COMPOUND_STATEMENT_IMPL:
@@ -775,52 +775,48 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // indices
-    private static final int FIRST_INDEX = CsmObjectFactory.LAST_INDEX + 1;
-    private static final int VISIBILITY_PUBLIC = FIRST_INDEX;
-    private static final int VISIBILITY_PROTECTED = VISIBILITY_PUBLIC + 1;
-    private static final int VISIBILITY_PRIVATE = VISIBILITY_PROTECTED + 1;
-    private static final int VISIBILITY_NONE = VISIBILITY_PRIVATE + 1;
-    private static final int EXPRESSION_BASE = VISIBILITY_NONE + 1;
-    private static final int FILE_BUFFER_FILE = EXPRESSION_BASE + 1;
+    private static final byte FIRST_INDEX = 1;
+    private static final byte VISIBILITY_PUBLIC = FIRST_INDEX;
+    private static final byte VISIBILITY_PROTECTED = VISIBILITY_PUBLIC + 1;
+    private static final byte VISIBILITY_PRIVATE = VISIBILITY_PROTECTED + 1;
+    private static final byte VISIBILITY_NONE = VISIBILITY_PRIVATE + 1;
+    private static final byte EXPRESSION_BASE = VISIBILITY_NONE + 1;
+    private static final byte FILE_BUFFER_FILE = EXPRESSION_BASE + 1;
     // types
-    private static final int NO_TYPE = FILE_BUFFER_FILE + 1;
-    private static final int TYPE_IMPL = NO_TYPE + 1;
-    private static final int NESTED_TYPE = TYPE_IMPL + 1;
-    private static final int TYPE_FUN_PTR_IMPL = NESTED_TYPE + 1;
-    private static final int TYPE_DECLTYPE_IMPL = TYPE_FUN_PTR_IMPL + 1;
-    private static final int TEMPLATE_PARAM_TYPE = TYPE_DECLTYPE_IMPL + 1;
+    private static final byte NO_TYPE = FILE_BUFFER_FILE + 1;
+    private static final byte TYPE_IMPL = NO_TYPE + 1;
+    private static final byte NESTED_TYPE = TYPE_IMPL + 1;
+    private static final byte TYPE_FUN_PTR_IMPL = NESTED_TYPE + 1;
+    private static final byte TYPE_DECLTYPE_IMPL = TYPE_FUN_PTR_IMPL + 1;
+    private static final byte TEMPLATE_PARAM_TYPE = TYPE_DECLTYPE_IMPL + 1;
 
     // state
-    private static final int PREPROC_STATE_STATE_IMPL = TEMPLATE_PARAM_TYPE + 1;
+    private static final byte PREPROC_STATE_STATE_IMPL = TEMPLATE_PARAM_TYPE + 1;
 
     // compound statements
-    private static final int LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;
-    private static final int LAZY_TRY_CATCH_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
-    private static final int EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_TRY_CATCH_STATEMENT_IMPL + 1;
-    private static final int COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
+    private static final byte LAZY_COMPOUND_STATEMENT_IMPL = PREPROC_STATE_STATE_IMPL + 1;
+    private static final byte LAZY_TRY_CATCH_STATEMENT_IMPL = LAZY_COMPOUND_STATEMENT_IMPL + 1;
+    private static final byte EMPTY_COMPOUND_STATEMENT_IMPL = LAZY_TRY_CATCH_STATEMENT_IMPL + 1;
+    private static final byte COMPOUND_STATEMENT_IMPL = EMPTY_COMPOUND_STATEMENT_IMPL + 1;
     
     // params
-    private static final int DUMMY_PARAMETER_IMPL = COMPOUND_STATEMENT_IMPL + 1;
-    private static final int PARAMETER_ELLIPSIS_IMPL = DUMMY_PARAMETER_IMPL + 1;
-    private static final int PARAMETER_IMPL = PARAMETER_ELLIPSIS_IMPL + 1;    
+    private static final byte DUMMY_PARAMETER_IMPL = COMPOUND_STATEMENT_IMPL + 1;
+    private static final byte PARAMETER_ELLIPSIS_IMPL = DUMMY_PARAMETER_IMPL + 1;
+    private static final byte PARAMETER_IMPL = PARAMETER_ELLIPSIS_IMPL + 1;    
 
     // param lists
-    private static final int PARAM_LIST_IMPL = PARAMETER_IMPL + 1;
-    private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
-    private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
-    private static final int DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+    private static final byte PARAM_LIST_IMPL = PARAMETER_IMPL + 1;
+    private static final byte FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
+    private static final byte FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
+    private static final byte DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
 
     // tempalte descriptor
-    private static final int TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
+    private static final byte TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
     // specialization descriptor
-    private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
+    private static final byte SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
     // specialization parameters
-    private static final int SPECIALIZATION_PARAMETERS_LIST = SPECIALIZATION_DESCRIPTOR_IMPL + 1;
-    private static final int TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL = SPECIALIZATION_PARAMETERS_LIST + 1;
-    private static final int EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL = TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
-    private static final int VARIADIC_SPECIALIZATION_PARAMETER_IMPL = EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
-
-    // index to be used in another factory (but only in one)
-    // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = VARIADIC_SPECIALIZATION_PARAMETER_IMPL;
+    private static final byte SPECIALIZATION_PARAMETERS_LIST = SPECIALIZATION_DESCRIPTOR_IMPL + 1;
+    private static final byte TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL = SPECIALIZATION_PARAMETERS_LIST + 1;
+    private static final byte EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL = TYPE_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
+    private static final byte VARIADIC_SPECIALIZATION_PARAMETER_IMPL = EXPRESSION_BASED_SPECIALIZATION_PARAMETER_IMPL + 1;
 }

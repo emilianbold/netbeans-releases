@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,115 +34,108 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.openide.util.CharSequences;
 
 /**
- * A common ancestor for nearly all keys 
+ *
+ * @author alsimon
  */
+/*package*/ abstract class NamespaceBaseKey extends ProjectContainerKey {
 
-/*package*/ abstract class ProjectNameBasedKey extends AbstractKey {
+    private final CharSequence fqn;
+    private int hashCode; // cashed hash code
 
-    private final int unitIndex;
-    
-    /*package*/ static final CharSequence NO_PROJECT = CharSequences.create("<No Project Name>"); // NOI18N
-
-    protected ProjectNameBasedKey(int unitIndex) {
-        this.unitIndex = unitIndex;
-        CndUtils.assertTrue(this.unitIndex > 10000, "Impossible unit index: ", unitIndex); //NOI18N
+    NamespaceBaseKey(CsmNamespace ns) {
+        super(((ProjectBase) ns.getProject()).getUnitId());
+        this.fqn = ns.getQualifiedName();
     }
 
-    protected ProjectNameBasedKey(KeyDataPresentation presentation) {
-        unitIndex = presentation.getUnitPresentation();
-        CndUtils.assertTrue(this.unitIndex > 10000, "Impossible unit index: ", unitIndex); //NOI18N
+    NamespaceBaseKey(KeyDataPresentation presentation) {
+        super(presentation);
+        fqn = presentation.getNamePresentation();
     }
 
     @Override
-    public String toString() {
-        return getProjectName().toString();
+    public PersistentFactory getPersistentFactory() {
+        return CsmObjectFactory.instance();
     }
 
     @Override
     public int hashCode(int unitID) {
-        return 37*getHandler() + unitID;
+        return 17*fqn.hashCode() + super.hashCode(unitID);
     }
 
     @Override
     public int hashCode() {
-        return hashCode(unitIndex);
-    }
-
-    @Override
-    public final int getUnitId() {
-        return unitIndex;
+        if (hashCode == 0) {
+            hashCode = hashCode(getUnitId());
+        }
+        return hashCode;
     }
 
     @Override
     public boolean equals(int unitThis, Key obj, int unitObject) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || (this.getClass() != obj.getClass())) {
+        if (!super.equals(unitThis, obj, unitObject)) {
             return false;
         }
-        return unitThis == unitObject;
-    }
-
-
-    @Override
-    public final boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || (this.getClass() != obj.getClass())) {
-            return false;
-        }
-        ProjectNameBasedKey other = (ProjectNameBasedKey) obj;
-        return equals(unitIndex, other, other.unitIndex);
+        NamespaceBaseKey other = (NamespaceBaseKey) obj;
+        return this.fqn.equals(other.fqn);
     }
 
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
-        aStream.writeUnitId(this.unitIndex);
+        super.write(aStream);
+        assert fqn != null;
+        PersistentUtils.writeUTF(fqn, aStream);
     }
 
-    protected ProjectNameBasedKey(RepositoryDataInput aStream) throws IOException {
-        this.unitIndex = aStream.readUnitId();
+    /*package*/ NamespaceBaseKey(RepositoryDataInput aStream) throws IOException {
+        super(aStream);
+        fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
+        assert fqn != null;
     }
 
     @Override
     public int getDepth() {
-        return 0;
+        assert super.getDepth() == 0;
+        return 1;
     }
 
     @Override
     public CharSequence getAt(int level) {
-        throw new UnsupportedOperationException();
-    }
-
-    protected CharSequence getProjectName() {
-        return KeyUtilities.getUnitNameSafe(this.unitIndex);
+        assert super.getDepth() == 0 && level < getDepth();
+        return this.fqn;
     }
 
     @Override
-    public CharSequence getUnit() {
-        if (this.unitIndex < 0) {
-            return NO_PROJECT;
-        }
-        // having this functionality here to be sure unit is the same thing as project
-        return KeyUtilities.getUnitName(this.unitIndex);
+    public int getSecondaryDepth() {
+        return 1;
     }
 
     @Override
-    public final int getUnitPresentation() {
-        return unitIndex;
+    public boolean hasCache() {
+        return true;
+    }
+
+    @Override
+    public final CharSequence getNamePresentation() {
+        return fqn;
     }
 }

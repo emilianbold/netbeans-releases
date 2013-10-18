@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -62,6 +61,8 @@ import org.netbeans.modules.cnd.test.CndBaseTestCase;
 public abstract class GetPutTestBase extends CndBaseTestCase {
 
     private static final int TEST_UNIT_ID = RepositoryAccessor.getTranslator().getUnitId("Repository_Test_Unit", CacheLocation.DEFAULT);
+     public static final int SMALL_KEY_HANDLER = 657;
+     public static final int LARGE_KEY_HANDLER = 658;
     
     protected GetPutTestBase(java.lang.String testName) {
         super(testName);
@@ -112,6 +113,47 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         public int getDepth() {
             return 1;
         }
+        @Override
+        public final boolean equals(int unitThis, Key obj, int unitObject) {
+            if (unitThis != unitObject) {
+                return false;
+            }
+            final BaseKey other = (BaseKey) obj;
+            if (this.key != other.key && (this.key == null || !this.key.equals(other.key))) {
+                return false;
+            }
+            if (this.unitName != other.unitName && (this.unitName == null || !this.unitName.equals(other.unitName))) {
+                return false;
+            }
+            return true;
+        }
+
+        abstract protected short getHandler();
+        
+        @Override
+        public final boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final BaseKey other = (BaseKey) obj;
+            return equals(TEST_UNIT_ID, other, TEST_UNIT_ID);
+        }
+
+        @Override
+        public final int hashCode(int unitID) {
+            int hash = this.key != null ? this.key.hashCode() : 0;
+            hash = 59 * hash + (this.unitName != null ? this.unitName.hashCode() : 0);
+            return hash + unitID;
+        }
+
+        @Override
+        public final int hashCode() {
+            return hashCode(TEST_UNIT_ID);
+        }
+
     }
 
     protected class SmallKey extends BaseKey {
@@ -131,8 +173,8 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         }
 
         @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        protected short getHandler() {
+            return GetPutTestBase.SMALL_KEY_HANDLER;
         }
     }
 
@@ -153,14 +195,14 @@ public abstract class GetPutTestBase extends CndBaseTestCase {
         }
 
         @Override
-        public KeyDataPresentation getDataPresentation() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        protected short getHandler() {
+            return GetPutTestBase.LARGE_KEY_HANDLER;
         }
     }
 
     protected static class Value implements Persistent {
 
-        private String value;
+        private final String value;
 
         public Value(String value) {
             this.value = value;

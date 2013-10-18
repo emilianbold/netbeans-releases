@@ -98,27 +98,14 @@ public class KeyUtilities {
 
     public static Key createOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj) {
         assert obj != null;
-        return new OffsetableDeclarationKey(obj);
+        return OffsetableDeclarationKey.createOffsetableDeclarationKey(obj);
     }
 
-    public static Key createOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
-        assert containingFile != null;
-        assert name != null;
-        assert kind != null;
-        return new OffsetableDeclarationKey(containingFile, startOffset, kind, name);
-    }
-    
     public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
         assert obj != null;
-        return new OffsetableDeclarationKey(obj, index);
+        return OffsetableDeclarationKey.createUnnamedOffsetableDeclarationKey(obj, index);
     }
 
-    public static Key createUnnamedOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, int index) {
-        assert containingFile != null;
-        assert kind != null;
-        return new OffsetableDeclarationKey(containingFile, startOffset, kind, Integer.toString(index));
-    }
-    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
@@ -131,7 +118,7 @@ public class KeyUtilities {
 
     public static Key createInheritanceKey(CsmInheritance inh) {
         assert inh != null;
-        return KeyManager.instance().getSharedKey(new InheritanceKey(inh));
+        return KeyManager.instance().getSharedKey(InheritanceKey.createInheritanceKey(inh));
     }
 
     public static <T extends CsmNamedElement> Key createParamListKey(CsmParameterList<T> paramList) {

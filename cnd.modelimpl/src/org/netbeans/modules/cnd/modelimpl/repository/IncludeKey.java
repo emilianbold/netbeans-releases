@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /*package*/ final class IncludeKey extends OffsetableKey {
 
     IncludeKey(CsmInclude obj) {
-        super(obj, Utils.getCsmIncludeKindKey(), obj.getIncludeName()); // NOI18N
+        super(obj, obj.getIncludeName()); // NOI18N
     }
 
     /*package*/ IncludeKey(RepositoryDataInput aStream) throws IOException {
@@ -72,6 +72,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
+    }
+
+    @Override
+    char getKind() {
+        return Utils.getCsmIncludeKindKey();
+    }
+
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_INCLUDE_KEY;
     }
 
     @Override
@@ -90,7 +100,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_INCLUDE_KEY;
+            return getHandler();
         } else {
             return super.getSecondaryAt(level - 1);
         }

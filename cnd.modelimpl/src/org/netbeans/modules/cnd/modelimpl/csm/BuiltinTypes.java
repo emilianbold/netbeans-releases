@@ -93,7 +93,7 @@ public class BuiltinTypes {
 
         @Override
         public CharSequence getUniqueName() {
-            return CharSequences.create(CharSequenceUtils.toString(Utils.getCsmDeclarationKindkey(getKind()), OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR,  getQualifiedName()));
+            return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR,  getQualifiedName()));
         }
         
         @Override

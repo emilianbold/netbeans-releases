@@ -84,8 +84,8 @@ public class FileIndexFactory extends AbstractObjectFactory {
     }    
 
     @Override
-    protected int getHandler(final Object object) {
-        final int aHandle;
+    protected short getHandler(final Object object) {
+        final short aHandle;
         
         if (object instanceof SimpleFileIndex) {
             aHandle = FILE_INDEX_SIMPLE;
@@ -98,7 +98,7 @@ public class FileIndexFactory extends AbstractObjectFactory {
     }
 
     @Override
-    protected SelfPersistent createObject(final int handler, final RepositoryDataInput stream) throws IOException {
+    protected SelfPersistent createObject(final short handler, final RepositoryDataInput stream) throws IOException {
         final SelfPersistent anIndex;
         
         switch (handler) {

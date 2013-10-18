@@ -75,7 +75,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 	retValue = super.toString();
 	return "ProjectKey " + retValue; // NOI18N
     }
-    
+
     @Override
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();
@@ -89,16 +89,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
 	assert (level == 0);
-	return KeyObjectFactory.KEY_PROJECT_KEY;
+	return getHandler();
     }
 
     @Override
     public boolean hasCache() {
         return true;
     }
-
+    
     @Override
-    public final short getKindPresentation() {
+    public short getHandler() {
         return KeyObjectFactory.KEY_PROJECT_KEY;
     }
 }

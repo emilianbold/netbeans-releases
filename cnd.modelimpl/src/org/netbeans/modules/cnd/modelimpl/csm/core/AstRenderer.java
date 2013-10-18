@@ -566,7 +566,7 @@ public class AstRenderer {
      * Finds variable in globals and in the current file
      */
     private boolean findVariable(CharSequence name, int offset) {
-        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE) +
+        String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE) +//NOI18N
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
@@ -580,12 +580,12 @@ public class AstRenderer {
      * Finds function in globals and in the current file
      */
     private boolean findFunction(CharSequence name, int offset) {
-        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) +
+        String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) +//NOI18N
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;
         }
-        uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) +
+        uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) +//NOI18N
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name; // NOI18N
         if (findGlobal(file.getProject(), uname, new ArrayList<CsmProject>())) {
             return true;

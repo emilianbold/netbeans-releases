@@ -177,7 +177,7 @@ public class APTSerializeUtils {
             if (child != null) {
                 // due to not huge depth of the tree                
                 // write child without optimization
-                out.writeInt(CHILD);
+                out.writeShort(CHILD);
                 writeAPT(out, child);
             }
             node = node.getNextSibling();            
@@ -185,19 +185,19 @@ public class APTSerializeUtils {
                 // we don't want to use recursion on writing sibling
                 // to prevent StackOverflow, 
                 // we use while loop for writing siblings
-                out.writeInt(SIBLING);
+                out.writeShort(SIBLING);
                 // write node data
                 out.writeObject(node);                 
             }
         } while (node != null);
-        out.writeInt(END_APT);
+        out.writeShort(END_APT);
     }
 
     static private void readTree(ObjectInputStream in, APT root) throws IOException, ClassNotFoundException {
         assert (root != null) : "there must be something to read"; // NOI18N
         APT node = root;
         do {
-            int kind = in.readInt();
+            int kind = in.readShort();
             switch (kind) {
                 case END_APT:
                     return;
@@ -243,7 +243,7 @@ public class APTSerializeUtils {
             try {
                 aptRead = readAPT(ois);
             } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } finally {
                 ois.close();                
             }
@@ -251,7 +251,7 @@ public class APTSerializeUtils {
             if (TRACE) { System.out.println("read APT of file " + file.getPath() + " withing " + readTime + "ms"); } // NOI18N
             out.delete();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return aptRead;
     }
@@ -271,17 +271,17 @@ public class APTSerializeUtils {
     public static void writeMacroMapState(APTMacroMap.State state, RepositoryDataOutput output) throws IOException {
         assert state != null;
         if (state instanceof APTFileMacroMap.FileStateImpl) {
-            output.writeInt(MACRO_MAP_FILE_STATE_IMPL);
+            output.writeShort(MACRO_MAP_FILE_STATE_IMPL);
             ((APTFileMacroMap.FileStateImpl)state).write(output);
         } else {
             assert state instanceof APTBaseMacroMap.StateImpl;
-            output.writeInt(MACRO_MAP_STATE_IMPL);
+            output.writeShort(MACRO_MAP_STATE_IMPL);
             ((APTBaseMacroMap.StateImpl)state).write(output);
         }
     }
     
     public static APTMacroMap.State readMacroMapState(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        int handler = input.readShort();
         APTMacroMap.State state;
         if (handler == MACRO_MAP_FILE_STATE_IMPL) {
             state = new APTFileMacroMap.FileStateImpl(input);
@@ -306,7 +306,7 @@ public class APTSerializeUtils {
     public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output, int unitIndex) throws IOException {
         assert state != null;
         if (state instanceof APTPreprocHandlerImpl.StateImpl) {
-            output.writeInt(PREPROC_STATE_STATE_IMPL);
+            output.writeShort(PREPROC_STATE_STATE_IMPL);
             ((APTPreprocHandlerImpl.StateImpl)state).write(output, unitIndex);
         } else {
             throw new IllegalArgumentException("unknown preprocessor state" + state);  //NOI18N
@@ -314,7 +314,7 @@ public class APTSerializeUtils {
     }
     
     public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
-        int handler = input.readInt();
+        int handler = input.readShort();
         APTPreprocHandler.State out;
         switch (handler) {
             case PREPROC_STATE_STATE_IMPL:
@@ -332,7 +332,7 @@ public class APTSerializeUtils {
     public static void writeSnapshot(APTMacroMapSnapshot snap, RepositoryDataOutput output) throws IOException {
         // FIXUP: we do not support yet writing snapshots!
 //        if (snap == null) {
-            output.writeInt(NULL_POINTER);
+            output.writeShort(NULL_POINTER);
 //        } else {
 //            output.writeInt(MACRO_MAP_SNAPSHOT);
 //            snap.write(output);
@@ -340,7 +340,7 @@ public class APTSerializeUtils {
     }
 
     public static APTMacroMapSnapshot readSnapshot(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        int handler = input.readShort();
         APTMacroMapSnapshot snap = null;
         if (handler != NULL_POINTER) {
             assert handler == MACRO_MAP_SNAPSHOT;
@@ -352,15 +352,15 @@ public class APTSerializeUtils {
     public static void writeMacro(APTMacro macro, RepositoryDataOutput output) throws IOException {
         assert macro != null;
         if (macro == APTMacroMapSnapshot.UNDEFINED_MACRO) {
-            output.writeInt(UNDEFINED_MACRO);
+            output.writeShort(UNDEFINED_MACRO);
         } else if (macro instanceof APTMacroImpl) {
-            output.writeInt(MACRO_IMPL);
+            output.writeShort(MACRO_IMPL);
             ((APTMacroImpl)macro).write(output);
         }
     }
     
     public static APTMacro readMacro(RepositoryDataInput input) throws IOException {
-        int handler = input.readInt();
+        int handler = input.readShort();
         APTMacro macro;
         if (handler == UNDEFINED_MACRO) {
             macro = APTMacroMapSnapshot.UNDEFINED_MACRO;
@@ -371,12 +371,12 @@ public class APTSerializeUtils {
         return macro;
     }
     
-    private static final int NULL_POINTER               = -1;
-    private static final int MACRO_MAP_STATE_IMPL       = 1;
-    private static final int MACRO_MAP_FILE_STATE_IMPL  = MACRO_MAP_STATE_IMPL + 1;
-    private static final int PREPROC_STATE_STATE_IMPL   = MACRO_MAP_FILE_STATE_IMPL + 1;
-    private static final int MACRO_MAP_SNAPSHOT         = PREPROC_STATE_STATE_IMPL + 1;
-    private static final int UNDEFINED_MACRO            = MACRO_MAP_SNAPSHOT + 1;
-    private static final int MACRO_IMPL                 = UNDEFINED_MACRO + 1;
+    private static final short NULL_POINTER               = -1;
+    private static final short MACRO_MAP_STATE_IMPL       = 1;
+    private static final short MACRO_MAP_FILE_STATE_IMPL  = MACRO_MAP_STATE_IMPL + 1;
+    private static final short PREPROC_STATE_STATE_IMPL   = MACRO_MAP_FILE_STATE_IMPL + 1;
+    private static final short MACRO_MAP_SNAPSHOT         = PREPROC_STATE_STATE_IMPL + 1;
+    private static final short UNDEFINED_MACRO            = MACRO_MAP_SNAPSHOT + 1;
+    private static final short MACRO_IMPL                 = UNDEFINED_MACRO + 1;
     
 }

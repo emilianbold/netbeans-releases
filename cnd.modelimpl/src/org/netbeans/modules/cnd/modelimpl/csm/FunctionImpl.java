@@ -418,9 +418,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         String uname;
         if(baseClass == null) {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
         } else {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) +
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + // NOI18N
                 OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                 baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
         }
@@ -444,9 +444,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         if (def == null) {
             if(baseClass == null) {
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
             } else {
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) +
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION) + // NOI18N
                         OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +
                         baseClass.getQualifiedName().toString() + "::" + getSignature(); // NOI18N
             }
@@ -483,7 +483,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 tparams.append('>'); // NOI18N                
                 StringBuilder params = new StringBuilder();
                 InstantiationProviderImpl.appendParametersSignature(getParameters(), params);
-                uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + 
+                uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + //NOI18N
                         getQualifiedName().toString() + tparams.toString() + params.toString();
                 def = findDefinition(prj, uname);
                 if (def == null) {

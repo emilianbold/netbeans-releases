@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
@@ -55,17 +56,32 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
  * A key for CsmInclude objects (file and offset -based)
  */
 
-/*package*/ final class InheritanceKey extends OffsetableKey {
+/*package*/ abstract class InheritanceKey extends OffsetableKey {
 
-    InheritanceKey(CsmInheritance obj) {
-        super(obj, Utils.getCsmInheritanceKindKey(obj), obj.getAncestorType().getClassifierText()); // NOI18N
+    
+    /*package*/ static InheritanceKey createInheritanceKey(CsmInheritance obj) {
+        switch(obj.getVisibility()) {
+            case PUBLIC:
+                return new PUBLIC(obj);
+            case PRIVATE:
+                return new PRIVATE(obj);
+            case PROTECTED:
+                return new PROTECTED(obj);
+            case NONE:
+                return new NONE(obj);
+        }
+        throw new IllegalArgumentException();
     }
 
-    /*package*/ InheritanceKey(RepositoryDataInput aStream) throws IOException {
+    private InheritanceKey(CsmInheritance obj) {
+        super(obj, obj.getAncestorType().getClassifierText()); // NOI18N
+    }
+
+    private InheritanceKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
 
-    InheritanceKey(KeyDataPresentation presentation) {
+    private InheritanceKey(KeyDataPresentation presentation) {
         super(presentation);
     }
 
@@ -90,10 +106,38 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_INHERITANCE_KEY;
+            return getHandler();
         } else {
             return super.getSecondaryAt(level - 1);
         }
     }
-
+    
+    static final class PUBLIC extends InheritanceKey {
+        PUBLIC(CsmInheritance obj) {super(obj);}
+        PUBLIC(KeyDataPresentation presentation) {super(presentation);}
+        PUBLIC(RepositoryDataInput aStream) throws IOException {super(aStream);}
+        @Override char getKind() {return Utils.getCsmInheritanceKindKey(CsmVisibility.PUBLIC);}
+        @Override public short getHandler() {return KeyObjectFactory.KEY_INHERITANCE_PUBLIC_KEY;}
+    }
+    static final class PRIVATE extends InheritanceKey {
+        PRIVATE(CsmInheritance obj) {super(obj);}
+        PRIVATE(KeyDataPresentation presentation) {super(presentation);}
+        PRIVATE(RepositoryDataInput aStream) throws IOException {super(aStream);}
+        @Override char getKind() {return Utils.getCsmInheritanceKindKey(CsmVisibility.PRIVATE);}
+        @Override public short getHandler() {return KeyObjectFactory.KEY_INHERITANCE_PRIVATE_KEY;}
+    }
+    static final class PROTECTED extends InheritanceKey {
+        PROTECTED(CsmInheritance obj) {super(obj);}
+        PROTECTED(KeyDataPresentation presentation) {super(presentation);}
+        PROTECTED(RepositoryDataInput aStream) throws IOException {super(aStream);}
+        @Override char getKind() {return Utils.getCsmInheritanceKindKey(CsmVisibility.PROTECTED);}
+        @Override public short getHandler() {return KeyObjectFactory.KEY_INHERITANCE_PROTECTED_KEY;}
+    }
+    static final class NONE extends InheritanceKey {
+        NONE(CsmInheritance obj) {super(obj);}
+        NONE(KeyDataPresentation presentation) {super(presentation);}
+        NONE(RepositoryDataInput aStream) throws IOException {super(aStream);}
+        @Override char getKind() {return Utils.getCsmInheritanceKindKey(CsmVisibility.NONE);}
+        @Override public short getHandler() {return KeyObjectFactory.KEY_INHERITANCE_NONE_KEY;}
+    }
 }

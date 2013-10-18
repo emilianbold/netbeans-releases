@@ -94,7 +94,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
 
     @Override
     public CharSequence getUniqueName() {
-        return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), ":", getUniqueNameWithoutPrefix())); //NOI18N
+        return CharSequences.create(CharSequenceUtils.concatenate(Utils.getCsmDeclarationKindkey(getKind()), UNIQUE_NAME_SEPARATOR, getUniqueNameWithoutPrefix())); //NOI18N
     }
     
     public CharSequence getUniqueNameWithoutPrefix() {

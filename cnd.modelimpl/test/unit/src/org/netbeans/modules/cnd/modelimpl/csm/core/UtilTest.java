@@ -71,21 +71,21 @@ public class UtilTest extends ModelBasedTestCase {
 
     @Test
     public void testConsistency() throws Exception {
-        Set<String> set = new HashSet<String>();
+        Set<Character> set = new HashSet<Character>();
         for(CsmDeclaration.Kind kind : CsmDeclaration.Kind.values()) {
-            String csmDeclarationKindkey = Utils.getCsmDeclarationKindkey(kind);
+            char csmDeclarationKindkey = Utils.getCsmDeclarationKindkey(kind);
             if (set.contains(csmDeclarationKindkey)) {
                 assert false : "Duplicated key "+csmDeclarationKindkey+" for "+kind;
             }
             set.add(csmDeclarationKindkey);
-            char charAt = csmDeclarationKindkey.charAt(0);
-            assert Utils.getCsmDeclarationKind(charAt) == kind : "Undefined kind for char"+csmDeclarationKindkey.charAt(0);
+            char charAt = csmDeclarationKindkey;
+            assert Utils.getCsmDeclarationKind(charAt) == kind : "Undefined kind for char "+csmDeclarationKindkey;
             Key key = presentationFactory((short)charAt);
             assert key != null;
             assert KeyUtilities.getKeyChar(key) == charAt;
         }
         for(final CsmVisibility kind : CsmVisibility.values()) {
-            String csmInheritanceKindKey = Utils.getCsmInheritanceKindKey(new CsmInheritance() {
+            char csmInheritanceKindKey = Utils.getCsmInheritanceKindKey(new CsmInheritance() {
 
                 @Override
                 public CsmClassifier getClassifier() {
@@ -146,32 +146,32 @@ public class UtilTest extends ModelBasedTestCase {
                 assert false : "Duplicated key "+csmInheritanceKindKey+" for "+kind;
             }
             set.add(csmInheritanceKindKey);
-            char charAt = csmInheritanceKindKey.charAt(0);
-            assert Utils.getCsmVisibility(charAt) == kind : "Undefined kind for char"+csmInheritanceKindKey.charAt(0);
+            char charAt = csmInheritanceKindKey;
+            assert Utils.getCsmVisibility(charAt) == kind : "Undefined kind for char "+csmInheritanceKindKey;
             Key key = presentationFactory((short)charAt);
             assert key != null;
             assert KeyUtilities.getKeyChar(key) == charAt;
         }
-        String key = Utils.getCsmIncludeKindKey();
+        char key = Utils.getCsmIncludeKindKey();
         assert !set.contains(key) : "Duplicated key "+key;
         set.add(key);
-        Key aKey = presentationFactory((short)key.charAt(0));
+        Key aKey = presentationFactory((short)key);
         assert aKey != null;
-        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+        assert KeyUtilities.getKeyChar(aKey) == key;
         
         key = Utils.getCsmParamListKindKey();
         assert !set.contains(key) : "Duplicated key "+key;
         set.add(key);
-        aKey = presentationFactory((short)key.charAt(0));
+        aKey = presentationFactory((short)key);
         assert aKey != null;
-        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+        assert KeyUtilities.getKeyChar(aKey) == key;
 
         key = Utils.getCsmInstantiationKindKey();
         assert !set.contains(key) : "Duplicated key "+key;
         set.add(key);
-        aKey = presentationFactory((short)key.charAt(0));
+        aKey = presentationFactory((short)key);
         assert aKey != null;
-        assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+        assert KeyUtilities.getKeyChar(aKey) == key;
         assertNoExceptions();
     }
 
@@ -189,11 +189,6 @@ public class UtilTest extends ModelBasedTestCase {
             }
 
             @Override
-            public short getKindPresentation() {
-                return kind;
-            }
-
-            @Override
             public int getFilePresentation() {
                 return 0;
             }
@@ -206,6 +201,11 @@ public class UtilTest extends ModelBasedTestCase {
             @Override
             public int getEndPresentation() {
                 return 0;
+            }
+
+            @Override
+            public short getHandler() {
+                return kind;
             }
         };
         KeyPresentationFactoryImpl impl = new KeyPresentationFactoryImpl();

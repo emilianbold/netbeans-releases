@@ -45,111 +45,42 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
-/*package*/ class NamespaceKey extends ProjectContainerKey {
-
-    private final CharSequence fqn;
-    private final int hashCode; // cashed hash code
+/*package*/ final class NamespaceKey extends NamespaceBaseKey {
 
     NamespaceKey(CsmNamespace ns) {
-        super(((ProjectBase) ns.getProject()).getUnitId());
-        this.fqn = ns.getQualifiedName();
-        hashCode = _hashCode();
+        super(ns);
     }
 
     NamespaceKey(KeyDataPresentation presentation) {
         super(presentation);
-        fqn = presentation.getNamePresentation();
-        hashCode = _hashCode();
     }
-
-    @Override
-    public String toString() {
-        return "NSKey " + fqn + " of project " + getProjectName(); // NOI18N
-    }
-
-    @Override
-    public PersistentFactory getPersistentFactory() {
-        return CsmObjectFactory.instance();
-    }
-
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
-
-    private int _hashCode() {
-        int key = super.hashCode();
-        key = 37*KeyObjectFactory.KEY_NAMESPACE_KEY +key;
-        key = 17 * key + fqn.hashCode();
-        return key;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!super.equals(obj)) {
-            return false;
-        }
-        NamespaceKey other = (NamespaceKey) obj;
-        return this.fqn.equals(other.fqn);
-    }
-
+    
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
-        assert fqn != null;
-        PersistentUtils.writeUTF(fqn, aStream);
     }
 
     /*package*/ NamespaceKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
-        fqn = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager());
-        assert fqn != null;
-        hashCode = _hashCode();
-    }
-
-    @Override
-    public int getDepth() {
-        assert super.getDepth() == 0;
-        return 1;
-    }
-
-    @Override
-    public CharSequence getAt(int level) {
-        assert super.getDepth() == 0 && level < getDepth();
-        return this.fqn;
-    }
-
-    @Override
-    public int getSecondaryDepth() {
-        return 1;
     }
 
     @Override
     public int getSecondaryAt(int level) {
         assert level == 0;
+        return getHandler();
+    }
+
+    @Override
+    public short getHandler() {
         return KeyObjectFactory.KEY_NAMESPACE_KEY;
     }
-
+    
     @Override
-    public boolean hasCache() {
-        return true;
-    }
-
-    @Override
-    public short getKindPresentation() {
-        return KeyObjectFactory.KEY_NAMESPACE_KEY;
-    }
-
-    @Override
-    public final CharSequence getNamePresentation() {
-        return fqn;
+    public String toString() {
+        return "NSKey " + getNamePresentation() + " of project " + getProjectName(); // NOI18N
     }
 }

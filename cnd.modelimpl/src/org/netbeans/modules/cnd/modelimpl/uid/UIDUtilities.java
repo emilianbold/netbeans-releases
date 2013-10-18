@@ -76,7 +76,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Disposable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -450,15 +449,6 @@ public class UIDUtilities {
         }
     }
     
-    private static <T extends CsmOffsetableDeclaration> CsmUID<T> handleUnnamedDeclaration(CsmDeclaration.Kind kind, FileImpl containingFile, int startOffset) {
-        Key key = KeyUtilities.createUnnamedOffsetableDeclarationKey(containingFile, startOffset, Utils.getCsmDeclarationKindkey(kind), UnnamedID.incrementAndGet());
-        if (kind == CsmDeclaration.Kind.CLASS) {
-            return new UnnamedClassifierUID<T>(key);
-        } else {
-            return new UnnamedOffsetableDeclarationUID<T>(key);
-        }
-    }
-    
     private static final AtomicInteger UnnamedID = new AtomicInteger(0);
     //////////////////////////////////////////////////////////////////////////
     // impl details
@@ -489,7 +479,7 @@ public class UIDUtilities {
         @Override
         @SuppressWarnings("unchecked")
         public T getObject() {
-            T out = null;
+            T out;
             Reference<T> weak = (Reference<T>) weakT;
             if (weak != DUMMY) {
                 out = weak.get();

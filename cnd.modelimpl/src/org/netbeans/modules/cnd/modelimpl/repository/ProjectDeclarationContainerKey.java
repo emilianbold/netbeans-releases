@@ -78,14 +78,9 @@ public final class ProjectDeclarationContainerKey extends ProjectContainerKey {
     }
 
     @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_PROJECT_DECLARATION_CONTAINER_KEY + super.hashCode();
-    }
-
-    @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
-        return KeyObjectFactory.KEY_PROJECT_DECLARATION_CONTAINER_KEY;
+        return getHandler();
     }
 
     @Override
@@ -99,7 +94,7 @@ public final class ProjectDeclarationContainerKey extends ProjectContainerKey {
     }
 
     @Override
-    public final short getKindPresentation() {
+    public short getHandler() {
         return KeyObjectFactory.KEY_PROJECT_DECLARATION_CONTAINER_KEY;
     }
 }
