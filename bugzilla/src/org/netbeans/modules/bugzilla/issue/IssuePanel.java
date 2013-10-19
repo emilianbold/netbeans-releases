@@ -126,7 +126,11 @@ import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.util.LinkButton;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -189,7 +193,6 @@ public class IssuePanel extends javax.swing.JPanel {
     private boolean skipReload;
     private boolean usingTargetMilestones;
     private OwnerInfo ownerInfo;
-    private UndoRedoSupport undoRedoSupport;
     private final Set<String> unsavedFields = new HashSet<>();
     private boolean customFieldsLoaded;
 
@@ -3707,8 +3710,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
     void opened() {
         restoreSections();
-        undoRedoSupport = Bugzilla.getInstance().getUndoRedoSupport(issue);
-        undoRedoSupport.register(addCommentArea);
         enableComponents(false);
         issue.opened();
     }
@@ -3717,10 +3718,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if(issue != null) {
             persistSections();
             commentsPanel.storeSettings();
-            if (undoRedoSupport != null) {
-                undoRedoSupport.unregisterAll();
-                undoRedoSupport = null;
-            }
             issue.closed();
         }
     }
@@ -3916,7 +3913,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
 
             @Override
             protected boolean storeValue () {
-                issue.setTaskDueDate(dueDatePicker.getDate());
+                issue.setTaskDueDate(dueDatePicker.getDate(), false);
                 return true;
             }
         });
@@ -3931,7 +3928,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
                     cal = Calendar.getInstance();
                     cal.setTime(date);
                 }
-                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal));
+                issue.setTaskScheduleDate(cal == null ? null : new NbDateRange(cal).toSchedulingInfo(), false);
                 return true;
             }
         });
@@ -3942,7 +3939,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             protected boolean storeValue () {
                 int value = ((Number) estimateField.getValue()).intValue();
                 if (value != issue.getEstimate()) {
-                    issue.setTaskEstimate(value);
+                    issue.setTaskEstimate(value, false);
                     return true;
                 } else {
                     return false;
@@ -4061,10 +4058,9 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         if (privateSectionActions == null) {
             privateSectionActions = new Action[] {
                 new AbstractAction(Bundle.IssuePanel_addToCategory_text()) {
-                
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
+                        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(issue.getRepository(), issue);
                     }
                 }
             };

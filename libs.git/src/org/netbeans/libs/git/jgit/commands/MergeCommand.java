@@ -50,7 +50,6 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.errors.CheckoutConflictException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.merge.MergeStrategy;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -91,7 +90,6 @@ public class MergeCommand extends GitCommand {
             }
             command.include(msg, ref.getTarget().getObjectId());
         }
-        command.setStrategy(MergeStrategy.RESOLVE);
         try {
             result = getClassFactory().createMergeResult(command.call(), repository.getWorkTree());
         } catch (org.eclipse.jgit.api.errors.CheckoutConflictException ex) {

@@ -157,8 +157,9 @@ public class TaskSorter {
         TaskAttribute scheduled = new TaskAttribute(SCHEDULED_ID, NbBundle.getMessage(TaskSorter.class, "LBL_ScheduledDisplayName"), new Comparator<TaskNode>() {
             @Override
             public int compare(TaskNode tn1, TaskNode tn2) {
-                //TODO implement
-                return 0;
+                int scheduleIndex1 = DashboardUtils.getScheduleIndex(tn1.getTask());
+                int scheduleIndex2 = DashboardUtils.getScheduleIndex(tn2.getTask());
+                return Integer.compare(scheduleIndex1, scheduleIndex2);
             }
         });
         scheduled.setRank(3);

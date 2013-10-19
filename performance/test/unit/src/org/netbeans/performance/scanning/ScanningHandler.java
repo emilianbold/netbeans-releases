@@ -41,9 +41,9 @@
  */
 package org.netbeans.performance.scanning;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
@@ -54,16 +54,16 @@ import org.netbeans.junit.NbPerformanceTest.PerformanceData;
  */
 class ScanningHandler extends Handler {
 
-    private final List<PerformanceData> data;
+    private final Map<String, PerformanceData> data;
 
-    List<PerformanceData> getData() {
-        return data;
+    Collection<PerformanceData> getData() {
+        return data.values();
     }
 
     void clear() {
         data.clear();
     }
-
+    
     static enum ScanType {
 
         INITIAL(" initial "),
@@ -86,8 +86,7 @@ class ScanningHandler extends Handler {
     public ScanningHandler(String projectName) {
         this.projectName = projectName;
         this.type = ScanType.INITIAL;
-        data = new ArrayList<>();
-
+        data = new HashMap<>();
     }
 
     public void setType(ScanType type) {
@@ -98,42 +97,30 @@ class ScanningHandler extends Handler {
     public void publish(LogRecord record) {
         String message = record.getMessage();
         if (message != null && message.startsWith("Complete indexing")) {
+            String name = null;
+            long value = 0;
             if (message.contains("source roots")) {
-                PerformanceData res = new PerformanceData();
-                res.name = projectName + type.getName() + "source scan";
-
-                if (record.getParameters() == null) {
-                    StringTokenizer tokenizer = new StringTokenizer(message, " ");
-                    int count = tokenizer.countTokens();
-                    String token = "0";
-                    for (int i = 0; i < count; i++) {
-                        String next = tokenizer.nextToken();
-                        if ((next.startsWith("source")) && "0".equals(token)) {
-                            break;
-                        }
-                        if (next.startsWith("ms")) {
-                            res.value = Long.parseLong(token);
-                            res.unit = "ms";
-                            res.runOrder = 0;
-                            data.add(res);
-                            break;
-                        }
-                        token = next;
-                    }
-                } else if (record.getParameters()[0].hashCode() > 0) {
-                    res.value = record.getParameters()[1].hashCode();
-                    res.unit = "ms";
-                    res.runOrder = 0;
-                    data.add(res);
+                if (record.getParameters()[0].hashCode() > 0) {
+                    name = projectName + type.getName() + "source scan";
+                    value = record.getParameters()[1].hashCode();
                 }
             } else if (message.contains("binary roots")) {
                 if (record.getParameters()[0].hashCode() > 0) {
-                    PerformanceData res = new PerformanceData();
-                    res.name = projectName + type.getName() + "binary scan";
-                    res.value = record.getParameters()[1].hashCode();
-                    res.unit = "ms";
-                    res.runOrder = 0;
-                    data.add(res);
+                    name = projectName + type.getName() + "binary scan";
+                    value = record.getParameters()[1].hashCode();
+                }
+            }
+            if (name != null && value > 0) {
+                PerformanceData newData = data.get(name);
+                if (newData == null) {
+                    newData = new PerformanceData();
+                    newData.name = name;
+                    newData.value = value;
+                    newData.unit = "ms";
+                    newData.runOrder = 0;
+                    data.put(name, newData);
+                } else {
+                    newData.value = newData.value + value;
                 }
             }
         }

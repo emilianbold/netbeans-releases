@@ -153,7 +153,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Logger.getAnonymousLogger().log(Level.INFO, "Processing results.");
         super.tearDown();
-        for (PerformanceData rec : getPerformanceData()) {
+        for (PerformanceData rec : data) {
             Utilities.processUnitTestsResults(JavaNavigatorPerfTest.class.getCanonicalName(), rec);
         }
         data.clear();
@@ -162,10 +162,6 @@ public class JavaNavigatorPerfTest extends NbTestCase {
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.createConfiguration(JavaNavigatorPerfTest.class).
                 clusters(".*").enableModules(".*").suite();
-    }
-
-    public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
     }
 
     private class NavigatorHandler extends Handler {

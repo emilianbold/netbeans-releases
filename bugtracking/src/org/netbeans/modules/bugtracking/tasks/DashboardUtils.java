@@ -46,9 +46,10 @@ import java.awt.FontMetrics;
 import java.awt.Image;
 import java.io.CharConversionException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +63,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.spi.IssueScheduleInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.cache.DashboardStorage;
 import org.netbeans.modules.bugtracking.tasks.cache.TaskEntry;
@@ -93,6 +95,10 @@ public class DashboardUtils {
 
     private static final Image SCHEDULE_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule.png", true); //NOI18
     private static final Image SCHEDULE_WARNING_ICON = ImageUtilities.loadImage("org/netbeans/modules/bugtracking/tasks/resources/schedule_warning.png", true); //NOI18
+
+    private static final int SCHEDULE_NOT_IN_SCHEDULE = 0;
+    private static final int SCHEDULE_IN_SCHEDULE = 1;
+    private static final int SCHEDULE_AFTER_DUE = 2;
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -341,15 +347,51 @@ public class DashboardUtils {
         return ImageUtilities.image2Icon(priorityIcon);
     }
 
+    public static int getScheduleIndex(IssueImpl issue) {
+        boolean afterDue = isAfterDue(issue);
+        boolean scheduleNow = isInSchedule(issue);
+        if (afterDue) {
+            return SCHEDULE_AFTER_DUE;
+        } else if (scheduleNow) {
+            return SCHEDULE_IN_SCHEDULE;
+        }
+        return SCHEDULE_NOT_IN_SCHEDULE;
+    }
+
     private static Image getScheduleIcon(IssueImpl issue) {
-        boolean afterDue = false; //TODO get from issue ASA it is in API
-        boolean scheduleNow = false; //TODO get from issue ASA it is in API
+        boolean afterDue = isAfterDue(issue);
+        boolean scheduleNow = isInSchedule(issue);
         if (afterDue) {
             return SCHEDULE_WARNING_ICON;
         } else if (scheduleNow) {
             return SCHEDULE_ICON;
         }
         return null;
+    }
+
+    private static boolean isAfterDue(IssueImpl issue) {
+        Calendar now = Calendar.getInstance();
+        Date dueDate = issue.getDueDate();
+        return dueDate == null ? false : now.getTime().getTime() >= dueDate.getTime();
+    }
+
+    private static boolean isInSchedule(IssueImpl issue) {
+        Calendar now = Calendar.getInstance();
+        IssueScheduleInfo scheduleInfo = issue.getSchedule();
+        if (scheduleInfo == null) {
+            return false;
+        }
+        Calendar scheduleStart = Calendar.getInstance();
+        scheduleStart.setTime(scheduleInfo.getDate());
+
+        Calendar scheduleEnd = Calendar.getInstance();
+        scheduleEnd.setTime(scheduleInfo.getDate());
+        scheduleEnd.add(Calendar.DATE, scheduleInfo.getInterval());
+
+        if (now.getTimeInMillis() >= scheduleStart.getTimeInMillis() && now.getTimeInMillis() <= scheduleEnd.getTimeInMillis()) {
+            return true;
+        }
+        return false;
     }
 
     public static int compareTaskIds(String id1, String id2) {

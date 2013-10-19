@@ -53,7 +53,6 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -466,10 +465,10 @@ public class IgnoreTest extends AbstractGitTestCase {
         write(gitIgnore, "/fi\\*le");
         // jgit seems to incorrectly handle escaped wildcards
         st = getClient(workDir).getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertNotSame(Status.STATUS_IGNORED, st.getStatusIndexWC());
-//        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
-//        assertEquals("/fi\\*le", read(gitIgnore));
-//        assertNull(getClient(workDir).getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f));
+        assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
+        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
+        assertEquals("/fi\\*le", read(gitIgnore));
+        assertEquals(0, ignores.length);
     }
     
     public void testIgnoreFileWithQuestionMark () throws Exception {
@@ -494,9 +493,10 @@ public class IgnoreTest extends AbstractGitTestCase {
         write(gitIgnore, "/fi\\?le");
         // jgit seems to incorrectly handle escaped wildcards
         st = getClient(workDir).getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertNotSame(Status.STATUS_IGNORED, st.getStatusIndexWC());
-//        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
-//        assertEquals("/fi\\?le", read(gitIgnore));
+        assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
+        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
+        assertEquals("/fi\\?le", read(gitIgnore));
+        assertEquals(0, ignores.length);
     }
     
     public void testIgnoreFileWithBracket () throws Exception {
@@ -517,9 +517,10 @@ public class IgnoreTest extends AbstractGitTestCase {
         write(gitIgnore, "/fi\\[le");
         // jgit seems to incorrectly handle escaped wildcards
         st = getClient(workDir).getStatus(new File[] { f }, NULL_PROGRESS_MONITOR).get(f);
-        assertNotSame(Status.STATUS_IGNORED, st.getStatusIndexWC());
-//        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
-//        assertEquals("/fi[\\[]le", read(gitIgnore));
+        assertEquals(Status.STATUS_IGNORED, st.getStatusIndexWC());
+        ignores = getClient(workDir).ignore(new File[] { f }, NULL_PROGRESS_MONITOR);
+        assertEquals("/fi\\[le", read(gitIgnore));
+        assertEquals(0, ignores.length);
     }
     
     public void testDoNotIgnoreExcludedFile () throws Exception {

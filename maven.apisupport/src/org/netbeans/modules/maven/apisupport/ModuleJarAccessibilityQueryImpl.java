@@ -125,7 +125,7 @@ public class ModuleJarAccessibilityQueryImpl implements AccessibilityQueryImplem
         if ("nbm-file".equals(art.getType())) {
             return getIcon();
         }
-        if (jarFile != null) {
+        if (jarFile != null && FileUtil.isArchiveFile(jarFile)) {
             FileObject jarRoot = FileUtil.getArchiveRoot(jarFile);
             synchronized (cache) {
                 List<Pattern> patt = cache.get(jarRoot);

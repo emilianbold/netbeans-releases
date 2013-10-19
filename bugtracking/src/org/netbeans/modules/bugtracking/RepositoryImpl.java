@@ -91,7 +91,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
 
-    private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
+    private final Map<I, IssueImpl> issueMap = new WeakHashMap<I, IssueImpl>();
     private final Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     private IssuePrioritySupport prioritySupport;
