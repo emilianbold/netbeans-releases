@@ -68,6 +68,7 @@ public class MakeUpdateDescTest extends NbTestCase {
                 "com.jcraft.jzlib;resolution:=optional, " +
                 "org.openide.actions;bundle-version=\"[6.15,100)\"," +
                 "javax.xml.rpc;bundle-version=1.1.0, " +
+                "javax.xml.rpc;bundle-version=1.1.0, " +
                 "org.apache.xerces;bundle-version=\"[2.8.0,3.0.0)\";resolution:=optional, " + 
                 "org.eclipse.osgi;bundle-version=\"[3.5.0,4.0.0)\";visibility:=reexport");
         Properties localization = new Properties();
