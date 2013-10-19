@@ -283,9 +283,9 @@ public final class ProjectHooks {
                 preOpen,
                 postOpen,
                 preClose,
-                postClose,
-                buildTemplate,
+                postClose,                
                 buildImplTemplate,
+                buildTemplate,
                 buildXmlName);
         }
         
