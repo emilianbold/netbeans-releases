@@ -753,10 +753,8 @@ public class MakeUpdateDesc extends MatchingTask {
                     continue;
                 } 
                 m2.reset();
-                if (b.length() > 0) {
-                    b.append(", ");
-                }
-                b.append(requiredBundleName); // dep CNB
+                StringBuilder depSB = new StringBuilder();
+                depSB.append(requiredBundleName); // dep CNB
                 while (m2.find()) {
                     if (!m2.group(1).equals("bundle-version")) {
                         continue;
@@ -764,7 +762,7 @@ public class MakeUpdateDesc extends MatchingTask {
                     String val = m2.group(2);
                     if (val.matches("[0-9]+([.][0-9]+)*")) {
                         // non-range dep occasionally used in OSGi; no exact equivalent in NB
-                        b.append(" > ").append(val);
+                        depSB.append(" > ").append(val);
                         continue;
                     }
                     Matcher m3 = Pattern.compile("\\[([0-9]+)((?:[.][0-9]+)*),([0-9.]+)\\)").matcher(val);
@@ -776,17 +774,23 @@ public class MakeUpdateDesc extends MatchingTask {
                     try {
                         int max = Integer.parseInt(m3.group(3));
                         if (major > 99) {
-                            b.append('/').append(major / 100);
+                            depSB.append('/').append(major / 100);
                             if (max > major + 100) {
-                                b.append('-').append(max / 100 - 1);
+                                depSB.append('-').append(max / 100 - 1);
                             }
                         } else if (max > 100) {
-                            b.append("/0-").append(max / 100 - 1);
+                            depSB.append("/0-").append(max / 100 - 1);
                         }
                     } catch (NumberFormatException x) {
                         // never mind end boundary, does not match NB conventions
                     }
-                    b.append(" > ").append(major % 100).append(rest);
+                    depSB.append(" > ").append(major % 100).append(rest);
+                }
+                if (b.indexOf(depSB.toString()) == -1) {
+                    if (b.length() > 0) {
+                        b.append(", ");
+                    }
+                    b.append(depSB);
                 }
             }
             if(b.length() > 0) {
@@ -858,8 +862,12 @@ public class MakeUpdateDesc extends MatchingTask {
             return sb;
         }
         StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+        String token;
         while (tok.hasMoreElements()) {
-            sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+            token = beforeSemicolon(tok);
+            if (sb.indexOf(token) == -1) {
+                sb.append(sb.length() == 0 ? "" : ", ").append(token);
+            }
         }
         return sb;
     }
@@ -869,15 +877,23 @@ public class MakeUpdateDesc extends MatchingTask {
         String pkgs = attr.getValue("Import-Package"); // NOI18N
         if (pkgs != null) {
             StringTokenizer tok = createTokenizer(pkgs); // NOI18N
+            String token;
             while (tok.hasMoreElements()) {
-                sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+                token = beforeSemicolon(tok);
+                if (sb.indexOf(token) == -1) {
+                    sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+                }
             }
         }
         String recomm = attr.getValue("Require-Bundle"); // NOI18N
         if (recomm != null) {
             StringTokenizer tok = createTokenizer(recomm); // NOI18N
+            String token;
             while (tok.hasMoreElements()) {
-                sb.append(sb.length() == 0 ? "" : ", ").append("cnb.").append(beforeSemicolon(tok));
+                token = beforeSemicolon(tok);
+                if (sb.indexOf(token) == -1) {
+                    sb.append(sb.length() == 0 ? "" : ", ").append("cnb.").append(token);
+                }
             }
         }
         return sb;
