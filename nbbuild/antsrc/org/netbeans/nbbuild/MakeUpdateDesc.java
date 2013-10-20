@@ -881,7 +881,7 @@ public class MakeUpdateDesc extends MatchingTask {
             while (tok.hasMoreElements()) {
                 token = beforeSemicolon(tok);
                 if (sb.indexOf(token) == -1) {
-                    sb.append(sb.length() == 0 ? "" : ", ").append(beforeSemicolon(tok));
+                    sb.append(sb.length() == 0 ? "" : ", ").append(token);
                 }
             }
         }
