@@ -65,7 +65,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 /*package*/ final class InstantiationKey extends OffsetableKey {
     
     InstantiationKey(CsmInstantiation inst) {
-        super(inst.getTemplateDeclaration(), Utils.getCsmInstantiationKindKey(), NameCache.getManager().getString(getName(inst))); // NOI18N
+        super(inst.getTemplateDeclaration(), NameCache.getManager().getString(getName(inst))); // NOI18N
     }
     
     private static CharSequence getName(CsmInstantiation inst) {
@@ -100,6 +100,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     public PersistentFactory getPersistentFactory() {
         return CsmObjectFactory.instance();
     }
+    
+    @Override
+    char getKind() {
+        return Utils.getCsmInstantiationKindKey();
+    }
+
+    @Override
+    public short getHandler() {
+        return KeyObjectFactory.KEY_INSTANTIATION_KEY;
+    }
 
     @Override
     public String toString() {
@@ -117,7 +127,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     @Override
     public int getSecondaryAt(int level) {
         if (level == 0) {
-            return KeyObjectFactory.KEY_INSTANTIATION_KEY;
+            return getHandler();
         } else {
             return super.getSecondaryAt(level - 1);
         }

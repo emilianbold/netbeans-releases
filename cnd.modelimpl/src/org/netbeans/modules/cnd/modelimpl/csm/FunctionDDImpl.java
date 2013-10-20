@@ -175,7 +175,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             }
             return this;
         }
-        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+        String uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
         CsmProject prj = getContainingFile().getProject();
         CsmDeclaration decl = findDeclaration(prj, uname);
         if (decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION) {
@@ -192,7 +192,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             }
         }
         if(decl == null) {
-            uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
+            uname = ""+Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_FRIEND) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix(); //NOI18N
             decl = findDeclaration(prj, uname);
             if (decl != null && decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND) {
                 if (!isStatic() || CsmKindUtilities.isClassMember(this)

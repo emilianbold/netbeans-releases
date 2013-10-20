@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  *
  * @author Vladimir Voskresensky
  */
-public final class NamespaceDeclarationContainerKey extends NamespaceKey {
+public final class NamespaceDeclarationContainerKey extends NamespaceBaseKey {
 
     public NamespaceDeclarationContainerKey(CsmNamespace ns) {
         super(ns);
@@ -64,18 +64,13 @@ public final class NamespaceDeclarationContainerKey extends NamespaceKey {
 
     @Override
     public String toString() {
-        return "NSDeclContainer " + super.toString(); // NOI18N
-    }
-
-    @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY + super.hashCode();
+        return "NSDeclContainer " + getNamePresentation() + " of project " + getProjectName(); // NOI18N
     }
 
     @Override
     public int getSecondaryAt(int level) {
         assert level == 0;
-        return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;
+        return getHandler();
     }
 
     @Override
@@ -86,14 +81,9 @@ public final class NamespaceDeclarationContainerKey extends NamespaceKey {
     /*package*/ NamespaceDeclarationContainerKey(RepositoryDataInput aStream) throws IOException {
         super(aStream);
     }
-
+    
     @Override
-    public boolean hasCache() {
-        return true;
-    }
-
-    @Override
-    public final short getKindPresentation() {
+    public short getHandler() {
         return KeyObjectFactory.KEY_NS_DECLARATION_CONTAINER_KEY;
     }
 }

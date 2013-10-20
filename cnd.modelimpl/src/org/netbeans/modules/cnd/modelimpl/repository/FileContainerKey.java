@@ -71,10 +71,10 @@ public final class FileContainerKey extends ProjectContainerKey {
     public int getSecondaryDepth() {
         return 1;
     }
-
+    
     @Override
-    public int hashCode() {
-        return 37*KeyObjectFactory.KEY_FILE_CONTAINER_KEY + super.hashCode();
+    public short getHandler() {
+        return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
 
     @Override
@@ -85,7 +85,7 @@ public final class FileContainerKey extends ProjectContainerKey {
     @Override
     public int getSecondaryAt(int level) {
         assert (level == 0);
-        return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
+        return getHandler();
     }
 
     @Override
@@ -96,10 +96,5 @@ public final class FileContainerKey extends ProjectContainerKey {
     @Override
     public boolean hasCache() {
         return true;
-    }
-
-    @Override
-    public short getKindPresentation() {
-        return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
 }
