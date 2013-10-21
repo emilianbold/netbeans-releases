@@ -96,16 +96,16 @@ import org.openide.util.Utilities;
  */
 public class JUnitOutputListenerProvider implements OutputProcessor {
     TestSession session;
-    private Pattern runningPattern;
-    private Pattern outDirPattern2;
-    private Pattern outDirPattern;
+    private final Pattern runningPattern;
+    private final Pattern outDirPattern2;
+    private final Pattern outDirPattern;
     private File outputDir;
     String runningTestClass;
     private final Set<String> usedNames;
     private final long startTimeStamp;
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
-    private RunConfig config;
+    private final RunConfig config;
     
     public JUnitOutputListenerProvider(RunConfig config) {
         runningPattern = Pattern.compile("(?:\\[surefire\\] )?Running (.*)", Pattern.DOTALL); //NOI18N
