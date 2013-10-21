@@ -229,7 +229,11 @@ public final class IssueImpl<R, I> {
     }
     
     public boolean submit () {
-        return issueProvider.submit(data);
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return false;
+        }
+        return sp.submit(data);
     }
 
     public void discardChanges() {

@@ -83,4 +83,9 @@ public class TestStatusProvider implements IssueStatusProvider<TestRepository, T
         i.discardOutgoing();
     }
     
+    @Override
+    public boolean submit(TestIssue data) {
+        return data.submit();
+    }    
+    
 }

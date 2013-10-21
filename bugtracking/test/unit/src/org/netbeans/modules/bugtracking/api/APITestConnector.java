@@ -331,10 +331,5 @@ public class APITestConnector implements BugtrackingConnector {
             data.addPropertyChangeListener(listener);
         }
 
-        @Override
-        public boolean submit(APITestIssue data) {
-            return data.submit();
-        }
-
     }    
 }        

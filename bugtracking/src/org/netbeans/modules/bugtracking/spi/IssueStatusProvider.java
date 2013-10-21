@@ -47,9 +47,12 @@ import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * 
- * Provides Issue Status related information to be used by the Tasks Dashboard 
- * to appropriately render Issue Status annotations (e.g. by coloring) as well 
- * some Issue Status related functionality.
+ * Provides information and functionality related to incoming and outgoing issue changes. 
+ * Issue Status information is used by the Tasks Dashboard to e.g.:
+ * <ul>
+ *  <li>to appropriately render Issue Status annotations (e.g. by coloring)</li>
+ *  <li>to list Issues with outgoing changes in a Tasks Dashboard category, submit or discard them, etc.</li>
+ * </ul>
  * 
  * <p>
  * An implementation of this interface is not mandatory for a 
@@ -63,6 +66,25 @@ import org.netbeans.modules.bugtracking.api.Issue;
  * the INCOMING_NEW, INCOMING_MODIFIED and SEEN values. In case that also 
  * outgoing changes are reflected then also CONFLICT should be taken in count.
  * </p>
+ * 
+ * <p>
+ * <b>Incoming changes:</b><br/>
+ * Represented by the status values INCOMING_NEW or INCOMING_MODIFIED. In case 
+ * the implementation keeps track of changes the user haven't seen yet 
+ * (e.g. by opening the Issue UI) then it is also expected to provide the 
+ * relevant incoming status values.
+ * </p>
+ * 
+ * <p>
+ * <b>Outgoing changes:</b><br/>
+ * Represented by the status values OUTGOING_NEW or OUTGOING_MODIFIED. Typically each
+ * particular issue editor UI is expected to provide a way to change an issue 
+ * and to submit those changes. In case the implementation keeps track of changes 
+ * made locally between more editing sessions, then it is also expected to provide the 
+ * relevant outgoing status values and implement the relevant methods in this interface  
+ * - e.g. <code>getUnsubmittedIssue(I i)</code>, <code>discardOutgoing(I i)</code>, <code>submit(i I)</code>.
+ * </p>
+ * 
  * <p>
  * Even though the status is entirely given by the particular implementation, 
  * the 
@@ -94,7 +116,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
  * </table>
  * 
  * @author Tomas Stupka
- * @param <R>
+ * @param <R> the implementation specific repository type
  * @param <I> the implementation specific issue type
  */
 public interface IssueStatusProvider<R, I> {
@@ -184,10 +206,12 @@ public interface IssueStatusProvider<R, I> {
      * SEEN to INCOMMING_XXX or from OUTGOING_XXX to CONFLICT. Please note that doing so 
      * at least for a running IDE session would be considered as polite to the user.
      * </p>
-     * <br/> 
-     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * 
+     * <p>
+     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
      * being either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
      * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
+     * </p>
      * 
      * @param issue
      * @param seen 
@@ -195,7 +219,14 @@ public interface IssueStatusProvider<R, I> {
     public void setSeenIncoming(I issue, boolean seen);
     
     /**
-     * Returns unsubmitted issues from the given repository.
+     * Returns unsubmitted issues from the given repository. 
+     * Implement in case the implementation supports also outgoing changes mode.
+     * 
+     * <p>
+     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
+     * </p>
      * 
      * @param r repository
      * @return collection of unsubmitted issues
@@ -203,16 +234,41 @@ public interface IssueStatusProvider<R, I> {
     public Collection<I> getUnsubmittedIssues (R r);
     
     /**
-     * Discard outgoing local changes.
-     * <br/> 
-     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * Discard outgoing local changes from the given issue.
+     * Implement in case the implementation supports also outgoing changes mode.
+     * 
+     * <p> 
+     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
      * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
      * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
+     * </p> 
      * 
      * @param i 
      */
     public void discardOutgoing(I i);
 
+    /**
+     * Submits outgoing local changes. 
+     * Implement in case the implementation supports also outgoing changes mode.
+     *
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * <p>
+     * <b>Note</b> that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
+     * </p>
+     * 
+     * @param i issue data
+     * @return <code>true</code> if the task was successfully
+     * submitted,<code>false</code> if the task was not submitted for any
+     * reason.
+     */
+    public boolean submit (I i);
+    
     /**
      * Registers a PropertyChangeListener to notify about status changes for an issue.
      * 

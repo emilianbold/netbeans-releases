@@ -118,10 +118,5 @@ public class TestIssueProvider implements IssueProvider<TestIssue> {
     public void addPropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public boolean submit(TestIssue data) {
-        return data.submit();
-    }
     
 }
