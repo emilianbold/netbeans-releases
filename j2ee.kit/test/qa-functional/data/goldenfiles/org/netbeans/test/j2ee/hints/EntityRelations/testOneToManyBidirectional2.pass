@@ -40,7 +40,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 /**
  *
@@ -53,7 +53,7 @@ public class B implements Serializable {
      
     List<A> listA;
   
-    @ManyToMany
+    @OneToMany(mappedBy = "b")
     Queue<A> queueA;
     
     @Id
@@ -107,12 +107,11 @@ public class B implements Serializable {
 package hints;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -124,8 +123,8 @@ public class A implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToMany(mappedBy = "queueA")
-    private List<B> bs;
+    @ManyToOne
+    private B b;
     
     /** Creates a new instance of A */
     public A() {
