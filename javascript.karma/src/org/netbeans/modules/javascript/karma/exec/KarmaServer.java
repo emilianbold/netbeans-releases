@@ -134,13 +134,21 @@ public final class KarmaServer {
         changeSupport.removeChangeListener(listener);
     }
 
+    public int getPort() {
+        return port;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
     void fireChange() {
         changeSupport.fireChange();
     }
 
     @Override
     public String toString() {
-        return "KarmaServer{" + "port=" + port + ", project=" + project + '}'; // NOI18N
+        return "KarmaServer{" + "port=" + port + ", project=" + project.getProjectDirectory() + '}'; // NOI18N
     }
 
 }

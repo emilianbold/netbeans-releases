@@ -49,7 +49,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.openide.util.ChangeSupport;
 
 public final class KarmaServers {
 
@@ -57,7 +56,7 @@ public final class KarmaServers {
 
     // @GuardedBy("this")
     private final Map<Project, KarmaServerInfo> karmaServers = new HashMap<>();
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final KarmaServersListener.Support listenerSupport = new KarmaServersListener.Support();
     private final ChangeListener serverListener = new ServerListener();
 
 
@@ -68,12 +67,12 @@ public final class KarmaServers {
         return INSTANCE;
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
+    public void addKarmaServersListener(KarmaServersListener listener) {
+        listenerSupport.addKarmaServersListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
+    public void removeKarmaServersListener(KarmaServersListener listener) {
+        listenerSupport.removeKarmaServersListener(listener);
     }
 
     public synchronized void startServer(Project project) {
@@ -165,8 +164,9 @@ public final class KarmaServers {
         return serverInfo.getServer();
     }
 
-    void fireChange() {
-        changeSupport.fireChange();
+    void fireServerChange(KarmaServer karmaServer) {
+        assert karmaServer != null;
+        listenerSupport.fireServerChanged(karmaServer);
     }
 
     //~ Inner classes
@@ -208,7 +208,7 @@ public final class KarmaServers {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            fireChange();
+            fireServerChange((KarmaServer) e.getSource());
         }
 
     }

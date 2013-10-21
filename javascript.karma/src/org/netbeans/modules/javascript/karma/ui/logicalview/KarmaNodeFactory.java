@@ -48,12 +48,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.exec.KarmaServers;
+import org.netbeans.modules.javascript.karma.exec.KarmaServersListener;
 import org.netbeans.modules.javascript.karma.ui.customizer.KarmaCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -95,7 +95,7 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         @Override
         public List<Node> keys() {
-            return Collections.<Node>singletonList(new KarmaNode(project));
+            return Collections.<Node>singletonList(KarmaNode.create(project));
         }
 
         @Override
@@ -125,7 +125,7 @@ public final class KarmaNodeFactory implements NodeFactory {
 
     }
 
-    private static final class KarmaNode extends AbstractNode implements ChangeListener {
+    private static final class KarmaNode extends AbstractNode implements KarmaServersListener {
 
         @StaticResource
         private static final String KARMA_ICON = "org/netbeans/modules/javascript/karma/ui/resources/karma.png"; // NOI18N
@@ -141,7 +141,7 @@ public final class KarmaNodeFactory implements NodeFactory {
             "KarmaNode.displayName=Karma",
             "KarmaNode.description=Test Runner for JavaScript",
         })
-        KarmaNode(Project project) {
+        private KarmaNode(Project project) {
             super(Children.LEAF, Lookups.fixed(project));
 
             assert project != null;
@@ -151,13 +151,17 @@ public final class KarmaNodeFactory implements NodeFactory {
             setDisplayName(Bundle.KarmaNode_displayName());
             setShortDescription(Bundle.KarmaNode_description());
             setIconBaseWithExtension(KARMA_ICON);
+        }
 
-            KarmaServers.getInstance().addChangeListener(this);
+        static KarmaNode create(Project project) {
+            KarmaNode karmaNode = new KarmaNode(project);
+            KarmaServers.getInstance().addKarmaServersListener(karmaNode);
+            return karmaNode;
         }
 
         @Override
         public void destroy() throws IOException {
-            KarmaServers.getInstance().removeChangeListener(this);
+            KarmaServers.getInstance().removeKarmaServersListener(this);
             super.destroy();
         }
 
@@ -195,9 +199,11 @@ public final class KarmaNodeFactory implements NodeFactory {
         }
 
         @Override
-        public void stateChanged(ChangeEvent e) {
-            fireIconChange();
-            fireOpenedIconChange();
+        public void serverStateChanged(Project project) {
+            if (this.project.equals(project)) {
+                fireIconChange();
+                fireOpenedIconChange();
+            }
         }
 
     }
