@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.browser.ui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JLayer;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.LayerUI;
@@ -79,7 +82,7 @@ import org.openide.util.Lookup;
 /**
  * A quick prototype of a Preview tab in HTML document Multiview window.
  *
- * Note: It is disabled by default. Use system propery nb.html.preview.enabled=true to turn it on.
+ * Note: It is disabled by default. Use system property nb.html.preview.enabled=true to turn it on.
  *
  * @author S. Aubrecht
  */
@@ -97,6 +100,8 @@ public class HtmlPreviewElement implements MultiViewElement {
     private final Lookup lookup;
 
     private Method methodSetBrowserContent;
+    
+    private Timer refreshTimer;
 
     private static final Logger LOG = Logger.getLogger( HtmlPreviewElement.class.getName() );
 
@@ -110,17 +115,17 @@ public class HtmlPreviewElement implements MultiViewElement {
 
             @Override
             public void insertUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
 
             @Override
             public void removeUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
 
             @Override
             public void changedUpdate( DocumentEvent e ) {
-                reloadFromDocument();
+                scheduleReload();
             }
         };
 
@@ -269,11 +274,26 @@ public class HtmlPreviewElement implements MultiViewElement {
             Document doc = editorCookie.getDocument();
             if( null != doc )
                 doc.addDocumentListener( documentListener );
-        } else {
-            reloadFromDocument();
         }
+        reloadFromDocument();
     }
 
+    private void scheduleReload() {
+        if( null == refreshTimer ) {
+            refreshTimer = new Timer(500, new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    reloadFromDocument();
+                }
+            });
+            refreshTimer.setRepeats(false);
+            refreshTimer.start();
+        } else {
+            refreshTimer.restart();
+        }
+    }
+    
     private void reloadFromDocument() {
         if( null == editorCookie )
             return;
@@ -302,6 +322,10 @@ public class HtmlPreviewElement implements MultiViewElement {
             });
             return;
         }
+        if( null != refreshTimer ) {
+            refreshTimer.stop();
+            refreshTimer = null;
+        }
         if( null != editorCookie ) {
             editorCookie.removePropertyChangeListener( editorListener );
             Document doc = editorCookie.getDocument();
@@ -311,6 +335,8 @@ public class HtmlPreviewElement implements MultiViewElement {
     }
 
     private void refresh( Document doc ) {
+        if( null == doc )
+            return;
         try {
             String text = doc.getText( 0, doc.getLength() );
             if( null != browser && null != methodSetBrowserContent ) {

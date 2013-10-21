@@ -43,10 +43,10 @@
  */
 package org.netbeans.lib.lexer.test.inc;
 
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -74,14 +74,19 @@ public class DocumentUpdateTest extends NbTestCase {
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
         
-        h.tokenSequence().tokenCount();
-        
-        TokenSequence<?> s = h.tokenSequence();
-        
-        assertTrue(s.moveNext());
-        
-        s.embedded();
-        
+        ((AbstractDocument)d).readLock();
+        try {
+            h.tokenSequence().tokenCount();
+
+            TokenSequence<?> s = h.tokenSequence();
+
+            assertTrue(s.moveNext());
+
+            s.embedded();
+        } finally {
+            ((AbstractDocument)d).readUnlock();
+        }
+
         d.insertString(5, "t", null);
     }
     
@@ -94,13 +99,18 @@ public class DocumentUpdateTest extends NbTestCase {
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
         
-        h.tokenSequence().tokenCount();
-        
-        TokenSequence<?> s = h.tokenSequence();
-        
-        assertTrue(s.moveNext());
-        
-        s.embedded();
+        ((AbstractDocument)d).readLock();
+        try {
+            h.tokenSequence().tokenCount();
+
+            TokenSequence<?> s = h.tokenSequence();
+
+            assertTrue(s.moveNext());
+
+            s.embedded();
+        } finally {
+            ((AbstractDocument)d).readUnlock();
+        }
         
         d.insertString(10, "t", null);
     }
@@ -114,31 +124,40 @@ public class DocumentUpdateTest extends NbTestCase {
         
         TokenHierarchy<?> h = TokenHierarchy.get(d);
         
-        h.tokenSequence().tokenCount();
-        
-        TokenSequence<?> s = h.tokenSequence();
-        
-        assertTrue(s.moveNext());
-        
-        assertNotNull(s.embedded());
+        ((AbstractDocument)d).readLock();
+        try {
+            h.tokenSequence().tokenCount();
+
+            TokenSequence<?> s = h.tokenSequence();
+
+            assertTrue(s.moveNext());
+
+            assertNotNull(s.embedded());
+        } finally {
+            ((AbstractDocument)d).readUnlock();
+        }
         
         d.insertString(1, "\\", null);
         
-        System.err.println("d=" + d.getText(0, d.getLength()));
+        ((AbstractDocument)d).readLock();
+        try {
         
-        LexerTestUtilities.assertNextTokenEquals(h.tokenSequence(),TestTokenId.STRING_LITERAL, "\"\\t\"");
-        
-        s = h.tokenSequence();
-        
-        assertTrue(s.moveNext());
-        
-        TokenSequence<?> e = s.embedded();
-        
-        assertNotNull(e);
-        
-        assertTrue(e.moveNext());
-        
-        assertEquals(e.token().id(),TestStringTokenId.TAB);
+            LexerTestUtilities.assertNextTokenEquals(h.tokenSequence(),TestTokenId.STRING_LITERAL, "\"\\t\"");
+
+            TokenSequence<?> s = h.tokenSequence();
+
+            assertTrue(s.moveNext());
+
+            TokenSequence<?> e = s.embedded();
+
+            assertNotNull(e);
+
+            assertTrue(e.moveNext());
+
+            assertEquals(e.token().id(),TestStringTokenId.TAB);
+        } finally {
+            ((AbstractDocument)d).readUnlock();
+        }
     }
     
 }

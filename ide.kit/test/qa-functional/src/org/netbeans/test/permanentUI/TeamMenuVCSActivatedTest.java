@@ -41,7 +41,11 @@
  */
 package org.netbeans.test.permanentUI;
 
+import java.awt.event.KeyEvent;
+import java.io.IOException;
 import junit.framework.Test;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -52,7 +56,7 @@ import org.netbeans.test.permanentUI.utils.Utilities;
  *
  * @author Lukas Hasik, Jan Peska, Marian.Mirilovic@oracle.com
  */
-public class TeamMenuVCSActivatedTest extends MainMenuTest {
+public class TeamMenuVCSActivatedTest extends MainMenuTestCase {
 
     /**
      * Need to be defined because of JUnit
@@ -80,15 +84,18 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
     }
 
     @Override
-    public void initialize() {
+    public void initialize() throws IOException {
         openVersioningJavaEEProject("SampleProject");
-        this.context = ProjectContext.VERSIONING_ACTIVATED;
+    }
+
+    @Override
+    public ProjectContext getContext() {
+        return ProjectContext.VERSIONING_ACTIVATED;
     }
 
     @Override
     protected void tearDown() throws Exception {}
 
-    @Override
     public void testTeamMenu() {
         oneMenuTest("Team");
     }
@@ -127,7 +134,6 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
         oneSubMenuTest("Team|Other VCS", false);
     }
 
-    @Override
     public void testTeam_HistorySubMenu() {
         oneSubMenuTest("Team|History", true);
     }
@@ -137,13 +143,15 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
      *
      * @param projectName Name of project.
      * @return name of currently created project.
+     * @throws java.io.IOException
      */
-    public boolean openVersioningJavaEEProject(String projectName) {
-        ProjectRootNode projectNode = openProject(projectName);
+    public boolean openVersioningJavaEEProject(String projectName) throws IOException {
+        openDataProjects(projectName);
         waitScanFinished();
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         projectNode.select();
-        if (!isVersioningProject(projectName)) {
-            versioningActivation(projectName);
+        if (!isVersioningProject()) {
+            versioningActivation(projectNode);
         }
         return true;
     }
@@ -151,23 +159,24 @@ public class TeamMenuVCSActivatedTest extends MainMenuTest {
     /**
      * Create repository (Mercurial) for given project.
      *
-     * @param projectName
+     * @param projectNode
      */
-    public void versioningActivation(String projectName) {
-        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(projectName);
-        projectNode.callPopup().showMenuItem("Versioning|Initialize Mercurial Repository...").push();
-        WizardOperator wo2 = new WizardOperator("Initialize a Mercurial Repository");
+    public void versioningActivation(ProjectRootNode projectNode) {
+        projectNode.callPopup().pushMenu("Versioning|Initialize Git Repository...");
+        captureScreen();
+        NbDialogOperator wo2 = new NbDialogOperator("Initialize a Git Repository");
         wo2.ok();
     }
 
     /**
      * Check if project has local repository activated.
      *
-     * @param projectName
      * @return true - VCS activated, else false
      */
-    public boolean isVersioningProject(String projectName) {
+    public boolean isVersioningProject() {
         int menuSize = getMainMenuItem("Team").getSubmenu().size();
+        // push Escape key to ensure there is no thing blocking shortcut execution
+        MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
         return menuSize > 8;
     }
 

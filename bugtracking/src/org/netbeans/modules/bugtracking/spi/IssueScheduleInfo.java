@@ -57,29 +57,32 @@ public final class IssueScheduleInfo {
     private final int interval;
 
     /**
-     * Creates a ScheduleDate representing a specific day.
+     * Creates a ScheduleDate representing one specific day for which an issue is scheduled.
      * 
      * @param date 
      */
     public IssueScheduleInfo(Date date) {
         this.date = date;
-        this.interval = 0;
+        this.interval = 1;
     }
 
     /**
-     * Creates a ScheduleDate representing an interval of days.
+     * Creates a ScheduleDate representing one or more days for which an issue is scheduled.
      * 
      * @param startDate determines the day from which this issue is scheduled
-     * @param interval determines the interval of days for which an issue is scheduled
+     * @param interval determines for how many days an issue is scheduled. Allowed values are >=1.
      */
     public IssueScheduleInfo(Date startDate, int interval) {
+        if(interval < 1) {
+            throw new IllegalArgumentException("interval must be >= 1");
+        }
         this.date = startDate;
         this.interval = interval;
     }
 
     /**
-     * Returns the start date of this ScheduleDate.
-     * 
+     * Returns the date of this ScheduleDate. 
+     * In case an Issue is scheduled for more than one day, then this would be the starting date.
      * @return 
      */
     public Date getDate() {
@@ -87,7 +90,8 @@ public final class IssueScheduleInfo {
     }
 
     /**
-     * Returns the amount of days given by this SheduleDate.
+     * Determines for how many days an issue was scheduled. 
+     * Obviously then, 1 stands for one day given by the start date - {@link #getDate()}.
      * 
      * @return 
      */

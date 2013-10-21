@@ -44,9 +44,7 @@ package org.netbeans.performance.scanning;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.*;
 import java.util.zip.*;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -56,16 +54,13 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.openide.filesystems.*;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 
 /**
  * Utilities methods.
@@ -83,13 +78,13 @@ public class Utilities {
     /**
      * Unzip the file <code>f</code> to folder <code>destDir</code>.
      *
-     * @param f         file to unzip
-     * @param destDir   destination directory
+     * @param f file to unzip
+     * @param destDir destination directory
      */
     public static void unzip(File f, String destDir) {
         final int BUFFER = 2048;
         try {
-            BufferedOutputStream dest = null;
+            BufferedOutputStream dest;
             FileInputStream fis = new FileInputStream(f);
             ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
             ZipEntry entry;
@@ -120,10 +115,10 @@ public class Utilities {
      * Open project <code>projectName</code> located in <code>dir</code>
      * directory.
      *
-     * @param projectName           project name to open
-     * @param dir                   project's enclosing directory
-     * @return file-object          representing project
-     * @throws java.io.IOException  when project cannot be opened
+     * @param projectName project name to open
+     * @param dir project's enclosing directory
+     * @return file-object representing project
+     * @throws java.io.IOException when project cannot be opened
      */
     public static FileObject openProject(String projectName, File dir) throws IOException {
         File projectsDir = FileUtil.normalizeFile(dir);
@@ -146,10 +141,9 @@ public class Utilities {
 
     public static String projectOpen(String path, String tmpFile) {
 
-/* Temporary solution - download jEdit from internal location */
-
+        /* Temporary solution - download jEdit from internal location */
         OutputStream out = null;
-        URLConnection conn = null;
+        URLConnection conn;
         InputStream in = null;
         int BUFFER = 2048;
 
@@ -157,7 +151,9 @@ public class Utilities {
             URL url = new URL(path);
             System.err.println("");
             File dir = new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             out = new BufferedOutputStream(new FileOutputStream(dir.getAbsolutePath() + File.separator + tmpFile));
             conn = url.openConnection();
             in = conn.getInputStream();
@@ -210,17 +206,18 @@ public class Utilities {
 
     /**
      * Copy file f1 to f2
+     *
      * @param f1 file 1
      * @param f2 file 2
      * @throws java.io.FileNotFoundException
      * @throws java.io.IOException
      */
-    public static void copyFile(java.io.File f1, java.io.File f2) throws java.io.FileNotFoundException, java.io.IOException{
+    public static void copyFile(java.io.File f1, java.io.File f2) throws java.io.FileNotFoundException, java.io.IOException {
         int data;
         java.io.InputStream fis = new java.io.BufferedInputStream(new java.io.FileInputStream(f1));
         java.io.OutputStream fos = new java.io.BufferedOutputStream(new java.io.FileOutputStream(f2));
 
-        while((data=fis.read())!=-1){
+        while ((data = fis.read()) != -1) {
             fos.write(data);
         }
     }
@@ -235,24 +232,26 @@ public class Utilities {
         PrintStream out = System.out;
 
         System.out.println();
-        System.out.println("#####  Results for "+name+"   #####");
+        System.out.println("#####  Results for " + name + "   #####");
         System.out.print("#####        [");
-        for(int i=1;i<=repeat;i++)
-            System.out.print(results[i]+"ms, ");
+        for (int i = 1; i <= repeat; i++) {
+            System.out.print(results[i] + "ms, ");
+        }
         System.out.println("]");
-        for (int i=1;i<=name.length()+27;i++)
+        for (int i = 1; i <= name.length() + 27; i++) {
             System.out.print("#");
+        }
         System.out.println();
         System.out.println();
 
-        path=System.getProperty("nbjunit.workdir");
-        File resGlobal=new File(path+File.separator+"allPerformance.xml");
+        path = System.getProperty("nbjunit.workdir");
+        File resGlobal = new File(path + File.separator + "allPerformance.xml");
 
         try {
-            dbf=DocumentBuilderFactory.newInstance();
+            dbf = DocumentBuilderFactory.newInstance();
             db = dbf.newDocumentBuilder();
-         } catch (Exception ex) {
-            ex.printStackTrace (  ) ;
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         if (!resGlobal.exists()) {
@@ -263,77 +262,81 @@ public class Utilities {
                 out.print("</TestResults>");
                 out.close();
             } catch (IOException ex) {
-            ex.printStackTrace (  ) ;
+                ex.printStackTrace();
             }
-         }
+        }
 
         try {
-              allPerfDoc = db.parse(resGlobal);
-            } catch (Exception ex) {
-            ex.printStackTrace (  ) ;
-            }
+            allPerfDoc = db.parse(resGlobal);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
         testResultsTag = allPerfDoc.getDocumentElement();
 
-        testTag=null;
-        for (int i=0;i<allPerfDoc.getElementsByTagName("Test").getLength();i++) {
-            if (("name=\""+name+"\"").equalsIgnoreCase( allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString() ) ) {
-                testTag =(Element)allPerfDoc.getElementsByTagName("Test").item(i);
+        testTag = null;
+        for (int i = 0; i < allPerfDoc.getElementsByTagName("Test").getLength(); i++) {
+            if (("name=\"" + name + "\"").equalsIgnoreCase(allPerfDoc.getElementsByTagName("Test").item(i).getAttributes().getNamedItem("name").toString())) {
+                testTag = (Element) allPerfDoc.getElementsByTagName("Test").item(i);
                 break;
             }
         }
 
-        if (testTag!=null) {
-            for (int i=1;i<=repeat;i++) {
-                perfDataTag=allPerfDoc.createElement("PerformanceData");
-                if (i==1) perfDataTag.setAttribute("runOrder", "1");
-                    else perfDataTag.setAttribute("runOrder", "2");
+        if (testTag != null) {
+            for (int i = 1; i <= repeat; i++) {
+                perfDataTag = allPerfDoc.createElement("PerformanceData");
+                if (i == 1) {
+                    perfDataTag.setAttribute("runOrder", "1");
+                } else {
+                    perfDataTag.setAttribute("runOrder", "2");
+                }
                 perfDataTag.setAttribute("value", new Long(results[i]).toString());
                 testTag.appendChild(perfDataTag);
             }
-        }
-        else {
-            testTag=allPerfDoc.createElement("Test");
+        } else {
+            testTag = allPerfDoc.createElement("Test");
             testTag.setAttribute("name", name);
             testTag.setAttribute("unit", unit);
             testTag.setAttribute("results", pass);
             testTag.setAttribute("threshold", new Long(threshold).toString());
             testTag.setAttribute("classname", classname);
-            for (int i=1;i<=repeat;i++) {
-                perfDataTag=allPerfDoc.createElement("PerformanceData");
-                if (i==1) perfDataTag.setAttribute("runOrder", "1");
-                    else perfDataTag.setAttribute("runOrder", "2");
+            for (int i = 1; i <= repeat; i++) {
+                perfDataTag = allPerfDoc.createElement("PerformanceData");
+                if (i == 1) {
+                    perfDataTag.setAttribute("runOrder", "1");
+                } else {
+                    perfDataTag.setAttribute("runOrder", "2");
+                }
                 perfDataTag.setAttribute("value", new Long(results[i]).toString());
                 testTag.appendChild(perfDataTag);
             }
         }
 
-            testSuiteTag=null;
-            for (int i=0;i<allPerfDoc.getElementsByTagName("Suite").getLength();i++) {
-                if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
-                    testSuiteTag =(Element)allPerfDoc.getElementsByTagName("Suite").item(i);
-                    break;
-                }
+        testSuiteTag = null;
+        for (int i = 0; i < allPerfDoc.getElementsByTagName("Suite").getLength(); i++) {
+            if (suite.equalsIgnoreCase(allPerfDoc.getElementsByTagName("Suite").item(i).getAttributes().getNamedItem("suitename").getNodeValue())) {
+                testSuiteTag = (Element) allPerfDoc.getElementsByTagName("Suite").item(i);
+                break;
             }
+        }
 
-            if (testSuiteTag==null) {
-                testSuiteTag=allPerfDoc.createElement("Suite");
-                testSuiteTag.setAttribute("name", sname);
-                testSuiteTag.setAttribute("suitename", suite);
-                testSuiteTag.appendChild(testTag);
-            } else {
-                testSuiteTag.appendChild(testTag);
-            }
+        if (testSuiteTag == null) {
+            testSuiteTag = allPerfDoc.createElement("Suite");
+            testSuiteTag.setAttribute("name", sname);
+            testSuiteTag.setAttribute("suitename", suite);
+            testSuiteTag.appendChild(testTag);
+        } else {
+            testSuiteTag.appendChild(testTag);
+        }
 
         testResultsTag.appendChild(testSuiteTag);
-
 
         try {
             out = new PrintStream(new FileOutputStream(resGlobal));
         } catch (FileNotFoundException ex) {
         }
 
-        Transformer tr=null;
+        Transformer tr = null;
         try {
             tr = TransformerFactory.newInstance().newTransformer();
         } catch (TransformerConfigurationException ex) {
@@ -352,12 +355,14 @@ public class Utilities {
     }
 
     public static void processUnitTestsResults(String className, PerformanceData pd) {
-        processUnitTestsResults(className, className, pd);
+        String suiteClassName = System.getProperty("suitename", "org.netbeans.performance.unknown");
+        String suiteName = System.getProperty("suite", "Unknown Test Suite");
+        processUnitTestsResults(className, suiteName, suiteClassName, pd);
     }
-    
-    public static void processUnitTestsResults(String className, String suiteName, PerformanceData pd) {
-        long[] result=new long[2];
-        result[1]=pd.value;
-        xmlTestResults(System.getProperty("nbjunit.workdir"), "Unit Tests Suite", pd.name, className, suiteName, pd.unit, "passed", 120000 , result, 1);
+
+    public static void processUnitTestsResults(String className, String suiteName, String suiteClassName, PerformanceData pd) {
+        long[] result = new long[2];
+        result[1] = pd.value;
+        xmlTestResults(System.getProperty("nbjunit.workdir"), suiteName, pd.name, className, suiteClassName, pd.unit, "passed", 120000, result, 1);
     }
 }

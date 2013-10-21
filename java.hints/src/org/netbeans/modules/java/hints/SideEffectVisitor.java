@@ -71,6 +71,7 @@ import org.netbeans.modules.java.hints.StopProcessing;
  */
 public class SideEffectVisitor extends TreePathScanner {
     private int nestingLevel;
+    private int invocationChainLevel;
     private final boolean nonLocals;
     private final CompilationInfo ci;
     private Deque<TypeElement> enclosingElements = new LinkedList<TypeElement>();
@@ -222,9 +223,13 @@ public class SideEffectVisitor extends TreePathScanner {
         if (e.getKind() != ElementKind.METHOD) {
             return o;
         }
+        if (invocationChainLevel > 0) {
+            return o;
+        }
         ExecutableElement el = (ExecutableElement) e;
         TreePath target = ci.getTrees().getPath(el);
         if (target != null) {
+            invocationChainLevel++;
             nestingLevel++;
             invocationTree = node;
             // hack! will replace current path with the path to the method. The scan may process a Path from
@@ -232,6 +237,7 @@ public class SideEffectVisitor extends TreePathScanner {
             scan(target, null);
             invocationTree = null;
             nestingLevel--;
+            invocationChainLevel--;
             // no current path is defined here !!
         }
         return o;

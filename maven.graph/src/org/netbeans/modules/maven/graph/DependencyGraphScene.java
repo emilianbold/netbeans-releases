@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -82,6 +83,7 @@ import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.graph.layout.GraphLayout;
 import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
 import org.netbeans.api.visual.graph.layout.GraphLayoutSupport;
+import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
@@ -137,6 +139,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     private static final Set<ArtifactGraphNode> EMPTY_SELECTION = new HashSet<ArtifactGraphNode>();
     private final POMModel model;
     private JScrollPane pane;
+    private AtomicBoolean animated = new AtomicBoolean(false);
     
     /** Creates a new instance ofla DependencyGraphScene */
     DependencyGraphScene(MavenProject prj, Project nbProj, DependencyGraphTopComponent tc,
@@ -183,11 +186,46 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         getActions().addAction(popupMenuAction);
     }
 
+    void setMyZoomFactor(double zoom) {
+        setZoomFactor(zoom);
+        ArrayList<Widget> arr = new ArrayList<Widget>();
+        arr.addAll(mainLayer.getChildren());
+        arr.addAll(connectionLayer.getChildren());
+        for (Widget wid : arr) {
+            if (wid instanceof ArtifactWidget) {
+                ((ArtifactWidget)wid).updateReadableZoom();
+            }
+            if (wid instanceof EdgeWidget) {
+                ((EdgeWidget)wid).updateReadableZoom();
+            }
+        }
+    }
 
-    void cleanLayout() {
+    void initialLayout() {
         //start using default layout
         layout =  new FruchtermanReingoldLayout(this, pane);
         layout.invokeLayout();
+        addSceneListener(new SceneListener() {
+
+            @Override
+            public void sceneRepaint() {
+               
+            }
+
+            @Override
+            public void sceneValidating() {
+                
+            }
+
+            @Override
+            public void sceneValidated() {
+                //the first layout has not be non animated, then we can fit to zoom easily
+                if (animated.compareAndSet(false, true)) {
+                    new SceneZoomToFitAction().actionPerformed(null);
+                }
+                    
+            }
+        });
     }
     
     void setSurroundingScrollPane(JScrollPane pane) {
@@ -211,7 +249,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
     }
 
     boolean isAnimated () {
-        return true;
+        return animated.get();
     }
 
     @CheckForNull ArtifactGraphNode getGraphNodeRepresentant(DependencyNode node) {
@@ -490,16 +528,24 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
         return fitViewL;
     }
 
-    private static class FitToViewLayout  {
+    private static class FitToViewLayout extends SceneLayout {
 
         private final DependencyGraphScene depScene;
+        private List<? extends Widget> widgets;
 
         FitToViewLayout(DependencyGraphScene scene) {
+            super(scene);
             this.depScene = scene;
         }
 
         
         protected void fitToView(@NullAllowed List<? extends Widget> widgets) {
+            this.widgets = widgets;
+            this.invokeLayout(); 
+        }
+
+        @Override
+        protected void performLayout() {
             Rectangle rectangle = null;
             List<? extends Widget> toFit = widgets != null ? widgets : depScene.getChildren();
             if (toFit == null) {
@@ -536,7 +582,7 @@ public class DependencyGraphScene extends GraphScene<ArtifactGraphNode, Artifact
                             new Point((int)rectangle.getCenterX(), (int)rectangle.getCenterY()));
                 }
             } else {
-                depScene.setZoomFactor (zf);
+                depScene.setMyZoomFactor (zf);
             }
         }
     }

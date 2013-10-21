@@ -174,6 +174,10 @@ public final class GitMergeResult {
             mergeStatus = MergeResult.MergeStatus.FAST_FORWARD;
         } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED) {
             mergeStatus = MergeResult.MergeStatus.MERGED;
+        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_NOT_COMMITTED) {
+            mergeStatus = MergeResult.MergeStatus.MERGED;
+        } else if (mergeStatus == MergeResult.MergeStatus.MERGED_SQUASHED_NOT_COMMITTED) {
+            mergeStatus = MergeResult.MergeStatus.MERGED;
         } else if (mergeStatus == MergeResult.MergeStatus.ABORTED) {
             mergeStatus = MergeResult.MergeStatus.FAILED;
         } else if (mergeStatus == MergeResult.MergeStatus.CHECKOUT_CONFLICT) {

@@ -197,7 +197,7 @@ public class SelectImpl implements CsmSelectProvider {
             } else {
                 res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
                 for(int i = 0; i < implKind.kinds.length; i++){
-                    String from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
+                    String from = ""+Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
                     res.addAll(namespace.findUidsByPrefix(from));
                 }
                 if (implName.allowEmptyName) {
@@ -207,7 +207,7 @@ public class SelectImpl implements CsmSelectProvider {
         } else if (implKind != null) {
             res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
             for(int i = 0; i < implKind.kinds.length; i++){
-                String from = Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
+                String from = ""+Utils.getCsmDeclarationKindkey(implKind.kinds[i]);
                 res.addAll(namespace.findUidsByPrefix(from));
             }
         }

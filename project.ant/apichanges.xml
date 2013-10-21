@@ -107,7 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="GeneratedFilesInterceptor">
+            <api name="general"/>
+            <summary>Added <code>GeneratedFilesInterceptor</code> called by <code>GeneratedFilesHelper</code> when it generates a file</summary>
+            <version major="1" minor="1.58"/>
+            <date year="2013" month="10" day="15"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                <p>
+                   Added <code>GeneratedFilesInterceptor</code> callback called by <code>GeneratedFilesHelper</code> when it
+                   generates or regenerates a file.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ant" name="GeneratedFilesInterceptor"/>
+        </change>
         <change id="license_header_customizer">
             <api name="general"/>
             <summary>Added <code>CustomizerUtilities.createLicenseHeaderCustomizerPanel</code></summary>

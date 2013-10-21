@@ -271,8 +271,16 @@ public class ODCSRepository implements PropertyChangeListener {
     private static void setupProperties (TaskRepository repository, String displayName,
             String user, char[] password, String httpUser, char[] httpPassword) {
         repository.setRepositoryLabel(displayName);
+        
+        // set u/p as well as http u/p which is being used by the odcs http client
+        if(httpUser == null || httpUser.trim().equals("")) {
+            httpUser = user;
+        }
+        if(httpPassword == null || new String(httpPassword).trim().equals("")) {
+            httpPassword = password;
+        }
+        
         MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
-        patchHttpCredentials(repository, user, password);
     }
     
     synchronized void resetRepository (boolean logout) {
@@ -435,7 +443,7 @@ public class ODCSRepository implements PropertyChangeListener {
             for (SavedTaskQuery sq : savedQueries) {
                 ODCSQuery q = ODCSQuery.createSaved(this, sq);
                 queries.add(q);
-                
+
                 ODCS.LOG.log(Level.FINER, "added remote query {0} to repository {1}", new Object[]{sq.getName(), getDisplayName()});
             }
         }
@@ -455,19 +463,21 @@ public class ODCSRepository implements PropertyChangeListener {
     private void initializePredefinedQueries () {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
-            for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                try {
-                    MylynSupport supp = MylynSupport.getInstance();
-                    IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
-                    if (query == null) {
-                        query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
-                        query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
-                        query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
-                        supp.addQuery(taskRepository, query);
+            if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
+                    try {
+                        MylynSupport supp = MylynSupport.getInstance();
+                        IRepositoryQuery query = supp.getRepositoryQuery(getTaskRepository(), ODCSUtil.getPredefinedQueryName(ptq));
+                        if (query == null) {
+                            query = supp.createNewQuery(taskRepository, ODCSUtil.getPredefinedQueryName(ptq));
+                            query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
+                            query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());
+                            supp.addQuery(taskRepository, query);
+                        }
+                        queries.put(ptq, query);
+                    } catch (CoreException ex) {
+                        ODCS.LOG.log(Level.WARNING, null, ex);
                     }
-                    queries.put(ptq, query);
-                } catch (CoreException ex) {
-                    ODCS.LOG.log(Level.WARNING, null, ex);
                 }
             }
             synchronized(QUERIES_LOCK) {
@@ -579,12 +589,6 @@ public class ODCSRepository implements PropertyChangeListener {
     private void fireUnsubmittedIssuesChanged() {
         ODCS.LOG.log(Level.FINER, "firing unsubmitted issues changed for repository {0}", new Object[] { getDisplayName() }); //NOI18N
         support.firePropertyChange(RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
-    }
-
-    private static void patchHttpCredentials(TaskRepository taskRepository, String user, char[] password) {
-        // XXX have to setup http credentials as that is requested by the odcs client
-        AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(user != null ? user : "", password != null ? new String(password) : ""); // NOI18N
-        taskRepository.setCredentials(AuthenticationType.HTTP, authenticationCredentials, false);
     }
 
     public void refreshConfiguration() {

@@ -555,7 +555,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     public void attachPatch(File file, String description) {
         // HACK for attaching hg bundles - they are NOT patches
         boolean isPatch = !file.getName().endsWith(".hg"); //NOI18N
-        addAttachment(file, null, description, null, isPatch);
+        addAttachment(file, description, description, null, isPatch);
     }
     
     void addAttachment (File file, final String comment, final String desc, String contentType, final boolean patch) {

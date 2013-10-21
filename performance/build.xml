@@ -51,7 +51,8 @@ made subject to such option by the copyright holder.
     <property name="test.run.args" value="-client 
             -Xss4m -Xms64m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=300m 
             -Dnetbeans.keyring.no.master=true 
-            -Xverify:none -Dsun.java2d.noddraw=true"/>
+            -Xverify:none -Dsun.java2d.noddraw=true
+            -DBrokenReferencesSupport.suppressBrokenRefAlert=true"/>
 
     <import file="../nbbuild/templates/projectized.xml"/>
 

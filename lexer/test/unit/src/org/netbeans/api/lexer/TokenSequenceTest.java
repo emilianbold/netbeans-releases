@@ -51,6 +51,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.TokenList;
@@ -448,18 +449,23 @@ public class TokenSequenceTest extends NbTestCase {
         
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
-        
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        
-        ts = ts.subSequence(2, 6);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 2);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "cd", 3);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 5);
-        assertFalse(ts.moveNext());
+
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+
+            ts = ts.subSequence(2, 6);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 2);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "cd", 3);
+            assertTrue(ts.moveNext());
+            LexerTestUtilities.assertTokenEquals(ts,TestTokenId.WHITESPACE, " ", 5);
+            assertFalse(ts.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
     public void testSubSequenceInvalidOffset137564() throws Exception {
@@ -471,11 +477,16 @@ public class TokenSequenceTest extends NbTestCase {
         doc.putProperty(Language.class,TestTokenId.language());
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         
-        TokenSequence<?> ts = hi.tokenSequence();
-        assertTrue(ts.moveNext());
-        
-        ts = ts.subSequence(-2, -1);
-        assertFalse(ts.moveNext());
+        ((AbstractDocument)doc).readLock();
+        try {
+            TokenSequence<?> ts = hi.tokenSequence();
+            assertTrue(ts.moveNext());
+
+            ts = ts.subSequence(-2, -1);
+            assertFalse(ts.moveNext());
+        } finally {
+            ((AbstractDocument)doc).readUnlock();
+        }
     }
 
 }

@@ -491,13 +491,13 @@ public class Utilities {
             fis.read(b);
         } catch (IOException ex) {
             System.out.println("problems with diff file - nothing with the test");
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             try {
                 fis.close();
             } catch (IOException ex) {
                 System.out.println("just closing the diff file - nothing with the test");
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
 

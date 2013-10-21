@@ -124,7 +124,16 @@ public class EdgeWidget extends ConnectionWidget {
 
     public void setState (int state) {
         this.state = state;
-        updateAppearance();
+        updateAppearance(((DependencyGraphScene)getScene()).isAnimated());
+    }
+
+    /**
+     * readable widgets are calculated  based on scene zoom factor when zoom factor changes, the readable scope should too
+     */
+    void updateReadableZoom() {
+        if (state == HIGHLIGHTED || state == HIGHLIGHTED_PRIMARY) {
+            updateAppearance(false);
+        }
     }
 
     void modelChanged () {
@@ -136,7 +145,7 @@ public class EdgeWidget extends ConnectionWidget {
         }
         
         updateVersionW(isConflict);
-        updateAppearance();
+        updateAppearance(((DependencyGraphScene)getScene()).isAnimated());
     }
 
     @Messages({
@@ -147,7 +156,7 @@ public class EdgeWidget extends ConnectionWidget {
     })
     @SuppressWarnings("fallthrough")
     @org.netbeans.api.annotations.common.SuppressWarnings(value = "SF_SWITCH_FALLTHROUGH")
-    private void updateAppearance () {
+    private void updateAppearance (boolean animated) {
         Color inactiveC = UIManager.getColor("textInactiveText");
         if (inactiveC == null) {
             inactiveC = Color.LIGHT_GRAY;
@@ -220,7 +229,7 @@ public class EdgeWidget extends ConnectionWidget {
         setStroke(stroke);
 
         DependencyGraphScene grScene = (DependencyGraphScene)getScene();
-        if (grScene.isAnimated()) {
+        if (animated) {
             grScene.getSceneAnimator().animateForegroundColor(this, c);
         } else {
             setForeground(c);

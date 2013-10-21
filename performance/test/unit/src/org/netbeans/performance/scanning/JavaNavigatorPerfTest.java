@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.performance.scanning;
 
 import java.io.File;
@@ -72,17 +71,21 @@ import org.openide.filesystems.FileUtil;
 public class JavaNavigatorPerfTest extends NbTestCase {
 
     private final List<PerformanceData> data;
+    private static String logged;
 
     public JavaNavigatorPerfTest(String name) {
         super(name);
-        data = new ArrayList<PerformanceData>();
+        data = new ArrayList<>();
     }
 
     /**
      * Set-up the services and project
+     *
+     * @throws java.io.IOException
      */
     @Override
-    protected void setUp() throws IOException, InterruptedException {
+    protected void setUp() throws IOException {
+        System.out.println("###########  " + getName() + " ###########");
         clearWorkDir();
         System.setProperty("netbeans.user", getWorkDirPath());
     }
@@ -95,8 +98,9 @@ public class JavaNavigatorPerfTest extends NbTestCase {
 
         Logger navigatorUpdater = Logger.getLogger("org.netbeans.modules.java.navigation.ClassMemberPanelUI.perf");
         navigatorUpdater.setLevel(Level.FINE);
-        navigatorUpdater.addHandler(new NavigatorHandler());
-        
+        NavigatorHandler handler = new NavigatorHandler();
+        navigatorUpdater.addHandler(handler);
+
         JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
 
         src.runWhenScanFinished(new Task<CompilationController>() {
@@ -108,6 +112,7 @@ public class JavaNavigatorPerfTest extends NbTestCase {
         }, false).get();
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
@@ -115,9 +120,14 @@ public class JavaNavigatorPerfTest extends NbTestCase {
                 pt.selectNodeAsync(testFile);
             }
         });
-        Thread.sleep(500);
+        if(!"This".equals(logged)) {
+            synchronized(handler) {
+                handler.wait(5000);
+            }
+        }
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 ProjectTab pt = ProjectTab.findDefault(ProjectTab.ID_LOGICAL);
                 pt.requestActive();
@@ -125,9 +135,14 @@ public class JavaNavigatorPerfTest extends NbTestCase {
                 pt.selectNodeAsync(testFile);
             }
         });
-        Thread.sleep(5000);
+        if(!"jEdit".equals(logged)) {
+            synchronized(handler) {
+                handler.wait(5000);
+            }
+        }
         SwingUtilities.invokeAndWait(new Runnable() {
 
+            @Override
             public void run() {
                 Logger.getAnonymousLogger().log(Level.INFO, "Test finished execution.");
             }
@@ -138,26 +153,21 @@ public class JavaNavigatorPerfTest extends NbTestCase {
     protected void tearDown() throws Exception {
         Logger.getAnonymousLogger().log(Level.INFO, "Processing results.");
         super.tearDown();
-        for (PerformanceData rec : getPerformanceData()) {
+        for (PerformanceData rec : data) {
             Utilities.processUnitTestsResults(JavaNavigatorPerfTest.class.getCanonicalName(), rec);
         }
         data.clear();
     }
 
-
     public static Test suite() throws InterruptedException {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-            addTest(JavaNavigatorPerfTest.class).gui(false));
-    }
-
-    public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
+        return NbModuleSuite.createConfiguration(JavaNavigatorPerfTest.class).
+                clusters(".*").enableModules(".*").suite();
     }
 
     private class NavigatorHandler extends Handler {
 
         @Override
-        public void publish(LogRecord record) {
+        public synchronized void publish(LogRecord record) {
             PerformanceData perfRec = new PerformanceData();
             perfRec.name = (String) record.getParameters()[0];
             perfRec.value = (Long) record.getParameters()[1];
@@ -166,6 +176,8 @@ public class JavaNavigatorPerfTest extends NbTestCase {
             perfRec.threshold = 5000;
             System.err.println(perfRec.name);
             data.add(perfRec);
+            logged = perfRec.name;
+            notifyAll();
         }
 
         @Override

@@ -55,8 +55,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public abstract class AbstractObjectFactory {
 
-    protected abstract int getHandler(Object object);
-    protected abstract SelfPersistent createObject(int handler, RepositoryDataInput stream) throws IOException;
+    protected abstract short getHandler(Object object);
+    protected abstract SelfPersistent createObject(short handler, RepositoryDataInput stream) throws IOException;
     
     protected final void writeSelfPersistent(SelfPersistent object, RepositoryDataOutput output) throws IOException
     {
@@ -72,7 +72,7 @@ public abstract class AbstractObjectFactory {
     
     protected final SelfPersistent readSelfPersistent(RepositoryDataInput input) throws IOException
     {
-        int handler = input.readShort();
+        short handler = input.readShort();
         SelfPersistent object = null;
         if (handler != NULL_POINTER) {
             object = createObject(handler, input);
@@ -81,9 +81,9 @@ public abstract class AbstractObjectFactory {
         return object;
     }
     
-    public static final int NULL_POINTER = -1;
+    public static final short NULL_POINTER = -1;
     
     // index to be used in another factory (but only in one) 
     // to start own indeces from the next after LAST_INDEX
-    public static final int LAST_INDEX = 0; 
+    public static final short LAST_INDEX = 0; 
 }

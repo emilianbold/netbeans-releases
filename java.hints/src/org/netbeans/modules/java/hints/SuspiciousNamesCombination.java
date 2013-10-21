@@ -55,16 +55,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -73,6 +81,12 @@ import org.openide.util.NbBundle;
  * @author Jan Lahoda
  */
 public class SuspiciousNamesCombination extends AbstractHint {
+    static final String GROUP_SEPARATOR = "|";
+    static final String SEPARATORS_REGEX = "[, \t;]";
+    static final String GROUP_KEY = "groups";
+    static final String DEFAULT_GROUPS = "x, width|y, height";
+    
+    private Map<String, Integer> mapNameToGroup;
     
     /** Creates a new instance of SuspiciousNamesCombination */
     public SuspiciousNamesCombination() {
@@ -98,6 +112,35 @@ public class SuspiciousNamesCombination extends AbstractHint {
 
     public void cancel() {
         // XXX implement me
+    }
+    
+    private void ensureNameMapLoaded() {
+        if (mapNameToGroup != null) {
+            return;
+        }
+        mapNameToGroup = new HashMap<String, Integer>();
+        Preferences prefs = getPreferences(null);
+        String value = prefs.get(GROUP_KEY, DEFAULT_GROUPS);
+        if (value == null) {
+            return;
+        }
+        String[] groups = value.split(Pattern.quote(GROUP_SEPARATOR));
+        int idx = 0;
+        for (String g : groups) {
+            String[] names = g.split(SEPARATORS_REGEX);
+            for (String n : names) {
+                if (n.isEmpty()) {
+                    continue;
+                }
+                mapNameToGroup.put(n.toLowerCase(), idx);
+            }
+            idx++;
+        }
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return new SuspiciousNamesCustomizer(node);
     }
     
     
@@ -205,20 +248,13 @@ public class SuspiciousNamesCombination extends AbstractHint {
     
     private int findCategory(String name) {
         Set<String> broken = breakName(name);
-        int index = 0;
-        
-        for (List<String> names : NAME_CATEGORIES) {
-            Set<String> copy = new HashSet<String>(names);
-            
-            copy.retainAll(broken);
-            
-            if (!copy.isEmpty()) {
-                return index;
+        ensureNameMapLoaded();
+        for (String s : broken) {
+            Integer i = mapNameToGroup.get(s);
+            if (i != null) {
+                return i;
             }
-            
-            index++;
         }
-        
         return -1;
     }
     

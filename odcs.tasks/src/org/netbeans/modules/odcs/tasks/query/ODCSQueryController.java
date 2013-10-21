@@ -201,7 +201,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
             querySemaphore.acquireUninterruptibly();
             postPopulate(false);
         } else {
-            hideModificationFields();
+            panel.hideModificationFields();
             populated = true;
         }
     }
@@ -374,16 +374,22 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
     }
 
-    protected void enableFields(boolean bl) {
-        // set all non parameter fields
-        panel.enableFields(bl);
-        if(!modifiable) {
-            hideModificationFields();
-        }
-        // set the parameter fields
-        for (QueryParameters.Parameter qp : parameters.getAll()) {
-            qp.setEnabled(bl);
-        }
+    protected void enableFields(final boolean bl) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                // set all non parameter fields
+                panel.enableFields(bl);
+                if (!modifiable) {
+                    panel.hideModificationFields();
+                }
+                // set the parameter fields
+                for (QueryParameters.Parameter qp : parameters.getAll()) {
+                    qp.setEnabled(bl);
+                }
+            }
+        };
+        ODCSUtil.runInAwt(r);
     }
 
     protected void selectFirstProduct() {
@@ -542,7 +548,8 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     }
                 }
                 assert name != null;
-                save(name);
+                final String fname = name;
+                save(fname);
                 ODCS.LOG.fine("on save finnish");
 
                 if(refresh) {
@@ -625,11 +632,7 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                     setIssueCount(issueCount);
                 }
             };
-            if(EventQueue.isDispatchThread()) {
-                r.run();
-            } else {
-                EventQueue.invokeLater(r);
-            }
+            ODCSUtil.runInAwt(r);
         }
         issueTable.setFilter(filter);
     }
@@ -927,15 +930,6 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
                 refreshTask.addProgressUnit(issueDesc);
             }
         }
-    }
-
-    private void hideModificationFields () {
-        // can't change the controllers data
-        // so alwasy keep those fields disabled
-        panel.modifyButton.setEnabled(false);
-        panel.removeButton.setEnabled(false);
-        panel.refreshConfigurationButton.setEnabled(false);
-        panel.cloneQueryButton.setEnabled(false);
     }
 
     String getQueryString() {

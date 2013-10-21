@@ -60,9 +60,9 @@ public final class PartToken<T extends TokenId> extends PropertyToken<T> {
 
     private TokenOrEmbedding<T> joinTokenOrEmbedding; // 32 bytes (28-super + 4)
     
-    private int partTokenIndex; // Index of this part inside 
+    private final int partTokenIndex; // Index of this part inside 
     
-    private int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
+    private final int partTextOffset; // Offset of this part's text among all parts that comprise the complete token
 
     public PartToken(T id, int length, TokenPropertyProvider<T> propertyProvider, PartType partType,
             TokenOrEmbedding<T> joinToken, int partTokenIndex, int partTextOffset

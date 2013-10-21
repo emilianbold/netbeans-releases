@@ -51,7 +51,6 @@ import javax.swing.JTabbedPane;
 import junit.framework.Test;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
-import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.Manager;
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
@@ -77,7 +76,11 @@ public class OptionsTest extends PermUITestCase {
     @Override
     public void initialize() throws IOException {
         // do nothing
-        context = ProjectContext.NONE;
+    }
+    
+    @Override
+    public ProjectContext getContext() {
+        return ProjectContext.NONE;    
     }
 
     public void testOptionsCategories() {
@@ -141,7 +144,7 @@ public class OptionsTest extends PermUITestCase {
             String message = Utilities.readFileToString(logFiles.pathToDiffLogFile);
             assertFile(message, logFiles.pathToGoldenLogFile, logFiles.pathToIdeLogFile, logFiles.pathToDiffLogFile);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         } finally {
             ideFileStream.close();
             goldenFileStream.close();

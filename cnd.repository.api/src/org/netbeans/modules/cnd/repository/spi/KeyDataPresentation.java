@@ -49,7 +49,7 @@ package org.netbeans.modules.cnd.repository.spi;
 public interface KeyDataPresentation {
     int getUnitPresentation();
     CharSequence getNamePresentation();
-    short getKindPresentation();
+    short getHandler();
 
     int getFilePresentation();
     int getStartPresentation();
