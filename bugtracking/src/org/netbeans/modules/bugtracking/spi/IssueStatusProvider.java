@@ -42,11 +42,12 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * 
  * Provides Issue Status information used by the Tasks Dashboard 
- * to appropriately render Issue status annotations (e.g. coloring).
+ * to appropriately render Issue status annotations (e.g. by coloring).
  * <p>
  * An implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. The {@link Status#SEEN} status is default for
@@ -55,8 +56,39 @@ import java.beans.PropertyChangeListener;
  * <p>
  * Also note that it is not to mandatory to honor all status values in a 
  * particular implementation - e.g. it is ok for a plugin to handle only 
- * the INCOMING_NEW, INCOMING_MODIFIED and SEEN values.
+ * the INCOMING_NEW, INCOMING_MODIFIED and SEEN values. In case that also 
+ * outgoing changes are reflected then also CONFLICT should be taken in count.
  * </p>
+ * <p>
+ * Even though the status is entirely given by the particular implementation, 
+ * the 
+ * </p>
+ * <p>
+ * The precedence of Status values is expected to be the following:
+ * <table border="1" cellpadding="3" cellspacing="0">
+ * <tr bgcolor="#ccccff">
+ * <td><b>Issue state</b></font></td>
+ * <td><b>Expected Status</b></font></td>
+ * </tr>
+ *  <tr>
+ *      <td>no changes</td>
+ *      <td>SEEN</td>
+ *  </tr>
+ *  <tr>
+ *      <td>only incoming changes</td>
+ *      <td>INCOMING_NEW or INCOMING_MODIFIED</td>
+ *  </tr>
+  *  <tr>
+ *      <td>only outgoing changes</td>
+ *      <td>OUTGOING_NEW or OUTGOING_MODIFIED</td>
+ *  </tr>
+ *  <tr>
+ *      <td>incoming and outgoing changes</td>
+ *      <td>CONFLICT</td>
+ *  </tr>
+ * 
+ * </table>
+ * 
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
  */
@@ -67,33 +99,34 @@ public interface IssueStatusProvider<I> {
      */
     public enum Status {
         /**
-         * the user hasn't seen this issue yet
+         * The Issue appeared for the first time on the client and the user hasn't seen it yet.
          */
         INCOMING_NEW,
         /**
-         * the issue was modified since the issue was seen the last time
+         * The Issue was modified (remotely) and the user hasn't seen it yet.
          */
         INCOMING_MODIFIED,
         /**
-         * the issue is new on client and haven't been submited yet
+         * The Issue is new on client and haven't been submited yet.
          */
         OUTGOING_NEW,
         /**
-         * there are outgoing changes in the issue
+         * There are outgoing changes in the Issue.
          */
         OUTGOING_MODIFIED,
         /**
-         * there are incoming and outgoing changes at one
+         * There are incoming and outgoing changes at once.
          */
         CONFLICT,        
         /**
-         * the user has seen the issue and there haven't been any changes since then
+         * The user has seen the incoming changes and there haven't been any other incoming changes since then.
          */
         SEEN
     }
         
     /**
-     * Issue status has changed.
+     * Issue status has changed.<br/>
+     * Old value should be the status before the change, new value the Status after the change.
      */
     public static final String EVENT_STATUS_CHANGED = "issue.status_changed"; // NOI18N
 
@@ -105,23 +138,64 @@ public interface IssueStatusProvider<I> {
     public Status getStatus(I issue);
 
     /**
-     * DeterminesResets the INCOMING_XXX status
+     * Sets the information if the user has seen the incoming changes or 
+     * wishes to mark them as seen (so that they aren't annotated anymore).<br/>
+     * Called e.g. by the 'Mark as Seen/Unseen' action in the Tasks Dashboard or when an Issue was opened 
+     * by the user.
+     * 
+     * <p>
+     * The expected result of setting seen to <b><code>true</code></b>:
+     * </p>
+     * <p>
+     * <table border="1" cellpadding="3" cellspacing="0">
+     * <tr bgcolor="#ccccff">
+     * <td><b>Status before</b></font></td>
+     * <td><b>Status after </b></font></td>
+     * </tr>
+     *  <tr>
+     *      <td>SEEN</td>
+     *      <td>SEEN</td>
+     *  </tr>
+     *  <tr>
+     *      <td>INCOMING_NEW or INCOMING_MODIFIED</td>
+     *      <td>SEEN</td>
+     *  </tr>
+     *  <tr>
+     *      <td>OUTGOING_NEW or OUTGOING_MODIFIED</td>
+     *      <td>no effect</td>
+     *  </tr>
+     *  <tr>
+     *      <td>CONFLICT</td>
+     *      <td>OUTGOING_NEW or OUTGOING_MODIFIED</td>
+     *  </tr>
+     * 
+     * </table>
+     * </p>
+     * 
+     * <p>
+     * It is up the particular implementation if and for how long the information 
+     * about incoming changes will be preserved so that it can be restored after setting seen 
+     * back to <b><code>false</code></b>. E.g. resulting to a status change from 
+     * SEEN to INCOMMING_XXX or from OUTGOING_XXX to CONFLICT. Please note that doing so 
+     * at least for a running IDE session would be considered as polite to the user.
+     * </p>
+     * 
      * @param issue
      * @param seen 
      */
-    public void setSeen(I issue, boolean seen);
+    public void setSeenIncoming(I issue, boolean seen);
     
     /**
+     * Registers a PropertyChangeListener to notify about status changes for an issue.
      * 
-     * XXX just a change listener maybe
      * @param issue
      * @param listener
      */
     public void removePropertyChangeListener(I issue, PropertyChangeListener listener);
 
     /**
+     * Unregisters a PropertyChangeListener.
      * 
-     * XXX just a change listener maybe
      * @param issue
      * @param listener 
      */

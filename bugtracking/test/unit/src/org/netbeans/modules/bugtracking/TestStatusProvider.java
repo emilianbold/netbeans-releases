@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking;
 
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.openide.util.lookup.LookupPermGenLeakTest;
 
 /**
  *
@@ -57,7 +58,7 @@ public class TestStatusProvider implements IssueStatusProvider<TestIssue> {
     }
 
     @Override
-    public void setSeen(TestIssue issue, boolean seen) {
+    public void setSeenIncoming(TestIssue issue, boolean seen) {
         issue.setSeen(seen);
     }
 

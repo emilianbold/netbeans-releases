@@ -132,7 +132,7 @@ public class ODCS {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(ODCSIssue issue, boolean seen) {
+                public void setSeenIncoming(ODCSIssue issue, boolean seen) {
                     issue.setUpToDate(seen);
                 }
                 @Override

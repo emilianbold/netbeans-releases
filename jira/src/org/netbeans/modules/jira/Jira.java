@@ -172,7 +172,7 @@ public class Jira {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(NbJiraIssue issue, boolean uptodate) {
+                public void setSeenIncoming(NbJiraIssue issue, boolean uptodate) {
                     issue.setUpToDate(uptodate);
                 }
                 @Override

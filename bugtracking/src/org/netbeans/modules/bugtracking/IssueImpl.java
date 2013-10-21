@@ -225,7 +225,7 @@ public final class IssueImpl<R, I> {
         if(sp == null) {
             return;
         }
-        sp.setSeen(data, isUptodate);
+        sp.setSeenIncoming(data, isUptodate);
     }
     
     public boolean submit () {

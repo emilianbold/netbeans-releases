@@ -174,7 +174,7 @@ public class Bugzilla {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(BugzillaIssue issue, boolean uptodate) {
+                public void setSeenIncoming(BugzillaIssue issue, boolean uptodate) {
                     issue.setUpToDate(uptodate);
                 }
                 @Override
