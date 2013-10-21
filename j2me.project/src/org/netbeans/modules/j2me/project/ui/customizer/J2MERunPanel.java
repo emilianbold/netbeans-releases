@@ -81,9 +81,9 @@ import org.openide.util.Utilities;
  */
 public class J2MERunPanel extends javax.swing.JPanel {
 
-    private DataSource[] data;
-    private Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
-    private J2MEProjectProperties uiProperties;
+    private final DataSource[] data;
+    private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
+    private final J2MEProjectProperties uiProperties;
 
     /**
      * Creates new form J2MERunPanel
@@ -97,7 +97,6 @@ public class J2MERunPanel extends javax.swing.JPanel {
         this.uiProperties = properties;
         configs = uiProperties.RUN_CONFIGS;
         domainsCombo.setModel(new DefaultComboBoxModel(uiProperties.SECURITY_DOMAINS));
-
 
         data = new DataSource[]{
             new TextDataSource(ProjectProperties.APPLICATION_ARGS, labelCommandlineOptions, texfieldCmdOptions, configCombo, configs),
@@ -490,7 +489,7 @@ public class J2MERunPanel extends javax.swing.JPanel {
     private abstract static class DataSource {
 
         private final String propName;
-        private JComponent label;
+        private final JComponent label;
         private final JComboBox<?> configCombo;
         private final Map<String, Map<String, String>> configs;
         private final Font basefont;

@@ -206,6 +206,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.j2me.keystore</friend>
                 <friend>org.netbeans.modules.impng</friend>
                 <friend>org.netbeans.modules.j2me.project</friend>
                 <friend>org.netbeans.modules.javame.deviceselector</friend>

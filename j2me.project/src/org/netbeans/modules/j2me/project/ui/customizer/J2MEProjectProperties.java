@@ -61,13 +61,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.BoundedRangeModel;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
@@ -80,6 +83,7 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2me.keystore.KeyStoreRepository;
 import org.netbeans.modules.j2me.project.J2MEProject;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -108,15 +112,12 @@ import org.openide.util.MutexException;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
-
-
-
 /**
  *
  * @author Tomas Zezula
  */
 public final class J2MEProjectProperties {
-        
+
     public static final String PLATFORM_ANT_NAME = "platform.ant.name";  //NOI18N
     public static final String PLATFORM_TYPE_J2ME = "j2me"; //NOI18N
     public static String PLATFORM_SDK = "platform.sdk"; //NOI18N
@@ -126,6 +127,9 @@ public final class J2MEProjectProperties {
     public static final String PROP_USE_SECURITY_DOMAIN = "run.use.security.domain"; //NOI18N
     public static final String PROP_SECURITY_DOMAIN = "security.domain"; //NOI18N
     public static final String PROP_DEBUGGER_TIMEOUT = "debugger.timeout"; //NOI18N
+    public static final String PROP_SIGN_ENABLED = "sign.enabled"; //NOI18N
+    public static final String PROP_SIGN_KEYSTORE = "sign.keystore"; //NOI18N
+    public static final String PROP_SIGN_ALIAS = "sign.alias"; //NOI18N
     //J2MEAttributesPanel
     public static final String MANIFEST_IS_LIBLET = "manifest.is.liblet"; //NOI18N
     public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
@@ -135,16 +139,14 @@ public final class J2MEProjectProperties {
     public static final String DEPLOYMENT_JARURL = "deployment.jarurl"; //MOI18N
     public static final String DEPLOYMENT_OVERRIDE_JARURL = "deployment.override.jarurl"; //MOI18N
     public static final String PLATFORM_PROFILE = "platform.profile"; //NOI18N
-    
-    
+
     // MODELS FOR VISUAL CONTROLS
-    
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
     ComboBoxModel JAVAC_SOURCE_MODEL;
     ComboBoxModel JAVAC_PROFILE_MODEL;
-     
+
     // CustomizerLibraries
     DefaultListModel JAVAC_CLASSPATH_MODEL;
     DefaultListModel JAVAC_PROCESSORPATH_MODEL;
@@ -158,14 +160,14 @@ public final class J2MEProjectProperties {
     ListCellRenderer JAVAC_SOURCE_RENDERER;
     ListCellRenderer JAVAC_PROFILE_RENDERER;
     Document SHARED_LIBRARIES_MODEL;
-    
+
     // CustomizerCompile
     ButtonModel NO_DEPENDENCIES_MODEL;
 
     //J2MEObfuscatingPanel
     Document ADDITIONAL_OBFUSCATION_SETTINGS_MODEL;
     BoundedRangeModel OBFUSCATION_LEVEL_MODEL;
-    
+
     //CustomizerRun
     Map<String, Map<String, String>> RUN_CONFIGS;
     String activeConfig;
@@ -178,6 +180,11 @@ public final class J2MEProjectProperties {
         PROP_DEBUGGER_TIMEOUT
     };
 
+    //J2ME Signing customizer
+    JToggleButton.ToggleButtonModel SIGN_ENABLED_MODEL;
+    ComboBoxModel SIGN_KEYSTORE_MODEL;
+    ComboBoxModel SIGN_ALIAS_MODEL;
+
     //J2MEAttributesPanel
     ButtonModel DEPLOYMENT_OVERRIDE_JARURL_MODEL;
     Document DEPLOYMENT_JARURL_MODEL;
@@ -185,11 +192,11 @@ public final class J2MEProjectProperties {
     String[] ATTRIBUTES_PROPERTY_NAMES = {MANIFEST_OTHERS, MANIFEST_JAD, MANIFEST_MANIFEST};
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
-    private Map<String,String> additionalProperties;
+    private Map<String, String> additionalProperties;
     private String includes, excludes;
     ClassPathSupport cs;
-    
-    private StoreGroup privateGroup; 
+
+    private StoreGroup privateGroup;
     private StoreGroup projectGroup;
 
     private final J2MEProject project;
@@ -208,13 +215,13 @@ public final class J2MEProjectProperties {
     J2MEProjectProperties(@NonNull final J2MEProject project) {
         this.project = project;
         this.cs = new ClassPathSupport(getEvaluator(), project.getReferenceHelper(), project.getHelper(), project.getUpdateHelper(), null);
-                
+
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
         additionalProperties = new HashMap<>();
         init();
     }
-    
+
     private void init() {
         PropertyEvaluator evaluator = getEvaluator();
         UpdateHelper updateHelper = getProject().getUpdateHelper();
@@ -265,18 +272,23 @@ public final class J2MEProjectProperties {
         //Obfuscation customizer
         ADDITIONAL_OBFUSCATION_SETTINGS_MODEL = projectGroup.createStringDocument(getEvaluator(), OBFUSCATION_CUSTOM);
         OBFUSCATION_LEVEL_MODEL = ModelHelper.createSliderModel(getEvaluator(), OBFUSCATION_LEVEL, 0, 0, 9);
-        
+
         RUN_CONFIGS = readRunConfigs();
         activeConfig = evaluator.getProperty("config");
         SECURITY_DOMAINS = readSecurityDomains();
-        
+
+        // Signning customizer
+        SIGN_ENABLED_MODEL = projectGroup.createToggleButtonModel(evaluator, PROP_SIGN_ENABLED);
+        SIGN_KEYSTORE_MODEL = ModelHelper.createComboBoxModel(evaluator, PROP_SIGN_KEYSTORE, loadKeystores());
+        SIGN_ALIAS_MODEL = ModelHelper.createComboBoxModel(evaluator, PROP_SIGN_ALIAS, loadAliases());
+
         //J2MEAttributesPanel
         DEPLOYMENT_OVERRIDE_JARURL_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOYMENT_OVERRIDE_JARURL);
-        if(getEvaluator().getProperty(DEPLOYMENT_OVERRIDE_JARURL) == null) {
+        if (getEvaluator().getProperty(DEPLOYMENT_OVERRIDE_JARURL) == null) {
             DEPLOYMENT_OVERRIDE_JARURL_MODEL.setSelected(false);
-    }
+        }
         DEPLOYMENT_JARURL_MODEL = projectGroup.createStringDocument(getEvaluator(), DEPLOYMENT_JARURL);
-        if(getEvaluator().getProperty(DEPLOYMENT_JARURL) == null) {
+        if (getEvaluator().getProperty(DEPLOYMENT_JARURL) == null) {
             try {
                 DEPLOYMENT_JARURL_MODEL.insertString(0, "${dist.jar}", null); //NOI18N
             } catch (BadLocationException ex) {
@@ -353,7 +365,20 @@ public final class J2MEProjectProperties {
         // Standard store of the properties
         projectGroup.store(projectProperties);
         privateGroup.store(privateProperties);
-        
+
+        //store Signing properties
+        if (SIGN_ENABLED_MODEL.isSelected() && SIGN_KEYSTORE_MODEL.getSelectedItem() != null) {
+            projectProperties.put(PROP_SIGN_KEYSTORE, ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).getKeyStorePath());
+            if (SIGN_ALIAS_MODEL.getSelectedItem() != null) {
+                projectProperties.put(PROP_SIGN_ALIAS, ((KeyStoreRepository.KeyStoreBean.KeyAliasBean) SIGN_ALIAS_MODEL.getSelectedItem()).getAlias());
+            }
+        }
+        if (!SIGN_ENABLED_MODEL.isSelected()) {
+            projectProperties.remove(PROP_SIGN_ENABLED);
+            projectProperties.remove(PROP_SIGN_KEYSTORE);
+            projectProperties.remove(PROP_SIGN_ALIAS);
+        }
+
         //Store run configs
         storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
         EditableProperties ep = project.getUpdateHelper().getProperties("nbproject/private/config.properties");
@@ -391,7 +416,7 @@ public final class J2MEProjectProperties {
 
         projectProperties.put(ProjectProperties.INCLUDES, includes);
         projectProperties.put(ProjectProperties.EXCLUDES, excludes);
-        
+
         //J2MEAttributesPanel
         projectProperties.put(DEPLOYMENT_OVERRIDE_JARURL, Boolean.toString(DEPLOYMENT_OVERRIDE_JARURL_MODEL.isSelected()));
         try {
@@ -403,7 +428,7 @@ public final class J2MEProjectProperties {
         for (int i = 0; i < dataDelegates.length; i++) {
             projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], ATTRIBUTES_TABLE_MODEL.encode(dataDelegates[i]));
         }
-        
+
         //Obfusation properties
         projectProperties.put(OBFUSCATION_LEVEL, String.valueOf(OBFUSCATION_LEVEL_MODEL.getValue()));
         projectGroup.store(projectProperties);
@@ -451,7 +476,6 @@ public final class J2MEProjectProperties {
         removed.removeAll(newArtifacts);
         Set<ClassPathSupport.Item> added = new HashSet<>(newArtifacts);
         added.removeAll(oldArtifacts);
-
 
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
@@ -524,7 +548,7 @@ public final class J2MEProjectProperties {
             throw new IllegalArgumentException(use);
         }
     }
-    
+
     @NonNull
     Iterable<? extends ActionListener> getOptionListeners() {
         return optionListeners;
@@ -539,15 +563,15 @@ public final class J2MEProjectProperties {
         Parameters.notNull("al", al);   //NOI18N
         optionListeners.remove(al);
     }
-    
+
     /* This is used by CustomizerWSServiceHost */
     public void putAdditionalProperty(String propertyName, String propertyValue) {
         additionalProperties.put(propertyName, propertyValue);
     }
-    
+
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
         Set<File> roots = new HashSet<>();
-        for (DefaultTableModel model : new DefaultTableModel[] {SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
+        for (DefaultTableModel model : new DefaultTableModel[]{SOURCE_ROOTS_MODEL, TEST_ROOTS_MODEL}) {
             for (Object row : model.getDataVector()) {
                 File d = (File) ((Vector) row).elementAt(0);
                 if (/* #104996 */d.isDirectory()) {
@@ -585,7 +609,7 @@ public final class J2MEProjectProperties {
         return SharableLibrariesUtils.showMakeSharableWizard(getProject().getHelper(),
                 getProject().getReferenceHelper(), libs, jars);
     }
-    
+
     private void collectLibs(DefaultListModel model, List<String> libs, List<String> jarReferences) {
         for (int i = 0; i < model.size(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
@@ -604,50 +628,55 @@ public final class J2MEProjectProperties {
             }
         }
     }
-    
+
     public static boolean isTrue(final String value) {
-        return value != null &&
-                (value.equalsIgnoreCase("true") ||  //NOI18N
-                 value.equalsIgnoreCase("yes") ||   //NOI18N
-                 value.equalsIgnoreCase("on"));     //NOI18N
+        return value != null
+                && (value.equalsIgnoreCase("true") || //NOI18N
+                value.equalsIgnoreCase("yes") || //NOI18N
+                value.equalsIgnoreCase("on"));     //NOI18N
     }
-           
+
     public void store() throws IOException {
-    }    
-    
+    }
+
     private J2MECompilingPanel compilingPanel = null;
+
     public J2MECompilingPanel getCompilingPanel() {
         if (compilingPanel == null) {
             compilingPanel = new J2MECompilingPanel(this);
         }
         return compilingPanel;
     }
-    
+
     private J2MEPackagingPanel packagingPanel = null;
+
     public J2MEPackagingPanel getPackagingPanel() {
         if (packagingPanel == null) {
             packagingPanel = new J2MEPackagingPanel(this);
         }
         return packagingPanel;
     }
-    
+
     private J2MERunPanel runPanel = null;
+
     public J2MERunPanel getRunPanel() {
         if (runPanel == null) {
             runPanel = new J2MERunPanel(this);
         }
         return runPanel;
     }
-    
+
     private J2MEApplicationPanel applicationPanel = null;
+
     public J2MEApplicationPanel getApplicationPanel() {
         if (applicationPanel == null) {
             applicationPanel = new J2MEApplicationPanel(this);
         }
         return applicationPanel;
     }
-    
+
     private J2MEDeploymentPanel deploymentPanel = null;
+
     public J2MEDeploymentPanel getDeploymentPanel() {
         if (deploymentPanel == null) {
             deploymentPanel = new J2MEDeploymentPanel(this);
@@ -717,8 +746,8 @@ public final class J2MEProjectProperties {
         Map<String, String> def = configs.get(null);
         for (String prop : CONFIG_AWARE_PROPERTIES) {
             String v = def.get(prop);
-            EditableProperties ep =
-                    (prop.equals(ProjectProperties.APPLICATION_ARGS)
+            EditableProperties ep
+                    = (prop.equals(ProjectProperties.APPLICATION_ARGS)
                     || prop.equals(ProjectProperties.RUN_WORK_DIR)
                     || privateProperties.containsKey(prop))
                     ? privateProperties : projectProperties;
@@ -749,8 +778,8 @@ public final class J2MEProjectProperties {
             for (Map.Entry<String, String> entry2 : c.entrySet()) {
                 String prop = entry2.getKey();
                 String v = entry2.getValue();
-                EditableProperties ep =
-                        (prop.equals(ProjectProperties.APPLICATION_ARGS)
+                EditableProperties ep
+                        = (prop.equals(ProjectProperties.APPLICATION_ARGS)
                         || prop.equals(ProjectProperties.RUN_WORK_DIR)
                         || privateCfgProps.containsKey(prop))
                         ? privateCfgProps : sharedCfgProps;
@@ -806,6 +835,14 @@ public final class J2MEProjectProperties {
         return securityDomains;
     }
 
+    List<KeyStoreRepository.KeyStoreBean> loadKeystores() {
+        return KeyStoreRepository.getDefault().getKeyStores();
+    }
+
+    Set<KeyStoreRepository.KeyStoreBean.KeyAliasBean> loadAliases() {
+        return ((KeyStoreRepository.KeyStoreBean) SIGN_KEYSTORE_MODEL.getSelectedItem()).aliasses();
+    }
+
     /**
      * Helper class for components models instantiation.
      */
@@ -821,6 +858,33 @@ public final class J2MEProjectProperties {
             }
 
             DefaultBoundedRangeModel model = new DefaultBoundedRangeModel(Integer.valueOf(value), extent, minVal, maxVal);
+            return model;
+        }
+
+        public static <T> ComboBoxModel<T> createComboBoxModel(PropertyEvaluator evaluator, String propertyName, Collection<T> items) {
+            if (items == null || items.isEmpty()) {
+                return new DefaultComboBoxModel<>();
+            }
+            DefaultComboBoxModel model = new DefaultComboBoxModel<>(items.toArray());
+            String value = evaluator.getProperty(propertyName);
+            Class<?> type = items.toArray()[0].getClass();
+            if (value != null) {
+                if (type.equals(KeyStoreRepository.KeyStoreBean.class)) {
+                    for (Object item : items) {
+                        if (value.equals(((KeyStoreRepository.KeyStoreBean) item).getKeyStorePath())) {
+                            model.setSelectedItem(item);
+                            break;
+                        }
+                    }
+                } else if (type.equals(KeyStoreRepository.KeyStoreBean.KeyAliasBean.class)) {
+                    for (Object item : items) {
+                        if (value.equals(((KeyStoreRepository.KeyStoreBean.KeyAliasBean) item).getAlias())) {
+                            model.setSelectedItem(item);
+                            break;
+                        }
+                    }
+                }
+            }
             return model;
         }
     }
