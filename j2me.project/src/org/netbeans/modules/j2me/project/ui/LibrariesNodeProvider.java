@@ -68,7 +68,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-@NodeFactory.Registration(projectType = "org-netbeans-modules-j2me-project")
+@NodeFactory.Registration(projectType = "org-netbeans-modules-j2me-project", position=300)
 public class LibrariesNodeProvider implements NodeFactory {
 
     public LibrariesNodeProvider() {
