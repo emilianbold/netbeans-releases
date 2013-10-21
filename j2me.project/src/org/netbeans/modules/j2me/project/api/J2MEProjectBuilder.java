@@ -315,11 +315,14 @@ public final class J2MEProjectBuilder {
     @NonNull
     private SpecificationVersion getSourceLevel() {
         final SpecificationVersion specVersion = platform.getSpecification().getVersion();
-        if (VERSION_8.compareTo(specVersion) <= 0) {
-            return new SpecificationVersion("1.8"); //NOI18N
-        } else {
-            return new SpecificationVersion("1.3"); //NOI18N
-        }
+        final SpecificationVersion runtimeVersion =
+            VERSION_8.compareTo(specVersion) <= 0 ?
+                new SpecificationVersion("1.8") : //NOI18N
+                new SpecificationVersion("1.3"); //NOI18N
+        final SpecificationVersion toolsVersion = sdk.getSpecification().getVersion();
+        return runtimeVersion.compareTo(toolsVersion) <= 0 ?
+            runtimeVersion :
+            toolsVersion;
     }
 
         private static void registerRoots(
