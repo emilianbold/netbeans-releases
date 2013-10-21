@@ -47,15 +47,16 @@ import java.beans.PropertyChangeListener;
  * 
  * Provides Issue Status information used by the Tasks Dashboard 
  * to appropriately render Issue status annotations (e.g. coloring).
- * <br/>
+ * <p>
  * An implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. The {@link Status#SEEN} status is default for
  * all issues in such a case.
- * <br/> 
+ * </p>
+ * <p>
  * Also note that it is not to mandatory to honor all status values in a 
  * particular implementation - e.g. it is ok for a plugin to handle only 
  * the INCOMING_NEW, INCOMING_MODIFIED and SEEN values.
- *
+ * </p>
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
  */

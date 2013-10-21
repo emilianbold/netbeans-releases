@@ -108,9 +108,10 @@ public interface BugtrackingConnector {
         
         /**
          * Determines if this connector provides the possibility for a user 
-         * to create, edit or removal of repositories.<br/>
+         * to create, edit or removal of repositories.
+         * <p>
          * Typically the expected value for a connector is to return <code>true</code>. 
-         * 
+         * </p>
          * @return <code>true</code> if this connector provides the possibility 
          *         to create, edit or removal of repositories. Otherwise <code>false</code>.
          */

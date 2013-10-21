@@ -47,14 +47,15 @@ import java.util.Date;
 /**
  * Provides access to scheduling data for a given task so that they can by used 
  * by the Tasks Dashboard facilities - filtering or grouping by schedule date.
- * <br/>
+ * <p>
  * It is up to the particular implementation if the values eventually match with  
  * corresponding remote repository fields or if they are merely handed 
  * locally as user private.
- * <br/>
+ * </p>
+ * <p>
  * Note that an implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. 
- * 
+ * <p>
  * @author Tomas Stupka
  * @param <I> the implementation specific issue type
  */

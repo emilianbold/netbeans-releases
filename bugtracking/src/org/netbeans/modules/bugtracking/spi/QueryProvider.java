@@ -128,6 +128,12 @@ public interface QueryProvider<Q, I> {
      */
     public void rename(Q q, String newName);
     
+    /**
+     * Returns all issues from this queries last refresh.
+     * 
+     * @param q
+     * @return 
+     */
     public Collection<I> getIssues(Q q);
 
     /**

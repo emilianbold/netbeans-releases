@@ -61,6 +61,8 @@ public final class BugtrackingSupport<R, Q, I> {
     private final IssueProvider<I> issueProvider;
 
     /**
+     * Creates a new BugtrackingSupport preconfigured with mandatory provider implementations.
+     * 
      * @param repositoryProvider a {@link RepositoryProvider} to access the implementation specific repository.<br/> 
      *                           Is mandatory and cannot be null.
      * @param queryProvider a {@link QueryProvider} to access queries from the given repository.<br/>
