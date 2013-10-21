@@ -51,7 +51,7 @@ import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssuePriorityProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -86,7 +86,7 @@ public class ODCS {
     private ODCSRepositoryProvider odcsRepositoryProvider;
     private IssueStatusProvider<ODCSIssue> isp;    
     private IssuePriorityProvider<ODCSIssue> ipp;    
-    private BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> bf;
+    private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
 
     private void init() {
@@ -98,9 +98,9 @@ public class ODCS {
         return rc;
     }
     
-    public BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue> getBugtrackingFactory() {
+    public BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> getBugtrackingFactory() {
         if(bf == null) {
-            bf = new BugtrackingFactory<ODCSRepository, ODCSQuery, ODCSIssue>();
+            bf = new BugtrackingSupport<>(getRepositoryProvider(), getQueryProvider(), getIssueProvider());
         }    
         return bf;
     }

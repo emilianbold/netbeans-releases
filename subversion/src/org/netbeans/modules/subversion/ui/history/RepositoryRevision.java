@@ -97,13 +97,16 @@ final class RepositoryRevision {
     public static final String PROP_EVENTS_CHANGED = "eventsChanged"; //NOI18N
     private final File[] selectionRoots;
     private final Map<String,File> pathToRoot;
+    private final Map<String, SVNRevision> pegRevisions;
 
-    public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl, File[] selectionRoots, Map<String,File> pathToRoot) {
+    public RepositoryRevision(ISVNLogMessage message, SVNUrl rootUrl, File[] selectionRoots,
+            Map<String,File> pathToRoot, Map<String, SVNRevision> pegRevisions) {
         this.message = message;
         this.repositoryRootUrl = rootUrl;
         this.selectionRoots = selectionRoots;
         support = new PropertyChangeSupport(this);
         this.pathToRoot = pathToRoot;
+        this.pegRevisions = pegRevisions;
         initFakeRootEvent();
     }
 
@@ -451,7 +454,25 @@ final class RepositoryRevision {
         protected void perform () {
             try {
                 SvnClient client = Subversion.getInstance().getClient(repositoryRootUrl, this);
-                ISVNLogMessage [] messages = client.getLogMessages(repositoryRootUrl, message.getRevision(), message.getRevision());
+                ISVNLogMessage [] messages = new ISVNLogMessage[0];
+                if (pegRevisions == null) {
+                    // searching URL
+                    messages = client.getLogMessages(repositoryRootUrl, message.getRevision(), message.getRevision());
+                } else {
+                    // do not call search history for with repo root url, some repositories
+                    // may limit access to the root folder
+                    for (File f : selectionRoots) {
+                        String p = SvnUtils.getRelativePath(f);
+                        if (p != null && p.startsWith("/")) { //NOI18N
+                            p = p.substring(1, p.length());
+                        }
+                        messages = client.getLogMessages(repositoryRootUrl.appendPath(p), pegRevisions.get(p),
+                                message.getRevision(), message.getRevision(), false, true, 0);
+                        if (messages.length > 0) {
+                            break;
+                        }
+                    }
+                }
                 if (messages.length > 0) {
                     final ISVNLogMessage msg = messages[0];
                     final List<Event> logEvents = prepareEvents(msg);

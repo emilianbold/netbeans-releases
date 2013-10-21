@@ -175,18 +175,27 @@ public class POMDataObject extends MultiDataObject {
         }
 
         protected @Override String messageName() {
-            return annotateWithProjectName(super.messageName());
+            return annotateWithProjectName(super.messageName(), getPrimaryFile());
         }
 
         protected @Override String messageHtmlName() {
             String name = super.messageHtmlName();
-            return name != null ? annotateWithProjectName(name) : null;
+            return name != null ? annotateWithProjectName(name, getPrimaryFile()) : null;
         }
 
-        private String annotateWithProjectName(String name) { // #154508
-            if (getPrimaryFile().getNameExt().equals("pom.xml")) { // NOI18N
+
+        protected @Override boolean asynchronousOpen() {
+            return true;
+        }
+
+        // XXX override initializeCloneableEditor if needed; see AntProjectDataEditor
+
+    }
+    
+        static String annotateWithProjectName(String name, FileObject primaryFile) { // #154508
+            if (primaryFile.getNameExt().equals("pom.xml")) { // NOI18N
                 try {
-                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(getPrimaryFile().toURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
+                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(primaryFile.toURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
                     if (artifactId != null) {
                         String text = XMLUtil.findText(artifactId);
                         if (text != null) {
@@ -203,14 +212,7 @@ public class POMDataObject extends MultiDataObject {
             }
             return name;
         }
-
-        protected @Override boolean asynchronousOpen() {
-            return true;
-        }
-
-        // XXX override initializeCloneableEditor if needed; see AntProjectDataEditor
-
-    }
+    
 
     private static class POMEnv extends DataEditorSupport.Env {
 

@@ -76,7 +76,8 @@ public class testHints extends GeneralPHP {
                 "testShortArraySyntax",
                 "testPhp54RelatedHint",
                 "testPhp53RelatedHint",
-                "testSmartySurroundWith").enableModules(".*").clusters(".*") //.gui( true )
+                "testSmartySurroundWith",
+                "testTooManyNestedBlocks").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
@@ -257,4 +258,28 @@ public class testHints extends GeneralPHP {
         checkNumberOfAnnotationsContains("Surround with ...", 1, "Possibility to wrap code with chosen Smarty tag", file);
         endTest();
     } 
+    
+    public void testTooManyNestedBlocks() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "UnusedUse");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\nclass A {\n" +
+                        "    function a() {\n" +
+                        "        if(true) {\n" +
+                        "            if(true) {\n" +
+                        "                if(true) {\n" +
+                        "                    \n" +
+                        "                }\n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        " \n" +
+                        "}");
+        file.save();
+        new EventTool().waitNoEvent(2000);
+        checkNumberOfAnnotationsContains("Too Many Nested Blocks in Function Declaration", 1, "Incorrect number of Too Many Nested Blocks hints", file);
+        endTest();
+    }
 }

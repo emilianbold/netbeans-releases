@@ -63,7 +63,7 @@ import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.localtasks.task.LocalTask;
-import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.spi.BugtrackingSupport;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.openide.util.Exceptions;
@@ -79,7 +79,7 @@ public final class LocalRepository {
     private static final String ID = "LocalRepositoryInstance"; //NOI18N
     private static LocalRepository instance;
     private final Repository repository;
-    private final BugtrackingFactory<LocalRepository, LocalQuery, LocalTask> fac;
+    private final BugtrackingSupport<LocalRepository, LocalQuery, LocalTask> fac;
     private final PropertyChangeSupport propertySuport;
     private static final String ICON_PATH = "org/netbeans/modules/localtasks/resources/local_repo.png"; // NOI18N
     private final Image icon;
@@ -98,11 +98,10 @@ public final class LocalRepository {
     }
 
     public LocalRepository () {
-        fac = new BugtrackingFactory<>();
+        fac = new BugtrackingSupport<>(new RepositoryProviderImpl(), new QueryProviderImpl(), new IssueProviderImpl());
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         propertySuport = new PropertyChangeSupport(this);
-        repository = fac.createRepository(this, new RepositoryProviderImpl(),
-                new QueryProviderImpl(), new IssueProviderImpl());
+        repository = fac.createRepository(this, null, new IssueSchedulingProviderImpl(), null, null);
     }
 
     public Repository getRepository () {

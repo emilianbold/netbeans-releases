@@ -43,9 +43,13 @@
 package org.netbeans.modules.bugtracking.ui.issue;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
@@ -63,6 +67,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.JTextComponent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
@@ -217,6 +222,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if(!issue.isNew()) {
             BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
         }
+        
+        undoRedoListener.register(this, true);
     }
 
     /** This method is called from within the constructor to
@@ -366,6 +373,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     if (issue == null) {
                         return;
                     }
+                    undoRedoListener.register(IssueTopComponent.this, true);
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
                     if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
@@ -442,6 +450,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.add(this);
         if(issue != null) {
             getController().opened();
+            undoRedoListener.register(this, true);
         }
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
@@ -450,6 +459,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void componentClosed() {
         openIssues.remove(this);
         if(issue != null) {
+            undoRedoListener.register(this, false);
             issue.removePropertyChangeListener(this);
             getController().closed();
         }
@@ -630,6 +640,49 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         public String getRedoPresentationName() {
             return delegate != null ? delegate.getRedoPresentationName() : UndoRedo.NONE.getRedoPresentationName();
         }
+    }
+    
+    private final UndoRedoListener undoRedoListener = new UndoRedoListener();
+    private class UndoRedoListener implements ContainerListener {
+        
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            register((Container)e.getComponent(), true);
+        }
+
+        @Override
+        public void componentRemoved(ContainerEvent e) {
+            register((Container)e.getComponent(), false);
+        }
+        
+        void register(Component c, boolean register) {
+            if(c instanceof Container) {
+                register((Container)c, register, issue != null ? UndoRedoSupport.getSupport(issue) : null);
+            }            
+        }
+        
+        private void register(Component c, boolean register, UndoRedoSupport urs) {
+            if(urs != null && c instanceof JTextComponent) {
+                JTextComponent tx = (JTextComponent) c;
+                if(register) {
+                    urs.register(tx);
+                } else {
+                    urs.unregister(tx);
+                }
+            }
+            if(c instanceof Container) {
+                Container container = (Container) c;
+                container.removeContainerListener(this);
+                if(register) {
+                    container.addContainerListener(this);
+                }
+                Component[] components = container.getComponents();
+                for (Component cmp : components) {
+                    register(cmp, register, urs);
+                }
+            }
+        }
+        
     }
     
 }

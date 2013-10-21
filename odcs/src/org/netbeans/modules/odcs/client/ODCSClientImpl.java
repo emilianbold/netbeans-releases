@@ -254,7 +254,7 @@ public class ODCSClientImpl implements ODCSClient {
     private ActivityServiceClient getActivityClient() {
         if (actvityServiceClient == null) {
             actvityServiceClient = new ActivityServiceClient();
-            actvityServiceClient.setBaseUrl(url + "api/");
+            actvityServiceClient.setBaseUrl(url + "api/activity/");
             ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
             actvityServiceClient.setRestClientDelegate(delegate);
         }
