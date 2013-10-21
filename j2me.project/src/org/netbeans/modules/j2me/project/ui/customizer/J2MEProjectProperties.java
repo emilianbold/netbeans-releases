@@ -42,8 +42,10 @@
 package org.netbeans.modules.j2me.project.ui.customizer;
 
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -132,14 +134,20 @@ public final class J2MEProjectProperties {
     public static final String PROP_SIGN_ALIAS = "sign.alias"; //NOI18N
     //J2MEAttributesPanel
     public static final String MANIFEST_IS_LIBLET = "manifest.is.liblet"; //NOI18N
-    public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
     public static final String MANIFEST_OTHERS = "manifest.others"; //NOI18N
     public static final String MANIFEST_MANIFEST = "manifest.manifest"; //NOI18N
     public static final String MANIFEST_JAD = "manifest.jad"; //NOI18N
     public static final String DEPLOYMENT_JARURL = "deployment.jarurl"; //MOI18N
     public static final String DEPLOYMENT_OVERRIDE_JARURL = "deployment.override.jarurl"; //MOI18N
     public static final String PLATFORM_PROFILE = "platform.profile"; //NOI18N
-
+    //J2MEMIDletsPanel
+    public static final String MANIFEST_MIDLETS = "manifest.midlets"; //NOI18N
+    //J2MEAPIPermissionsPanel
+    public static final String MANIFEST_APIPERMISSIONS = "manifest.apipermissions"; //NOI18N
+    //J2MEPushRegistryPanel
+    public static final String MANIFEST_PUSHREGISTRY = "manifest.pushregistry"; //NOI18N
+    
+    
     // MODELS FOR VISUAL CONTROLS
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
@@ -190,6 +198,18 @@ public final class J2MEProjectProperties {
     Document DEPLOYMENT_JARURL_MODEL;
     J2MEAttributesPanel.StorableTableModel ATTRIBUTES_TABLE_MODEL;
     String[] ATTRIBUTES_PROPERTY_NAMES = {MANIFEST_OTHERS, MANIFEST_JAD, MANIFEST_MANIFEST};
+    
+    //J2MEMIDletsPanel
+    J2MEMIDletsPanel.MIDletsTableModel MIDLETS_TABLE_MODEL;
+    String[] MIDLETS_PROPERTY_NAMES = {MANIFEST_MIDLETS};
+    
+    //J2MEAPIPermissionsPanel
+    J2MEAPIPermissionsPanel.StorableTableModel API_PERMISSIONS_TABLE_MODEL;
+    String[] API_PERMISSIONS_PROPERTY_NAMES = {MANIFEST_APIPERMISSIONS};
+    
+    //J2MEPushRegistryPanel
+    J2MEPushRegistryPanel.StorableTableModel PUSH_REGISTRY_TABLE_MODEL;
+    String[] PUSH_REGISTRY_PROPERTY_NAMES = {MANIFEST_PUSHREGISTRY};
 
     private final List<ActionListener> optionListeners = new CopyOnWriteArrayList<>();
     private Map<String, String> additionalProperties;
@@ -295,7 +315,16 @@ public final class J2MEProjectProperties {
                 Exceptions.printStackTrace(ex);
             }
         }
-        ATTRIBUTES_TABLE_MODEL = new J2MEAttributesPanel.StorableTableModel();
+        ATTRIBUTES_TABLE_MODEL = new J2MEAttributesPanel.StorableTableModel(this);
+        
+        //J2MEMIDletsPanel
+        MIDLETS_TABLE_MODEL = new J2MEMIDletsPanel.MIDletsTableModel(this);
+        
+        //J2MEAPIPermissionsPanel
+        API_PERMISSIONS_TABLE_MODEL = new J2MEAPIPermissionsPanel.StorableTableModel(this);
+        
+        //J2MEPushRegistryPanel
+        PUSH_REGISTRY_TABLE_MODEL = new J2MEPushRegistryPanel.StorableTableModel(this);
 
     }
 
@@ -426,7 +455,25 @@ public final class J2MEProjectProperties {
         }
         Object[] dataDelegates = ATTRIBUTES_TABLE_MODEL.getDataDelegates();
         for (int i = 0; i < dataDelegates.length; i++) {
-            projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], ATTRIBUTES_TABLE_MODEL.encode(dataDelegates[i]));
+            projectProperties.put(ATTRIBUTES_PROPERTY_NAMES[i], encode(dataDelegates[i]));
+        }
+        
+        //J2MEMIDletsPanel
+        dataDelegates = MIDLETS_TABLE_MODEL.getDataDelegates();
+        for (int i = 0; i < dataDelegates.length; i++) {
+            projectProperties.put(MIDLETS_PROPERTY_NAMES[i], encode(dataDelegates[i]));
+        }
+        
+        //J2MEAPIPermissionsPanel
+        dataDelegates = API_PERMISSIONS_TABLE_MODEL.getDataDelegates();
+        for (int i = 0; i < dataDelegates.length; i++) {
+            projectProperties.put(API_PERMISSIONS_PROPERTY_NAMES[i], encode(dataDelegates[i]));
+        }
+        
+        //J2MEPushRegistryPanel
+        dataDelegates = PUSH_REGISTRY_TABLE_MODEL.getDataDelegates();
+        for (int i = 0; i < dataDelegates.length; i++) {
+            projectProperties.put(PUSH_REGISTRY_PROPERTY_NAMES[i], encode(dataDelegates[i]));
         }
 
         //Obfusation properties
@@ -445,6 +492,50 @@ public final class J2MEProjectProperties {
                 //When the encoding is not supported by JVM do not set it as default
             }
         }
+    }
+    
+    Object decode(String raw) {
+        try {
+            if (raw == null) {
+                return null;
+            }
+            BufferedReader br = new BufferedReader(new StringReader(raw));
+            HashMap<String, String> map = new HashMap<>();
+            for (;;) {
+                String line = br.readLine();
+                if (line == null) {
+                    break;
+                }
+                int i = line.indexOf(':');
+                if (i < 0) {
+                    continue;
+                }
+                map.put(line.substring(0, i), line.substring(i + 1).trim());
+            }
+            return map;
+        } catch (IOException ioe) {
+            assert false : ioe;
+            return null;
+        }
+    }
+
+    private String encode(Object val) {
+        HashMap<String, String> map = (HashMap<String, String>) val;
+        if (map == null) {
+            return null;
+        }
+        StringBuilder buffer = new StringBuilder();
+        for (String key : map.keySet()) {
+            if (key == null) {
+                continue;
+            }
+            String value = map.get(key);
+            if (value == null) {
+                continue;
+            }
+            buffer.append(key).append(": ").append(value).append('\n'); //NOI18N
+        }
+        return buffer.toString();
     }
 
     /**

@@ -55,6 +55,9 @@ import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -74,15 +77,14 @@ import org.openide.util.NbBundle;
 public class J2MEPushRegistryPanel extends javax.swing.JPanel {
     
     final protected JTable table;
-    final protected StorableTableModel tableModel;
+    final private StorableTableModel tableModel;
     final private DefaultComboBoxModel cbmClassesForAdd = new DefaultComboBoxModel();
     
-    private String configuration;
-    private String configurationProfileValue;
-    private String defaultProfileValue;
     protected HashSet<String> classes;
 
     private final J2MEProjectProperties uiProperties;
+    private final ListSelectionListener listSelectionListener;
+    private final ChangeListener changeListener;
 
     /**
      * Creates new form J2MEPushRegistryPanel
@@ -92,7 +94,8 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         initComponents();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(J2MEPushRegistryPanel.class, "ACSN_Push"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MEPushRegistryPanel.class, "ACSD_Push"));
-        table = new JTable(tableModel = new StorableTableModel());
+        tableModel = this.uiProperties.PUSH_REGISTRY_TABLE_MODEL;
+        table = new JTable(tableModel);
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent tme) {
@@ -105,7 +108,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         });
         scrollPane.setViewportView(table);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        listSelectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
                 final boolean enabled = table.isEnabled() && table.getSelectedRow() >= 0;
@@ -114,7 +117,8 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
                 bMoveUp.setEnabled(enabled && table.getSelectedRow() > 0);
                 bMoveDown.setEnabled(enabled && table.getSelectedRow() < tableModel.getRowCount() - 1);
             }
-        });
+        };
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
         TableColumn col;
         col = table.getColumnModel().getColumn(0);
         col.setResizable(true);
@@ -139,15 +143,36 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
                     bEditActionPerformed(null);
             }
         });
+        changeListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent ce) {
+                classes = new HashSet<>();
+                for (int i = 0; i < cbmClassesForAdd.getSize(); i++) {
+                    classes.add((String) cbmClassesForAdd.getElementAt(i));
+                }
+                tableModel.fireTableDataChanged();
+            }
+        };
+        postInitComponents();
+    }
+    
+    private void postInitComponents() {
+        classes = null;
+        final MIDletScanner scanner = MIDletScanner.getDefault(uiProperties);
+        scanner.scan(cbmClassesForAdd, null, changeListener);
+        String[] propertyNames = uiProperties.PUSH_REGISTRY_PROPERTY_NAMES;
+        String values[] = new String[propertyNames.length];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+        }
+        tableModel.setDataDelegates(values);
+        table.setBackground(UIManager.getDefaults().getColor("Table.background")); //NOI18N
+        listSelectionListener.valueChanged(null);
     }
     
     private boolean isMIDP10() {
-        String value = null;
-        if (configuration != null)
-            value = configurationProfileValue;
-        if (value == null)
-            value = defaultProfileValue;
-        return value != null  &&  value.equals("MIDP-1.0"); //NOI18N
+        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
+        return platformProfile != null && platformProfile.equals("MIDP-1.0"); //NOI18N
     }
 
     /**
@@ -362,7 +387,7 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
-    private static class StorableTableModel extends AbstractTableModel {
+    static class StorableTableModel extends AbstractTableModel {
         
         public static final String PREFIX = "MIDlet-Push-"; //NOI18N
         
@@ -372,10 +397,10 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
         private int rows = 0;
         
         private static final long serialVersionUID = 920375326055211848L;
+        private final J2MEProjectProperties uiProperties;
         
-        private StorableTableModel()
-        {
-            //just to avoid creation of accessor class
+        public StorableTableModel(J2MEProjectProperties uiProperties) {
+            this.uiProperties = uiProperties;
         }
         
         public int getColumnCount() {
@@ -452,8 +477,8 @@ public class J2MEPushRegistryPanel extends javax.swing.JPanel {
             return new Object[]{map};
         }
         
-		public synchronized void setDataDelegates(final Object data[]) {
-            map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[0];
+	public synchronized void setDataDelegates(final String data[]) {
+            map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
             rows = 0;
             for ( final String key : map.keySet() ) {
                 if (key.startsWith(PREFIX)) try { //NOI18N

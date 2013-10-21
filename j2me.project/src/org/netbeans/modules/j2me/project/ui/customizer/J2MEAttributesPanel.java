@@ -93,7 +93,6 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         initComponents();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(J2MEAttributesPanel.class, "ACSN_Jad"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MEAttributesPanel.class, "ACSD_Jad"));
-//        table = new JTable(tableModel = new StorableTableModel());
         tableModel = this.uiProperties.ATTRIBUTES_TABLE_MODEL;
         table = new JTable(tableModel);
         scrollPane.setViewportView(table);
@@ -135,7 +134,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
         tableModel.setMIDP(platformProfile);
         String liblet = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.MANIFEST_IS_LIBLET);
-        jRadioButtonSuite.setSelected(liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand()));
+        jRadioButtonSuite.setSelected(liblet == null || (liblet != null && liblet.equals(jRadioButtonSuite.getActionCommand())));
         jRadioButtonLIBlet.setSelected(liblet != null && liblet.equals(jRadioButtonLIBlet.getActionCommand()));
         tableModel.initManifestModel(jRadioButtonLIBlet.isSelected());
         
@@ -410,7 +409,7 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public static class StorableTableModel extends AbstractTableModel {
+    static class StorableTableModel extends AbstractTableModel {
         private HashMap<String,String> othersMap, jadMap, manifestMap;
         final private ArrayList<String> items = new ArrayList<>();
         private int midpVersion = 1;
@@ -499,8 +498,10 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         private static final long serialVersionUID = -2195421895353167160L;
 
         private static final Pattern midpPattern = Pattern.compile("MIDP-([1-3])");
+        private final J2MEProjectProperties uiProperties;
 
-        public StorableTableModel() {
+        public StorableTableModel(J2MEProjectProperties uiProperties) {
+            this.uiProperties = uiProperties;
             this.othersMap = new HashMap<>();
             this.jadMap = new HashMap<>();
             this.manifestMap = new HashMap<>();
@@ -639,55 +640,11 @@ public class J2MEAttributesPanel extends javax.swing.JPanel {
         
         public synchronized void setDataDelegates(final String data[]) {
             assert data != null;
-            othersMap = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) decode(data[0]);
-            jadMap = data[1] == null ? new HashMap<String,String>() : (HashMap<String,String>) decode(data[1]);
-            manifestMap = data[2] == null ? new HashMap<String,String>() : (HashMap<String,String>) decode(data[2]);
+            othersMap = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
+            jadMap = data[1] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[1]);
+            manifestMap = data[2] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[2]);
             updateItemsFromMaps();
             fireTableDataChanged();
-        }
-        
-        private Object decode(String raw) {
-            try {
-                if (raw == null) {
-                    return null;
-                }
-                BufferedReader br = new BufferedReader(new StringReader(raw));
-                HashMap<String, String> map = new HashMap<>();
-                for (;;) {
-                    String line = br.readLine();
-                    if (line == null) {
-                        break;
-                    }
-                    int i = line.indexOf(':');
-                    if (i < 0) {
-                        continue;
-                    }
-                    map.put(line.substring(0, i), line.substring(i + 1).trim());
-                }
-                return map;
-            } catch (IOException ioe) {
-                assert false : ioe;
-                return null;
-            }
-        }
-
-        String encode(Object val) {
-            HashMap<String, String> map = (HashMap<String, String>) val;
-            if (map == null) {
-                return null;
-            }
-            StringBuilder buffer = new StringBuilder();
-            for (String key : map.keySet()) {
-                if (key == null) {
-                    continue;
-                }
-                String value = map.get(key);
-                if (value == null) {
-                    continue;
-                }
-                buffer.append(key).append(": ").append(value).append('\n'); //NOI18N
-            }
-            return buffer.toString();
         }
         
         public synchronized void updateItemsFromMaps() {

@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.StringTokenizer;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -67,13 +68,10 @@ import org.openide.util.NbBundle;
 public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     
     protected JTable table;
-    protected StorableTableModel tableModel;
-    
-    private String configuration;
-    private String configurationProfileValue;
-    private String defaultProfileValue;
+    private final StorableTableModel tableModel;
 
     private final J2MEProjectProperties uiProperties;
+    private final ListSelectionListener listSelectionListener;
 
     /**
      * Creates new form J2MEAPIPermissionsPanel
@@ -83,21 +81,38 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         initComponents();
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "ACSN_Perm"));
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "ACSD_Perm"));
-        table = new JTable(tableModel = new StorableTableModel());
+        tableModel = this.uiProperties.API_PERMISSIONS_TABLE_MODEL;
+        table = new JTable(tableModel);
         scrollPane.setViewportView(table);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        listSelectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent lse) {
                 bRemove.setEnabled(table.isEnabled()  &&  table.getSelectedRow() >= 0);
             }
-        });
+        };
+        table.getSelectionModel().addListSelectionListener(listSelectionListener);
         TableColumn col0 = table.getColumnModel().getColumn(0);
         TableColumn col1 = table.getColumnModel().getColumn(1);
         col0.setResizable(true);
         col0.setPreferredWidth(300);
         col1.setResizable(true);
         col1.setPreferredWidth(80);
+        postInitComponents();
+    }
+    
+    private void postInitComponents() {
+        String platformProfile = uiProperties.getProject().evaluator().getProperty(J2MEProjectProperties.PLATFORM_PROFILE);
+        final boolean notMIDP10 = platformProfile != null && !platformProfile.equals("MIDP-1.0"); //NOI18N
+        String[] propertyNames = uiProperties.API_PERMISSIONS_PROPERTY_NAMES;
+        String values[] = new String[propertyNames.length];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = uiProperties.getEvaluator().getProperty(propertyNames[i]);
+        }
+        tableModel.setDataDelegates(values);
+        table.setBackground(UIManager.getDefaults().getColor("Table.background")); //NOI18N
+        listSelectionListener.valueChanged(null);
+        lError.setVisible(! notMIDP10);
     }
 
     /**
@@ -182,6 +197,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         final DialogDescriptor dd = new DialogDescriptor(
             add, NbBundle.getMessage(J2MEAPIPermissionsPanel.class, "TITLE_AddAPI"), //NOI18N
             true, new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
                         int row = tableModel.addRow(add.getAPIName());
@@ -218,7 +234,7 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
-    public static class StorableTableModel extends AbstractTableModel {
+    static class StorableTableModel extends AbstractTableModel {
         
         static class Item {
             
@@ -251,6 +267,11 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
         final private ArrayList<Item> items = new ArrayList<Item>();
         
         private static final long serialVersionUID = -6523408202243150812L;
+        private final J2MEProjectProperties uiProperties;
+
+        public StorableTableModel(J2MEProjectProperties uiProperties) {
+            this.uiProperties = uiProperties;
+        }
         
         public HashSet<String> getKeys() {
             final HashSet<String> set = new HashSet<String>();
@@ -317,9 +338,9 @@ public class J2MEAPIPermissionsPanel extends javax.swing.JPanel {
             fireTableRowsUpdated(rowIndex, rowIndex);
         }
         
-		public synchronized void setDataDelegates(final Object data[]) {
+	public synchronized void setDataDelegates(final String data[]) {
             assert data != null;
-            map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) data[0];
+            map = data[0] == null ? new HashMap<String,String>() : (HashMap<String,String>) uiProperties.decode(data[0]);
             updateItemsFromMap();
             fireTableDataChanged();
         }
