@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,12 +73,21 @@ import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.customizer.WarnPanel;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.ModelRunConfig;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyManagement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.operations.Operations;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
@@ -93,6 +103,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -105,6 +116,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -130,6 +142,9 @@ public class ActionProviderImpl implements ActionProvider {
         "javadoc", //NOI18N
         COMMAND_TEST,
         COMMAND_TEST_SINGLE,
+        SingleMethod.COMMAND_RUN_SINGLE_METHOD,
+        SingleMethod.COMMAND_DEBUG_SINGLE_METHOD,
+            
         COMMAND_RUN,
         COMMAND_RUN_SINGLE,
         COMMAND_DEBUG,
@@ -164,8 +179,6 @@ public class ActionProviderImpl implements ActionProvider {
                 supp.addAll( added);
             }
         }
-        supp.add(SingleMethod.COMMAND_RUN_SINGLE_METHOD);
-        supp.add(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD);
         return supp.toArray(new String[0]);
     }
 
@@ -198,12 +211,45 @@ public class ActionProviderImpl implements ActionProvider {
     boolean runSingleMethodEnabled() {
         return usingSurefire28() && (usingJUnit4() || usingTestNG());
     }
+    
+    //TODO these effectively need updating once in a while
+    private static final String SUREFIRE_VERSION_SAFE = "2.15"; //2.16 is broken
+    private static final String JUNIT_VERSION_SAFE = "4.11";
 
-    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method.")
+    @Messages({
+        "run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method.",
+        "TIT_Run_Single_method=Feature requires update of POM",
+        "TXT_Run_Single_method=<html>Executing single test method requires Surefire 2.8+ and JUnit in version 4.8 and bigger. <br/><br/>Update your pom.xml?</html>"
+    })
     @Override public void invokeAction(final String action, final Lookup lookup) {
         if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             if (!runSingleMethodEnabled()) {
-                //TODO show a popup dialog with X Show Next time?
+                if (NbPreferences.forModule(ActionProviderImpl.class).getBoolean(SHOW_SUREFIRE_WARNING, true)) {
+                    WarnPanel pnl = new WarnPanel(TXT_Run_Single_method());
+                    Object o = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(pnl, TIT_Run_Single_method(), NotifyDescriptor.YES_NO_OPTION));
+                    if (pnl.disabledWarning()) {
+                        NbPreferences.forModule(ActionProviderImpl.class).putBoolean(SHOW_SUREFIRE_WARNING, false);
+                    }
+                    if (o == NotifyDescriptor.YES_OPTION) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                Utilities.performPOMModelOperations(
+                                        proj.getProjectDirectory().getFileObject("pom.xml"), 
+                                        Collections.singletonList(new UpdateSurefireOperation(usingSurefire28() ? null : SUREFIRE_VERSION_SAFE, usingJUnit4() || usingTestNG() ? null : JUNIT_VERSION_SAFE)));
+                                //this appears to run too fast, before the resolved model is updated.
+//                                SwingUtilities.invokeLater(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        invokeAction(action, lookup);
+//                                    }
+//                                });
+                            }
+                        });
+                        return;
+                    }
+                } 
                 StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
                 return;
             }
@@ -270,6 +316,7 @@ public class ActionProviderImpl implements ActionProvider {
             }
         }
     }
+    private static final String SHOW_SUREFIRE_WARNING = "showSurefireWarning";
 
     public static Map<String,String> replacements(Project proj, String action, Lookup lookup) {
         Map<String,String> replacements = new HashMap<String,String>();
@@ -624,4 +671,101 @@ public class ActionProviderImpl implements ActionProvider {
         return (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(BUILD_WITH_DEPENDENCIES, ACT_Build_Deps(), null);
     }
 
+    private static class UpdateSurefireOperation implements ModelOperation<POMModel> {
+        private final String newJUnit;
+        private final String newSurefirePluginVersion;
+
+        public UpdateSurefireOperation(@NullAllowed String newSurefirePluginVersion, @NullAllowed String newJUnit) {
+            this.newSurefirePluginVersion = newSurefirePluginVersion;
+            this.newJUnit = newJUnit;
+        }
+
+        
+        
+        @Override
+        public void performOperation(POMModel model) {
+            org.netbeans.modules.maven.model.pom.Project prj = model.getProject();
+            if (newJUnit != null) {
+                findDependency("junit", "junit", newJUnit, prj);
+            }
+            if (newSurefirePluginVersion != null) {
+                findPlugin(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, newSurefirePluginVersion, prj);
+            }
+        }
+
+        private void findDependency(String groupId, String artifactID, String newVersion, org.netbeans.modules.maven.model.pom.Project prj) {
+            DependencyManagement dm = prj.getDependencyManagement();
+            boolean setInDM = false;
+            boolean setInDeps = false;
+            if (dm != null) {
+                Dependency dep = dm.findDependencyById(groupId, artifactID, null);
+                if (dep != null) {
+                    dep.setVersion(newVersion);
+                    setInDM = true;
+                }
+            }
+            //TODO search profiles?
+            Dependency dep = prj.findDependencyById(groupId, artifactID, null);
+            if (dep != null) {
+                if (dep.getVersion() != null) {
+                    dep.setVersion(newVersion);
+                    setInDeps = true;
+                } else {
+                    if (!setInDM) { //dm in parent maybe? set here
+                        dep.setVersion(newVersion);
+                        setInDeps = true;
+                    }
+                }
+            }
+            if (!setInDM && !setInDeps) {
+                //not found in current project (likely in one of parents), we need to insert here.
+                Dependency d = prj.getModel().getFactory().createDependency();
+                d.setArtifactId(artifactID);
+                d.setGroupId(groupId);
+                d.setVersion(newVersion);
+                prj.addDependency(d);
+            }
+        }
+
+        private void findPlugin(String groupId, String artifactId, String version, org.netbeans.modules.maven.model.pom.Project prj) {
+            Build bld = prj.getBuild();
+            boolean setInPM = false;
+            boolean setInPlgs = false;
+            
+            if (bld != null) {
+                PluginManagement pm = bld.getPluginManagement();
+                if (pm != null) {
+                    Plugin p = pm.findPluginById(groupId, artifactId);
+                    if (p != null) {
+                        p.setVersion(version);
+                        setInPM = true;
+                    }
+                }
+                Plugin p = bld.findPluginById(groupId, artifactId);
+                if (p != null) {
+                    if (p.getVersion() != null) {
+                        p.setVersion(version);
+                        setInPlgs = true;
+                    } else {
+                        if (!setInPM) {
+                            p.setVersion(version);
+                            setInPlgs = true;
+                        }
+                    }
+                }
+            }
+            if (!setInPM && !setInPlgs) {
+                if (bld == null) {
+                    bld = prj.getModel().getFactory().createBuild();
+                    prj.setBuild(bld);
+                }
+                Plugin p = prj.getModel().getFactory().createPlugin();
+                p.setGroupId(groupId);
+                p.setArtifactId(artifactId);
+                p.setVersion(version);
+                bld.addPlugin(p);
+            }
+        }
+        
+    }
 }
