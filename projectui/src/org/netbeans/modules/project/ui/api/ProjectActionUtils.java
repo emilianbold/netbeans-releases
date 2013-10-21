@@ -47,7 +47,7 @@ import org.netbeans.modules.project.ui.ProjectUtilities;
 /**
  * Provides actions on project and project tab
  * @author mkozeny
- * @since 1.49.0
+ * @since 1.50.0
  */
 public class ProjectActionUtils {
     
