@@ -40,9 +40,8 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.refactoring.hints;
+package org.netbeans.modules.cnd.model.tasks;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -65,8 +64,8 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
  * @author Alexander Simon
  */
 public class CndParser extends Parser {
-    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.refactoring"); //NOI18N
-    private final Collection<CsmFile> tus = new ArrayList<>();
+    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
+    private final Collection<CsmFile> tus = new ArrayList<CsmFile>();
     private Snapshot snapshot;
 
     private CndParser(Collection<Snapshot> snapshots) {

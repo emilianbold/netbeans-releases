@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
