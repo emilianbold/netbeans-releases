@@ -297,7 +297,7 @@ public final class KarmaNodeFactory implements NodeFactory {
 
         @Override
         protected boolean enable(Project project) {
-            return true;
+            return !KarmaServers.getInstance().isServerStarting(project);
         }
 
         @NbBundle.Messages("RunTestsKarmaServerAction.name=Run Tests")

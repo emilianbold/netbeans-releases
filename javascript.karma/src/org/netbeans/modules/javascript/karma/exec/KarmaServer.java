@@ -91,7 +91,6 @@ public final class KarmaServer {
 
     public synchronized void runTests() {
         assert Thread.holdsLock(this);
-        // XXX handle isStarting() == true
         if (!isStarted()) {
             start();
         }

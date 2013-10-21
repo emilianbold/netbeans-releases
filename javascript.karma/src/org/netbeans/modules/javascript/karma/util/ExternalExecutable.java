@@ -70,6 +70,8 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.progress.ProgressUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -426,8 +428,7 @@ public final class ExternalExecutable {
         String error = ExternalExecutableValidator.validateCommand(executable, executableName);
         if (error != null) {
             if (warnUser) {
-                // XXX
-                throw new UnsupportedOperationException("Not supported yet");
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(error, NotifyDescriptor.ERROR_MESSAGE));
             }
             return null;
         }
