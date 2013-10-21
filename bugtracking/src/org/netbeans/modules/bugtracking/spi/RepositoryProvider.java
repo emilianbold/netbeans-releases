@@ -161,7 +161,12 @@ public interface RepositoryProvider<R, Q, I> {
      * for which applies that the ID equals to or the summary contains 
      * the given criteria string.
      *
-     * XXX move to simple search
+     * The method is expected to return after the whole execution was handled.
+     * 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
      *
      * @param r an implementation specific repository
      * @param criteria

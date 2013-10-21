@@ -118,25 +118,42 @@ public interface IssueProvider<I> {
     /**
      * Refreshes this Issues data from its bugtracking repository
      *
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
      * @param i
      * @return true if the issue was refreshed, otherwise false
      */
     public boolean refresh(I i);
 
     /**
-     * Add a comment to this issue and close it as fixed eventually.
+     * Add a comment to this issue and close it as fixed eventually. 
+     * The method is expected to return after the whole execution was handled 
+     * and the changes submitted to the remote repository.
      * 
-     * @param i
-     * @param comment
-     * @param closeAsFixed 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * @param i an implementation specific issue instance
+     * @param comment a comment to be added to the issue
+     * @param close close the issue if <code>true</code>
      */
-    // XXX throw exception
     // XXX provide way so that we know commit hooks are supported
-    public void addComment(I i, String comment, boolean closeAsFixed);
+    public void addComment(I i, String comment, boolean close);
 
     /**
-     * Attach a file to this issue.
-     * <br/>
+     * Attach a file to this issue. The method is expected to return after 
+     * the whole execution was handled and the changes submitted to the remote repository.
+     * 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
      * Note that in case this functionality isn't available then
      * {@link RepositoryProvider#canAttachFile(java.lang.Object)} is expected to return <code>false</code>
      * 
@@ -147,7 +164,6 @@ public interface IssueProvider<I> {
      * 
      * @see RepositoryProvider#canAttachFile(java.lang.Object) 
      */
-    // XXX throw exception
     public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**
@@ -176,6 +192,11 @@ public interface IssueProvider<I> {
      * Submits the issue. Override and implement if you support issue
      * submitting.
      *
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
      * @param i issue data
      * @return <code>true</code> if the task was successfully
      * submitted,<code>false</code> if the task was not submitted for any
