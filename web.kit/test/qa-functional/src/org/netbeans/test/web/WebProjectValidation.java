@@ -484,8 +484,8 @@ public class WebProjectValidation extends J2eeTestCase {
         EditorOperator editor = new EditorOperator("Servlet1.java");
         String expected = "response.setContentType(\"text/html;charset=UTF-8\");";
         assertTrue("Servlet1.java should contain " + expected, editor.contains(expected));
-        editor.replace("try {",
-                "try {\nout.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
+        editor.replace("out.println(\"<title>Servlet Servlet1</title>\");",
+                "out.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
         new ActionNoBlock(null, "Run File").perform(editor);
         NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
@@ -669,7 +669,7 @@ public class WebProjectValidation extends J2eeTestCase {
         initDisplayer();
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME);
         new Node(rootNode, "Web Pages|HTML.html").performPopupAction("Open");
-        new EditorOperator("HTML.html").replace("<title></title>",
+        new EditorOperator("HTML.html").replace("<title>TODO supply a title</title>",
                 "<title>HTML Page</title>");
         new Action("Run|Run File", null).perform();
         //waitBuildSuccessful();
@@ -745,6 +745,9 @@ public class WebProjectValidation extends J2eeTestCase {
     }
 
     public void waitBuildSuccessful() {
+        new Action(Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window")
+                + "|" + Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", "OutputWindow"),
+                null).performMenu();
         OutputTabOperator console = new OutputTabOperator(PROJECT_NAME);
         console.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 180000);
         boolean ok = false;
