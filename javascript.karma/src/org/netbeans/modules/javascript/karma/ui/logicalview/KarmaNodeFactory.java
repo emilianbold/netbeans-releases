@@ -65,7 +65,6 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -311,26 +310,18 @@ public final class KarmaNodeFactory implements NodeFactory {
 
     private abstract static class BaseNodeAction extends NodeAction {
 
-        protected static final RequestProcessor RP = new RequestProcessor(BaseNodeAction.class);
-
-
         protected abstract void performAction(Project project);
 
         protected abstract boolean enable(Project project);
 
         @Override
         protected final void performAction(Node[] activatedNodes) {
-            final Project project = getProject(activatedNodes);
+            Project project = getProject(activatedNodes);
             if (project == null) {
                 LOGGER.fine("No project found -> no karma action performed");
                 return;
             }
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    performAction(project);
-                }
-            });
+            performAction(project);
         }
 
         @Override

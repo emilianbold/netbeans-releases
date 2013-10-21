@@ -56,6 +56,7 @@ public final class KarmaServer {
     // @GuardedBy("this")
     private Future<Integer> server;
 
+    volatile boolean started = false;
     volatile boolean starting = false;
 
 
@@ -65,10 +66,10 @@ public final class KarmaServer {
         this.project = project;
     }
 
-    public synchronized void start() {
+    public synchronized boolean start() {
         assert Thread.holdsLock(this);
         if (isStarted()) {
-            return;
+            return true;
         }
         starting = true;
         fireChange();
@@ -77,15 +78,15 @@ public final class KarmaServer {
             // some error
             starting = false;
             fireChange();
-            return;
+            return false;
         }
-        server = karmaExecutable.start(port, new Runnable() {
-            @Override
-            public void run() {
-                starting = false;
-                fireChange();
-            }
-        });
+        server = karmaExecutable.start(port);
+        starting = false;
+        if (server != null) {
+            started = true;
+        }
+        fireChange();
+        return started;
     }
 
     public synchronized void runTests() {
@@ -114,6 +115,7 @@ public final class KarmaServer {
         }
         server.cancel(true);
         server = null;
+        started = false;
         fireChange();
     }
 
@@ -121,9 +123,8 @@ public final class KarmaServer {
         return starting;
     }
 
-    public synchronized boolean isStarted() {
-        assert Thread.holdsLock(this);
-        return server != null;
+    public boolean isStarted() {
+        return started;
     }
 
     public void addChangeListener(ChangeListener listener) {

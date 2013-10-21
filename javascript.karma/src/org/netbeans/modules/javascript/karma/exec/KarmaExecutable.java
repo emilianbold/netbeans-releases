@@ -45,7 +45,9 @@ package org.netbeans.modules.javascript.karma.exec;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -102,17 +104,34 @@ public final class KarmaExecutable {
         "# {0} - project name",
         "KarmaExecutable.start=Karma ({0})",
     })
-    public Future<Integer> start(int port, @NullAllowed Runnable startFinishedTask) {
+    @CheckForNull
+    public Future<Integer> start(int port) {
         List<String> params = new ArrayList<>(4);
         params.add(START_COMMAND);
         // XXX
         params.add("config/karma-netbeans.conf.js");
         params.add(PORT_PARAMETER);
         params.add(Integer.toString(port));
+        final CountDownLatch countDownLatch = new CountDownLatch(1);
+        Runnable countDownTask = new Runnable() {
+            @Override
+            public void run() {
+                countDownLatch.countDown();
+            }
+        };
         Future<Integer> task = getExecutable(Bundle.KarmaExecutable_start(ProjectUtils.getInformation(project).getDisplayName()), getProjectDir())
                 .additionalParameters(params)
-                .run(getStartDescriptor(), new ServerProcessorFactory(startFinishedTask));
+                .run(getStartDescriptor(countDownTask), new ServerProcessorFactory(countDownTask));
         assert task != null : karmaPath;
+        try {
+            countDownLatch.await(1, TimeUnit.MINUTES);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        if (task.isDone()) {
+            // some error, task is not running
+            return null;
+        }
         return task;
     }
 
@@ -138,12 +157,13 @@ public final class KarmaExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getStartDescriptor() {
+    private ExecutionDescriptor getStartDescriptor(Runnable postTask) {
         return new ExecutionDescriptor()
                 .frontWindow(false)
                 .frontWindowOnError(false)
                 .outLineBased(true)
-                .errLineBased(true);
+                .errLineBased(true)
+                .postExecution(postTask);
     }
 
     private ExecutionDescriptor getRunDescriptor() {

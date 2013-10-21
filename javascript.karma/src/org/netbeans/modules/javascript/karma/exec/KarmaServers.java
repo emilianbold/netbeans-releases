@@ -42,20 +42,22 @@
 
 package org.netbeans.modules.javascript.karma.exec;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.openide.util.RequestProcessor;
 
 public final class KarmaServers {
 
+    private static final RequestProcessor RP = new RequestProcessor(KarmaServers.class.getName(), 2);
     private static final KarmaServers INSTANCE = new KarmaServers();
 
-    // @GuardedBy("this")
-    private final Map<Project, KarmaServerInfo> karmaServers = new HashMap<>();
+    // write operations @GuardedBy("RP") thread
+    private final ConcurrentMap<Project, KarmaServerInfo> karmaServers = new ConcurrentHashMap<>();
     private final KarmaServersListener.Support listenerSupport = new KarmaServersListener.Support();
     private final ChangeListener serverListener = new ServerListener();
 
@@ -75,42 +77,47 @@ public final class KarmaServers {
         listenerSupport.removeKarmaServersListener(listener);
     }
 
-    public synchronized void startServer(Project project) {
-        assert Thread.holdsLock(this);
+    public void startServer(final Project project) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                startServerInternal(project);
+            }
+        });
+    }
+
+    void startServerInternal(Project project) {
+        assert RP.isRequestProcessorThread();
         if (isServerRunning(project)) {
             return;
         }
         KarmaServerInfo serverInfo = karmaServers.get(project);
         if (serverInfo == null) {
             serverInfo = new KarmaServerInfo();
-            karmaServers.put(project, serverInfo);
+            KarmaServerInfo prevServerInfo = karmaServers.putIfAbsent(project, serverInfo);
+            assert prevServerInfo == null : serverInfo;
         }
         assert serverInfo.getServer() == null : serverInfo;
         KarmaServer karmaServer = new KarmaServer(serverInfo.getPort(), project);
-        karmaServer.addChangeListener(serverListener);
         serverInfo.setServer(karmaServer);
-        karmaServer.start();
-    }
-
-    public synchronized void runTests(Project project) {
-        assert Thread.holdsLock(this);
-        startServer(project);
-        KarmaServerInfo serverInfo = karmaServers.get(project);
-        assert serverInfo != null;
-        KarmaServer karmaServer = serverInfo.getServer();
-        // XXX
-        while (karmaServer.isStarting()) {
-            try {
-                Thread.sleep(250);
-            } catch (InterruptedException ex) {
-                break;
-            }
+        karmaServer.addChangeListener(serverListener);
+        if (!karmaServer.start()) {
+            // did not start -> remove it
+            serverInfo.setServer(null);
         }
-        karmaServer.runTests();
     }
 
-    public synchronized void stopServer(Project project, boolean cleanup) {
-        assert Thread.holdsLock(this);
+    public void stopServer(final Project project, final boolean cleanup) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                stopServerInternal(project, cleanup);
+            }
+        });
+    }
+
+    void stopServerInternal(Project project, boolean cleanup) {
+        assert RP.isRequestProcessorThread();
         KarmaServerInfo serverInfo = karmaServers.get(project);
         if (serverInfo == null) {
             return;
@@ -125,14 +132,40 @@ public final class KarmaServers {
         }
     }
 
-    public synchronized void restartServer(Project project) {
-        assert Thread.holdsLock(this);
-        stopServer(project, false);
-        startServer(project);
+    public synchronized void restartServer(final Project project) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                restartServerInternal(project);
+            }
+        });
     }
 
-    public synchronized boolean isServerStarting(Project project) {
-        assert Thread.holdsLock(this);
+    void restartServerInternal(Project project) {
+        assert RP.isRequestProcessorThread();
+        stopServerInternal(project, false);
+        startServerInternal(project);
+    }
+
+    public void runTests(final Project project) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                runTestsInternal(project);
+            }
+        });
+    }
+
+    void runTestsInternal(Project project) {
+        assert RP.isRequestProcessorThread();
+        startServerInternal(project);
+        KarmaServerInfo serverInfo = karmaServers.get(project);
+        assert serverInfo != null;
+        KarmaServer karmaServer = serverInfo.getServer();
+        karmaServer.runTests();
+    }
+
+    public boolean isServerStarting(Project project) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {
             return false;
@@ -140,8 +173,7 @@ public final class KarmaServers {
         return karmaServer.isStarting();
     }
 
-    public synchronized boolean isServerStarted(Project project) {
-        assert Thread.holdsLock(this);
+    public boolean isServerStarted(Project project) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {
             return false;
@@ -149,14 +181,13 @@ public final class KarmaServers {
         return karmaServer.isStarted();
     }
 
-    public synchronized boolean isServerRunning(Project project) {
+    public boolean isServerRunning(Project project) {
         return isServerStarting(project)
                 || isServerStarted(project);
     }
 
     @CheckForNull
-    private synchronized KarmaServer getKarmaServer(Project project) {
-        assert Thread.holdsLock(this);
+    private KarmaServer getKarmaServer(Project project) {
         KarmaServerInfo serverInfo = karmaServers.get(project);
         if (serverInfo == null) {
             return null;
@@ -177,8 +208,7 @@ public final class KarmaServers {
 
         private final int port;
 
-        // @GuardedBy("this")
-        private KarmaServer server;
+        private volatile KarmaServer server;
 
 
         public KarmaServerInfo() {
@@ -189,11 +219,11 @@ public final class KarmaServers {
             return port;
         }
 
-        public synchronized KarmaServer getServer() {
+        public KarmaServer getServer() {
             return server;
         }
 
-        public synchronized void setServer(KarmaServer karmaServer) {
+        public void setServer(KarmaServer karmaServer) {
             this.server = karmaServer;
         }
 
