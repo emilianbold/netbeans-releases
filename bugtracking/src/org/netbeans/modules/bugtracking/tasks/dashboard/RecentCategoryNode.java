@@ -45,67 +45,68 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.tasks.Category;
-import org.netbeans.modules.bugtracking.tasks.actions.Actions;
+import org.netbeans.modules.bugtracking.tasks.RecentCategory;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.WeakListeners;
 
-public class UnsubmittedCategoryNode extends CategoryNode implements Submitable {
 
-    private final RepositoryImpl repository;
-    private final PropertyChangeListener unsubmittedListener;
-    private static final ImageIcon UNSUBMITTED_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+public class RecentCategoryNode extends CategoryNode {
 
-    public UnsubmittedCategoryNode(Category category, RepositoryImpl repository, boolean refresh) {
-        super(category, refresh);
-        this.repository = repository;
-        this.unsubmittedListener = new UnsubmittedCategoryListener();
-        repository.addPropertyChangeListener(WeakListeners.propertyChange(unsubmittedListener, repository));
+    private final PropertyChangeListener recentListener;
+    private static final ImageIcon RECENT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+
+    public RecentCategoryNode(Category category) {
+        super(category, false);
+        recentListener = new RecentCategoryListener();
     }
 
     @Override
     ImageIcon getIcon() {
-        return UNSUBMITTED_ICON;
+        return RECENT_ICON;
     }
 
     @Override
     List<Action> getCategoryActions(List<TreeListNode> selectedNodes) {
         List<Action> actions = new ArrayList<Action>();
-        actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        //TODO add clear action eventually
         return actions;
-    }
-
-    @Override
-    public List<IssueImpl> getTasksToSubmit() {
-        return getTasks(false);
-    }
-
-    @Override
-    public boolean isUnsubmitted() {
-        return true;
     }
 
     @Override
     void adjustTaskNode(TaskNode taskNode) {
     }
 
-    public RepositoryImpl getRepository() {
-        return repository;
+    @Override
+    protected void attach() {
+        super.attach();
+        BugtrackingManager.getInstance().addPropertyChangeListener(recentListener);
     }
 
-    private class UnsubmittedCategoryListener implements PropertyChangeListener {
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        BugtrackingManager.getInstance().removePropertyChangeListener(recentListener);
+    }
+
+    @Override
+    Comparator<TaskNode> getSpecialComparator() {
+        return ((RecentCategory) getCategory()).getTaskNodeComparator();
+    }
+
+    private class RecentCategoryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(RepositoryImpl.EVENT_UNSUBMITTED_ISSUES_CHANGED)) {
-                UnsubmittedCategoryNode.this.updateContent();
-                DashboardViewer.getInstance().updateCategoryNode(UnsubmittedCategoryNode.this);
+            if (evt.getPropertyName().equals(BugtrackingManager.PROP_RECENT_ISSUES_CHANGED)) {
+                RecentCategoryNode.this.updateContent();
+                DashboardViewer.getInstance().updateCategoryNode(RecentCategoryNode.this);
             }
         }
     }
