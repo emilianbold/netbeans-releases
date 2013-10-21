@@ -98,6 +98,8 @@ import org.netbeans.modules.git.ui.repository.remote.RemoveRemoteConfig;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerManager.Provider;
@@ -573,9 +575,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            return new Action[] {
-                SystemAction.get(FetchAction.class)
-            };
+            VCSContext ctx = VCSContext.forNodes(new Node[] { this });
+            return Git.getInstance().getVCSAnnotator().getActions(ctx, VCSAnnotator.ActionDestination.PopupMenu);
         }
 
         @Override
