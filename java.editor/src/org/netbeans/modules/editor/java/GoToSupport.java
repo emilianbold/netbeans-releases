@@ -414,47 +414,49 @@ public class GoToSupport {
         }
 
         String result = null;
-        final ElementJavadoc jdoc = ElementJavadoc.create(controller, resolved.resolved);
-        Future<String> text = jdoc != null ? jdoc.getTextAsync() : null;
         try {
+            final ElementJavadoc jdoc = ElementJavadoc.create(controller, resolved.resolved);
+            Future<String> text = jdoc != null ? jdoc.getTextAsync() : null;
             result = text != null ? text.get(1, TimeUnit.SECONDS) : null;
-        } catch (Exception ex) {}
-        if (result != null) {
-            int idx = 0;
-            for (int i = 0; i < 3 && idx >= 0; i++) {
-                idx = result.indexOf("<p>", idx + 1); //NOI18N
-            }
-            if (idx >= 0) {
-                result = result.substring(0, idx + 3);
-                result += "<a href='***'>more...</a>"; //NOI18N
-            }
-            idx = result.indexOf("<p id=\"not-found\">"); //NOI18N
-            if (idx >= 0) {
-                result = result.substring(0, idx);
-            }
-            doc.putProperty("TooltipResolver.hyperlinkListener", new HyperlinkListener() { //NOI18N
-                @Override
-                public void hyperlinkUpdate(HyperlinkEvent e) {                    
-                    if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
-                        String desc = e.getDescription();
-                        if (desc != null) {
-                            ElementJavadoc link = "***".contentEquals(desc) ? jdoc : jdoc.resolveLink(desc); //NOI18N
-                            if (link != null) {
-                                JTextComponent comp = EditorRegistry.lastFocusedComponent();
-                                if (comp != null && comp.getDocument() == doc) {
-                                    ToolTipSupport tts = org.netbeans.editor.Utilities.getEditorUI(comp).getToolTipSupport();
-                                    if (tts != null) {
-                                        tts.setToolTipVisible(false);
+            if (result != null) {
+                int idx = 0;
+                for (int i = 0; i < 3 && idx >= 0; i++) {
+                    idx = result.indexOf("<p>", idx + 1); //NOI18N
+                }
+                if (idx >= 0) {
+                    result = result.substring(0, idx + 3);
+                    result += "<a href='***'>more...</a>"; //NOI18N
+                }
+                idx = result.indexOf("<p id=\"not-found\">"); //NOI18N
+                if (idx >= 0) {
+                    result = result.substring(0, idx);
+                }
+                doc.putProperty("TooltipResolver.hyperlinkListener", new HyperlinkListener() { //NOI18N
+                    @Override
+                    public void hyperlinkUpdate(HyperlinkEvent e) {                    
+                        if (e != null && HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                            String desc = e.getDescription();
+                            if (desc != null) {
+                                ElementJavadoc link = "***".contentEquals(desc) ? jdoc : jdoc.resolveLink(desc); //NOI18N
+                                if (link != null) {
+                                    JTextComponent comp = EditorRegistry.lastFocusedComponent();
+                                    if (comp != null && comp.getDocument() == doc) {
+                                        ToolTipSupport tts = org.netbeans.editor.Utilities.getEditorUI(comp).getToolTipSupport();
+                                        if (tts != null) {
+                                            tts.setToolTipVisible(false);
+                                        }
                                     }
+                                    JavaCompletionProvider.JavaCompletionQuery.outerDocumentation.set(new JavaCompletionDoc(link));
+                                    Completion.get().showDocumentation();
                                 }
-                                JavaCompletionProvider.JavaCompletionQuery.outerDocumentation.set(new JavaCompletionDoc(link));
-                                Completion.get().showDocumentation();
                             }
                         }
                     }
-                }
-            });
-        } else {
+                });
+            }
+        } catch (Exception ex) {}
+        
+        if (result == null) {
             result = v.result.toString();
         }
         
