@@ -266,9 +266,10 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             }
 
             if (doc instanceof BaseDocument) {
-                final boolean worked[] = new boolean [1];
                 final BaseDocument baseDoc = (BaseDocument) doc;
-                baseDoc.runAtomic(new Runnable() {
+                final Line[] line = new Line[1];
+                final int column[] = new int[1];
+                baseDoc.render(new Runnable() {
                     @Override
                     public void run() {
                         Element lineRoot = baseDoc.getParagraphElement(0).getParentElement();
@@ -276,17 +277,19 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
 
                         if (lineIndex != -1) {
                             Element lineElement = lineRoot.getElement(lineIndex);
-                            int column = offset - lineElement.getStartOffset();
-
-                            Line line = lineCookie.getLineSet().getCurrent(lineIndex);
-                            if (line != null) {
-                                line.show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column);
-                                worked[0] = true;
-                            }
+                            column[0] = offset - lineElement.getStartOffset();
+                            line[0] = lineCookie.getLineSet().getCurrent(lineIndex);
                         }
                     }
                 });
-                if (worked[0]) {
+                // Line.show() must NOT be called under doc.writeLock().
+                // By possible thread's waiting in CloneableEditor.getEditorPane()
+                // an asynchronous editor pane opening would be blocked
+                // by the write-lock.
+                // In case the current unlocked Line.show() solution would be found
+                // unsatisfactory then issue #232175 should be reopened.
+                if (line[0] != null) {
+                    line[0].show(ShowOpenType.REUSE, ShowVisibilityType.FOCUS, column[0]);
                     return;
                 }
             }
