@@ -118,10 +118,5 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     public void removePropertyChangeListener (LocalTask data, PropertyChangeListener listener) {
         data.removePropertyChangeListener(listener);
     }
-
-    @Override
-    public boolean submit(LocalTask data) {
-        return false;
-    }
     
 }

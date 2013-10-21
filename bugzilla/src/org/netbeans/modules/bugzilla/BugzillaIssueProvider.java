@@ -118,11 +118,6 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public boolean submit (BugzillaIssue data) {
-        return data.submitAndRefresh();
-    }
-    
     /************************************************************************************
      * Kenai
      ************************************************************************************/

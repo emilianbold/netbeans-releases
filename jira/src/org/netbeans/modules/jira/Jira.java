@@ -192,6 +192,10 @@ public class Jira {
                 public void discardOutgoing(NbJiraIssue i) {
                     i.discardLocalEdits();
                 }
+                @Override
+                public boolean submit (NbJiraIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return isp;

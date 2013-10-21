@@ -116,9 +116,4 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
     
-    @Override
-    public boolean submit (NbJiraIssue data) {
-        return data.submitAndRefresh();
-    }
-
 }

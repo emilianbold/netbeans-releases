@@ -69,6 +69,11 @@ public class IssueStatusProviderImpl implements IssueStatusProvider<LocalReposit
         i.delete();
     }
 
+    @Override
+    public boolean submit(LocalTask data) {
+        return false;
+    }
+    
     @Override public void setSeenIncoming(LocalTask issue, boolean seen) { }
     @Override public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }
     @Override public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }

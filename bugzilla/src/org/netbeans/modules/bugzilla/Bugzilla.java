@@ -186,16 +186,18 @@ public class Bugzilla {
                 public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
                     issue.addPropertyChangeListener(listener);
                 }
-
                 @Override
                 public Collection<BugzillaIssue> getUnsubmittedIssues(BugzillaRepository r) {
                     return r.getUnsubmittedIssues();
                 }
-
                 @Override
                 public void discardOutgoing(BugzillaIssue i) {
                     i.discardLocalEdits();
                 }
+                @Override
+                public boolean submit (BugzillaIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return sp;

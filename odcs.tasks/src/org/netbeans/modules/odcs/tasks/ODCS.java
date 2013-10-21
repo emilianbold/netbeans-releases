@@ -152,6 +152,10 @@ public class ODCS {
                 public void discardOutgoing(ODCSIssue i) {
                     i.discardLocalEdits();
                 }
+                @Override
+                public boolean submit (ODCSIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return isp;

@@ -118,10 +118,5 @@ public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
     public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public boolean submit (ODCSIssue data) {
-        return data.submitAndRefresh();
-    }
     
 }
