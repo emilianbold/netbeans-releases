@@ -107,10 +107,12 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for (PerformanceData rec : handler.getData()) {
-            Utilities.processUnitTestsResults(ScanSeveralProjectsPerfTest.class.getCanonicalName(), rec);
+        if (handler != null) {
+            for (PerformanceData rec : handler.getData()) {
+                Utilities.processUnitTestsResults(ScanSeveralProjectsPerfTest.class.getCanonicalName(), rec);
+            }
+            handler.clear();
         }
-        handler.clear();
     }
 
     public static Test suite() throws InterruptedException {
