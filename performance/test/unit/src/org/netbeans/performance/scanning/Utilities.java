@@ -44,6 +44,12 @@ package org.netbeans.performance.scanning;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.zip.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,11 +60,17 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -68,6 +80,15 @@ import org.w3c.dom.Element;
  * @author Pavel Flaska
  */
 public class Utilities {
+
+    public static final Map<String, String> PROJECTS = new HashMap<>(4);
+
+    static {
+        PROJECTS.put("jEdit", "http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip");
+        PROJECTS.put("mediawiki-1.14.0", "https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip");
+        PROJECTS.put("tomcat6", "http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip");
+        PROJECTS.put("FrankioskiProject", "http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip");
+    }
 
     /**
      * Prevent creation.
@@ -81,7 +102,7 @@ public class Utilities {
      * @param f file to unzip
      * @param destDir destination directory
      */
-    public static void unzip(File f, String destDir) {
+    public static void unzip(File f, File destDir) {
         final int BUFFER = 2048;
         try {
             BufferedOutputStream dest;
@@ -90,13 +111,13 @@ public class Utilities {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 if (entry.isDirectory()) {
-                    File dir = new File(destDir + '/' + entry.getName());
+                    File dir = new File(destDir, entry.getName());
                     dir.mkdir();
                 } else {
                     int count;
                     byte contents[] = new byte[BUFFER];
                     // write the files to the disk
-                    FileOutputStream fos = new FileOutputStream(destDir + "/" + entry.getName());
+                    FileOutputStream fos = new FileOutputStream(new File(destDir, entry.getName()));
                     dest = new BufferedOutputStream(fos, BUFFER);
                     while ((count = zis.read(contents, 0, BUFFER)) != -1) {
                         dest.write(contents, 0, count);
@@ -112,49 +133,46 @@ public class Utilities {
     }
 
     /**
-     * Open project <code>projectName</code> located in <code>dir</code>
-     * directory.
+     * Open projects with given names located in given folder.
      *
-     * @param projectName project name to open
+     * @param projectNames project names to open
      * @param dir project's enclosing directory
-     * @return file-object representing project
      * @throws java.io.IOException when project cannot be opened
      */
-    public static FileObject openProject(String projectName, File dir) throws IOException {
-        File projectsDir = FileUtil.normalizeFile(dir);
-        FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
-        FileObject projdir = projectsDirFO.getFileObject(projectName);
-        FileObject nbproject = projdir.getFileObject("nbproject");
-        if (nbproject.getFileObject("private") != null) {
-            for (FileObject ch : nbproject.getFileObject("private").getChildren()) {
-                ch.delete();
+    public static void openProjects(File dir, String... projectNames) throws IOException {
+        List<Project> projects = new ArrayList<>(projectNames.length);
+        for (String projectName : projectNames) {
+            File projectsDir = FileUtil.normalizeFile(dir);
+            FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
+            FileObject projdir = projectsDirFO.getFileObject(projectName);
+            FileObject nbproject = projdir.getFileObject("nbproject");
+            if (nbproject.getFileObject("private") != null) {
+                for (FileObject ch : nbproject.getFileObject("private").getChildren()) {
+                    ch.delete();
+                }
             }
+            Project p = ProjectManager.getDefault().findProject(projdir);
+            if (p == null) {
+                throw new IOException("Project is not found " + projectName);
+            }
+            projects.add(p);
         }
-        Project p = ProjectManager.getDefault().findProject(projdir);
-        if (p == null) {
-            throw new IOException("Project is not found " + projectName);
-        }
-        OpenProjects.getDefault().open(new Project[]{p}, false);
-
-        return projdir;
+        OpenProjects.getDefault().open(projects.toArray(new Project[0]), false);
     }
 
-    public static String projectOpen(String path, String tmpFile) {
+    public static void projectDownload(String projectUrl, File projectZip) throws Exception {
 
         /* Temporary solution - download jEdit from internal location */
         OutputStream out = null;
         URLConnection conn;
         InputStream in = null;
-        int BUFFER = 2048;
 
         try {
-            URL url = new URL(path);
-            System.err.println("");
-            File dir = new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator);
-            if (!dir.exists()) {
-                dir.mkdirs();
+            URL url = new URL(projectUrl);
+            if (!projectZip.getParentFile().exists()) {
+                projectZip.getParentFile().mkdirs();
             }
-            out = new BufferedOutputStream(new FileOutputStream(dir.getAbsolutePath() + File.separator + tmpFile));
+            out = new BufferedOutputStream(new FileOutputStream(projectZip));
             conn = url.openConnection();
             in = conn.getInputStream();
             byte[] buffer = new byte[1024];
@@ -162,8 +180,6 @@ public class Utilities {
             while ((numRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, numRead);
             }
-        } catch (Exception exception) {
-            exception.printStackTrace();
         } finally {
             try {
                 if (in != null) {
@@ -175,33 +191,24 @@ public class Utilities {
             } catch (IOException ioe) {
             }
         }
+    }
 
-        try {
-            BufferedOutputStream dest = null;
-            FileInputStream fis = new FileInputStream(new File(System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + tmpFile));
-            ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
-            ZipEntry entry;
-            while ((entry = zis.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    new File(System.getProperty("nbjunit.workdir") + File.separator + ".." + File.separator + "data" + File.separator + entry.getName()).mkdirs();
-                    continue;
-                }
-                int count;
-                byte data[] = new byte[BUFFER];
-                FileOutputStream fos = new FileOutputStream(System.getProperty("nbjunit.workdir") + File.separator + ".." + File.separator + "data" + File.separator + entry.getName());
-                dest = new BufferedOutputStream(fos, BUFFER);
-                while ((count = zis.read(data, 0, BUFFER)) != -1) {
-                    dest.write(data, 0, count);
-                }
-                dest.flush();
-                dest.close();
-            }
-            zis.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    /**
+     * Downloads project by its name from pre-defined location and unzips it to
+     * given workdir.
+     *
+     * @param projectName project name
+     * @param workdir folder to unzip project
+     * @throws java.lang.Exception
+     */
+    public static void projectDownloadAndUnzip(String projectName, File workdir) throws Exception {
+        String projectUrl = Utilities.PROJECTS.get(projectName);
+        File projectsDir = new File(System.getProperty("nbjunit.workdir"), "tmpdir");
+        File projectZip = new File(projectsDir, projectName + ".zip");
+        if (!projectZip.exists()) {
+            projectDownload(projectUrl, projectZip);
         }
-
-        return System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + tmpFile;
+        unzip(projectZip, workdir);
     }
 
     /**
@@ -364,5 +371,63 @@ public class Utilities {
         long[] result = new long[2];
         result[1] = pd.value;
         xmlTestResults(System.getProperty("nbjunit.workdir"), suiteName, pd.name, className, suiteClassName, pd.unit, "passed", 120000, result, 1);
+    }
+
+    /**
+     * Request RepositoryUpdater to refresh all indexes.
+     */
+    public static void refreshIndexes() {
+        RepositoryUpdater.getDefault().refreshAll(false, false, false, null, new Object[0]);
+    }
+
+    /**
+     * Sets new cache folder to reset indexed values.
+     *
+     * @param cacheFolder new cache folder
+     */
+    public static void setCacheFolder(File cacheFolder) {
+        CacheFolder.setCacheFolder(FileUtil.toFileObject(cacheFolder));
+    }
+
+    /**
+     * Wait until scanning is finished.
+     *
+     * @param projectDir File pointing to project root or root of several
+     * projects
+     * @throws java.lang.Exception
+     */
+    public static void waitScanningFinished(File projectDir) throws Exception {
+        JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
+        src.runWhenScanFinished(new Task<CompilationController>() {
+
+            @Override()
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+            }
+        }, false).get();
+    }
+
+    static class ReadingHandler extends Handler {
+
+        private boolean read = false;
+
+        @Override
+        public void publish(LogRecord record) {
+            if ("MSG_CACHED_INPUT_STREAM".equals(record.getMessage())) {
+                read = true;
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public boolean wasRead() {
+            return read;
+        }
     }
 }
