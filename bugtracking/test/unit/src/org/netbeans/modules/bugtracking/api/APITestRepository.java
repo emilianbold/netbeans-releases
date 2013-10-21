@@ -185,10 +185,6 @@ public class APITestRepository extends TestRepository {
         support.firePropertyChange(new PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, null, null));
     }
 
-    Collection<APITestIssue> getUnsubmittedIssues() {
-        return Collections.EMPTY_LIST;
-    }
-
     class APITestRepositoryController implements RepositoryController {
         String name;
         String url;

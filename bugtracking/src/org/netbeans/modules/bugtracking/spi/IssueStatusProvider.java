@@ -42,17 +42,21 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * 
- * Provides Issue Status information used by the Tasks Dashboard 
- * to appropriately render Issue status annotations (e.g. by coloring).
+ * Provides Issue Status related information to be used by the Tasks Dashboard 
+ * to appropriately render Issue Status annotations (e.g. by coloring) as well 
+ * some Issue Status related functionality.
+ * 
  * <p>
  * An implementation of this interface is not mandatory for a 
  * NetBeans bugtracking plugin. The {@link Status#SEEN} status is default for
- * all issues in such a case.
+ * all issues in such a case. Implement only in cases you want to reflect incoming or outgoing changes.
  * </p>
+ * 
  * <p>
  * Also note that it is not to mandatory to honor all status values in a 
  * particular implementation - e.g. it is ok for a plugin to handle only 
@@ -90,9 +94,10 @@ import org.netbeans.modules.bugtracking.api.Issue;
  * </table>
  * 
  * @author Tomas Stupka
+ * @param <R>
  * @param <I> the implementation specific issue type
  */
-public interface IssueStatusProvider<I> {
+public interface IssueStatusProvider<R, I> {
 
     /**
      * Determines the {@link Issue} status.
@@ -185,6 +190,24 @@ public interface IssueStatusProvider<I> {
      */
     public void setSeenIncoming(I issue, boolean seen);
     
+    /**
+     * Returns unsubmitted issues from the given repository.
+     * 
+     * @param r repository
+     * @return collection of unsubmitted issues
+     */
+    public Collection<I> getUnsubmittedIssues (R r);
+    
+    /**
+     * Discard outgoing local changes. 
+     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * 
+     * @param i 
+     */
+    public void discardOutgoing(I i);
+
     /**
      * Registers a PropertyChangeListener to notify about status changes for an issue.
      * 

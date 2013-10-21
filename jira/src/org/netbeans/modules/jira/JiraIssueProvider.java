@@ -121,8 +121,4 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
         return data.submitAndRefresh();
     }
 
-    @Override
-    public void discardOutgoing(NbJiraIssue data) {
-        data.discardLocalEdits();
-    }
 }

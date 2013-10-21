@@ -171,14 +171,6 @@ public interface RepositoryProvider<R, Q, I> {
     public Collection<I> simpleSearch(R r, String criteria);
     
     /**
-     * Returns unsubmitted issues from the given repository.
-     * 
-     * @param r repository
-     * @return collection of unsubmitted issues
-     */
-    public Collection<I> getUnsubmittedIssues (R r);
-    
-    /**
      * Removes a PropertyChangeListener to the given repository.
      * 
      * @param r an implementation specific repository

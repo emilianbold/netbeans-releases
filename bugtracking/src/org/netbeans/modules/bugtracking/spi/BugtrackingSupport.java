@@ -112,7 +112,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @return a {@link Repository} instance
      */
     public Repository createRepository(R r,
-            IssueStatusProvider<I> issueStatusProvider,
+            IssueStatusProvider<R, I> issueStatusProvider,
             IssueSchedulingProvider<I> issueSchedulingProvider, 
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)

@@ -257,11 +257,6 @@ public class APITestConnector implements BugtrackingConnector {
         public APITestIssue createIssue(APITestRepository r, String summary, String description) {
             return r.createIssue(summary, description);
         }
-
-        @Override
-        public Collection<APITestIssue> getUnsubmittedIssues(APITestRepository r) {
-            return r.getUnsubmittedIssues();
-        }
     }
 
     public static class APITestIssueProvider implements IssueProvider<APITestIssue> {
@@ -329,11 +324,6 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public void addPropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
             data.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void discardOutgoing(APITestIssue data) {
-            data.discardOutgoing();
         }
 
         @Override

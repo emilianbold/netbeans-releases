@@ -132,9 +132,4 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
         data.setOwnerInfo(info);
     }
 
-    @Override
-    public void discardOutgoing(BugzillaIssue data) {
-        data.discardLocalEdits();
-    }
-
 }

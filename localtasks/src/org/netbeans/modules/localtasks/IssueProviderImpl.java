@@ -120,11 +120,6 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     }
 
     @Override
-    public void discardOutgoing(LocalTask data) {
-        data.delete();
-    }
-
-    @Override
     public boolean submit(LocalTask data) {
         return false;
     }

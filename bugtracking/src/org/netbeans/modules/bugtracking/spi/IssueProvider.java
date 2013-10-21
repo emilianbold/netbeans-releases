@@ -147,16 +147,6 @@ public interface IssueProvider<I> {
     public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**
-     * Discard outgoing local changes. 
-     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
-     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
-     * 
-     * @param i 
-     */
-    public void discardOutgoing(I i);
-    
-    /**
      * Returns this issues controller
      * @param i
      * @return

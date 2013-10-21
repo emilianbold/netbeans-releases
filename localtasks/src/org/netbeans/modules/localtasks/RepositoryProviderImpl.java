@@ -117,9 +117,4 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public Collection<LocalTask> getUnsubmittedIssues(LocalRepository r) {
-        return Collections.emptyList();
-    }
-    
 }

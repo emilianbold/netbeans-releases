@@ -86,7 +86,7 @@ public final class RepositoryImpl<R, Q, I> {
     private final RepositoryProvider<R, Q, I> repositoryProvider;
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
-    private final IssueStatusProvider<I> issueStatusProvider;    
+    private final IssueStatusProvider<R, I> issueStatusProvider;    
     private final IssueSchedulingProvider<I> issueSchedulingProvider;    
     private final IssuePriorityProvider<I> issuePriorityProvider;
     private final R r;
@@ -102,7 +102,7 @@ public final class RepositoryImpl<R, Q, I> {
             RepositoryProvider<R, Q, I> repositoryProvider, 
             QueryProvider<Q, I> queryProvider, 
             IssueProvider<I> issueProvider, 
-            IssueStatusProvider<I> issueStatusProvider, 
+            IssueStatusProvider<R, I> issueStatusProvider, 
             IssueSchedulingProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder) 
@@ -287,7 +287,7 @@ public final class RepositoryImpl<R, Q, I> {
         support.addPropertyChangeListener(listener);
     }
 
-    IssueStatusProvider<I> getStatusProvider() {
+    IssueStatusProvider<R, I> getStatusProvider() {
         return issueStatusProvider;
     }
     
@@ -444,7 +444,7 @@ public final class RepositoryImpl<R, Q, I> {
     //////////////////////
     
     public Collection<IssueImpl> getUnsubmittedIssues () {
-        Collection<I> issues = repositoryProvider.getUnsubmittedIssues(r);
+        Collection<I> issues = issueStatusProvider != null ? issueStatusProvider.getUnsubmittedIssues(r) : null;
         if (issues == null || issues.isEmpty()) {
             return Collections.<IssueImpl>emptyList();
         }

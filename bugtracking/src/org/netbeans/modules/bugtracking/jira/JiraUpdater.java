@@ -278,10 +278,6 @@ public class JiraUpdater {
         public Object createIssue(Object r, String summary, String description) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        @Override
-        public Collection<Object> getUnsubmittedIssues(Object r) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        }
     }
 
     private class JiraProxyController implements RepositoryController {

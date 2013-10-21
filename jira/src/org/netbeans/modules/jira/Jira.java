@@ -47,6 +47,7 @@ import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnecto
 import com.atlassian.connector.eclipse.internal.jira.core.model.Priority;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -81,7 +82,7 @@ public class Jira {
     private JiraRepositoryProvider jrp;
     private JiraQueryProvider jqp;
     private JiraIssueProvider jip;
-    private IssueStatusProvider<NbJiraIssue> isp;
+    private IssueStatusProvider<JiraRepository, NbJiraIssue> isp;
     private IssueNode.ChangesProvider<NbJiraIssue> jcp;
     private IssuePriorityProvider<NbJiraIssue> ipp;
     
@@ -164,9 +165,9 @@ public class Jira {
         return jrp; 
     }
 
-    public synchronized IssueStatusProvider<NbJiraIssue> getStatusProvider() {
+    public synchronized IssueStatusProvider<JiraRepository, NbJiraIssue> getStatusProvider() {
         if(isp == null) {
-            isp = new IssueStatusProvider<NbJiraIssue>() {
+            isp = new IssueStatusProvider<JiraRepository, NbJiraIssue>() {
                 @Override
                 public IssueStatusProvider.Status getStatus(NbJiraIssue issue) {
                     return issue.getStatus();
@@ -182,6 +183,14 @@ public class Jira {
                 @Override
                 public void removePropertyChangeListener(NbJiraIssue issue, PropertyChangeListener listener) {
                     issue.removePropertyChangeListener(listener);
+                }
+                @Override
+                public Collection<NbJiraIssue> getUnsubmittedIssues(JiraRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(NbJiraIssue i) {
+                    i.discardLocalEdits();
                 }
             };
         }

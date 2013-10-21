@@ -115,9 +115,4 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
         return r.createIssue(summary, description);
     }
 
-    @Override
-    public Collection<TestIssue> getUnsubmittedIssues(TestRepository r) {
-        return r.getUnsubmittedIssues(r);
-    }
-     
 }

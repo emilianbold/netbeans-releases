@@ -1,8 +1,7 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,90 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.tasks;
+
+package org.netbeans.modules.localtasks;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
+public class IssueStatusProviderImpl implements IssueStatusProvider<LocalRepository, LocalTask> {
 
     @Override
-    public String getDisplayName(ODCSIssue data) {
-        return data.getDisplayName();
+    public Status getStatus(LocalTask issue) {
+        return Status.SEEN;
     }
 
     @Override
-    public String getTooltip(ODCSIssue data) {
-        return data.getTooltip();
+    public Collection<LocalTask> getUnsubmittedIssues(LocalRepository r) {
+        return Collections.emptyList();
     }
 
     @Override
-    public String getID(ODCSIssue data) {
-        return data.getID();
+    public void discardOutgoing(LocalTask i) {
+        i.delete();
     }
 
-    @Override
-    public String[] getSubtasks(ODCSIssue data) {
-        return data.getSubtasks();
-    }
-
-    @Override
-    public String getSummary(ODCSIssue data) {
-        return data.getSummary();
-    }
-
-    @Override
-    public boolean isNew(ODCSIssue data) {
-        return data.isNew();
-    }
-
-    @Override
-    public boolean isFinished(ODCSIssue data) {
-        return data.isFinished();
-    }
-
-    @Override
-    public boolean refresh(ODCSIssue data) {
-        return data.refresh();
-    }
-
-    @Override
-    public void addComment(ODCSIssue data, String comment, boolean closeAsFixed) {
-        data.addComment(comment, closeAsFixed);
-    }
-
-    @Override
-    public void attachFile(ODCSIssue data, File file, String description, boolean isPatch) {
-        data.attachPatch(file, description);
-    }
-
-    @Override
-    public IssueController getController(ODCSIssue data) {
-        return data.getController();
-    }
-
-    @Override
-    public void removePropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
-        data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
-        data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean submit (ODCSIssue data) {
-        return data.submitAndRefresh();
-    }
+    @Override public void setSeenIncoming(LocalTask issue, boolean seen) { }
+    @Override public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }
+    @Override public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }
     
 }

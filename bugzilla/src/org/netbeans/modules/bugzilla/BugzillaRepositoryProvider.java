@@ -109,11 +109,6 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     public void addPropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public Collection<BugzillaIssue> getUnsubmittedIssues (BugzillaRepository r) {
-        return r.getUnsubmittedIssues();
-    }
     
     /********************************************************************************
      * Kenai
