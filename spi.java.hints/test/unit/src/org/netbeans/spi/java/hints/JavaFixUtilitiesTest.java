@@ -1130,6 +1130,24 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
 
+    public void testMemberRef2Null() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, String::compareTo);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$expr::$name => (String l, String r) -> l.$name(r)",
+                           "package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
     public void testComments232298() throws Exception {
         performRewriteTest("package test;\n" +
                            "public class Test {\n" +
