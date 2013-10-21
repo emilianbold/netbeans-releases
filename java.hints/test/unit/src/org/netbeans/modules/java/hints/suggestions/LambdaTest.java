@@ -218,6 +218,31 @@ public class LambdaTest {
     }
     
     @Test
+    public void testLambda2Ref() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "public class Test {\n" +
+                       "    public void main(List<String> list) {\n" +
+                       "        Collections.sort(list, (l, r) -^> l.compareTo(r));\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("4:39-4:39:verifier:" + Bundle.ERR_lambda2MemberReference())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "import java.util.*;\n" +
+                                      "public class Test {\n" +
+                                      "    public void main(List<String> list) {\n" +
+                                      "        Collections.sort(list, String::compareTo);\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    @Test
     public void testRef2LambdaStaticStatic() throws Exception {
         HintTest.create()
                 .setCaretMarker('^')
@@ -268,7 +293,7 @@ public class LambdaTest {
                                       "import java.util.*;\n" +
                                       "public class Test {\n" +
                                       "    public void main(List<String> list) {\n" +
-                                      "        Collections.sort(list, (_this, string) -> _this.compareTo(string));\n" +
+                                      "        Collections.sort(list, (string, string1) -> string.compareTo(string1));\n" +
                                       "    }\n" +
                                       "}\n");
     }
