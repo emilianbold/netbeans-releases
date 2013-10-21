@@ -113,7 +113,7 @@ public final class BugtrackingSupport<R, Q, I> {
      */
     public Repository createRepository(R r,
             IssueStatusProvider<R, I> issueStatusProvider,
-            IssueSchedulingProvider<I> issueSchedulingProvider, 
+            IssueSchedulingProvider<I> issueSchedulingProvider,
             IssuePriorityProvider<I> issuePriorityProvider,
             IssueFinder issueFinder)
     {
@@ -185,6 +185,11 @@ public final class BugtrackingSupport<R, Q, I> {
 
     /**
      * Priority icons used by default in the Tasks Dashboard sorted from the highest priority. 
+     * <br/>
+     * Use them in case you want your bugtracking plugin implementation to use 
+     * the same icons as are used by default in the Tasks Dashboard, or provide a 
+     * {@link IssuePriorityProvider} implementation via {@link #createRepository(java.lang.Object, IssueStatusProvider, IssueSchedulingProvider, IssuePriorityProvider, IssueFinder)}
+     * 
      * @return 
      */
     public Image[] getPriorityIcons() {

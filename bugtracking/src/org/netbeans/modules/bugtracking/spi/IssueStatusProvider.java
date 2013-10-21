@@ -184,6 +184,10 @@ public interface IssueStatusProvider<R, I> {
      * SEEN to INCOMMING_XXX or from OUTGOING_XXX to CONFLICT. Please note that doing so 
      * at least for a running IDE session would be considered as polite to the user.
      * </p>
+     * <br/> 
+     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
+     * being either {@link IssueStatusProvider.Status#INCOMING_NEW} or 
+     * {@link IssueStatusProvider.Status#INCOMING_MODIFIED}.
      * 
      * @param issue
      * @param seen 
@@ -199,10 +203,11 @@ public interface IssueStatusProvider<R, I> {
     public Collection<I> getUnsubmittedIssues (R r);
     
     /**
-     * Discard outgoing local changes. 
+     * Discard outgoing local changes.
+     * <br/> 
      * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
      * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
-     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}. 
      * 
      * @param i 
      */
