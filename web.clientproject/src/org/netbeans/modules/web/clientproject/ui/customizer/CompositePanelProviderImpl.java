@@ -47,6 +47,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
+import org.netbeans.modules.javascript.karma.api.Karma;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
@@ -135,6 +136,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             position = 300)
     public static CompositePanelProviderImpl createRunConfigs() {
         return new CompositePanelProviderImpl(RUN);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 400)
+    public static ProjectCustomizer.CompositeCategoryProvider createKarma() {
+        return Karma.getDefault().createCustomizer();
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
