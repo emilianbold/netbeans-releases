@@ -828,7 +828,7 @@ public class Actions {
                 editPossible = false;
             }
             if(!q.providesMode(QueryController.QueryMode.VIEW)) {
-                editPossible = false;
+                openPossible = false;
             }
             if(!editPossible && !openPossible) {
                 break;

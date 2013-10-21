@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.maven.junit.nodes;
+package org.netbeans.modules.project.ui.api;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.testrunner.api.TestRunnerNodeFactory;
-import org.netbeans.modules.gsf.testrunner.api.TestSession;
-import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
-import org.openide.nodes.Node;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 
 /**
- * mkleint: copied from junit module
- *
- * @author answer
+ * Provides actions on project and project tab
+ * @author mkozeny
+ * @since 1.50.0
  */
-public class JUnitTestRunnerNodeFactory extends TestRunnerNodeFactory {
-    private final TestSession session;
-    private final Project project;
-
-    public JUnitTestRunnerNodeFactory(TestSession session, Project project) {
-        this.session = session;
-        this.project = project;
+public class ProjectActionUtils {
+    
+    /**
+     * Select and expand project
+     * @param p passed project
+     */
+    public static void selectAndExpandProject( final Project p ) {
+        ProjectUtilities.selectAndExpandProject(p);
     }
-
-    @Override
-    public Node createTestMethodNode(Testcase testcase, Project project) {
-        return new JUnitTestMethodNode(testcase, project);
+    
+    /**
+     * Makes the project tab visible
+     */
+    public static void makeProjectTabVisible() {
+        ProjectUtilities.makeProjectTabVisible();
     }
-
-    @Override
-    public Node createCallstackFrameNode(String frameInfo, String dispayName) {
-        return new JUnitCallstackFrameNode(frameInfo, dispayName);
-    }
-
-    @Override
-    public TestsuiteNode createTestSuiteNode(String suiteName, boolean filtered) {
-        return new JUnitTestsuiteNode(suiteName, filtered);
-    }
+    
 }

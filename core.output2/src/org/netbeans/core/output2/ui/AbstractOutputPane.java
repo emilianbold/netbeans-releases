@@ -258,7 +258,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         textView.addMouseListener(this);
         textView.addMouseMotionListener(this);
         textView.addKeyListener(this);
-        addMouseWheelListener(this);
+        textView.addMouseWheelListener(this);
         //#107354
         OCaret oc = new OCaret();
         oc.setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
@@ -784,6 +784,12 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             int change = -e.getWheelRotation();
             changeFontSizeBy(change);
             e.consume();
+            return;
+        } else if (e.isShiftDown()) { // horizontal scrolling
+            BoundedRangeModel sbmodel = getHorizontalScrollBar().getModel();
+            int currPosition = sbmodel.getValue();
+            int newPosition = Math.max(0, Math.min(sbmodel.getMaximum(), currPosition + (e.getUnitsToScroll()) * fontWidth));
+            sbmodel.setValue (newPosition);
             return;
         }
         BoundedRangeModel sbmodel = getVerticalScrollBar().getModel();
