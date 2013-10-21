@@ -224,7 +224,7 @@ public class APITestRepository extends TestRepository {
         }
 
         @Override
-        public void applyChanges() throws IOException {
+        public void applyChanges() {
             info = new RepositoryInfo(
                     info.getId(), 
                     info.getConnectorId(), 

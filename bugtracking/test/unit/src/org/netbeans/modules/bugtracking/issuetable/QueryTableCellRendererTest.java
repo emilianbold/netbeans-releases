@@ -143,30 +143,6 @@ public class QueryTableCellRendererTest {
         assertEquals(null, result.getFormat());
         assertEquals("<html>some value</html>", result.getTooltip());
 
-        // obsolete issue, not selected
-        rendererQuery.containsIssue = false;
-        rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        selected = false;
-        result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
-        assertEquals(defaultStyle.getBackground(), result.getBackground());
-        assertEquals(defaultStyle.getForeground(), result.getForeground());
-        assertEquals(issueObsoleteFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font> - this task doesn't belong to the query anymore</html>", result.getTooltip());
-
-        // obsolete issue, selected
-        rendererQuery.containsIssue = false;
-        selected = true;
-        rendererIssue = new RendererIssue(rendererRepository, "");
-        property = new RendererNode(rendererIssue, "some value", rendererRepository, new ChangesProvider()).createProperty();
-        result = QueryTableCellRenderer.getCellStyle(table, query.getQuery(), issueTable, property, selected, 0);
-        defaultStyle = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, property, selected, 0);
-        assertEquals(obsoleteHighlightColor, result.getBackground());
-        assertEquals(defaultStyle.getForeground(), result.getForeground());
-        assertEquals(defaultStyle.getFormat(), result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font> - this task doesn't belong to the query anymore</html>", result.getTooltip());
-
         // modified issue, not selected
         rendererQuery.containsIssue = true;
         selected = false;

@@ -302,7 +302,7 @@ public class JiraUpdater {
             return false;
         }
         @Override
-        public void applyChanges() throws IOException {
+        public void applyChanges() {
 
         }
 
