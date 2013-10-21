@@ -87,8 +87,6 @@ public interface RepositoryProvider<R, Q, I> {
     /**
      * Returns an issue with the given ID.
      *
-     * XXX add flag refresh
-     *
      * @param r an implementation specific repository
      * @param ids
      * @return

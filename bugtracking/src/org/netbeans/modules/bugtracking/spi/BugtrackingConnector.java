@@ -53,7 +53,6 @@ import org.netbeans.modules.bugtracking.api.Repository;
  *
  * @author Tomas Stupka
  */
-// XXX provide commit hook support instead of addComment() and addAttachent() in Issue
 public interface BugtrackingConnector {
 
     /**
