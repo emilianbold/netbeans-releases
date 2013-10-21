@@ -2794,7 +2794,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     ClassType clazz = (ClassType) expr;
                     if (fieldName.equals("this")) {
                         ObjectReference thisObject = evaluationContext.getContextObject();
-                        while (thisObject != null && !((ReferenceType) thisObject.type()).equals(clazz)) {
+                        // Need to check sub-classes also (clazz equal or sub-class of thisObject.type()
+                        while (thisObject != null && !instanceOf((ReferenceType) thisObject.type(), clazz)) {
                             ReferenceType thisClass = (ReferenceType) thisObject.type();
                             Field outerThisField = thisClass.fieldByName("this$0");
                             if (outerThisField != null) {
