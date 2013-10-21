@@ -60,6 +60,7 @@ import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
@@ -70,6 +71,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -188,9 +191,10 @@ public class J2MEProject implements Project {
 
     @NonNull
     private Lookup createLookup() {
+        final FileEncodingQueryImplementation encodingQuery =
+                QuerySupport.createFileEncodingQuery(eval, ProjectProperties.SOURCE_ENCODING);
         final Lookup base = Lookups.fixed(
-                J2MEProject.this,                
-                QuerySupport.createProjectInformation(helper, this, ImageUtilities.loadImageIcon(ICON, false)),
+                J2MEProject.this,                                
                 auxCfg,
                 helper.createCacheDirectoryProvider(),
                 helper.createAuxiliaryProperties(),
@@ -201,7 +205,8 @@ public class J2MEProject implements Project {
                     sourceRoots,
                     testRoots),
                 cpProvider,
-                QuerySupport.createFileEncodingQuery(eval, ProjectProperties.SOURCE_ENCODING),
+                QuerySupport.createProjectInformation(helper, this, ImageUtilities.loadImageIcon(ICON, false)),
+                encodingQuery,
                 QuerySupport.createSourceLevelQuery2(eval),
                 QuerySupport.createSources(
                     this,
@@ -210,13 +215,26 @@ public class J2MEProject implements Project {
                     sourceRoots,
                     testRoots,
                     Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
-                QuerySupport.createSources(
-                    this,
+                QuerySupport.createCompiledSourceForBinaryQuery(
                     helper,
                     eval,
                     sourceRoots,
-                    testRoots,
-                    Roots.nonSourceRoots(ProjectProperties.BUILD_DIR, ProjectProperties.DIST_DIR)),
+                    testRoots),
+                QuerySupport.createJavadocForBinaryQuery(
+                    helper,
+                    eval),
+                QuerySupport.createUnitTestForSourceQuery(sourceRoots, testRoots),
+                QuerySupport.createSharabilityQuery2(helper, eval, sourceRoots, testRoots),
+                QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+                QuerySupport.createAnnotationProcessingQuery(helper, eval,
+                        ProjectProperties.ANNOTATION_PROCESSING_ENABLED,
+                        ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR,
+                        ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS,
+                        ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST,
+                        ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT,
+                        ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
+                QuerySupport.createFileBuiltQuery(helper, eval, sourceRoots, testRoots),
+                QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ProjectHooks.createProjectXmlSavedHookBuilder(updateHelper, genFilesHelper).
                         setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
@@ -228,17 +246,26 @@ public class J2MEProject implements Project {
                             }
                         }).
                         build(),
-                ProjectHooks.createProjectOpenedHookBuilder(this, eval, updateHelper, genFilesHelper, cpProvider).
+                UILookupMergerSupport.createProjectOpenHookMerger(
+                    ProjectHooks.createProjectOpenedHookBuilder(this, eval, updateHelper, genFilesHelper, cpProvider).
                         addClassPathType(ClassPath.BOOT).
                         addClassPathType(ClassPath.COMPILE).
                         addClassPathType(ClassPath.SOURCE).
                         setBuildImplTemplate(J2MEProject.class.getResource("resources/build-impl.xsl")).    //NOI18N
                         setBuildTemplate(J2MEProject.class.getResource("resources/build.xsl")). //NOI18N
                         setBuildXmlName(BaseActionProvider.getBuildXmlName(this, eval)).
-                        build(),
+                        build()),
                 new CustomizerProviderImpl(this),
                 LogicalViewProviders.createBuilder(this, eval, EXTENSION_FOLDER).
-                        build()
+                        build(),
+                LookupMergerSupport.createClassPathProviderMerger(cpProvider),
+                LookupMergerSupport.createSFBLookupMerger(),
+                LookupMergerSupport.createJFBLookupMerger(),
+                LookupProviderSupport.createSourcesMerger(),
+                LookupProviderSupport.createActionProviderMerger(),
+                UILookupMergerSupport.createPrivilegedTemplatesMerger(),
+                UILookupMergerSupport.createRecommendedTemplatesMerger(),
+                UILookupMergerSupport.createProjectProblemsProviderMerger()
         );
         return LookupProviderSupport.createCompositeLookup(base, EXTENSION_POINT);
     }
