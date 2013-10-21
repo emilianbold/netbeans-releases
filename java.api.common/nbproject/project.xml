@@ -291,6 +291,7 @@
                 <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2me.project</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
                 <friend>org.netbeans.modules.javacard.project</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
