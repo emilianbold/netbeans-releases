@@ -41,7 +41,6 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.IOException;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
@@ -51,7 +50,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -136,9 +135,11 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         NbDialogOperator propertiesDialogOper = new NbDialogOperator("Project Properties");
         // select "Build|Compile" category
         new Node(new JTreeOperator(propertiesDialogOper), "Build|Compile").select();
-        // choose Disable in combo box
-        JLabelOperator cosLabel = new JLabelOperator(propertiesDialogOper, "Compile On Save:");
-        new JComboBoxOperator((JComboBox) cosLabel.getLabelFor()).selectItem("Disable");
+        // untick checkbox
+        JCheckBoxOperator cosCheckBox = new JCheckBoxOperator(propertiesDialogOper,
+                Bundle.getStringTrimmed("org.netbeans.modules.maven.customizer.Bundle",
+                        "CompilePanel.cbCompileOnSave.text"));
+        cosCheckBox.doClick();
         // confirm properties dialog
         propertiesDialogOper.ok();
         waitScanFinished();
