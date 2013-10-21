@@ -100,7 +100,7 @@ public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public void attachPatch(ODCSIssue data, File file, String description) {
+    public void attachFile(ODCSIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 

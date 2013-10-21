@@ -937,8 +937,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         });
     }
 
-    public void attachPatch(File file, String description) {
-        boolean isPatch = true;
+    public void attachPatch(File file, String description, boolean isPatch) {
         // HACK for attaching hg bundles - they are NOT patches
         isPatch = !file.getName().endsWith(".hg"); // NOI18N
         addAttachment(file, null, description, null, isPatch);

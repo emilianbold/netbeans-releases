@@ -100,7 +100,7 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     }
 
     @Override
-    public void attachPatch (LocalTask data, File file, String description) {
+    public void attachFile (LocalTask data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 

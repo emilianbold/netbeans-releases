@@ -116,7 +116,7 @@ public class HookIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
+    public void attachFile(File file, String description, boolean isPatch) {
         // do nothing
     }
 

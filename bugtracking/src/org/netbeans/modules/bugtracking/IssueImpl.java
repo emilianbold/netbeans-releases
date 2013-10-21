@@ -149,8 +149,8 @@ public final class IssueImpl<R, I> {
         return issueProvider.getTooltip(data);
     }
 
-    public void attachPatch(File file, String description) {
-        issueProvider.attachPatch(data, file, description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        issueProvider.attachFile(data, file, description, isPatch);
     }
 
     public void addComment(String comment, boolean closeAsFixed) {

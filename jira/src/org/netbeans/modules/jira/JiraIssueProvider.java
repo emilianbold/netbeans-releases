@@ -97,7 +97,7 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public void attachPatch(NbJiraIssue data, File file, String description) {
+    public void attachFile(NbJiraIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 

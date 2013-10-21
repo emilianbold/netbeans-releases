@@ -79,6 +79,7 @@ public class APITestIssue extends TestIssue {
     private final APITestRepository repo;
     private String summary;
     private String description;
+    private boolean isPatch;
 
     public APITestIssue(String id, APITestRepository repo) {
         this(id, repo, false);
@@ -140,9 +141,10 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public void attachPatch(File file, String description) {
-        attachedPatchDesc = description;
-        attachedFile = file;
+    public void attachFile(File file, String description, boolean isPatch) {
+        this.attachedPatchDesc = description;
+        this.attachedFile = file;
+        this.isPatch = isPatch;
     }
 
     @Override

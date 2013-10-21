@@ -135,14 +135,16 @@ public interface IssueProvider<I> {
     public void addComment(I i, String comment, boolean closeAsFixed);
 
     /**
-     * Attach a file to this issue
-     * @param i
+     * Attach a file to this issue.
+     * 
+     * @param i issue
      * @param file
      * @param description 
+     * @param isPatch 
      */
     // XXX throw exception; attach Patch or attachFile?
     // XXX provide way so that we know patch attachemnts are supported
-    public void attachPatch(I i, File file, String description);
+    public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**
      * Discard outgoing local changes. 

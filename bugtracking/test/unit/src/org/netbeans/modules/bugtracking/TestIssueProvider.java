@@ -100,8 +100,8 @@ public class TestIssueProvider implements IssueProvider<TestIssue> {
     }
 
     @Override
-    public void attachPatch(TestIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(TestIssue data, File file, String description, boolean isPatch) {
+        data.attachFile(file, description, isPatch);
     }
 
     @Override

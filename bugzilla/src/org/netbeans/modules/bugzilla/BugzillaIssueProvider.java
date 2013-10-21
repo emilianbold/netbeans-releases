@@ -99,8 +99,8 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public void attachPatch(BugzillaIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(BugzillaIssue data, File file, String description, boolean isPatch) {
+        data.attachPatch(file, description, isPatch);
     }
 
     @Override
