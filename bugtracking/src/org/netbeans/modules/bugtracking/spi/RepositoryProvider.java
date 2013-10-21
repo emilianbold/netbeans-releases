@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * 
