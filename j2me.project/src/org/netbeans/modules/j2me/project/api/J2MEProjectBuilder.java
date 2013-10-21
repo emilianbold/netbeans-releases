@@ -533,13 +533,12 @@ public final class J2MEProjectBuilder {
         if (customProjectProperties != null) {
             ep.putAll(customProjectProperties);
         }
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         if (customPrivateProperties != null) {
+            ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             ep.putAll(customPrivateProperties);
-        }
-        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+            h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        }        
         logUsage();
         return h;
     }
