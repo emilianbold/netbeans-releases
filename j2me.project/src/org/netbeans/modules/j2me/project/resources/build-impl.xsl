@@ -135,10 +135,16 @@ is divided into following sections:
                 <j2meproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
 
                 <j2meproject1:property name="platform.sdk.home.tmp" value="platforms.${{platform.sdk}}.home"/>
-                <condition property="platform.sdk.home" value="${java.home}">
+                <condition property="platform.sdk.home" value="${{jdk.home}}">
                     <equals arg1="${{platform.sdk.home.tmp}}" arg2="$${{platforms.${{platform.sdk}}.home}}"/>
                 </condition>
                 <property name="platform.sdk.home" value="${{platform.sdk.home.tmp}}"/>
+                <j2meproject1:property name="platform.java.tmp" value="platforms.${{platform.sdk}}.java"/>
+                <condition property="platform.java" value="${{platform.sdk.home}}/bin/java">
+                    <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.sdk}}.java}}"/>
+                </condition>
+                <property name="platform.java" value="${{platform.java.tmp}}"/>
+
                 <j2meproject1:property name="platform.javac.tmp" value="platforms.${{platform.sdk}}.javac"/>
                 <condition property="platform.javac" value="${{platform.sdk.home}}/bin/javac">
                     <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.sdk}}.javac}}"/>
@@ -159,6 +165,7 @@ is divided into following sections:
                 <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                 <fail unless="platform.java">Must set platform.java</fail>
                 <fail unless="platform.javac">Must set platform.javac</fail>
+                <fail unless="platform.javadoc">Must set platform.javadoc</fail>
                 <fail if="platform.invalid">
                     The Compile Platform is not correctly set up.
                     Your active compile platform is: ${platform.sdk}, but the corresponding property "platforms.${platform.sdk}.home" is not found in the project's properties files.
@@ -356,6 +363,7 @@ is divided into following sections:
                             <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <xsl:attribute name="bootclasspath">${platform.bootcp}</xsl:attribute>
                             <src>
                                 <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
                                     <include name="*"/>
@@ -448,6 +456,7 @@ is divided into following sections:
                             <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
                             <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
+                            <xsl:attribute name="bootclasspath">${platform.bootcp}</xsl:attribute>
                             <src>
                                 <dirset dir="@{{gensrcdir}}" erroronmissingdir="false">
                                     <include name="*"/>
