@@ -105,6 +105,11 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
+    public boolean canAttachFiles(ODCSRepository r) {
+        return false;
+    }
+    
+    @Override
     public void removePropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }

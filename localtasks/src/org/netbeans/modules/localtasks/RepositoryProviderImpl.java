@@ -117,4 +117,9 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
+    public boolean canAttachFiles(LocalRepository r) {
+        return true;
+    }
+    
 }

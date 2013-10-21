@@ -115,4 +115,9 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
         return r.createIssue(summary, description);
     }
 
+    @Override
+    public boolean canAttachFiles(TestRepository r) {
+        return r.canAttachFile();
+    }
+
 }

@@ -430,6 +430,10 @@ public final class RepositoryImpl<R, Q, I> {
         return dc.providesRepositoryManagement();
     }
     
+    public boolean canAttachFiles() {
+        return repositoryProvider.canAttachFiles(r);
+    }
+    
     public void remove() {
         repositoryProvider.remove(r);
         RepositoryRegistry.getInstance().removeRepository(this);

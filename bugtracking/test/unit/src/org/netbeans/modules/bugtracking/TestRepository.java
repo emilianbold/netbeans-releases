@@ -108,4 +108,8 @@ public abstract class TestRepository {
     public Collection<TestIssue> getUnsubmittedIssues() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    public boolean canAttachFile() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

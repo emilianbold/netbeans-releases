@@ -80,6 +80,7 @@ public class APITestRepository extends TestRepository {
     private HashMap<String, APITestIssue> issues;
     APITestIssue newIssue;
     APITestQuery newQuery;
+    boolean canAttachFiles = false;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -166,6 +167,12 @@ public class APITestRepository extends TestRepository {
         return ret;
     }
 
+    @Override
+    public boolean canAttachFile() {
+        return canAttachFiles;
+    }
+
+    
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { 

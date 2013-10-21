@@ -101,6 +101,11 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     }
 
     @Override
+    public boolean canAttachFiles(BugzillaRepository r) {
+        return true;
+    }
+    
+    @Override
     public void removePropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
@@ -109,7 +114,7 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     public void addPropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
-    
+
     /********************************************************************************
      * Kenai
      ********************************************************************************/

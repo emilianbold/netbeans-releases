@@ -257,6 +257,11 @@ public class APITestConnector implements BugtrackingConnector {
         public APITestIssue createIssue(APITestRepository r, String summary, String description) {
             return r.createIssue(summary, description);
         }
+
+        @Override
+        public boolean canAttachFiles(APITestRepository r) {
+            return r.canAttachFile();
+        }
     }
 
     public static class APITestIssueProvider implements IssueProvider<APITestIssue> {

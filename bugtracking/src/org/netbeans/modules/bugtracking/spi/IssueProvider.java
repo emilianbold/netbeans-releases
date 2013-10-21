@@ -136,14 +136,18 @@ public interface IssueProvider<I> {
 
     /**
      * Attach a file to this issue.
+     * <br/>
+     * Note that in case this functionality isn't available then
+     * {@link RepositoryProvider#canAttachFile(java.lang.Object)} is expected to return <code>false</code>
      * 
-     * @param i issue
-     * @param file
-     * @param description 
-     * @param isPatch 
+     * @param i an implementation specific issue instance
+     * @param file the to be attached file
+     * @param description description to be associated with the file 
+     * @param isPatch <code>true</code> in case the given file is a patch, otherwise <code>false</code>
+     * 
+     * @see RepositoryProvider#canAttachFile(java.lang.Object) 
      */
-    // XXX throw exception; attach Patch or attachFile?
-    // XXX provide way so that we know patch attachemnts are supported
+    // XXX throw exception
     public void attachFile(I i, File file, String description, boolean isPatch);
 
     /**

@@ -273,9 +273,12 @@ public class JiraUpdater {
         public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {
             // do nothing
         }
-
         @Override
         public Object createIssue(Object r, String summary, String description) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        @Override
+        public boolean canAttachFiles(Object r) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }

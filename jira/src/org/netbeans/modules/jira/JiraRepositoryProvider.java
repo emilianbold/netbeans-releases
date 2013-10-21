@@ -102,6 +102,11 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
     }
 
     @Override
+    public boolean canAttachFiles(JiraRepository r) {
+        return true;
+    }
+
+    @Override
     public void removePropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
