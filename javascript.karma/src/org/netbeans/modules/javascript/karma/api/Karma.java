@@ -79,6 +79,10 @@ public final class Karma {
      * @see ProjectCustomizer.CompositeCategoryProvider.Registration
      */
     public ProjectCustomizer.CompositeCategoryProvider createCustomizer() {
+        // XXX
+        if (!Boolean.getBoolean("nb.js.karma")) { // NOI18N
+            return null;
+        }
         return new KarmaCustomizer();
     }
 
@@ -89,6 +93,10 @@ public final class Karma {
      * @see NodeFactory.Registration
      */
     public NodeFactory createNodeFactory() {
+        // XXX
+        if (!Boolean.getBoolean("nb.js.karma")) { // NOI18N
+            return null;
+        }
         return new KarmaNodeFactory();
     }
 
