@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven;
 
 import java.awt.event.ActionEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -458,7 +459,7 @@ public class ActionProviderImpl implements ActionProvider {
                                 mapping.setDisplayName(remembered);
                                 //TODO shall we write to configuration based files or not?
                                 ModelHandle2.putMapping(mapping, proj, conf.getDefaultConfig());
-                            } catch (Exception ex) {
+                            } catch (IOException ex) {
                                 LOG.log(Level.INFO, "Cannot write custom action mapping", ex);
                             }
                         }
@@ -600,8 +601,7 @@ public class ActionProviderImpl implements ActionProvider {
                     } else {
                       maps = ActionToGoalUtils.getActiveCustomMappings(proj.getLookup().lookup(NbMavenProjectImpl.class));
                     }
-                    for (int i = 0; i < maps.length; i++) {
-                        NetbeansActionMapping mapp = maps[i];
+                    for (NetbeansActionMapping mapp : maps) {
                         Action act = createCustomMavenAction(mapp.getActionName(), mapp, false, lookup);
                         JMenuItem item = new JMenuItem(act);
                         item.setText(mapp.getDisplayName() == null ? mapp.getActionName() : mapp.getDisplayName());
