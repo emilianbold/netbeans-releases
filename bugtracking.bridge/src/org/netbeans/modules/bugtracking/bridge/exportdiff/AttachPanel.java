@@ -72,9 +72,9 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Cha
 
     void init(File referenceFile) {
         if (referenceFile != null) {
-            RepositoryComboSupport.setup(this, repositoryComboBox, referenceFile);
+            RepositoryComboSupport.setup(this, repositoryComboBox, RepositoryComboSupport.Filter.ATTACH_FILE, referenceFile);
         } else {
-            RepositoryComboSupport.setup(this, repositoryComboBox, false);
+            RepositoryComboSupport.setup(this, repositoryComboBox, RepositoryComboSupport.Filter.ATTACH_FILE, false);
         }
         repositoryComboBox.addItemListener(this);
         setEnabled(false);

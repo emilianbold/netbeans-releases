@@ -53,30 +53,30 @@ import java.io.File;
 public interface IssueProvider<I> {
 
     /**
-     * issue data were refreshed
+     * Issue data were refreshed
      */
     public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
 
     /**
      * Returns this issues display name. 
      * 
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return the display name for the given Issue
      */
     public String getDisplayName(I i);
 
     /**
-     * Returns this issues tooltip.
+     * Returns this issues tooltip. 
      * 
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return tooltip for the given Issue
      */
     public String getTooltip(I i);
 
     /**
      * Returns this issues unique ID
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return id of the given Issue
      */
     public String getID(I i);
     
@@ -86,14 +86,14 @@ public interface IssueProvider<I> {
      * e.g. the blocks/depends relationship in Bugzilla, or sub-/parent-task in JIRA
      * 
      * 
-     * @param i
-     * @return 
+     * @param i an implementation specific issue instance
+     * @return id-s of subtasks for the given Issue
      */
     public String[] getSubtasks(I i);
 
     /**
      * Returns this issues summary
-     * @param i
+     * @param i an implementation specific issue instance
      * @return
      */
     public String getSummary(I i);
@@ -101,90 +101,92 @@ public interface IssueProvider<I> {
     /**
      * Returns true if the issue isn't stored in a repository yet. Otherwise false.
      * 
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> in case the given Issue exists only locally and wasn't submitted yet.
      */
     public boolean isNew(I i);
     
     /**
      * Determines if the issue is considered finished 
-     * in the means of the particular bugtracking.
+     * in the means of the particular implementation 
+     * - e.g closed as fixed in case of bugzilla
      * 
-     * @param i
-     * @return true if finished, otherwise false
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> if finished, otherwise <code>false</code>
      */
     public boolean isFinished(I i);
 
     /**
      * Refreshes this Issues data from its bugtracking repository
      *
-     * @param i
-     * @return true if the issue was refreshed, otherwise false
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * @param i an implementation specific issue instance
+     * @return <code>true</code> if the issue was refreshed, otherwise <code>false</code>
      */
     public boolean refresh(I i);
 
     /**
-     * Add a comment to this issue and close it as fixed eventually.
+     * Add a comment to this issue and close it as fixed eventually. 
+     * The method is expected to return after the whole execution was handled 
+     * and the changes submitted to the remote repository.
      * 
-     * @param i
-     * @param comment
-     * @param closeAsFixed 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * @param i an implementation specific issue instance
+     * @param comment a comment to be added to the issue
+     * @param close close the issue if <code>true</code>
      */
-    // XXX throw exception
-    // XXX provide way so that we know commit hooks are supported
-    public void addComment(I i, String comment, boolean closeAsFixed);
+    public void addComment(I i, String comment, boolean close);
 
     /**
-     * Attach a file to this issue
-     * @param i
-     * @param file
-     * @param description 
-     */
-    // XXX throw exception; attach Patch or attachFile?
-    // XXX provide way so that we know patch attachemnts are supported
-    public void attachPatch(I i, File file, String description);
-
-    /**
-     * Discard outgoing local changes. 
-     * Note that this method is going to be called only for issue with  {@link IssueStatusProvider.Status} 
-     * being either {@link IssueStatusProvider.Status#OUTGOING_NEW} or 
-     * {@link IssueStatusProvider.Status#OUTGOING_MODIFIED}.
+     * Attach a file to this issue. The method is expected to return after 
+     * the whole execution was handled and the changes submitted to the remote repository.
      * 
-     * @param i 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
+     * 
+     * Note that in case this functionality isn't available then
+     * {@link RepositoryProvider#canAttachFile(java.lang.Object)} is expected to return <code>false</code>
+     * 
+     * @param i an implementation specific issue instance
+     * @param file the to be attached file
+     * @param description description to be associated with the file 
+     * @param isPatch <code>true</code> in case the given file is a patch, otherwise <code>false</code>
+     * 
+     * @see RepositoryProvider#canAttachFile(java.lang.Object) 
      */
-    public void discardOutgoing(I i);
-    
+    public void attachFile(I i, File file, String description, boolean isPatch);
+
     /**
      * Returns this issues controller
-     * @param i
-     * @return
+     * @param i an implementation specific issue instance
+     * @return an IssueController for the given issue
      */
     public IssueController getController(I i);
 
     /**
      * Remove a PropertyChangeListener from the given issue.
-     * @param i
-     * @param listener 
+     * 
+     * @param i an implementation specific issue instance
+     * @param listener a PropertyChangeListener
      */
     public void removePropertyChangeListener(I i, PropertyChangeListener listener);
 
     /**
      * Add a PropertyChangeListener to the given issue.
      * 
-     * @param i
-     * @param listener 
+     * @param i an implementation specific issue instance
+     * @param listener a PropertyChangeListener
      */
     public void addPropertyChangeListener(I i, PropertyChangeListener listener);
-    
-    /**
-     * Submits the issue. Override and implement if you support issue
-     * submitting.
-     *
-     * @param i issue data
-     * @return <code>true</code> if the task was successfully
-     * submitted,<code>false</code> if the task was not submitted for any
-     * reason.
-     */
-    public boolean submit (I i);
     
 }

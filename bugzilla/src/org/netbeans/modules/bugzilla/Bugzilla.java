@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClientManager;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
@@ -84,7 +85,7 @@ public class Bugzilla {
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
-    private IssueStatusProvider<BugzillaIssue> sp;    
+    private IssueStatusProvider<BugzillaRepository, BugzillaIssue> sp;    
     private IssuePriorityProvider<BugzillaIssue> pp;
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
     private IssueSchedulingProvider<BugzillaIssue> schedulingProvider;
@@ -166,15 +167,15 @@ public class Bugzilla {
         return brp; 
     }
 
-    public IssueStatusProvider<BugzillaIssue> getStatusProvider() {
+    public IssueStatusProvider<BugzillaRepository, BugzillaIssue> getStatusProvider() {
         if(sp == null) {
-            sp = new IssueStatusProvider<BugzillaIssue>() {
+            sp = new IssueStatusProvider<BugzillaRepository, BugzillaIssue>() {
                 @Override
                 public IssueStatusProvider.Status getStatus(BugzillaIssue issue) {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(BugzillaIssue issue, boolean uptodate) {
+                public void setSeenIncoming(BugzillaIssue issue, boolean uptodate) {
                     issue.setUpToDate(uptodate);
                 }
                 @Override
@@ -185,6 +186,18 @@ public class Bugzilla {
                 public void addPropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {
                     issue.addPropertyChangeListener(listener);
                 }
+                @Override
+                public Collection<BugzillaIssue> getUnsubmittedIssues(BugzillaRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(BugzillaIssue i) {
+                    i.discardLocalEdits();
+                }
+                @Override
+                public boolean submit (BugzillaIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return sp;

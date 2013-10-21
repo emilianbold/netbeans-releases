@@ -85,7 +85,7 @@ public abstract class TestIssue {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void attachPatch(File file, String description) {
+    public void attachFile(File file, String description, boolean isPatch) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

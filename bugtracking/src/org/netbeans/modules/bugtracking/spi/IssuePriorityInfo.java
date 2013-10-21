@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
-import org.netbeans.modules.bugtracking.IssueImpl;
 
 /**
  * Represents information related to one particular issue priority. 

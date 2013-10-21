@@ -46,19 +46,23 @@ import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
- * Provides access to a {@link Query}-s UI.
- * <br/>
+ * Provides access to a Queries UI.
+ * <p>
  * Typically a Query UI should provide at least a query criteria 
  * editor available when creating new queries or modifying existing ones. 
  * In case it isn't possible to create or modify a query on the client it is 
  * possible to provide no QueryController and no UI at all - e.g. an immutable 
  * server defined query with no remote api to modify the criteria.
- * <br/>
+ * </p>
+ * <p>
  * The results of an query (see {@link QueryProvider<Q>#getIssues(java.lang.Object)}  
  * are always presented in the TaskDashboard, but eventually, in case the need appears,
  * it is also possible for the bugtracking plugin implementation to provide a
  * customized result view - e.g a table listing more attributes than then TasksDashboard does.
- * 
+ * </p>
+ * <p>
+ * When viewing, creating or editing a new Query, the UI is presented in an TopComponent in the editor area.
+ * </p>
  * @author Tomas Stupka
  */
 public interface QueryController {

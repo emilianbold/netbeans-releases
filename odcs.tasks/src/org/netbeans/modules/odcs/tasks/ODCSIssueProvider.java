@@ -100,7 +100,7 @@ public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public void attachPatch(ODCSIssue data, File file, String description) {
+    public void attachFile(ODCSIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
@@ -117,16 +117,6 @@ public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
     @Override
     public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public boolean submit (ODCSIssue data) {
-        return data.submitAndRefresh();
-    }
-
-    @Override
-    public void discardOutgoing(ODCSIssue data) {
-        data.discardLocalEdits();
     }
     
 }

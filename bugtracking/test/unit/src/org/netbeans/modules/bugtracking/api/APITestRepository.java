@@ -80,6 +80,7 @@ public class APITestRepository extends TestRepository {
     private HashMap<String, APITestIssue> issues;
     APITestIssue newIssue;
     APITestQuery newQuery;
+    boolean canAttachFiles = false;
 
     public APITestRepository(RepositoryInfo info) {
         this.info = info;
@@ -166,6 +167,12 @@ public class APITestRepository extends TestRepository {
         return ret;
     }
 
+    @Override
+    public boolean canAttachFile() {
+        return canAttachFiles;
+    }
+
+    
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) { 
@@ -183,10 +190,6 @@ public class APITestRepository extends TestRepository {
     
     void fireAttributesChangeEvent() {
         support.firePropertyChange(new PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, null, null));
-    }
-
-    Collection<APITestIssue> getUnsubmittedIssues() {
-        return Collections.EMPTY_LIST;
     }
 
     class APITestRepositoryController implements RepositoryController {
@@ -224,7 +227,7 @@ public class APITestRepository extends TestRepository {
         }
 
         @Override
-        public void applyChanges() throws IOException {
+        public void applyChanges() {
             info = new RepositoryInfo(
                     info.getId(), 
                     info.getConnectorId(), 

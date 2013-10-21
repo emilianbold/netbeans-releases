@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,107 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.vcs;
+package org.netbeans.modules.localtasks;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.TestIssue;
-import org.netbeans.modules.bugtracking.spi.IssueController;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.openide.util.HelpCtx;
+import org.netbeans.modules.localtasks.task.LocalTask;
 
 /**
  *
  * @author tomas
  */
-public class HookIssue extends TestIssue {
-    static HookIssue instance;
+public class IssueStatusProviderImpl implements IssueStatusProvider<LocalRepository, LocalTask> {
 
-    boolean closed;
-    String comment;
-    private IssueController controller;
-
-    static HookIssue getInstance() {
-        if(instance == null) {
-            instance = new HookIssue();
-        }
-        return instance;
-    }
-
-    void reset() {
-        comment = null;
-        closed = false;
-    }
     @Override
-    public String getDisplayName() {
-        return "HookIssue";
+    public Status getStatus(LocalTask issue) {
+        return Status.SEEN;
     }
 
     @Override
-    public String getTooltip() {
-        return "HookIssue";
+    public Collection<LocalTask> getUnsubmittedIssues(LocalRepository r) {
+        return Collections.emptyList();
     }
 
     @Override
-    public String getID() {
-        return "1";
+    public void discardOutgoing(LocalTask i) {
+        i.delete();
     }
 
     @Override
-    public String getSummary() {
-        return "HookIssue";
-    }
-
-    @Override
-    public boolean isNew() {
+    public boolean submit(LocalTask data) {
         return false;
     }
     
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    @Override
-    public boolean refresh() {
-        return true;
-    }
-
-    @Override
-    public void addComment(String comment, boolean closeAsFixed) {
-        this.comment = comment;
-        closed = closeAsFixed;
-    }
-
-    @Override
-    public void attachFile(File file, String description, boolean isPatch) {
-        // do nothing
-    }
-
-    @Override
-    public IssueController getController() {
-        if(controller == null) {        
-            controller = new IssueController() {
-                private JComponent panel = new JPanel();                
-                @Override
-                public JComponent getComponent() {
-                    return panel;
-                }
-                @Override
-                public HelpCtx getHelpCtx() {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-                @Override public void opened() { }
-                @Override public void closed() { }
-            };
-        }
-        return controller;
-    }
-
+    @Override public void setSeenIncoming(LocalTask issue, boolean seen) { }
+    @Override public void removePropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }
+    @Override public void addPropertyChangeListener(LocalTask issue, PropertyChangeListener listener) { }
+    
 }

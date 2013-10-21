@@ -93,7 +93,13 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     static final String LOADING_REPOSITORIES = "loading";               //NOI18N
     static final String NO_REPOSITORIES = "no repositories";            //NOI18N
     static final String SELECT_REPOSITORY = "select";                   //NOI18N
+    private Filter filter;
 
+    public enum Filter {
+        ATTACH_FILE,
+        ALL
+    }
+    
     private static final Logger LOG = Logger.getLogger(RepositoryComboSupport.class.getName());
 
     private final JComboBox comboBox;
@@ -122,14 +128,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, boolean selectRepoIfSingle) {
-        RepositoryComboSupport repositoryComboSupport
-                = new RepositoryComboSupport(comboBox, (Repository) null,
-                                                       (File) null,
-                                                       selectRepoIfSingle);
-        if (component != null) {
-            repositoryComboSupport.setupDisplayabilityTrigger(component);
-        }
-        return repositoryComboSupport;
+        return setup(component, comboBox, Filter.ALL, selectRepoIfSingle);
     }
 
     /**
@@ -143,21 +142,10 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Repository defaultRepo) {
-        if (defaultRepo == null) {
-            throw new IllegalArgumentException("default repository must be specified"); //NOI18N
-        }
-
-        RepositoryComboSupport repositoryComboSupport
-                = new RepositoryComboSupport(comboBox, defaultRepo,
-                                                       (File) null,
-                                                       false);
-        if (component != null) {
-            repositoryComboSupport.setupDisplayabilityTrigger(component);
-        }
-        return repositoryComboSupport;
+        return setup(component, comboBox, Filter.ALL, defaultRepo);
     }
-
-    /**
+    
+/**
      * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
      * is displayed a list of all known repositories is retrieved and either the repository associated with
      * referenceFile will be selected or nothing if there is no such repository
@@ -168,6 +156,71 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      * @return
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, File referenceFile) {
+        return setup(component, comboBox, Filter.ALL, referenceFile);
+    }
+    
+    /**
+     * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
+     * is displayed a list of all known repositories is retrieved and the first in the list is selected
+     *
+     * @param component component with the combobox
+     * @param comboBox repository combobo
+     * @param mode for what kind of functionality the presented list of repositories should be filtered
+     * @param selectRepoIfSingle  if {@code true} and there is only one repository
+     *                        known, then the (only) repository is preselected;
+     *                        otherwise no repository is selected in the combo
+     * @return
+     */
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter mode, boolean selectRepoIfSingle) {
+        RepositoryComboSupport repositoryComboSupport
+                = new RepositoryComboSupport(comboBox, (Repository) null,
+                                                       (File) null,
+                                                       selectRepoIfSingle);
+        if (component != null) {
+            repositoryComboSupport.setupDisplayabilityTrigger(component);
+        }
+        repositoryComboSupport.filter = mode;
+        return repositoryComboSupport;
+    }
+
+    /**
+     * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
+     * is displayed a list of all known repositories is retrieved and either the default repository will be
+     * selected or nothing if it's not between the known repositories
+     *
+     * @param component component with the combobox
+     * @param comboBox repository combobox
+     * @param mode for what kind of functionality the presented list of repositories should be filtered
+     * @param defaultRepo the repository to be selected
+     * @return
+     */
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter mode, Repository defaultRepo) {
+        if (defaultRepo == null) {
+            throw new IllegalArgumentException("default repository must be specified"); //NOI18N
+        }
+        RepositoryComboSupport repositoryComboSupport
+                = new RepositoryComboSupport(comboBox, defaultRepo,
+                                                       (File) null,
+                                                       false);
+        if (component != null) {
+            repositoryComboSupport.setupDisplayabilityTrigger(component);
+        }
+        repositoryComboSupport.filter = mode;
+        return repositoryComboSupport;
+    }
+
+    /**
+     * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
+     * is displayed a list of all known repositories is retrieved and either the repository associated with
+     * referenceFile will be selected or nothing if there is no such repository
+     *
+     * @param component component with the combobox
+     * @param comboBox repository combobox
+     * @param filter for what kind of functionality the presented list of repositories should be filtered
+     * @param referenceFile file associated with a repository
+     * @return
+     */
+    public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, Filter filter, File referenceFile) {
         if (referenceFile == null) {
             throw new IllegalArgumentException("reference file must be specified"); //NOI18N
         }
@@ -179,6 +232,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if (component != null) {
             repositoryComboSupport.setupDisplayabilityTrigger(component);
         }
+        repositoryComboSupport.filter = filter;
         return repositoryComboSupport;
     }
     private final RequestProcessor rp;
@@ -623,7 +677,11 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         Collection<RepositoryImpl> repoImpls = RepositoryRegistry.getInstance().getKnownRepositories(true);
         List<Repository> repos = new ArrayList(repoImpls.size());
         for (RepositoryImpl impl : repoImpls) {
-            if (!(hideLocalRepository && BugtrackingManager.isLocalConnectorID(impl.getConnectorId()))) {
+            boolean hidden = hideLocalRepository && BugtrackingManager.isLocalConnectorID(impl.getConnectorId());
+            if ( !hidden && 
+                 ( filter == Filter.ALL || 
+                 ( filter == Filter.ATTACH_FILE && impl.canAttachFiles()))) 
+            {
                 repos.add(impl.getRepository());
             }
         }

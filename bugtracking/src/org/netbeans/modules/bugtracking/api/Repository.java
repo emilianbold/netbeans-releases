@@ -158,6 +158,16 @@ public final class Repository {
     }
     
     /**
+     * Determines whether it is possible to attach files to Issues from this repository.
+     * 
+     * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     */
+    public boolean canAttachFiles() {
+        return impl.canAttachFiles();
+    }
+    
+    
+    /**
      * Removes this repository
      */
     public void remove() {

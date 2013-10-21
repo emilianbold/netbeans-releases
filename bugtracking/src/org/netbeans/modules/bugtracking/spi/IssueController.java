@@ -46,12 +46,15 @@ import javax.swing.JComponent;
 import org.openide.util.HelpCtx;
 
 /**
-* Provides access to an {@link Issues}-s UI.
- * <br/>
+ * Provides access to an Issues UI.
+ * <p>
  * Every Issue is expected to provide at least some visual expected to. 
  * Typically this would be an Issue editor making it possible to create and 
  * modify issues.
- * 
+ * </p>
+ * <p>
+ * When viewing, creating or editing a new Issue, the UI is presented in an TopComponent in the editor area.
+ * </p>
  * @author Tomas Stupka
  */
 public interface IssueController {

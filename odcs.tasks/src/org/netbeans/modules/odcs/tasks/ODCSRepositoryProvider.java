@@ -105,6 +105,11 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
+    public boolean canAttachFiles(ODCSRepository r) {
+        return false;
+    }
+    
+    @Override
     public void removePropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
         r.removePropertyChangeListener(listener);
     }
@@ -113,12 +118,7 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     public void addPropertyChangeListener(ODCSRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
     }
-
-    @Override
-    public Collection<ODCSIssue> getUnsubmittedIssues (ODCSRepository r) {
-        return r.getUnsubmittedIssues();
-    }
-
+    
     /************************************************************************************
      * Team Support
      ************************************************************************************/
