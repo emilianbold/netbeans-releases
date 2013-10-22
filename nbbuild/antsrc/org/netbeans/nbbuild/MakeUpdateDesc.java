@@ -799,14 +799,14 @@ public class MakeUpdateDesc extends MatchingTask {
             if(needsNetbinox) {
                 manifest.setAttribute("OpenIDE-Module-Needs", "org.netbeans.Netbinox");
             }
-            String provides = computeExported(attr).toString();
-            if (! provides.isEmpty()) {
-                manifest.setAttribute("OpenIDE-Module-Provides", provides);
-            }
-            String recommends = computeImported(attr).toString();
-            if (! recommends.isEmpty()) {
-                manifest.setAttribute("OpenIDE-Module-Recommends", recommends);
-            }
+        }
+        String provides = computeExported(attr).toString();
+        if (! provides.isEmpty()) {
+            manifest.setAttribute("OpenIDE-Module-Provides", provides);
+        }
+        String recommends = computeImported(attr).toString();
+        if (! recommends.isEmpty()) {
+            manifest.setAttribute("OpenIDE-Module-Recommends", recommends);
         }
         String bundleCategory = loc(localized, attr, "Bundle-Category");
         if (bundleCategory != null) {
