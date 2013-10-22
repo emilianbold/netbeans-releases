@@ -109,6 +109,26 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="org.openide.loaders.DataFolder.SortMode.EXTENSIONS">
+          <api name="loaders"/>
+          <summary>Introduces SortMode for sorting by file extension.</summary>
+          <version major="7" minor="54"/>
+          <date day="10" month="10" year="2013"/>
+          <author login="jhavlin"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"
+                         semantic="compatible" deprecation="no" deletion="no"
+                         modification="no"/>
+          <description>
+              <p>It's possible to sort files using sort mode "By Type", which
+                  means using SortMode.CLASS. It may be confusing, as users
+                  expect that the files will be sorted by file type, i.e. by
+                  extension. "By Type" was renamed to "By Class" and new
+                  sort mode "By Extension" (SortMode.EXTENSIONS) was added.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="DataFolder"/>
+          <issue number="230821"/>
+      </change>
       <change id="org.openide.text.big.file.size">
           <api name="editor"/>
           <summary>Introduces system property to change file size threshold.</summary>
