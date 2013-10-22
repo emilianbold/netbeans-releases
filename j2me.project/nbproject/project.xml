@@ -71,7 +71,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.62</specification-version>
+                        <specification-version>1.63</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

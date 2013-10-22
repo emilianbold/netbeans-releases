@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2me.project.J2MEProject;
+import org.netbeans.modules.j2me.project.ui.customizer.J2MEProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -136,50 +137,44 @@ public class LibrariesNodeProvider implements NodeFactory {
             Parameters.notNull("key", key); //NOI18N
             switch (key) {
                 case SOURCES:                    
-                    return new LibrariesNode(
-                        NbBundle.getMessage(LibrariesNodeProvider.class,"CTL_LibrariesNode"),
-                        prj,
-                        prj.evaluator(),
-                        prj.getUpdateHelper(),
-                        prj.getReferenceHelper(),
-                        ProjectProperties.RUN_CLASSPATH,
-                        new String[] {ProjectProperties.BUILD_CLASSES_DIR},
-                        ProjectProperties.PLATFORM_ACTIVE,
-                        new Action[] {
+                    return new LibrariesNode.Builder(
+                            prj,
+                            prj.evaluator(),
+                            prj.getUpdateHelper(),
+                            prj.getReferenceHelper(),
+                            cs).
+                        setName(NbBundle.getMessage(LibrariesNodeProvider.class,"CTL_LibrariesNode")).
+                        addClassPathProperties(ProjectProperties.RUN_CLASSPATH).
+                        addClassPathIgnoreRefs(ProjectProperties.BUILD_CLASSES_DIR).
+                        setPlatformProperty(ProjectProperties.PLATFORM_ACTIVE).
+                        setPlatformType(J2MEProjectProperties.PLATFORM_TYPE_J2ME).
+                        addLibrariesNodeActions(
                             LibrariesNode.createAddProjectAction(prj, sources),
                             LibrariesNode.createAddLibraryAction(prj.getReferenceHelper(), sources, null),
                             LibrariesNode.createAddFolderAction(prj.getHelper(), sources),
                             null,
-                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", null), // NOI18N
-                        },
-                        null,
-                        cs,
-                        null);
+                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", null)). // NOI18N)
+                        build();
                 case TESTS:
-                    return new LibrariesNode(
-                        NbBundle.getMessage(LibrariesNodeProvider.class,"CTL_TestLibrariesNode"),
-                        prj,
-                        prj.evaluator(),
-                        prj.getUpdateHelper(),
-                        prj.getReferenceHelper(),
-                        ProjectProperties.RUN_TEST_CLASSPATH,
-                        new String[] {
-                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
-                            ProjectProperties.JAVAC_CLASSPATH,
-                            ProjectProperties.BUILD_CLASSES_DIR,
-                        },
-                        null,
-                        new Action[] {
+                    return new LibrariesNode.Builder(
+                            prj,
+                            prj.evaluator(),
+                            prj.getUpdateHelper(),
+                            prj.getReferenceHelper(),
+                            cs).
+                        setName(NbBundle.getMessage(LibrariesNodeProvider.class,"CTL_TestLibrariesNode")).
+                        addClassPathProperties(ProjectProperties.RUN_TEST_CLASSPATH).
+                        addClassPathIgnoreRefs(
+                                ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                                ProjectProperties.JAVAC_CLASSPATH,
+                                ProjectProperties.BUILD_CLASSES_DIR).
+                        addLibrariesNodeActions(
                             LibrariesNode.createAddProjectAction(prj, tests),
                             LibrariesNode.createAddLibraryAction(prj.getReferenceHelper(), tests, null),
                             LibrariesNode.createAddFolderAction(prj.getHelper(), tests),
                             null,
-                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", null), // NOI18N
-                        },
-                        null,
-                        cs,
-                        null
-                    );
+                            ProjectUISupport.createPreselectPropertiesAction(prj, "Libraries", null)). // NOI18N
+                        build();
                 default:
                     throw new IllegalArgumentException(key.toString());
             }
