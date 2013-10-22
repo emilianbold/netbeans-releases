@@ -100,8 +100,8 @@ public class TestIssueProvider implements IssueProvider<TestIssue> {
     }
 
     @Override
-    public void attachPatch(TestIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(TestIssue data, File file, String description, boolean isPatch) {
+        data.attachFile(file, description, isPatch);
     }
 
     @Override
@@ -117,16 +117,6 @@ public class TestIssueProvider implements IssueProvider<TestIssue> {
     @Override
     public void addPropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
         data.addPropertyChangeListener(listener);
-    }
-
-    @Override
-    public void discardOutgoing(TestIssue data) {
-        data.discardOutgoing();
-    }
-
-    @Override
-    public boolean submit(TestIssue data) {
-        return data.submit();
     }
     
 }

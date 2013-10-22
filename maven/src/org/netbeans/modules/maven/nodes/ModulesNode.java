@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -68,6 +69,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.netbeans.modules.project.ui.api.ProjectActionUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -75,6 +77,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -84,6 +87,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -277,7 +281,15 @@ public class ModulesNode extends AbstractNode {
             return new AbstractAction(BTN_Open_Project()) {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
-                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                    final NbMavenProjectImpl [] projectsArray = new NbMavenProjectImpl[projects.size()];
+                    OpenProjects.getDefault().open(projects.toArray(projectsArray), false, true);
+                    if(projectsArray.length > 0) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            public @Override void run() {
+                                ProjectActionUtils.selectAndExpandProject(projectsArray[0]);
+                            }
+                        }, 500);
+                    }
                 }
             };
         }

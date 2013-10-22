@@ -1,8 +1,7 @@
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,85 +37,77 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.odcs.tasks;
 
+package org.netbeans.modules.bugtracking.tasks.dashboard;
+
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.tasks.Category;
+import org.netbeans.modules.bugtracking.tasks.RecentCategory;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
+import org.openide.util.ImageUtilities;
 
-/**
- *
- * @author Tomas Stupka
- */
-public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
 
-    @Override
-    public String getDisplayName(ODCSIssue data) {
-        return data.getDisplayName();
+public class RecentCategoryNode extends CategoryNode {
+
+    private final PropertyChangeListener recentListener;
+    private static final ImageIcon RECENT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/category_unsubmitted.png", true);
+
+    public RecentCategoryNode(Category category) {
+        super(category, false);
+        recentListener = new RecentCategoryListener();
     }
 
     @Override
-    public String getTooltip(ODCSIssue data) {
-        return data.getTooltip();
+    ImageIcon getIcon() {
+        return RECENT_ICON;
     }
 
     @Override
-    public String getID(ODCSIssue data) {
-        return data.getID();
+    List<Action> getCategoryActions(List<TreeListNode> selectedNodes) {
+        List<Action> actions = new ArrayList<Action>();
+        //TODO add clear action eventually
+        return actions;
     }
 
     @Override
-    public String[] getSubtasks(ODCSIssue data) {
-        return data.getSubtasks();
+    void adjustTaskNode(TaskNode taskNode) {
     }
 
     @Override
-    public String getSummary(ODCSIssue data) {
-        return data.getSummary();
+    protected void attach() {
+        super.attach();
+        BugtrackingManager.getInstance().addPropertyChangeListener(recentListener);
+    }
+
+
+    @Override
+    protected void dispose() {
+        super.dispose();
+        BugtrackingManager.getInstance().removePropertyChangeListener(recentListener);
     }
 
     @Override
-    public boolean isNew(ODCSIssue data) {
-        return data.isNew();
+    Comparator<TaskNode> getSpecialComparator() {
+        return ((RecentCategory) getCategory()).getTaskNodeComparator();
     }
 
-    @Override
-    public boolean isFinished(ODCSIssue data) {
-        return data.isFinished();
-    }
+    private class RecentCategoryListener implements PropertyChangeListener {
 
-    @Override
-    public boolean refresh(ODCSIssue data) {
-        return data.refresh();
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(BugtrackingManager.PROP_RECENT_ISSUES_CHANGED)) {
+                RecentCategoryNode.this.updateContent();
+                DashboardViewer.getInstance().updateCategoryNode(RecentCategoryNode.this);
+            }
+        }
     }
-
-    @Override
-    public void addComment(ODCSIssue data, String comment, boolean closeAsFixed) {
-        data.addComment(comment, closeAsFixed);
-    }
-
-    @Override
-    public void attachFile(ODCSIssue data, File file, String description, boolean isPatch) {
-        data.attachPatch(file, description);
-    }
-
-    @Override
-    public IssueController getController(ODCSIssue data) {
-        return data.getController();
-    }
-
-    @Override
-    public void removePropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
-        data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(ODCSIssue data, PropertyChangeListener listener) {
-        data.addPropertyChangeListener(listener);
-    }
-    
 }

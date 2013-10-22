@@ -1523,7 +1523,7 @@ public class SvnUtils {
                     continue;
                 }
             }
-            ISVNLogMessage[] logs = client.getLogMessages(rootUrl.appendPath(path), pegRevision, null, toRevision, stopOnCopy, fetchChangePath, limit);
+            ISVNLogMessage[] logs = client.getLogMessages(rootUrl.appendPath(path), pegRevision, fromRevision, toRevision, stopOnCopy, fetchChangePath, limit);
             for (ISVNLogMessage log : logs) {
                 long revNum = log.getRevision().getNumber();
                 if(!alreadyHere.contains(revNum)) {

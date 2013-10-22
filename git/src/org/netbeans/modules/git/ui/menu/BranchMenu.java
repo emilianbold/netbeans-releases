@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
 import org.netbeans.modules.git.ui.branch.SetTrackingAction;
@@ -57,6 +58,7 @@ import org.netbeans.modules.git.ui.checkout.AbstractCheckoutAction;
 import org.netbeans.modules.git.ui.checkout.SwitchBranchAction;
 import org.netbeans.modules.git.ui.merge.MergeRevisionAction;
 import org.netbeans.modules.git.ui.rebase.RebaseAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.tag.CreateTagAction;
 import org.netbeans.modules.git.ui.tag.ManageTagsAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -150,9 +152,14 @@ public final class BranchMenu extends DynamicMenu {
                     repositoryRoot = repositoryRoots.iterator().next();
                 }
                 if (repositoryRoot != null) {
+                    RepositoryInfo info = RepositoryInfo.getInstance(repositoryRoot);
+                    GitBranch branch = info.getActiveBranch();
                     List<String> recentlySwitched = Utils.getStringList(NbPreferences.forModule(BranchMenu.class), AbstractCheckoutAction.PREF_KEY_RECENT_BRANCHES + repositoryRoot.getAbsolutePath());
                     int index = 0;
                     for (String recentBranch : recentlySwitched) {
+                        if (recentBranch.equals(branch.getName())) {
+                            continue;
+                        }
                         menu.add(new SwitchBranchAction.KnownBranchAction(recentBranch, ctx));
                         if (++index > 2) {
                             break;

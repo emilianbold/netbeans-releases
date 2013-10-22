@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
@@ -66,16 +67,25 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15", suppressWarnings="Convert2Lambda")
+@NbBundle.Messages({
+    "FIX_ConvertToMemberReference=Use member reference", //NOI18N
+    "FIX_ConvertToLambda=Use lambda expression" //NOI18N    
+})
+@Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15", suppressWarnings="Convert2Lambda") //NOI18N
 public class ConvertToLambda {
 
-    public static final String ID = "Javac_canUseLambda";
-    public static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.note.potential.lambda.found"));
+    public static final String ID = "Javac_canUseLambda"; //NOI18N
+    public static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.note.potential.lambda.found")); //NOI18N
+
+    static final boolean DEF_PREFER_MEMBER_REFERENCES = true;
+
+    @BooleanOption(displayName = "#LBL_Javac_canUseLambda_preferMemberReferences", tooltip = "#TP_Javac_canUseLambda_preferMemberReferences", defaultValue=DEF_PREFER_MEMBER_REFERENCES) //NOI18N
+    static final String KEY_PREFER_MEMBER_REFERENCES = "prefer-member-references"; //NOI18N
 
     @TriggerPatterns({
-        @TriggerPattern("new $clazz($params$) { $method; }")
+        @TriggerPattern("new $clazz($params$) { $method; }") //NOI18N
     })
-    public static ErrorDescription compute(HintContext ctx) {
+    public static ErrorDescription computeAnnonymousToLambda(HintContext ctx) {
         ClassTree clazz = ((NewClassTree) ctx.getPath().getLeaf()).getClassBody();
         long start = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), clazz);
 
@@ -88,33 +98,35 @@ public class ConvertToLambda {
                 continue;
             }
 
-            FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath());
-
-            if (cannotBeConverted(ctx.getInfo(), ctx.getPath())) {
+            ConvertToLambdaPreconditionChecker preconditionChecker =
+                    new ConvertToLambdaPreconditionChecker(ctx.getPath(), ctx.getInfo());
+            if (!preconditionChecker.passesFatalPreconditions()) {
                 return null;
             }
 
+            FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath(), false);
+            if (ctx.getPreferences().getBoolean(KEY_PREFER_MEMBER_REFERENCES, DEF_PREFER_MEMBER_REFERENCES)
+                    && preconditionChecker.foundMemberReferenceCandidate()) {
+                return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), d.getMessage(null),
+                        new FixImpl(ctx.getInfo(), ctx.getPath(), true).toEditorFix(), fix.toEditorFix());
+            }
             return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), d.getMessage(null), fix.toEditorFix());
         }
         return null;
     }
 
-    public static boolean cannotBeConverted(CompilationInfo info, TreePath path) {
-        ConvertToLambdaPreconditionChecker preconditionChecker =
-                new ConvertToLambdaPreconditionChecker(path, info);
-
-        return !preconditionChecker.passesFatalPreconditions();
-    }
-
     private static final class FixImpl extends JavaFix {
 
-        public FixImpl(CompilationInfo info, TreePath path) {
+        private final boolean useMemberReference;
+
+        public FixImpl(CompilationInfo info, TreePath path, boolean useMemberReference) {
             super(info, path);
+            this.useMemberReference = useMemberReference;
         }
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(ConvertToLambda.class, "FIX_ConvertToLambda");
+            return useMemberReference ? Bundle.FIX_ConvertToMemberReference(): Bundle.FIX_ConvertToLambda();
         }
 
         @Override
@@ -131,7 +143,11 @@ public class ConvertToLambda {
             }
 
             ConvertToLambdaConverter converter = new ConvertToLambdaConverter(tp, copy);
-            converter.performRewrite();
+            if (useMemberReference) {
+                converter.performRewriteToMemberReference();
+            } else {
+                converter.performRewriteToLambda();
+            }
         }
     }
 }

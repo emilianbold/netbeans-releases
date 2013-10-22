@@ -160,7 +160,7 @@ public class ODCSRepositoryController implements RepositoryController, DocumentL
     }
 
     @Override
-    public void applyChanges() throws IOException {
+    public void applyChanges() {
         repository.setInfoValues(
             getName(),
             getUrl(),

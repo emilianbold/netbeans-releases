@@ -259,8 +259,8 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public Collection<APITestIssue> getUnsubmittedIssues(APITestRepository r) {
-            return r.getUnsubmittedIssues();
+        public boolean canAttachFiles(APITestRepository r) {
+            return r.canAttachFile();
         }
     }
 
@@ -312,8 +312,8 @@ public class APITestConnector implements BugtrackingConnector {
         }
 
         @Override
-        public void attachPatch(APITestIssue data, File file, String description) {
-            data.attachPatch(file, description);
+        public void attachFile(APITestIssue data, File file, String description, boolean isPatch) {
+            data.attachFile(file, description, isPatch);
         }
 
         @Override
@@ -329,16 +329,6 @@ public class APITestConnector implements BugtrackingConnector {
         @Override
         public void addPropertyChangeListener(APITestIssue data, PropertyChangeListener listener) {
             data.addPropertyChangeListener(listener);
-        }
-
-        @Override
-        public void discardOutgoing(APITestIssue data) {
-            data.discardOutgoing();
-        }
-
-        @Override
-        public boolean submit(APITestIssue data) {
-            return data.submit();
         }
 
     }    

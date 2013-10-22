@@ -830,7 +830,7 @@ public final class GitClient {
                                 }
                                 if (repositoryInfoRefreshNeeded) {
                                     LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                                    RepositoryInfo.refreshAsync(repositoryRoot);
+                                    RepositoryInfo.getInstance(repositoryRoot).refresh();
                                 }
                             }
                         }

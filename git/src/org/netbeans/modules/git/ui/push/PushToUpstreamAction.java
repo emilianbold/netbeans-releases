@@ -177,7 +177,7 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
         return cfg;
     }
 
-    private static String guessRemoteBranchName (List<String> fetchSpecs, String branchName, String remoteName) {
+    public static String guessRemoteBranchName (List<String> fetchSpecs, String branchName, String remoteName) {
         String remoteBranchName = null;
         String branchShortName = branchName.startsWith(remoteName) 
                 ? branchName.substring(remoteName.length() + 1)

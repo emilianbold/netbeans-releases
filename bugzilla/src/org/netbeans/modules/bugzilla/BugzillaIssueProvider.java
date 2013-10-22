@@ -99,8 +99,8 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public void attachPatch(BugzillaIssue data, File file, String description) {
-        data.attachPatch(file, description);
+    public void attachFile(BugzillaIssue data, File file, String description, boolean isPatch) {
+        data.attachPatch(file, description, isPatch);
     }
 
     @Override
@@ -118,11 +118,6 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
         data.addPropertyChangeListener(listener);
     }
 
-    @Override
-    public boolean submit (BugzillaIssue data) {
-        return data.submitAndRefresh();
-    }
-    
     /************************************************************************************
      * Kenai
      ************************************************************************************/
@@ -130,11 +125,6 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     @Override
     public void setOwnerInfo(BugzillaIssue data, OwnerInfo info) {
         data.setOwnerInfo(info);
-    }
-
-    @Override
-    public void discardOutgoing(BugzillaIssue data) {
-        data.discardLocalEdits();
     }
 
 }

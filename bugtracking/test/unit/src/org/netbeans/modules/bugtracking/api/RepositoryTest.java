@@ -120,6 +120,15 @@ public class RepositoryTest extends NbTestCase {
         assertEquals(true, repo.isMutable());
     }
     
+    public void testCanAttachFiles() {
+        Repository repo = getRepo();
+        
+        getApiRepo().canAttachFiles = false;
+        assertFalse(repo.canAttachFiles());
+        getApiRepo().canAttachFiles = true;
+        assertTrue(repo.canAttachFiles());
+    }
+    
     public void testQueryListChanged() {
         Repository repo = getRepo();
         APITestRepository apiTestRepo = getApiRepo();

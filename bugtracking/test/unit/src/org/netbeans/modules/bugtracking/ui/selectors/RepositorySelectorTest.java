@@ -157,7 +157,7 @@ public class RepositorySelectorTest extends NbTestCase {
                 }
 
                 @Override
-                public void applyChanges() throws IOException {
+                public void applyChanges() {
 
                 }
 

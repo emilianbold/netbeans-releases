@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.project.ui.api;
 
-package org.netbeans.modules.bugtracking.spi;
-
-import javax.swing.JComponent;
-import org.openide.util.HelpCtx;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 
 /**
- * Provides access to an Issues UI.
- * <p>
- * Every Issue is expected to provide at least some visual expected to. 
- * Typically this would be an Issue editor making it possible to create and 
- * modify issues.
- * </p>
- * <p>
- * When viewing, creating or editing a new Issue, the UI is presented in an TopComponent in the editor area.
- * </p>
- * @author Tomas Stupka
+ * Provides actions on project and project tab
+ * @author mkozeny
+ * @since 1.50.0
  */
-public interface IssueController {
-
+public class ProjectActionUtils {
+    
     /**
-     * Returns a visual Issue component.
-     * @return a visual component representing an Issue
+     * Select and expand project
+     * @param p passed project
      */
-    public JComponent getComponent();
-
+    public static void selectAndExpandProject( final Project p ) {
+        ProjectUtilities.selectAndExpandProject(p);
+    }
+    
     /**
-     * Returns the help context associated with this controllers visual component
-     * @return
+     * Makes the project tab visible
      */
-    public HelpCtx getHelpCtx();
-
-    /**
-     * Called when the component returned by this controller was opened.
-     */
-    public void opened();
-
-    /**
-     * Called when the component returned by this controller was closed.
-     */
-    public void closed();
-
+    public static void makeProjectTabVisible() {
+        ProjectUtilities.makeProjectTabVisible();
+    }
+    
 }

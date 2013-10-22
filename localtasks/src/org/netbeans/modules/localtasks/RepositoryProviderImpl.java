@@ -118,8 +118,8 @@ public class RepositoryProviderImpl implements RepositoryProvider<LocalRepositor
     }
 
     @Override
-    public Collection<LocalTask> getUnsubmittedIssues(LocalRepository r) {
-        return Collections.emptyList();
+    public boolean canAttachFiles(LocalRepository r) {
+        return true;
     }
     
 }

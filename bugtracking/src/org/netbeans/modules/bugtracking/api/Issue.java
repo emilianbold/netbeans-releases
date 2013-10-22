@@ -233,9 +233,10 @@ public final class Issue {
      * 
      * @param file
      * @param description 
+     * @param isPatch 
      */
-    public void attachPatch(File file, String description) {
-        impl.attachPatch(file, description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        impl.attachFile(file, description, isPatch);
     }
     
     public void addComment(String msg, boolean closeAsFixed) {

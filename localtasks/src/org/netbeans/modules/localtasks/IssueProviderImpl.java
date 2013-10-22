@@ -100,7 +100,7 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     }
 
     @Override
-    public void attachPatch (LocalTask data, File file, String description) {
+    public void attachFile (LocalTask data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
@@ -117,16 +117,6 @@ public class IssueProviderImpl implements IssueProvider<LocalTask> {
     @Override
     public void removePropertyChangeListener (LocalTask data, PropertyChangeListener listener) {
         data.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void discardOutgoing(LocalTask data) {
-        data.delete();
-    }
-
-    @Override
-    public boolean submit(LocalTask data) {
-        return false;
     }
     
 }
