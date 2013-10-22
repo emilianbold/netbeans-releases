@@ -87,7 +87,7 @@ public class ScanSeveralProjectsPerfTest extends NbTestCase {
         }
         Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
         repositoryUpdater.setLevel(Level.INFO);
-        handler = new ScanningHandler("test projects");
+        handler = new ScanningHandler("test projects", 70000, 140000, 1000, 15000);
         repositoryUpdater.addHandler(handler);
 
         Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");

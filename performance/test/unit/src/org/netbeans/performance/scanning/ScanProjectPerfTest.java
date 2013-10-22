@@ -82,28 +82,28 @@ public class ScanProjectPerfTest extends NbTestCase {
     }
 
     public void testScanJEdit() throws Exception {
-        scanProject("jEdit");
+        scanProject("jEdit", 25000, 35000, 200, 8000);
     }
 
     public void testPhpProject() throws Exception {
-        scanProject("mediawiki-1.14.0");
+        scanProject("mediawiki-1.14.0", 0, 100000, 0, 1200);
     }
 
     public void testWebProject() throws Exception {
-        scanProject("FrankioskiProject");
+        scanProject("FrankioskiProject", 40000, 35000, 600, 15000);
     }
 
     public void testTomcat() throws Exception {
-        scanProject("tomcat6");
+        scanProject("tomcat6", 10000, 50000, 200, 15000);
     }
 
-    private void scanProject(String projectName) throws Exception {
+    private void scanProject(String projectName, long thBinaryScan, long thSourceScan, long thBinaryUpdate, long thSourceUpdate) throws Exception {
         File projectsDir = getWorkDir();
         Utilities.projectDownloadAndUnzip(projectName, projectsDir);
 
         Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
         repositoryUpdater.setLevel(Level.INFO);
-        handler = new ScanningHandler(projectName);
+        handler = new ScanningHandler(projectName, thBinaryScan, thSourceScan, thBinaryUpdate, thSourceUpdate);
         repositoryUpdater.addHandler(handler);
 
         Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");

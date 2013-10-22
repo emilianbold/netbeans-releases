@@ -91,8 +91,10 @@ public final class GitModuleConfig {
     private static final String KEY_SHOW_HISTORY_MERGES = "showHistoryMerges"; //NOI18N
     private static final String KEY_SHOW_FILE_INFO = "showFileInfo"; //NOI18N
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled"; //NOI18N
+    private static final String PROP_ANNOTATIONFORMAT_PROJECT = "annotationFormat.project"; //NOI18N
     
     private String lastCanceledCommitMessage;
+    private static final String DEFAULT_ANNOTATION_PROJECT = Annotator.DEFAULT_ANNOTATION_PROJECT;
     
     public static GitModuleConfig getDefault () {
         if (instance == null) {
@@ -157,6 +159,14 @@ public final class GitModuleConfig {
             Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
         }
     }   
+
+    public String getProjectAnnotationFormat () {
+        return getPreferences().get(PROP_ANNOTATIONFORMAT_PROJECT, DEFAULT_ANNOTATION_PROJECT);
+    }
+
+    public void setProjectAnnotationFormat (String text) {
+        getPreferences().put(PROP_ANNOTATIONFORMAT_PROJECT, text);
+    }
     
     synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
