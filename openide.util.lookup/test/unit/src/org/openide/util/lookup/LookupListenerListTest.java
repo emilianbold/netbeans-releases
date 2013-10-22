@@ -52,11 +52,10 @@ import org.netbeans.junit.RandomlyFails;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
-/**
+/** Tests the fix of #237149
  *
  * @author stan
  */
-@RandomlyFails // marked as @RF until #237149 fixed
 public class LookupListenerListTest extends NbTestCase {
         
     public LookupListenerListTest(String name) {
