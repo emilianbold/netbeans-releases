@@ -830,6 +830,27 @@ public class StatusTest extends AbstractGitTestCase {
         assertFalse(flags[0]);
     }
     
+    public void testIgnoredSubrepos () throws Exception {
+        File subrepo = new File(repositoryLocation, "subrepository");
+        subrepo.mkdirs();
+        getClient(repositoryLocation).ignore(new File[] { subrepo }, GitUtils.NULL_PROGRESS_MONITOR);
+        
+        File file = new File(subrepo, "file");
+        file.createNewFile();
+        
+        getCache().refreshAllRoots(repositoryLocation);
+        FileInformation fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        
+        GitClient client = getClient(subrepo);
+        client.init(GitUtils.NULL_PROGRESS_MONITOR);
+        Git.getInstance().versionedFilesChanged();
+        
+        getCache().refreshAllRoots(subrepo);
+        fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NEW_INDEX_WORKING_TREE));
+    }
+    
     private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {
             assertEquals(status, getCache().getStatus(f).getStatus());
