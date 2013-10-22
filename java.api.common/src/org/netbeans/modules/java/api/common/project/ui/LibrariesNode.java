@@ -63,6 +63,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -75,6 +76,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -93,6 +95,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -110,6 +113,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -153,12 +157,225 @@ public final class LibrariesNode extends AbstractNode {
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty,
                    Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs,
                    Callback extraKeys) {
-        super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperty,
-                    classPathIgnoreRef, platformProperty,
+        this(
+            displayName,
+            project,
+            eval,
+            helper,
+            refHelper,
+            Collections.singletonList(classPathProperty),
+            Arrays.asList(classPathIgnoreRef),
+            platformProperty,
+            null,
+            librariesNodeActions,
+            webModuleElementName,
+            cs,
+            extraKeys);
+    }
+
+    private LibrariesNode(
+            @NonNull final String displayName,
+            @NonNull final Project project,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final UpdateHelper helper,
+            @NonNull final ReferenceHelper refHelper,
+            @NonNull final List<String> classPathProperties,
+            @NonNull final Collection<String> classPathIgnoreRef,
+            @NonNull final String platformProperty,
+            @NullAllowed final String platformType,
+            @NullAllowed final Action[] librariesNodeActions,
+            @NullAllowed final String webModuleElementName,
+            @NonNull final ClassPathSupport cs,
+            @NullAllowed final Callback extraKeys) {
+        super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperties,
+                    classPathIgnoreRef, platformProperty, platformType,
                     webModuleElementName, cs, extraKeys),
                 Lookups.fixed(project, new PathFinder()));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
+    }
+
+    /**
+     * Builder for {@Link LibrariesNode}.
+     * @since 1.63
+     */
+    public static final class Builder {
+
+        private final Project project;
+        private final PropertyEvaluator eval;
+        private final UpdateHelper helper;
+        private final ReferenceHelper refHelper;
+        private final ClassPathSupport cs;
+        private final Set<String> classPathIgnoreRef = new HashSet<String>();
+        private final List<Action> librariesNodeActions = new ArrayList<Action>();
+        private final List<String> classPathProperties = new ArrayList<String>();
+        private String name = NbBundle.getMessage(LibrariesNode.class, "TXT_LibrariesNode");
+        private String platformProperty;
+        private String platformType;
+        private String webModuleElementName;
+        private NodeList<Key> extraNodes;
+
+        public Builder(
+            @NonNull final Project project,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final UpdateHelper helper,
+            @NonNull final ReferenceHelper refHelper,
+            @NonNull final ClassPathSupport cs) {
+            Parameters.notNull("project", project); //NOI18N
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("helper", helper);   //NOI18N
+            Parameters.notNull("refHelper", refHelper); //NOI18N
+            Parameters.notNull("cs", cs);
+            this.project = project;
+            this.eval = eval;
+            this.helper = helper;
+            this.refHelper = refHelper;
+            this.cs = cs;
+        }
+
+        /**
+         * Sets node name.
+         * @param name the node name
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder setName(@NonNull final String name) {
+            Parameters.notNull("name", name);   //NOI18N
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Adds references to ignore from libraries.
+         * @param refs the references to ignore
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder addClassPathIgnoreRefs(@NonNull final String... refs) {
+            Parameters.notNull("refs", refs);   //NOI18N
+            Collections.addAll(classPathIgnoreRef, refs);
+            return this;
+        }
+
+        /**
+         * Adds classpaths to display.
+         * @param propNames the names of properties holding the paths to be displayed
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder addClassPathProperties(@NonNull final String... propNames) {
+            Parameters.notNull("propNames", propNames);    //NOI18N
+            Collections.addAll(classPathProperties, propNames);
+            return this;
+        }
+
+        /**
+         * Sets platform type.
+         * @param platformType the type of platform, by default "j2se"
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder setPlatformType(@NonNull final String platformType) {
+            Parameters.notNull("platformType", platformType);   //NOI18N
+            this.platformType = platformType;
+            return this;
+        }
+
+        /**
+         * Sets platform property.
+         * @param platformProperty the property holding the reference on {@link JavaPlatform}
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder setPlatformProperty(@NonNull final String platformProperty) {
+            Parameters.notNull("platformProperty", platformProperty);   //NOI18N
+            this.platformProperty = platformProperty;
+            return this;
+        }
+
+        /**
+         * Adds actions to libraries node.
+         * @param actions the actions to be added.
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder addLibrariesNodeActions(@NonNull final Action... actions) {
+            Parameters.notNull("actions", actions); //NOI18N
+            Collections.addAll(librariesNodeActions, actions);
+            return this;
+        }
+
+        /**
+         * Sets web module element.
+         * @param elementName the web module element name
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder setWebModuleElementName(@NonNull final String elementName) {
+            Parameters.notNull("elementName", elementName);
+            this.webModuleElementName = elementName;
+            return this;
+        }
+
+        /**
+         * Sets a factory to create additional nodes.
+         * @param extraNodes the {@link NodeList} to create additional nodes
+         * @return the {@link Builder}
+         */
+        @NonNull
+        public Builder setExtraNodes(@NonNull final NodeList<Key> extraNodes) {
+            Parameters.notNull("extraNodes", extraNodes);
+            this.extraNodes = extraNodes;
+            return this;
+        }
+
+        /**
+         * Creates configured {@link LibrariesNode}.
+         * @return the {@link LibrariesNode}.
+         */
+        @NonNull
+        public LibrariesNode build() {
+            return new LibrariesNode(
+                name,
+                project,
+                eval,
+                helper,
+                refHelper,
+                classPathProperties,
+                classPathIgnoreRef,
+                platformProperty,
+                platformType,
+                librariesNodeActions.toArray(new Action[librariesNodeActions.size()]),
+                webModuleElementName,
+                cs,
+                extraNodes != null ? new CallBackImpl(extraNodes) : null);
+        }
+
+        private static final class CallBackImpl implements Callback {
+
+            private final NodeList<Key> delegate;
+
+            CallBackImpl(@NonNull final NodeList<Key> nodeList) {
+                Parameters.notNull("nodeList", nodeList);   //NOI18N
+                this.delegate = nodeList;
+            }
+
+            @Override
+            @NonNull
+            public List<Key> getExtraKeys() {
+                return delegate.keys();
+            }
+
+            @Override
+            @NonNull
+            public Node[] createNodes(Key key) {
+                final Node node = delegate.node(key);
+                return node != null ?
+                    new Node[] {node} :
+                    new Node[0];
+            }
+
+        }
     }
 
     @Override
@@ -260,8 +477,9 @@ public final class LibrariesNode extends AbstractNode {
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
         private final ReferenceHelper refHelper;
-        private final String classPathProperty;
+        private final Set<String> classPathProperties;
         private final String platformProperty;
+        private final String platformType;
         private final Set<String> classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
@@ -276,14 +494,15 @@ public final class LibrariesNode extends AbstractNode {
 
 
         LibrariesChildren (Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
-                           String classPathProperty, String[] classPathIgnoreRef, String platformProperty, 
-                           String webModuleElementName, ClassPathSupport cs, Callback extraKeys) {
+                           List<String> classPathProperties, Collection<String> classPathIgnoreRef, String platformProperty,
+                           String platformType, String webModuleElementName, ClassPathSupport cs, Callback extraKeys) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
-            this.classPathProperty = classPathProperty;
-            this.classPathIgnoreRef = new HashSet<String>(Arrays.asList(classPathIgnoreRef));
+            this.classPathProperties = new LinkedHashSet<>(classPathProperties);
+            this.classPathIgnoreRef = new HashSet<String>(classPathIgnoreRef);
             this.platformProperty = platformProperty;
+            this.platformType = platformType;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
             this.extraKeys = extraKeys;
@@ -294,7 +513,7 @@ public final class LibrariesNode extends AbstractNode {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             final boolean propRoots = RootsListener.PROP_ROOTS.equals(propName);
-            if (classPathProperty.equals(propName) || propRoots || LibraryManager.PROP_LIBRARIES.equals(propName)) {
+            if (classPathProperties.contains(propName) || propRoots || LibraryManager.PROP_LIBRARIES.equals(propName)) {
                 synchronized (this) {
                     if (fsListener!=null) {
                         fsListener.removePropertyChangeListener (this);
@@ -349,7 +568,7 @@ public final class LibrariesNode extends AbstractNode {
             Node[] result = null;
             switch (key.getType()) {
                 case Key.TYPE_PLATFORM:
-                    result = new Node[] {PlatformNode.create(eval, platformProperty, cs)};
+                    result = new Node[] {PlatformNode.create(eval, platformProperty, platformType, cs)};
                     break;
                 case Key.TYPE_PROJECT:
                     result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
@@ -411,7 +630,10 @@ public final class LibrariesNode extends AbstractNode {
             EditableProperties projectPrivateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
             List<URL> rootsList = new ArrayList<URL>();
-            List<Key> result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
+            List<Key> result = new ArrayList<>();
+            for (String classPathProperty : classPathProperties) {
+                result.addAll(getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList));
+            }
             if (platformProperty!=null) {
                 result.add (Key.platform());
             }
