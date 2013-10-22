@@ -44,14 +44,37 @@
 
 package org.netbeans.modules.cnd.qnavigator.navigator;
 
+import java.awt.Image;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+
+
 /**
- *
  * @author Alexander Simon
  */
-public class ItemEvent {
+public final class LoadingNode extends AbstractNode {
 
-    /** Creates a new instance of ItemEvent */
-    public ItemEvent() {
+    private static final Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/cnd/qnavigator/resources/waitNode.gif"); // NOI18N
+    private static final String displayName = NbBundle.getMessage(LoadingNode.class, "LBL_WaitNode");
+
+    LoadingNode( ) {
+        super( Children.LEAF );
     }
-    
+
+    @Override
+    public Image getIcon(int type) {
+         return waitIcon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    @java.lang.Override
+    public String getDisplayName() {
+        return displayName;
+    }
 }

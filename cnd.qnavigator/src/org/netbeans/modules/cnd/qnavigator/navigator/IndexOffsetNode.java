@@ -51,7 +51,7 @@ import org.openide.nodes.Node;
  * @author Alexander Simon
  */
 public class IndexOffsetNode implements Comparable<IndexOffsetNode>{
-    private Node node;
+    private final Node node;
     private long startOffset;
     private long endOffset;
     private IndexOffsetNode scope;

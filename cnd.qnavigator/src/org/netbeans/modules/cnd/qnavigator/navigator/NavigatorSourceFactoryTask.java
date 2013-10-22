@@ -39,80 +39,82 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.qnavigator.navigator;
 
-package org.netbeans.modules.cnd.model.tasks;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JEditorPane;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.model.tasks.CndParserResult;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserFactory;
-import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Alexander Simon
  */
-public class CndParser extends Parser {
-    public final static Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
-    private final Collection<CsmFile> tus = new ArrayList<CsmFile>();
-    private Snapshot snapshot;
-
-    private CndParser(Collection<Snapshot> snapshots) {
+public class NavigatorSourceFactoryTask extends ParserResultTask<CndParserResult> {
+    private AtomicBoolean canceled = new AtomicBoolean(false);
+    
+    public NavigatorSourceFactoryTask() {
     }
 
     @Override
-    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        LOG.log(Level.FINE, "parse called for {0}", snapshot); //NOI18N
-        if (snapshot == null) {
+    public void run(CndParserResult result, SchedulerEvent event) {
+        canceled = new AtomicBoolean(false);
+        if (!(event instanceof CursorMovedSchedulerEvent)) {
             return;
         }
-        this.snapshot = snapshot;
-        CsmFile csmFile = CsmUtilities.getCsmFile(snapshot.getSource().getFileObject(), true, false);
-        tus.clear();
-        if (csmFile != null) {
-            tus.add(csmFile);
+        final NavigatorComponent navigator = NavigatorComponent.getInstance();
+        if (navigator != null) {
+            final NavigatorPanelUI panelUI = navigator.getPanelUI();
+            final NavigatorContent content = panelUI.getContent();
+            NavigatorModel model = content.getModel();
+            if (model != null) {
+                CursorMovedSchedulerEvent cursorEvent = (CursorMovedSchedulerEvent) event;
+                JTextComponent comp = EditorRegistry.lastFocusedComponent();
+                if (comp instanceof JEditorPane) {
+                    model.setSelection(cursorEvent.getCaretOffset(), (JEditorPane) comp);
+                }
+            }
         }
     }
-    
+
     @Override
-    public void cancel(CancelReason reason, SourceModificationEvent event) {
-        super.cancel(reason, event);
+    public int getPriority() {
+        return 100;
     }
 
     @Override
-    public CndParserResult getResult(Task task) throws ParseException {
-        return new CndParserResult(tus, snapshot);
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     @Override
-    public void addChangeListener(ChangeListener changeListener) {
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener changeListener) {
+    public final synchronized void cancel() {
+        canceled.set(true);
     }
     
     @MimeRegistrations({
-        @MimeRegistration(mimeType=MIMENames.C_MIME_TYPE, service=ParserFactory.class),
-        @MimeRegistration(mimeType=MIMENames.CPLUSPLUS_MIME_TYPE, service=ParserFactory.class),
-        @MimeRegistration(mimeType=MIMENames.HEADER_MIME_TYPE, service=ParserFactory.class),
-        @MimeRegistration(mimeType=MIMENames.FORTRAN_MIME_TYPE, service=ParserFactory.class)
+        @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = TaskFactory.class),
+        @MimeRegistration(mimeType = MIMENames.FORTRAN_MIME_TYPE, service = TaskFactory.class)
     })
-    public static class FactoryImpl extends ParserFactory {
+    public static class NavigatorSourceFactory extends TaskFactory {
         @Override
-        public Parser createParser(Collection<Snapshot> snapshots) {
-            return new CndParser(snapshots);
+        public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+            return Collections.singletonList(new NavigatorSourceFactoryTask());
         }
     }
 }
