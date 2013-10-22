@@ -159,12 +159,12 @@ public class MalformedFormatString {
             return null;
         }
         Object ret = ArithmeticUtilities.compute(ctx.getInfo(), format, true, true);
-        if (ret == null) {
-            // format is not a constant expr.
-            return null;
-        }
         if (ArithmeticUtilities.isNull(ret)) {
             return Collections.singletonList(ErrorDescriptionFactory.forTree(ctx, format, Bundle.ERR_NullFormatString()));
+        }
+        if (!(ret instanceof String)) {
+            // format is not a constant String expr.
+            return null;
         }
         if (parameters.size() == 1) {
             // check the parameter is not an Object[], such parameter will be passed as argument list and cannot
