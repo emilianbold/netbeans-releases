@@ -370,7 +370,7 @@ public class Utilities {
     public static void processUnitTestsResults(String className, String suiteName, String suiteClassName, PerformanceData pd) {
         long[] result = new long[2];
         result[1] = pd.value;
-        xmlTestResults(System.getProperty("nbjunit.workdir"), suiteName, pd.name, className, suiteClassName, pd.unit, "passed", 120000, result, 1);
+        xmlTestResults(System.getProperty("nbjunit.workdir"), suiteName, pd.name, className, suiteClassName, pd.unit, "passed", pd.threshold, result, 1);
     }
 
     /**
