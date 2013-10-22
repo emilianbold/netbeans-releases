@@ -48,14 +48,18 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
@@ -101,6 +105,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
     private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.UPTODATE, Status.NEW_INDEX_WORKING_TREE,
             Status.MODIFIED_HEAD_WORKING_TREE);
+    private static String projectFormat;
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
         STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
@@ -114,9 +119,16 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
 
     private final FileStatusCache cache;
-    private MessageFormat format;
-    private String emptyFormat;
     public static final String ACTIONS_PATH_PREFIX = "Actions/Git/";                        // NOI18N
+    static final String DEFAULT_ANNOTATION_PROJECT = "[{repository_state} {branch}]"; //NOI18N
+    
+    @NbBundle.Messages({
+        "Annotator.variable.repositoryState=stands for repository state",
+        "Annotator.variable.branch=stands for the current branch label"
+    })
+    private static final LabelVariables PROJECT_ANNOTATION_VARIABLES = new LabelVariables(
+            new LabelVariable("repository_state", "{repository_state}", Bundle.Annotator_variable_repositoryState()),
+            new LabelVariable("branch", "{branch}", Bundle.Annotator_variable_branch()));
 
     public Annotator() {
         cache = Git.getInstance().getFileStatusCache();
@@ -192,6 +204,15 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         }
 
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    public void refreshFormat () {
+        projectFormat = null;
+        Git.getInstance().refreshAllAnnotations();
+    }
+
+    public LabelVariable[] getProjectVariables () {
+        return PROJECT_ANNOTATION_VARIABLES.toArray(new LabelVariable[PROJECT_ANNOTATION_VARIABLES.size()]);
     }
 
     private void addAction(String name, VCSContext context, List<Action> actions) {
@@ -390,15 +411,19 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 }
             }
             GitRepositoryState repositoryState = info.getRepositoryState();
+            String format = getAnnotationProjectFormat();
             if (repositoryState != GitRepositoryState.SAFE) {
-                folderAnnotation = repositoryState.toString() + " - " + branchLabel; //NOI18N
+                folderAnnotation = MessageFormat.format(format, repositoryState.toString(), branchLabel);
             } else {
-                folderAnnotation = branchLabel;
+                format = format.replace("{0} ", "{0}"); //NOI18N
+                folderAnnotation = MessageFormat.format(format, "", branchLabel); //NOI18N
             }
+            folderAnnotation = folderAnnotation.replace("  ", " "); //NOI18N
         }
 
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
-        return uptodateFormat.format(new Object [] { nameHtml, !folderAnnotation.isEmpty() ? new StringBuilder(" [").append(folderAnnotation).append("]").toString() : "" }); // NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, !folderAnnotation.isEmpty()
+                ? " " + folderAnnotation : "" }); // NOI18N
     }
 
     private void addFileWithRepositoryAnnotation (RepositoryInfo info, File file) {
@@ -440,15 +465,11 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
 
         if (annotationsVisible && mostImportantFile != null && mostImportantInfo.containsStatus(STATUS_IS_IMPORTANT)) {
-            if (format != null) {
-                textAnnotation = formatAnnotation(mostImportantInfo, mostImportantFile);
+            String statusText = mostImportantInfo.getShortStatusText();
+            if(!statusText.isEmpty()) {
+                textAnnotation = " [" + mostImportantInfo.getShortStatusText() + "]"; // NOI18N
             } else {
-                String statusText = mostImportantInfo.getShortStatusText();
-                if(!statusText.isEmpty()) {
-                    textAnnotation = " [" + mostImportantInfo.getShortStatusText() + "]"; // NOI18N
-                } else {
-                    textAnnotation = ""; // NOI18N
-                }
+                textAnnotation = ""; // NOI18N
             }
         } else {
             textAnnotation = ""; // NOI18N
@@ -502,28 +523,80 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         return AnnotationColorProvider.getInstance();
     }
 
-    private String formatAnnotation(FileInformation info, File file) {
-        String statusString = "";  // NOI18N
-        if (info.containsStatus(Status.UPTODATE)) {
-            statusString = info.getShortStatusText();
+    private static String getAnnotationProjectFormat () {
+        if (projectFormat == null) {
+            String format = GitModuleConfig.getDefault().getProjectAnnotationFormat();
+            format = Utils.skipUnsupportedVariables(format, PROJECT_ANNOTATION_VARIABLES.toPatterns());
+            try {
+                int i = 0;
+                for (LabelVariable var : PROJECT_ANNOTATION_VARIABLES) {
+                    format = format.replaceAll("\\{" + var.getVariable() + "\\}", "\\{" + i++ + "\\}"); // NOI18N
+                }
+                MessageFormat f = new MessageFormat(format);
+                projectFormat = format;
+            } catch (IllegalArgumentException ex) {
+                Logger.getLogger(Annotator.class.getName()).log(Level.INFO, "Invalid annotation format: {0}", //NOI18N
+                        GitModuleConfig.getDefault().getProjectAnnotationFormat());
+                format = DEFAULT_ANNOTATION_PROJECT;
+                int i = 0;
+                for (LabelVariable var : PROJECT_ANNOTATION_VARIABLES) {
+                    format = format.replaceAll("\\{" + var.getVariable() + "\\}", "\\{" + i++ + "\\}"); // NOI18N
+                }
+                projectFormat = format;
+            }
+        }
+        return projectFormat;
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - variable name", "# {1} - variable description", "LabelVariable.displayName={0} - {1}"
+    })
+    public static class LabelVariable {
+        
+        private final String variable;
+        private final String pattern;
+        private final String description;
+
+        public LabelVariable (String variable, String pattern, String description) {
+            this.variable = variable;
+            this.pattern = pattern;
+            this.description = description;
         }
 
-        //String stickyString = SvnUtils.getCopy(file);
-        String stickyString = null;
-        if (stickyString == null) {
-            stickyString = ""; // NOI18N
+        public String getDescription () {
+            return description;
         }
 
-        Object[] arguments = new Object[] {
-            statusString,
-            stickyString,
-        };
+        public String getPattern () {
+            return pattern;
+        }
 
-        String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();
-        if(annotation.equals(emptyFormat)) {
-            return ""; // NOI18N
-        } else {
-            return " " + annotation; // NOI18N
+        public String getVariable () {
+            return variable;
+        }
+
+        @Override
+        public String toString () {
+            return getPattern();
+        }
+        
+    }
+    
+    private static class LabelVariables extends LinkedHashSet<LabelVariable> {
+
+        public LabelVariables (LabelVariable... initVars) {
+            super();
+            for (LabelVariable var : initVars) {
+                add(var);
+            }
+        }
+        
+        String[] toPatterns () {
+            List<String> patterns = new ArrayList<>(size());
+            for (LabelVariable var : this) {
+                patterns.add(var.getPattern());
+            }
+            return patterns.toArray(new String[patterns.size()]);
         }
     }
 }
