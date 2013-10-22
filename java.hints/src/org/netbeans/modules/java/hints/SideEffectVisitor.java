@@ -45,6 +45,7 @@ import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree.BodyKind;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
@@ -145,21 +146,6 @@ public class SideEffectVisitor extends TreePathScanner {
 
     private void stop(Tree node) {
         throw new StopProcessing(invocationTree != null ? invocationTree : node);
-    }
-
-    @Override
-    public Object visitLambdaExpression(LambdaExpressionTree node, Object p) {
-        Element e = ci.getTrees().getElement(getCurrentPath());
-        if (e.getKind().isClass()) {
-            nestingLevel++;
-            enclosingElements.push((TypeElement) e);
-            Object o = super.visitLambdaExpression(node, p);
-            nestingLevel--;
-            enclosingElements.pop();
-            return o;
-        } else {
-            return super.visitLambdaExpression(node, p);
-        }
     }
 
     @Override
