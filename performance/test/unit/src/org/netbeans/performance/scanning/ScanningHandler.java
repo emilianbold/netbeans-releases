@@ -82,10 +82,18 @@ class ScanningHandler extends Handler {
 
     private final String projectName;
     private ScanType type;
+    private final long thBinaryScan;
+    private final long thSourceScan;
+    private final long thBinaryUpdate;
+    private final long thSourceUpdate;
 
-    public ScanningHandler(String projectName) {
+    public ScanningHandler(String projectName, long thBinaryScan, long thSourceScan, long thBinaryUpdate, long thSourceUpdate) {
         this.projectName = projectName;
         this.type = ScanType.INITIAL;
+        this.thBinaryScan = thBinaryScan;
+        this.thSourceScan = thSourceScan;
+        this.thBinaryUpdate = thBinaryUpdate;
+        this.thSourceUpdate = thSourceUpdate;
         data = new HashMap<>();
     }
 
@@ -99,15 +107,26 @@ class ScanningHandler extends Handler {
         if (message != null && message.startsWith("Complete indexing")) {
             String name = null;
             long value = 0;
+            long threshold = 0;
             if (message.contains("source roots")) {
                 if (record.getParameters()[0].hashCode() > 0) {
                     name = projectName + type.getName() + "source scan";
                     value = record.getParameters()[1].hashCode();
+                    if (type.equals(ScanType.INITIAL)) {
+                        threshold = thSourceScan;
+                    } else {
+                        threshold = thSourceUpdate;
+                    }
                 }
             } else if (message.contains("binary roots")) {
                 if (record.getParameters()[0].hashCode() > 0) {
                     name = projectName + type.getName() + "binary scan";
                     value = record.getParameters()[1].hashCode();
+                    if (type.equals(ScanType.INITIAL)) {
+                        threshold = thBinaryScan;
+                    } else {
+                        threshold = thBinaryUpdate;
+                    }
                 }
             }
             if (name != null && value > 0) {
@@ -117,6 +136,7 @@ class ScanningHandler extends Handler {
                     newData.name = name;
                     newData.value = value;
                     newData.unit = "ms";
+                    newData.threshold = threshold;
                     newData.runOrder = 0;
                     data.put(name, newData);
                 } else {

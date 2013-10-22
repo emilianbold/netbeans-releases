@@ -470,13 +470,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             it.next(); //cmd
             it.next(); //c
             String m = it.next();
-            //this sounds weird but is true. if the bat file has spaces it has to be eclosed in quotes
-            // but then on start and end of the entire string we need exactly 2 quotes. so sometimes it's ""aaa.bat and sometimes ""aa bb.bat" 
-            if (m.startsWith("\"")) {
-                sb.append("\"");
-            } else {
-                sb.append("\"\"");
-            }
+            
+            sb.append("\"");
             sb.append(m);
             while (it.hasNext()) {
                 sb.append(" ").append(it.next());
