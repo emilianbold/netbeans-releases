@@ -131,7 +131,7 @@ made subject to such option by the copyright holder.
             <cpp11 flags="-std=c++11"/>
         </cpp_standard>
         <output_object_file flags="-o " />
-        <dependency_generation flags="-MMD -MP -MF &quot;$@&quot;.d" />
+        <dependency_generation flags="-MMD -MP -MF &quot;$@.d&quot;" />
         <precompiled_header flags="-o &quot;$@&quot;" suffix=".gch" append="true" />
     </cpp>
 </toolchaindefinition>
