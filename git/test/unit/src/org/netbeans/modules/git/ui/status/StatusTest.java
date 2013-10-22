@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
 import org.netbeans.junit.MockServices;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileStatusCache;
@@ -59,6 +60,7 @@ import org.netbeans.modules.git.FileStatusCache.ChangedEvent;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitVCS;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
@@ -251,6 +253,27 @@ public class StatusTest extends AbstractGitTestCase {
             }
         });
         assertEquals(1, model.getNodes().length);
+    }
+    
+    public void testIgnoredSubrepos () throws Exception {
+        File subrepo = new File(repositoryLocation, "subrepository");
+        subrepo.mkdirs();
+        getClient(repositoryLocation).ignore(new File[] { subrepo }, GitUtils.NULL_PROGRESS_MONITOR);
+        
+        File file = new File(subrepo, "file");
+        file.createNewFile();
+        
+        getCache().refreshAllRoots(repositoryLocation);
+        FileInformation fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        
+        GitClient client = getClient(subrepo);
+        client.init(GitUtils.NULL_PROGRESS_MONITOR);
+        Git.getInstance().versionedFilesChanged();
+        
+        getCache().refreshAllRoots(subrepo);
+        fi = getCache().getStatus(file);
+        assertTrue(fi.containsStatus(FileInformation.Status.NEW_INDEX_WORKING_TREE));
     }
 
     private void assertTable (final JTable table, Set<File> files) throws Exception {
