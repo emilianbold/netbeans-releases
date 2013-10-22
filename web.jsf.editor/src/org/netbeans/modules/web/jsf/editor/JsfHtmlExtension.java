@@ -69,6 +69,7 @@ import org.netbeans.modules.web.common.taginfo.AttrValueType;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
+import org.netbeans.modules.web.jsf.api.editor.JsfFacesComponentsProvider.FacesComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
@@ -547,10 +548,8 @@ public class JsfHtmlExtension extends HtmlExtension {
     public DeclarationLocation findDeclaration(ParserResult result, final int caretOffset) {
         assert result instanceof HtmlParserResult;
         HtmlParserResult htmlresult = (HtmlParserResult) result;
-
-        Snapshot snapshot = result.getSnapshot();
-
         Element leaf = htmlresult.findByPhysicalRange(caretOffset, true);
+
         if (leaf == null || leaf.type() != ElementType.OPEN_TAG) {
             return DeclarationLocation.NONE;
         }
@@ -569,89 +568,12 @@ public class JsfHtmlExtension extends HtmlExtension {
         if (lib == null) {
             return DeclarationLocation.NONE;
         }
+
         if (lib instanceof CompositeComponentLibrary) {
-
-            OpenTag openTag = (OpenTag) leaf;
-            String tagName = openTag.unqualifiedName().toString();
-            LibraryComponent component = lib.getComponent(tagName);
-            if (component == null) {
-                return DeclarationLocation.NONE;
-            }
-            if (!(component instanceof CompositeComponentLibrary.CompositeComponent)) {
-                //TODO add hyperlinking to class components
-                return DeclarationLocation.NONE;
-            }
-            CompositeComponentModel model = ((CompositeComponentLibrary.CompositeComponent) component).getComponentModel();
-            FileObject file = model.getSourceFile();
-
-            //find to what exactly the user points, the AST doesn't contain attributes as nodes :-(
-            int astOffset = snapshot.getEmbeddedOffset(caretOffset);
-
-            int jumpOffset = 0;
-            TokenSequence htmlTs = snapshot.getTokenHierarchy().tokenSequence();
-            htmlTs.move(astOffset);
-            if (htmlTs.moveNext() || htmlTs.movePrevious()) {
-                if (htmlTs.token().id() == HTMLTokenId.TAG_OPEN) {
-                    //jumpOffset = 0;
-                } else if (htmlTs.token().id() == HTMLTokenId.ARGUMENT) {
-                    final String attributeName = htmlTs.token().text().toString();
-                    //find the attribute in the interface
-
-                    Source source = Source.create(file);
-                    final int[] attrOffset = new int[1];
-                    try {
-                        ParserManager.parse(Collections.singleton(source), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                Result result = resultIterator.getParserResult(caretOffset);
-                                if (result instanceof HtmlParserResult) {
-                                    HtmlParserResult hresult = (HtmlParserResult) result;
-                                    Element root = hresult.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
-                                    ElementUtils.visitChildren(root, new ElementVisitor() {
-                                        @Override
-                                        public void visit(Element node) {
-                                            OpenTag ot = (OpenTag) node;
-                                            if (LexerUtils.equals("interface", ot.unqualifiedName(), true, true)) { //NOI18N
-                                                for (Element child : ot.children(ElementType.OPEN_TAG)) {
-                                                    OpenTag otch = (OpenTag) child;
-                                                    if (LexerUtils.equals("attribute", otch.unqualifiedName(), true, true)) { //NOI18N
-                                                        org.netbeans.modules.html.editor.lib.api.elements.Attribute nameAttr = otch.getAttribute("name"); //NOI18N
-                                                        if (nameAttr != null) {
-                                                            CharSequence value = nameAttr.unquotedValue();
-                                                            if (value != null) {
-                                                                if (LexerUtils.equals(attributeName, value, true, false)) {
-                                                                    //we found it
-                                                                    attrOffset[0] = child.from(); //offset of the attribute tag is fine
-                                                                    break;
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }, ElementType.OPEN_TAG);
-                                }
-                            }
-                        });
-                    } catch (ParseException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    jumpOffset = attrOffset[0];
-
-                }
-            }
-
-
-            if (file != null) {
-                return new DeclarationLocation(file, jumpOffset);
-            }
-
+            return JsfNavigationHelper.goToCompositeComponentLibrary(htmlresult, caretOffset, lib);
+        } else if (lib instanceof FacesComponentLibrary) {
+            return JsfNavigationHelper.goToFacesComponentLibrary(htmlresult, caretOffset, (FacesComponentLibrary) lib);
         }
-
-
-
-
 
         return DeclarationLocation.NONE;
 
