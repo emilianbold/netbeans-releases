@@ -43,24 +43,15 @@ package org.netbeans.performance.scanning;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.performance.scanning.ScanningHandler.ScanType;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -82,8 +73,7 @@ public class ScanProjectPerfTest extends NbTestCase {
     @Override
     protected void setUp() throws IOException {
         System.out.println("###########  " + getName() + " ###########");
-        clearWorkDir();
-        System.setProperty("netbeans.user", getWorkDirPath());
+        Utilities.setCacheFolder(getWorkDir());
     }
 
     @Override
@@ -91,47 +81,25 @@ public class ScanProjectPerfTest extends NbTestCase {
         return 15 * 60000; // 15min
     }
 
-    public void testScanJEdit() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://hg.netbeans.org/binaries/BBD005CDF8785223376257BD3E211C7C51A821E7-jEdit41.zip",
-                "jEdit41.zip",
-                "jEdit");
+    public void testScanJEdit() throws Exception {
+        scanProject("jEdit");
     }
 
-    public void testPhpProject() throws IOException, ExecutionException, InterruptedException {
-        scanProject("https://netbeans.org/projects/performance/downloads/download/Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                "Mediawiki-1_FitnessViaSamples.14.0-nbproject.zip",
-                "mediawiki-1.14.0"
-        );
+    public void testPhpProject() throws Exception {
+        scanProject("mediawiki-1.14.0");
     }
 
-    public void testWebProject() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://jupiter.cz.oracle.com/wiki/pub/NbQE/TestingProjects/BigWebProject.zip",
-                "BigWebProject.zip",
-                "FrankioskiProject"
-        );
+    public void testWebProject() throws Exception {
+        scanProject("FrankioskiProject");
     }
 
-    public void testTomcat() throws IOException, ExecutionException, InterruptedException {
-        scanProject("http://hg.netbeans.org/binaries/70CE8459CA39C3A49A2722C449117CE5DCFBA56A-tomcat6.zip",
-                "tomcat6.zip",
-                "tomcat6");
+    public void testTomcat() throws Exception {
+        scanProject("tomcat6");
     }
 
-    private void scanProject(
-            final String networkFileLoc,
-            final String compressedProject,
-            final String project)
-            throws IOException, ExecutionException, InterruptedException {
-        String zipPath = System.getProperty("nbjunit.workdir") + File.separator + "tmpdir" + File.separator + compressedProject;
-        File f = new File(zipPath);
-        if (!f.exists()) {
-            zipPath = Utilities.projectOpen(networkFileLoc, compressedProject);
-        }
-        File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, getWorkDirPath());
-
-        FileObject projectDir = Utilities.openProject(project, getWorkDir());
-        final String projectName = projectDir.getName();
+    private void scanProject(String projectName) throws Exception {
+        File projectsDir = getWorkDir();
+        Utilities.projectDownloadAndUnzip(projectName, projectsDir);
 
         Logger repositoryUpdater = Logger.getLogger(RepositoryUpdater.class.getName());
         repositoryUpdater.setLevel(Level.INFO);
@@ -140,31 +108,14 @@ public class ScanProjectPerfTest extends NbTestCase {
 
         Logger log = Logger.getLogger("org.openide.filesystems.MIMESupport");
         log.setLevel(Level.FINE);
-        ReadingHandler readHandler = new ReadingHandler();
+        Utilities.ReadingHandler readHandler = new Utilities.ReadingHandler();
         log.addHandler(readHandler);
-        // assertFalse("File read ", readHandler.wasRead());
-        JavaSource src = JavaSource.create(ClasspathInfo.create(projectDir));
 
-        src.runWhenScanFinished(new Task<CompilationController>() {
-
-            @Override()
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.RESOLVED);
-            }
-        }, false).get();
-
-        OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
+        Utilities.openProjects(projectsDir, projectName);
+        Utilities.waitScanningFinished(new File(projectsDir, projectName));
         handler.setType(ScanType.UP_TO_DATE);
-        projectDir = Utilities.openProject(project, getWorkDir());
-
-        src = JavaSource.create(ClasspathInfo.create(projectDir));
-        src.runWhenScanFinished(new Task<CompilationController>() {
-
-            @Override()
-            public void run(CompilationController controller) throws Exception {
-                controller.toPhase(JavaSource.Phase.RESOLVED);
-            }
-        }, false).get();
+        Utilities.refreshIndexes();
+        Utilities.waitScanningFinished(new File(projectsDir, projectName));
         OpenProjects.getDefault().close(OpenProjects.getDefault().getOpenProjects());
         repositoryUpdater.removeHandler(handler);
     }
@@ -172,39 +123,17 @@ public class ScanProjectPerfTest extends NbTestCase {
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        for (PerformanceData rec : handler.getData()) {
-            Utilities.processUnitTestsResults(ScanProjectPerfTest.class.getCanonicalName(), rec);
+        if (handler != null) {
+            for (PerformanceData rec : handler.getData()) {
+                Utilities.processUnitTestsResults(ScanProjectPerfTest.class.getCanonicalName(), rec);
+            }
+            handler.clear();
         }
-        handler.clear();
     }
 
     public static Test suite() throws InterruptedException {
         return NbModuleSuite.createConfiguration(ScanProjectPerfTest.class).
                 clusters(".*").enableModules(".*").
                 suite();
-    }
-
-    private class ReadingHandler extends Handler {
-
-        private boolean read = false;
-
-        @Override
-        public void publish(LogRecord record) {
-            if ("MSG_CACHED_INPUT_STREAM".equals(record.getMessage())) {
-                read = true;
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-
-        public boolean wasRead() {
-            return read;
-        }
     }
 }

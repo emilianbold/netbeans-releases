@@ -83,7 +83,7 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
             return;
         }
         
-        issue.attachPatch(file, panel.descriptionTextField.getText());
+        issue.attachFile(file, panel.descriptionTextField.getText(), true);
         issue.open();
 
         OwnerUtils.setFirmAssociations(files, panel.getRepository());

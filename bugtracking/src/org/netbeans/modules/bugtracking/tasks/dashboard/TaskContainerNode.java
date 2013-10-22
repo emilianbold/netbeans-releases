@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -108,6 +109,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     //override if you need to adjust node during updateNodes method
     void adjustTaskNode(TaskNode taskNode) {
+    }
+
+    Comparator<TaskNode> getSpecialComparator(){
+        return null;
     }
 
     @Override
@@ -313,7 +318,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     @Override
     protected List<TreeListNode> createChildren() {
         List<TaskNode> filteredNodes = filteredTaskNodes;
-        Collections.sort(filteredNodes, TaskSorter.getInstance().getComparator());
+
+        Comparator<TaskNode> specialComparator = getSpecialComparator();
+        Collections.sort(filteredNodes, specialComparator == null ? TaskSorter.getInstance().getComparator() : specialComparator);
+
         List<TaskNode> taskNodesToShow;
         boolean addShowNext = false;
         int taskCountToShow = getTaskCountToShow();

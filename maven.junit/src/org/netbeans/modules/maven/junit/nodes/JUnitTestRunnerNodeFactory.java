@@ -55,8 +55,8 @@ import org.openide.nodes.Node;
  * @author answer
  */
 public class JUnitTestRunnerNodeFactory extends TestRunnerNodeFactory {
-    private TestSession session;
-    private Project project;
+    private final TestSession session;
+    private final Project project;
 
     public JUnitTestRunnerNodeFactory(TestSession session, Project project) {
         this.session = session;

@@ -47,8 +47,9 @@ import org.netbeans.modules.bugtracking.api.Repository;
 /**
  * Provides information if a file managed in the IDE is somehow associated with 
  * a bugtracking repository.
- * <br/>
+ * <p>
  * Note that this interface is not meant to be implemented by bugtracking plugins.
+ * <p/>
  * 
  * @author Tomas Stupka
  */

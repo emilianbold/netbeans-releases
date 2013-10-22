@@ -411,7 +411,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}",
         "ERR_Participant=Custom build participant(s) found",
-        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE's own codebase. "
+        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE''s own codebase. "
             + "On the other hand the model loaded can be incomplete without their participation. In this project "
             + "we have discovered the following external build participants:\n{0}"
     })

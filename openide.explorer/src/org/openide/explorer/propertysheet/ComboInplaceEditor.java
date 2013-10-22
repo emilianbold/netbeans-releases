@@ -314,8 +314,15 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
                     int selItem = ComboBoxAutoCompleteSupport.findMatch( this, editorItem.toString() );
                     if( selItem >= 0 && selItem < getItemCount() )
                         return getItemAt( selItem );
-                    if( strictAutoCompleteMatching )
+                    if( strictAutoCompleteMatching ) {
+                        int selIndex = getSelectedIndex();
+                        if( selIndex < 0 ) {
+                            if( null != editor )
+                                return editor.getAsText();
+                            return null;
+                        }
                         return getSelectedItem();
+                    }
                 }
             }
             return getEditor().getItem();

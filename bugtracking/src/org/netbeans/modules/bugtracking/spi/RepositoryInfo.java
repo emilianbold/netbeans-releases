@@ -49,8 +49,10 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 
 /**
+ * Represents information related to one particular repository. 
  *
  * @author Tomas Stupka
+ * @see RepositoryController
  */
 public final class RepositoryInfo {
     
@@ -77,6 +79,15 @@ public final class RepositoryInfo {
         this.map.putAll(properties);
     }
 
+    /**
+     * Creates a new RepositoryInfo instance.
+     * 
+     * @param id unique identifier for the given connector
+     * @param connectorId connector id
+     * @param url remote repository url
+     * @param displayName display name to be used in the UI
+     * @param tooltip tooltip to be used in the UI
+     */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip) {
         LOG.log(
             Level.FINER, 
@@ -90,6 +101,19 @@ public final class RepositoryInfo {
         map.put(PROPERTY_URL, url);
     }
     
+    /**
+     * Creates a new RepositoryInfo instance.
+     * 
+     * @param id unique identifier for the given connector
+     * @param connectorId connector id
+     * @param url remote repository url
+     * @param displayName display name to be used in the UI
+     * @param tooltip tooltip to be used in the UI
+     * @param user username 
+     * @param httpUser http username 
+     * @param password password
+     * @param httpPassword http password
+     */
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
         LOG.log(
             Level.FINER, 
@@ -106,10 +130,20 @@ public final class RepositoryInfo {
         storePasswords(password, httpPassword);
     }
 
+    /**
+     * Returns the display name to presented in the IDE UI.
+     * 
+     * @return display name
+     */
     public String getDisplayName() {
         return map.get(PROPERTY_DISPLAY_NAME);
     }
 
+    /**
+     * Returns the http password.
+     * 
+     * @return http password
+     */
     public char[] getHttpPassword() {
         if(isNbRepository(map)) {
             return new char[0];
@@ -120,18 +154,38 @@ public final class RepositoryInfo {
         }
     }
 
+    /**
+     * Returns this repositories unique ID.
+     * 
+     * @return id
+     */
     public String getId() {
         return map.get(PROPERTY_ID);
     }
     
+    /**
+     * Returns the id for the connector this repository belongs to.
+     * 
+     * @return connector id
+     */
     public String getConnectorId() {
         return map.get(PROPERTY_CONNECTOR_ID);
     }
     
+    /**
+     * Returns the remote repositories url.
+     * 
+     * @return url
+     */
     public String getUrl() {
         return map.get(PROPERTY_URL);
     }
 
+    /**
+     * Returns the password for the repository user.
+     * 
+     * @return password
+     */
     public char[] getPassword() {
         if(isNbRepository(map)) {
             char[] password = NBBugzillaUtils.getNBPassword();
@@ -144,22 +198,49 @@ public final class RepositoryInfo {
         }
     }
 
+    /**
+     * Returns the tooltip to be presented in the IDE UI.
+     * 
+     * @return tooltip
+     */
     public String getTooltip() {
         return map.get(PROPERTY_TOOLTIP);
     }
 
+    /**
+     * Returns the repositories username.
+     * 
+     * @return username
+     */
     public String getUsername() {
         return map.get(PROPERTY_USERNAME);
     }
 
+    /**
+     * Returns the http username.
+     * 
+     * @return 
+     */
     public String getHttpUsername() {
         return map.get(PROPERTY_HTTP_USERNAME);
     }
     
+    /**
+     * Gets a general property of a Repository. 
+     * 
+     * @param key property key
+     * @return property value
+     */
     public String getValue(String key) {
         return map.get(key);
     }
     
+    /**
+     * Sets a general property of a Repository. 
+     * 
+     * @param key property key
+     * @param value property value
+     */
     public void putValue(String key, String value) {
         map.put(key, value);
     }

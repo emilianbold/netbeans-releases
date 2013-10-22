@@ -54,6 +54,22 @@ made subject to such option by the copyright holder.
     </apidefs>
 
     <changes>
+        <change id="SelectAndExpandProjectAPI">
+            <api name="recent"/>
+            <summary>Added <code>ProjectActionUtils</code></summary>
+            <version major="1" minor="49"/>
+            <date year="2013" month="10" day="21"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added new API interface <code>ProjectActionUtils</code> providing actions <code>selectAndExpandProject()</code> and <code>makeProjectTabVisible()</code>
+                    on project node a project tab
+                </p>
+            </description>
+            <class package="org.netbeans.modules.project.ui.api" name="ProjectActionUtils"/>
+            <issue number="232642"/>
+        </change>
         <change id="ProjectGroupCustomizer">
             <api name="recent"/>
             <summary>Location <code>Projects/Groups/Customizer</code> recognized in layers</summary>

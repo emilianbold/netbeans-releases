@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.tasks;
 
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -84,7 +85,7 @@ public class ODCS {
     private ODCSIssueProvider odcsIssueProvider;
     private ODCSQueryProvider odcsQueryProvider;
     private ODCSRepositoryProvider odcsRepositoryProvider;
-    private IssueStatusProvider<ODCSIssue> isp;    
+    private IssueStatusProvider<ODCSRepository, ODCSIssue> isp;    
     private IssuePriorityProvider<ODCSIssue> ipp;    
     private BugtrackingSupport<ODCSRepository, ODCSQuery, ODCSIssue> bf;
     private IssueNode.ChangesProvider<ODCSIssue> ocp;
@@ -124,15 +125,15 @@ public class ODCS {
         return odcsRepositoryProvider; 
     }    
 
-    public IssueStatusProvider getStatusProvider() {
+    public IssueStatusProvider<ODCSRepository, ODCSIssue> getStatusProvider() {
         if(isp == null) {
-            isp = new IssueStatusProvider<ODCSIssue>() {
+            isp = new IssueStatusProvider<ODCSRepository, ODCSIssue>() {
                 @Override
                 public IssueStatusProvider.Status getStatus(ODCSIssue issue) {
                     return issue.getStatus();
                 }
                 @Override
-                public void setSeen(ODCSIssue issue, boolean seen) {
+                public void setSeenIncoming(ODCSIssue issue, boolean seen) {
                     issue.setUpToDate(seen);
                 }
                 @Override
@@ -143,6 +144,18 @@ public class ODCS {
                 public void addPropertyChangeListener(ODCSIssue issue, PropertyChangeListener listener) {
                     issue.addPropertyChangeListener(listener);
                 }
+                @Override
+                public Collection<ODCSIssue> getUnsubmittedIssues(ODCSRepository r) {
+                    return r.getUnsubmittedIssues();
+                }
+                @Override
+                public void discardOutgoing(ODCSIssue i) {
+                    i.discardLocalEdits();
+                }
+                @Override
+                public boolean submit (ODCSIssue data) {
+                    return data.submitAndRefresh();
+                }                
             };
         }
         return isp;

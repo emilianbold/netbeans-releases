@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.spi;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * 
@@ -87,8 +86,6 @@ public interface RepositoryProvider<R, Q, I> {
 
     /**
      * Returns an issue with the given ID.
-     *
-     * XXX add flag refresh
      *
      * @param r an implementation specific repository
      * @param ids
@@ -162,7 +159,12 @@ public interface RepositoryProvider<R, Q, I> {
      * for which applies that the ID equals to or the summary contains 
      * the given criteria string.
      *
-     * XXX move to simple search
+     * The method is expected to return after the whole execution was handled.
+     * 
+     * <p>
+     * In case an error appears during execution, the implementation 
+     * should take care of the error handling, user notification etc.
+     * </p>
      *
      * @param r an implementation specific repository
      * @param criteria
@@ -171,12 +173,18 @@ public interface RepositoryProvider<R, Q, I> {
     public Collection<I> simpleSearch(R r, String criteria);
     
     /**
-     * Returns unsubmitted issues from the given repository.
+     * Determines whether it is possible to attach files to an Issue for the given repository.
+     * <p>
+     * Note that in case this method returns <code>true</code> {@link IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean)>
+     * has to be implemented as well.
+     * <p/>
      * 
-     * @param r repository
-     * @return collection of unsubmitted issues
+     * @param r an implementation specific repository
+     * @return <code>true</code> in case it is possible to attach files, otherwise <code>false</code>
+     * 
+     * @see IssueProvider#attachFile(java.lang.Object, java.io.File, java.lang.String, boolean) 
      */
-    public Collection<I> getUnsubmittedIssues (R r);
+    public boolean canAttachFiles(R r);
     
     /**
      * Removes a PropertyChangeListener to the given repository.

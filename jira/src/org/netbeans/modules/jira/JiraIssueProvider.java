@@ -97,7 +97,7 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public void attachPatch(NbJiraIssue data, File file, String description) {
+    public void attachFile(NbJiraIssue data, File file, String description, boolean isPatch) {
         data.attachPatch(file, description);
     }
 
@@ -116,13 +116,4 @@ public class JiraIssueProvider implements IssueProvider<NbJiraIssue> {
         data.addPropertyChangeListener(listener);
     }
     
-    @Override
-    public boolean submit (NbJiraIssue data) {
-        return data.submitAndRefresh();
-    }
-
-    @Override
-    public void discardOutgoing(NbJiraIssue data) {
-        data.discardLocalEdits();
-    }
 }

@@ -72,11 +72,11 @@ public final class IssueImpl<R, I> {
     public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
 
     private Issue issue;
-    private final RepositoryImpl<?, ?, I> repo;
+    private final RepositoryImpl<R, ?, I> repo;
     private final IssueProvider<I> issueProvider;
     private final I data;
 
-    IssueImpl(RepositoryImpl<?, ?, I> repo, IssueProvider<I> issueProvider, I data) {
+    IssueImpl(RepositoryImpl<R, ?, I> repo, IssueProvider<I> issueProvider, I data) {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repo = repo;
@@ -149,8 +149,8 @@ public final class IssueImpl<R, I> {
         return issueProvider.getTooltip(data);
     }
 
-    public void attachPatch(File file, String description) {
-        issueProvider.attachPatch(data, file, description);
+    public void attachFile(File file, String description, boolean isPatch) {
+        issueProvider.attachFile(data, file, description, isPatch);
     }
 
     public void addComment(String comment, boolean closeAsFixed) {
@@ -197,7 +197,7 @@ public final class IssueImpl<R, I> {
     }
 
     public IssueStatusProvider.Status getStatus() {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return IssueStatusProvider.Status.SEEN;
         } 
@@ -205,7 +205,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void addIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -213,7 +213,7 @@ public final class IssueImpl<R, I> {
     }
 
     public void removeIssueStatusListener(PropertyChangeListener l) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
@@ -221,19 +221,27 @@ public final class IssueImpl<R, I> {
     }
 
     public void setSeen(boolean isUptodate) {
-        IssueStatusProvider<I> sp = repo.getStatusProvider();
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
         if(sp == null) {
             return;
         }
-        sp.setSeen(data, isUptodate);
+        sp.setSeenIncoming(data, isUptodate);
     }
     
     public boolean submit () {
-        return issueProvider.submit(data);
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return false;
+        }
+        return sp.submit(data);
     }
 
     public void discardChanges() {
-        issueProvider.discardOutgoing(data);
+        IssueStatusProvider<R, I> sp = repo.getStatusProvider();
+        if(sp == null) {
+            return;
+        }
+        sp.discardOutgoing(data);
     }
 
     public boolean hasSchedule() {

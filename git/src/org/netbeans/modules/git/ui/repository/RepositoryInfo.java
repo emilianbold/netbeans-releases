@@ -126,7 +126,8 @@ public class RepositoryInfo {
     }
 
     /**
-     * Do NOT call from EDT
+     * Can be called from EDT, but if no info is yet available it will be
+     * refreshed and initialized asynchronously
      * @param repositoryRoot existing repository root
      * @return null if repositoryRoot is not an existing git repository
      */
@@ -298,7 +299,7 @@ public class RepositoryInfo {
     }
 
     /**
-     * May be <code>null</code> if repository could not be initialized
+     * May be {@link GitBranch#NO_BRANCH_INSTANCE} if repository could not be initialized
      * @return 
      */
     public GitBranch getActiveBranch () {
