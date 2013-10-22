@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.hints.spiimpl.options;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -259,6 +260,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
     
     private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes, boolean direct) {
         initComponents();
+        // this init may be delayed, and the parent might already disable the entire panel, but the panel
+        // is populated only now. Replicate the enabled state to the children.
+        updateEnabledState();
         scriptScrollPane.setVisible(false);
         optionsFilter = null;
         if (!ignoreMissingFilter && filter==null) {
@@ -357,6 +361,20 @@ public final class HintsPanel extends javax.swing.JPanel   {
         cancelButton.setVisible(showOkCancel);
         validate();
         jSplitPane1.setDividerLocation(getDividerLocation());
+    }
+    
+    private void updateEnabledState() {
+        boolean enabled = isEnabled();
+        enableDisableRecursively(this, enabled);
+    }
+    
+    private void enableDisableRecursively(Component what, boolean enable) {
+        what.setEnabled(enable);
+        if (what instanceof Container) {
+            for (Component c : ((Container) what).getComponents()) {
+                enableDisableRecursively(c, enable);
+            }
+        }
     }
 
     private int getDividerLocation() {
