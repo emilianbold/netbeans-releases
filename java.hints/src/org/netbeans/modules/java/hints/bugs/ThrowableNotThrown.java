@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.introduce.Flow;
@@ -139,7 +140,7 @@ public class ThrowableNotThrown {
             return null;
         }
         TypeMirror b = el.asType();
-        if (!ctx.getInfo().getTypes().isAssignable(tm, b)) {
+        if (tm.getKind() == TypeKind.ERROR || !ctx.getInfo().getTypes().isAssignable(tm, b)) {
             // does not return Throwable
             return null;
         }
