@@ -84,6 +84,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     static final String DEVICE = "device"; //NOI18N
     static final String CONFIGURATION = "config"; //NOI18N
     static final String PROFILE = "profile"; //NOI18N
+    static final String OPTIONAL_API = "optionalApi"; //NOI18N
     private static final long serialVersionUID = 1L;
     private WizardType type;
 
@@ -120,6 +121,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         String profile = (String) wiz.getProperty(PROFILE);
         String device = (String) wiz.getProperty(DEVICE);
         JavaPlatform jdk = (JavaPlatform) wiz.getProperty(JDK_PLATFORM);
+        String optionalApi = (String) wiz.getProperty(OPTIONAL_API);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -137,6 +139,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
         props.put("platform.profile", profile); //NOI18N
         props.put("platform.type", ((J2MEPlatform) platform).getType()); //NOI18N
         props.put("platform.device", device); //NOI18N
+        props.put("platform.apis", optionalApi); //NOI18N
         if (midletClass != null && !midletClass.isEmpty()) {
             props.put("manifest.midlets", "MIDlet-1: " + name + ", , " + midletClass + "\n"); //NOI18N
             props.put("manifest.others", "MIDlet-Vendor: Test\nMIDlet-Name: " + name + "\nMIDlet-Version: 1.0\n"); //NOI18N
@@ -237,6 +240,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
             this.wiz.putProperty(DEVICE, null); //NOI18N
             this.wiz.putProperty(CONFIGURATION, null); //NOI18N
             this.wiz.putProperty(PROFILE, null); //NOI18N
+            this.wiz.putProperty(OPTIONAL_API, null); //NOI18N
             switch (type) {
                 case EXISTING:
                     this.wiz.putProperty("sourceRoot", null); //NOI18N

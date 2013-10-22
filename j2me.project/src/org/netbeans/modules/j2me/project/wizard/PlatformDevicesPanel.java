@@ -46,6 +46,8 @@ package org.netbeans.modules.j2me.project.wizard;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -202,9 +204,28 @@ public class PlatformDevicesPanel extends SettingsPanel {
     }
 
     private void initOptionalPackages() {
+        String platformApis = null;
+        if(props != null) {
+            platformApis = props.getEvaluator().getProperty(J2MEProjectProperties.PLATFORM_APIS);
+        }
+        if(platformApis == null) {
+            platformApis = "";
+        }
         optionalPackagesPanel.removeAll();
         for (JCheckBox cb : optionalPackages) {
+            if(platformApis.contains(cb.getActionCommand())) {
+                cb.setSelected(true);
+            }
             optionalPackagesPanel.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        }
+        ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                props.putAdditionalProperty(J2MEProjectProperties.PLATFORM_APIS, getOptionalAPI());
+            }
+        };
+        for (JCheckBox cb : optionalPackages) {
+            cb.addActionListener(actionListener);
         }
     }
 
@@ -667,11 +688,25 @@ public class PlatformDevicesPanel extends SettingsPanel {
         d.putProperty(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         d.putProperty(J2MEProjectWizardIterator.PROFILE, getProfile());
         d.putProperty(J2MEProjectWizardIterator.JDK_PLATFORM, jdkComboBox.getSelectedIndex() == -1 ? "" : getJdkPlatform()); //This is enough to store in wizard iterator
+        d.putProperty(J2MEProjectWizardIterator.OPTIONAL_API, getOptionalAPI()); //This is enough to store in wizard iterator
 
         getPreferences().put(J2MEProjectWizardIterator.PLATFORM, platformComboBox.getSelectedIndex() == -1 ? "" : getPlatform().getName());
         getPreferences().put(J2MEProjectWizardIterator.DEVICE, deviceComboBox.getSelectedIndex() == -1 ? "" : getDevice().getName());
         getPreferences().put(J2MEProjectWizardIterator.CONFIGURATION, getConfiguration());
         getPreferences().put(J2MEProjectWizardIterator.PROFILE, getProfile());
+    }
+    
+    private String getOptionalAPI() {
+        StringBuilder sb = new StringBuilder();
+        for (JCheckBox cb : optionalPackages) {
+            if (props == null || cb.isSelected()) {
+                if (sb.length() > 0) {
+                    sb.append(',');
+                }
+                sb.append(cb.getActionCommand());
+            }
+        }
+        return sb.toString();
     }
 
     protected final Preferences getPreferences() {
