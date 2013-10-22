@@ -53,6 +53,20 @@ public class StringBufferCharConstructorTest extends NbTestCase {
     public StringBufferCharConstructorTest(String name) {
         super(name);
     }
+    
+    public void testIntPass() throws Exception {
+        HintTest.create().
+                input(
+                "package test;\n"
+                + "public final class Test {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        StringBuffer sb = new StringBuffer(35);\n"
+                + "    }\n"
+                + "}"
+                )
+                .run(StringBufferCharConstructor.class).
+                assertWarnings();
+    }
 
     public void testChar() throws Exception {
         HintTest.create().

@@ -163,7 +163,10 @@ public class DefaultToken<T extends TokenId> extends AbstractToken<T> {
                         // Log that the IOOBE occurred.
                         if (!textFailureLogged) {
                             textFailureLogged = true;
-                            LOG.log(Level.INFO, "Obtaining of token text failed.", ex);
+                            LOG.log(Level.INFO, "Obtaining of token text failed.", ex); // NOI18N
+                            LOG.info("Errorneous token: IHC=" + System.identityHashCode(this) + ", rawOffset=" + rawOffset() + // NOI18N
+                                    ", tokenLength=" + tokenLength + ", start=" + start + ", end=" + end); // NOI18N
+                            LOG.info("Errorneous token hierarchy:\n" + rootTokenList.tokenHierarchyOperation().toString()); // NOI18N
                         }
                         return "";
                     }

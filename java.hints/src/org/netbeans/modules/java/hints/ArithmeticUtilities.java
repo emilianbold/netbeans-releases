@@ -137,6 +137,10 @@ public class ArithmeticUtilities {
     
     private static final Object UNKNOWN = new Object();
     
+    public static boolean isRealValue(Object o) {
+        return !(o == null || o == NULL || o == NOT_NULL);
+    }
+    
     public static boolean isNull(Object o) {
         return o == NULL;
     }
