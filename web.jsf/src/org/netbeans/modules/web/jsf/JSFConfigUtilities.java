@@ -225,7 +225,7 @@ public class JSFConfigUtilities {
         return resourceFound.get();
     }
 
-    private static JavaSource createJavaSource(WebModule webModule) {
+    public static JavaSource createJavaSource(WebModule webModule) {
         Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
         ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
         ClassPath bootCP = cpp.findClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
