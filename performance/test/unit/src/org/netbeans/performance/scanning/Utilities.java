@@ -362,8 +362,8 @@ public class Utilities {
     }
 
     public static void processUnitTestsResults(String className, PerformanceData pd) {
-        String suiteClassName = System.getProperty("suitename", "org.netbeans.performance.unknown");
-        String suiteName = System.getProperty("suite", "Unknown Test Suite");
+        String suiteClassName = System.getProperty("suitename", className);
+        String suiteName = System.getProperty("suite", className);
         processUnitTestsResults(className, suiteName, suiteClassName, pd);
     }
 
