@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
@@ -91,7 +93,7 @@ public class NavigatorModel {
     private final Object lock = new Lock();
     private final CsmFile csmFile;
 
-    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component, String mimeType, final CsmFile csmFile) {
+    public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component, final String mimeType, final CsmFile csmFile) {
         this.cdo = cdo;
         this.ui = ui;
         actions = new Action[]{
@@ -110,7 +112,11 @@ public class NavigatorModel {
 
             @Override
             public Image getIcon(int type) {
-                return NavigatorModel.this.cdo.getNodeDelegate().getIcon(type);
+                if (csmFile != null) {
+                    return CsmImageLoader.getImage(csmFile);
+                } else {
+                    return NavigatorModel.this.cdo.getNodeDelegate().getIcon(type);
+                }
             }
             
         };
