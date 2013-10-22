@@ -168,6 +168,18 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-beans+xml">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-web-beans-BeansDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.beans.resources.Bundle"/>
+                        <attr name="position" intvalue="0"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
     <folder name="org-netbeans-modules-java-hints">
     	<folder name="rules">
     		<folder name="errors">
