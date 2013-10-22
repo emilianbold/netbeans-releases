@@ -2018,6 +2018,26 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         private void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
             issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
         }
+
+        @Override
+        public boolean saveChanges() {
+            return true;
+        }
+
+        @Override
+        public boolean discardUnsavedChanges() {
+            return true;
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            
+        }
     }
 
     public static final class Comment {
