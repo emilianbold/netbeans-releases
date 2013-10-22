@@ -63,10 +63,10 @@ final class Templates implements RecommendedTemplates, PrivilegedTemplates {
         "simple-files"          // NOI18N
     };
     private static final String[] PRIVILEGED = {
+        "Templates/j2me/Midlet.java",    //NOI18N
         "Templates/Classes/Class.java", // NOI18N
         "Templates/Classes/Package", // NOI18N
-        "Templates/Classes/Interface.java", // NOI18N
-        "Templates/j2me/Midlet.java"    //NOI18N
+        "Templates/Classes/Interface.java" // NOI18N        
     };
 
     Templates() {

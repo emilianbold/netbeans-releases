@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="910"/>
             
             <file name="Midlet.java" url="../templates/Midlet.template">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.Bundle#Templates/javame/Midlet.java"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.project.resources.Bundle#Templates/javame/Midlet.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="position" intvalue="100"/>
