@@ -122,8 +122,8 @@ public abstract class Group {
     protected static final String KEY_MAIN = "main"; // NOI18N
     /** Preferences for None group. */
     protected static final Preferences NONE_GROUP_NODE = NbPreferences.forModule(Group.class).node("nonegroup");
-    public static final String NONE_GROUP = "(none)"; // NOI18N
-    private static final String noneGroupSanitizedId = "none_group"; // NOI18N
+    protected static final String NONE_GROUP = "(none)"; // NOI18N
+    protected static final String noneGroupSanitizedId = "none_group"; // NOI18N
 
     private static Group load(String id) {
         if (id == null) {
