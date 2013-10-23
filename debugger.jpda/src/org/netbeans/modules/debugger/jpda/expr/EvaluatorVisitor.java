@@ -2525,6 +2525,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } else {
             cType = null;
         }
+        ExpressionTree enclosingExpression = arg0.getEnclosingExpression();
+        Mirror enclosing = null;
+        if (enclosingExpression != null) {
+            enclosing = enclosingExpression.accept(this, evaluationContext);
+        }
         ExpressionTree classIdentifier = arg0.getIdentifier();
         Mirror clazz = classIdentifier.accept(this, evaluationContext);
         ClassType classType = (ClassType) clazz;
@@ -2556,7 +2561,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     throw iex; // re-throw the original
                 }
             }
-            if (thisObject != null) {
+            if (enclosing != null && enclosing instanceof ObjectReference) {
+                ObjectReference enclosingObject = (ObjectReference) enclosing;
+                argVals.add(0, enclosingObject);
+                firstParamSignature = enclosingObject.referenceType().signature();
+            } else if (thisObject != null) {
                 String className = classType.name();
                 if (className.contains("$") && !classType.isStatic()) { // An inner class
                     // A constructor of a non-static inner class always needs
@@ -2634,7 +2643,11 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     throw iex; // re-throw the original
                 }
             }
-            if (thisObject != null) {
+            if (enclosing != null && enclosing instanceof ObjectReference) {
+                ObjectReference enclosingObject = (ObjectReference) enclosing;
+                argVals.add(0, enclosingObject);
+                firstParamSignature = enclosingObject.referenceType().signature();
+            } else if (thisObject != null) {
                 String className = classType.name();
                 if (className.contains("$") && !classType.isStatic()) { // An inner class
                     // A constructor of a non-static inner class always needs

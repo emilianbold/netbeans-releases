@@ -1076,6 +1076,9 @@ public class EvaluatorApp extends BaseClass {
         return ((EvaluatorApp) new InnerI2()).methodNotToOverride();
     }
     
+    public String testInnerInner() {
+        return new InnerI1().new InnerI1Inner().getInnerString();
+    }
     
     @Override
     String getBasedValue() {
