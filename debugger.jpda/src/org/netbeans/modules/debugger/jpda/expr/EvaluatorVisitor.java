@@ -2557,12 +2557,58 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
             if (thisObject != null) {
-                List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
-                for (ReferenceType nested : nestedTypes) {
-                    if (!nested.isStatic() && nested.equals(classType)) {
-                        argVals.add(0, thisObject);
-                        firstParamSignature = thisObject.type().signature();
+                String className = classType.name();
+                if (className.contains("$") && !classType.isStatic()) { // An inner class
+                    // A constructor of a non-static inner class always needs
+                    // a reference to the instance of the outer class.
+                    // 1) If 'this' is an instance of the outer class, use it directly.
+                    // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
+                    ClassType thisClass = (ClassType) thisObject.type();
+                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    if (outerClass != null) {
+                        if (instanceOf(thisClass, outerClass)) {
+                            // 'this' is an instance of the outer class, use it directly.
+                            argVals.add(0, thisObject);
+                            firstParamSignature = outerClass.signature();
+                        } else {
+                            // 'this' is likely an instance of some inner class, use this$0 (this$1,...)
+                            ObjectReference enclosingObject = findEnclosingObject(arg0, thisObject, outerClass, null, null);
+                            if (enclosingObject != null) {
+                                argVals.add(0, enclosingObject);
+                                firstParamSignature = outerClass.signature();
+                            }
+                        }
+                        /*
+                        if (instanceOf(thisClass, classType)) {
+                            // 'this' is an instance of the inner class, use this$0 (this$1,...)
+                            ObjectReference enclosingObject = findEnclosingObject(arg0, thisObject, outerClass, null, null);
+                            if (enclosingObject != null) {
+                                argVals.add(0, enclosingObject);
+                                firstParamSignature = outerClass.signature();
+                            }
+                        } else if (instanceOf(thisClass, outerClass)) {
+                            // 'this' is an instance of the outer class, use it directly.
+                            argVals.add(0, thisObject);
+                            firstParamSignature = outerClass.signature();
+                        }
+                        */
                     }
+                    /*
+                    while (thisClass != null) {
+                        List<ReferenceType> nestedTypes = thisClass.nestedTypes();
+                        for (ReferenceType nested : nestedTypes) {
+                            if (!nested.isStatic() && nested.equals(classType)) {
+                                argVals.add(0, thisObject);
+                                firstParamSignature = thisClass.signature();
+                                break;
+                            }
+                        }
+                        if (firstParamSignature != null) {
+                            break;
+                        }
+                        thisClass = thisClass.superclass();
+                    }
+                    */
                 }
             }
         } else {
@@ -2589,6 +2635,30 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
             }
             if (thisObject != null) {
+                String className = classType.name();
+                if (className.contains("$") && !classType.isStatic()) { // An inner class
+                    // A constructor of a non-static inner class always needs
+                    // a reference to the instance of the outer class.
+                    // 1) If 'this' is an instance of the outer class, use it directly.
+                    // 2) If 'this' is an instance of the inner class, use this$0 (this$1,...)
+                    ClassType thisClass = (ClassType) thisObject.type();
+                    ReferenceType outerClass = findEnclosingType(classType, className.substring(0, className.lastIndexOf('$')));
+                    if (outerClass != null) {
+                        if (instanceOf(thisClass, outerClass)) {
+                            // 'this' is an instance of the outer class, use it directly.
+                            argVals.add(0, thisObject);
+                            firstParamSignature = outerClass.signature();
+                        } else {
+                            // 'this' is likely an instance of some inner class, use this$0 (this$1,...)
+                            ObjectReference enclosingObject = findEnclosingObject(arg0, thisObject, outerClass, null, null);
+                            if (enclosingObject != null) {
+                                argVals.add(0, enclosingObject);
+                                firstParamSignature = outerClass.signature();
+                            }
+                        }
+                    }
+                }
+                
                 List<ReferenceType> nestedTypes = ((ReferenceType) thisObject.type()).nestedTypes();
                 for (ReferenceType nested : nestedTypes) {
                     if (!nested.isStatic() && nested.equals(classType)) {
