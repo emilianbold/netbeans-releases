@@ -165,6 +165,10 @@ public class APITestIssue extends TestIssue {
                 }
                 @Override public HelpCtx getHelpCtx() { return null; }
                 @Override public void closed() { }
+                @Override public boolean saveChanges() { return true; }
+                @Override public boolean discardUnsavedChanges() { return true; }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             };
         }
         return controller;
