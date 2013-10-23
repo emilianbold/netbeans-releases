@@ -219,6 +219,7 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
+        fireSaved();
         if (controller != null) {
             controller.taskDeleted();
         }
@@ -300,6 +301,14 @@ public final class LocalTask extends AbstractLocalTask {
 
     private void fireDataChanged () {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
+    }
+
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
     }
 
     private boolean hasUnsavedAttributes () {

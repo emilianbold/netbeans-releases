@@ -134,7 +134,7 @@ final class TaskPanel extends javax.swing.JPanel {
     private final Map<Component, Boolean> enableMap = new HashMap<>();
     private static final RequestProcessor RP = LocalRepository.getInstance().getRequestProcessor();
     private boolean skipReload;
-    private final Set<String> unsavedFields = new HashSet<>();
+    private final Set<String> unsavedFields = new UnsavedFieldSet();
     private boolean reloading;
     private boolean noSummary;
     private static final String ATTRIBUTE_PRIVATE_NOTES = "nb.private.notes"; //NOI18N
@@ -676,54 +676,11 @@ final class TaskPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run () {
-                boolean saved = false;
-                try {
-                    saved = task.save();
-                } finally {
-                    final boolean fSaved = saved;
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSave.setEnabled(!fSaved);
-                            skipReload = false;
-                            refreshViewData();
-                        }
-                    });
-                }
-            }
-        });
+        saveChanges();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
-        skipReload = true;
-        enableComponents(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run () {
-                try {
-                    task.clearModifications();
-                } finally {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            unsavedFields.clear();
-                            enableComponents(true);
-                            btnSave.setEnabled(false);
-                            btnCancel.setEnabled(false);
-                            skipReload = false;
-                            refreshViewData();
-                        }
-                    });
-                }
-            }
-        });
+        discardUnsavedChanges();
     }//GEN-LAST:event_btnCancelActionPerformed
 
     @NbBundle.Messages({
@@ -970,6 +927,12 @@ final class TaskPanel extends javax.swing.JPanel {
                     enableMap.put(btnSave, dirty);
                     enableMap.put(btnCancel, dirty);
                 }
+                
+                if (dirty) {
+                    task.fireUnsaved();
+                } else {
+                    task.fireSaved();
+                }
             }
         });
     }
@@ -1196,6 +1159,70 @@ final class TaskPanel extends javax.swing.JPanel {
         referencesSection.setExpanded(!config.isEditorSectionCollapsed(task.getID(), SECTION_REFERENCES, true));
     }
 
+    boolean saveChanges () {
+        skipReload = true;
+        enableComponents(false);
+        final boolean retval[] = new boolean[] { true };
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run () {
+                retval[0] = false;
+                try {
+                    retval[0] = task.save();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            unsavedFields.clear();
+                            enableComponents(true);
+                            btnSave.setEnabled(!retval[0]);
+                            skipReload = false;
+                            refreshViewData();
+                        }
+                    });
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            RP.post(outOfAWT);
+            return true;
+        } else {
+            outOfAWT.run();
+            return retval[0];
+        }
+    }
+
+    boolean discardUnsavedChanges () {
+        skipReload = true;
+        enableComponents(false);
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    task.clearModifications();
+                } finally {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            unsavedFields.clear();
+                            enableComponents(true);
+                            btnSave.setEnabled(false);
+                            btnCancel.setEnabled(false);
+                            skipReload = false;
+                            refreshViewData();
+                        }
+                    });
+                }
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            RP.post(outOfAWT);
+        } else {
+            outOfAWT.run();
+        }
+        return true;
+    }
+
     private class SubTaskTableMouseListener extends MouseAdapter {
 
         @Override
@@ -1420,5 +1447,36 @@ final class TaskPanel extends javax.swing.JPanel {
         }
 
         protected abstract boolean storeValue ();
+    }
+    
+    private class UnsavedFieldSet extends HashSet<String> {
+
+        @Override
+        public boolean add (String value) {
+            boolean added = super.add(value);
+            if (added) {
+                task.fireUnsaved();
+            }
+            return added;
+        }
+
+        @Override
+        public boolean remove (Object o) {
+            boolean removed = super.remove(o);
+            if (removed && isEmpty()) {
+                task.fireSaved();
+            }
+            return removed;
+        }
+
+        @Override
+        public void clear () {
+            boolean fire = !isEmpty();
+            super.clear();
+            if (fire) {
+                task.fireSaved();
+            }
+        }
+        
     }
 }
