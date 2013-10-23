@@ -180,6 +180,11 @@ public class RepositorySelectorTest extends NbTestCase {
                 public void removeChangeListener(ChangeListener l) {
                     
                 }
+
+                @Override
+                public void cancelChanges() {
+                    
+                }
             };
         }
 

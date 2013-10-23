@@ -247,7 +247,7 @@ public class JiraRepository {
         return taskRepository;
     }
 
-    public NbJiraIssue[] getIssues(String[] keys) {
+    public List<NbJiraIssue> getIssues(String[] keys) {
         final List<NbJiraIssue> ret = new LinkedList<NbJiraIssue>();
         // can't use GetMultiTaskDataCommand as it isn't implemented in the JIRA connector
         // see also issue ##212090 
@@ -257,7 +257,7 @@ public class JiraRepository {
                 ret.add(issue);
             }
         }
-        return ret.toArray(new NbJiraIssue[ret.size()]);
+        return ret;
     }
     
     public NbJiraIssue getIssue(String key) {

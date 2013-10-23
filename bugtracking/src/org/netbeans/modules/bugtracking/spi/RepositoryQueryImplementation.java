@@ -42,7 +42,6 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Provides information if a file managed in the IDE is somehow associated with 

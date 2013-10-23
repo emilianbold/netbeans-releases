@@ -39,6 +39,7 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
@@ -68,9 +69,8 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public String[] getSubtasks(BugzillaIssue data) {
-        List<String> l = data.getRepositoryFieldValues(IssueField.BLOCKS);
-        return l.toArray(new String[l.size()]);
+    public Collection<String> getSubtasks(BugzillaIssue data) {
+        return data.getRepositoryFieldValues(IssueField.BLOCKS);
     }
 
     @Override

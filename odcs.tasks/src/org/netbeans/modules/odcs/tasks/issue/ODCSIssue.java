@@ -53,10 +53,11 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -76,7 +77,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.IssueController;
-import org.netbeans.modules.bugtracking.spi.IssuePriorityInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -708,17 +708,17 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         return controller;
     }
 
-    public String[] getSubtasks() {
+    public Collection<String> getSubtasks() {
         String value = getRepositoryFieldValue(IssueField.SUBTASK);
         value = value != null ? value.trim() : ""; // NOI18N
         if("".equals(value)) { // NOI18N
-            return new String[0];
+            return Collections.emptyList();
         } else {
             String[] ret = value.split(","); // NOI18N
             for (int i = 0; i < ret.length; i++) {
                 ret[i] = ret[i].trim();
             }
-            return ret;
+            return Arrays.asList(ret);
         }
     }
     
@@ -728,7 +728,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public boolean hasSubtasks() {
-        return getSubtasks().length > 0;
+        return getSubtasks().size() > 0;
     }
 
     public String getParentId() {

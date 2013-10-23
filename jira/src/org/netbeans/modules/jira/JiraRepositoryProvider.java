@@ -97,7 +97,7 @@ public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepositor
     }
 
     @Override
-    public NbJiraIssue[] getIssues(JiraRepository r, String[] ids) {
+    public Collection<NbJiraIssue> getIssues(JiraRepository r, String[] ids) {
         return r.getIssues(ids);
     }
 

@@ -56,6 +56,7 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -138,12 +139,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     private final Map<String, QueryParameter> parameters;
 
-    private RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Bugzilla query", 1, true);  // NOI18N
 
     private final BugzillaRepository repository;
     protected BugzillaQuery query;
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); // NOI18N
     private QueryTask refreshTask;
     private final IssueTable issueTable;
     private final boolean isNetbeans;
@@ -208,7 +209,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         panel.changedToTextField.addActionListener(this);
 
         // setup parameters
-        parameters = new LinkedHashMap<String, QueryParameter>();
+        parameters = new LinkedHashMap<>();
         summaryParameter = createQueryParameter(ComboParameter.class, panel.summaryComboBox, "short_desc_type");    // NOI18N
         commentsParameter = createQueryParameter(ComboParameter.class, panel.commentComboBox, "long_desc_type");    // NOI18N
         whiteboardParameter = createQueryParameter(ComboParameter.class, panel.whiteboardComboBox, "status_whiteboard_type"); // NOI18N
@@ -321,7 +322,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             T t = constructor.newInstance(c, parameter, getRepository().getTaskRepository().getCharacterEncoding());
             parameters.put(parameter, t);
             return t;
-        } catch (Exception ex) {
+        } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             Bugzilla.LOG.log(Level.SEVERE, parameter, ex);
         }
         return null;
@@ -335,13 +336,15 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(org.netbeans.modules.bugzilla.query.BugzillaQuery.class);
+        return new HelpCtx("org.netbeans.modules.bugzilla.query.BugzillaQuery"); // NOI18N
     }
 
     private void setMode(QueryMode mode) {
         switch(mode) {
             case EDIT:
-                onModify();
+                if(query.isSaved()) {
+                    onModify();
+                }
                 break;
             case VIEW:
                 wasModeShow = true;
@@ -901,9 +904,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             products = new String[] {null};
         }
 
-        List<String> newComponents = new ArrayList<String>();
-        List<String> newVersions = new ArrayList<String>();
-        List<String> newTargetMilestone = new ArrayList<String>();
+        List<String> newComponents = new ArrayList<>();
+        List<String> newVersions = new ArrayList<>();
+        List<String> newTargetMilestone = new ArrayList<>();
         for (String p : products) {
             List<String> productComponents = bc.getComponents(p);
             for (String c : productComponents) {
@@ -938,7 +941,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
     }
 
     private List<ParameterValue> toParameterValues(List<String> values) {
-        List<ParameterValue> ret = new ArrayList<ParameterValue>(values.size());
+        List<ParameterValue> ret = new ArrayList<>(values.size());
         for (String v : values) {
             ret.add(new ParameterValue(v, v));
         }
@@ -951,7 +954,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         }
         String[] params = urlParameters.split("&"); // NOI18N
         if(params == null || params.length == 0) return;
-        Map<String, List<ParameterValue>> normalizedParams = new HashMap<String, List<ParameterValue>>();
+        Map<String, List<ParameterValue>> normalizedParams = new HashMap<>();
         for (String p : params) {
             int idx = p.indexOf("="); // NOI18N
             if(idx > -1) {
@@ -961,7 +964,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 ParameterValue pv = new ParameterValue(value, value);
                 List<ParameterValue> values = normalizedParams.get(parameter);
                 if(values == null) {
-                    values = new ArrayList<ParameterValue>();
+                    values = new ArrayList<>();
                     normalizedParams.put(parameter, values);
                 }
                 values.add(pv);
@@ -1104,7 +1107,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         private boolean autoRefresh;
         private long progressMaxWorkunits;
         private int progressWorkunits;
-        private final LinkedList<BugzillaIssue> notifiedIssues = new LinkedList<BugzillaIssue>();
+        private final LinkedList<BugzillaIssue> notifiedIssues = new LinkedList<>();
 
         public QueryTask() {
             query.addNotifyListener(this);

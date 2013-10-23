@@ -1490,21 +1490,33 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
     }
     
-    public void setTaskDueDate (Date date, boolean persistChange) {
-        if (hasTimeTracking()) {
-            setDueDateAndSubmit(date);
-        } else {
-            super.setDueDate(date, persistChange);
-            if (controller != null) {
-                controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                if (hasTimeTracking()) {
+                    setDueDateAndSubmit(date);
+                } else {
+                    setDueDate(date, persistChange);
+                    if (controller != null) {
+                        controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                        if (persistChange) {
+                            controller.refreshViewData(false);
+                        }
+                    }
+                }
             }
-        }
+        });
     }
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+            if (persistChange) {
+                controller.refreshViewData(false);
+            }
         }
     }
 
@@ -1512,12 +1524,26 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setEstimate(estimate, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+            if (persistChange) {
+                controller.refreshViewData(false);
+            }
         }
     }
 
     public boolean discardLocalEdits () {
-        clearUnsavedChanges();
-        return cancelChanges();
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
+                }
+            }
+        });
+        return retval[0];
     }
 
     public String getPriority() {

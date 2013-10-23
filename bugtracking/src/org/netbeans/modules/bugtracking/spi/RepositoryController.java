@@ -47,12 +47,12 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.HelpCtx;
 
 /**
- ** Provides access to an Repository UI.
+ * Provides access to an Repository UI.
  * <p>
- * Every Repository is expected to provide an Editor UI to create or change its attributes. 
+ * Every Repository is expected to provide an UI to create or change its attributes. 
  * </p>
  * <p>
- * When creating or editing a new Repository instance, the UI is presented in an modal dialog 
+ * When creating or editing a new Repository instance, the UI is presented in a modal dialog 
  * with the necessary Save button to trigger the {@link #applyChanges()} method.
  * </p>
  * 
@@ -94,10 +94,14 @@ public interface RepositoryController {
     public String getErrorMessage();
     
     /**
-     * Is called when the changes made in the
-     * controllers visual component are confirmed.
+     * Is called when the "Save" button was pressed.
      */
     public void applyChanges(); 
+    
+    /**
+     * Is called when the "Cancel" button was pressed.
+     */
+    public void cancelChanges(); 
 
     /**
      * Registers a ChangeListener.

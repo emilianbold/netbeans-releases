@@ -520,9 +520,9 @@ public class ODCSRepository implements PropertyChangeListener {
         return ODCSQuery.createNew(this);
     }
 
-    public ODCSIssue[] getIssues(String[] ids) {
+    public List<ODCSIssue> getIssues(String[] ids) {
         if (ids.length == 0) {
-            return new ODCSIssue[0];
+            return Collections.emptyList();
         } else {
             //TODO is there a bulk command?
             List<ODCSIssue> issues = new ArrayList<ODCSIssue>(ids.length);
@@ -532,7 +532,7 @@ public class ODCSRepository implements PropertyChangeListener {
                     issues.add(i);
                 }
             }
-            return issues.toArray(new ODCSIssue[issues.size()]);
+            return issues;
         }
     }
     

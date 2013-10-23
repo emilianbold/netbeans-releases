@@ -65,7 +65,7 @@ public abstract class TestRepository {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public <I extends TestIssue> I[] getIssues(String[] id) {
+    public <I extends TestIssue> Collection<I> getIssues(String[] id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

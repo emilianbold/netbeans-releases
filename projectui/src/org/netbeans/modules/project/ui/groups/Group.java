@@ -124,6 +124,8 @@ public abstract class Group {
     protected static final Preferences NONE_GROUP_NODE = NbPreferences.forModule(Group.class).node("nonegroup");
     protected static final String NONE_GROUP = "(none)"; // NOI18N
     protected static final String noneGroupSanitizedId = "none_group"; // NOI18N
+    
+    List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
 
     private static Group load(String id) {
         if (id == null) {
@@ -467,6 +469,7 @@ public abstract class Group {
      * Change the current display name.
      */
     public void setName(String n) {
+        notifyListeners(this, "groupRename", getNameOrNull(), n);
         prefs().put(KEY_NAME, n);
         if (this.equals(getActiveGroup())) {
             EventQueue.invokeLater(new Runnable() {
@@ -736,6 +739,24 @@ public abstract class Group {
             return Arrays.asList(paths.split(" "));
         } else {
             return Collections.emptyList();
+        }
+    }
+    
+    public void addChangeListener(PropertyChangeListener newListener) {
+        synchronized (listeners) {
+            listeners.add(newListener);
+        }
+    }
+    
+    public void removeChangeListener(PropertyChangeListener existingListener) {
+        synchronized (listeners) {
+            listeners.remove(existingListener);
+        }
+    }
+    
+    private void notifyListeners(Object object, String property, String oldValue, String newValue) {
+        for (PropertyChangeListener listener : listeners) {
+          listener.propertyChange(new PropertyChangeEvent(object, property, oldValue, newValue));
         }
     }
 }

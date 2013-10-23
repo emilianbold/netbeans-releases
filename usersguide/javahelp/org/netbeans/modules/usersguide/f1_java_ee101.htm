@@ -2,16 +2,16 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Web Service Attributes Editor: WSDL Customization: Global Customization</title>
+<title>Web Service Attributes Editor: WSDL Customization: Port Types</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="ID_GLOBAL" name="ID_GLOBAL"></a></p>
+<p><a id="ID_PORT_TYPE" name="ID_PORT_TYPE"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref686" name="sthref686"></a>
-<h1>Web Service Attributes Editor: WSDL Customization: Global Customization</h1>
+<h1>Web Service Attributes Editor: WSDL Customization: Port Types</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use the Global Customization section of the WSDL Customization panel to customize the entire WSDL file. 
+<p>Use the Port Types section to customize WSDL properties at the port type level. The properties affect only the operations of that port type. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1866">
 <param name="text" value="<html><u>More</u></html>">
@@ -19,7 +19,7 @@
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You can define the following global properties:</p>
+<p>You can define the following properties at the port type level:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -33,10 +33,10 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t98" headers="r1c1-t98">
-<p>Package Name</p>
+<p>Java Class</p>
 </td>
 <td align="left" headers="r2c1-t98 r1c2-t98">
-<p>Customizes the package name that you specified when creating the artifact.</p>
+<p>Customizes the Java class name provided by the WSDL file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -74,7 +74,7 @@
 </table>
 <br />
 <!-- -->
-<p>If the latter three properties are enabled in the Global Customization section, all port type operations will be affected. You can then override at the port type level to affect only the operations of that port type. And, finally, you can overrride at the port type operation level to designate which operations are affected.</p>
+<p>You can overrride the settings at the port type operation level to designate which operations are affected.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -240,7 +239,7 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public Object[] getIssues(Object r, String... id) {
+        public Collection<Object> getIssues(Object r, String... id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
@@ -300,11 +299,6 @@ public class JiraUpdater {
         public boolean isValid() {
             return false;
         }
-        @Override
-        public void applyChanges() {
-
-        }
-
         private JPanel createControllerPanel() {
             JPanel controllerPanel = new JPanel();
 
@@ -344,19 +338,11 @@ public class JiraUpdater {
             return controllerPanel;
         }
 
-        @Override
-        public void populate() {}
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {}
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {}
-
+        @Override public String getErrorMessage() { return null; }
+        @Override public void applyChanges() { }        
+        @Override public void cancelChanges() { }
+        @Override public void populate() {}
+        @Override public void addChangeListener(ChangeListener l) {}
+        @Override public void removeChangeListener(ChangeListener l) {}
     }
 }

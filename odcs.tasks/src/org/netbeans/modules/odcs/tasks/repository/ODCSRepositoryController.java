@@ -171,6 +171,11 @@ public class ODCSRepositoryController implements RepositoryController, DocumentL
     }
     
     @Override
+    public void cancelChanges() {
+        
+    }
+    
+    @Override
     public void addChangeListener(ChangeListener l) {
         support.addChangeListener(l);
     }
