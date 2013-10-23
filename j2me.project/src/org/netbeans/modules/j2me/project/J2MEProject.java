@@ -65,6 +65,7 @@ import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -297,6 +298,8 @@ public class J2MEProject implements Project {
                     addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
                     setCustomizerAction(newConfigCustomizerAction()).
                     build(),
+                ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+                ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
                 LookupMergerSupport.createSFBLookupMerger(),
                 LookupMergerSupport.createJFBLookupMerger(),
