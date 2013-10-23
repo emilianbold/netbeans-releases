@@ -62,6 +62,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider.Callback3;
+import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.j2seproject.api.J2SEBuildPropertiesProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
@@ -219,11 +220,11 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
     @Override
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         String names[] = super.getTargetNames(command, context, p, doJavaChecks);
-        J2SEConfigurationProvider.Config c = context.lookup(J2SEConfigurationProvider.Config.class);
+        ProjectConfigurations.Configuration c = context.lookup(ProjectConfigurations.Configuration.class);
         if (c != null) {
             String config;
-            if (c.name != null) {
-                config = c.name;
+            if (!c.isDefault()) {
+                config = c.getName();
             } else {
                 // Invalid but overrides any valid setting in config.properties.
                 config = "";

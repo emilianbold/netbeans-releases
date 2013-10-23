@@ -61,6 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
@@ -372,7 +373,7 @@ public class J2SEProjectOperations implements DeleteOperationImplementation, Cop
     }
     
     private void rememberConfigurations () {
-        FileObject fo = project.getProjectDirectory().getFileObject(J2SEConfigurationProvider.CONFIG_PROPS_PATH);
+        FileObject fo = project.getProjectDirectory().getFileObject(ProjectConfigurations.CONFIG_PROPS_PATH);
         if (fo != null) {
             //Has configurations
             try {
