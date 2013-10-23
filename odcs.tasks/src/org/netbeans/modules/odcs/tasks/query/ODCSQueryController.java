@@ -59,6 +59,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
@@ -955,6 +956,26 @@ public class ODCSQueryController implements QueryController, ItemListener, ListS
         }
         ODCS.LOG.log(Level.FINE, "returning queryString [{0}]", queryString); // NOI18N        
         return queryString;
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

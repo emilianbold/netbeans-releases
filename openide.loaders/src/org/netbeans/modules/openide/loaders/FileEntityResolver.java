@@ -414,6 +414,7 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
             try {
                 org.xml.sax.XMLReader reader = org.openide.xml.XMLUtil.createXMLReader(false, false);
                 reader.setContentHandler(this);
+                reader.setErrorHandler(this);
                 reader.setEntityResolver(this);
                 in = new BufferedInputStream (src.getInputStream());
                 InputSource is = new InputSource(in);

@@ -73,6 +73,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1245,6 +1246,26 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 refreshTask.progress(issueDesc);
             }
         }
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

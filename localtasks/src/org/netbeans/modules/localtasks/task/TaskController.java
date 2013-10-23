@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.localtasks.task;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.openide.util.HelpCtx;
@@ -111,5 +112,25 @@ final class TaskController implements IssueController {
                 panel.attachmentDeleted();
             }
         });
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+
     }
 }

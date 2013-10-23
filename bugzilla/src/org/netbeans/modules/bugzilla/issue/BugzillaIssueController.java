@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -93,6 +95,27 @@ public class BugzillaIssueController implements IssueController {
 
     void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
         issuePanel.modelStateChanged(modelDirty, modelHasLocalChanges);
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return issuePanel.saveSynchronously();
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        issuePanel.clearUnsavedChanges();
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        issuePanel.getIssue().addPropertyChangeListener(l);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        issuePanel.getIssue().removePropertyChangeListener(l);
     }
 
 }

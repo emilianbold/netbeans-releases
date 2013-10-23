@@ -208,6 +208,14 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
 
+    protected void fireUnsaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_NOT_SAVED, null, null);
+    }
+ 
+    protected void fireSaved() {
+        support.firePropertyChange(IssueController.PROPERTY_ISSUE_SAVED, null, null);
+    }
+
     @Override
     protected void taskDeleted (NbTask task) {
         getRepository().taskDeleted(getID(task));
