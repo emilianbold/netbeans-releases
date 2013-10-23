@@ -176,7 +176,6 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
                     if (Thread.interrupted()) {
                         return;
                     }
-                    // children can't be versioned
                     if (dir.equals(Git.getInstance().getRepositoryRoot(dir))) {
                         valid = false;
                         errorMessage = NbBundle.getMessage(InitAction.class, "LBL_Init_Panel_Error_Versioned"); //NOI18N
