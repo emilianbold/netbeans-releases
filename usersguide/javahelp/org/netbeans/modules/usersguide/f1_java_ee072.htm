@@ -2,19 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New JDBC Resource: General Attributes</title>
+<title>New JDBC Resource: Additional Properties</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="AS_Wiz_DataSource_general" name="AS_Wiz_DataSource_general"></a></p>
+<p><a id="AS_Wiz_DataSource_props" name="AS_Wiz_DataSource_props"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref656" name="sthref656"></a>
-<h1>New JDBC Resource: General Attributes</h1>
+<h1>New JDBC Resource: Additional Properties</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You see this page of the New File wizard when you are defining a JDBC resource. On this page you choose a connection pool and specify the JNDI name of the resource.</p>
-<p>When making a connection to a relational database, the application calls up the JDBC resource using the JNDI resource name. The JDBC resource (datasource) specifies the connection pool used to connect to a database.</p>
-<p>Use this page as follows:</p>
-<p>To create a JDBC resource, you first need to define a connection pool. Choose one of the following connection pool options:</p>
+<p>This page of the wizard enables you to add additional configuration information and properties for a JDBC resource.</p>
+<p>This panel of the wizard contains the following elements.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -28,83 +26,27 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t71" headers="r1c1-t71">
-<p>Use Existing JDBC Connection Pool</p>
+<p>Properties</p>
 </td>
 <td align="left" headers="r2c1-t71 r1c2-t71">
-<p>If selected, select from the drop-down list one of the connection pools already registered with the default server instance. If the connection pool you want does not appear in the list, ensure that it is registered with the default server instance. If no connection pools are listed and you see &lt;No JDBC Connection Pool&gt; in the drop-down list, ensure that the server instance is running.</p>
+<p>This table displays a list of the properties of the JDBC resource.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t71" headers="r1c1-t71">
-<p>Create New JDBC Connection Pool</p>
+<p>Add</p>
 </td>
 <td align="left" headers="r3c1-t71 r1c2-t71">
-<p>Select this option to create a new connection pool in the wizard.</p>
-<p><b>Note</b>: Alternatively, you can create a JDBC Connection Pool in the New File wizard. Click Back to return to the first screen of the New File wizard and select JDBC Connection Pool in the File Types pane.</p>
+<p>Click Add to add a row to the table that you can edit to specify the new property.</p>
+<p>Hit the Enter key after you add a value to the table to save the value.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t71" headers="r1c1-t71">
-<p>JNDI name</p>
+<p>Remove</p>
 </td>
 <td align="left" headers="r4c1-t71 r1c2-t71">
-<p>The JNDI name for the resource is required and must be unique to this JDBC resource. The JNDI name of a JDBC resource is expected in the <code>java:comp/env/jdbc</code> subcontext. For example, the JNDI name for the resource of a payroll database could be j<code>ava:comp/env/jdbc/payrolldb</code>. Because all resource JNDI names are in the j<code>ava:comp/env subcontext</code>, when you specify the JNDI name of a JDBC resource enter only <code>jdbc/name</code>. For example, for a payroll database, specify jdbc/payrolldb. When looking up a resource, relative lookups are attempted when other lookup attempts fail. For example, a client can use context.lookup("<code>jdbc/payrolldb</code>") in the place of context.lookup("j<code>ava:comp/env/jdbc/payrolldb</code>") to look up the resource.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t71" headers="r1c1-t71">
-<p>Object-types</p>
-</td>
-<td align="left" headers="r5c1-t71 r1c2-t71">
-<p>The type of the object. You can choose from the following values.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t71" headers="r1c1-t71">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;system-all</p>
-</td>
-<td align="left" headers="r6c1-t71 r1c2-t71">
-<p>A system resource for all server instances and the domain application server.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t71" headers="r1c1-t71">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;system-admin</p>
-</td>
-<td align="left" headers="r7c1-t71 r1c2-t71">
-<p>A system resource only for the domain application server.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t71" headers="r1c1-t71">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;system-instance</p>
-</td>
-<td align="left" headers="r8c1-t71 r1c2-t71">
-<p>A system resource for all server instances only.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t71" headers="r1c1-t71">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;user</p>
-</td>
-<td align="left" headers="r9c1-t71 r1c2-t71">
-<p>A user resource.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t71" headers="r1c1-t71">
-<p>Enabled</p>
-</td>
-<td align="left" headers="r10c1-t71 r1c2-t71">
-<p>Set to true to enable the resource, or false to disable the resource.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t71" headers="r1c1-t71">
-<p>Description</p>
-</td>
-<td align="left" headers="r11c1-t71 r1c2-t71">
-<p>Description of the resource (optional).</p>
+<p>Click Remove after you select a row in the table to remove the property.</p>
 </td>
 </tr>
 </tbody>
