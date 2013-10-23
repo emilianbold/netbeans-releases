@@ -40,7 +40,7 @@
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.refactoring.hints;
+package org.netbeans.modules.cnd.model.tasks;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +50,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 
 /**
  *
- * @author alsimon
+ * @author Alexander Simon
  */
 public class CndParserResult  extends Result {
     private final Collection<CsmFile> files;
