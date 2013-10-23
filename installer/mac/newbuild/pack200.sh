@@ -39,11 +39,11 @@ do
   bn=`basename $f`
   if  [ "$bn" != "jhall.jar" ] && [ "$bn" != "derby.jar" ] && [ "$bn" != "derbyclient.jar" ]
   then
-    if [ ! -z "$dont_pack_anything" ]; then
+    if [ ! -z "$dont_pack_anything" ] && [ "$dont_pack_anything" == "y" ] ; then
         echo "Skipping packing of $f"
         continue
     fi
-    if [ ! -z "$dont_pack_localization_jars" ]; then
+    if [ ! -z "$dont_pack_localization_jars" ] && [ "$dont_pack_localization_jars" == "y" ]; then
         if [ ! -z `echo $f | grep "/locale/"` ]; then
             echo "Skipping packing of localization jars: $f"
             continue
