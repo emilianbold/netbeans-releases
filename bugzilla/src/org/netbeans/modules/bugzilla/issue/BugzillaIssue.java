@@ -1490,15 +1490,21 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         }
     }
     
-    public void setTaskDueDate (Date date, boolean persistChange) {
-        if (hasTimeTracking()) {
-            setDueDateAndSubmit(date);
-        } else {
-            super.setDueDate(date, persistChange);
-            if (controller != null) {
-                controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+    public void setTaskDueDate (final Date date, final boolean persistChange) {
+        runWithModelLoaded(new Runnable() {
+
+            @Override
+            public void run () {
+                if (hasTimeTracking()) {
+                    setDueDateAndSubmit(date);
+                } else {
+                    setDueDate(date, persistChange);
+                    if (controller != null) {
+                        controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    }
+                }
             }
-        }
+        });
     }
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
@@ -1516,8 +1522,18 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     public boolean discardLocalEdits () {
-        clearUnsavedChanges();
-        return cancelChanges();
+        final boolean retval[] = new boolean[1];
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                clearUnsavedChanges();
+                retval[0] = cancelChanges();
+                if (controller != null) {
+                    controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                }
+            }
+        });
+        return retval[0];
     }
 
     public String getPriority() {
