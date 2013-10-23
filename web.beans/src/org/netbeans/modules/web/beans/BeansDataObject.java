@@ -61,7 +61,8 @@ import org.openide.windows.TopComponent;
 @MIMEResolver.NamespaceRegistration(
         displayName = "#LBL_Beans_LOADER",
         mimeType = "text/x-beans+xml",
-        elementNS = {"http://xmlns.jcp.org/xml/ns/javaee"}
+        elementNS = {"http://xmlns.jcp.org/xml/ns/javaee"},
+        position = 799
 )
 @DataObject.Registration(
         mimeType = "text/x-beans+xml",
