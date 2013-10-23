@@ -66,7 +66,7 @@ import org.openide.windows.TopComponent;
 @DataObject.Registration(
         mimeType = "text/x-beans+xml",
         iconBase = "org/netbeans/modules/web/beans/resources/delegate.png",
-        displayName = "#LBL_Beans_LOADER",
+        displayName = "#LBL_Beans_LOADER"
 )
 @ActionReferences({
     @ActionReference(
