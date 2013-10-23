@@ -51,7 +51,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -59,7 +66,7 @@ import org.openide.util.Utilities;
 // XXX copied from PHP
 public final class FileUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+    static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
 
@@ -196,6 +203,55 @@ public final class FileUtils {
             sb.append("sh"); // NOI18N
         }
         return sb.toString();
+    }
+
+    /**
+     * Opens the file and optionally set cursor to the line. This action is always run in AWT thread.
+     * @param file path of a file to open
+     * @param line line of a file to set cursor to, {@code -1} if no specific line is needed
+     */
+    public static void openFile(File file, int line) {
+        assert file != null;
+
+        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fileObject == null) {
+            LOGGER.log(Level.INFO, "FileObject not found for {0}", file);
+            return;
+        }
+
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException ex) {
+            LOGGER.log(Level.INFO, "DataObject not found for {0}", file);
+            return;
+        }
+
+        if (line == -1) {
+            // simply open file
+            EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+            ec.open();
+            return;
+        }
+
+        // open at specific line
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
+        if (lineCookie == null) {
+            LOGGER.log(Level.INFO, "LineCookie not found for {0}", file);
+            return;
+        }
+        Line.Set lineSet = lineCookie.getLineSet();
+        try {
+            final Line currentLine = lineSet.getCurrent(line - 1);
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                }
+            });
+        } catch (IndexOutOfBoundsException exc) {
+            LOGGER.log(Level.FINE, null, exc);
+        }
     }
 
 }
