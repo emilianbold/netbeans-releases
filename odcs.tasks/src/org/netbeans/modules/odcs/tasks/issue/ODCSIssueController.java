@@ -43,6 +43,7 @@
 package org.netbeans.modules.odcs.tasks.issue;
 
 import java.awt.Font;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
@@ -106,6 +107,26 @@ public class ODCSIssueController implements IssueController {
 
     void modelStateChanged (boolean modelDirty, boolean modelHasLocalChanges) {
         panel.modelStateChanged(modelDirty, modelHasLocalChanges);
+    }
+
+    @Override
+    public boolean saveChanges() {
+        return true;
+    }
+
+    @Override
+    public boolean discardUnsavedChanges() {
+        return true;
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        
     }
 
 }

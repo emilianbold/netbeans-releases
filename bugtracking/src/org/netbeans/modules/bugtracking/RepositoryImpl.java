@@ -219,8 +219,6 @@ public final class RepositoryImpl<R, Q, I> {
     /**
      * Returns an issue with the given ID
      *
-     * XXX add flag refresh
-     *
      * @param id
      * @return
      */

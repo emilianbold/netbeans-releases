@@ -63,7 +63,7 @@ public class RecentCategory extends Category {
     private final Map<IssueImpl, RecentIssue> issue2recent = new HashMap<IssueImpl, RecentIssue>();
 
     public RecentCategory() {
-        super(NbBundle.getMessage(RecentCategory.class, "LBL_Recent"));
+        super(NbBundle.getMessage(RecentCategory.class, "LBL_Recent"), new ArrayList<IssueImpl>(), true);
         bugtrackingManager = BugtrackingManager.getInstance();
         recentComparator = new RecentComparator();
     }
@@ -75,7 +75,7 @@ public class RecentCategory extends Category {
 
     @Override
     public List<IssueImpl> getTasks() {
-        List<IssueImpl> result = null;
+        List<IssueImpl> result;
         synchronized (issue2recent) {
             recentIssues = new ArrayList<RecentIssue>();
             Collection<List<RecentIssue>> values = bugtrackingManager.getAllRecentIssues().values();

@@ -108,11 +108,20 @@ public class APITestQuery extends TestQuery {
                 
                 @Override public void closed() {  }                
                 @Override public HelpCtx getHelpCtx() { return null; }
-
                 @Override
                 public boolean providesMode(QueryController.QueryMode mode) {
                     return true;
                 }
+                @Override
+                public boolean saveChanges() {
+                    return true;
+                }
+                @Override
+                public boolean discardUnsavedChanges() {
+                    return true;
+                }
+                @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+                @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
             }; 
         }
         return controller;

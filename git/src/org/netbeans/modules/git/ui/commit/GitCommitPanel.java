@@ -52,7 +52,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -317,11 +316,9 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             if (fileList.isEmpty()) {
                 return true;
             }
-            List<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(fileList.size());
-            Git git = Git.getInstance();
-            for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
-                File file = it.next();
-                if (repository.equals(git.getRepositoryRoot(file))) {
+            List<GitLocalFileNode> nodesList = new ArrayList<>(fileList.size());
+            for (File file : fileList) {
+                if (GitUtils.isFromRepository(repository, file)) {
                     GitLocalFileNode node = new GitLocalFileNode(repository, file);
                     nodesList.add(node);
                 }

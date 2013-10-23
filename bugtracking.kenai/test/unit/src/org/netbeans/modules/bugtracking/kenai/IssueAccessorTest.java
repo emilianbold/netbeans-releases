@@ -278,6 +278,17 @@ public class IssueAccessorTest extends NbTestCase {
         }
         @Override public void opened() { }
         @Override public void closed() { }
+
+        @Override
+        public boolean saveChanges() { 
+            return true;
+        }
+        @Override
+        public boolean discardUnsavedChanges() {
+            return true;
+        }
+        @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+        @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
     }
 
     @BugtrackingConnector.Registration(
