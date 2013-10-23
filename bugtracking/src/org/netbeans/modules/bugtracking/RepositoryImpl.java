@@ -355,11 +355,15 @@ public final class RepositoryImpl<R, Q, I> {
         }        
     }
     
-    public void applyChanges() throws IOException {
+    public void applyChanges() {
         HashMap<String, Object> oldAttributes = createAttributesMap();
         repositoryProvider.getController(getData()).applyChanges();
         HashMap<String, Object> newAttributes = createAttributesMap();
         fireAttributesChanged(oldAttributes, newAttributes);
+    }
+    
+    public void cancelChanges() {
+        repositoryProvider.getController(getData()).cancelChanges();
     }
     
     private HashMap<String, Object> createAttributesMap () {

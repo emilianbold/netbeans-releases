@@ -99,7 +99,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     }
 
     public HelpCtx getHelpContext() {
-        return new HelpCtx(org.netbeans.modules.bugzilla.repository.BugzillaRepository.class);
+        return new HelpCtx("org.netbeans.modules.bugzilla.repository.BugzillaRepository"); // NOI18N
     }
 
     @Override
@@ -225,6 +225,11 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         }
     }
 
+    @Override
+    public void cancelChanges() {
+        
+    }
+    
     @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N

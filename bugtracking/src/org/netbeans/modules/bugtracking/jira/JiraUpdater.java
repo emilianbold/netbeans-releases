@@ -299,11 +299,6 @@ public class JiraUpdater {
         public boolean isValid() {
             return false;
         }
-        @Override
-        public void applyChanges() {
-
-        }
-
         private JPanel createControllerPanel() {
             JPanel controllerPanel = new JPanel();
 
@@ -343,19 +338,11 @@ public class JiraUpdater {
             return controllerPanel;
         }
 
-        @Override
-        public void populate() {}
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener l) {}
-
-        @Override
-        public void removeChangeListener(ChangeListener l) {}
-
+        @Override public String getErrorMessage() { return null; }
+        @Override public void applyChanges() { }        
+        @Override public void cancelChanges() { }
+        @Override public void populate() {}
+        @Override public void addChangeListener(ChangeListener l) {}
+        @Override public void removeChangeListener(ChangeListener l) {}
     }
 }

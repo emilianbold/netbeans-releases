@@ -249,6 +249,11 @@ public class APITestRepository extends TestRepository {
         public void setURL(String url) {
             this.url = url;
         }
+
+        @Override
+        public void cancelChanges() {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
     }
 }
