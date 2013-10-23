@@ -115,16 +115,16 @@ public interface IssueController {
     public boolean discardUnsavedChanges();
 
     /**
-     * Registers a ChangeListener.
+     * Registers a PropertyChangeListener.
      * 
-     * @param l a ChangeListener
+     * @param l a PropertyChangeListener
      */
     public void addPropertyChangeListener(PropertyChangeListener l);
 
     /**
-     * Unregisters a ChangeListener.
+     * Unregisters a PropertyChangeListener.
      * 
-     * @param l a ChangeListener
+     * @param l a PropertyChangeListener
      */
     public void removePropertyChangeListener(PropertyChangeListener l);    
 }
