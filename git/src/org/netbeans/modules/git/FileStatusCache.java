@@ -161,16 +161,16 @@ public class FileStatusCache {
             // go through all files and sort them under repository roots
             file = FileUtil.normalizeFile(file);
             File repository = Git.getInstance().getRepositoryRoot(file);
+            File parentFile;
+            File parentRepository;
             if (repository == null) {
                 // we have an unversioned root, maybe the whole subtree should be removed from cache (VCS owners might have changed)
                 continue;
+            } else if (repository.equals(file) && (parentFile = file.getParentFile()) != null
+                    && (parentRepository = Git.getInstance().getRepositoryRoot(parentFile)) != null) {
+                addUnderRoot(rootFiles, parentRepository, file);
             }
-            Collection<File> filesUnderRoot = rootFiles.get(repository);
-            if (filesUnderRoot == null) {
-                filesUnderRoot = new HashSet<File>();
-                rootFiles.put(repository, filesUnderRoot);
-            }
-            GitUtils.prepareRootFiles(repository, filesUnderRoot, file);
+            addUnderRoot(rootFiles, repository, file);
         }
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("refreshAll: starting status scan for " + rootFiles.values() + " after " + (System.currentTimeMillis() - startTime)); //NOI18N
@@ -247,7 +247,7 @@ public class FileStatusCache {
                                     && (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
                                     fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
                                     !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
-                                    && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
+                                    && (correctRepository = !repository.equals(file) && repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for gitlinks or nested repositories
                                 LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                                 refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
                             }
@@ -883,6 +883,16 @@ public class FileStatusCache {
             }
         }
         return cachedRepository;
+    }
+
+    private void addUnderRoot (HashMap<File, Collection<File>> rootFiles, File repository, File file) {
+        // file is a gitlink inside another repository, we need to refresh also the file's status explicitely
+        Collection<File> filesUnderRoot = rootFiles.get(repository);
+        if (filesUnderRoot == null) {
+            filesUnderRoot = new HashSet<>();
+            rootFiles.put(repository, filesUnderRoot);
+        }
+        GitUtils.prepareRootFiles(repository, filesUnderRoot, file);
     }
 
     public static class ChangedEvent {
