@@ -1501,6 +1501,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                     setDueDate(date, persistChange);
                     if (controller != null) {
                         controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                        if (persistChange) {
+                            controller.refreshViewData(false);
+                        }
                     }
                 }
             }
@@ -1511,6 +1514,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setScheduleDate(date, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+            if (persistChange) {
+                controller.refreshViewData(false);
+            }
         }
     }
 
@@ -1518,6 +1524,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         super.setEstimate(estimate, persistChange);
         if (controller != null) {
             controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+            if (persistChange) {
+                controller.refreshViewData(false);
+            }
         }
     }
 
@@ -1530,6 +1539,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 retval[0] = cancelChanges();
                 if (controller != null) {
                     controller.modelStateChanged(hasUnsavedChanges(), hasLocalEdits());
+                    controller.refreshViewData(false);
                 }
             }
         });

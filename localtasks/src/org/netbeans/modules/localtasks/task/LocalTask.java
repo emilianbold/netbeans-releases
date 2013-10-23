@@ -467,17 +467,32 @@ public final class LocalTask extends AbstractLocalTask {
     
     public void setTaskDueDate (Date date, boolean persistChange) {
         super.setDueDate(date, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
     public void setTaskScheduleDate (IssueScheduleInfo date, boolean persistChange) {
         super.setScheduleDate(date, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
     
     public void setTaskEstimate (int estimate, boolean persistChange) {
         super.setEstimate(estimate, persistChange);
-        getTaskController().modelStateChanged(hasUnsavedChanges());
+        if (controller != null) {
+            controller.modelStateChanged(hasUnsavedChanges());
+            if (persistChange) {
+                controller.refreshViewData();
+            }
+        }
     }
 
     public void addComment (String comment, boolean closeAsFixed) {
