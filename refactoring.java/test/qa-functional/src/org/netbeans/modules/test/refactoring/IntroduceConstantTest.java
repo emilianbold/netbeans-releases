@@ -520,6 +520,8 @@ public class IntroduceConstantTest extends ModifyingRefactoring {
                 
                 if(debugMode) new EventTool().waitNoEvent(1000);
                 
+                new EventTool().waitNoEvent(1000);
+                
                 // call Reafctor > Introduce method
                 switch(c){
                     default: new RefactorIntroduceConstantAction().performPopup(editor); break;

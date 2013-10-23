@@ -105,6 +105,20 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="ProjectConfigurations">
+            <api name="java-api-common"/>
+            <summary>Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.</summary>
+            <version major="1" minor="64"/>
+            <date day="23" month="10" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                   Added <code>ProjectConfigurations</code> support for <code>ProjectConfiguration</code>s in Ant base project.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project" name="ProjectConfigurations"/>
+        </change>
         <change id="LibrariesNode.Builder">
             <api name="java-api-common"/>
             <summary>Added <code>LibrariesNode.Builder</code> to create configured <code>LibrariesNode</code>.</summary>

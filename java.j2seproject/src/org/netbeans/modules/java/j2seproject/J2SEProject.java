@@ -89,16 +89,19 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectConfigurations;
 import org.netbeans.modules.java.api.common.project.ProjectHooks;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProviders;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SECompositePanelProvider;
 import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
@@ -193,6 +196,7 @@ public final class J2SEProject implements Project {
      */
     private final ThreadLocal<Boolean> projectPropertiesSave;
 
+    @SuppressWarnings("LeakingThisInConstructor")
     public J2SEProject(AntProjectHelper helper) throws IOException {
         this.projectPropertiesSave = new ThreadLocal<Boolean>() {
             @Override
@@ -204,7 +208,7 @@ public final class J2SEProject implements Project {
         aux = helper.createAuxiliaryConfiguration();
         UpdateProjectImpl updateProject = new UpdateProjectImpl(this, helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
-        eval = createEvaluator();
+        eval = ProjectConfigurations.createPropertyEvaluator(this, helper, UPDATE_PROPERTIES);
         for (int v = 4; v < 10; v++) {
             if (aux.getConfigurationFragment("data", "http://www.netbeans.org/ns/j2se-project/" + v, true) != null) { // NOI18N
                 throw Exceptions.attachLocalizedMessage(new IOException("too new"), // NOI18N
@@ -253,60 +257,8 @@ public final class J2SEProject implements Project {
     public String toString() {
         return "J2SEProject[" + FileUtil.getFileDisplayName(getProjectDirectory()) + "]"; // NOI18N
     }
-
-    private PropertyEvaluator createEvaluator() {
-        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
-        // Adapted from APH.getStandardPropertyEvaluator (delegates to ProjectProperties):
-        PropertyEvaluator baseEval1 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(J2SEConfigurationProvider.CONFIG_PROPS_PATH));
-        PropertyEvaluator baseEval2 = PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
-        return PropertyUtils.sequentialPropertyEvaluator(
-                helper.getStockPropertyPreprovider(),
-                helper.getPropertyProvider(J2SEConfigurationProvider.CONFIG_PROPS_PATH),
-                new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
-                helper.getProjectLibrariesPropertyProvider(),
-                PropertyUtils.userPropertiesProvider(baseEval2,
-                    "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
-                new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
-                helper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH),
-                UPDATE_PROPERTIES);
-    }
-    private static final class ConfigPropertyProvider extends FilterPropertyProvider implements PropertyChangeListener {
-        private final PropertyEvaluator baseEval;
-        private final String prefix;
-        private final AntProjectHelper helper;
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public ConfigPropertyProvider(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
-            super(computeDelegate(baseEval, prefix, helper));
-            this.baseEval = baseEval;
-            this.prefix = prefix;
-            this.helper = helper;
-            baseEval.addPropertyChangeListener(this);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent ev) {
-            if (J2SEConfigurationProvider.PROP_CONFIG.equals(ev.getPropertyName())) {
-                setDelegate(computeDelegate(baseEval, prefix, helper));
-            }
-        }
-        private static PropertyProvider computeDelegate(PropertyEvaluator baseEval, String prefix, AntProjectHelper helper) {
-            String config = baseEval.getProperty(J2SEConfigurationProvider.PROP_CONFIG);
-            if (config != null) {
-                return helper.getPropertyProvider(prefix + "/" + config + ".properties"); // NOI18N
-            } else {
-                return PropertyUtils.fixedPropertyProvider(Collections.<String,String>emptyMap());
-            }
-        }
-    }
-
+        
     private static final PropertyProvider UPDATE_PROPERTIES;
-
     static {
         Map<String, String> defs = new HashMap<String, String>();
 
@@ -400,7 +352,10 @@ public final class J2SEProject implements Project {
             buildExtender,
             cpMod,
             ops,
-            new J2SEConfigurationProvider(this),
+            ProjectConfigurations.createConfigurationProviderBuilder(this, eval, updateHelper).
+                    addConfigurationsAffectActions(ActionProvider.COMMAND_RUN, ActionProvider.COMMAND_DEBUG).
+                    setCustomizerAction(newConfigCustomizerAction()).
+                    build(),
             new J2SEPersistenceProvider(this, cpProvider),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -978,6 +933,17 @@ public final class J2SEProject implements Project {
             private FileObject toFile(@NonNull final URL url) {
                 final URL file = FileUtil.getArchiveFile(url);
                 return URLMapper.findFileObject(file != null ? file : url);
+            }
+        };
+    }
+
+    @NonNull
+    private Runnable newConfigCustomizerAction() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                J2SEProject.this.getLookup().lookup(CustomizerProviderImpl.class).
+                    showCustomizer(J2SECompositePanelProvider.RUN);
             }
         };
     }
