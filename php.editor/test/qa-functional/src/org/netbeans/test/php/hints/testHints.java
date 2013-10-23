@@ -77,7 +77,12 @@ public class testHints extends GeneralPHP {
                 "testPhp54RelatedHint",
                 "testPhp53RelatedHint",
                 "testSmartySurroundWith",
-                "testTooManyNestedBlocks").enableModules(".*").clusters(".*") //.gui( true )
+                "testTooManyNestedBlocks",
+                "testUnreachableStatement",
+                "testEmptyStatement",
+                "testDirectUseOfSuperGlobals",
+                "testConditionBraces",
+                "testUnnecessaryClosingDelimiter").enableModules(".*").clusters(".*") //.gui( true )
                 );
     }
 
@@ -260,7 +265,7 @@ public class testHints extends GeneralPHP {
     } 
     
     public void testTooManyNestedBlocks() {
-        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "UnusedUse");
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "NestedBlocks");
         SetPhpVersion(TEST_PHP_NAME, 4);
         startTest();
         file.setCaretPosition("*/", false);
@@ -280,6 +285,95 @@ public class testHints extends GeneralPHP {
         file.save();
         new EventTool().waitNoEvent(2000);
         checkNumberOfAnnotationsContains("Too Many Nested Blocks in Function Declaration", 1, "Incorrect number of Too Many Nested Blocks hints", file);
+        endTest();
+    }
+    
+    public void testUnreachableStatement() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Unreachable");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitEvent(1000);
+        TypeCode(file, "function unreachableTest() {\n" +
+                        "    return 1;\n" +
+                        "    echo 'unreachable';\n" +
+                        "}");
+        file.save();
+        new EventTool().waitNoEvent(1500);
+        checkNumberOfAnnotationsContains("Unreachable Statement", 1, "Incorrect number of Unreachable Statement hints", file);
+        endTest();
+    }
+    
+    public void testEmptyStatement() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "EmptyStatement");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "function emptyStatement() {\n" +
+                        "    ;\n" +
+                        "}");
+        file.save();
+        new EventTool().waitNoEvent(1500);
+        checkNumberOfAnnotationsContains("Empty Statement", 1, "Incorrect number of Empty Statement hints", file);
+        endTest();
+    }
+    
+    public void testDirectUseOfSuperGlobals() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "Superglobals");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "function useSuperGlobals() {\n" +
+                        "    $a = $_GET['a'];\n" +
+                        "    $b = $_POST['b'];\n" +
+                        "    $c = $_SERVER['c'];\n" +
+                        "    $d = $_COOKIE['d'];\n" +
+                        "    $e = $_ENV['e'];\n" +
+                        "    $f = $_REQUEST['f'];\n" +
+                        "    $g = $_SESSION['g'];\n" +
+                        "    $i = $_FILES['i'];\n" +
+                        "}");
+        file.save();
+        new EventTool().waitNoEvent(1500);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_GET Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_POST Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_SERVER Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_COOKIE Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_ENV Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_REQUEST Array Directly.", 1, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_SESSION Array Directly.", 0, "Incorrect number of Direct Use of Superglobals hints", file);
+        checkNumberOfAnnotationsContains("Do not Access Superglobal $_FILES Array Directly.", 0, "Incorrect number of Direct Use of Superglobals hints", file);
+        endTest();
+    }
+    
+    public void testConditionBraces() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "ConditionBraces");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "if(true)\n" +
+                        "    echo 1;\n" +
+                        "else\n" +
+                        "    echo 2;");
+        file.save();
+        new EventTool().waitNoEvent(1500);
+        checkNumberOfAnnotationsContains("If-Else Statements Must Use Braces", 2, "Incorrect number of Conditions Must Use Braces hints", file);
+        endTest();
+    }
+    
+    public void testUnnecessaryClosingDelimiter() {
+        EditorOperator file = CreatePHPFile(TEST_PHP_NAME, "PHP File", "ClosingDelimiter");
+        SetPhpVersion(TEST_PHP_NAME, 4);
+        startTest();
+        file.setCaretPosition("*/", false);
+        new EventTool().waitNoEvent(1000);
+        TypeCode(file, "\n ?>");
+        file.save();
+        new EventTool().waitNoEvent(1500);
+        checkNumberOfAnnotationsContains("Unnecessary Closing Delimiter", 1, "Incorrect number of Unnecessary Closing Delimiter hints", file);
         endTest();
     }
 }
