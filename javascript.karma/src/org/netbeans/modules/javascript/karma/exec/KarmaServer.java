@@ -45,6 +45,7 @@ package org.netbeans.modules.javascript.karma.exec;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.openide.util.ChangeSupport;
 
 public final class KarmaServer {
@@ -80,7 +81,7 @@ public final class KarmaServer {
             fireChange();
             return false;
         }
-        server = karmaExecutable.start(port);
+        server = karmaExecutable.start(port, KarmaPreferences.getInstance().getConfig(project));
         starting = false;
         if (server != null) {
             started = true;

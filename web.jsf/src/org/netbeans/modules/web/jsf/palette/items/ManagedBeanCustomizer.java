@@ -301,13 +301,15 @@ public class ManagedBeanCustomizer extends javax.swing.JPanel implements Cancell
                 hint.setText(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.instanceHint", entityClass));
             }
             hint.setVisible(true);
-            RP.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
+                @Override
                 public void run() {
                     final List<String> props = getPropertyNames(project, entityClass, collection);
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             dummyBean = false;
-                            if (props.size() == 0) {
+                            if (props.isEmpty()) {
                                 props.add(""); // NOI18N
                                 props.add(NbBundle.getMessage(ManagedBeanCustomizer.class, "ManagedBeanCustomizer.notManagedBeanFound")); // NOI18N
                                 dummyBean = true;
