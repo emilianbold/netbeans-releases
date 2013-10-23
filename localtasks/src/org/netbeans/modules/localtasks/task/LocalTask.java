@@ -219,6 +219,9 @@ public final class LocalTask extends AbstractLocalTask {
     }
 
     public void delete () {
+        if (controller != null) {
+            controller.taskDeleted();
+        }
         deleteTask();
     }
 

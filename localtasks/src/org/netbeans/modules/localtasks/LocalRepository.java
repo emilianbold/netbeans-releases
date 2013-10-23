@@ -101,7 +101,8 @@ public final class LocalRepository {
         fac = new BugtrackingSupport<>(new RepositoryProviderImpl(), new QueryProviderImpl(), new IssueProviderImpl());
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         propertySuport = new PropertyChangeSupport(this);
-        repository = fac.createRepository(this, null, new IssueSchedulingProviderImpl(), null, null);
+        repository = fac.createRepository(this, new IssueStatusProviderImpl(), 
+                new IssueSchedulingProviderImpl(), null, null);
     }
 
     public Repository getRepository () {

@@ -122,7 +122,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -736,10 +735,6 @@ final class TaskPanel extends javax.swing.JPanel {
                 Bundle.MSG_IssuePanel_deleteTask_message(),
                 Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
-        }
-        Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
-        if (tc instanceof TopComponent) {
-            ((TopComponent) tc).close();
         }
         RP.post(new Runnable() {
             @Override
