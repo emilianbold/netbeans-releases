@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -208,7 +209,7 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
                         }                    
                         if (newMainClass != null && !newMainClass.equals(oldMainClass) && helper.requestUpdate() &&
                                 // XXX ##84806: ideally should update nbproject/configs/*.properties in this case:
-                            eval.getProperty(J2SEConfigurationProvider.PROP_CONFIG) == null) {
+                            eval.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG) == null) {
                             final String newMainClassFinal = newMainClass;
                             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                                 @Override
