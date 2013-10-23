@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -240,7 +239,7 @@ public class JiraUpdater {
             return null;
         }
         @Override
-        public Object[] getIssues(Object r, String... id) {
+        public Collection<Object> getIssues(Object r, String... id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override

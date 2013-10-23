@@ -70,7 +70,7 @@ public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepositor
     }
 
     @Override
-    public ODCSIssue[] getIssues(ODCSRepository r, String... ids) {
+    public Collection<ODCSIssue> getIssues(ODCSRepository r, String... ids) {
         return r.getIssues(ids);
     }
 

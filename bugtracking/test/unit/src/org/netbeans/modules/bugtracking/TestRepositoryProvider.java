@@ -66,7 +66,7 @@ public class TestRepositoryProvider implements RepositoryProvider<TestRepository
     }
 
     @Override
-    public TestIssue[] getIssues(TestRepository r, String... ids) {
+    public Collection<TestIssue> getIssues(TestRepository r, String... ids) {
         return r.getIssues(ids);
     }
 

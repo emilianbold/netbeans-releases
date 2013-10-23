@@ -44,6 +44,7 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -70,7 +71,7 @@ public class ODCSIssueProvider implements IssueProvider<ODCSIssue> {
     }
 
     @Override
-    public String[] getSubtasks(ODCSIssue data) {
+    public Collection<String> getSubtasks(ODCSIssue data) {
         return data.getSubtasks();
     }
 

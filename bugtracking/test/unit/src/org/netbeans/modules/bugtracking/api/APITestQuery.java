@@ -134,7 +134,7 @@ public class APITestQuery extends TestQuery {
 
     @Override
     public Collection<APITestIssue> getIssues() {
-        return Arrays.asList(repo.getIssues(new String[] {APITestIssue.ID_1}));
+        return repo.getIssues(APITestIssue.ID_1);
     }
 
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);

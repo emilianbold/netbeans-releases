@@ -44,13 +44,13 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.IssueController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -186,8 +186,8 @@ public class APITestIssue extends TestIssue {
     }
 
     @Override
-    public String[] getSubtasks() {
-        return new String[] {APITestIssue.ID_SUB_3};
+    public Collection<String> getSubtasks() {
+        return Arrays.asList(new String[] {APITestIssue.ID_SUB_3});
     }
 
     @Override

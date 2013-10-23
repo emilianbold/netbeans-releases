@@ -223,11 +223,11 @@ public final class RepositoryImpl<R, Q, I> {
      * @return
      */
     public Collection<IssueImpl> getIssueImpls(String... ids) {
-        I[] is = repositoryProvider.getIssues(r, ids);
-        if(is == null || is.length == 0) {
+        Collection<I> is = repositoryProvider.getIssues(r, ids);
+        if(is == null || is.isEmpty()) {
             return Collections.emptyList();
         }
-        List<IssueImpl> ret = new ArrayList<IssueImpl>(is.length);
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(is.size());
         for (I i : is) {
             IssueImpl impl = getIssue(i);
             if(impl != null) {

@@ -216,7 +216,7 @@ public final class LocalRepository {
         }
     }
 
-    LocalTask[] getTasks (String[] ids) {
+    List<LocalTask> getTasks (String[] ids) {
         final List<LocalTask> ret = new ArrayList<>(ids.length);
         boolean queryNeedsRefresh = false;
         try {
@@ -245,7 +245,7 @@ public final class LocalRepository {
                 }
             });
         }
-        return ret.toArray(new LocalTask[ret.size()]);
+        return ret;
     }
 
     Collection<LocalTask> simpleSearch (String criteria) {
