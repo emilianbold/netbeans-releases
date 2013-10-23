@@ -83,7 +83,8 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private ServerWizardIterator wizardIterator;
     private AddDomainLocationVisualPanel component;
     private WizardDescriptor wizard;
-    private transient List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
+    private transient List<ChangeListener> listeners
+            = new CopyOnWriteArrayList<>();
     private String gfRoot;
 
     /** Default Java SE platform is supported by selected GlassFish server. */
@@ -230,9 +231,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
             InetAddress ip;
             try {
                 ip = InetAddress.getByName(((String)rawHost).trim());
-            } catch (UnknownHostException ex) {
-                ip = null;
-            } catch (SecurityException ex) {
+            } catch (UnknownHostException | SecurityException ex) {
                 ip = null;
             }
             return ip != null ? (String)rawHost : "localhost";
@@ -384,7 +383,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
     private boolean validateForRemoteDomain(
             final AddDomainLocationVisualPanel panel) {
         String host = panel.getHostName();
-        List<String> errors = new LinkedList<String>();
+        List<String> errors = new LinkedList<>();
         int dasPort = strToInt(panel.getAdminPortValue(),
                 "AddDomainLocationPanel.invalidDasPort", errors);
         int httpPort = strToInt(panel.getHttpPortValue(),

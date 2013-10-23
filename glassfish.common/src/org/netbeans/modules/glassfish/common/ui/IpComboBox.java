@@ -43,102 +43,18 @@ package org.netbeans.modules.glassfish.common.ui;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import org.glassfish.tools.ide.utils.NetUtils;
 
 /**
- *
- * @author kratz
+ * Combo box to select IP address.
+ * <p/>
+ * @author Tomas Kraus
  */
 public class IpComboBox extends JComboBox<IpComboBox.InetAddr> {
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner classes                                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Encapsulate {@see InetAddress} object and provide human readable
-     * <code>toString()</code> output for combo box.
-     */
-    public static class InetAddr {
-
-        /** IP address reference. */
-        private final InetAddress ip;
-
-        /** Mark default IP address. */
-        private boolean def;
-
-        /**
-         * Creates an instance of <code>InetAddr</code> object and sets provided
-         * {@see InetAddress} reference.
-         * <p/>
-         * @param addr IP address reference.
-         */
-        InetAddr(final InetAddress ip, final boolean def) {
-            this.ip = ip;
-            this.def = def;
-        }
-
-        /**
-         * Get IP address reference.
-         * <p/>
-         * @return IP address reference.
-         */
-        public InetAddress getIp() {
-            return ip;
-        }
-
-        /**
-         * Get {@see String} representation of this object.
-         * <p/>
-         * @return {@see String} representation of this object.
-         */
-        @Override
-        public String toString() {
-            return isLocalhost(ip) ? IP_4_127_0_0_1_NAME : ip.getHostAddress();
-        }
-
-        /**
-         * Check if this platform is the default platform.
-         * <p/>
-         * @return Value of <code>true</code> if this platform is the default
-         *         platform or <code>false</code> otherwise.
-         */
-        public boolean isDefault() {
-            return def;
-        }
-
-    }
-
-    /**
-     * Comparator for <code>InetAddr</code> instances to be sorted in combo box.
-     */
-    public static class InetAddrComparator implements Comparator<InetAddr> {
-
-        /** Comparator for {@link InetAddress} instances to be sorted. */
-        private static final NetUtils.InetAddressComparator
-                INET_ADDRESS_COMPARATOR = new NetUtils.InetAddressComparator();
-
-        /**
-         * Compares values of <code>InetAddr</code> instances.
-         * <p/>
-         * @param ip1 First <code>InetAddr</code> instance to be compared.
-         * @param ip2 Second <code>InetAddr</code> instance to be compared.
-         * @return A negative integer, zero, or a positive integer as the first
-         *         argument is less than, equal to, or greater than the second.
-         */
-        @Override
-        public int compare(final InetAddr ip1, final InetAddr ip2) {
-            return INET_ADDRESS_COMPARATOR.compare(ip1.getIp(), ip2.getIp()); 
-        }
-
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -209,6 +125,9 @@ public class IpComboBox extends JComboBox<IpComboBox.InetAddr> {
         return count;
     }
 
+    // TODO: Currently default selection is marked in returned array only and
+    // component does not know about index id this default value. Setting
+    // default value as selected requires to iterate over model array.
     /**
      * Convert array of {@see InetAddress} objects to array of {@see InetAddr}
      * objects.
@@ -231,6 +150,20 @@ public class IpComboBox extends JComboBox<IpComboBox.InetAddr> {
             }
         }
         Arrays.sort(ipsOut, ipComparator);
+        // Set default IP to 1st loopback address available.
+        boolean gotDefault = false;
+        for (int j = 0; j < ipsOut.length; j++) {
+            if (ipsOut[j].getIp().isLoopbackAddress()) {
+                ipsOut[j].def = true;
+                gotDefault = true;
+                break;
+            }
+        }
+        // Set default IP to 1st address in the list when no loopback address
+        // was fiound.
+        if (!gotDefault && ipsOut.length > 0) {
+            ipsOut[0].def = true;
+        }
         return ipsOut;
     }
 
@@ -341,14 +274,97 @@ public class IpComboBox extends JComboBox<IpComboBox.InetAddr> {
     }
 
     /**
+     * Get selected item from the combo box display area as IP address.
+     * <p/>
+     * User modified content 
+     * <p/>
+     * @return Selected item from the combo box display area as IP address
+     *         or <code>null</code> when there is no selected IP address.
+     */
+    public InetAddress getSelectedIp() {
+        Object item = getSelectedItem();
+        if (item instanceof InetAddr) {
+            return ((InetAddr)item).getIp();
+        } else if (item instanceof String) {
+            InetAddress ip;
+            try {
+                ip = InetAddress.getByName(((String)item).trim());
+            } catch (UnknownHostException | SecurityException ex) {
+                ip = null;
+            }
+            return ip;
+        }
+        return null;
+    }
+
+    /**
+     * Get selected item from the combo box display area.
+     * <p/>
+     * @return Selected item from the combo box display area.
+     */
+    @Override
+    public Object getSelectedItem() {
+        Object item = super.getSelectedItem();
+        if ((item instanceof InetAddr)
+                || (item instanceof String) || item == null) {
+            return item;
+        } else {
+            throw new IllegalStateException("Selected item is not IP adress");
+        }
+    }
+
+    /**
      * Set selected item in the combo box display area to the provided
      * IP address.
+     * <p/>
+     * @param ip IP address to be set as selected. Default IP address
+     *           will be used when provided address is not found.
+     */
+    public void setSelectedIp(final InetAddress ip) {
+        int i, count = dataModel.getSize();
+        int defaultIndex = -1;
+        boolean isSelectedSet = false;
+        for (i = 0; i < count; i++) {
+            InetAddr element = dataModel.getElementAt(i);
+            // Passed IP address has highest priority.
+            if (((InetAddress) ip).equals(
+                    element.getIp())) {
+                super.setSelectedItem(element);
+                isSelectedSet = true;
+                break;
+            // Searching for default item in parallel.
+            } else if (element.isDefault()) {
+                defaultIndex = i;
+            }
+        }
+        // Set default or first available when passed IP was noit found.
+        if (!isSelectedSet && count > 0) {
+            super.setSelectedItem(dataModel.getElementAt(
+                    defaultIndex >= 0 ? defaultIndex : 0));
+        }
+    }
+
+    /**
+     * Set selected item in the combo box display area to the provided
+     * IP address.
+     * <p/>
+     * Expecting values from previous states of combo box which can be<ul>
+     * <li><code>null</code> to select default value</li>
+     * <li>or <code>String</code> when combo box content was modified
+     *     by user</li>
+     * <li>or <code>InetAddr</code> and <code>InetAddress</code> values
+     * containing previous selections.</li></ul>
      * <p/>
      * @param ip IP address to be set as selected. Default IP address
      *           will be used when <code>null</code> value is supplied.
      */
     @Override
     public void setSelectedItem(Object ip) {
+        // String means user modified value. Do not rewrite editor content.
+        if (ip instanceof String) {
+            return;
+        }
+        // Select default value for null.
         if (ip == null) {
             int i, count = dataModel.getSize();
             for (i = 0; i < count; i++) {
@@ -358,18 +374,99 @@ public class IpComboBox extends JComboBox<IpComboBox.InetAddr> {
                 }
             }
         }
+        // Select IP address from list .
+        if (ip instanceof InetAddr) {
+            setSelectedIp(((InetAddr)ip).getIp());
+        }
+        // Select IP address from list.
         if (ip instanceof InetAddress) {
-            int i, count = dataModel.getSize();
-            for (i = 0; i < count; i++) {
-                if (((InetAddress) ip).equals(
-                        (dataModel.getElementAt(i)).getIp())) {
-                    super.setSelectedItem(dataModel.getElementAt(i));
-                    break;
-                }
-            }
+            setSelectedIp((InetAddress)ip);
+        // Pass unknown instance to parrent method.
         } else {
             super.setSelectedItem(ip);
         }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Encapsulate {@see InetAddress} object and provide human readable
+     * <code>toString()</code> output for combo box.
+     */
+    public static class InetAddr {
+
+        /** IP address reference. */
+        private final InetAddress ip;
+
+        /** Mark default IP address. */
+        private boolean def;
+
+        /**
+         * Creates an instance of <code>InetAddr</code> object and sets provided
+         * {@see InetAddress} reference.
+         * <p/>
+         * @param addr IP address reference.
+         */
+        InetAddr(final InetAddress ip, final boolean def) {
+            this.ip = ip;
+            this.def = def;
+        }
+
+        /**
+         * Get IP address reference.
+         * <p/>
+         * @return IP address reference.
+         */
+        public InetAddress getIp() {
+            return ip;
+        }
+
+        /**
+         * Get {@see String} representation of this object.
+         * <p/>
+         * @return {@see String} representation of this object.
+         */
+        @Override
+        public String toString() {
+            return isLocalhost(ip) ? IP_4_127_0_0_1_NAME : ip.getHostAddress();
+        }
+
+        /**
+         * Check if this platform is the default platform.
+         * <p/>
+         * @return Value of <code>true</code> if this platform is the default
+         *         platform or <code>false</code> otherwise.
+         */
+        public boolean isDefault() {
+            return def;
+        }
+
+    }
+
+    /**
+     * Comparator for <code>InetAddr</code> instances to be sorted in combo box.
+     */
+    public static class InetAddrComparator implements Comparator<InetAddr> {
+
+        /** Comparator for {@link InetAddress} instances to be sorted. */
+        private static final NetUtils.InetAddressComparator
+                INET_ADDRESS_COMPARATOR = new NetUtils.InetAddressComparator();
+
+        /**
+         * Compares values of <code>InetAddr</code> instances.
+         * <p/>
+         * @param ip1 First <code>InetAddr</code> instance to be compared.
+         * @param ip2 Second <code>InetAddr</code> instance to be compared.
+         * @return A negative integer, zero, or a positive integer as the first
+         *         argument is less than, equal to, or greater than the second.
+         */
+        @Override
+        public int compare(final InetAddr ip1, final InetAddr ip2) {
+            return INET_ADDRESS_COMPARATOR.compare(ip1.getIp(), ip2.getIp()); 
+        }
+
     }
 
 }

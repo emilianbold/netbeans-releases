@@ -398,7 +398,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             String domainName, int httpPort, int adminPort,
             String userName, String password, String target, String url,
             GlassfishInstanceProvider gip) {
-        Map<String, String> ip = new HashMap<String, String>();
+        Map<String, String> ip = new HashMap<>();
         ip.put(GlassfishModule.DISPLAY_NAME_ATTR, displayName);
         ip.put(GlassfishModule.INSTALL_FOLDER_ATTR, installRoot);
         ip.put(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot);
@@ -607,7 +607,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                 && org.netbeans.modules.glassfish.common.utils.ServerUtils
                 .isValidFolder(glassfishRoot)) {
             // collect attributes and pass to create()
-            Map<String, String> ip = new HashMap<String, String>();
+            Map<String, String> ip = new HashMap<>();
             Enumeration<String> iter = instanceFO.getAttributes();
             while(iter.hasMoreElements()) {
                 String name = iter.nextElement();
@@ -914,6 +914,15 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Set GlassFish server host from stored properties.
+     * <p/>
+     * @param host GlassFish server host  to be stored.
+     */
+    public void setHost(final String host) {
+        properties.put(GlassfishModule.HOSTNAME_ATTR, host);
+    }
+
+    /**
      * Get GlassFish server HTTP port from stored properties.
      * <p/>
      * @return GlassFish server HTTP port.
@@ -1030,6 +1039,17 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Get GlassFish server target in domain (cluster or standalone
+     * server name).
+     * <p/>
+     * @return  GlassFish server target in domain (cluster or standalone
+     *          server name).
+     */
+    public String getTarget() {
+        return properties.get(GlassfishModule.TARGET_ATTR);
+    }
+
+    /**
      * Get GlassFish server URL from stored properties.
      * <p/>
      * @return GlassFish server URL.
@@ -1124,12 +1144,24 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * If the map previously contained a mapping for the key, the old value
      * is replaced by the specified value.
      * <p/>
-     * @param properties GlassFish properties to set
+     * @param key   GlassFish property <code>key</code>.
+     * @param value GlassFish property <code>value</code>.
      * @return Previous value associated with <code>key</code>, or
      *         <code>null</code> if there was no mapping for <code>key</code>.
      */
     public String putProperty(String key, String value) {
         return properties.put(key, value);
+    }
+
+    /**
+     * Removes the mapping for a key from this map if it is present.
+     * <p/>
+     * @param key GlassFish property <code>key</code>.
+     * @return Previous value associated with <code>key</code>, or
+     *         <code>null</code> if there was no mapping for <code>key</code>.
+     */
+    public String removeProperty(String key) {
+        return properties.remove(key);
     }
 
     /**
@@ -1163,16 +1195,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
-     * Retrieve password attribute from stored properties and NetBeans
-     * key store.
-     * <p/>
-     * @return Retrieved password attribute.
-     */
-    public String getPassword() {
-        return properties.get(GlassfishModule.PASSWORD_ATTR);
-    }
-
-    /**
      * Store password attribute into GlassFish instance properties.
      * <p/>
      * Password is not stored in {@see Keyring}. Method
@@ -1181,8 +1203,18 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @param password Password attribute to store.
      */
-    public void setPassword(String password) {
+    public void setAdminPassword(String password) {
         properties.put(GlassfishModule.PASSWORD_ATTR, password);
+    }
+
+    /**
+     * Retrieve password attribute from stored properties and NetBeans
+     * key store.
+     * <p/>
+     * @return Retrieved password attribute.
+     */
+    public String getPassword() {
+        return properties.get(GlassfishModule.PASSWORD_ATTR);
     }
 
     public String getInstallRoot() {
@@ -1594,7 +1626,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         } else {
             LOGGER.log(Level.WARNING, "{0} does not exist", asenvConf.getAbsolutePath()); // NOI18N
         }
-        Set<GlassfishModuleFactory> added = new HashSet<GlassfishModuleFactory>();
+        Set<GlassfishModuleFactory> added = new HashSet<>();
         //Set<GlassfishModuleFactory> removed = new HashSet<GlassfishModuleFactory>();
         synchronized (lookupResult) {
             Collection<? extends GlassfishModuleFactory> factories = lookupResult.allInstances();
@@ -1602,7 +1634,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             added.removeAll(currentFactories);
             currentFactories = factories;
 
-            List<Lookup> proxies = new ArrayList<Lookup>();
+            List<Lookup> proxies = new ArrayList<>();
             proxies.add(localLookup);
             for (GlassfishModuleFactory moduleFactory : added) {
                 if(moduleFactory.isModuleSupported(homeFolder, asenvProps)) {
